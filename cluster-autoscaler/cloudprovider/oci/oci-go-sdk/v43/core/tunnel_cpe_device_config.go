@@ -22,10 +22,10 @@ import (
 // The answers correlate to the questions that are specific to the CPE device type (see the
 // `parameters` attribute of CpeDeviceShapeDetail).
 // See these related operations:
-//   * GetTunnelCpeDeviceConfig
-//   * GetTunnelCpeDeviceConfigContent
-//   * GetIpsecCpeDeviceConfigContent
-//   * GetCpeDeviceConfigContent
+//   - GetTunnelCpeDeviceConfig
+//   - GetTunnelCpeDeviceConfigContent
+//   - GetIpsecCpeDeviceConfigContent
+//   - GetCpeDeviceConfigContent
 type TunnelCpeDeviceConfig struct {
 	TunnelCpeDeviceConfigParameter []CpeDeviceConfigAnswer `mandatory:"false" json:"tunnelCpeDeviceConfigParameter"`
 }

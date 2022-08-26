@@ -11,7 +11,7 @@ import (
 
 // ListDrgRouteDistributionStatementsRequest wrapper for the ListDrgRouteDistributionStatements operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListDrgRouteDistributionStatements.go.html to see an example of how to use ListDrgRouteDistributionStatementsRequest.
 type ListDrgRouteDistributionStatementsRequest struct {

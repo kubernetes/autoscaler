@@ -25,24 +25,24 @@
 // AWS Resource Groups uses a REST-compliant API that you can use to perform
 // the following types of operations.
 //
-//    * Create, Read, Update, and Delete (CRUD) operations on resource groups
-//    and resource query entities
+//   - Create, Read, Update, and Delete (CRUD) operations on resource groups
+//     and resource query entities
 //
-//    * Applying, editing, and removing tags from resource groups
+//   - Applying, editing, and removing tags from resource groups
 //
-//    * Resolving resource group member ARNs so they can be returned as search
-//    results
+//   - Resolving resource group member ARNs so they can be returned as search
+//     results
 //
-//    * Getting data about resources that are members of a group
+//   - Getting data about resources that are members of a group
 //
-//    * Searching AWS resources based on a resource query
+//   - Searching AWS resources based on a resource query
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/resource-groups-2017-11-27 for more information on this service.
 //
 // See resourcegroups package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/resourcegroups/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Resource Groups with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

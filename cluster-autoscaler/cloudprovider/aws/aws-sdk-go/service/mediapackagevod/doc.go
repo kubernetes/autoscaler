@@ -3,14 +3,14 @@
 // Package mediapackagevod provides the client and types for making API
 // requests to AWS Elemental MediaPackage VOD.
 //
-// AWS Elemental MediaPackage VOD
+// # AWS Elemental MediaPackage VOD
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07 for more information on this service.
 //
 // See mediapackagevod package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/mediapackagevod/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Elemental MediaPackage VOD with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS RoboMaker.
-//    func myFunc(svc robomakeriface.RoboMakerAPI) bool {
-//        // Make svc.BatchDeleteWorlds request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS RoboMaker.
+//	func myFunc(svc robomakeriface.RoboMakerAPI) bool {
+//	    // Make svc.BatchDeleteWorlds request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := robomaker.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := robomaker.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockRoboMakerClient struct {
-//        robomakeriface.RoboMakerAPI
-//    }
-//    func (m *mockRoboMakerClient) BatchDeleteWorlds(input *robomaker.BatchDeleteWorldsInput) (*robomaker.BatchDeleteWorldsOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockRoboMakerClient struct {
+//	    robomakeriface.RoboMakerAPI
+//	}
+//	func (m *mockRoboMakerClient) BatchDeleteWorlds(input *robomaker.BatchDeleteWorldsInput) (*robomaker.BatchDeleteWorldsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockRoboMakerClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockRoboMakerClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

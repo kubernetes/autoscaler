@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Connect client from just a session.
-//     svc := connect.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Connect client with additional configuration
-//     svc := connect.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Connect client from just a session.
+//	svc := connect.New(mySession)
+//
+//	// Create a Connect client with additional configuration
+//	svc := connect.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Connect {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

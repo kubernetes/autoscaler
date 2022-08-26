@@ -11,7 +11,7 @@ import (
 
 // DeleteSecurityListRequest wrapper for the DeleteSecurityList operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteSecurityList.go.html to see an example of how to use DeleteSecurityListRequest.
 type DeleteSecurityListRequest struct {

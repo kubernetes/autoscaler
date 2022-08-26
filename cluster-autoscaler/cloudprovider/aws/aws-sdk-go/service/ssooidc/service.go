@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a SSOOIDC client from just a session.
-//     svc := ssooidc.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a SSOOIDC client with additional configuration
-//     svc := ssooidc.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a SSOOIDC client from just a session.
+//	svc := ssooidc.New(mySession)
+//
+//	// Create a SSOOIDC client with additional configuration
+//	svc := ssooidc.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *SSOOIDC {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

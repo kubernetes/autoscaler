@@ -20,16 +20,16 @@ import (
 // The following example shows how to use BuildAuthToken to create an authentication
 // token for connecting to a MySQL database in RDS.
 //
-//   authToken, err := BuildAuthToken(dbEndpoint, awsRegion, dbUser, awsCreds)
+//	authToken, err := BuildAuthToken(dbEndpoint, awsRegion, dbUser, awsCreds)
 //
-//   // Create the MySQL DNS string for the DB connection
-//   // user:password@protocol(endpoint)/dbname?<params>
-//   connectStr = fmt.Sprintf("%s:%s@tcp(%s)/%s?allowCleartextPasswords=true&tls=rds",
-//      dbUser, authToken, dbEndpoint, dbName,
-//   )
+//	// Create the MySQL DNS string for the DB connection
+//	// user:password@protocol(endpoint)/dbname?<params>
+//	connectStr = fmt.Sprintf("%s:%s@tcp(%s)/%s?allowCleartextPasswords=true&tls=rds",
+//	   dbUser, authToken, dbEndpoint, dbName,
+//	)
 //
-//   // Use db to perform SQL operations on database
-//   db, err := sql.Open("mysql", connectStr)
+//	// Use db to perform SQL operations on database
+//	db, err := sql.Open("mysql", connectStr)
 //
 // See http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html
 // for more information on using IAM database authentication with RDS.

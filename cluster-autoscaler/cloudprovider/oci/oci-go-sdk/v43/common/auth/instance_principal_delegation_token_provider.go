@@ -14,7 +14,7 @@ type instancePrincipalDelegationTokenConfigurationProvider struct {
 	delegationToken              string
 }
 
-//InstancePrincipalDelegationTokenConfigurationProvider returns a configuration for obo token instance principals
+// InstancePrincipalDelegationTokenConfigurationProvider returns a configuration for obo token instance principals
 func InstancePrincipalDelegationTokenConfigurationProvider(delegationToken *string) (common.ConfigurationProvider, error) {
 	if delegationToken == nil || len(*delegationToken) == 0 {
 		return nil, fmt.Errorf("failed to create a delagationTokenConfigurationProvider: token is a mondatory input paras")

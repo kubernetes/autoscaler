@@ -11,7 +11,7 @@ import (
 
 // CreateVirtualCircuitRequest wrapper for the CreateVirtualCircuit operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreateVirtualCircuit.go.html to see an example of how to use CreateVirtualCircuitRequest.
 type CreateVirtualCircuitRequest struct {

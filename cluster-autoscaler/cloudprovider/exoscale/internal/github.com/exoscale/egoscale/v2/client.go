@@ -235,15 +235,14 @@ func setEndpointFromContext(ctx context.Context, req *http.Request) error {
 // fetchFromIDs returns a list of API resources fetched from the specified list of IDs.
 // It is meant to be used with API resources implementing the getter interface, e.g.:
 //
-//     func (i Instance) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
-//         return client.GetInstance(ctx, zone, id)
-//     }
+//	func (i Instance) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
+//	    return client.GetInstance(ctx, zone, id)
+//	}
 //
-//     func (i *InstancePool) Instances(ctx context.Context) ([]*Instance, error) {
-//         res, err := i.c.fetchFromIDs(ctx, i.zone, i.InstanceIDs, new(Instance))
-//         return res.([]*Instance), err
-//     }
-//
+//	func (i *InstancePool) Instances(ctx context.Context) ([]*Instance, error) {
+//	    res, err := i.c.fetchFromIDs(ctx, i.zone, i.InstanceIDs, new(Instance))
+//	    return res.([]*Instance), err
+//	}
 func (c *Client) fetchFromIDs(ctx context.Context, zone string, ids []string, rt interface{}) (interface{}, error) {
 	if rt == nil {
 		return nil, errors.New("resource type must not be <nil>")

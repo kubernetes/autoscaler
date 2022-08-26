@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MachineLearning client from just a session.
-//     svc := machinelearning.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MachineLearning client with additional configuration
-//     svc := machinelearning.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MachineLearning client from just a session.
+//	svc := machinelearning.New(mySession)
+//
+//	// Create a MachineLearning client with additional configuration
+//	svc := machinelearning.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MachineLearning {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

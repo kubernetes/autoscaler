@@ -25,7 +25,7 @@ const (
 	invalidConditionOperand = "BuildOperand error"
 )
 
-//Compare
+// Compare
 func TestCompare(t *testing.T) {
 	cases := []struct {
 		name         string

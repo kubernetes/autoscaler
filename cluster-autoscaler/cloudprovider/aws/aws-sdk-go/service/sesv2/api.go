@@ -29,14 +29,13 @@ const opCreateConfigurationSet = "CreateConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetRequest method.
+//	req, resp := client.CreateConfigurationSetRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetRequest method.
-//    req, resp := client.CreateConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateConfigurationSet
 func (c *SESV2) CreateConfigurationSetRequest(input *CreateConfigurationSetInput) (req *request.Request, output *CreateConfigurationSetOutput) {
@@ -72,23 +71,24 @@ func (c *SESV2) CreateConfigurationSetRequest(input *CreateConfigurationSetInput
 // API operation CreateConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateConfigurationSet
 func (c *SESV2) CreateConfigurationSet(input *CreateConfigurationSetInput) (*CreateConfigurationSetOutput, error) {
@@ -128,14 +128,13 @@ const opCreateConfigurationSetEventDestination = "CreateConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetEventDestinationRequest method.
+//	req, resp := client.CreateConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetEventDestinationRequest method.
-//    req, resp := client.CreateConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateConfigurationSetEventDestination
 func (c *SESV2) CreateConfigurationSetEventDestinationRequest(input *CreateConfigurationSetEventDestinationInput) (req *request.Request, output *CreateConfigurationSetEventDestinationOutput) {
@@ -174,20 +173,21 @@ func (c *SESV2) CreateConfigurationSetEventDestinationRequest(input *CreateConfi
 // API operation CreateConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateConfigurationSetEventDestination
 func (c *SESV2) CreateConfigurationSetEventDestination(input *CreateConfigurationSetEventDestinationInput) (*CreateConfigurationSetEventDestinationOutput, error) {
@@ -227,14 +227,13 @@ const opCreateContact = "CreateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContactRequest method.
+//	req, resp := client.CreateContactRequest(params)
 //
-//    // Example sending a request using the CreateContactRequest method.
-//    req, resp := client.CreateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateContact
 func (c *SESV2) CreateContactRequest(input *CreateContactInput) (req *request.Request, output *CreateContactOutput) {
@@ -267,17 +266,18 @@ func (c *SESV2) CreateContactRequest(input *CreateContactInput) (req *request.Re
 // API operation CreateContact for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateContact
 func (c *SESV2) CreateContact(input *CreateContactInput) (*CreateContactOutput, error) {
@@ -317,14 +317,13 @@ const opCreateContactList = "CreateContactList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContactListRequest method.
+//	req, resp := client.CreateContactListRequest(params)
 //
-//    // Example sending a request using the CreateContactListRequest method.
-//    req, resp := client.CreateContactListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateContactList
 func (c *SESV2) CreateContactListRequest(input *CreateContactListInput) (req *request.Request, output *CreateContactListOutput) {
@@ -356,17 +355,18 @@ func (c *SESV2) CreateContactListRequest(input *CreateContactListInput) (req *re
 // API operation CreateContactList for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
+//
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateContactList
 func (c *SESV2) CreateContactList(input *CreateContactListInput) (*CreateContactListOutput, error) {
@@ -406,14 +406,13 @@ const opCreateCustomVerificationEmailTemplate = "CreateCustomVerificationEmailTe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomVerificationEmailTemplateRequest method.
+//	req, resp := client.CreateCustomVerificationEmailTemplateRequest(params)
 //
-//    // Example sending a request using the CreateCustomVerificationEmailTemplateRequest method.
-//    req, resp := client.CreateCustomVerificationEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateCustomVerificationEmailTemplate
 func (c *SESV2) CreateCustomVerificationEmailTemplateRequest(input *CreateCustomVerificationEmailTemplateInput) (req *request.Request, output *CreateCustomVerificationEmailTemplateOutput) {
@@ -451,20 +450,21 @@ func (c *SESV2) CreateCustomVerificationEmailTemplateRequest(input *CreateCustom
 // API operation CreateCustomVerificationEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateCustomVerificationEmailTemplate
 func (c *SESV2) CreateCustomVerificationEmailTemplate(input *CreateCustomVerificationEmailTemplateInput) (*CreateCustomVerificationEmailTemplateOutput, error) {
@@ -504,14 +504,13 @@ const opCreateDedicatedIpPool = "CreateDedicatedIpPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDedicatedIpPoolRequest method.
+//	req, resp := client.CreateDedicatedIpPoolRequest(params)
 //
-//    // Example sending a request using the CreateDedicatedIpPoolRequest method.
-//    req, resp := client.CreateDedicatedIpPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateDedicatedIpPool
 func (c *SESV2) CreateDedicatedIpPoolRequest(input *CreateDedicatedIpPoolInput) (req *request.Request, output *CreateDedicatedIpPoolOutput) {
@@ -547,20 +546,21 @@ func (c *SESV2) CreateDedicatedIpPoolRequest(input *CreateDedicatedIpPoolInput) 
 // API operation CreateDedicatedIpPool for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateDedicatedIpPool
 func (c *SESV2) CreateDedicatedIpPool(input *CreateDedicatedIpPoolInput) (*CreateDedicatedIpPoolOutput, error) {
@@ -600,14 +600,13 @@ const opCreateDeliverabilityTestReport = "CreateDeliverabilityTestReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeliverabilityTestReportRequest method.
+//	req, resp := client.CreateDeliverabilityTestReportRequest(params)
 //
-//    // Example sending a request using the CreateDeliverabilityTestReportRequest method.
-//    req, resp := client.CreateDeliverabilityTestReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateDeliverabilityTestReport
 func (c *SESV2) CreateDeliverabilityTestReportRequest(input *CreateDeliverabilityTestReportInput) (req *request.Request, output *CreateDeliverabilityTestReportOutput) {
@@ -645,34 +644,35 @@ func (c *SESV2) CreateDeliverabilityTestReportRequest(input *CreateDeliverabilit
 // API operation CreateDeliverabilityTestReport for usage and error information.
 //
 // Returned Error Types:
-//   * AccountSuspendedException
-//   The message can't be sent because the account's ability to send email has
-//   been permanently restricted.
 //
-//   * SendingPausedException
-//   The message can't be sent because the account's ability to send email is
-//   currently paused.
+//   - AccountSuspendedException
+//     The message can't be sent because the account's ability to send email has
+//     been permanently restricted.
 //
-//   * MessageRejected
-//   The message can't be sent because it contains invalid content.
+//   - SendingPausedException
+//     The message can't be sent because the account's ability to send email is
+//     currently paused.
 //
-//   * MailFromDomainNotVerifiedException
-//   The message can't be sent because the sending domain isn't verified.
+//   - MessageRejected
+//     The message can't be sent because it contains invalid content.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - MailFromDomainNotVerifiedException
+//     The message can't be sent because the sending domain isn't verified.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateDeliverabilityTestReport
 func (c *SESV2) CreateDeliverabilityTestReport(input *CreateDeliverabilityTestReportInput) (*CreateDeliverabilityTestReportOutput, error) {
@@ -712,14 +712,13 @@ const opCreateEmailIdentity = "CreateEmailIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEmailIdentityRequest method.
+//	req, resp := client.CreateEmailIdentityRequest(params)
 //
-//    // Example sending a request using the CreateEmailIdentityRequest method.
-//    req, resp := client.CreateEmailIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateEmailIdentity
 func (c *SESV2) CreateEmailIdentityRequest(input *CreateEmailIdentityInput) (req *request.Request, output *CreateEmailIdentityOutput) {
@@ -781,23 +780,24 @@ func (c *SESV2) CreateEmailIdentityRequest(input *CreateEmailIdentityInput) (req
 // API operation CreateEmailIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateEmailIdentity
 func (c *SESV2) CreateEmailIdentity(input *CreateEmailIdentityInput) (*CreateEmailIdentityOutput, error) {
@@ -837,14 +837,13 @@ const opCreateEmailIdentityPolicy = "CreateEmailIdentityPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEmailIdentityPolicyRequest method.
+//	req, resp := client.CreateEmailIdentityPolicyRequest(params)
 //
-//    // Example sending a request using the CreateEmailIdentityPolicyRequest method.
-//    req, resp := client.CreateEmailIdentityPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateEmailIdentityPolicy
 func (c *SESV2) CreateEmailIdentityPolicyRequest(input *CreateEmailIdentityPolicyInput) (req *request.Request, output *CreateEmailIdentityPolicyOutput) {
@@ -886,20 +885,21 @@ func (c *SESV2) CreateEmailIdentityPolicyRequest(input *CreateEmailIdentityPolic
 // API operation CreateEmailIdentityPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateEmailIdentityPolicy
 func (c *SESV2) CreateEmailIdentityPolicy(input *CreateEmailIdentityPolicyInput) (*CreateEmailIdentityPolicyOutput, error) {
@@ -939,14 +939,13 @@ const opCreateEmailTemplate = "CreateEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEmailTemplateRequest method.
+//	req, resp := client.CreateEmailTemplateRequest(params)
 //
-//    // Example sending a request using the CreateEmailTemplateRequest method.
-//    req, resp := client.CreateEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateEmailTemplate
 func (c *SESV2) CreateEmailTemplateRequest(input *CreateEmailTemplateInput) (req *request.Request, output *CreateEmailTemplateOutput) {
@@ -982,17 +981,18 @@ func (c *SESV2) CreateEmailTemplateRequest(input *CreateEmailTemplateInput) (req
 // API operation CreateEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateEmailTemplate
 func (c *SESV2) CreateEmailTemplate(input *CreateEmailTemplateInput) (*CreateEmailTemplateOutput, error) {
@@ -1032,14 +1032,13 @@ const opCreateImportJob = "CreateImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImportJobRequest method.
+//	req, resp := client.CreateImportJobRequest(params)
 //
-//    // Example sending a request using the CreateImportJobRequest method.
-//    req, resp := client.CreateImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateImportJob
 func (c *SESV2) CreateImportJobRequest(input *CreateImportJobInput) (req *request.Request, output *CreateImportJobOutput) {
@@ -1070,14 +1069,15 @@ func (c *SESV2) CreateImportJobRequest(input *CreateImportJobInput) (req *reques
 // API operation CreateImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/CreateImportJob
 func (c *SESV2) CreateImportJob(input *CreateImportJobInput) (*CreateImportJobOutput, error) {
@@ -1117,14 +1117,13 @@ const opDeleteConfigurationSet = "DeleteConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetRequest method.
+//	req, resp := client.DeleteConfigurationSetRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetRequest method.
-//    req, resp := client.DeleteConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteConfigurationSet
 func (c *SESV2) DeleteConfigurationSetRequest(input *DeleteConfigurationSetInput) (req *request.Request, output *DeleteConfigurationSetOutput) {
@@ -1162,17 +1161,18 @@ func (c *SESV2) DeleteConfigurationSetRequest(input *DeleteConfigurationSetInput
 // API operation DeleteConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteConfigurationSet
 func (c *SESV2) DeleteConfigurationSet(input *DeleteConfigurationSetInput) (*DeleteConfigurationSetOutput, error) {
@@ -1212,14 +1212,13 @@ const opDeleteConfigurationSetEventDestination = "DeleteConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetEventDestinationRequest method.
+//	req, resp := client.DeleteConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetEventDestinationRequest method.
-//    req, resp := client.DeleteConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteConfigurationSetEventDestination
 func (c *SESV2) DeleteConfigurationSetEventDestinationRequest(input *DeleteConfigurationSetEventDestinationInput) (req *request.Request, output *DeleteConfigurationSetEventDestinationOutput) {
@@ -1257,14 +1256,15 @@ func (c *SESV2) DeleteConfigurationSetEventDestinationRequest(input *DeleteConfi
 // API operation DeleteConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteConfigurationSetEventDestination
 func (c *SESV2) DeleteConfigurationSetEventDestination(input *DeleteConfigurationSetEventDestinationInput) (*DeleteConfigurationSetEventDestinationOutput, error) {
@@ -1304,14 +1304,13 @@ const opDeleteContact = "DeleteContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContactRequest method.
+//	req, resp := client.DeleteContactRequest(params)
 //
-//    // Example sending a request using the DeleteContactRequest method.
-//    req, resp := client.DeleteContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteContact
 func (c *SESV2) DeleteContactRequest(input *DeleteContactInput) (req *request.Request, output *DeleteContactOutput) {
@@ -1343,14 +1342,15 @@ func (c *SESV2) DeleteContactRequest(input *DeleteContactInput) (req *request.Re
 // API operation DeleteContact for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteContact
 func (c *SESV2) DeleteContact(input *DeleteContactInput) (*DeleteContactOutput, error) {
@@ -1390,14 +1390,13 @@ const opDeleteContactList = "DeleteContactList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContactListRequest method.
+//	req, resp := client.DeleteContactListRequest(params)
 //
-//    // Example sending a request using the DeleteContactListRequest method.
-//    req, resp := client.DeleteContactListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteContactList
 func (c *SESV2) DeleteContactListRequest(input *DeleteContactListInput) (req *request.Request, output *DeleteContactListOutput) {
@@ -1429,17 +1428,18 @@ func (c *SESV2) DeleteContactListRequest(input *DeleteContactListInput) (req *re
 // API operation DeleteContactList for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteContactList
 func (c *SESV2) DeleteContactList(input *DeleteContactListInput) (*DeleteContactListOutput, error) {
@@ -1479,14 +1479,13 @@ const opDeleteCustomVerificationEmailTemplate = "DeleteCustomVerificationEmailTe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomVerificationEmailTemplateRequest method.
+//	req, resp := client.DeleteCustomVerificationEmailTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteCustomVerificationEmailTemplateRequest method.
-//    req, resp := client.DeleteCustomVerificationEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteCustomVerificationEmailTemplate
 func (c *SESV2) DeleteCustomVerificationEmailTemplateRequest(input *DeleteCustomVerificationEmailTemplateInput) (req *request.Request, output *DeleteCustomVerificationEmailTemplateOutput) {
@@ -1524,14 +1523,15 @@ func (c *SESV2) DeleteCustomVerificationEmailTemplateRequest(input *DeleteCustom
 // API operation DeleteCustomVerificationEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteCustomVerificationEmailTemplate
 func (c *SESV2) DeleteCustomVerificationEmailTemplate(input *DeleteCustomVerificationEmailTemplateInput) (*DeleteCustomVerificationEmailTemplateOutput, error) {
@@ -1571,14 +1571,13 @@ const opDeleteDedicatedIpPool = "DeleteDedicatedIpPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDedicatedIpPoolRequest method.
+//	req, resp := client.DeleteDedicatedIpPoolRequest(params)
 //
-//    // Example sending a request using the DeleteDedicatedIpPoolRequest method.
-//    req, resp := client.DeleteDedicatedIpPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteDedicatedIpPool
 func (c *SESV2) DeleteDedicatedIpPoolRequest(input *DeleteDedicatedIpPoolInput) (req *request.Request, output *DeleteDedicatedIpPoolOutput) {
@@ -1610,17 +1609,18 @@ func (c *SESV2) DeleteDedicatedIpPoolRequest(input *DeleteDedicatedIpPoolInput) 
 // API operation DeleteDedicatedIpPool for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteDedicatedIpPool
 func (c *SESV2) DeleteDedicatedIpPool(input *DeleteDedicatedIpPoolInput) (*DeleteDedicatedIpPoolOutput, error) {
@@ -1660,14 +1660,13 @@ const opDeleteEmailIdentity = "DeleteEmailIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEmailIdentityRequest method.
+//	req, resp := client.DeleteEmailIdentityRequest(params)
 //
-//    // Example sending a request using the DeleteEmailIdentityRequest method.
-//    req, resp := client.DeleteEmailIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteEmailIdentity
 func (c *SESV2) DeleteEmailIdentityRequest(input *DeleteEmailIdentityInput) (req *request.Request, output *DeleteEmailIdentityOutput) {
@@ -1700,17 +1699,18 @@ func (c *SESV2) DeleteEmailIdentityRequest(input *DeleteEmailIdentityInput) (req
 // API operation DeleteEmailIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteEmailIdentity
 func (c *SESV2) DeleteEmailIdentity(input *DeleteEmailIdentityInput) (*DeleteEmailIdentityOutput, error) {
@@ -1750,14 +1750,13 @@ const opDeleteEmailIdentityPolicy = "DeleteEmailIdentityPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEmailIdentityPolicyRequest method.
+//	req, resp := client.DeleteEmailIdentityPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteEmailIdentityPolicyRequest method.
-//    req, resp := client.DeleteEmailIdentityPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteEmailIdentityPolicy
 func (c *SESV2) DeleteEmailIdentityPolicyRequest(input *DeleteEmailIdentityPolicyInput) (req *request.Request, output *DeleteEmailIdentityPolicyOutput) {
@@ -1800,14 +1799,15 @@ func (c *SESV2) DeleteEmailIdentityPolicyRequest(input *DeleteEmailIdentityPolic
 // API operation DeleteEmailIdentityPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteEmailIdentityPolicy
 func (c *SESV2) DeleteEmailIdentityPolicy(input *DeleteEmailIdentityPolicyInput) (*DeleteEmailIdentityPolicyOutput, error) {
@@ -1847,14 +1847,13 @@ const opDeleteEmailTemplate = "DeleteEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEmailTemplateRequest method.
+//	req, resp := client.DeleteEmailTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteEmailTemplateRequest method.
-//    req, resp := client.DeleteEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteEmailTemplate
 func (c *SESV2) DeleteEmailTemplateRequest(input *DeleteEmailTemplateInput) (req *request.Request, output *DeleteEmailTemplateOutput) {
@@ -1888,14 +1887,15 @@ func (c *SESV2) DeleteEmailTemplateRequest(input *DeleteEmailTemplateInput) (req
 // API operation DeleteEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteEmailTemplate
 func (c *SESV2) DeleteEmailTemplate(input *DeleteEmailTemplateInput) (*DeleteEmailTemplateOutput, error) {
@@ -1935,14 +1935,13 @@ const opDeleteSuppressedDestination = "DeleteSuppressedDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSuppressedDestinationRequest method.
+//	req, resp := client.DeleteSuppressedDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteSuppressedDestinationRequest method.
-//    req, resp := client.DeleteSuppressedDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteSuppressedDestination
 func (c *SESV2) DeleteSuppressedDestinationRequest(input *DeleteSuppressedDestinationInput) (req *request.Request, output *DeleteSuppressedDestinationOutput) {
@@ -1974,14 +1973,15 @@ func (c *SESV2) DeleteSuppressedDestinationRequest(input *DeleteSuppressedDestin
 // API operation DeleteSuppressedDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/DeleteSuppressedDestination
 func (c *SESV2) DeleteSuppressedDestination(input *DeleteSuppressedDestinationInput) (*DeleteSuppressedDestinationOutput, error) {
@@ -2021,14 +2021,13 @@ const opGetAccount = "GetAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountRequest method.
+//	req, resp := client.GetAccountRequest(params)
 //
-//    // Example sending a request using the GetAccountRequest method.
-//    req, resp := client.GetAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetAccount
 func (c *SESV2) GetAccountRequest(input *GetAccountInput) (req *request.Request, output *GetAccountOutput) {
@@ -2060,11 +2059,12 @@ func (c *SESV2) GetAccountRequest(input *GetAccountInput) (req *request.Request,
 // API operation GetAccount for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetAccount
 func (c *SESV2) GetAccount(input *GetAccountInput) (*GetAccountOutput, error) {
@@ -2104,14 +2104,13 @@ const opGetBlacklistReports = "GetBlacklistReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlacklistReportsRequest method.
+//	req, resp := client.GetBlacklistReportsRequest(params)
 //
-//    // Example sending a request using the GetBlacklistReportsRequest method.
-//    req, resp := client.GetBlacklistReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetBlacklistReports
 func (c *SESV2) GetBlacklistReportsRequest(input *GetBlacklistReportsInput) (req *request.Request, output *GetBlacklistReportsOutput) {
@@ -2143,14 +2142,15 @@ func (c *SESV2) GetBlacklistReportsRequest(input *GetBlacklistReportsInput) (req
 // API operation GetBlacklistReports for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetBlacklistReports
 func (c *SESV2) GetBlacklistReports(input *GetBlacklistReportsInput) (*GetBlacklistReportsOutput, error) {
@@ -2190,14 +2190,13 @@ const opGetConfigurationSet = "GetConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationSetRequest method.
+//	req, resp := client.GetConfigurationSetRequest(params)
 //
-//    // Example sending a request using the GetConfigurationSetRequest method.
-//    req, resp := client.GetConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetConfigurationSet
 func (c *SESV2) GetConfigurationSetRequest(input *GetConfigurationSetInput) (req *request.Request, output *GetConfigurationSetOutput) {
@@ -2236,14 +2235,15 @@ func (c *SESV2) GetConfigurationSetRequest(input *GetConfigurationSetInput) (req
 // API operation GetConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetConfigurationSet
 func (c *SESV2) GetConfigurationSet(input *GetConfigurationSetInput) (*GetConfigurationSetOutput, error) {
@@ -2283,14 +2283,13 @@ const opGetConfigurationSetEventDestinations = "GetConfigurationSetEventDestinat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationSetEventDestinationsRequest method.
+//	req, resp := client.GetConfigurationSetEventDestinationsRequest(params)
 //
-//    // Example sending a request using the GetConfigurationSetEventDestinationsRequest method.
-//    req, resp := client.GetConfigurationSetEventDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetConfigurationSetEventDestinations
 func (c *SESV2) GetConfigurationSetEventDestinationsRequest(input *GetConfigurationSetEventDestinationsInput) (req *request.Request, output *GetConfigurationSetEventDestinationsOutput) {
@@ -2328,14 +2327,15 @@ func (c *SESV2) GetConfigurationSetEventDestinationsRequest(input *GetConfigurat
 // API operation GetConfigurationSetEventDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetConfigurationSetEventDestinations
 func (c *SESV2) GetConfigurationSetEventDestinations(input *GetConfigurationSetEventDestinationsInput) (*GetConfigurationSetEventDestinationsOutput, error) {
@@ -2375,14 +2375,13 @@ const opGetContact = "GetContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContactRequest method.
+//	req, resp := client.GetContactRequest(params)
 //
-//    // Example sending a request using the GetContactRequest method.
-//    req, resp := client.GetContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetContact
 func (c *SESV2) GetContactRequest(input *GetContactInput) (req *request.Request, output *GetContactOutput) {
@@ -2413,14 +2412,15 @@ func (c *SESV2) GetContactRequest(input *GetContactInput) (req *request.Request,
 // API operation GetContact for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetContact
 func (c *SESV2) GetContact(input *GetContactInput) (*GetContactOutput, error) {
@@ -2460,14 +2460,13 @@ const opGetContactList = "GetContactList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContactListRequest method.
+//	req, resp := client.GetContactListRequest(params)
 //
-//    // Example sending a request using the GetContactListRequest method.
-//    req, resp := client.GetContactListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetContactList
 func (c *SESV2) GetContactListRequest(input *GetContactListInput) (req *request.Request, output *GetContactListOutput) {
@@ -2499,14 +2498,15 @@ func (c *SESV2) GetContactListRequest(input *GetContactListInput) (req *request.
 // API operation GetContactList for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetContactList
 func (c *SESV2) GetContactList(input *GetContactListInput) (*GetContactListOutput, error) {
@@ -2546,14 +2546,13 @@ const opGetCustomVerificationEmailTemplate = "GetCustomVerificationEmailTemplate
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCustomVerificationEmailTemplateRequest method.
+//	req, resp := client.GetCustomVerificationEmailTemplateRequest(params)
 //
-//    // Example sending a request using the GetCustomVerificationEmailTemplateRequest method.
-//    req, resp := client.GetCustomVerificationEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetCustomVerificationEmailTemplate
 func (c *SESV2) GetCustomVerificationEmailTemplateRequest(input *GetCustomVerificationEmailTemplateInput) (req *request.Request, output *GetCustomVerificationEmailTemplateOutput) {
@@ -2591,14 +2590,15 @@ func (c *SESV2) GetCustomVerificationEmailTemplateRequest(input *GetCustomVerifi
 // API operation GetCustomVerificationEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetCustomVerificationEmailTemplate
 func (c *SESV2) GetCustomVerificationEmailTemplate(input *GetCustomVerificationEmailTemplateInput) (*GetCustomVerificationEmailTemplateOutput, error) {
@@ -2638,14 +2638,13 @@ const opGetDedicatedIp = "GetDedicatedIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDedicatedIpRequest method.
+//	req, resp := client.GetDedicatedIpRequest(params)
 //
-//    // Example sending a request using the GetDedicatedIpRequest method.
-//    req, resp := client.GetDedicatedIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDedicatedIp
 func (c *SESV2) GetDedicatedIpRequest(input *GetDedicatedIpInput) (req *request.Request, output *GetDedicatedIpOutput) {
@@ -2678,14 +2677,15 @@ func (c *SESV2) GetDedicatedIpRequest(input *GetDedicatedIpInput) (req *request.
 // API operation GetDedicatedIp for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDedicatedIp
 func (c *SESV2) GetDedicatedIp(input *GetDedicatedIpInput) (*GetDedicatedIpOutput, error) {
@@ -2725,14 +2725,13 @@ const opGetDedicatedIps = "GetDedicatedIps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDedicatedIpsRequest method.
+//	req, resp := client.GetDedicatedIpsRequest(params)
 //
-//    // Example sending a request using the GetDedicatedIpsRequest method.
-//    req, resp := client.GetDedicatedIpsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDedicatedIps
 func (c *SESV2) GetDedicatedIpsRequest(input *GetDedicatedIpsInput) (req *request.Request, output *GetDedicatedIpsOutput) {
@@ -2770,14 +2769,15 @@ func (c *SESV2) GetDedicatedIpsRequest(input *GetDedicatedIpsInput) (req *reques
 // API operation GetDedicatedIps for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDedicatedIps
 func (c *SESV2) GetDedicatedIps(input *GetDedicatedIpsInput) (*GetDedicatedIpsOutput, error) {
@@ -2809,15 +2809,14 @@ func (c *SESV2) GetDedicatedIpsWithContext(ctx aws.Context, input *GetDedicatedI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDedicatedIps operation.
-//    pageNum := 0
-//    err := client.GetDedicatedIpsPages(params,
-//        func(page *sesv2.GetDedicatedIpsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDedicatedIps operation.
+//	pageNum := 0
+//	err := client.GetDedicatedIpsPages(params,
+//	    func(page *sesv2.GetDedicatedIpsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) GetDedicatedIpsPages(input *GetDedicatedIpsInput, fn func(*GetDedicatedIpsOutput, bool) bool) error {
 	return c.GetDedicatedIpsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2869,14 +2868,13 @@ const opGetDeliverabilityDashboardOptions = "GetDeliverabilityDashboardOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeliverabilityDashboardOptionsRequest method.
+//	req, resp := client.GetDeliverabilityDashboardOptionsRequest(params)
 //
-//    // Example sending a request using the GetDeliverabilityDashboardOptionsRequest method.
-//    req, resp := client.GetDeliverabilityDashboardOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDeliverabilityDashboardOptions
 func (c *SESV2) GetDeliverabilityDashboardOptionsRequest(input *GetDeliverabilityDashboardOptionsInput) (req *request.Request, output *GetDeliverabilityDashboardOptionsOutput) {
@@ -2917,14 +2915,15 @@ func (c *SESV2) GetDeliverabilityDashboardOptionsRequest(input *GetDeliverabilit
 // API operation GetDeliverabilityDashboardOptions for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDeliverabilityDashboardOptions
 func (c *SESV2) GetDeliverabilityDashboardOptions(input *GetDeliverabilityDashboardOptionsInput) (*GetDeliverabilityDashboardOptionsOutput, error) {
@@ -2964,14 +2963,13 @@ const opGetDeliverabilityTestReport = "GetDeliverabilityTestReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeliverabilityTestReportRequest method.
+//	req, resp := client.GetDeliverabilityTestReportRequest(params)
 //
-//    // Example sending a request using the GetDeliverabilityTestReportRequest method.
-//    req, resp := client.GetDeliverabilityTestReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDeliverabilityTestReport
 func (c *SESV2) GetDeliverabilityTestReportRequest(input *GetDeliverabilityTestReportInput) (req *request.Request, output *GetDeliverabilityTestReportOutput) {
@@ -3002,14 +3000,15 @@ func (c *SESV2) GetDeliverabilityTestReportRequest(input *GetDeliverabilityTestR
 // API operation GetDeliverabilityTestReport for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDeliverabilityTestReport
 func (c *SESV2) GetDeliverabilityTestReport(input *GetDeliverabilityTestReportInput) (*GetDeliverabilityTestReportOutput, error) {
@@ -3049,14 +3048,13 @@ const opGetDomainDeliverabilityCampaign = "GetDomainDeliverabilityCampaign"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainDeliverabilityCampaignRequest method.
+//	req, resp := client.GetDomainDeliverabilityCampaignRequest(params)
 //
-//    // Example sending a request using the GetDomainDeliverabilityCampaignRequest method.
-//    req, resp := client.GetDomainDeliverabilityCampaignRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDomainDeliverabilityCampaign
 func (c *SESV2) GetDomainDeliverabilityCampaignRequest(input *GetDomainDeliverabilityCampaignInput) (req *request.Request, output *GetDomainDeliverabilityCampaignOutput) {
@@ -3089,14 +3087,15 @@ func (c *SESV2) GetDomainDeliverabilityCampaignRequest(input *GetDomainDeliverab
 // API operation GetDomainDeliverabilityCampaign for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDomainDeliverabilityCampaign
 func (c *SESV2) GetDomainDeliverabilityCampaign(input *GetDomainDeliverabilityCampaignInput) (*GetDomainDeliverabilityCampaignOutput, error) {
@@ -3136,14 +3135,13 @@ const opGetDomainStatisticsReport = "GetDomainStatisticsReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainStatisticsReportRequest method.
+//	req, resp := client.GetDomainStatisticsReportRequest(params)
 //
-//    // Example sending a request using the GetDomainStatisticsReportRequest method.
-//    req, resp := client.GetDomainStatisticsReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDomainStatisticsReport
 func (c *SESV2) GetDomainStatisticsReportRequest(input *GetDomainStatisticsReportInput) (req *request.Request, output *GetDomainStatisticsReportOutput) {
@@ -3175,14 +3173,15 @@ func (c *SESV2) GetDomainStatisticsReportRequest(input *GetDomainStatisticsRepor
 // API operation GetDomainStatisticsReport for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetDomainStatisticsReport
 func (c *SESV2) GetDomainStatisticsReport(input *GetDomainStatisticsReportInput) (*GetDomainStatisticsReportOutput, error) {
@@ -3222,14 +3221,13 @@ const opGetEmailIdentity = "GetEmailIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEmailIdentityRequest method.
+//	req, resp := client.GetEmailIdentityRequest(params)
 //
-//    // Example sending a request using the GetEmailIdentityRequest method.
-//    req, resp := client.GetEmailIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetEmailIdentity
 func (c *SESV2) GetEmailIdentityRequest(input *GetEmailIdentityInput) (req *request.Request, output *GetEmailIdentityOutput) {
@@ -3262,14 +3260,15 @@ func (c *SESV2) GetEmailIdentityRequest(input *GetEmailIdentityInput) (req *requ
 // API operation GetEmailIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetEmailIdentity
 func (c *SESV2) GetEmailIdentity(input *GetEmailIdentityInput) (*GetEmailIdentityOutput, error) {
@@ -3309,14 +3308,13 @@ const opGetEmailIdentityPolicies = "GetEmailIdentityPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEmailIdentityPoliciesRequest method.
+//	req, resp := client.GetEmailIdentityPoliciesRequest(params)
 //
-//    // Example sending a request using the GetEmailIdentityPoliciesRequest method.
-//    req, resp := client.GetEmailIdentityPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetEmailIdentityPolicies
 func (c *SESV2) GetEmailIdentityPoliciesRequest(input *GetEmailIdentityPoliciesInput) (req *request.Request, output *GetEmailIdentityPoliciesOutput) {
@@ -3359,14 +3357,15 @@ func (c *SESV2) GetEmailIdentityPoliciesRequest(input *GetEmailIdentityPoliciesI
 // API operation GetEmailIdentityPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetEmailIdentityPolicies
 func (c *SESV2) GetEmailIdentityPolicies(input *GetEmailIdentityPoliciesInput) (*GetEmailIdentityPoliciesOutput, error) {
@@ -3406,14 +3405,13 @@ const opGetEmailTemplate = "GetEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEmailTemplateRequest method.
+//	req, resp := client.GetEmailTemplateRequest(params)
 //
-//    // Example sending a request using the GetEmailTemplateRequest method.
-//    req, resp := client.GetEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetEmailTemplate
 func (c *SESV2) GetEmailTemplateRequest(input *GetEmailTemplateInput) (req *request.Request, output *GetEmailTemplateOutput) {
@@ -3447,14 +3445,15 @@ func (c *SESV2) GetEmailTemplateRequest(input *GetEmailTemplateInput) (req *requ
 // API operation GetEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetEmailTemplate
 func (c *SESV2) GetEmailTemplate(input *GetEmailTemplateInput) (*GetEmailTemplateOutput, error) {
@@ -3494,14 +3493,13 @@ const opGetImportJob = "GetImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImportJobRequest method.
+//	req, resp := client.GetImportJobRequest(params)
 //
-//    // Example sending a request using the GetImportJobRequest method.
-//    req, resp := client.GetImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetImportJob
 func (c *SESV2) GetImportJobRequest(input *GetImportJobInput) (req *request.Request, output *GetImportJobOutput) {
@@ -3532,14 +3530,15 @@ func (c *SESV2) GetImportJobRequest(input *GetImportJobInput) (req *request.Requ
 // API operation GetImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetImportJob
 func (c *SESV2) GetImportJob(input *GetImportJobInput) (*GetImportJobOutput, error) {
@@ -3579,14 +3578,13 @@ const opGetSuppressedDestination = "GetSuppressedDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSuppressedDestinationRequest method.
+//	req, resp := client.GetSuppressedDestinationRequest(params)
 //
-//    // Example sending a request using the GetSuppressedDestinationRequest method.
-//    req, resp := client.GetSuppressedDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetSuppressedDestination
 func (c *SESV2) GetSuppressedDestinationRequest(input *GetSuppressedDestinationInput) (req *request.Request, output *GetSuppressedDestinationOutput) {
@@ -3618,14 +3616,15 @@ func (c *SESV2) GetSuppressedDestinationRequest(input *GetSuppressedDestinationI
 // API operation GetSuppressedDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/GetSuppressedDestination
 func (c *SESV2) GetSuppressedDestination(input *GetSuppressedDestinationInput) (*GetSuppressedDestinationOutput, error) {
@@ -3665,14 +3664,13 @@ const opListConfigurationSets = "ListConfigurationSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationSetsRequest method.
+//	req, resp := client.ListConfigurationSetsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationSetsRequest method.
-//    req, resp := client.ListConfigurationSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListConfigurationSets
 func (c *SESV2) ListConfigurationSetsRequest(input *ListConfigurationSetsInput) (req *request.Request, output *ListConfigurationSetsOutput) {
@@ -3716,11 +3714,12 @@ func (c *SESV2) ListConfigurationSetsRequest(input *ListConfigurationSetsInput) 
 // API operation ListConfigurationSets for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListConfigurationSets
 func (c *SESV2) ListConfigurationSets(input *ListConfigurationSetsInput) (*ListConfigurationSetsOutput, error) {
@@ -3752,15 +3751,14 @@ func (c *SESV2) ListConfigurationSetsWithContext(ctx aws.Context, input *ListCon
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurationSets operation.
-//    pageNum := 0
-//    err := client.ListConfigurationSetsPages(params,
-//        func(page *sesv2.ListConfigurationSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurationSets operation.
+//	pageNum := 0
+//	err := client.ListConfigurationSetsPages(params,
+//	    func(page *sesv2.ListConfigurationSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListConfigurationSetsPages(input *ListConfigurationSetsInput, fn func(*ListConfigurationSetsOutput, bool) bool) error {
 	return c.ListConfigurationSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3812,14 +3810,13 @@ const opListContactLists = "ListContactLists"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContactListsRequest method.
+//	req, resp := client.ListContactListsRequest(params)
 //
-//    // Example sending a request using the ListContactListsRequest method.
-//    req, resp := client.ListContactListsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListContactLists
 func (c *SESV2) ListContactListsRequest(input *ListContactListsInput) (req *request.Request, output *ListContactListsOutput) {
@@ -3856,11 +3853,12 @@ func (c *SESV2) ListContactListsRequest(input *ListContactListsInput) (req *requ
 // API operation ListContactLists for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListContactLists
 func (c *SESV2) ListContactLists(input *ListContactListsInput) (*ListContactListsOutput, error) {
@@ -3892,15 +3890,14 @@ func (c *SESV2) ListContactListsWithContext(ctx aws.Context, input *ListContactL
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContactLists operation.
-//    pageNum := 0
-//    err := client.ListContactListsPages(params,
-//        func(page *sesv2.ListContactListsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContactLists operation.
+//	pageNum := 0
+//	err := client.ListContactListsPages(params,
+//	    func(page *sesv2.ListContactListsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListContactListsPages(input *ListContactListsInput, fn func(*ListContactListsOutput, bool) bool) error {
 	return c.ListContactListsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3952,14 +3949,13 @@ const opListContacts = "ListContacts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContactsRequest method.
+//	req, resp := client.ListContactsRequest(params)
 //
-//    // Example sending a request using the ListContactsRequest method.
-//    req, resp := client.ListContactsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListContacts
 func (c *SESV2) ListContactsRequest(input *ListContactsInput) (req *request.Request, output *ListContactsOutput) {
@@ -3996,14 +3992,15 @@ func (c *SESV2) ListContactsRequest(input *ListContactsInput) (req *request.Requ
 // API operation ListContacts for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListContacts
 func (c *SESV2) ListContacts(input *ListContactsInput) (*ListContactsOutput, error) {
@@ -4035,15 +4032,14 @@ func (c *SESV2) ListContactsWithContext(ctx aws.Context, input *ListContactsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContacts operation.
-//    pageNum := 0
-//    err := client.ListContactsPages(params,
-//        func(page *sesv2.ListContactsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContacts operation.
+//	pageNum := 0
+//	err := client.ListContactsPages(params,
+//	    func(page *sesv2.ListContactsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListContactsPages(input *ListContactsInput, fn func(*ListContactsOutput, bool) bool) error {
 	return c.ListContactsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4095,14 +4091,13 @@ const opListCustomVerificationEmailTemplates = "ListCustomVerificationEmailTempl
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomVerificationEmailTemplatesRequest method.
+//	req, resp := client.ListCustomVerificationEmailTemplatesRequest(params)
 //
-//    // Example sending a request using the ListCustomVerificationEmailTemplatesRequest method.
-//    req, resp := client.ListCustomVerificationEmailTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListCustomVerificationEmailTemplates
 func (c *SESV2) ListCustomVerificationEmailTemplatesRequest(input *ListCustomVerificationEmailTemplatesInput) (req *request.Request, output *ListCustomVerificationEmailTemplatesOutput) {
@@ -4146,11 +4141,12 @@ func (c *SESV2) ListCustomVerificationEmailTemplatesRequest(input *ListCustomVer
 // API operation ListCustomVerificationEmailTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListCustomVerificationEmailTemplates
 func (c *SESV2) ListCustomVerificationEmailTemplates(input *ListCustomVerificationEmailTemplatesInput) (*ListCustomVerificationEmailTemplatesOutput, error) {
@@ -4182,15 +4178,14 @@ func (c *SESV2) ListCustomVerificationEmailTemplatesWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomVerificationEmailTemplates operation.
-//    pageNum := 0
-//    err := client.ListCustomVerificationEmailTemplatesPages(params,
-//        func(page *sesv2.ListCustomVerificationEmailTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomVerificationEmailTemplates operation.
+//	pageNum := 0
+//	err := client.ListCustomVerificationEmailTemplatesPages(params,
+//	    func(page *sesv2.ListCustomVerificationEmailTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListCustomVerificationEmailTemplatesPages(input *ListCustomVerificationEmailTemplatesInput, fn func(*ListCustomVerificationEmailTemplatesOutput, bool) bool) error {
 	return c.ListCustomVerificationEmailTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4242,14 +4237,13 @@ const opListDedicatedIpPools = "ListDedicatedIpPools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDedicatedIpPoolsRequest method.
+//	req, resp := client.ListDedicatedIpPoolsRequest(params)
 //
-//    // Example sending a request using the ListDedicatedIpPoolsRequest method.
-//    req, resp := client.ListDedicatedIpPoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListDedicatedIpPools
 func (c *SESV2) ListDedicatedIpPoolsRequest(input *ListDedicatedIpPoolsInput) (req *request.Request, output *ListDedicatedIpPoolsOutput) {
@@ -4287,11 +4281,12 @@ func (c *SESV2) ListDedicatedIpPoolsRequest(input *ListDedicatedIpPoolsInput) (r
 // API operation ListDedicatedIpPools for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListDedicatedIpPools
 func (c *SESV2) ListDedicatedIpPools(input *ListDedicatedIpPoolsInput) (*ListDedicatedIpPoolsOutput, error) {
@@ -4323,15 +4318,14 @@ func (c *SESV2) ListDedicatedIpPoolsWithContext(ctx aws.Context, input *ListDedi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDedicatedIpPools operation.
-//    pageNum := 0
-//    err := client.ListDedicatedIpPoolsPages(params,
-//        func(page *sesv2.ListDedicatedIpPoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDedicatedIpPools operation.
+//	pageNum := 0
+//	err := client.ListDedicatedIpPoolsPages(params,
+//	    func(page *sesv2.ListDedicatedIpPoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListDedicatedIpPoolsPages(input *ListDedicatedIpPoolsInput, fn func(*ListDedicatedIpPoolsOutput, bool) bool) error {
 	return c.ListDedicatedIpPoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4383,14 +4377,13 @@ const opListDeliverabilityTestReports = "ListDeliverabilityTestReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeliverabilityTestReportsRequest method.
+//	req, resp := client.ListDeliverabilityTestReportsRequest(params)
 //
-//    // Example sending a request using the ListDeliverabilityTestReportsRequest method.
-//    req, resp := client.ListDeliverabilityTestReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListDeliverabilityTestReports
 func (c *SESV2) ListDeliverabilityTestReportsRequest(input *ListDeliverabilityTestReportsInput) (req *request.Request, output *ListDeliverabilityTestReportsOutput) {
@@ -4430,14 +4423,15 @@ func (c *SESV2) ListDeliverabilityTestReportsRequest(input *ListDeliverabilityTe
 // API operation ListDeliverabilityTestReports for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListDeliverabilityTestReports
 func (c *SESV2) ListDeliverabilityTestReports(input *ListDeliverabilityTestReportsInput) (*ListDeliverabilityTestReportsOutput, error) {
@@ -4469,15 +4463,14 @@ func (c *SESV2) ListDeliverabilityTestReportsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeliverabilityTestReports operation.
-//    pageNum := 0
-//    err := client.ListDeliverabilityTestReportsPages(params,
-//        func(page *sesv2.ListDeliverabilityTestReportsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeliverabilityTestReports operation.
+//	pageNum := 0
+//	err := client.ListDeliverabilityTestReportsPages(params,
+//	    func(page *sesv2.ListDeliverabilityTestReportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListDeliverabilityTestReportsPages(input *ListDeliverabilityTestReportsInput, fn func(*ListDeliverabilityTestReportsOutput, bool) bool) error {
 	return c.ListDeliverabilityTestReportsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4529,14 +4522,13 @@ const opListDomainDeliverabilityCampaigns = "ListDomainDeliverabilityCampaigns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainDeliverabilityCampaignsRequest method.
+//	req, resp := client.ListDomainDeliverabilityCampaignsRequest(params)
 //
-//    // Example sending a request using the ListDomainDeliverabilityCampaignsRequest method.
-//    req, resp := client.ListDomainDeliverabilityCampaignsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListDomainDeliverabilityCampaigns
 func (c *SESV2) ListDomainDeliverabilityCampaignsRequest(input *ListDomainDeliverabilityCampaignsInput) (req *request.Request, output *ListDomainDeliverabilityCampaignsOutput) {
@@ -4575,14 +4567,15 @@ func (c *SESV2) ListDomainDeliverabilityCampaignsRequest(input *ListDomainDelive
 // API operation ListDomainDeliverabilityCampaigns for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListDomainDeliverabilityCampaigns
 func (c *SESV2) ListDomainDeliverabilityCampaigns(input *ListDomainDeliverabilityCampaignsInput) (*ListDomainDeliverabilityCampaignsOutput, error) {
@@ -4614,15 +4607,14 @@ func (c *SESV2) ListDomainDeliverabilityCampaignsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomainDeliverabilityCampaigns operation.
-//    pageNum := 0
-//    err := client.ListDomainDeliverabilityCampaignsPages(params,
-//        func(page *sesv2.ListDomainDeliverabilityCampaignsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomainDeliverabilityCampaigns operation.
+//	pageNum := 0
+//	err := client.ListDomainDeliverabilityCampaignsPages(params,
+//	    func(page *sesv2.ListDomainDeliverabilityCampaignsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListDomainDeliverabilityCampaignsPages(input *ListDomainDeliverabilityCampaignsInput, fn func(*ListDomainDeliverabilityCampaignsOutput, bool) bool) error {
 	return c.ListDomainDeliverabilityCampaignsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4674,14 +4666,13 @@ const opListEmailIdentities = "ListEmailIdentities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEmailIdentitiesRequest method.
+//	req, resp := client.ListEmailIdentitiesRequest(params)
 //
-//    // Example sending a request using the ListEmailIdentitiesRequest method.
-//    req, resp := client.ListEmailIdentitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListEmailIdentities
 func (c *SESV2) ListEmailIdentitiesRequest(input *ListEmailIdentitiesInput) (req *request.Request, output *ListEmailIdentitiesOutput) {
@@ -4722,11 +4713,12 @@ func (c *SESV2) ListEmailIdentitiesRequest(input *ListEmailIdentitiesInput) (req
 // API operation ListEmailIdentities for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListEmailIdentities
 func (c *SESV2) ListEmailIdentities(input *ListEmailIdentitiesInput) (*ListEmailIdentitiesOutput, error) {
@@ -4758,15 +4750,14 @@ func (c *SESV2) ListEmailIdentitiesWithContext(ctx aws.Context, input *ListEmail
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEmailIdentities operation.
-//    pageNum := 0
-//    err := client.ListEmailIdentitiesPages(params,
-//        func(page *sesv2.ListEmailIdentitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEmailIdentities operation.
+//	pageNum := 0
+//	err := client.ListEmailIdentitiesPages(params,
+//	    func(page *sesv2.ListEmailIdentitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListEmailIdentitiesPages(input *ListEmailIdentitiesInput, fn func(*ListEmailIdentitiesOutput, bool) bool) error {
 	return c.ListEmailIdentitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4818,14 +4809,13 @@ const opListEmailTemplates = "ListEmailTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEmailTemplatesRequest method.
+//	req, resp := client.ListEmailTemplatesRequest(params)
 //
-//    // Example sending a request using the ListEmailTemplatesRequest method.
-//    req, resp := client.ListEmailTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListEmailTemplates
 func (c *SESV2) ListEmailTemplatesRequest(input *ListEmailTemplatesInput) (req *request.Request, output *ListEmailTemplatesOutput) {
@@ -4865,11 +4855,12 @@ func (c *SESV2) ListEmailTemplatesRequest(input *ListEmailTemplatesInput) (req *
 // API operation ListEmailTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListEmailTemplates
 func (c *SESV2) ListEmailTemplates(input *ListEmailTemplatesInput) (*ListEmailTemplatesOutput, error) {
@@ -4901,15 +4892,14 @@ func (c *SESV2) ListEmailTemplatesWithContext(ctx aws.Context, input *ListEmailT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEmailTemplates operation.
-//    pageNum := 0
-//    err := client.ListEmailTemplatesPages(params,
-//        func(page *sesv2.ListEmailTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEmailTemplates operation.
+//	pageNum := 0
+//	err := client.ListEmailTemplatesPages(params,
+//	    func(page *sesv2.ListEmailTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListEmailTemplatesPages(input *ListEmailTemplatesInput, fn func(*ListEmailTemplatesOutput, bool) bool) error {
 	return c.ListEmailTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4961,14 +4951,13 @@ const opListImportJobs = "ListImportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImportJobsRequest method.
+//	req, resp := client.ListImportJobsRequest(params)
 //
-//    // Example sending a request using the ListImportJobsRequest method.
-//    req, resp := client.ListImportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListImportJobs
 func (c *SESV2) ListImportJobsRequest(input *ListImportJobsInput) (req *request.Request, output *ListImportJobsOutput) {
@@ -5005,11 +4994,12 @@ func (c *SESV2) ListImportJobsRequest(input *ListImportJobsInput) (req *request.
 // API operation ListImportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListImportJobs
 func (c *SESV2) ListImportJobs(input *ListImportJobsInput) (*ListImportJobsOutput, error) {
@@ -5041,15 +5031,14 @@ func (c *SESV2) ListImportJobsWithContext(ctx aws.Context, input *ListImportJobs
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImportJobs operation.
-//    pageNum := 0
-//    err := client.ListImportJobsPages(params,
-//        func(page *sesv2.ListImportJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImportJobs operation.
+//	pageNum := 0
+//	err := client.ListImportJobsPages(params,
+//	    func(page *sesv2.ListImportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListImportJobsPages(input *ListImportJobsInput, fn func(*ListImportJobsOutput, bool) bool) error {
 	return c.ListImportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5101,14 +5090,13 @@ const opListSuppressedDestinations = "ListSuppressedDestinations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSuppressedDestinationsRequest method.
+//	req, resp := client.ListSuppressedDestinationsRequest(params)
 //
-//    // Example sending a request using the ListSuppressedDestinationsRequest method.
-//    req, resp := client.ListSuppressedDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListSuppressedDestinations
 func (c *SESV2) ListSuppressedDestinationsRequest(input *ListSuppressedDestinationsInput) (req *request.Request, output *ListSuppressedDestinationsOutput) {
@@ -5146,14 +5134,15 @@ func (c *SESV2) ListSuppressedDestinationsRequest(input *ListSuppressedDestinati
 // API operation ListSuppressedDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * InvalidNextTokenException
-//   The specified request includes an invalid or expired token.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - InvalidNextTokenException
+//     The specified request includes an invalid or expired token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListSuppressedDestinations
 func (c *SESV2) ListSuppressedDestinations(input *ListSuppressedDestinationsInput) (*ListSuppressedDestinationsOutput, error) {
@@ -5185,15 +5174,14 @@ func (c *SESV2) ListSuppressedDestinationsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSuppressedDestinations operation.
-//    pageNum := 0
-//    err := client.ListSuppressedDestinationsPages(params,
-//        func(page *sesv2.ListSuppressedDestinationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSuppressedDestinations operation.
+//	pageNum := 0
+//	err := client.ListSuppressedDestinationsPages(params,
+//	    func(page *sesv2.ListSuppressedDestinationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SESV2) ListSuppressedDestinationsPages(input *ListSuppressedDestinationsInput, fn func(*ListSuppressedDestinationsOutput, bool) bool) error {
 	return c.ListSuppressedDestinationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5245,14 +5233,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListTagsForResource
 func (c *SESV2) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -5288,14 +5275,15 @@ func (c *SESV2) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/ListTagsForResource
 func (c *SESV2) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -5335,14 +5323,13 @@ const opPutAccountDedicatedIpWarmupAttributes = "PutAccountDedicatedIpWarmupAttr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountDedicatedIpWarmupAttributesRequest method.
+//	req, resp := client.PutAccountDedicatedIpWarmupAttributesRequest(params)
 //
-//    // Example sending a request using the PutAccountDedicatedIpWarmupAttributesRequest method.
-//    req, resp := client.PutAccountDedicatedIpWarmupAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountDedicatedIpWarmupAttributes
 func (c *SESV2) PutAccountDedicatedIpWarmupAttributesRequest(input *PutAccountDedicatedIpWarmupAttributesInput) (req *request.Request, output *PutAccountDedicatedIpWarmupAttributesOutput) {
@@ -5374,11 +5361,12 @@ func (c *SESV2) PutAccountDedicatedIpWarmupAttributesRequest(input *PutAccountDe
 // API operation PutAccountDedicatedIpWarmupAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountDedicatedIpWarmupAttributes
 func (c *SESV2) PutAccountDedicatedIpWarmupAttributes(input *PutAccountDedicatedIpWarmupAttributesInput) (*PutAccountDedicatedIpWarmupAttributesOutput, error) {
@@ -5418,14 +5406,13 @@ const opPutAccountDetails = "PutAccountDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountDetailsRequest method.
+//	req, resp := client.PutAccountDetailsRequest(params)
 //
-//    // Example sending a request using the PutAccountDetailsRequest method.
-//    req, resp := client.PutAccountDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountDetails
 func (c *SESV2) PutAccountDetailsRequest(input *PutAccountDetailsInput) (req *request.Request, output *PutAccountDetailsOutput) {
@@ -5457,14 +5444,15 @@ func (c *SESV2) PutAccountDetailsRequest(input *PutAccountDetailsInput) (req *re
 // API operation PutAccountDetails for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConflictException
-//   If there is already an ongoing account details update under review.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConflictException
+//     If there is already an ongoing account details update under review.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountDetails
 func (c *SESV2) PutAccountDetails(input *PutAccountDetailsInput) (*PutAccountDetailsOutput, error) {
@@ -5504,14 +5492,13 @@ const opPutAccountSendingAttributes = "PutAccountSendingAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountSendingAttributesRequest method.
+//	req, resp := client.PutAccountSendingAttributesRequest(params)
 //
-//    // Example sending a request using the PutAccountSendingAttributesRequest method.
-//    req, resp := client.PutAccountSendingAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountSendingAttributes
 func (c *SESV2) PutAccountSendingAttributesRequest(input *PutAccountSendingAttributesInput) (req *request.Request, output *PutAccountSendingAttributesOutput) {
@@ -5543,11 +5530,12 @@ func (c *SESV2) PutAccountSendingAttributesRequest(input *PutAccountSendingAttri
 // API operation PutAccountSendingAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountSendingAttributes
 func (c *SESV2) PutAccountSendingAttributes(input *PutAccountSendingAttributesInput) (*PutAccountSendingAttributesOutput, error) {
@@ -5587,14 +5575,13 @@ const opPutAccountSuppressionAttributes = "PutAccountSuppressionAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountSuppressionAttributesRequest method.
+//	req, resp := client.PutAccountSuppressionAttributesRequest(params)
 //
-//    // Example sending a request using the PutAccountSuppressionAttributesRequest method.
-//    req, resp := client.PutAccountSuppressionAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountSuppressionAttributes
 func (c *SESV2) PutAccountSuppressionAttributesRequest(input *PutAccountSuppressionAttributesInput) (req *request.Request, output *PutAccountSuppressionAttributesOutput) {
@@ -5626,11 +5613,12 @@ func (c *SESV2) PutAccountSuppressionAttributesRequest(input *PutAccountSuppress
 // API operation PutAccountSuppressionAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutAccountSuppressionAttributes
 func (c *SESV2) PutAccountSuppressionAttributes(input *PutAccountSuppressionAttributesInput) (*PutAccountSuppressionAttributesOutput, error) {
@@ -5670,14 +5658,13 @@ const opPutConfigurationSetDeliveryOptions = "PutConfigurationSetDeliveryOptions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetDeliveryOptionsRequest method.
+//	req, resp := client.PutConfigurationSetDeliveryOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetDeliveryOptionsRequest method.
-//    req, resp := client.PutConfigurationSetDeliveryOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetDeliveryOptions
 func (c *SESV2) PutConfigurationSetDeliveryOptionsRequest(input *PutConfigurationSetDeliveryOptionsInput) (req *request.Request, output *PutConfigurationSetDeliveryOptionsOutput) {
@@ -5711,14 +5698,15 @@ func (c *SESV2) PutConfigurationSetDeliveryOptionsRequest(input *PutConfiguratio
 // API operation PutConfigurationSetDeliveryOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetDeliveryOptions
 func (c *SESV2) PutConfigurationSetDeliveryOptions(input *PutConfigurationSetDeliveryOptionsInput) (*PutConfigurationSetDeliveryOptionsOutput, error) {
@@ -5758,14 +5746,13 @@ const opPutConfigurationSetReputationOptions = "PutConfigurationSetReputationOpt
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetReputationOptionsRequest method.
+//	req, resp := client.PutConfigurationSetReputationOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetReputationOptionsRequest method.
-//    req, resp := client.PutConfigurationSetReputationOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetReputationOptions
 func (c *SESV2) PutConfigurationSetReputationOptionsRequest(input *PutConfigurationSetReputationOptionsInput) (req *request.Request, output *PutConfigurationSetReputationOptionsOutput) {
@@ -5798,14 +5785,15 @@ func (c *SESV2) PutConfigurationSetReputationOptionsRequest(input *PutConfigurat
 // API operation PutConfigurationSetReputationOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetReputationOptions
 func (c *SESV2) PutConfigurationSetReputationOptions(input *PutConfigurationSetReputationOptionsInput) (*PutConfigurationSetReputationOptionsOutput, error) {
@@ -5845,14 +5833,13 @@ const opPutConfigurationSetSendingOptions = "PutConfigurationSetSendingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetSendingOptionsRequest method.
+//	req, resp := client.PutConfigurationSetSendingOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetSendingOptionsRequest method.
-//    req, resp := client.PutConfigurationSetSendingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetSendingOptions
 func (c *SESV2) PutConfigurationSetSendingOptionsRequest(input *PutConfigurationSetSendingOptionsInput) (req *request.Request, output *PutConfigurationSetSendingOptionsOutput) {
@@ -5885,14 +5872,15 @@ func (c *SESV2) PutConfigurationSetSendingOptionsRequest(input *PutConfiguration
 // API operation PutConfigurationSetSendingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetSendingOptions
 func (c *SESV2) PutConfigurationSetSendingOptions(input *PutConfigurationSetSendingOptionsInput) (*PutConfigurationSetSendingOptionsOutput, error) {
@@ -5932,14 +5920,13 @@ const opPutConfigurationSetSuppressionOptions = "PutConfigurationSetSuppressionO
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetSuppressionOptionsRequest method.
+//	req, resp := client.PutConfigurationSetSuppressionOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetSuppressionOptionsRequest method.
-//    req, resp := client.PutConfigurationSetSuppressionOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetSuppressionOptions
 func (c *SESV2) PutConfigurationSetSuppressionOptionsRequest(input *PutConfigurationSetSuppressionOptionsInput) (req *request.Request, output *PutConfigurationSetSuppressionOptionsOutput) {
@@ -5971,14 +5958,15 @@ func (c *SESV2) PutConfigurationSetSuppressionOptionsRequest(input *PutConfigura
 // API operation PutConfigurationSetSuppressionOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetSuppressionOptions
 func (c *SESV2) PutConfigurationSetSuppressionOptions(input *PutConfigurationSetSuppressionOptionsInput) (*PutConfigurationSetSuppressionOptionsOutput, error) {
@@ -6018,14 +6006,13 @@ const opPutConfigurationSetTrackingOptions = "PutConfigurationSetTrackingOptions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetTrackingOptionsRequest method.
+//	req, resp := client.PutConfigurationSetTrackingOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetTrackingOptionsRequest method.
-//    req, resp := client.PutConfigurationSetTrackingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetTrackingOptions
 func (c *SESV2) PutConfigurationSetTrackingOptionsRequest(input *PutConfigurationSetTrackingOptionsInput) (req *request.Request, output *PutConfigurationSetTrackingOptionsOutput) {
@@ -6058,14 +6045,15 @@ func (c *SESV2) PutConfigurationSetTrackingOptionsRequest(input *PutConfiguratio
 // API operation PutConfigurationSetTrackingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutConfigurationSetTrackingOptions
 func (c *SESV2) PutConfigurationSetTrackingOptions(input *PutConfigurationSetTrackingOptionsInput) (*PutConfigurationSetTrackingOptionsOutput, error) {
@@ -6105,14 +6093,13 @@ const opPutDedicatedIpInPool = "PutDedicatedIpInPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDedicatedIpInPoolRequest method.
+//	req, resp := client.PutDedicatedIpInPoolRequest(params)
 //
-//    // Example sending a request using the PutDedicatedIpInPoolRequest method.
-//    req, resp := client.PutDedicatedIpInPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutDedicatedIpInPool
 func (c *SESV2) PutDedicatedIpInPoolRequest(input *PutDedicatedIpInPoolInput) (req *request.Request, output *PutDedicatedIpInPoolOutput) {
@@ -6150,14 +6137,15 @@ func (c *SESV2) PutDedicatedIpInPoolRequest(input *PutDedicatedIpInPoolInput) (r
 // API operation PutDedicatedIpInPool for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutDedicatedIpInPool
 func (c *SESV2) PutDedicatedIpInPool(input *PutDedicatedIpInPoolInput) (*PutDedicatedIpInPoolOutput, error) {
@@ -6197,14 +6185,13 @@ const opPutDedicatedIpWarmupAttributes = "PutDedicatedIpWarmupAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDedicatedIpWarmupAttributesRequest method.
+//	req, resp := client.PutDedicatedIpWarmupAttributesRequest(params)
 //
-//    // Example sending a request using the PutDedicatedIpWarmupAttributesRequest method.
-//    req, resp := client.PutDedicatedIpWarmupAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutDedicatedIpWarmupAttributes
 func (c *SESV2) PutDedicatedIpWarmupAttributesRequest(input *PutDedicatedIpWarmupAttributesInput) (req *request.Request, output *PutDedicatedIpWarmupAttributesOutput) {
@@ -6234,14 +6221,15 @@ func (c *SESV2) PutDedicatedIpWarmupAttributesRequest(input *PutDedicatedIpWarmu
 // API operation PutDedicatedIpWarmupAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutDedicatedIpWarmupAttributes
 func (c *SESV2) PutDedicatedIpWarmupAttributes(input *PutDedicatedIpWarmupAttributesInput) (*PutDedicatedIpWarmupAttributesOutput, error) {
@@ -6281,14 +6269,13 @@ const opPutDeliverabilityDashboardOption = "PutDeliverabilityDashboardOption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDeliverabilityDashboardOptionRequest method.
+//	req, resp := client.PutDeliverabilityDashboardOptionRequest(params)
 //
-//    // Example sending a request using the PutDeliverabilityDashboardOptionRequest method.
-//    req, resp := client.PutDeliverabilityDashboardOptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutDeliverabilityDashboardOption
 func (c *SESV2) PutDeliverabilityDashboardOptionRequest(input *PutDeliverabilityDashboardOptionInput) (req *request.Request, output *PutDeliverabilityDashboardOptionOutput) {
@@ -6329,20 +6316,21 @@ func (c *SESV2) PutDeliverabilityDashboardOptionRequest(input *PutDeliverability
 // API operation PutDeliverabilityDashboardOption for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutDeliverabilityDashboardOption
 func (c *SESV2) PutDeliverabilityDashboardOption(input *PutDeliverabilityDashboardOptionInput) (*PutDeliverabilityDashboardOptionOutput, error) {
@@ -6382,14 +6370,13 @@ const opPutEmailIdentityConfigurationSetAttributes = "PutEmailIdentityConfigurat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityConfigurationSetAttributesRequest method.
+//	req, resp := client.PutEmailIdentityConfigurationSetAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityConfigurationSetAttributesRequest method.
-//    req, resp := client.PutEmailIdentityConfigurationSetAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityConfigurationSetAttributes
 func (c *SESV2) PutEmailIdentityConfigurationSetAttributesRequest(input *PutEmailIdentityConfigurationSetAttributesInput) (req *request.Request, output *PutEmailIdentityConfigurationSetAttributesOutput) {
@@ -6421,14 +6408,15 @@ func (c *SESV2) PutEmailIdentityConfigurationSetAttributesRequest(input *PutEmai
 // API operation PutEmailIdentityConfigurationSetAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityConfigurationSetAttributes
 func (c *SESV2) PutEmailIdentityConfigurationSetAttributes(input *PutEmailIdentityConfigurationSetAttributesInput) (*PutEmailIdentityConfigurationSetAttributesOutput, error) {
@@ -6468,14 +6456,13 @@ const opPutEmailIdentityDkimAttributes = "PutEmailIdentityDkimAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityDkimAttributesRequest method.
+//	req, resp := client.PutEmailIdentityDkimAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityDkimAttributesRequest method.
-//    req, resp := client.PutEmailIdentityDkimAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityDkimAttributes
 func (c *SESV2) PutEmailIdentityDkimAttributesRequest(input *PutEmailIdentityDkimAttributesInput) (req *request.Request, output *PutEmailIdentityDkimAttributesOutput) {
@@ -6507,14 +6494,15 @@ func (c *SESV2) PutEmailIdentityDkimAttributesRequest(input *PutEmailIdentityDki
 // API operation PutEmailIdentityDkimAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityDkimAttributes
 func (c *SESV2) PutEmailIdentityDkimAttributes(input *PutEmailIdentityDkimAttributesInput) (*PutEmailIdentityDkimAttributesOutput, error) {
@@ -6554,14 +6542,13 @@ const opPutEmailIdentityDkimSigningAttributes = "PutEmailIdentityDkimSigningAttr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityDkimSigningAttributesRequest method.
+//	req, resp := client.PutEmailIdentityDkimSigningAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityDkimSigningAttributesRequest method.
-//    req, resp := client.PutEmailIdentityDkimSigningAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityDkimSigningAttributes
 func (c *SESV2) PutEmailIdentityDkimSigningAttributesRequest(input *PutEmailIdentityDkimSigningAttributesInput) (req *request.Request, output *PutEmailIdentityDkimSigningAttributesOutput) {
@@ -6585,18 +6572,18 @@ func (c *SESV2) PutEmailIdentityDkimSigningAttributesRequest(input *PutEmailIden
 // Used to configure or change the DKIM authentication settings for an email
 // domain identity. You can use this operation to do any of the following:
 //
-//    * Update the signing attributes for an identity that uses Bring Your Own
-//    DKIM (BYODKIM).
+//   - Update the signing attributes for an identity that uses Bring Your Own
+//     DKIM (BYODKIM).
 //
-//    * Update the key length that should be used for Easy DKIM.
+//   - Update the key length that should be used for Easy DKIM.
 //
-//    * Change from using no DKIM authentication to using Easy DKIM.
+//   - Change from using no DKIM authentication to using Easy DKIM.
 //
-//    * Change from using no DKIM authentication to using BYODKIM.
+//   - Change from using no DKIM authentication to using BYODKIM.
 //
-//    * Change from using Easy DKIM to using BYODKIM.
+//   - Change from using Easy DKIM to using BYODKIM.
 //
-//    * Change from using BYODKIM to using Easy DKIM.
+//   - Change from using BYODKIM to using Easy DKIM.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6606,14 +6593,15 @@ func (c *SESV2) PutEmailIdentityDkimSigningAttributesRequest(input *PutEmailIden
 // API operation PutEmailIdentityDkimSigningAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityDkimSigningAttributes
 func (c *SESV2) PutEmailIdentityDkimSigningAttributes(input *PutEmailIdentityDkimSigningAttributesInput) (*PutEmailIdentityDkimSigningAttributesOutput, error) {
@@ -6653,14 +6641,13 @@ const opPutEmailIdentityFeedbackAttributes = "PutEmailIdentityFeedbackAttributes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityFeedbackAttributesRequest method.
+//	req, resp := client.PutEmailIdentityFeedbackAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityFeedbackAttributesRequest method.
-//    req, resp := client.PutEmailIdentityFeedbackAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityFeedbackAttributes
 func (c *SESV2) PutEmailIdentityFeedbackAttributesRequest(input *PutEmailIdentityFeedbackAttributesInput) (req *request.Request, output *PutEmailIdentityFeedbackAttributesOutput) {
@@ -6703,14 +6690,15 @@ func (c *SESV2) PutEmailIdentityFeedbackAttributesRequest(input *PutEmailIdentit
 // API operation PutEmailIdentityFeedbackAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityFeedbackAttributes
 func (c *SESV2) PutEmailIdentityFeedbackAttributes(input *PutEmailIdentityFeedbackAttributesInput) (*PutEmailIdentityFeedbackAttributesOutput, error) {
@@ -6750,14 +6738,13 @@ const opPutEmailIdentityMailFromAttributes = "PutEmailIdentityMailFromAttributes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityMailFromAttributesRequest method.
+//	req, resp := client.PutEmailIdentityMailFromAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityMailFromAttributesRequest method.
-//    req, resp := client.PutEmailIdentityMailFromAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityMailFromAttributes
 func (c *SESV2) PutEmailIdentityMailFromAttributesRequest(input *PutEmailIdentityMailFromAttributesInput) (req *request.Request, output *PutEmailIdentityMailFromAttributesOutput) {
@@ -6790,14 +6777,15 @@ func (c *SESV2) PutEmailIdentityMailFromAttributesRequest(input *PutEmailIdentit
 // API operation PutEmailIdentityMailFromAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutEmailIdentityMailFromAttributes
 func (c *SESV2) PutEmailIdentityMailFromAttributes(input *PutEmailIdentityMailFromAttributesInput) (*PutEmailIdentityMailFromAttributesOutput, error) {
@@ -6837,14 +6825,13 @@ const opPutSuppressedDestination = "PutSuppressedDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSuppressedDestinationRequest method.
+//	req, resp := client.PutSuppressedDestinationRequest(params)
 //
-//    // Example sending a request using the PutSuppressedDestinationRequest method.
-//    req, resp := client.PutSuppressedDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutSuppressedDestination
 func (c *SESV2) PutSuppressedDestinationRequest(input *PutSuppressedDestinationInput) (req *request.Request, output *PutSuppressedDestinationOutput) {
@@ -6876,11 +6863,12 @@ func (c *SESV2) PutSuppressedDestinationRequest(input *PutSuppressedDestinationI
 // API operation PutSuppressedDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/PutSuppressedDestination
 func (c *SESV2) PutSuppressedDestination(input *PutSuppressedDestinationInput) (*PutSuppressedDestinationOutput, error) {
@@ -6920,14 +6908,13 @@ const opSendBulkEmail = "SendBulkEmail"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendBulkEmailRequest method.
+//	req, resp := client.SendBulkEmailRequest(params)
 //
-//    // Example sending a request using the SendBulkEmailRequest method.
-//    req, resp := client.SendBulkEmailRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/SendBulkEmail
 func (c *SESV2) SendBulkEmailRequest(input *SendBulkEmailInput) (req *request.Request, output *SendBulkEmailOutput) {
@@ -6958,31 +6945,32 @@ func (c *SESV2) SendBulkEmailRequest(input *SendBulkEmailInput) (req *request.Re
 // API operation SendBulkEmail for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * AccountSuspendedException
-//   The message can't be sent because the account's ability to send email has
-//   been permanently restricted.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * SendingPausedException
-//   The message can't be sent because the account's ability to send email is
-//   currently paused.
+//   - AccountSuspendedException
+//     The message can't be sent because the account's ability to send email has
+//     been permanently restricted.
 //
-//   * MessageRejected
-//   The message can't be sent because it contains invalid content.
+//   - SendingPausedException
+//     The message can't be sent because the account's ability to send email is
+//     currently paused.
 //
-//   * MailFromDomainNotVerifiedException
-//   The message can't be sent because the sending domain isn't verified.
+//   - MessageRejected
+//     The message can't be sent because it contains invalid content.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - MailFromDomainNotVerifiedException
+//     The message can't be sent because the sending domain isn't verified.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/SendBulkEmail
 func (c *SESV2) SendBulkEmail(input *SendBulkEmailInput) (*SendBulkEmailOutput, error) {
@@ -7022,14 +7010,13 @@ const opSendCustomVerificationEmail = "SendCustomVerificationEmail"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendCustomVerificationEmailRequest method.
+//	req, resp := client.SendCustomVerificationEmailRequest(params)
 //
-//    // Example sending a request using the SendCustomVerificationEmailRequest method.
-//    req, resp := client.SendCustomVerificationEmailRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/SendCustomVerificationEmail
 func (c *SESV2) SendCustomVerificationEmailRequest(input *SendCustomVerificationEmailInput) (req *request.Request, output *SendCustomVerificationEmailOutput) {
@@ -7070,27 +7057,28 @@ func (c *SESV2) SendCustomVerificationEmailRequest(input *SendCustomVerification
 // API operation SendCustomVerificationEmail for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * MessageRejected
-//   The message can't be sent because it contains invalid content.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * SendingPausedException
-//   The message can't be sent because the account's ability to send email is
-//   currently paused.
+//   - MessageRejected
+//     The message can't be sent because it contains invalid content.
 //
-//   * MailFromDomainNotVerifiedException
-//   The message can't be sent because the sending domain isn't verified.
+//   - SendingPausedException
+//     The message can't be sent because the account's ability to send email is
+//     currently paused.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - MailFromDomainNotVerifiedException
+//     The message can't be sent because the sending domain isn't verified.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/SendCustomVerificationEmail
 func (c *SESV2) SendCustomVerificationEmail(input *SendCustomVerificationEmailInput) (*SendCustomVerificationEmailOutput, error) {
@@ -7130,14 +7118,13 @@ const opSendEmail = "SendEmail"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendEmailRequest method.
+//	req, resp := client.SendEmailRequest(params)
 //
-//    // Example sending a request using the SendEmailRequest method.
-//    req, resp := client.SendEmailRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/SendEmail
 func (c *SESV2) SendEmailRequest(input *SendEmailInput) (req *request.Request, output *SendEmailOutput) {
@@ -7161,18 +7148,18 @@ func (c *SESV2) SendEmailRequest(input *SendEmailInput) (req *request.Request, o
 // Sends an email message. You can use the Amazon SES API v2 to send the following
 // types of messages:
 //
-//    * Simple – A standard email message. When you create this type of message,
-//    you specify the sender, the recipient, and the message body, and Amazon
-//    SES assembles the message for you.
+//   - Simple – A standard email message. When you create this type of message,
+//     you specify the sender, the recipient, and the message body, and Amazon
+//     SES assembles the message for you.
 //
-//    * Raw – A raw, MIME-formatted email message. When you send this type
-//    of email, you have to specify all of the message headers, as well as the
-//    message body. You can use this message type to send messages that contain
-//    attachments. The message that you specify has to be a valid MIME message.
+//   - Raw – A raw, MIME-formatted email message. When you send this type
+//     of email, you have to specify all of the message headers, as well as the
+//     message body. You can use this message type to send messages that contain
+//     attachments. The message that you specify has to be a valid MIME message.
 //
-//    * Templated – A message that contains personalization tags. When you
-//    send this type of email, Amazon SES API v2 automatically replaces the
-//    tags with values that you specify.
+//   - Templated – A message that contains personalization tags. When you
+//     send this type of email, Amazon SES API v2 automatically replaces the
+//     tags with values that you specify.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7182,31 +7169,32 @@ func (c *SESV2) SendEmailRequest(input *SendEmailInput) (req *request.Request, o
 // API operation SendEmail for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * AccountSuspendedException
-//   The message can't be sent because the account's ability to send email has
-//   been permanently restricted.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * SendingPausedException
-//   The message can't be sent because the account's ability to send email is
-//   currently paused.
+//   - AccountSuspendedException
+//     The message can't be sent because the account's ability to send email has
+//     been permanently restricted.
 //
-//   * MessageRejected
-//   The message can't be sent because it contains invalid content.
+//   - SendingPausedException
+//     The message can't be sent because the account's ability to send email is
+//     currently paused.
 //
-//   * MailFromDomainNotVerifiedException
-//   The message can't be sent because the sending domain isn't verified.
+//   - MessageRejected
+//     The message can't be sent because it contains invalid content.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - MailFromDomainNotVerifiedException
+//     The message can't be sent because the sending domain isn't verified.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/SendEmail
 func (c *SESV2) SendEmail(input *SendEmailInput) (*SendEmailOutput, error) {
@@ -7246,14 +7234,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/TagResource
 func (c *SESV2) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -7294,17 +7281,18 @@ func (c *SESV2) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/TagResource
 func (c *SESV2) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -7344,14 +7332,13 @@ const opTestRenderEmailTemplate = "TestRenderEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestRenderEmailTemplateRequest method.
+//	req, resp := client.TestRenderEmailTemplateRequest(params)
 //
-//    // Example sending a request using the TestRenderEmailTemplateRequest method.
-//    req, resp := client.TestRenderEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/TestRenderEmailTemplate
 func (c *SESV2) TestRenderEmailTemplateRequest(input *TestRenderEmailTemplateInput) (req *request.Request, output *TestRenderEmailTemplateOutput) {
@@ -7385,14 +7372,15 @@ func (c *SESV2) TestRenderEmailTemplateRequest(input *TestRenderEmailTemplateInp
 // API operation TestRenderEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/TestRenderEmailTemplate
 func (c *SESV2) TestRenderEmailTemplate(input *TestRenderEmailTemplateInput) (*TestRenderEmailTemplateOutput, error) {
@@ -7432,14 +7420,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UntagResource
 func (c *SESV2) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -7471,17 +7458,18 @@ func (c *SESV2) UntagResourceRequest(input *UntagResourceInput) (req *request.Re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UntagResource
 func (c *SESV2) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -7521,14 +7509,13 @@ const opUpdateConfigurationSetEventDestination = "UpdateConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationSetEventDestinationRequest method.
+//	req, resp := client.UpdateConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationSetEventDestinationRequest method.
-//    req, resp := client.UpdateConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateConfigurationSetEventDestination
 func (c *SESV2) UpdateConfigurationSetEventDestinationRequest(input *UpdateConfigurationSetEventDestinationInput) (req *request.Request, output *UpdateConfigurationSetEventDestinationOutput) {
@@ -7566,14 +7553,15 @@ func (c *SESV2) UpdateConfigurationSetEventDestinationRequest(input *UpdateConfi
 // API operation UpdateConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateConfigurationSetEventDestination
 func (c *SESV2) UpdateConfigurationSetEventDestination(input *UpdateConfigurationSetEventDestinationInput) (*UpdateConfigurationSetEventDestinationOutput, error) {
@@ -7613,14 +7601,13 @@ const opUpdateContact = "UpdateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateContactRequest method.
+//	req, resp := client.UpdateContactRequest(params)
 //
-//    // Example sending a request using the UpdateContactRequest method.
-//    req, resp := client.UpdateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateContact
 func (c *SESV2) UpdateContactRequest(input *UpdateContactInput) (req *request.Request, output *UpdateContactOutput) {
@@ -7654,17 +7641,18 @@ func (c *SESV2) UpdateContactRequest(input *UpdateContactInput) (req *request.Re
 // API operation UpdateContact for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateContact
 func (c *SESV2) UpdateContact(input *UpdateContactInput) (*UpdateContactOutput, error) {
@@ -7704,14 +7692,13 @@ const opUpdateContactList = "UpdateContactList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateContactListRequest method.
+//	req, resp := client.UpdateContactListRequest(params)
 //
-//    // Example sending a request using the UpdateContactListRequest method.
-//    req, resp := client.UpdateContactListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateContactList
 func (c *SESV2) UpdateContactListRequest(input *UpdateContactListInput) (req *request.Request, output *UpdateContactListOutput) {
@@ -7743,17 +7730,18 @@ func (c *SESV2) UpdateContactListRequest(input *UpdateContactListInput) (req *re
 // API operation UpdateContactList for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateContactList
 func (c *SESV2) UpdateContactList(input *UpdateContactListInput) (*UpdateContactListOutput, error) {
@@ -7793,14 +7781,13 @@ const opUpdateCustomVerificationEmailTemplate = "UpdateCustomVerificationEmailTe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCustomVerificationEmailTemplateRequest method.
+//	req, resp := client.UpdateCustomVerificationEmailTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateCustomVerificationEmailTemplateRequest method.
-//    req, resp := client.UpdateCustomVerificationEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateCustomVerificationEmailTemplate
 func (c *SESV2) UpdateCustomVerificationEmailTemplateRequest(input *UpdateCustomVerificationEmailTemplateInput) (req *request.Request, output *UpdateCustomVerificationEmailTemplateOutput) {
@@ -7838,14 +7825,15 @@ func (c *SESV2) UpdateCustomVerificationEmailTemplateRequest(input *UpdateCustom
 // API operation UpdateCustomVerificationEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateCustomVerificationEmailTemplate
 func (c *SESV2) UpdateCustomVerificationEmailTemplate(input *UpdateCustomVerificationEmailTemplateInput) (*UpdateCustomVerificationEmailTemplateOutput, error) {
@@ -7885,14 +7873,13 @@ const opUpdateEmailIdentityPolicy = "UpdateEmailIdentityPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEmailIdentityPolicyRequest method.
+//	req, resp := client.UpdateEmailIdentityPolicyRequest(params)
 //
-//    // Example sending a request using the UpdateEmailIdentityPolicyRequest method.
-//    req, resp := client.UpdateEmailIdentityPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateEmailIdentityPolicy
 func (c *SESV2) UpdateEmailIdentityPolicyRequest(input *UpdateEmailIdentityPolicyInput) (req *request.Request, output *UpdateEmailIdentityPolicyOutput) {
@@ -7935,14 +7922,15 @@ func (c *SESV2) UpdateEmailIdentityPolicyRequest(input *UpdateEmailIdentityPolic
 // API operation UpdateEmailIdentityPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateEmailIdentityPolicy
 func (c *SESV2) UpdateEmailIdentityPolicy(input *UpdateEmailIdentityPolicyInput) (*UpdateEmailIdentityPolicyOutput, error) {
@@ -7982,14 +7970,13 @@ const opUpdateEmailTemplate = "UpdateEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEmailTemplateRequest method.
+//	req, resp := client.UpdateEmailTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateEmailTemplateRequest method.
-//    req, resp := client.UpdateEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateEmailTemplate
 func (c *SESV2) UpdateEmailTemplateRequest(input *UpdateEmailTemplateInput) (req *request.Request, output *UpdateEmailTemplateOutput) {
@@ -8025,14 +8012,15 @@ func (c *SESV2) UpdateEmailTemplateRequest(input *UpdateEmailTemplateInput) (req
 // API operation UpdateEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sesv2-2019-09-27/UpdateEmailTemplate
 func (c *SESV2) UpdateEmailTemplate(input *UpdateEmailTemplateInput) (*UpdateEmailTemplateOutput, error) {
@@ -20222,21 +20210,21 @@ func (s *SuppressionOptions) SetSuppressedReasons(v []*string) *SuppressionOptio
 // digits, white space, or one of the following symbols: _ . : / = + -. The
 // following additional restrictions apply to tags:
 //
-//    * Tag keys and values are case sensitive.
+//   - Tag keys and values are case sensitive.
 //
-//    * For each associated resource, each tag key must be unique and it can
-//    have only one value.
+//   - For each associated resource, each tag key must be unique and it can
+//     have only one value.
 //
-//    * The aws: prefix is reserved for use by Amazon Web Services; you can’t
-//    use it in any tag keys or values that you define. In addition, you can't
-//    edit or remove tag keys or values that use this prefix. Tags that use
-//    this prefix don’t count against the limit of 50 tags per resource.
+//   - The aws: prefix is reserved for use by Amazon Web Services; you can’t
+//     use it in any tag keys or values that you define. In addition, you can't
+//     edit or remove tag keys or values that use this prefix. Tags that use
+//     this prefix don’t count against the limit of 50 tags per resource.
 //
-//    * You can associate tags with public or shared resources, but the tags
-//    are available only for your Amazon Web Services account, not any other
-//    accounts that share the resource. In addition, the tags are available
-//    only for resources that are located in the specified Amazon Web Services
-//    Region for your Amazon Web Services account.
+//   - You can associate tags with public or shared resources, but the tags
+//     are available only for your Amazon Web Services account, not any other
+//     accounts that share the resource. In addition, the tags are available
+//     only for resources that are located in the specified Amazon Web Services
+//     Region for your Amazon Web Services account.
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -21965,20 +21953,20 @@ func DkimSigningKeyLength_Values() []string {
 // The DKIM authentication status of the identity. The status can be one of
 // the following:
 //
-//    * PENDING – The verification process was initiated, but Amazon SES hasn't
-//    yet detected the DKIM records in the DNS configuration for the domain.
+//   - PENDING – The verification process was initiated, but Amazon SES hasn't
+//     yet detected the DKIM records in the DNS configuration for the domain.
 //
-//    * SUCCESS – The verification process completed successfully.
+//   - SUCCESS – The verification process completed successfully.
 //
-//    * FAILED – The verification process failed. This typically occurs when
-//    Amazon SES fails to find the DKIM records in the DNS configuration of
-//    the domain.
+//   - FAILED – The verification process failed. This typically occurs when
+//     Amazon SES fails to find the DKIM records in the DNS configuration of
+//     the domain.
 //
-//    * TEMPORARY_FAILURE – A temporary issue is preventing Amazon SES from
-//    determining the DKIM authentication status of the domain.
+//   - TEMPORARY_FAILURE – A temporary issue is preventing Amazon SES from
+//     determining the DKIM authentication status of the domain.
 //
-//    * NOT_STARTED – The DKIM verification process hasn't been initiated
-//    for the domain.
+//   - NOT_STARTED – The DKIM verification process hasn't been initiated
+//     for the domain.
 const (
 	// DkimStatusPending is a DkimStatus enum value
 	DkimStatusPending = "PENDING"
@@ -22122,16 +22110,16 @@ func JobStatus_Values() []string {
 
 // The status of the MAIL FROM domain. This status can have the following values:
 //
-//    * PENDING – Amazon SES hasn't started searching for the MX record yet.
+//   - PENDING – Amazon SES hasn't started searching for the MX record yet.
 //
-//    * SUCCESS – Amazon SES detected the required MX record for the MAIL
-//    FROM domain.
+//   - SUCCESS – Amazon SES detected the required MX record for the MAIL
+//     FROM domain.
 //
-//    * FAILED – Amazon SES can't find the required MX record, or the record
-//    no longer exists.
+//   - FAILED – Amazon SES can't find the required MX record, or the record
+//     no longer exists.
 //
-//    * TEMPORARY_FAILURE – A temporary issue occurred, which prevented Amazon
-//    SES from determining the status of the MAIL FROM domain.
+//   - TEMPORARY_FAILURE – A temporary issue occurred, which prevented Amazon
+//     SES from determining the status of the MAIL FROM domain.
 const (
 	// MailFromDomainStatusPending is a MailFromDomainStatus enum value
 	MailFromDomainStatusPending = "PENDING"
@@ -22215,9 +22203,9 @@ func SubscriptionStatus_Values() []string {
 // The type of action to perform on the address. The following are possible
 // values:
 //
-//    * PUT: add the addresses to the suppression list.
+//   - PUT: add the addresses to the suppression list.
 //
-//    * DELETE: remove the address from the suppression list.
+//   - DELETE: remove the address from the suppression list.
 const (
 	// SuppressionListImportActionDelete is a SuppressionListImportAction enum value
 	SuppressionListImportActionDelete = "DELETE"
@@ -22237,12 +22225,12 @@ func SuppressionListImportAction_Values() []string {
 // The reason that the address was added to the suppression list for your account.
 // The value can be one of the following:
 //
-//    * COMPLAINT – Amazon SES added an email address to the suppression list
-//    for your account because a message sent to that address results in a complaint.
+//   - COMPLAINT – Amazon SES added an email address to the suppression list
+//     for your account because a message sent to that address results in a complaint.
 //
-//    * BOUNCE – Amazon SES added an email address to the suppression list
-//    for your account because a message sent to that address results in a hard
-//    bounce.
+//   - BOUNCE – Amazon SES added an email address to the suppression list
+//     for your account because a message sent to that address results in a hard
+//     bounce.
 const (
 	// SuppressionListReasonBounce is a SuppressionListReason enum value
 	SuppressionListReasonBounce = "BOUNCE"

@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type NovaServerNetwork struct {
 	// 网络port uuid。  没有指定网络uuid时必须指定。
 

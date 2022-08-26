@@ -3,7 +3,7 @@
 // Package ivs provides the client and types for making API
 // requests to Amazon Interactive Video Service.
 //
-// Introduction
+// # Introduction
 //
 // The Amazon Interactive Video Service (IVS) API is REST compatible, using
 // a standard HTTP API and an Amazon Web Services EventBridge event stream for
@@ -13,44 +13,44 @@
 // regions and Amazon IVS HTTPS service endpoints, see the Amazon IVS page (https://docs.aws.amazon.com/general/latest/gr/ivs.html)
 // in the Amazon Web Services General Reference.
 //
-//  All API request parameters and URLs are case sensitive.
+//	All API request parameters and URLs are case sensitive.
 //
 // For a summary of notable documentation changes in each release, see Document
 // History (https://docs.aws.amazon.com/ivs/latest/userguide/doc-history.html).
 //
 // Allowed Header Values
 //
-//    * Accept: application/json
+//   - Accept: application/json
 //
-//    * Accept-Encoding: gzip, deflate
+//   - Accept-Encoding: gzip, deflate
 //
-//    * Content-Type: application/json
+//   - Content-Type: application/json
 //
-// Resources
+// # Resources
 //
 // The following resources contain information about your IVS live stream (see
 // Getting Started with Amazon IVS (https://docs.aws.amazon.com/ivs/latest/userguide/getting-started.html)):
 //
-//    * Channel — Stores configuration data related to your live stream. You
-//    first create a channel and then use the channel’s stream key to start
-//    your live stream. See the Channel endpoints for more information.
+//   - Channel — Stores configuration data related to your live stream. You
+//     first create a channel and then use the channel’s stream key to start
+//     your live stream. See the Channel endpoints for more information.
 //
-//    * Stream key — An identifier assigned by Amazon IVS when you create
-//    a channel, which is then used to authorize streaming. See the StreamKey
-//    endpoints for more information. Treat the stream key like a secret, since
-//    it allows anyone to stream to the channel.
+//   - Stream key — An identifier assigned by Amazon IVS when you create
+//     a channel, which is then used to authorize streaming. See the StreamKey
+//     endpoints for more information. Treat the stream key like a secret, since
+//     it allows anyone to stream to the channel.
 //
-//    * Playback key pair — Video playback may be restricted using playback-authorization
-//    tokens, which use public-key encryption. A playback key pair is the public-private
-//    pair of keys used to sign and validate the playback-authorization token.
-//    See the PlaybackKeyPair endpoints for more information.
+//   - Playback key pair — Video playback may be restricted using playback-authorization
+//     tokens, which use public-key encryption. A playback key pair is the public-private
+//     pair of keys used to sign and validate the playback-authorization token.
+//     See the PlaybackKeyPair endpoints for more information.
 //
-//    * Recording configuration — Stores configuration related to recording
-//    a live stream and where to store the recorded content. Multiple channels
-//    can reference the same recording configuration. See the Recording Configuration
-//    endpoints for more information.
+//   - Recording configuration — Stores configuration related to recording
+//     a live stream and where to store the recorded content. Multiple channels
+//     can reference the same recording configuration. See the Recording Configuration
+//     endpoints for more information.
 //
-// Tagging
+// # Tagging
 //
 // A tag is a metadata label that you assign to an Amazon Web Services resource.
 // A tag comprises a key and a value, both set by you. For example, you might
@@ -69,18 +69,18 @@
 //
 // At most 50 tags can be applied to a resource.
 //
-// Authentication versus Authorization
+// # Authentication versus Authorization
 //
 // Note the differences between these concepts:
 //
-//    * Authentication is about verifying identity. You need to be authenticated
-//    to sign Amazon IVS API requests.
+//   - Authentication is about verifying identity. You need to be authenticated
+//     to sign Amazon IVS API requests.
 //
-//    * Authorization is about granting permissions. You need to be authorized
-//    to view Amazon IVS private channels (https://docs.aws.amazon.com/ivs/latest/userguide/private-channels.html).
-//    (Private channels are channels that are enabled for "playback authorization.")
+//   - Authorization is about granting permissions. You need to be authorized
+//     to view Amazon IVS private channels (https://docs.aws.amazon.com/ivs/latest/userguide/private-channels.html).
+//     (Private channels are channels that are enabled for "playback authorization.")
 //
-// Authentication
+// # Authentication
 //
 // All Amazon IVS API requests must be authenticated with a signature. The Amazon
 // Web Services Command-Line Interface (CLI) and Amazon IVS Player SDKs take
@@ -95,129 +95,129 @@
 //
 // For more information:
 //
-//    * Authentication and generating signatures — See Authenticating Requests
-//    (Amazon Web Services Signature Version 4) (https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html)
-//    in the Amazon Web Services General Reference.
+//   - Authentication and generating signatures — See Authenticating Requests
+//     (Amazon Web Services Signature Version 4) (https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html)
+//     in the Amazon Web Services General Reference.
 //
-//    * Managing Amazon IVS permissions — See Identity and Access Management
-//    (https://docs.aws.amazon.com/ivs/latest/userguide/security-iam.html) on
-//    the Security page of the Amazon IVS User Guide.
+//   - Managing Amazon IVS permissions — See Identity and Access Management
+//     (https://docs.aws.amazon.com/ivs/latest/userguide/security-iam.html) on
+//     the Security page of the Amazon IVS User Guide.
 //
 // Channel Endpoints
 //
-//    * CreateChannel — Creates a new channel and an associated stream key
-//    to start streaming.
+//   - CreateChannel — Creates a new channel and an associated stream key
+//     to start streaming.
 //
-//    * GetChannel — Gets the channel configuration for the specified channel
-//    ARN (Amazon Resource Name).
+//   - GetChannel — Gets the channel configuration for the specified channel
+//     ARN (Amazon Resource Name).
 //
-//    * BatchGetChannel — Performs GetChannel on multiple ARNs simultaneously.
+//   - BatchGetChannel — Performs GetChannel on multiple ARNs simultaneously.
 //
-//    * ListChannels — Gets summary information about all channels in your
-//    account, in the Amazon Web Services region where the API request is processed.
-//    This list can be filtered to match a specified name or recording-configuration
-//    ARN. Filters are mutually exclusive and cannot be used together. If you
-//    try to use both filters, you will get an error (409 Conflict Exception).
+//   - ListChannels — Gets summary information about all channels in your
+//     account, in the Amazon Web Services region where the API request is processed.
+//     This list can be filtered to match a specified name or recording-configuration
+//     ARN. Filters are mutually exclusive and cannot be used together. If you
+//     try to use both filters, you will get an error (409 Conflict Exception).
 //
-//    * UpdateChannel — Updates a channel's configuration. This does not affect
-//    an ongoing stream of this channel. You must stop and restart the stream
-//    for the changes to take effect.
+//   - UpdateChannel — Updates a channel's configuration. This does not affect
+//     an ongoing stream of this channel. You must stop and restart the stream
+//     for the changes to take effect.
 //
-//    * DeleteChannel — Deletes the specified channel.
+//   - DeleteChannel — Deletes the specified channel.
 //
 // StreamKey Endpoints
 //
-//    * CreateStreamKey — Creates a stream key, used to initiate a stream,
-//    for the specified channel ARN.
+//   - CreateStreamKey — Creates a stream key, used to initiate a stream,
+//     for the specified channel ARN.
 //
-//    * GetStreamKey — Gets stream key information for the specified ARN.
+//   - GetStreamKey — Gets stream key information for the specified ARN.
 //
-//    * BatchGetStreamKey — Performs GetStreamKey on multiple ARNs simultaneously.
+//   - BatchGetStreamKey — Performs GetStreamKey on multiple ARNs simultaneously.
 //
-//    * ListStreamKeys — Gets summary information about stream keys for the
-//    specified channel.
+//   - ListStreamKeys — Gets summary information about stream keys for the
+//     specified channel.
 //
-//    * DeleteStreamKey — Deletes the stream key for the specified ARN, so
-//    it can no longer be used to stream.
+//   - DeleteStreamKey — Deletes the stream key for the specified ARN, so
+//     it can no longer be used to stream.
 //
 // Stream Endpoints
 //
-//    * GetStream — Gets information about the active (live) stream on a specified
-//    channel.
+//   - GetStream — Gets information about the active (live) stream on a specified
+//     channel.
 //
-//    * GetStreamSession — Gets metadata on a specified stream.
+//   - GetStreamSession — Gets metadata on a specified stream.
 //
-//    * ListStreams — Gets summary information about live streams in your
-//    account, in the Amazon Web Services region where the API request is processed.
+//   - ListStreams — Gets summary information about live streams in your
+//     account, in the Amazon Web Services region where the API request is processed.
 //
-//    * ListStreamSessions — Gets a summary of current and previous streams
-//    for a specified channel in your account, in the AWS region where the API
-//    request is processed.
+//   - ListStreamSessions — Gets a summary of current and previous streams
+//     for a specified channel in your account, in the AWS region where the API
+//     request is processed.
 //
-//    * StopStream — Disconnects the incoming RTMPS stream for the specified
-//    channel. Can be used in conjunction with DeleteStreamKey to prevent further
-//    streaming to a channel.
+//   - StopStream — Disconnects the incoming RTMPS stream for the specified
+//     channel. Can be used in conjunction with DeleteStreamKey to prevent further
+//     streaming to a channel.
 //
-//    * PutMetadata — Inserts metadata into the active stream of the specified
-//    channel. At most 5 requests per second per channel are allowed, each with
-//    a maximum 1 KB payload. (If 5 TPS is not sufficient for your needs, we
-//    recommend batching your data into a single PutMetadata call.) At most
-//    155 requests per second per account are allowed.
+//   - PutMetadata — Inserts metadata into the active stream of the specified
+//     channel. At most 5 requests per second per channel are allowed, each with
+//     a maximum 1 KB payload. (If 5 TPS is not sufficient for your needs, we
+//     recommend batching your data into a single PutMetadata call.) At most
+//     155 requests per second per account are allowed.
 //
-// PlaybackKeyPair Endpoints
+// # PlaybackKeyPair Endpoints
 //
 // For more information, see Setting Up Private Channels (https://docs.aws.amazon.com/ivs/latest/userguide/private-channels.html)
 // in the Amazon IVS User Guide.
 //
-//    * ImportPlaybackKeyPair — Imports the public portion of a new key pair
-//    and returns its arn and fingerprint. The privateKey can then be used to
-//    generate viewer authorization tokens, to grant viewers access to private
-//    channels (channels enabled for playback authorization).
+//   - ImportPlaybackKeyPair — Imports the public portion of a new key pair
+//     and returns its arn and fingerprint. The privateKey can then be used to
+//     generate viewer authorization tokens, to grant viewers access to private
+//     channels (channels enabled for playback authorization).
 //
-//    * GetPlaybackKeyPair — Gets a specified playback authorization key pair
-//    and returns the arn and fingerprint. The privateKey held by the caller
-//    can be used to generate viewer authorization tokens, to grant viewers
-//    access to private channels.
+//   - GetPlaybackKeyPair — Gets a specified playback authorization key pair
+//     and returns the arn and fingerprint. The privateKey held by the caller
+//     can be used to generate viewer authorization tokens, to grant viewers
+//     access to private channels.
 //
-//    * ListPlaybackKeyPairs — Gets summary information about playback key
-//    pairs.
+//   - ListPlaybackKeyPairs — Gets summary information about playback key
+//     pairs.
 //
-//    * DeletePlaybackKeyPair — Deletes a specified authorization key pair.
-//    This invalidates future viewer tokens generated using the key pair’s
-//    privateKey.
+//   - DeletePlaybackKeyPair — Deletes a specified authorization key pair.
+//     This invalidates future viewer tokens generated using the key pair’s
+//     privateKey.
 //
 // RecordingConfiguration Endpoints
 //
-//    * CreateRecordingConfiguration — Creates a new recording configuration,
-//    used to enable recording to Amazon S3.
+//   - CreateRecordingConfiguration — Creates a new recording configuration,
+//     used to enable recording to Amazon S3.
 //
-//    * GetRecordingConfiguration — Gets the recording-configuration metadata
-//    for the specified ARN.
+//   - GetRecordingConfiguration — Gets the recording-configuration metadata
+//     for the specified ARN.
 //
-//    * ListRecordingConfigurations — Gets summary information about all recording
-//    configurations in your account, in the Amazon Web Services region where
-//    the API request is processed.
+//   - ListRecordingConfigurations — Gets summary information about all recording
+//     configurations in your account, in the Amazon Web Services region where
+//     the API request is processed.
 //
-//    * DeleteRecordingConfiguration — Deletes the recording configuration
-//    for the specified ARN.
+//   - DeleteRecordingConfiguration — Deletes the recording configuration
+//     for the specified ARN.
 //
 // Amazon Web Services Tags Endpoints
 //
-//    * TagResource — Adds or updates tags for the Amazon Web Services resource
-//    with the specified ARN.
+//   - TagResource — Adds or updates tags for the Amazon Web Services resource
+//     with the specified ARN.
 //
-//    * UntagResource — Removes tags from the resource with the specified
-//    ARN.
+//   - UntagResource — Removes tags from the resource with the specified
+//     ARN.
 //
-//    * ListTagsForResource — Gets information about Amazon Web Services tags
-//    for the specified ARN.
+//   - ListTagsForResource — Gets information about Amazon Web Services tags
+//     for the specified ARN.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14 for more information on this service.
 //
 // See ivs package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/ivs/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Interactive Video Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

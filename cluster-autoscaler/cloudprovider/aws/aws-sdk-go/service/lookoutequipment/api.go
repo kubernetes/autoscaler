@@ -29,14 +29,13 @@ const opCreateDataset = "CreateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatasetRequest method.
+//	req, resp := client.CreateDatasetRequest(params)
 //
-//    // Example sending a request using the CreateDatasetRequest method.
-//    req, resp := client.CreateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/CreateDataset
 func (c *LookoutEquipment) CreateDatasetRequest(input *CreateDatasetInput) (req *request.Request, output *CreateDatasetOutput) {
@@ -71,27 +70,28 @@ func (c *LookoutEquipment) CreateDatasetRequest(input *CreateDatasetInput) (req 
 // API operation CreateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ServiceQuotaExceededException
-//   Resource limitations have been exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ServiceQuotaExceededException
+//     Resource limitations have been exceeded.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/CreateDataset
 func (c *LookoutEquipment) CreateDataset(input *CreateDatasetInput) (*CreateDatasetOutput, error) {
@@ -131,14 +131,13 @@ const opCreateInferenceScheduler = "CreateInferenceScheduler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInferenceSchedulerRequest method.
+//	req, resp := client.CreateInferenceSchedulerRequest(params)
 //
-//    // Example sending a request using the CreateInferenceSchedulerRequest method.
-//    req, resp := client.CreateInferenceSchedulerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/CreateInferenceScheduler
 func (c *LookoutEquipment) CreateInferenceSchedulerRequest(input *CreateInferenceSchedulerInput) (req *request.Request, output *CreateInferenceSchedulerOutput) {
@@ -174,31 +173,32 @@ func (c *LookoutEquipment) CreateInferenceSchedulerRequest(input *CreateInferenc
 // API operation CreateInferenceScheduler for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * ServiceQuotaExceededException
-//   Resource limitations have been exceeded.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     Resource limitations have been exceeded.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/CreateInferenceScheduler
 func (c *LookoutEquipment) CreateInferenceScheduler(input *CreateInferenceSchedulerInput) (*CreateInferenceSchedulerOutput, error) {
@@ -238,14 +238,13 @@ const opCreateModel = "CreateModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateModelRequest method.
+//	req, resp := client.CreateModelRequest(params)
 //
-//    // Example sending a request using the CreateModelRequest method.
-//    req, resp := client.CreateModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/CreateModel
 func (c *LookoutEquipment) CreateModelRequest(input *CreateModelInput) (req *request.Request, output *CreateModelOutput) {
@@ -287,31 +286,32 @@ func (c *LookoutEquipment) CreateModelRequest(input *CreateModelInput) (req *req
 // API operation CreateModel for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ServiceQuotaExceededException
-//   Resource limitations have been exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - ServiceQuotaExceededException
+//     Resource limitations have been exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
+//
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/CreateModel
 func (c *LookoutEquipment) CreateModel(input *CreateModelInput) (*CreateModelOutput, error) {
@@ -351,14 +351,13 @@ const opDeleteDataset = "DeleteDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetRequest method.
+//	req, resp := client.DeleteDatasetRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetRequest method.
-//    req, resp := client.DeleteDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DeleteDataset
 func (c *LookoutEquipment) DeleteDatasetRequest(input *DeleteDatasetInput) (req *request.Request, output *DeleteDatasetOutput) {
@@ -394,24 +393,25 @@ func (c *LookoutEquipment) DeleteDatasetRequest(input *DeleteDatasetInput) (req 
 // API operation DeleteDataset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DeleteDataset
 func (c *LookoutEquipment) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
@@ -451,14 +451,13 @@ const opDeleteInferenceScheduler = "DeleteInferenceScheduler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInferenceSchedulerRequest method.
+//	req, resp := client.DeleteInferenceSchedulerRequest(params)
 //
-//    // Example sending a request using the DeleteInferenceSchedulerRequest method.
-//    req, resp := client.DeleteInferenceSchedulerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DeleteInferenceScheduler
 func (c *LookoutEquipment) DeleteInferenceSchedulerRequest(input *DeleteInferenceSchedulerInput) (req *request.Request, output *DeleteInferenceSchedulerOutput) {
@@ -491,28 +490,29 @@ func (c *LookoutEquipment) DeleteInferenceSchedulerRequest(input *DeleteInferenc
 // API operation DeleteInferenceScheduler for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DeleteInferenceScheduler
 func (c *LookoutEquipment) DeleteInferenceScheduler(input *DeleteInferenceSchedulerInput) (*DeleteInferenceSchedulerOutput, error) {
@@ -552,14 +552,13 @@ const opDeleteModel = "DeleteModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteModelRequest method.
+//	req, resp := client.DeleteModelRequest(params)
 //
-//    // Example sending a request using the DeleteModelRequest method.
-//    req, resp := client.DeleteModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DeleteModel
 func (c *LookoutEquipment) DeleteModelRequest(input *DeleteModelInput) (req *request.Request, output *DeleteModelOutput) {
@@ -593,24 +592,25 @@ func (c *LookoutEquipment) DeleteModelRequest(input *DeleteModelInput) (req *req
 // API operation DeleteModel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
+//
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DeleteModel
 func (c *LookoutEquipment) DeleteModel(input *DeleteModelInput) (*DeleteModelOutput, error) {
@@ -650,14 +650,13 @@ const opDescribeDataIngestionJob = "DescribeDataIngestionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataIngestionJobRequest method.
+//	req, resp := client.DescribeDataIngestionJobRequest(params)
 //
-//    // Example sending a request using the DescribeDataIngestionJobRequest method.
-//    req, resp := client.DescribeDataIngestionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeDataIngestionJob
 func (c *LookoutEquipment) DescribeDataIngestionJobRequest(input *DescribeDataIngestionJobInput) (req *request.Request, output *DescribeDataIngestionJobOutput) {
@@ -689,24 +688,25 @@ func (c *LookoutEquipment) DescribeDataIngestionJobRequest(input *DescribeDataIn
 // API operation DescribeDataIngestionJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeDataIngestionJob
 func (c *LookoutEquipment) DescribeDataIngestionJob(input *DescribeDataIngestionJobInput) (*DescribeDataIngestionJobOutput, error) {
@@ -746,14 +746,13 @@ const opDescribeDataset = "DescribeDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDatasetRequest method.
+//	req, resp := client.DescribeDatasetRequest(params)
 //
-//    // Example sending a request using the DescribeDatasetRequest method.
-//    req, resp := client.DescribeDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeDataset
 func (c *LookoutEquipment) DescribeDatasetRequest(input *DescribeDatasetInput) (req *request.Request, output *DescribeDatasetOutput) {
@@ -785,24 +784,25 @@ func (c *LookoutEquipment) DescribeDatasetRequest(input *DescribeDatasetInput) (
 // API operation DescribeDataset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeDataset
 func (c *LookoutEquipment) DescribeDataset(input *DescribeDatasetInput) (*DescribeDatasetOutput, error) {
@@ -842,14 +842,13 @@ const opDescribeInferenceScheduler = "DescribeInferenceScheduler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInferenceSchedulerRequest method.
+//	req, resp := client.DescribeInferenceSchedulerRequest(params)
 //
-//    // Example sending a request using the DescribeInferenceSchedulerRequest method.
-//    req, resp := client.DescribeInferenceSchedulerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeInferenceScheduler
 func (c *LookoutEquipment) DescribeInferenceSchedulerRequest(input *DescribeInferenceSchedulerInput) (req *request.Request, output *DescribeInferenceSchedulerOutput) {
@@ -881,24 +880,25 @@ func (c *LookoutEquipment) DescribeInferenceSchedulerRequest(input *DescribeInfe
 // API operation DescribeInferenceScheduler for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeInferenceScheduler
 func (c *LookoutEquipment) DescribeInferenceScheduler(input *DescribeInferenceSchedulerInput) (*DescribeInferenceSchedulerOutput, error) {
@@ -938,14 +938,13 @@ const opDescribeModel = "DescribeModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeModelRequest method.
+//	req, resp := client.DescribeModelRequest(params)
 //
-//    // Example sending a request using the DescribeModelRequest method.
-//    req, resp := client.DescribeModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeModel
 func (c *LookoutEquipment) DescribeModelRequest(input *DescribeModelInput) (req *request.Request, output *DescribeModelOutput) {
@@ -978,24 +977,25 @@ func (c *LookoutEquipment) DescribeModelRequest(input *DescribeModelInput) (req 
 // API operation DescribeModel for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/DescribeModel
 func (c *LookoutEquipment) DescribeModel(input *DescribeModelInput) (*DescribeModelOutput, error) {
@@ -1035,14 +1035,13 @@ const opListDataIngestionJobs = "ListDataIngestionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataIngestionJobsRequest method.
+//	req, resp := client.ListDataIngestionJobsRequest(params)
 //
-//    // Example sending a request using the ListDataIngestionJobsRequest method.
-//    req, resp := client.ListDataIngestionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListDataIngestionJobs
 func (c *LookoutEquipment) ListDataIngestionJobsRequest(input *ListDataIngestionJobsInput) (req *request.Request, output *ListDataIngestionJobsOutput) {
@@ -1080,20 +1079,21 @@ func (c *LookoutEquipment) ListDataIngestionJobsRequest(input *ListDataIngestion
 // API operation ListDataIngestionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListDataIngestionJobs
 func (c *LookoutEquipment) ListDataIngestionJobs(input *ListDataIngestionJobsInput) (*ListDataIngestionJobsOutput, error) {
@@ -1125,15 +1125,14 @@ func (c *LookoutEquipment) ListDataIngestionJobsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDataIngestionJobs operation.
-//    pageNum := 0
-//    err := client.ListDataIngestionJobsPages(params,
-//        func(page *lookoutequipment.ListDataIngestionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDataIngestionJobs operation.
+//	pageNum := 0
+//	err := client.ListDataIngestionJobsPages(params,
+//	    func(page *lookoutequipment.ListDataIngestionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutEquipment) ListDataIngestionJobsPages(input *ListDataIngestionJobsInput, fn func(*ListDataIngestionJobsOutput, bool) bool) error {
 	return c.ListDataIngestionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1185,14 +1184,13 @@ const opListDatasets = "ListDatasets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetsRequest method.
+//	req, resp := client.ListDatasetsRequest(params)
 //
-//    // Example sending a request using the ListDatasetsRequest method.
-//    req, resp := client.ListDatasetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListDatasets
 func (c *LookoutEquipment) ListDatasetsRequest(input *ListDatasetsInput) (req *request.Request, output *ListDatasetsOutput) {
@@ -1230,20 +1228,21 @@ func (c *LookoutEquipment) ListDatasetsRequest(input *ListDatasetsInput) (req *r
 // API operation ListDatasets for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListDatasets
 func (c *LookoutEquipment) ListDatasets(input *ListDatasetsInput) (*ListDatasetsOutput, error) {
@@ -1275,15 +1274,14 @@ func (c *LookoutEquipment) ListDatasetsWithContext(ctx aws.Context, input *ListD
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatasets operation.
-//    pageNum := 0
-//    err := client.ListDatasetsPages(params,
-//        func(page *lookoutequipment.ListDatasetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatasets operation.
+//	pageNum := 0
+//	err := client.ListDatasetsPages(params,
+//	    func(page *lookoutequipment.ListDatasetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutEquipment) ListDatasetsPages(input *ListDatasetsInput, fn func(*ListDatasetsOutput, bool) bool) error {
 	return c.ListDatasetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1335,14 +1333,13 @@ const opListInferenceExecutions = "ListInferenceExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInferenceExecutionsRequest method.
+//	req, resp := client.ListInferenceExecutionsRequest(params)
 //
-//    // Example sending a request using the ListInferenceExecutionsRequest method.
-//    req, resp := client.ListInferenceExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListInferenceExecutions
 func (c *LookoutEquipment) ListInferenceExecutionsRequest(input *ListInferenceExecutionsInput) (req *request.Request, output *ListInferenceExecutionsOutput) {
@@ -1380,24 +1377,25 @@ func (c *LookoutEquipment) ListInferenceExecutionsRequest(input *ListInferenceEx
 // API operation ListInferenceExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListInferenceExecutions
 func (c *LookoutEquipment) ListInferenceExecutions(input *ListInferenceExecutionsInput) (*ListInferenceExecutionsOutput, error) {
@@ -1429,15 +1427,14 @@ func (c *LookoutEquipment) ListInferenceExecutionsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInferenceExecutions operation.
-//    pageNum := 0
-//    err := client.ListInferenceExecutionsPages(params,
-//        func(page *lookoutequipment.ListInferenceExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInferenceExecutions operation.
+//	pageNum := 0
+//	err := client.ListInferenceExecutionsPages(params,
+//	    func(page *lookoutequipment.ListInferenceExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutEquipment) ListInferenceExecutionsPages(input *ListInferenceExecutionsInput, fn func(*ListInferenceExecutionsOutput, bool) bool) error {
 	return c.ListInferenceExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1489,14 +1486,13 @@ const opListInferenceSchedulers = "ListInferenceSchedulers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInferenceSchedulersRequest method.
+//	req, resp := client.ListInferenceSchedulersRequest(params)
 //
-//    // Example sending a request using the ListInferenceSchedulersRequest method.
-//    req, resp := client.ListInferenceSchedulersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListInferenceSchedulers
 func (c *LookoutEquipment) ListInferenceSchedulersRequest(input *ListInferenceSchedulersInput) (req *request.Request, output *ListInferenceSchedulersOutput) {
@@ -1534,20 +1530,21 @@ func (c *LookoutEquipment) ListInferenceSchedulersRequest(input *ListInferenceSc
 // API operation ListInferenceSchedulers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListInferenceSchedulers
 func (c *LookoutEquipment) ListInferenceSchedulers(input *ListInferenceSchedulersInput) (*ListInferenceSchedulersOutput, error) {
@@ -1579,15 +1576,14 @@ func (c *LookoutEquipment) ListInferenceSchedulersWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInferenceSchedulers operation.
-//    pageNum := 0
-//    err := client.ListInferenceSchedulersPages(params,
-//        func(page *lookoutequipment.ListInferenceSchedulersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInferenceSchedulers operation.
+//	pageNum := 0
+//	err := client.ListInferenceSchedulersPages(params,
+//	    func(page *lookoutequipment.ListInferenceSchedulersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutEquipment) ListInferenceSchedulersPages(input *ListInferenceSchedulersInput, fn func(*ListInferenceSchedulersOutput, bool) bool) error {
 	return c.ListInferenceSchedulersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1639,14 +1635,13 @@ const opListModels = "ListModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListModelsRequest method.
+//	req, resp := client.ListModelsRequest(params)
 //
-//    // Example sending a request using the ListModelsRequest method.
-//    req, resp := client.ListModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListModels
 func (c *LookoutEquipment) ListModelsRequest(input *ListModelsInput) (req *request.Request, output *ListModelsOutput) {
@@ -1684,20 +1679,21 @@ func (c *LookoutEquipment) ListModelsRequest(input *ListModelsInput) (req *reque
 // API operation ListModels for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListModels
 func (c *LookoutEquipment) ListModels(input *ListModelsInput) (*ListModelsOutput, error) {
@@ -1729,15 +1725,14 @@ func (c *LookoutEquipment) ListModelsWithContext(ctx aws.Context, input *ListMod
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListModels operation.
-//    pageNum := 0
-//    err := client.ListModelsPages(params,
-//        func(page *lookoutequipment.ListModelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListModels operation.
+//	pageNum := 0
+//	err := client.ListModelsPages(params,
+//	    func(page *lookoutequipment.ListModelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutEquipment) ListModelsPages(input *ListModelsInput, fn func(*ListModelsOutput, bool) bool) error {
 	return c.ListModelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1789,14 +1784,13 @@ const opListSensorStatistics = "ListSensorStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSensorStatisticsRequest method.
+//	req, resp := client.ListSensorStatisticsRequest(params)
 //
-//    // Example sending a request using the ListSensorStatisticsRequest method.
-//    req, resp := client.ListSensorStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListSensorStatistics
 func (c *LookoutEquipment) ListSensorStatisticsRequest(input *ListSensorStatisticsInput) (req *request.Request, output *ListSensorStatisticsOutput) {
@@ -1835,24 +1829,25 @@ func (c *LookoutEquipment) ListSensorStatisticsRequest(input *ListSensorStatisti
 // API operation ListSensorStatistics for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListSensorStatistics
 func (c *LookoutEquipment) ListSensorStatistics(input *ListSensorStatisticsInput) (*ListSensorStatisticsOutput, error) {
@@ -1884,15 +1879,14 @@ func (c *LookoutEquipment) ListSensorStatisticsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSensorStatistics operation.
-//    pageNum := 0
-//    err := client.ListSensorStatisticsPages(params,
-//        func(page *lookoutequipment.ListSensorStatisticsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSensorStatistics operation.
+//	pageNum := 0
+//	err := client.ListSensorStatisticsPages(params,
+//	    func(page *lookoutequipment.ListSensorStatisticsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutEquipment) ListSensorStatisticsPages(input *ListSensorStatisticsInput, fn func(*ListSensorStatisticsOutput, bool) bool) error {
 	return c.ListSensorStatisticsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1944,14 +1938,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListTagsForResource
 func (c *LookoutEquipment) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1982,24 +1975,25 @@ func (c *LookoutEquipment) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/ListTagsForResource
 func (c *LookoutEquipment) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2039,14 +2033,13 @@ const opStartDataIngestionJob = "StartDataIngestionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDataIngestionJobRequest method.
+//	req, resp := client.StartDataIngestionJobRequest(params)
 //
-//    // Example sending a request using the StartDataIngestionJobRequest method.
-//    req, resp := client.StartDataIngestionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/StartDataIngestionJob
 func (c *LookoutEquipment) StartDataIngestionJobRequest(input *StartDataIngestionJobInput) (req *request.Request, output *StartDataIngestionJobOutput) {
@@ -2078,31 +2071,32 @@ func (c *LookoutEquipment) StartDataIngestionJobRequest(input *StartDataIngestio
 // API operation StartDataIngestionJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ServiceQuotaExceededException
-//   Resource limitations have been exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ServiceQuotaExceededException
+//     Resource limitations have been exceeded.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/StartDataIngestionJob
 func (c *LookoutEquipment) StartDataIngestionJob(input *StartDataIngestionJobInput) (*StartDataIngestionJobOutput, error) {
@@ -2142,14 +2136,13 @@ const opStartInferenceScheduler = "StartInferenceScheduler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartInferenceSchedulerRequest method.
+//	req, resp := client.StartInferenceSchedulerRequest(params)
 //
-//    // Example sending a request using the StartInferenceSchedulerRequest method.
-//    req, resp := client.StartInferenceSchedulerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/StartInferenceScheduler
 func (c *LookoutEquipment) StartInferenceSchedulerRequest(input *StartInferenceSchedulerInput) (req *request.Request, output *StartInferenceSchedulerOutput) {
@@ -2180,28 +2173,29 @@ func (c *LookoutEquipment) StartInferenceSchedulerRequest(input *StartInferenceS
 // API operation StartInferenceScheduler for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/StartInferenceScheduler
 func (c *LookoutEquipment) StartInferenceScheduler(input *StartInferenceSchedulerInput) (*StartInferenceSchedulerOutput, error) {
@@ -2241,14 +2235,13 @@ const opStopInferenceScheduler = "StopInferenceScheduler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopInferenceSchedulerRequest method.
+//	req, resp := client.StopInferenceSchedulerRequest(params)
 //
-//    // Example sending a request using the StopInferenceSchedulerRequest method.
-//    req, resp := client.StopInferenceSchedulerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/StopInferenceScheduler
 func (c *LookoutEquipment) StopInferenceSchedulerRequest(input *StopInferenceSchedulerInput) (req *request.Request, output *StopInferenceSchedulerOutput) {
@@ -2279,28 +2272,29 @@ func (c *LookoutEquipment) StopInferenceSchedulerRequest(input *StopInferenceSch
 // API operation StopInferenceScheduler for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/StopInferenceScheduler
 func (c *LookoutEquipment) StopInferenceScheduler(input *StopInferenceSchedulerInput) (*StopInferenceSchedulerOutput, error) {
@@ -2340,14 +2334,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/TagResource
 func (c *LookoutEquipment) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2383,27 +2376,28 @@ func (c *LookoutEquipment) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ServiceQuotaExceededException
-//   Resource limitations have been exceeded.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     Resource limitations have been exceeded.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/TagResource
 func (c *LookoutEquipment) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2443,14 +2437,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/UntagResource
 func (c *LookoutEquipment) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2483,24 +2476,25 @@ func (c *LookoutEquipment) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/UntagResource
 func (c *LookoutEquipment) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2540,14 +2534,13 @@ const opUpdateInferenceScheduler = "UpdateInferenceScheduler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInferenceSchedulerRequest method.
+//	req, resp := client.UpdateInferenceSchedulerRequest(params)
 //
-//    // Example sending a request using the UpdateInferenceSchedulerRequest method.
-//    req, resp := client.UpdateInferenceSchedulerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/UpdateInferenceScheduler
 func (c *LookoutEquipment) UpdateInferenceSchedulerRequest(input *UpdateInferenceSchedulerInput) (req *request.Request, output *UpdateInferenceSchedulerOutput) {
@@ -2579,28 +2572,29 @@ func (c *LookoutEquipment) UpdateInferenceSchedulerRequest(input *UpdateInferenc
 // API operation UpdateInferenceScheduler for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
 //
-//   * ResourceNotFoundException
-//   The resource requested could not be found. Verify the resource ID and retry
-//   your request.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ValidationException
-//   The input fails to satisfy constraints specified by Amazon Lookout for Equipment
-//   or a related AWS service that's being utilized.
+//   - ResourceNotFoundException
+//     The resource requested could not be found. Verify the resource ID and retry
+//     your request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy constraints specified by Amazon Lookout for Equipment
+//     or a related AWS service that's being utilized.
 //
-//   * AccessDeniedException
-//   The request could not be completed because you do not have access to the
-//   resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   Processing of the request has failed because of an unknown error, exception
-//   or failure.
+//   - AccessDeniedException
+//     The request could not be completed because you do not have access to the
+//     resource.
+//
+//   - InternalServerException
+//     Processing of the request has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutequipment-2020-12-15/UpdateInferenceScheduler
 func (c *LookoutEquipment) UpdateInferenceScheduler(input *UpdateInferenceSchedulerInput) (*UpdateInferenceSchedulerOutput, error) {

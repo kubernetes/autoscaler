@@ -26,14 +26,13 @@ const opBuildSuggesters = "BuildSuggesters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BuildSuggestersRequest method.
+//	req, resp := client.BuildSuggestersRequest(params)
 //
-//    // Example sending a request using the BuildSuggestersRequest method.
-//    req, resp := client.BuildSuggestersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) BuildSuggestersRequest(input *BuildSuggestersInput) (req *request.Request, output *BuildSuggestersOutput) {
 	op := &request.Operation{
 		Name:       opBuildSuggesters,
@@ -64,20 +63,20 @@ func (c *CloudSearch) BuildSuggestersRequest(input *BuildSuggestersInput) (req *
 // API operation BuildSuggesters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) BuildSuggesters(input *BuildSuggestersInput) (*BuildSuggestersOutput, error) {
 	req, out := c.BuildSuggestersRequest(input)
 	return out, req.Send()
@@ -115,14 +114,13 @@ const opCreateDomain = "CreateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainRequest method.
+//	req, resp := client.CreateDomainRequest(params)
 //
-//    // Example sending a request using the CreateDomainRequest method.
-//    req, resp := client.CreateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) CreateDomainRequest(input *CreateDomainInput) (req *request.Request, output *CreateDomainOutput) {
 	op := &request.Operation{
 		Name:       opCreateDomain,
@@ -153,23 +151,23 @@ func (c *CloudSearch) CreateDomainRequest(input *CreateDomainInput) (req *reques
 // API operation CreateDomain for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceAlreadyExistsException "ResourceAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceAlreadyExistsException "ResourceAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) CreateDomain(input *CreateDomainInput) (*CreateDomainOutput, error) {
 	req, out := c.CreateDomainRequest(input)
 	return out, req.Send()
@@ -207,14 +205,13 @@ const opDefineAnalysisScheme = "DefineAnalysisScheme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DefineAnalysisSchemeRequest method.
+//	req, resp := client.DefineAnalysisSchemeRequest(params)
 //
-//    // Example sending a request using the DefineAnalysisSchemeRequest method.
-//    req, resp := client.DefineAnalysisSchemeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DefineAnalysisSchemeRequest(input *DefineAnalysisSchemeInput) (req *request.Request, output *DefineAnalysisSchemeOutput) {
 	op := &request.Operation{
 		Name:       opDefineAnalysisScheme,
@@ -246,26 +243,26 @@ func (c *CloudSearch) DefineAnalysisSchemeRequest(input *DefineAnalysisSchemeInp
 // API operation DefineAnalysisScheme for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DefineAnalysisScheme(input *DefineAnalysisSchemeInput) (*DefineAnalysisSchemeOutput, error) {
 	req, out := c.DefineAnalysisSchemeRequest(input)
 	return out, req.Send()
@@ -303,14 +300,13 @@ const opDefineExpression = "DefineExpression"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DefineExpressionRequest method.
+//	req, resp := client.DefineExpressionRequest(params)
 //
-//    // Example sending a request using the DefineExpressionRequest method.
-//    req, resp := client.DefineExpressionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DefineExpressionRequest(input *DefineExpressionInput) (req *request.Request, output *DefineExpressionOutput) {
 	op := &request.Operation{
 		Name:       opDefineExpression,
@@ -342,26 +338,26 @@ func (c *CloudSearch) DefineExpressionRequest(input *DefineExpressionInput) (req
 // API operation DefineExpression for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DefineExpression(input *DefineExpressionInput) (*DefineExpressionOutput, error) {
 	req, out := c.DefineExpressionRequest(input)
 	return out, req.Send()
@@ -399,14 +395,13 @@ const opDefineIndexField = "DefineIndexField"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DefineIndexFieldRequest method.
+//	req, resp := client.DefineIndexFieldRequest(params)
 //
-//    // Example sending a request using the DefineIndexFieldRequest method.
-//    req, resp := client.DefineIndexFieldRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DefineIndexFieldRequest(input *DefineIndexFieldInput) (req *request.Request, output *DefineIndexFieldOutput) {
 	op := &request.Operation{
 		Name:       opDefineIndexField,
@@ -442,26 +437,26 @@ func (c *CloudSearch) DefineIndexFieldRequest(input *DefineIndexFieldInput) (req
 // API operation DefineIndexField for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DefineIndexField(input *DefineIndexFieldInput) (*DefineIndexFieldOutput, error) {
 	req, out := c.DefineIndexFieldRequest(input)
 	return out, req.Send()
@@ -499,14 +494,13 @@ const opDefineSuggester = "DefineSuggester"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DefineSuggesterRequest method.
+//	req, resp := client.DefineSuggesterRequest(params)
 //
-//    // Example sending a request using the DefineSuggesterRequest method.
-//    req, resp := client.DefineSuggesterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DefineSuggesterRequest(input *DefineSuggesterInput) (req *request.Request, output *DefineSuggesterOutput) {
 	op := &request.Operation{
 		Name:       opDefineSuggester,
@@ -540,26 +534,26 @@ func (c *CloudSearch) DefineSuggesterRequest(input *DefineSuggesterInput) (req *
 // API operation DefineSuggester for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DefineSuggester(input *DefineSuggesterInput) (*DefineSuggesterOutput, error) {
 	req, out := c.DefineSuggesterRequest(input)
 	return out, req.Send()
@@ -597,14 +591,13 @@ const opDeleteAnalysisScheme = "DeleteAnalysisScheme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAnalysisSchemeRequest method.
+//	req, resp := client.DeleteAnalysisSchemeRequest(params)
 //
-//    // Example sending a request using the DeleteAnalysisSchemeRequest method.
-//    req, resp := client.DeleteAnalysisSchemeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DeleteAnalysisSchemeRequest(input *DeleteAnalysisSchemeInput) (req *request.Request, output *DeleteAnalysisSchemeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAnalysisScheme,
@@ -635,23 +628,23 @@ func (c *CloudSearch) DeleteAnalysisSchemeRequest(input *DeleteAnalysisSchemeInp
 // API operation DeleteAnalysisScheme for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DeleteAnalysisScheme(input *DeleteAnalysisSchemeInput) (*DeleteAnalysisSchemeOutput, error) {
 	req, out := c.DeleteAnalysisSchemeRequest(input)
 	return out, req.Send()
@@ -689,14 +682,13 @@ const opDeleteDomain = "DeleteDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainRequest method.
+//	req, resp := client.DeleteDomainRequest(params)
 //
-//    // Example sending a request using the DeleteDomainRequest method.
-//    req, resp := client.DeleteDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DeleteDomainRequest(input *DeleteDomainInput) (req *request.Request, output *DeleteDomainOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDomain,
@@ -728,13 +720,13 @@ func (c *CloudSearch) DeleteDomainRequest(input *DeleteDomainInput) (req *reques
 // API operation DeleteDomain for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 func (c *CloudSearch) DeleteDomain(input *DeleteDomainInput) (*DeleteDomainOutput, error) {
 	req, out := c.DeleteDomainRequest(input)
 	return out, req.Send()
@@ -772,14 +764,13 @@ const opDeleteExpression = "DeleteExpression"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteExpressionRequest method.
+//	req, resp := client.DeleteExpressionRequest(params)
 //
-//    // Example sending a request using the DeleteExpressionRequest method.
-//    req, resp := client.DeleteExpressionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DeleteExpressionRequest(input *DeleteExpressionInput) (req *request.Request, output *DeleteExpressionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteExpression,
@@ -810,23 +801,23 @@ func (c *CloudSearch) DeleteExpressionRequest(input *DeleteExpressionInput) (req
 // API operation DeleteExpression for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DeleteExpression(input *DeleteExpressionInput) (*DeleteExpressionOutput, error) {
 	req, out := c.DeleteExpressionRequest(input)
 	return out, req.Send()
@@ -864,14 +855,13 @@ const opDeleteIndexField = "DeleteIndexField"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIndexFieldRequest method.
+//	req, resp := client.DeleteIndexFieldRequest(params)
 //
-//    // Example sending a request using the DeleteIndexFieldRequest method.
-//    req, resp := client.DeleteIndexFieldRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DeleteIndexFieldRequest(input *DeleteIndexFieldInput) (req *request.Request, output *DeleteIndexFieldOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIndexField,
@@ -902,23 +892,23 @@ func (c *CloudSearch) DeleteIndexFieldRequest(input *DeleteIndexFieldInput) (req
 // API operation DeleteIndexField for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DeleteIndexField(input *DeleteIndexFieldInput) (*DeleteIndexFieldOutput, error) {
 	req, out := c.DeleteIndexFieldRequest(input)
 	return out, req.Send()
@@ -956,14 +946,13 @@ const opDeleteSuggester = "DeleteSuggester"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSuggesterRequest method.
+//	req, resp := client.DeleteSuggesterRequest(params)
 //
-//    // Example sending a request using the DeleteSuggesterRequest method.
-//    req, resp := client.DeleteSuggesterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DeleteSuggesterRequest(input *DeleteSuggesterInput) (req *request.Request, output *DeleteSuggesterOutput) {
 	op := &request.Operation{
 		Name:       opDeleteSuggester,
@@ -994,23 +983,23 @@ func (c *CloudSearch) DeleteSuggesterRequest(input *DeleteSuggesterInput) (req *
 // API operation DeleteSuggester for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) DeleteSuggester(input *DeleteSuggesterInput) (*DeleteSuggesterOutput, error) {
 	req, out := c.DeleteSuggesterRequest(input)
 	return out, req.Send()
@@ -1048,14 +1037,13 @@ const opDescribeAnalysisSchemes = "DescribeAnalysisSchemes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAnalysisSchemesRequest method.
+//	req, resp := client.DescribeAnalysisSchemesRequest(params)
 //
-//    // Example sending a request using the DescribeAnalysisSchemesRequest method.
-//    req, resp := client.DescribeAnalysisSchemesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeAnalysisSchemesRequest(input *DescribeAnalysisSchemesInput) (req *request.Request, output *DescribeAnalysisSchemesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAnalysisSchemes,
@@ -1090,17 +1078,17 @@ func (c *CloudSearch) DescribeAnalysisSchemesRequest(input *DescribeAnalysisSche
 // API operation DescribeAnalysisSchemes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 func (c *CloudSearch) DescribeAnalysisSchemes(input *DescribeAnalysisSchemesInput) (*DescribeAnalysisSchemesOutput, error) {
 	req, out := c.DescribeAnalysisSchemesRequest(input)
 	return out, req.Send()
@@ -1138,14 +1126,13 @@ const opDescribeAvailabilityOptions = "DescribeAvailabilityOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAvailabilityOptionsRequest method.
+//	req, resp := client.DescribeAvailabilityOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeAvailabilityOptionsRequest method.
-//    req, resp := client.DescribeAvailabilityOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeAvailabilityOptionsRequest(input *DescribeAvailabilityOptionsInput) (req *request.Request, output *DescribeAvailabilityOptionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAvailabilityOptions,
@@ -1178,26 +1165,26 @@ func (c *CloudSearch) DescribeAvailabilityOptionsRequest(input *DescribeAvailabi
 // API operation DescribeAvailabilityOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeDisabledOperationException "DisabledAction"
-//   The request was rejected because it attempted an operation which is not enabled.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeDisabledOperationException "DisabledAction"
+//     The request was rejected because it attempted an operation which is not enabled.
 func (c *CloudSearch) DescribeAvailabilityOptions(input *DescribeAvailabilityOptionsInput) (*DescribeAvailabilityOptionsOutput, error) {
 	req, out := c.DescribeAvailabilityOptionsRequest(input)
 	return out, req.Send()
@@ -1235,14 +1222,13 @@ const opDescribeDomainEndpointOptions = "DescribeDomainEndpointOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainEndpointOptionsRequest method.
+//	req, resp := client.DescribeDomainEndpointOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeDomainEndpointOptionsRequest method.
-//    req, resp := client.DescribeDomainEndpointOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeDomainEndpointOptionsRequest(input *DescribeDomainEndpointOptionsInput) (req *request.Request, output *DescribeDomainEndpointOptionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDomainEndpointOptions,
@@ -1274,23 +1260,23 @@ func (c *CloudSearch) DescribeDomainEndpointOptionsRequest(input *DescribeDomain
 // API operation DescribeDomainEndpointOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeDisabledOperationException "DisabledAction"
-//   The request was rejected because it attempted an operation which is not enabled.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeDisabledOperationException "DisabledAction"
+//     The request was rejected because it attempted an operation which is not enabled.
 func (c *CloudSearch) DescribeDomainEndpointOptions(input *DescribeDomainEndpointOptionsInput) (*DescribeDomainEndpointOptionsOutput, error) {
 	req, out := c.DescribeDomainEndpointOptionsRequest(input)
 	return out, req.Send()
@@ -1328,14 +1314,13 @@ const opDescribeDomains = "DescribeDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainsRequest method.
+//	req, resp := client.DescribeDomainsRequest(params)
 //
-//    // Example sending a request using the DescribeDomainsRequest method.
-//    req, resp := client.DescribeDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeDomainsRequest(input *DescribeDomainsInput) (req *request.Request, output *DescribeDomainsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDomains,
@@ -1369,13 +1354,13 @@ func (c *CloudSearch) DescribeDomainsRequest(input *DescribeDomainsInput) (req *
 // API operation DescribeDomains for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 func (c *CloudSearch) DescribeDomains(input *DescribeDomainsInput) (*DescribeDomainsOutput, error) {
 	req, out := c.DescribeDomainsRequest(input)
 	return out, req.Send()
@@ -1413,14 +1398,13 @@ const opDescribeExpressions = "DescribeExpressions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExpressionsRequest method.
+//	req, resp := client.DescribeExpressionsRequest(params)
 //
-//    // Example sending a request using the DescribeExpressionsRequest method.
-//    req, resp := client.DescribeExpressionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeExpressionsRequest(input *DescribeExpressionsInput) (req *request.Request, output *DescribeExpressionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeExpressions,
@@ -1454,17 +1438,17 @@ func (c *CloudSearch) DescribeExpressionsRequest(input *DescribeExpressionsInput
 // API operation DescribeExpressions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 func (c *CloudSearch) DescribeExpressions(input *DescribeExpressionsInput) (*DescribeExpressionsOutput, error) {
 	req, out := c.DescribeExpressionsRequest(input)
 	return out, req.Send()
@@ -1502,14 +1486,13 @@ const opDescribeIndexFields = "DescribeIndexFields"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIndexFieldsRequest method.
+//	req, resp := client.DescribeIndexFieldsRequest(params)
 //
-//    // Example sending a request using the DescribeIndexFieldsRequest method.
-//    req, resp := client.DescribeIndexFieldsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeIndexFieldsRequest(input *DescribeIndexFieldsInput) (req *request.Request, output *DescribeIndexFieldsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeIndexFields,
@@ -1543,17 +1526,17 @@ func (c *CloudSearch) DescribeIndexFieldsRequest(input *DescribeIndexFieldsInput
 // API operation DescribeIndexFields for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 func (c *CloudSearch) DescribeIndexFields(input *DescribeIndexFieldsInput) (*DescribeIndexFieldsOutput, error) {
 	req, out := c.DescribeIndexFieldsRequest(input)
 	return out, req.Send()
@@ -1591,14 +1574,13 @@ const opDescribeScalingParameters = "DescribeScalingParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalingParametersRequest method.
+//	req, resp := client.DescribeScalingParametersRequest(params)
 //
-//    // Example sending a request using the DescribeScalingParametersRequest method.
-//    req, resp := client.DescribeScalingParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeScalingParametersRequest(input *DescribeScalingParametersInput) (req *request.Request, output *DescribeScalingParametersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeScalingParameters,
@@ -1630,17 +1612,17 @@ func (c *CloudSearch) DescribeScalingParametersRequest(input *DescribeScalingPar
 // API operation DescribeScalingParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 func (c *CloudSearch) DescribeScalingParameters(input *DescribeScalingParametersInput) (*DescribeScalingParametersOutput, error) {
 	req, out := c.DescribeScalingParametersRequest(input)
 	return out, req.Send()
@@ -1678,14 +1660,13 @@ const opDescribeServiceAccessPolicies = "DescribeServiceAccessPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServiceAccessPoliciesRequest method.
+//	req, resp := client.DescribeServiceAccessPoliciesRequest(params)
 //
-//    // Example sending a request using the DescribeServiceAccessPoliciesRequest method.
-//    req, resp := client.DescribeServiceAccessPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeServiceAccessPoliciesRequest(input *DescribeServiceAccessPoliciesInput) (req *request.Request, output *DescribeServiceAccessPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeServiceAccessPolicies,
@@ -1719,17 +1700,17 @@ func (c *CloudSearch) DescribeServiceAccessPoliciesRequest(input *DescribeServic
 // API operation DescribeServiceAccessPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 func (c *CloudSearch) DescribeServiceAccessPolicies(input *DescribeServiceAccessPoliciesInput) (*DescribeServiceAccessPoliciesOutput, error) {
 	req, out := c.DescribeServiceAccessPoliciesRequest(input)
 	return out, req.Send()
@@ -1767,14 +1748,13 @@ const opDescribeSuggesters = "DescribeSuggesters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSuggestersRequest method.
+//	req, resp := client.DescribeSuggestersRequest(params)
 //
-//    // Example sending a request using the DescribeSuggestersRequest method.
-//    req, resp := client.DescribeSuggestersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) DescribeSuggestersRequest(input *DescribeSuggestersInput) (req *request.Request, output *DescribeSuggestersOutput) {
 	op := &request.Operation{
 		Name:       opDescribeSuggesters,
@@ -1809,17 +1789,17 @@ func (c *CloudSearch) DescribeSuggestersRequest(input *DescribeSuggestersInput) 
 // API operation DescribeSuggesters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 func (c *CloudSearch) DescribeSuggesters(input *DescribeSuggestersInput) (*DescribeSuggestersOutput, error) {
 	req, out := c.DescribeSuggestersRequest(input)
 	return out, req.Send()
@@ -1857,14 +1837,13 @@ const opIndexDocuments = "IndexDocuments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the IndexDocumentsRequest method.
+//	req, resp := client.IndexDocumentsRequest(params)
 //
-//    // Example sending a request using the IndexDocumentsRequest method.
-//    req, resp := client.IndexDocumentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) IndexDocumentsRequest(input *IndexDocumentsInput) (req *request.Request, output *IndexDocumentsOutput) {
 	op := &request.Operation{
 		Name:       opIndexDocuments,
@@ -1895,20 +1874,20 @@ func (c *CloudSearch) IndexDocumentsRequest(input *IndexDocumentsInput) (req *re
 // API operation IndexDocuments for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) IndexDocuments(input *IndexDocumentsInput) (*IndexDocumentsOutput, error) {
 	req, out := c.IndexDocumentsRequest(input)
 	return out, req.Send()
@@ -1946,14 +1925,13 @@ const opListDomainNames = "ListDomainNames"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainNamesRequest method.
+//	req, resp := client.ListDomainNamesRequest(params)
 //
-//    // Example sending a request using the ListDomainNamesRequest method.
-//    req, resp := client.ListDomainNamesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) ListDomainNamesRequest(input *ListDomainNamesInput) (req *request.Request, output *ListDomainNamesOutput) {
 	op := &request.Operation{
 		Name:       opListDomainNames,
@@ -1982,9 +1960,8 @@ func (c *CloudSearch) ListDomainNamesRequest(input *ListDomainNamesInput) (req *
 // API operation ListDomainNames for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
-//
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 func (c *CloudSearch) ListDomainNames(input *ListDomainNamesInput) (*ListDomainNamesOutput, error) {
 	req, out := c.ListDomainNamesRequest(input)
 	return out, req.Send()
@@ -2022,14 +1999,13 @@ const opUpdateAvailabilityOptions = "UpdateAvailabilityOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAvailabilityOptionsRequest method.
+//	req, resp := client.UpdateAvailabilityOptionsRequest(params)
 //
-//    // Example sending a request using the UpdateAvailabilityOptionsRequest method.
-//    req, resp := client.UpdateAvailabilityOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) UpdateAvailabilityOptionsRequest(input *UpdateAvailabilityOptionsInput) (req *request.Request, output *UpdateAvailabilityOptionsOutput) {
 	op := &request.Operation{
 		Name:       opUpdateAvailabilityOptions,
@@ -2063,29 +2039,29 @@ func (c *CloudSearch) UpdateAvailabilityOptionsRequest(input *UpdateAvailability
 // API operation UpdateAvailabilityOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeDisabledOperationException "DisabledAction"
-//   The request was rejected because it attempted an operation which is not enabled.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeDisabledOperationException "DisabledAction"
+//     The request was rejected because it attempted an operation which is not enabled.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) UpdateAvailabilityOptions(input *UpdateAvailabilityOptionsInput) (*UpdateAvailabilityOptionsOutput, error) {
 	req, out := c.UpdateAvailabilityOptionsRequest(input)
 	return out, req.Send()
@@ -2123,14 +2099,13 @@ const opUpdateDomainEndpointOptions = "UpdateDomainEndpointOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainEndpointOptionsRequest method.
+//	req, resp := client.UpdateDomainEndpointOptionsRequest(params)
 //
-//    // Example sending a request using the UpdateDomainEndpointOptionsRequest method.
-//    req, resp := client.UpdateDomainEndpointOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) UpdateDomainEndpointOptionsRequest(input *UpdateDomainEndpointOptionsInput) (req *request.Request, output *UpdateDomainEndpointOptionsOutput) {
 	op := &request.Operation{
 		Name:       opUpdateDomainEndpointOptions,
@@ -2162,29 +2137,29 @@ func (c *CloudSearch) UpdateDomainEndpointOptionsRequest(input *UpdateDomainEndp
 // API operation UpdateDomainEndpointOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeDisabledOperationException "DisabledAction"
-//   The request was rejected because it attempted an operation which is not enabled.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeDisabledOperationException "DisabledAction"
+//     The request was rejected because it attempted an operation which is not enabled.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) UpdateDomainEndpointOptions(input *UpdateDomainEndpointOptionsInput) (*UpdateDomainEndpointOptionsOutput, error) {
 	req, out := c.UpdateDomainEndpointOptionsRequest(input)
 	return out, req.Send()
@@ -2222,14 +2197,13 @@ const opUpdateScalingParameters = "UpdateScalingParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateScalingParametersRequest method.
+//	req, resp := client.UpdateScalingParametersRequest(params)
 //
-//    // Example sending a request using the UpdateScalingParametersRequest method.
-//    req, resp := client.UpdateScalingParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) UpdateScalingParametersRequest(input *UpdateScalingParametersInput) (req *request.Request, output *UpdateScalingParametersOutput) {
 	op := &request.Operation{
 		Name:       opUpdateScalingParameters,
@@ -2265,26 +2239,26 @@ func (c *CloudSearch) UpdateScalingParametersRequest(input *UpdateScalingParamet
 // API operation UpdateScalingParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) UpdateScalingParameters(input *UpdateScalingParametersInput) (*UpdateScalingParametersOutput, error) {
 	req, out := c.UpdateScalingParametersRequest(input)
 	return out, req.Send()
@@ -2322,14 +2296,13 @@ const opUpdateServiceAccessPolicies = "UpdateServiceAccessPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceAccessPoliciesRequest method.
+//	req, resp := client.UpdateServiceAccessPoliciesRequest(params)
 //
-//    // Example sending a request using the UpdateServiceAccessPoliciesRequest method.
-//    req, resp := client.UpdateServiceAccessPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearch) UpdateServiceAccessPoliciesRequest(input *UpdateServiceAccessPoliciesInput) (req *request.Request, output *UpdateServiceAccessPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opUpdateServiceAccessPolicies,
@@ -2360,26 +2333,26 @@ func (c *CloudSearch) UpdateServiceAccessPoliciesRequest(input *UpdateServiceAcc
 // API operation UpdateServiceAccessPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBaseException "BaseException"
-//   An error occurred while processing the request.
 //
-//   * ErrCodeInternalException "InternalException"
-//   An internal error occurred while processing the request. If this problem
-//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//   - ErrCodeBaseException "BaseException"
+//     An error occurred while processing the request.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because a resource limit has already been met.
+//   - ErrCodeInternalException "InternalException"
+//     An internal error occurred while processing the request. If this problem
+//     persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFound"
-//   The request was rejected because it attempted to reference a resource that
-//   does not exist.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because a resource limit has already been met.
 //
-//   * ErrCodeInvalidTypeException "InvalidType"
-//   The request was rejected because it specified an invalid type definition.
+//   - ErrCodeResourceNotFoundException "ResourceNotFound"
+//     The request was rejected because it attempted to reference a resource that
+//     does not exist.
 //
-//   * ErrCodeValidationException "ValidationException"
-//   The request was rejected because it has invalid parameters.
+//   - ErrCodeInvalidTypeException "InvalidType"
+//     The request was rejected because it specified an invalid type definition.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     The request was rejected because it has invalid parameters.
 func (c *CloudSearch) UpdateServiceAccessPolicies(input *UpdateServiceAccessPoliciesInput) (*UpdateServiceAccessPoliciesOutput, error) {
 	req, out := c.UpdateServiceAccessPoliciesRequest(input)
 	return out, req.Send()
@@ -7550,16 +7523,16 @@ func IndexFieldType_Values() []string {
 
 // The state of processing a change to an option. One of:
 //
-//    * RequiresIndexDocuments: The option's latest value will not be deployed
-//    until IndexDocuments has been called and indexing is complete.
+//   - RequiresIndexDocuments: The option's latest value will not be deployed
+//     until IndexDocuments has been called and indexing is complete.
 //
-//    * Processing: The option's latest value is in the process of being activated.
+//   - Processing: The option's latest value is in the process of being activated.
 //
-//    * Active: The option's latest value is fully deployed.
+//   - Active: The option's latest value is fully deployed.
 //
-//    * FailedToValidate: The option value is not compatible with the domain's
-//    data and cannot be used to index the data. You must either modify the
-//    option value or update or remove the incompatible documents.
+//   - FailedToValidate: The option value is not compatible with the domain's
+//     data and cannot be used to index the data. You must either modify the
+//     option value or update or remove the incompatible documents.
 const (
 	// OptionStateRequiresIndexDocuments is a OptionState enum value
 	OptionStateRequiresIndexDocuments = "RequiresIndexDocuments"

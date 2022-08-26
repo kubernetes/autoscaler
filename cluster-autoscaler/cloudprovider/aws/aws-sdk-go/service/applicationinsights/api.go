@@ -29,14 +29,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/CreateApplication
 func (c *ApplicationInsights) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
@@ -67,23 +66,24 @@ func (c *ApplicationInsights) CreateApplicationRequest(input *CreateApplicationI
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is already created or in use.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ResourceInUseException
+//     The resource is already created or in use.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * TagsAlreadyExistException
-//   Tags are already registered for the specified application ARN.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   User does not have permissions to perform this action.
+//   - TagsAlreadyExistException
+//     Tags are already registered for the specified application ARN.
+//
+//   - AccessDeniedException
+//     User does not have permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/CreateApplication
 func (c *ApplicationInsights) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
@@ -123,14 +123,13 @@ const opCreateComponent = "CreateComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateComponentRequest method.
+//	req, resp := client.CreateComponentRequest(params)
 //
-//    // Example sending a request using the CreateComponentRequest method.
-//    req, resp := client.CreateComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/CreateComponent
 func (c *ApplicationInsights) CreateComponentRequest(input *CreateComponentInput) (req *request.Request, output *CreateComponentOutput) {
@@ -162,17 +161,18 @@ func (c *ApplicationInsights) CreateComponentRequest(input *CreateComponentInput
 // API operation CreateComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is already created or in use.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ResourceInUseException
+//     The resource is already created or in use.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/CreateComponent
 func (c *ApplicationInsights) CreateComponent(input *CreateComponentInput) (*CreateComponentOutput, error) {
@@ -212,14 +212,13 @@ const opCreateLogPattern = "CreateLogPattern"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLogPatternRequest method.
+//	req, resp := client.CreateLogPatternRequest(params)
 //
-//    // Example sending a request using the CreateLogPatternRequest method.
-//    req, resp := client.CreateLogPatternRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/CreateLogPattern
 func (c *ApplicationInsights) CreateLogPatternRequest(input *CreateLogPatternInput) (req *request.Request, output *CreateLogPatternOutput) {
@@ -250,17 +249,18 @@ func (c *ApplicationInsights) CreateLogPatternRequest(input *CreateLogPatternInp
 // API operation CreateLogPattern for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is already created or in use.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ResourceInUseException
+//     The resource is already created or in use.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/CreateLogPattern
 func (c *ApplicationInsights) CreateLogPattern(input *CreateLogPatternInput) (*CreateLogPatternOutput, error) {
@@ -300,14 +300,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DeleteApplication
 func (c *ApplicationInsights) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -339,17 +338,18 @@ func (c *ApplicationInsights) DeleteApplicationRequest(input *DeleteApplicationI
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * BadRequestException
-//   The request is not understood by the server.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - BadRequestException
+//     The request is not understood by the server.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DeleteApplication
 func (c *ApplicationInsights) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -389,14 +389,13 @@ const opDeleteComponent = "DeleteComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteComponentRequest method.
+//	req, resp := client.DeleteComponentRequest(params)
 //
-//    // Example sending a request using the DeleteComponentRequest method.
-//    req, resp := client.DeleteComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DeleteComponent
 func (c *ApplicationInsights) DeleteComponentRequest(input *DeleteComponentInput) (req *request.Request, output *DeleteComponentOutput) {
@@ -430,14 +429,15 @@ func (c *ApplicationInsights) DeleteComponentRequest(input *DeleteComponentInput
 // API operation DeleteComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DeleteComponent
 func (c *ApplicationInsights) DeleteComponent(input *DeleteComponentInput) (*DeleteComponentOutput, error) {
@@ -477,14 +477,13 @@ const opDeleteLogPattern = "DeleteLogPattern"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLogPatternRequest method.
+//	req, resp := client.DeleteLogPatternRequest(params)
 //
-//    // Example sending a request using the DeleteLogPatternRequest method.
-//    req, resp := client.DeleteLogPatternRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DeleteLogPattern
 func (c *ApplicationInsights) DeleteLogPatternRequest(input *DeleteLogPatternInput) (req *request.Request, output *DeleteLogPatternOutput) {
@@ -516,17 +515,18 @@ func (c *ApplicationInsights) DeleteLogPatternRequest(input *DeleteLogPatternInp
 // API operation DeleteLogPattern for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * BadRequestException
-//   The request is not understood by the server.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - BadRequestException
+//     The request is not understood by the server.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DeleteLogPattern
 func (c *ApplicationInsights) DeleteLogPattern(input *DeleteLogPatternInput) (*DeleteLogPatternOutput, error) {
@@ -566,14 +566,13 @@ const opDescribeApplication = "DescribeApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationRequest method.
+//	req, resp := client.DescribeApplicationRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationRequest method.
-//    req, resp := client.DescribeApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeApplication
 func (c *ApplicationInsights) DescribeApplicationRequest(input *DescribeApplicationInput) (req *request.Request, output *DescribeApplicationOutput) {
@@ -604,14 +603,15 @@ func (c *ApplicationInsights) DescribeApplicationRequest(input *DescribeApplicat
 // API operation DescribeApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeApplication
 func (c *ApplicationInsights) DescribeApplication(input *DescribeApplicationInput) (*DescribeApplicationOutput, error) {
@@ -651,14 +651,13 @@ const opDescribeComponent = "DescribeComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeComponentRequest method.
+//	req, resp := client.DescribeComponentRequest(params)
 //
-//    // Example sending a request using the DescribeComponentRequest method.
-//    req, resp := client.DescribeComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeComponent
 func (c *ApplicationInsights) DescribeComponentRequest(input *DescribeComponentInput) (req *request.Request, output *DescribeComponentOutput) {
@@ -690,14 +689,15 @@ func (c *ApplicationInsights) DescribeComponentRequest(input *DescribeComponentI
 // API operation DescribeComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeComponent
 func (c *ApplicationInsights) DescribeComponent(input *DescribeComponentInput) (*DescribeComponentOutput, error) {
@@ -737,14 +737,13 @@ const opDescribeComponentConfiguration = "DescribeComponentConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeComponentConfigurationRequest method.
+//	req, resp := client.DescribeComponentConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeComponentConfigurationRequest method.
-//    req, resp := client.DescribeComponentConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeComponentConfiguration
 func (c *ApplicationInsights) DescribeComponentConfigurationRequest(input *DescribeComponentConfigurationInput) (req *request.Request, output *DescribeComponentConfigurationOutput) {
@@ -775,14 +774,15 @@ func (c *ApplicationInsights) DescribeComponentConfigurationRequest(input *Descr
 // API operation DescribeComponentConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeComponentConfiguration
 func (c *ApplicationInsights) DescribeComponentConfiguration(input *DescribeComponentConfigurationInput) (*DescribeComponentConfigurationOutput, error) {
@@ -822,14 +822,13 @@ const opDescribeComponentConfigurationRecommendation = "DescribeComponentConfigu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeComponentConfigurationRecommendationRequest method.
+//	req, resp := client.DescribeComponentConfigurationRecommendationRequest(params)
 //
-//    // Example sending a request using the DescribeComponentConfigurationRecommendationRequest method.
-//    req, resp := client.DescribeComponentConfigurationRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeComponentConfigurationRecommendation
 func (c *ApplicationInsights) DescribeComponentConfigurationRecommendationRequest(input *DescribeComponentConfigurationRecommendationInput) (req *request.Request, output *DescribeComponentConfigurationRecommendationOutput) {
@@ -860,14 +859,15 @@ func (c *ApplicationInsights) DescribeComponentConfigurationRecommendationReques
 // API operation DescribeComponentConfigurationRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeComponentConfigurationRecommendation
 func (c *ApplicationInsights) DescribeComponentConfigurationRecommendation(input *DescribeComponentConfigurationRecommendationInput) (*DescribeComponentConfigurationRecommendationOutput, error) {
@@ -907,14 +907,13 @@ const opDescribeLogPattern = "DescribeLogPattern"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLogPatternRequest method.
+//	req, resp := client.DescribeLogPatternRequest(params)
 //
-//    // Example sending a request using the DescribeLogPatternRequest method.
-//    req, resp := client.DescribeLogPatternRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeLogPattern
 func (c *ApplicationInsights) DescribeLogPatternRequest(input *DescribeLogPatternInput) (req *request.Request, output *DescribeLogPatternOutput) {
@@ -945,14 +944,15 @@ func (c *ApplicationInsights) DescribeLogPatternRequest(input *DescribeLogPatter
 // API operation DescribeLogPattern for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeLogPattern
 func (c *ApplicationInsights) DescribeLogPattern(input *DescribeLogPatternInput) (*DescribeLogPatternOutput, error) {
@@ -992,14 +992,13 @@ const opDescribeObservation = "DescribeObservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeObservationRequest method.
+//	req, resp := client.DescribeObservationRequest(params)
 //
-//    // Example sending a request using the DescribeObservationRequest method.
-//    req, resp := client.DescribeObservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeObservation
 func (c *ApplicationInsights) DescribeObservationRequest(input *DescribeObservationInput) (req *request.Request, output *DescribeObservationOutput) {
@@ -1030,14 +1029,15 @@ func (c *ApplicationInsights) DescribeObservationRequest(input *DescribeObservat
 // API operation DescribeObservation for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeObservation
 func (c *ApplicationInsights) DescribeObservation(input *DescribeObservationInput) (*DescribeObservationOutput, error) {
@@ -1077,14 +1077,13 @@ const opDescribeProblem = "DescribeProblem"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProblemRequest method.
+//	req, resp := client.DescribeProblemRequest(params)
 //
-//    // Example sending a request using the DescribeProblemRequest method.
-//    req, resp := client.DescribeProblemRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeProblem
 func (c *ApplicationInsights) DescribeProblemRequest(input *DescribeProblemInput) (req *request.Request, output *DescribeProblemOutput) {
@@ -1115,14 +1114,15 @@ func (c *ApplicationInsights) DescribeProblemRequest(input *DescribeProblemInput
 // API operation DescribeProblem for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeProblem
 func (c *ApplicationInsights) DescribeProblem(input *DescribeProblemInput) (*DescribeProblemOutput, error) {
@@ -1162,14 +1162,13 @@ const opDescribeProblemObservations = "DescribeProblemObservations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProblemObservationsRequest method.
+//	req, resp := client.DescribeProblemObservationsRequest(params)
 //
-//    // Example sending a request using the DescribeProblemObservationsRequest method.
-//    req, resp := client.DescribeProblemObservationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeProblemObservations
 func (c *ApplicationInsights) DescribeProblemObservationsRequest(input *DescribeProblemObservationsInput) (req *request.Request, output *DescribeProblemObservationsOutput) {
@@ -1200,14 +1199,15 @@ func (c *ApplicationInsights) DescribeProblemObservationsRequest(input *Describe
 // API operation DescribeProblemObservations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/DescribeProblemObservations
 func (c *ApplicationInsights) DescribeProblemObservations(input *DescribeProblemObservationsInput) (*DescribeProblemObservationsOutput, error) {
@@ -1247,14 +1247,13 @@ const opListApplications = "ListApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
 //
-//    // Example sending a request using the ListApplicationsRequest method.
-//    req, resp := client.ListApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListApplications
 func (c *ApplicationInsights) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
@@ -1291,11 +1290,12 @@ func (c *ApplicationInsights) ListApplicationsRequest(input *ListApplicationsInp
 // API operation ListApplications for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The parameter is not valid.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListApplications
 func (c *ApplicationInsights) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
@@ -1327,15 +1327,14 @@ func (c *ApplicationInsights) ListApplicationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplications operation.
-//    pageNum := 0
-//    err := client.ListApplicationsPages(params,
-//        func(page *applicationinsights.ListApplicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplications operation.
+//	pageNum := 0
+//	err := client.ListApplicationsPages(params,
+//	    func(page *applicationinsights.ListApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationInsights) ListApplicationsPages(input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool) error {
 	return c.ListApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1387,14 +1386,13 @@ const opListComponents = "ListComponents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentsRequest method.
+//	req, resp := client.ListComponentsRequest(params)
 //
-//    // Example sending a request using the ListComponentsRequest method.
-//    req, resp := client.ListComponentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListComponents
 func (c *ApplicationInsights) ListComponentsRequest(input *ListComponentsInput) (req *request.Request, output *ListComponentsOutput) {
@@ -1431,14 +1429,15 @@ func (c *ApplicationInsights) ListComponentsRequest(input *ListComponentsInput) 
 // API operation ListComponents for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListComponents
 func (c *ApplicationInsights) ListComponents(input *ListComponentsInput) (*ListComponentsOutput, error) {
@@ -1470,15 +1469,14 @@ func (c *ApplicationInsights) ListComponentsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponents operation.
-//    pageNum := 0
-//    err := client.ListComponentsPages(params,
-//        func(page *applicationinsights.ListComponentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponents operation.
+//	pageNum := 0
+//	err := client.ListComponentsPages(params,
+//	    func(page *applicationinsights.ListComponentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationInsights) ListComponentsPages(input *ListComponentsInput, fn func(*ListComponentsOutput, bool) bool) error {
 	return c.ListComponentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1530,14 +1528,13 @@ const opListConfigurationHistory = "ListConfigurationHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationHistoryRequest method.
+//	req, resp := client.ListConfigurationHistoryRequest(params)
 //
-//    // Example sending a request using the ListConfigurationHistoryRequest method.
-//    req, resp := client.ListConfigurationHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListConfigurationHistory
 func (c *ApplicationInsights) ListConfigurationHistoryRequest(input *ListConfigurationHistoryInput) (req *request.Request, output *ListConfigurationHistoryOutput) {
@@ -1567,12 +1564,12 @@ func (c *ApplicationInsights) ListConfigurationHistoryRequest(input *ListConfigu
 // Lists the INFO, WARN, and ERROR events for periodic configuration updates
 // performed by Application Insights. Examples of events represented are:
 //
-//    * INFO: creating a new alarm or updating an alarm threshold.
+//   - INFO: creating a new alarm or updating an alarm threshold.
 //
-//    * WARN: alarm not created due to insufficient data points used to predict
-//    thresholds.
+//   - WARN: alarm not created due to insufficient data points used to predict
+//     thresholds.
 //
-//    * ERROR: alarm not created due to permission errors or exceeding quotas.
+//   - ERROR: alarm not created due to permission errors or exceeding quotas.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1582,14 +1579,15 @@ func (c *ApplicationInsights) ListConfigurationHistoryRequest(input *ListConfigu
 // API operation ListConfigurationHistory for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListConfigurationHistory
 func (c *ApplicationInsights) ListConfigurationHistory(input *ListConfigurationHistoryInput) (*ListConfigurationHistoryOutput, error) {
@@ -1621,15 +1619,14 @@ func (c *ApplicationInsights) ListConfigurationHistoryWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurationHistory operation.
-//    pageNum := 0
-//    err := client.ListConfigurationHistoryPages(params,
-//        func(page *applicationinsights.ListConfigurationHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurationHistory operation.
+//	pageNum := 0
+//	err := client.ListConfigurationHistoryPages(params,
+//	    func(page *applicationinsights.ListConfigurationHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationInsights) ListConfigurationHistoryPages(input *ListConfigurationHistoryInput, fn func(*ListConfigurationHistoryOutput, bool) bool) error {
 	return c.ListConfigurationHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1681,14 +1678,13 @@ const opListLogPatternSets = "ListLogPatternSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLogPatternSetsRequest method.
+//	req, resp := client.ListLogPatternSetsRequest(params)
 //
-//    // Example sending a request using the ListLogPatternSetsRequest method.
-//    req, resp := client.ListLogPatternSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListLogPatternSets
 func (c *ApplicationInsights) ListLogPatternSetsRequest(input *ListLogPatternSetsInput) (req *request.Request, output *ListLogPatternSetsOutput) {
@@ -1725,14 +1721,15 @@ func (c *ApplicationInsights) ListLogPatternSetsRequest(input *ListLogPatternSet
 // API operation ListLogPatternSets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListLogPatternSets
 func (c *ApplicationInsights) ListLogPatternSets(input *ListLogPatternSetsInput) (*ListLogPatternSetsOutput, error) {
@@ -1764,15 +1761,14 @@ func (c *ApplicationInsights) ListLogPatternSetsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLogPatternSets operation.
-//    pageNum := 0
-//    err := client.ListLogPatternSetsPages(params,
-//        func(page *applicationinsights.ListLogPatternSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLogPatternSets operation.
+//	pageNum := 0
+//	err := client.ListLogPatternSetsPages(params,
+//	    func(page *applicationinsights.ListLogPatternSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationInsights) ListLogPatternSetsPages(input *ListLogPatternSetsInput, fn func(*ListLogPatternSetsOutput, bool) bool) error {
 	return c.ListLogPatternSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1824,14 +1820,13 @@ const opListLogPatterns = "ListLogPatterns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLogPatternsRequest method.
+//	req, resp := client.ListLogPatternsRequest(params)
 //
-//    // Example sending a request using the ListLogPatternsRequest method.
-//    req, resp := client.ListLogPatternsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListLogPatterns
 func (c *ApplicationInsights) ListLogPatternsRequest(input *ListLogPatternsInput) (req *request.Request, output *ListLogPatternsOutput) {
@@ -1868,14 +1863,15 @@ func (c *ApplicationInsights) ListLogPatternsRequest(input *ListLogPatternsInput
 // API operation ListLogPatterns for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListLogPatterns
 func (c *ApplicationInsights) ListLogPatterns(input *ListLogPatternsInput) (*ListLogPatternsOutput, error) {
@@ -1907,15 +1903,14 @@ func (c *ApplicationInsights) ListLogPatternsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLogPatterns operation.
-//    pageNum := 0
-//    err := client.ListLogPatternsPages(params,
-//        func(page *applicationinsights.ListLogPatternsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLogPatterns operation.
+//	pageNum := 0
+//	err := client.ListLogPatternsPages(params,
+//	    func(page *applicationinsights.ListLogPatternsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationInsights) ListLogPatternsPages(input *ListLogPatternsInput, fn func(*ListLogPatternsOutput, bool) bool) error {
 	return c.ListLogPatternsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1967,14 +1962,13 @@ const opListProblems = "ListProblems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProblemsRequest method.
+//	req, resp := client.ListProblemsRequest(params)
 //
-//    // Example sending a request using the ListProblemsRequest method.
-//    req, resp := client.ListProblemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListProblems
 func (c *ApplicationInsights) ListProblemsRequest(input *ListProblemsInput) (req *request.Request, output *ListProblemsOutput) {
@@ -2011,14 +2005,15 @@ func (c *ApplicationInsights) ListProblemsRequest(input *ListProblemsInput) (req
 // API operation ListProblems for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListProblems
 func (c *ApplicationInsights) ListProblems(input *ListProblemsInput) (*ListProblemsOutput, error) {
@@ -2050,15 +2045,14 @@ func (c *ApplicationInsights) ListProblemsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProblems operation.
-//    pageNum := 0
-//    err := client.ListProblemsPages(params,
-//        func(page *applicationinsights.ListProblemsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProblems operation.
+//	pageNum := 0
+//	err := client.ListProblemsPages(params,
+//	    func(page *applicationinsights.ListProblemsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationInsights) ListProblemsPages(input *ListProblemsInput, fn func(*ListProblemsOutput, bool) bool) error {
 	return c.ListProblemsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2110,14 +2104,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListTagsForResource
 func (c *ApplicationInsights) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2153,11 +2146,12 @@ func (c *ApplicationInsights) ListTagsForResourceRequest(input *ListTagsForResou
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
+//
+//   - ValidationException
+//     The parameter is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/ListTagsForResource
 func (c *ApplicationInsights) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2197,14 +2191,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/TagResource
 func (c *ApplicationInsights) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2244,15 +2237,16 @@ func (c *ApplicationInsights) TagResourceRequest(input *TagResourceInput) (req *
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * TooManyTagsException
-//   The number of the provided tags is beyond the limit, or the number of total
-//   tags you are trying to attach to the specified resource exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - TooManyTagsException
+//     The number of the provided tags is beyond the limit, or the number of total
+//     tags you are trying to attach to the specified resource exceeds the limit.
+//
+//   - ValidationException
+//     The parameter is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/TagResource
 func (c *ApplicationInsights) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2292,14 +2286,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UntagResource
 func (c *ApplicationInsights) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2331,11 +2324,12 @@ func (c *ApplicationInsights) UntagResourceRequest(input *UntagResourceInput) (r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
+//
+//   - ValidationException
+//     The parameter is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UntagResource
 func (c *ApplicationInsights) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2375,14 +2369,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateApplication
 func (c *ApplicationInsights) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
@@ -2413,14 +2406,15 @@ func (c *ApplicationInsights) UpdateApplicationRequest(input *UpdateApplicationI
 // API operation UpdateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
+//
+//   - ValidationException
+//     The parameter is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateApplication
 func (c *ApplicationInsights) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {
@@ -2460,14 +2454,13 @@ const opUpdateComponent = "UpdateComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateComponentRequest method.
+//	req, resp := client.UpdateComponentRequest(params)
 //
-//    // Example sending a request using the UpdateComponentRequest method.
-//    req, resp := client.UpdateComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateComponent
 func (c *ApplicationInsights) UpdateComponentRequest(input *UpdateComponentInput) (req *request.Request, output *UpdateComponentOutput) {
@@ -2500,17 +2493,18 @@ func (c *ApplicationInsights) UpdateComponentRequest(input *UpdateComponentInput
 // API operation UpdateComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is already created or in use.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ResourceInUseException
+//     The resource is already created or in use.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateComponent
 func (c *ApplicationInsights) UpdateComponent(input *UpdateComponentInput) (*UpdateComponentOutput, error) {
@@ -2550,14 +2544,13 @@ const opUpdateComponentConfiguration = "UpdateComponentConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateComponentConfigurationRequest method.
+//	req, resp := client.UpdateComponentConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateComponentConfigurationRequest method.
-//    req, resp := client.UpdateComponentConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateComponentConfiguration
 func (c *ApplicationInsights) UpdateComponentConfigurationRequest(input *UpdateComponentConfigurationInput) (req *request.Request, output *UpdateComponentConfigurationOutput) {
@@ -2591,14 +2584,15 @@ func (c *ApplicationInsights) UpdateComponentConfigurationRequest(input *UpdateC
 // API operation UpdateComponentConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateComponentConfiguration
 func (c *ApplicationInsights) UpdateComponentConfiguration(input *UpdateComponentConfigurationInput) (*UpdateComponentConfigurationOutput, error) {
@@ -2638,14 +2632,13 @@ const opUpdateLogPattern = "UpdateLogPattern"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLogPatternRequest method.
+//	req, resp := client.UpdateLogPatternRequest(params)
 //
-//    // Example sending a request using the UpdateLogPatternRequest method.
-//    req, resp := client.UpdateLogPatternRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateLogPattern
 func (c *ApplicationInsights) UpdateLogPatternRequest(input *UpdateLogPatternInput) (req *request.Request, output *UpdateLogPatternOutput) {
@@ -2676,17 +2669,18 @@ func (c *ApplicationInsights) UpdateLogPatternRequest(input *UpdateLogPatternInp
 // API operation UpdateLogPattern for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is already created or in use.
 //
-//   * ResourceNotFoundException
-//   The resource does not exist in the customer account.
+//   - ResourceInUseException
+//     The resource is already created or in use.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ResourceNotFoundException
+//     The resource does not exist in the customer account.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-insights-2018-11-25/UpdateLogPattern
 func (c *ApplicationInsights) UpdateLogPattern(input *UpdateLogPatternInput) (*UpdateLogPatternOutput, error) {
@@ -6288,14 +6282,14 @@ func (s *ResourceNotFoundException) RequestID() string {
 // digits, white space, or one of the following symbols: _ . : / = + -. The
 // following additional restrictions apply to tags:
 //
-//    * Tag keys and values are case sensitive.
+//   - Tag keys and values are case sensitive.
 //
-//    * For each associated resource, each tag key must be unique and it can
-//    have only one value.
+//   - For each associated resource, each tag key must be unique and it can
+//     have only one value.
 //
-//    * The aws: prefix is reserved for use by AWS; you can’t use it in any
-//    tag keys or values that you define. In addition, you can't edit or remove
-//    tag keys or values that use this prefix.
+//   - The aws: prefix is reserved for use by AWS; you can’t use it in any
+//     tag keys or values that you define. In addition, you can't edit or remove
+//     tag keys or values that use this prefix.
 type Tag struct {
 	_ struct{} `type:"structure"`
 

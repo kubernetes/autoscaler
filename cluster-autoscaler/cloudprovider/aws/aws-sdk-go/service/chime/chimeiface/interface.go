@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Chime.
-//    func myFunc(svc chimeiface.ChimeAPI) bool {
-//        // Make svc.AssociatePhoneNumberWithUser request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Chime.
+//	func myFunc(svc chimeiface.ChimeAPI) bool {
+//	    // Make svc.AssociatePhoneNumberWithUser request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := chime.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := chime.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockChimeClient struct {
-//        chimeiface.ChimeAPI
-//    }
-//    func (m *mockChimeClient) AssociatePhoneNumberWithUser(input *chime.AssociatePhoneNumberWithUserInput) (*chime.AssociatePhoneNumberWithUserOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockChimeClient struct {
+//	    chimeiface.ChimeAPI
+//	}
+//	func (m *mockChimeClient) AssociatePhoneNumberWithUser(input *chime.AssociatePhoneNumberWithUserInput) (*chime.AssociatePhoneNumberWithUserOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockChimeClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockChimeClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

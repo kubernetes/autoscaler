@@ -29,14 +29,13 @@ const opAssociateServiceQuotaTemplate = "AssociateServiceQuotaTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateServiceQuotaTemplateRequest method.
+//	req, resp := client.AssociateServiceQuotaTemplateRequest(params)
 //
-//    // Example sending a request using the AssociateServiceQuotaTemplateRequest method.
-//    req, resp := client.AssociateServiceQuotaTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/AssociateServiceQuotaTemplate
 func (c *ServiceQuotas) AssociateServiceQuotaTemplateRequest(input *AssociateServiceQuotaTemplateInput) (req *request.Request, output *AssociateServiceQuotaTemplateOutput) {
@@ -71,31 +70,32 @@ func (c *ServiceQuotas) AssociateServiceQuotaTemplateRequest(input *AssociateSer
 // API operation AssociateServiceQuotaTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * OrganizationNotInAllFeaturesModeException
-//   The organization that your account belongs to is not in All Features mode.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - OrganizationNotInAllFeaturesModeException
+//     The organization that your account belongs to is not in All Features mode.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/AssociateServiceQuotaTemplate
 func (c *ServiceQuotas) AssociateServiceQuotaTemplate(input *AssociateServiceQuotaTemplateInput) (*AssociateServiceQuotaTemplateOutput, error) {
@@ -135,14 +135,13 @@ const opDeleteServiceQuotaIncreaseRequestFromTemplate = "DeleteServiceQuotaIncre
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceQuotaIncreaseRequestFromTemplateRequest method.
+//	req, resp := client.DeleteServiceQuotaIncreaseRequestFromTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteServiceQuotaIncreaseRequestFromTemplateRequest method.
-//    req, resp := client.DeleteServiceQuotaIncreaseRequestFromTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/DeleteServiceQuotaIncreaseRequestFromTemplate
 func (c *ServiceQuotas) DeleteServiceQuotaIncreaseRequestFromTemplateRequest(input *DeleteServiceQuotaIncreaseRequestFromTemplateInput) (req *request.Request, output *DeleteServiceQuotaIncreaseRequestFromTemplateOutput) {
@@ -175,34 +174,35 @@ func (c *ServiceQuotas) DeleteServiceQuotaIncreaseRequestFromTemplateRequest(inp
 // API operation DeleteServiceQuotaIncreaseRequestFromTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/DeleteServiceQuotaIncreaseRequestFromTemplate
 func (c *ServiceQuotas) DeleteServiceQuotaIncreaseRequestFromTemplate(input *DeleteServiceQuotaIncreaseRequestFromTemplateInput) (*DeleteServiceQuotaIncreaseRequestFromTemplateOutput, error) {
@@ -242,14 +242,13 @@ const opDisassociateServiceQuotaTemplate = "DisassociateServiceQuotaTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateServiceQuotaTemplateRequest method.
+//	req, resp := client.DisassociateServiceQuotaTemplateRequest(params)
 //
-//    // Example sending a request using the DisassociateServiceQuotaTemplateRequest method.
-//    req, resp := client.DisassociateServiceQuotaTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/DisassociateServiceQuotaTemplate
 func (c *ServiceQuotas) DisassociateServiceQuotaTemplateRequest(input *DisassociateServiceQuotaTemplateInput) (req *request.Request, output *DisassociateServiceQuotaTemplateOutput) {
@@ -284,31 +283,32 @@ func (c *ServiceQuotas) DisassociateServiceQuotaTemplateRequest(input *Disassoci
 // API operation DisassociateServiceQuotaTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
 //
-//   * ServiceQuotaTemplateNotInUseException
-//   The quota request template is not associated with your organization.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - ServiceQuotaTemplateNotInUseException
+//     The quota request template is not associated with your organization.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/DisassociateServiceQuotaTemplate
 func (c *ServiceQuotas) DisassociateServiceQuotaTemplate(input *DisassociateServiceQuotaTemplateInput) (*DisassociateServiceQuotaTemplateOutput, error) {
@@ -348,14 +348,13 @@ const opGetAWSDefaultServiceQuota = "GetAWSDefaultServiceQuota"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAWSDefaultServiceQuotaRequest method.
+//	req, resp := client.GetAWSDefaultServiceQuotaRequest(params)
 //
-//    // Example sending a request using the GetAWSDefaultServiceQuotaRequest method.
-//    req, resp := client.GetAWSDefaultServiceQuotaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetAWSDefaultServiceQuota
 func (c *ServiceQuotas) GetAWSDefaultServiceQuotaRequest(input *GetAWSDefaultServiceQuotaInput) (req *request.Request, output *GetAWSDefaultServiceQuotaOutput) {
@@ -387,21 +386,22 @@ func (c *ServiceQuotas) GetAWSDefaultServiceQuotaRequest(input *GetAWSDefaultSer
 // API operation GetAWSDefaultServiceQuota for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetAWSDefaultServiceQuota
 func (c *ServiceQuotas) GetAWSDefaultServiceQuota(input *GetAWSDefaultServiceQuotaInput) (*GetAWSDefaultServiceQuotaOutput, error) {
@@ -441,14 +441,13 @@ const opGetAssociationForServiceQuotaTemplate = "GetAssociationForServiceQuotaTe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssociationForServiceQuotaTemplateRequest method.
+//	req, resp := client.GetAssociationForServiceQuotaTemplateRequest(params)
 //
-//    // Example sending a request using the GetAssociationForServiceQuotaTemplateRequest method.
-//    req, resp := client.GetAssociationForServiceQuotaTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetAssociationForServiceQuotaTemplate
 func (c *ServiceQuotas) GetAssociationForServiceQuotaTemplateRequest(input *GetAssociationForServiceQuotaTemplateInput) (req *request.Request, output *GetAssociationForServiceQuotaTemplateOutput) {
@@ -479,31 +478,32 @@ func (c *ServiceQuotas) GetAssociationForServiceQuotaTemplateRequest(input *GetA
 // API operation GetAssociationForServiceQuotaTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
 //
-//   * ServiceQuotaTemplateNotInUseException
-//   The quota request template is not associated with your organization.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - ServiceQuotaTemplateNotInUseException
+//     The quota request template is not associated with your organization.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetAssociationForServiceQuotaTemplate
 func (c *ServiceQuotas) GetAssociationForServiceQuotaTemplate(input *GetAssociationForServiceQuotaTemplateInput) (*GetAssociationForServiceQuotaTemplateOutput, error) {
@@ -543,14 +543,13 @@ const opGetRequestedServiceQuotaChange = "GetRequestedServiceQuotaChange"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRequestedServiceQuotaChangeRequest method.
+//	req, resp := client.GetRequestedServiceQuotaChangeRequest(params)
 //
-//    // Example sending a request using the GetRequestedServiceQuotaChangeRequest method.
-//    req, resp := client.GetRequestedServiceQuotaChangeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetRequestedServiceQuotaChange
 func (c *ServiceQuotas) GetRequestedServiceQuotaChangeRequest(input *GetRequestedServiceQuotaChangeInput) (req *request.Request, output *GetRequestedServiceQuotaChangeOutput) {
@@ -581,21 +580,22 @@ func (c *ServiceQuotas) GetRequestedServiceQuotaChangeRequest(input *GetRequeste
 // API operation GetRequestedServiceQuotaChange for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetRequestedServiceQuotaChange
 func (c *ServiceQuotas) GetRequestedServiceQuotaChange(input *GetRequestedServiceQuotaChangeInput) (*GetRequestedServiceQuotaChangeOutput, error) {
@@ -635,14 +635,13 @@ const opGetServiceQuota = "GetServiceQuota"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceQuotaRequest method.
+//	req, resp := client.GetServiceQuotaRequest(params)
 //
-//    // Example sending a request using the GetServiceQuotaRequest method.
-//    req, resp := client.GetServiceQuotaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetServiceQuota
 func (c *ServiceQuotas) GetServiceQuotaRequest(input *GetServiceQuotaInput) (req *request.Request, output *GetServiceQuotaOutput) {
@@ -675,21 +674,22 @@ func (c *ServiceQuotas) GetServiceQuotaRequest(input *GetServiceQuotaInput) (req
 // API operation GetServiceQuota for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetServiceQuota
 func (c *ServiceQuotas) GetServiceQuota(input *GetServiceQuotaInput) (*GetServiceQuotaOutput, error) {
@@ -729,14 +729,13 @@ const opGetServiceQuotaIncreaseRequestFromTemplate = "GetServiceQuotaIncreaseReq
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceQuotaIncreaseRequestFromTemplateRequest method.
+//	req, resp := client.GetServiceQuotaIncreaseRequestFromTemplateRequest(params)
 //
-//    // Example sending a request using the GetServiceQuotaIncreaseRequestFromTemplateRequest method.
-//    req, resp := client.GetServiceQuotaIncreaseRequestFromTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetServiceQuotaIncreaseRequestFromTemplate
 func (c *ServiceQuotas) GetServiceQuotaIncreaseRequestFromTemplateRequest(input *GetServiceQuotaIncreaseRequestFromTemplateInput) (req *request.Request, output *GetServiceQuotaIncreaseRequestFromTemplateOutput) {
@@ -768,34 +767,35 @@ func (c *ServiceQuotas) GetServiceQuotaIncreaseRequestFromTemplateRequest(input 
 // API operation GetServiceQuotaIncreaseRequestFromTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetServiceQuotaIncreaseRequestFromTemplate
 func (c *ServiceQuotas) GetServiceQuotaIncreaseRequestFromTemplate(input *GetServiceQuotaIncreaseRequestFromTemplateInput) (*GetServiceQuotaIncreaseRequestFromTemplateOutput, error) {
@@ -835,14 +835,13 @@ const opListAWSDefaultServiceQuotas = "ListAWSDefaultServiceQuotas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAWSDefaultServiceQuotasRequest method.
+//	req, resp := client.ListAWSDefaultServiceQuotasRequest(params)
 //
-//    // Example sending a request using the ListAWSDefaultServiceQuotasRequest method.
-//    req, resp := client.ListAWSDefaultServiceQuotasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListAWSDefaultServiceQuotas
 func (c *ServiceQuotas) ListAWSDefaultServiceQuotasRequest(input *ListAWSDefaultServiceQuotasInput) (req *request.Request, output *ListAWSDefaultServiceQuotasOutput) {
@@ -880,24 +879,25 @@ func (c *ServiceQuotas) ListAWSDefaultServiceQuotasRequest(input *ListAWSDefault
 // API operation ListAWSDefaultServiceQuotas for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * InvalidPaginationTokenException
-//   Invalid input was provided.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - InvalidPaginationTokenException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListAWSDefaultServiceQuotas
 func (c *ServiceQuotas) ListAWSDefaultServiceQuotas(input *ListAWSDefaultServiceQuotasInput) (*ListAWSDefaultServiceQuotasOutput, error) {
@@ -929,15 +929,14 @@ func (c *ServiceQuotas) ListAWSDefaultServiceQuotasWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAWSDefaultServiceQuotas operation.
-//    pageNum := 0
-//    err := client.ListAWSDefaultServiceQuotasPages(params,
-//        func(page *servicequotas.ListAWSDefaultServiceQuotasOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAWSDefaultServiceQuotas operation.
+//	pageNum := 0
+//	err := client.ListAWSDefaultServiceQuotasPages(params,
+//	    func(page *servicequotas.ListAWSDefaultServiceQuotasOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServiceQuotas) ListAWSDefaultServiceQuotasPages(input *ListAWSDefaultServiceQuotasInput, fn func(*ListAWSDefaultServiceQuotasOutput, bool) bool) error {
 	return c.ListAWSDefaultServiceQuotasPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -989,14 +988,13 @@ const opListRequestedServiceQuotaChangeHistory = "ListRequestedServiceQuotaChang
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRequestedServiceQuotaChangeHistoryRequest method.
+//	req, resp := client.ListRequestedServiceQuotaChangeHistoryRequest(params)
 //
-//    // Example sending a request using the ListRequestedServiceQuotaChangeHistoryRequest method.
-//    req, resp := client.ListRequestedServiceQuotaChangeHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListRequestedServiceQuotaChangeHistory
 func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryRequest(input *ListRequestedServiceQuotaChangeHistoryInput) (req *request.Request, output *ListRequestedServiceQuotaChangeHistoryOutput) {
@@ -1033,24 +1031,25 @@ func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryRequest(input *Lis
 // API operation ListRequestedServiceQuotaChangeHistory for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * InvalidPaginationTokenException
-//   Invalid input was provided.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - InvalidPaginationTokenException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListRequestedServiceQuotaChangeHistory
 func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistory(input *ListRequestedServiceQuotaChangeHistoryInput) (*ListRequestedServiceQuotaChangeHistoryOutput, error) {
@@ -1082,15 +1081,14 @@ func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryWithContext(ctx aw
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRequestedServiceQuotaChangeHistory operation.
-//    pageNum := 0
-//    err := client.ListRequestedServiceQuotaChangeHistoryPages(params,
-//        func(page *servicequotas.ListRequestedServiceQuotaChangeHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRequestedServiceQuotaChangeHistory operation.
+//	pageNum := 0
+//	err := client.ListRequestedServiceQuotaChangeHistoryPages(params,
+//	    func(page *servicequotas.ListRequestedServiceQuotaChangeHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryPages(input *ListRequestedServiceQuotaChangeHistoryInput, fn func(*ListRequestedServiceQuotaChangeHistoryOutput, bool) bool) error {
 	return c.ListRequestedServiceQuotaChangeHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1142,14 +1140,13 @@ const opListRequestedServiceQuotaChangeHistoryByQuota = "ListRequestedServiceQuo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRequestedServiceQuotaChangeHistoryByQuotaRequest method.
+//	req, resp := client.ListRequestedServiceQuotaChangeHistoryByQuotaRequest(params)
 //
-//    // Example sending a request using the ListRequestedServiceQuotaChangeHistoryByQuotaRequest method.
-//    req, resp := client.ListRequestedServiceQuotaChangeHistoryByQuotaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListRequestedServiceQuotaChangeHistoryByQuota
 func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryByQuotaRequest(input *ListRequestedServiceQuotaChangeHistoryByQuotaInput) (req *request.Request, output *ListRequestedServiceQuotaChangeHistoryByQuotaOutput) {
@@ -1186,24 +1183,25 @@ func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryByQuotaRequest(inp
 // API operation ListRequestedServiceQuotaChangeHistoryByQuota for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * InvalidPaginationTokenException
-//   Invalid input was provided.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - InvalidPaginationTokenException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListRequestedServiceQuotaChangeHistoryByQuota
 func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryByQuota(input *ListRequestedServiceQuotaChangeHistoryByQuotaInput) (*ListRequestedServiceQuotaChangeHistoryByQuotaOutput, error) {
@@ -1235,15 +1233,14 @@ func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryByQuotaWithContext
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRequestedServiceQuotaChangeHistoryByQuota operation.
-//    pageNum := 0
-//    err := client.ListRequestedServiceQuotaChangeHistoryByQuotaPages(params,
-//        func(page *servicequotas.ListRequestedServiceQuotaChangeHistoryByQuotaOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRequestedServiceQuotaChangeHistoryByQuota operation.
+//	pageNum := 0
+//	err := client.ListRequestedServiceQuotaChangeHistoryByQuotaPages(params,
+//	    func(page *servicequotas.ListRequestedServiceQuotaChangeHistoryByQuotaOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryByQuotaPages(input *ListRequestedServiceQuotaChangeHistoryByQuotaInput, fn func(*ListRequestedServiceQuotaChangeHistoryByQuotaOutput, bool) bool) error {
 	return c.ListRequestedServiceQuotaChangeHistoryByQuotaPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1295,14 +1292,13 @@ const opListServiceQuotaIncreaseRequestsInTemplate = "ListServiceQuotaIncreaseRe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceQuotaIncreaseRequestsInTemplateRequest method.
+//	req, resp := client.ListServiceQuotaIncreaseRequestsInTemplateRequest(params)
 //
-//    // Example sending a request using the ListServiceQuotaIncreaseRequestsInTemplateRequest method.
-//    req, resp := client.ListServiceQuotaIncreaseRequestsInTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServiceQuotaIncreaseRequestsInTemplate
 func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplateRequest(input *ListServiceQuotaIncreaseRequestsInTemplateInput) (req *request.Request, output *ListServiceQuotaIncreaseRequestsInTemplateOutput) {
@@ -1339,31 +1335,32 @@ func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplateRequest(input 
 // API operation ListServiceQuotaIncreaseRequestsInTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServiceQuotaIncreaseRequestsInTemplate
 func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplate(input *ListServiceQuotaIncreaseRequestsInTemplateInput) (*ListServiceQuotaIncreaseRequestsInTemplateOutput, error) {
@@ -1395,15 +1392,14 @@ func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplateWithContext(ct
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceQuotaIncreaseRequestsInTemplate operation.
-//    pageNum := 0
-//    err := client.ListServiceQuotaIncreaseRequestsInTemplatePages(params,
-//        func(page *servicequotas.ListServiceQuotaIncreaseRequestsInTemplateOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceQuotaIncreaseRequestsInTemplate operation.
+//	pageNum := 0
+//	err := client.ListServiceQuotaIncreaseRequestsInTemplatePages(params,
+//	    func(page *servicequotas.ListServiceQuotaIncreaseRequestsInTemplateOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplatePages(input *ListServiceQuotaIncreaseRequestsInTemplateInput, fn func(*ListServiceQuotaIncreaseRequestsInTemplateOutput, bool) bool) error {
 	return c.ListServiceQuotaIncreaseRequestsInTemplatePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1455,14 +1451,13 @@ const opListServiceQuotas = "ListServiceQuotas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceQuotasRequest method.
+//	req, resp := client.ListServiceQuotasRequest(params)
 //
-//    // Example sending a request using the ListServiceQuotasRequest method.
-//    req, resp := client.ListServiceQuotasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServiceQuotas
 func (c *ServiceQuotas) ListServiceQuotasRequest(input *ListServiceQuotasInput) (req *request.Request, output *ListServiceQuotasOutput) {
@@ -1501,24 +1496,25 @@ func (c *ServiceQuotas) ListServiceQuotasRequest(input *ListServiceQuotasInput) 
 // API operation ListServiceQuotas for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * InvalidPaginationTokenException
-//   Invalid input was provided.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - InvalidPaginationTokenException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServiceQuotas
 func (c *ServiceQuotas) ListServiceQuotas(input *ListServiceQuotasInput) (*ListServiceQuotasOutput, error) {
@@ -1550,15 +1546,14 @@ func (c *ServiceQuotas) ListServiceQuotasWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceQuotas operation.
-//    pageNum := 0
-//    err := client.ListServiceQuotasPages(params,
-//        func(page *servicequotas.ListServiceQuotasOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceQuotas operation.
+//	pageNum := 0
+//	err := client.ListServiceQuotasPages(params,
+//	    func(page *servicequotas.ListServiceQuotasOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServiceQuotas) ListServiceQuotasPages(input *ListServiceQuotasInput, fn func(*ListServiceQuotasOutput, bool) bool) error {
 	return c.ListServiceQuotasPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1610,14 +1605,13 @@ const opListServices = "ListServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServicesRequest method.
+//	req, resp := client.ListServicesRequest(params)
 //
-//    // Example sending a request using the ListServicesRequest method.
-//    req, resp := client.ListServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServices
 func (c *ServiceQuotas) ListServicesRequest(input *ListServicesInput) (req *request.Request, output *ListServicesOutput) {
@@ -1654,21 +1648,22 @@ func (c *ServiceQuotas) ListServicesRequest(input *ListServicesInput) (req *requ
 // API operation ListServices for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * InvalidPaginationTokenException
-//   Invalid input was provided.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - InvalidPaginationTokenException
+//     Invalid input was provided.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServices
 func (c *ServiceQuotas) ListServices(input *ListServicesInput) (*ListServicesOutput, error) {
@@ -1700,15 +1695,14 @@ func (c *ServiceQuotas) ListServicesWithContext(ctx aws.Context, input *ListServ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServices operation.
-//    pageNum := 0
-//    err := client.ListServicesPages(params,
-//        func(page *servicequotas.ListServicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServices operation.
+//	pageNum := 0
+//	err := client.ListServicesPages(params,
+//	    func(page *servicequotas.ListServicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServiceQuotas) ListServicesPages(input *ListServicesInput, fn func(*ListServicesOutput, bool) bool) error {
 	return c.ListServicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1760,14 +1754,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListTagsForResource
 func (c *ServiceQuotas) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1798,21 +1791,22 @@ func (c *ServiceQuotas) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
+//
+//   - ServiceException
+//     Something went wrong.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListTagsForResource
 func (c *ServiceQuotas) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1852,14 +1846,13 @@ const opPutServiceQuotaIncreaseRequestIntoTemplate = "PutServiceQuotaIncreaseReq
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutServiceQuotaIncreaseRequestIntoTemplateRequest method.
+//	req, resp := client.PutServiceQuotaIncreaseRequestIntoTemplateRequest(params)
 //
-//    // Example sending a request using the PutServiceQuotaIncreaseRequestIntoTemplateRequest method.
-//    req, resp := client.PutServiceQuotaIncreaseRequestIntoTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/PutServiceQuotaIncreaseRequestIntoTemplate
 func (c *ServiceQuotas) PutServiceQuotaIncreaseRequestIntoTemplateRequest(input *PutServiceQuotaIncreaseRequestIntoTemplateInput) (req *request.Request, output *PutServiceQuotaIncreaseRequestIntoTemplateOutput) {
@@ -1890,39 +1883,40 @@ func (c *ServiceQuotas) PutServiceQuotaIncreaseRequestIntoTemplateRequest(input 
 // API operation PutServiceQuotaIncreaseRequestIntoTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
 //
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * QuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas to request a service
-//   quota increase.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - QuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas to request a service
+//     quota increase.
 //
-//   * AWSServiceAccessNotEnabledException
-//   The action you attempted is not allowed unless Service Access with Service
-//   Quotas is enabled in your organization.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * TemplatesNotAvailableInRegionException
-//   The Service Quotas template is not available in this AWS Region.
+//   - AWSServiceAccessNotEnabledException
+//     The action you attempted is not allowed unless Service Access with Service
+//     Quotas is enabled in your organization.
 //
-//   * NoAvailableOrganizationException
-//   The account making this call is not a member of an organization.
+//   - TemplatesNotAvailableInRegionException
+//     The Service Quotas template is not available in this AWS Region.
+//
+//   - NoAvailableOrganizationException
+//     The account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/PutServiceQuotaIncreaseRequestIntoTemplate
 func (c *ServiceQuotas) PutServiceQuotaIncreaseRequestIntoTemplate(input *PutServiceQuotaIncreaseRequestIntoTemplateInput) (*PutServiceQuotaIncreaseRequestIntoTemplateOutput, error) {
@@ -1962,14 +1956,13 @@ const opRequestServiceQuotaIncrease = "RequestServiceQuotaIncrease"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestServiceQuotaIncreaseRequest method.
+//	req, resp := client.RequestServiceQuotaIncreaseRequest(params)
 //
-//    // Example sending a request using the RequestServiceQuotaIncreaseRequest method.
-//    req, resp := client.RequestServiceQuotaIncreaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/RequestServiceQuotaIncrease
 func (c *ServiceQuotas) RequestServiceQuotaIncreaseRequest(input *RequestServiceQuotaIncreaseInput) (req *request.Request, output *RequestServiceQuotaIncreaseOutput) {
@@ -2000,35 +1993,36 @@ func (c *ServiceQuotas) RequestServiceQuotaIncreaseRequest(input *RequestService
 // API operation RequestServiceQuotaIncrease for usage and error information.
 //
 // Returned Error Types:
-//   * DependencyAccessDeniedException
-//   You can't perform this action because a dependency does not have access.
 //
-//   * QuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas to request a service
-//   quota increase.
+//   - DependencyAccessDeniedException
+//     You can't perform this action because a dependency does not have access.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - QuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas to request a service
+//     quota increase.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * InvalidResourceStateException
-//   The resource is in an invalid state.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - InvalidResourceStateException
+//     The resource is in an invalid state.
 //
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
+//   - ServiceException
+//     Something went wrong.
+//
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/RequestServiceQuotaIncrease
 func (c *ServiceQuotas) RequestServiceQuotaIncrease(input *RequestServiceQuotaIncreaseInput) (*RequestServiceQuotaIncreaseOutput, error) {
@@ -2068,14 +2062,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/TagResource
 func (c *ServiceQuotas) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2108,29 +2101,30 @@ func (c *ServiceQuotas) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * TooManyTagsException
-//   You've exceeded the number of tags allowed for a resource. For more information,
-//   see Tag restrictions (https://docs.aws.amazon.com/servicequotas/latest/userguide/sq-tagging.html#sq-tagging-restrictions)
-//   in the Service Quotas User Guide.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * TagPolicyViolationException
-//   The specified tag is a reserved word and cannot be used.
+//   - TooManyTagsException
+//     You've exceeded the number of tags allowed for a resource. For more information,
+//     see Tag restrictions (https://docs.aws.amazon.com/servicequotas/latest/userguide/sq-tagging.html#sq-tagging-restrictions)
+//     in the Service Quotas User Guide.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - TagPolicyViolationException
+//     The specified tag is a reserved word and cannot be used.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
+//
+//   - ServiceException
+//     Something went wrong.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/TagResource
 func (c *ServiceQuotas) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2170,14 +2164,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/UntagResource
 func (c *ServiceQuotas) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2210,21 +2203,22 @@ func (c *ServiceQuotas) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Due to throttling, the request was denied. Slow down the rate of request
-//   calls, or request an increase for this quota.
 //
-//   * NoSuchResourceException
-//   The specified resource does not exist.
+//   - TooManyRequestsException
+//     Due to throttling, the request was denied. Slow down the rate of request
+//     calls, or request an increase for this quota.
 //
-//   * IllegalArgumentException
-//   Invalid input was provided.
+//   - NoSuchResourceException
+//     The specified resource does not exist.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permission to perform this action.
+//   - IllegalArgumentException
+//     Invalid input was provided.
 //
-//   * ServiceException
-//   Something went wrong.
+//   - AccessDeniedException
+//     You do not have sufficient permission to perform this action.
+//
+//   - ServiceException
+//     Something went wrong.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/UntagResource
 func (c *ServiceQuotas) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

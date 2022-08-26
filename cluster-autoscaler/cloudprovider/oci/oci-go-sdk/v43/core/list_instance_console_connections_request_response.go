@@ -11,7 +11,7 @@ import (
 
 // ListInstanceConsoleConnectionsRequest wrapper for the ListInstanceConsoleConnections operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListInstanceConsoleConnections.go.html to see an example of how to use ListInstanceConsoleConnectionsRequest.
 type ListInstanceConsoleConnectionsRequest struct {

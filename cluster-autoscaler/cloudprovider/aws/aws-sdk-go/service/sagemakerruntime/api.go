@@ -27,14 +27,13 @@ const opInvokeEndpoint = "InvokeEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InvokeEndpointRequest method.
+//	req, resp := client.InvokeEndpointRequest(params)
 //
-//    // Example sending a request using the InvokeEndpointRequest method.
-//    req, resp := client.InvokeEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.sagemaker-2017-05-13/InvokeEndpoint
 func (c *SageMakerRuntime) InvokeEndpointRequest(input *InvokeEndpointInput) (req *request.Request, output *InvokeEndpointOutput) {
@@ -87,27 +86,28 @@ func (c *SageMakerRuntime) InvokeEndpointRequest(input *InvokeEndpointInput) (re
 // API operation InvokeEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailure
-//   An internal failure occurred.
 //
-//   * ServiceUnavailable
-//   The service is unavailable. Try your call again.
+//   - InternalFailure
+//     An internal failure occurred.
 //
-//   * ValidationError
-//   Inspect your request and try again.
+//   - ServiceUnavailable
+//     The service is unavailable. Try your call again.
 //
-//   * ModelError
-//   Model (owned by the customer in the container) returned 4xx or 5xx error
-//   code.
+//   - ValidationError
+//     Inspect your request and try again.
 //
-//   * InternalDependencyException
-//   Your request caused an exception with an internal dependency. Contact customer
-//   support.
+//   - ModelError
+//     Model (owned by the customer in the container) returned 4xx or 5xx error
+//     code.
 //
-//   * ModelNotReadyException
-//   Either a serverless endpoint variant's resources are still being provisioned,
-//   or a multi-model endpoint is still downloading or loading the target model.
-//   Wait and try your request again.
+//   - InternalDependencyException
+//     Your request caused an exception with an internal dependency. Contact customer
+//     support.
+//
+//   - ModelNotReadyException
+//     Either a serverless endpoint variant's resources are still being provisioned,
+//     or a multi-model endpoint is still downloading or loading the target model.
+//     Wait and try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.sagemaker-2017-05-13/InvokeEndpoint
 func (c *SageMakerRuntime) InvokeEndpoint(input *InvokeEndpointInput) (*InvokeEndpointOutput, error) {
@@ -147,14 +147,13 @@ const opInvokeEndpointAsync = "InvokeEndpointAsync"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InvokeEndpointAsyncRequest method.
+//	req, resp := client.InvokeEndpointAsyncRequest(params)
 //
-//    // Example sending a request using the InvokeEndpointAsyncRequest method.
-//    req, resp := client.InvokeEndpointAsyncRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.sagemaker-2017-05-13/InvokeEndpointAsync
 func (c *SageMakerRuntime) InvokeEndpointAsyncRequest(input *InvokeEndpointAsyncInput) (req *request.Request, output *InvokeEndpointAsyncOutput) {
@@ -202,14 +201,15 @@ func (c *SageMakerRuntime) InvokeEndpointAsyncRequest(input *InvokeEndpointAsync
 // API operation InvokeEndpointAsync for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailure
-//   An internal failure occurred.
 //
-//   * ServiceUnavailable
-//   The service is unavailable. Try your call again.
+//   - InternalFailure
+//     An internal failure occurred.
 //
-//   * ValidationError
-//   Inspect your request and try again.
+//   - ServiceUnavailable
+//     The service is unavailable. Try your call again.
+//
+//   - ValidationError
+//     Inspect your request and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.sagemaker-2017-05-13/InvokeEndpointAsync
 func (c *SageMakerRuntime) InvokeEndpointAsync(input *InvokeEndpointAsyncInput) (*InvokeEndpointAsyncOutput, error) {

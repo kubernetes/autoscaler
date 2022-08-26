@@ -32,14 +32,13 @@ const opCancelQuery = "CancelQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelQueryRequest method.
+//	req, resp := client.CancelQueryRequest(params)
 //
-//    // Example sending a request using the CancelQueryRequest method.
-//    req, resp := client.CancelQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/CancelQuery
 func (c *TimestreamQuery) CancelQueryRequest(input *CancelQueryInput) (req *request.Request, output *CancelQueryOutput) {
@@ -98,21 +97,22 @@ func (c *TimestreamQuery) CancelQueryRequest(input *CancelQueryInput) (req *requ
 // API operation CancelQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/CancelQuery
 func (c *TimestreamQuery) CancelQuery(input *CancelQueryInput) (*CancelQueryOutput, error) {
@@ -152,14 +152,13 @@ const opCreateScheduledQuery = "CreateScheduledQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateScheduledQueryRequest method.
+//	req, resp := client.CreateScheduledQueryRequest(params)
 //
-//    // Example sending a request using the CreateScheduledQueryRequest method.
-//    req, resp := client.CreateScheduledQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/CreateScheduledQuery
 func (c *TimestreamQuery) CreateScheduledQueryRequest(input *CreateScheduledQueryInput) (req *request.Request, output *CreateScheduledQueryOutput) {
@@ -216,27 +215,28 @@ func (c *TimestreamQuery) CreateScheduledQueryRequest(input *CreateScheduledQuer
 // API operation CreateScheduledQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * ConflictException
-//   Unable to poll results for a cancelled query.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - ConflictException
+//     Unable to poll results for a cancelled query.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the service quota.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     You have exceeded the service quota.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/CreateScheduledQuery
 func (c *TimestreamQuery) CreateScheduledQuery(input *CreateScheduledQueryInput) (*CreateScheduledQueryOutput, error) {
@@ -276,14 +276,13 @@ const opDeleteScheduledQuery = "DeleteScheduledQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScheduledQueryRequest method.
+//	req, resp := client.DeleteScheduledQueryRequest(params)
 //
-//    // Example sending a request using the DeleteScheduledQueryRequest method.
-//    req, resp := client.DeleteScheduledQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/DeleteScheduledQuery
 func (c *TimestreamQuery) DeleteScheduledQueryRequest(input *DeleteScheduledQueryInput) (req *request.Request, output *DeleteScheduledQueryOutput) {
@@ -338,24 +337,25 @@ func (c *TimestreamQuery) DeleteScheduledQueryRequest(input *DeleteScheduledQuer
 // API operation DeleteScheduledQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/DeleteScheduledQuery
 func (c *TimestreamQuery) DeleteScheduledQuery(input *DeleteScheduledQueryInput) (*DeleteScheduledQueryOutput, error) {
@@ -395,14 +395,13 @@ const opDescribeEndpoints = "DescribeEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointsRequest method.
+//	req, resp := client.DescribeEndpointsRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointsRequest method.
-//    req, resp := client.DescribeEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/DescribeEndpoints
 func (c *TimestreamQuery) DescribeEndpointsRequest(input *DescribeEndpointsInput) (req *request.Request, output *DescribeEndpointsOutput) {
@@ -430,13 +429,13 @@ func (c *TimestreamQuery) DescribeEndpointsRequest(input *DescribeEndpointsInput
 // architecture, including the management and mapping of the service endpoints,
 // it is not recommended that you use this API unless:
 //
-//    * You are using VPC endpoints (Amazon Web Services PrivateLink) with Timestream
-//    (https://docs.aws.amazon.com/timestream/latest/developerguide/VPCEndpoints)
+//   - You are using VPC endpoints (Amazon Web Services PrivateLink) with Timestream
+//     (https://docs.aws.amazon.com/timestream/latest/developerguide/VPCEndpoints)
 //
-//    * Your application uses a programming language that does not yet have
-//    SDK support
+//   - Your application uses a programming language that does not yet have
+//     SDK support
 //
-//    * You require better control over the client-side implementation
+//   - You require better control over the client-side implementation
 //
 // For detailed information on how and when to use and implement DescribeEndpoints,
 // see The Endpoint Discovery Pattern (https://docs.aws.amazon.com/timestream/latest/developerguide/Using.API.html#Using-API.endpoint-discovery).
@@ -449,15 +448,16 @@ func (c *TimestreamQuery) DescribeEndpointsRequest(input *DescribeEndpointsInput
 // API operation DescribeEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/DescribeEndpoints
 func (c *TimestreamQuery) DescribeEndpoints(input *DescribeEndpointsInput) (*DescribeEndpointsOutput, error) {
@@ -569,14 +569,13 @@ const opDescribeScheduledQuery = "DescribeScheduledQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduledQueryRequest method.
+//	req, resp := client.DescribeScheduledQueryRequest(params)
 //
-//    // Example sending a request using the DescribeScheduledQueryRequest method.
-//    req, resp := client.DescribeScheduledQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/DescribeScheduledQuery
 func (c *TimestreamQuery) DescribeScheduledQueryRequest(input *DescribeScheduledQueryInput) (req *request.Request, output *DescribeScheduledQueryOutput) {
@@ -630,24 +629,25 @@ func (c *TimestreamQuery) DescribeScheduledQueryRequest(input *DescribeScheduled
 // API operation DescribeScheduledQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/DescribeScheduledQuery
 func (c *TimestreamQuery) DescribeScheduledQuery(input *DescribeScheduledQueryInput) (*DescribeScheduledQueryOutput, error) {
@@ -687,14 +687,13 @@ const opExecuteScheduledQuery = "ExecuteScheduledQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExecuteScheduledQueryRequest method.
+//	req, resp := client.ExecuteScheduledQueryRequest(params)
 //
-//    // Example sending a request using the ExecuteScheduledQueryRequest method.
-//    req, resp := client.ExecuteScheduledQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/ExecuteScheduledQuery
 func (c *TimestreamQuery) ExecuteScheduledQueryRequest(input *ExecuteScheduledQueryInput) (req *request.Request, output *ExecuteScheduledQueryOutput) {
@@ -749,24 +748,25 @@ func (c *TimestreamQuery) ExecuteScheduledQueryRequest(input *ExecuteScheduledQu
 // API operation ExecuteScheduledQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/ExecuteScheduledQuery
 func (c *TimestreamQuery) ExecuteScheduledQuery(input *ExecuteScheduledQueryInput) (*ExecuteScheduledQueryOutput, error) {
@@ -806,14 +806,13 @@ const opListScheduledQueries = "ListScheduledQueries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListScheduledQueriesRequest method.
+//	req, resp := client.ListScheduledQueriesRequest(params)
 //
-//    // Example sending a request using the ListScheduledQueriesRequest method.
-//    req, resp := client.ListScheduledQueriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/ListScheduledQueries
 func (c *TimestreamQuery) ListScheduledQueriesRequest(input *ListScheduledQueriesInput) (req *request.Request, output *ListScheduledQueriesOutput) {
@@ -874,21 +873,22 @@ func (c *TimestreamQuery) ListScheduledQueriesRequest(input *ListScheduledQuerie
 // API operation ListScheduledQueries for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/ListScheduledQueries
 func (c *TimestreamQuery) ListScheduledQueries(input *ListScheduledQueriesInput) (*ListScheduledQueriesOutput, error) {
@@ -920,15 +920,14 @@ func (c *TimestreamQuery) ListScheduledQueriesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListScheduledQueries operation.
-//    pageNum := 0
-//    err := client.ListScheduledQueriesPages(params,
-//        func(page *timestreamquery.ListScheduledQueriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListScheduledQueries operation.
+//	pageNum := 0
+//	err := client.ListScheduledQueriesPages(params,
+//	    func(page *timestreamquery.ListScheduledQueriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TimestreamQuery) ListScheduledQueriesPages(input *ListScheduledQueriesInput, fn func(*ListScheduledQueriesOutput, bool) bool) error {
 	return c.ListScheduledQueriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -980,14 +979,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/ListTagsForResource
 func (c *TimestreamQuery) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1047,17 +1045,18 @@ func (c *TimestreamQuery) ListTagsForResourceRequest(input *ListTagsForResourceI
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/ListTagsForResource
 func (c *TimestreamQuery) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1089,15 +1088,14 @@ func (c *TimestreamQuery) ListTagsForResourceWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *timestreamquery.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *timestreamquery.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TimestreamQuery) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1149,14 +1147,13 @@ const opPrepareQuery = "PrepareQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PrepareQueryRequest method.
+//	req, resp := client.PrepareQueryRequest(params)
 //
-//    // Example sending a request using the PrepareQueryRequest method.
-//    req, resp := client.PrepareQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/PrepareQuery
 func (c *TimestreamQuery) PrepareQueryRequest(input *PrepareQueryInput) (req *request.Request, output *PrepareQueryOutput) {
@@ -1212,21 +1209,22 @@ func (c *TimestreamQuery) PrepareQueryRequest(input *PrepareQueryInput) (req *re
 // API operation PrepareQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/PrepareQuery
 func (c *TimestreamQuery) PrepareQuery(input *PrepareQueryInput) (*PrepareQueryOutput, error) {
@@ -1266,14 +1264,13 @@ const opQuery = "Query"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the QueryRequest method.
+//	req, resp := client.QueryRequest(params)
 //
-//    // Example sending a request using the QueryRequest method.
-//    req, resp := client.QueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/Query
 func (c *TimestreamQuery) QueryRequest(input *QueryInput) (req *request.Request, output *QueryOutput) {
@@ -1331,20 +1328,20 @@ func (c *TimestreamQuery) QueryRequest(input *QueryInput) (req *request.Request,
 //
 // Your query request will fail in the following cases:
 //
-//    * If you submit a Query request with the same client token outside of
-//    the 5-minute idempotency window.
+//   - If you submit a Query request with the same client token outside of
+//     the 5-minute idempotency window.
 //
-//    * If you submit a Query request with the same client token, but change
-//    other parameters, within the 5-minute idempotency window.
+//   - If you submit a Query request with the same client token, but change
+//     other parameters, within the 5-minute idempotency window.
 //
-//    * If the size of the row (including the query metadata) exceeds 1 MB,
-//    then the query will fail with the following error message: Query aborted
-//    as max page response size has been exceeded by the output result row
+//   - If the size of the row (including the query metadata) exceeds 1 MB,
+//     then the query will fail with the following error message: Query aborted
+//     as max page response size has been exceeded by the output result row
 //
-//    * If the IAM principal of the query initiator and the result reader are
-//    not the same and/or the query initiator and the result reader do not have
-//    the same query string in the query requests, the query will fail with
-//    an Invalid pagination token error.
+//   - If the IAM principal of the query initiator and the result reader are
+//     not the same and/or the query initiator and the result reader do not have
+//     the same query string in the query requests, the query will fail with
+//     an Invalid pagination token error.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1354,27 +1351,28 @@ func (c *TimestreamQuery) QueryRequest(input *QueryInput) (req *request.Request,
 // API operation Query for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * ConflictException
-//   Unable to poll results for a cancelled query.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - ConflictException
+//     Unable to poll results for a cancelled query.
 //
-//   * QueryExecutionException
-//   Timestream was unable to run the query successfully.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - QueryExecutionException
+//     Timestream was unable to run the query successfully.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/Query
 func (c *TimestreamQuery) Query(input *QueryInput) (*QueryOutput, error) {
@@ -1406,15 +1404,14 @@ func (c *TimestreamQuery) QueryWithContext(ctx aws.Context, input *QueryInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a Query operation.
-//    pageNum := 0
-//    err := client.QueryPages(params,
-//        func(page *timestreamquery.QueryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a Query operation.
+//	pageNum := 0
+//	err := client.QueryPages(params,
+//	    func(page *timestreamquery.QueryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TimestreamQuery) QueryPages(input *QueryInput, fn func(*QueryOutput, bool) bool) error {
 	return c.QueryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1466,14 +1463,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/TagResource
 func (c *TimestreamQuery) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1530,20 +1526,21 @@ func (c *TimestreamQuery) TagResourceRequest(input *TagResourceInput) (req *requ
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the service quota.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     You have exceeded the service quota.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/TagResource
 func (c *TimestreamQuery) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1583,14 +1580,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/UntagResource
 func (c *TimestreamQuery) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1645,17 +1641,18 @@ func (c *TimestreamQuery) UntagResourceRequest(input *UntagResourceInput) (req *
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Invalid or malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     Invalid or malformed request.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/UntagResource
 func (c *TimestreamQuery) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1695,14 +1692,13 @@ const opUpdateScheduledQuery = "UpdateScheduledQuery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateScheduledQueryRequest method.
+//	req, resp := client.UpdateScheduledQueryRequest(params)
 //
-//    // Example sending a request using the UpdateScheduledQueryRequest method.
-//    req, resp := client.UpdateScheduledQueryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/UpdateScheduledQuery
 func (c *TimestreamQuery) UpdateScheduledQueryRequest(input *UpdateScheduledQueryInput) (req *request.Request, output *UpdateScheduledQueryOutput) {
@@ -1757,24 +1753,25 @@ func (c *TimestreamQuery) UpdateScheduledQueryRequest(input *UpdateScheduledQuer
 // API operation UpdateScheduledQuery for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerException
-//   Timestream was unable to fully process this request because of an internal
-//   server error.
+//   - AccessDeniedException
+//     You are not authorized to perform this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - InternalServerException
+//     Timestream was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * ValidationException
-//   Invalid or malformed request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidEndpointException
-//   The requested endpoint was not valid.
+//   - ValidationException
+//     Invalid or malformed request.
+//
+//   - InvalidEndpointException
+//     The requested endpoint was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/timestream-query-2018-11-01/UpdateScheduledQuery
 func (c *TimestreamQuery) UpdateScheduledQuery(input *UpdateScheduledQueryInput) (*UpdateScheduledQueryOutput, error) {

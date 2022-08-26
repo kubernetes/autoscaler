@@ -6,13 +6,15 @@
 // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html#UsingWithRDS.IAMDBAuth.Availability
 //
 // When building the connection string, there are two required parameters that are needed to be set on the query.
-//	* tls
-//	* allowCleartextPasswords must be set to true
 //
-//	Example creating a basic auth token with the builder:
-//	v := url.Values{}
-//	v.Add("tls", "tls_profile_name")
-//	v.Add("allowCleartextPasswords", "true")
-//	b := rdsutils.NewConnectionStringBuilder(endpoint, region, user, dbname, creds)
-//	connectStr, err := b.WithTCPFormat().WithParams(v).Build()
+//   - tls
+//
+//   - allowCleartextPasswords must be set to true
+//
+//     Example creating a basic auth token with the builder:
+//     v := url.Values{}
+//     v.Add("tls", "tls_profile_name")
+//     v.Add("allowCleartextPasswords", "true")
+//     b := rdsutils.NewConnectionStringBuilder(endpoint, region, user, dbname, creds)
+//     connectStr, err := b.WithTCPFormat().WithParams(v).Build()
 package rdsutils

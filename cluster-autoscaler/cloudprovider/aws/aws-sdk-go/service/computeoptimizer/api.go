@@ -29,14 +29,13 @@ const opDeleteRecommendationPreferences = "DeleteRecommendationPreferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecommendationPreferencesRequest method.
+//	req, resp := client.DeleteRecommendationPreferencesRequest(params)
 //
-//    // Example sending a request using the DeleteRecommendationPreferencesRequest method.
-//    req, resp := client.DeleteRecommendationPreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/DeleteRecommendationPreferences
 func (c *ComputeOptimizer) DeleteRecommendationPreferencesRequest(input *DeleteRecommendationPreferencesInput) (req *request.Request, output *DeleteRecommendationPreferencesOutput) {
@@ -71,30 +70,31 @@ func (c *ComputeOptimizer) DeleteRecommendationPreferencesRequest(input *DeleteR
 // API operation DeleteRecommendationPreferences for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/DeleteRecommendationPreferences
 func (c *ComputeOptimizer) DeleteRecommendationPreferences(input *DeleteRecommendationPreferencesInput) (*DeleteRecommendationPreferencesOutput, error) {
@@ -134,14 +134,13 @@ const opDescribeRecommendationExportJobs = "DescribeRecommendationExportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRecommendationExportJobsRequest method.
+//	req, resp := client.DescribeRecommendationExportJobsRequest(params)
 //
-//    // Example sending a request using the DescribeRecommendationExportJobsRequest method.
-//    req, resp := client.DescribeRecommendationExportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/DescribeRecommendationExportJobs
 func (c *ComputeOptimizer) DescribeRecommendationExportJobsRequest(input *DescribeRecommendationExportJobsInput) (req *request.Request, output *DescribeRecommendationExportJobsOutput) {
@@ -176,30 +175,31 @@ func (c *ComputeOptimizer) DescribeRecommendationExportJobsRequest(input *Descri
 // API operation DescribeRecommendationExportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/DescribeRecommendationExportJobs
 func (c *ComputeOptimizer) DescribeRecommendationExportJobs(input *DescribeRecommendationExportJobsInput) (*DescribeRecommendationExportJobsOutput, error) {
@@ -239,14 +239,13 @@ const opExportAutoScalingGroupRecommendations = "ExportAutoScalingGroupRecommend
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportAutoScalingGroupRecommendationsRequest method.
+//	req, resp := client.ExportAutoScalingGroupRecommendationsRequest(params)
 //
-//    // Example sending a request using the ExportAutoScalingGroupRecommendationsRequest method.
-//    req, resp := client.ExportAutoScalingGroupRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportAutoScalingGroupRecommendations
 func (c *ComputeOptimizer) ExportAutoScalingGroupRecommendationsRequest(input *ExportAutoScalingGroupRecommendationsInput) (req *request.Request, output *ExportAutoScalingGroupRecommendationsOutput) {
@@ -286,30 +285,31 @@ func (c *ComputeOptimizer) ExportAutoScalingGroupRecommendationsRequest(input *E
 // API operation ExportAutoScalingGroupRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
 //
-//   * LimitExceededException
-//   The request exceeds a limit of the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The request exceeds a limit of the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportAutoScalingGroupRecommendations
 func (c *ComputeOptimizer) ExportAutoScalingGroupRecommendations(input *ExportAutoScalingGroupRecommendationsInput) (*ExportAutoScalingGroupRecommendationsOutput, error) {
@@ -349,14 +349,13 @@ const opExportEBSVolumeRecommendations = "ExportEBSVolumeRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportEBSVolumeRecommendationsRequest method.
+//	req, resp := client.ExportEBSVolumeRecommendationsRequest(params)
 //
-//    // Example sending a request using the ExportEBSVolumeRecommendationsRequest method.
-//    req, resp := client.ExportEBSVolumeRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportEBSVolumeRecommendations
 func (c *ComputeOptimizer) ExportEBSVolumeRecommendationsRequest(input *ExportEBSVolumeRecommendationsInput) (req *request.Request, output *ExportEBSVolumeRecommendationsOutput) {
@@ -396,30 +395,31 @@ func (c *ComputeOptimizer) ExportEBSVolumeRecommendationsRequest(input *ExportEB
 // API operation ExportEBSVolumeRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
 //
-//   * LimitExceededException
-//   The request exceeds a limit of the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The request exceeds a limit of the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportEBSVolumeRecommendations
 func (c *ComputeOptimizer) ExportEBSVolumeRecommendations(input *ExportEBSVolumeRecommendationsInput) (*ExportEBSVolumeRecommendationsOutput, error) {
@@ -459,14 +459,13 @@ const opExportEC2InstanceRecommendations = "ExportEC2InstanceRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportEC2InstanceRecommendationsRequest method.
+//	req, resp := client.ExportEC2InstanceRecommendationsRequest(params)
 //
-//    // Example sending a request using the ExportEC2InstanceRecommendationsRequest method.
-//    req, resp := client.ExportEC2InstanceRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportEC2InstanceRecommendations
 func (c *ComputeOptimizer) ExportEC2InstanceRecommendationsRequest(input *ExportEC2InstanceRecommendationsInput) (req *request.Request, output *ExportEC2InstanceRecommendationsOutput) {
@@ -506,30 +505,31 @@ func (c *ComputeOptimizer) ExportEC2InstanceRecommendationsRequest(input *Export
 // API operation ExportEC2InstanceRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
 //
-//   * LimitExceededException
-//   The request exceeds a limit of the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The request exceeds a limit of the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportEC2InstanceRecommendations
 func (c *ComputeOptimizer) ExportEC2InstanceRecommendations(input *ExportEC2InstanceRecommendationsInput) (*ExportEC2InstanceRecommendationsOutput, error) {
@@ -569,14 +569,13 @@ const opExportLambdaFunctionRecommendations = "ExportLambdaFunctionRecommendatio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportLambdaFunctionRecommendationsRequest method.
+//	req, resp := client.ExportLambdaFunctionRecommendationsRequest(params)
 //
-//    // Example sending a request using the ExportLambdaFunctionRecommendationsRequest method.
-//    req, resp := client.ExportLambdaFunctionRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportLambdaFunctionRecommendations
 func (c *ComputeOptimizer) ExportLambdaFunctionRecommendationsRequest(input *ExportLambdaFunctionRecommendationsInput) (req *request.Request, output *ExportLambdaFunctionRecommendationsOutput) {
@@ -616,30 +615,31 @@ func (c *ComputeOptimizer) ExportLambdaFunctionRecommendationsRequest(input *Exp
 // API operation ExportLambdaFunctionRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
 //
-//   * LimitExceededException
-//   The request exceeds a limit of the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The request exceeds a limit of the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/ExportLambdaFunctionRecommendations
 func (c *ComputeOptimizer) ExportLambdaFunctionRecommendations(input *ExportLambdaFunctionRecommendationsInput) (*ExportLambdaFunctionRecommendationsOutput, error) {
@@ -679,14 +679,13 @@ const opGetAutoScalingGroupRecommendations = "GetAutoScalingGroupRecommendations
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAutoScalingGroupRecommendationsRequest method.
+//	req, resp := client.GetAutoScalingGroupRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetAutoScalingGroupRecommendationsRequest method.
-//    req, resp := client.GetAutoScalingGroupRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetAutoScalingGroupRecommendations
 func (c *ComputeOptimizer) GetAutoScalingGroupRecommendationsRequest(input *GetAutoScalingGroupRecommendationsInput) (req *request.Request, output *GetAutoScalingGroupRecommendationsOutput) {
@@ -722,30 +721,31 @@ func (c *ComputeOptimizer) GetAutoScalingGroupRecommendationsRequest(input *GetA
 // API operation GetAutoScalingGroupRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetAutoScalingGroupRecommendations
 func (c *ComputeOptimizer) GetAutoScalingGroupRecommendations(input *GetAutoScalingGroupRecommendationsInput) (*GetAutoScalingGroupRecommendationsOutput, error) {
@@ -785,14 +785,13 @@ const opGetEBSVolumeRecommendations = "GetEBSVolumeRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEBSVolumeRecommendationsRequest method.
+//	req, resp := client.GetEBSVolumeRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetEBSVolumeRecommendationsRequest method.
-//    req, resp := client.GetEBSVolumeRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEBSVolumeRecommendations
 func (c *ComputeOptimizer) GetEBSVolumeRecommendationsRequest(input *GetEBSVolumeRecommendationsInput) (req *request.Request, output *GetEBSVolumeRecommendationsOutput) {
@@ -828,30 +827,31 @@ func (c *ComputeOptimizer) GetEBSVolumeRecommendationsRequest(input *GetEBSVolum
 // API operation GetEBSVolumeRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEBSVolumeRecommendations
 func (c *ComputeOptimizer) GetEBSVolumeRecommendations(input *GetEBSVolumeRecommendationsInput) (*GetEBSVolumeRecommendationsOutput, error) {
@@ -891,14 +891,13 @@ const opGetEC2InstanceRecommendations = "GetEC2InstanceRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEC2InstanceRecommendationsRequest method.
+//	req, resp := client.GetEC2InstanceRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetEC2InstanceRecommendationsRequest method.
-//    req, resp := client.GetEC2InstanceRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEC2InstanceRecommendations
 func (c *ComputeOptimizer) GetEC2InstanceRecommendationsRequest(input *GetEC2InstanceRecommendationsInput) (req *request.Request, output *GetEC2InstanceRecommendationsOutput) {
@@ -934,30 +933,31 @@ func (c *ComputeOptimizer) GetEC2InstanceRecommendationsRequest(input *GetEC2Ins
 // API operation GetEC2InstanceRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEC2InstanceRecommendations
 func (c *ComputeOptimizer) GetEC2InstanceRecommendations(input *GetEC2InstanceRecommendationsInput) (*GetEC2InstanceRecommendationsOutput, error) {
@@ -997,14 +997,13 @@ const opGetEC2RecommendationProjectedMetrics = "GetEC2RecommendationProjectedMet
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEC2RecommendationProjectedMetricsRequest method.
+//	req, resp := client.GetEC2RecommendationProjectedMetricsRequest(params)
 //
-//    // Example sending a request using the GetEC2RecommendationProjectedMetricsRequest method.
-//    req, resp := client.GetEC2RecommendationProjectedMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEC2RecommendationProjectedMetrics
 func (c *ComputeOptimizer) GetEC2RecommendationProjectedMetricsRequest(input *GetEC2RecommendationProjectedMetricsInput) (req *request.Request, output *GetEC2RecommendationProjectedMetricsOutput) {
@@ -1041,30 +1040,31 @@ func (c *ComputeOptimizer) GetEC2RecommendationProjectedMetricsRequest(input *Ge
 // API operation GetEC2RecommendationProjectedMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEC2RecommendationProjectedMetrics
 func (c *ComputeOptimizer) GetEC2RecommendationProjectedMetrics(input *GetEC2RecommendationProjectedMetricsInput) (*GetEC2RecommendationProjectedMetricsOutput, error) {
@@ -1104,14 +1104,13 @@ const opGetEffectiveRecommendationPreferences = "GetEffectiveRecommendationPrefe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEffectiveRecommendationPreferencesRequest method.
+//	req, resp := client.GetEffectiveRecommendationPreferencesRequest(params)
 //
-//    // Example sending a request using the GetEffectiveRecommendationPreferencesRequest method.
-//    req, resp := client.GetEffectiveRecommendationPreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEffectiveRecommendationPreferences
 func (c *ComputeOptimizer) GetEffectiveRecommendationPreferencesRequest(input *GetEffectiveRecommendationPreferencesInput) (req *request.Request, output *GetEffectiveRecommendationPreferencesOutput) {
@@ -1148,30 +1147,31 @@ func (c *ComputeOptimizer) GetEffectiveRecommendationPreferencesRequest(input *G
 // API operation GetEffectiveRecommendationPreferences for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEffectiveRecommendationPreferences
 func (c *ComputeOptimizer) GetEffectiveRecommendationPreferences(input *GetEffectiveRecommendationPreferencesInput) (*GetEffectiveRecommendationPreferencesOutput, error) {
@@ -1211,14 +1211,13 @@ const opGetEnrollmentStatus = "GetEnrollmentStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnrollmentStatusRequest method.
+//	req, resp := client.GetEnrollmentStatusRequest(params)
 //
-//    // Example sending a request using the GetEnrollmentStatusRequest method.
-//    req, resp := client.GetEnrollmentStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEnrollmentStatus
 func (c *ComputeOptimizer) GetEnrollmentStatusRequest(input *GetEnrollmentStatusInput) (req *request.Request, output *GetEnrollmentStatusOutput) {
@@ -1255,24 +1254,25 @@ func (c *ComputeOptimizer) GetEnrollmentStatusRequest(input *GetEnrollmentStatus
 // API operation GetEnrollmentStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEnrollmentStatus
 func (c *ComputeOptimizer) GetEnrollmentStatus(input *GetEnrollmentStatusInput) (*GetEnrollmentStatusOutput, error) {
@@ -1312,14 +1312,13 @@ const opGetEnrollmentStatusesForOrganization = "GetEnrollmentStatusesForOrganiza
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnrollmentStatusesForOrganizationRequest method.
+//	req, resp := client.GetEnrollmentStatusesForOrganizationRequest(params)
 //
-//    // Example sending a request using the GetEnrollmentStatusesForOrganizationRequest method.
-//    req, resp := client.GetEnrollmentStatusesForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEnrollmentStatusesForOrganization
 func (c *ComputeOptimizer) GetEnrollmentStatusesForOrganizationRequest(input *GetEnrollmentStatusesForOrganizationInput) (req *request.Request, output *GetEnrollmentStatusesForOrganizationOutput) {
@@ -1354,24 +1353,25 @@ func (c *ComputeOptimizer) GetEnrollmentStatusesForOrganizationRequest(input *Ge
 // API operation GetEnrollmentStatusesForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetEnrollmentStatusesForOrganization
 func (c *ComputeOptimizer) GetEnrollmentStatusesForOrganization(input *GetEnrollmentStatusesForOrganizationInput) (*GetEnrollmentStatusesForOrganizationOutput, error) {
@@ -1411,14 +1411,13 @@ const opGetLambdaFunctionRecommendations = "GetLambdaFunctionRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLambdaFunctionRecommendationsRequest method.
+//	req, resp := client.GetLambdaFunctionRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetLambdaFunctionRecommendationsRequest method.
-//    req, resp := client.GetLambdaFunctionRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetLambdaFunctionRecommendations
 func (c *ComputeOptimizer) GetLambdaFunctionRecommendationsRequest(input *GetLambdaFunctionRecommendationsInput) (req *request.Request, output *GetLambdaFunctionRecommendationsOutput) {
@@ -1454,30 +1453,31 @@ func (c *ComputeOptimizer) GetLambdaFunctionRecommendationsRequest(input *GetLam
 // API operation GetLambdaFunctionRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
 //
-//   * LimitExceededException
-//   The request exceeds a limit of the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The request exceeds a limit of the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetLambdaFunctionRecommendations
 func (c *ComputeOptimizer) GetLambdaFunctionRecommendations(input *GetLambdaFunctionRecommendationsInput) (*GetLambdaFunctionRecommendationsOutput, error) {
@@ -1517,14 +1517,13 @@ const opGetRecommendationPreferences = "GetRecommendationPreferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommendationPreferencesRequest method.
+//	req, resp := client.GetRecommendationPreferencesRequest(params)
 //
-//    // Example sending a request using the GetRecommendationPreferencesRequest method.
-//    req, resp := client.GetRecommendationPreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetRecommendationPreferences
 func (c *ComputeOptimizer) GetRecommendationPreferencesRequest(input *GetRecommendationPreferencesInput) (req *request.Request, output *GetRecommendationPreferencesOutput) {
@@ -1563,30 +1562,31 @@ func (c *ComputeOptimizer) GetRecommendationPreferencesRequest(input *GetRecomme
 // API operation GetRecommendationPreferences for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetRecommendationPreferences
 func (c *ComputeOptimizer) GetRecommendationPreferences(input *GetRecommendationPreferencesInput) (*GetRecommendationPreferencesOutput, error) {
@@ -1626,14 +1626,13 @@ const opGetRecommendationSummaries = "GetRecommendationSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommendationSummariesRequest method.
+//	req, resp := client.GetRecommendationSummariesRequest(params)
 //
-//    // Example sending a request using the GetRecommendationSummariesRequest method.
-//    req, resp := client.GetRecommendationSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetRecommendationSummaries
 func (c *ComputeOptimizer) GetRecommendationSummariesRequest(input *GetRecommendationSummariesInput) (req *request.Request, output *GetRecommendationSummariesOutput) {
@@ -1658,14 +1657,14 @@ func (c *ComputeOptimizer) GetRecommendationSummariesRequest(input *GetRecommend
 //
 // It returns the number of:
 //
-//    * Amazon EC2 instances in an account that are Underprovisioned, Overprovisioned,
-//    or Optimized.
+//   - Amazon EC2 instances in an account that are Underprovisioned, Overprovisioned,
+//     or Optimized.
 //
-//    * Auto Scaling groups in an account that are NotOptimized, or Optimized.
+//   - Auto Scaling groups in an account that are NotOptimized, or Optimized.
 //
-//    * Amazon EBS volumes in an account that are NotOptimized, or Optimized.
+//   - Amazon EBS volumes in an account that are NotOptimized, or Optimized.
 //
-//    * Lambda functions in an account that are NotOptimized, or Optimized.
+//   - Lambda functions in an account that are NotOptimized, or Optimized.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1675,27 +1674,28 @@ func (c *ComputeOptimizer) GetRecommendationSummariesRequest(input *GetRecommend
 // API operation GetRecommendationSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/GetRecommendationSummaries
 func (c *ComputeOptimizer) GetRecommendationSummaries(input *GetRecommendationSummariesInput) (*GetRecommendationSummariesOutput, error) {
@@ -1735,14 +1735,13 @@ const opPutRecommendationPreferences = "PutRecommendationPreferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecommendationPreferencesRequest method.
+//	req, resp := client.PutRecommendationPreferencesRequest(params)
 //
-//    // Example sending a request using the PutRecommendationPreferencesRequest method.
-//    req, resp := client.PutRecommendationPreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/PutRecommendationPreferences
 func (c *ComputeOptimizer) PutRecommendationPreferencesRequest(input *PutRecommendationPreferencesInput) (req *request.Request, output *PutRecommendationPreferencesOutput) {
@@ -1778,30 +1777,31 @@ func (c *ComputeOptimizer) PutRecommendationPreferencesRequest(input *PutRecomme
 // API operation PutRecommendationPreferences for usage and error information.
 //
 // Returned Error Types:
-//   * OptInRequiredException
-//   The account is not opted in to Compute Optimizer.
 //
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
+//   - OptInRequiredException
+//     The account is not opted in to Compute Optimizer.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/PutRecommendationPreferences
 func (c *ComputeOptimizer) PutRecommendationPreferences(input *PutRecommendationPreferencesInput) (*PutRecommendationPreferencesOutput, error) {
@@ -1841,14 +1841,13 @@ const opUpdateEnrollmentStatus = "UpdateEnrollmentStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnrollmentStatusRequest method.
+//	req, resp := client.UpdateEnrollmentStatusRequest(params)
 //
-//    // Example sending a request using the UpdateEnrollmentStatusRequest method.
-//    req, resp := client.UpdateEnrollmentStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/UpdateEnrollmentStatus
 func (c *ComputeOptimizer) UpdateEnrollmentStatusRequest(input *UpdateEnrollmentStatusInput) (req *request.Request, output *UpdateEnrollmentStatusOutput) {
@@ -1893,24 +1892,25 @@ func (c *ComputeOptimizer) UpdateEnrollmentStatusRequest(input *UpdateEnrollment
 // API operation UpdateEnrollmentStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Try your call again.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - InternalServerException
+//     An internal error has occurred. Try your call again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   The value supplied for the input parameter is out of range or not valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * MissingAuthenticationToken
-//   The request must contain either a valid (registered) Amazon Web Services
-//   access key ID or X.509 certificate.
+//   - InvalidParameterValueException
+//     The value supplied for the input parameter is out of range or not valid.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - MissingAuthenticationToken
+//     The request must contain either a valid (registered) Amazon Web Services
+//     access key ID or X.509 certificate.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/compute-optimizer-2019-11-01/UpdateEnrollmentStatus
 func (c *ComputeOptimizer) UpdateEnrollmentStatus(input *UpdateEnrollmentStatusInput) (*UpdateEnrollmentStatusOutput, error) {

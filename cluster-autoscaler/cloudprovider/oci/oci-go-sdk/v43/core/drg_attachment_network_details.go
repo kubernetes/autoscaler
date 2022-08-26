@@ -78,7 +78,7 @@ func (m *drgattachmentnetworkdetails) UnmarshalPolymorphicJSON(data []byte) (int
 	}
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m drgattachmentnetworkdetails) GetId() *string {
 	return m.Id
 }

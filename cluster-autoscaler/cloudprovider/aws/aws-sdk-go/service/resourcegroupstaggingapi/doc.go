@@ -3,14 +3,14 @@
 // Package resourcegroupstaggingapi provides the client and types for making API
 // requests to AWS Resource Groups Tagging API.
 //
-// Resource Groups Tagging API
+// # Resource Groups Tagging API
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26 for more information on this service.
 //
 // See resourcegroupstaggingapi package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/resourcegroupstaggingapi/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Resource Groups Tagging API with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

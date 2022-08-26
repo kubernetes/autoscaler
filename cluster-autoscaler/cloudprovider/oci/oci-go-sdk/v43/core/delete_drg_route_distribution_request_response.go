@@ -11,7 +11,7 @@ import (
 
 // DeleteDrgRouteDistributionRequest wrapper for the DeleteDrgRouteDistribution operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteDrgRouteDistribution.go.html to see an example of how to use DeleteDrgRouteDistributionRequest.
 type DeleteDrgRouteDistributionRequest struct {

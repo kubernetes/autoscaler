@@ -30,7 +30,7 @@ type EnumIntegerImageCapabilityDescriptor struct {
 	Source ImageCapabilitySchemaDescriptorSourceEnum `mandatory:"true" json:"source"`
 }
 
-//GetSource returns Source
+// GetSource returns Source
 func (m EnumIntegerImageCapabilityDescriptor) GetSource() ImageCapabilitySchemaDescriptorSourceEnum {
 	return m.Source
 }

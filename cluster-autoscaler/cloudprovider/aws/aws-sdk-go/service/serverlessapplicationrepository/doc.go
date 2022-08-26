@@ -28,18 +28,18 @@
 // The AWS Serverless Application Repository Developer Guide contains more information
 // about the two developer experiences available:
 //
-//    * Consuming Applications – Browse for applications and view information
-//    about them, including source code and readme files. Also install, configure,
-//    and deploy applications of your choosing. Publishing Applications –
-//    Configure and upload applications to make them available to other developers,
-//    and publish new versions of applications.
+//   - Consuming Applications – Browse for applications and view information
+//     about them, including source code and readme files. Also install, configure,
+//     and deploy applications of your choosing. Publishing Applications –
+//     Configure and upload applications to make them available to other developers,
+//     and publish new versions of applications.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08 for more information on this service.
 //
 // See serverlessapplicationrepository package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/serverlessapplicationrepository/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWSServerlessApplicationRepository with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

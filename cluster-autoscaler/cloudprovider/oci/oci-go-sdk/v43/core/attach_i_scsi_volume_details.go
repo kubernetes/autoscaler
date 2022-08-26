@@ -50,32 +50,32 @@ type AttachIScsiVolumeDetails struct {
 	EncryptionInTransitType EncryptionInTransitTypeEnum `mandatory:"false" json:"encryptionInTransitType,omitempty"`
 }
 
-//GetDevice returns Device
+// GetDevice returns Device
 func (m AttachIScsiVolumeDetails) GetDevice() *string {
 	return m.Device
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m AttachIScsiVolumeDetails) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetInstanceId returns InstanceId
+// GetInstanceId returns InstanceId
 func (m AttachIScsiVolumeDetails) GetInstanceId() *string {
 	return m.InstanceId
 }
 
-//GetIsReadOnly returns IsReadOnly
+// GetIsReadOnly returns IsReadOnly
 func (m AttachIScsiVolumeDetails) GetIsReadOnly() *bool {
 	return m.IsReadOnly
 }
 
-//GetIsShareable returns IsShareable
+// GetIsShareable returns IsShareable
 func (m AttachIScsiVolumeDetails) GetIsShareable() *bool {
 	return m.IsShareable
 }
 
-//GetVolumeId returns VolumeId
+// GetVolumeId returns VolumeId
 func (m AttachIScsiVolumeDetails) GetVolumeId() *string {
 	return m.VolumeId
 }

@@ -29,14 +29,13 @@ const opAcceptDirectConnectGatewayAssociationProposal = "AcceptDirectConnectGate
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptDirectConnectGatewayAssociationProposalRequest method.
+//	req, resp := client.AcceptDirectConnectGatewayAssociationProposalRequest(params)
 //
-//    // Example sending a request using the AcceptDirectConnectGatewayAssociationProposalRequest method.
-//    req, resp := client.AcceptDirectConnectGatewayAssociationProposalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AcceptDirectConnectGatewayAssociationProposal
 func (c *DirectConnect) AcceptDirectConnectGatewayAssociationProposalRequest(input *AcceptDirectConnectGatewayAssociationProposalInput) (req *request.Request, output *AcceptDirectConnectGatewayAssociationProposalOutput) {
@@ -68,11 +67,12 @@ func (c *DirectConnect) AcceptDirectConnectGatewayAssociationProposalRequest(inp
 // API operation AcceptDirectConnectGatewayAssociationProposal for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AcceptDirectConnectGatewayAssociationProposal
 func (c *DirectConnect) AcceptDirectConnectGatewayAssociationProposal(input *AcceptDirectConnectGatewayAssociationProposalInput) (*AcceptDirectConnectGatewayAssociationProposalOutput, error) {
@@ -112,14 +112,13 @@ const opAllocateConnectionOnInterconnect = "AllocateConnectionOnInterconnect"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocateConnectionOnInterconnectRequest method.
+//	req, resp := client.AllocateConnectionOnInterconnectRequest(params)
 //
-//    // Example sending a request using the AllocateConnectionOnInterconnectRequest method.
-//    req, resp := client.AllocateConnectionOnInterconnectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateConnectionOnInterconnect
 //
@@ -162,11 +161,12 @@ func (c *DirectConnect) AllocateConnectionOnInterconnectRequest(input *AllocateC
 // API operation AllocateConnectionOnInterconnect for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateConnectionOnInterconnect
 //
@@ -210,14 +210,13 @@ const opAllocateHostedConnection = "AllocateHostedConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocateHostedConnectionRequest method.
+//	req, resp := client.AllocateHostedConnectionRequest(params)
 //
-//    // Example sending a request using the AllocateHostedConnectionRequest method.
-//    req, resp := client.AllocateHostedConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateHostedConnection
 func (c *DirectConnect) AllocateHostedConnectionRequest(input *AllocateHostedConnectionInput) (req *request.Request, output *Connection) {
@@ -257,17 +256,18 @@ func (c *DirectConnect) AllocateHostedConnectionRequest(input *AllocateHostedCon
 // API operation AllocateHostedConnection for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateHostedConnection
 func (c *DirectConnect) AllocateHostedConnection(input *AllocateHostedConnectionInput) (*Connection, error) {
@@ -307,14 +307,13 @@ const opAllocatePrivateVirtualInterface = "AllocatePrivateVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocatePrivateVirtualInterfaceRequest method.
+//	req, resp := client.AllocatePrivateVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the AllocatePrivateVirtualInterfaceRequest method.
-//    req, resp := client.AllocatePrivateVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePrivateVirtualInterface
 func (c *DirectConnect) AllocatePrivateVirtualInterfaceRequest(input *AllocatePrivateVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
@@ -350,17 +349,18 @@ func (c *DirectConnect) AllocatePrivateVirtualInterfaceRequest(input *AllocatePr
 // API operation AllocatePrivateVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePrivateVirtualInterface
 func (c *DirectConnect) AllocatePrivateVirtualInterface(input *AllocatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
@@ -400,14 +400,13 @@ const opAllocatePublicVirtualInterface = "AllocatePublicVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocatePublicVirtualInterfaceRequest method.
+//	req, resp := client.AllocatePublicVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the AllocatePublicVirtualInterfaceRequest method.
-//    req, resp := client.AllocatePublicVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePublicVirtualInterface
 func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePublicVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
@@ -451,17 +450,18 @@ func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePub
 // API operation AllocatePublicVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePublicVirtualInterface
 func (c *DirectConnect) AllocatePublicVirtualInterface(input *AllocatePublicVirtualInterfaceInput) (*VirtualInterface, error) {
@@ -501,14 +501,13 @@ const opAllocateTransitVirtualInterface = "AllocateTransitVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocateTransitVirtualInterfaceRequest method.
+//	req, resp := client.AllocateTransitVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the AllocateTransitVirtualInterfaceRequest method.
-//    req, resp := client.AllocateTransitVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateTransitVirtualInterface
 func (c *DirectConnect) AllocateTransitVirtualInterfaceRequest(input *AllocateTransitVirtualInterfaceInput) (req *request.Request, output *AllocateTransitVirtualInterfaceOutput) {
@@ -549,17 +548,18 @@ func (c *DirectConnect) AllocateTransitVirtualInterfaceRequest(input *AllocateTr
 // API operation AllocateTransitVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateTransitVirtualInterface
 func (c *DirectConnect) AllocateTransitVirtualInterface(input *AllocateTransitVirtualInterfaceInput) (*AllocateTransitVirtualInterfaceOutput, error) {
@@ -599,14 +599,13 @@ const opAssociateConnectionWithLag = "AssociateConnectionWithLag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateConnectionWithLagRequest method.
+//	req, resp := client.AssociateConnectionWithLagRequest(params)
 //
-//    // Example sending a request using the AssociateConnectionWithLagRequest method.
-//    req, resp := client.AssociateConnectionWithLagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateConnectionWithLag
 func (c *DirectConnect) AssociateConnectionWithLagRequest(input *AssociateConnectionWithLagInput) (req *request.Request, output *Connection) {
@@ -653,11 +652,12 @@ func (c *DirectConnect) AssociateConnectionWithLagRequest(input *AssociateConnec
 // API operation AssociateConnectionWithLag for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateConnectionWithLag
 func (c *DirectConnect) AssociateConnectionWithLag(input *AssociateConnectionWithLagInput) (*Connection, error) {
@@ -697,14 +697,13 @@ const opAssociateHostedConnection = "AssociateHostedConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateHostedConnectionRequest method.
+//	req, resp := client.AssociateHostedConnectionRequest(params)
 //
-//    // Example sending a request using the AssociateHostedConnectionRequest method.
-//    req, resp := client.AssociateHostedConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateHostedConnection
 func (c *DirectConnect) AssociateHostedConnectionRequest(input *AssociateHostedConnectionInput) (req *request.Request, output *Connection) {
@@ -741,11 +740,12 @@ func (c *DirectConnect) AssociateHostedConnectionRequest(input *AssociateHostedC
 // API operation AssociateHostedConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateHostedConnection
 func (c *DirectConnect) AssociateHostedConnection(input *AssociateHostedConnectionInput) (*Connection, error) {
@@ -785,14 +785,13 @@ const opAssociateMacSecKey = "AssociateMacSecKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateMacSecKeyRequest method.
+//	req, resp := client.AssociateMacSecKeyRequest(params)
 //
-//    // Example sending a request using the AssociateMacSecKeyRequest method.
-//    req, resp := client.AssociateMacSecKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateMacSecKey
 func (c *DirectConnect) AssociateMacSecKeyRequest(input *AssociateMacSecKeyInput) (req *request.Request, output *AssociateMacSecKeyOutput) {
@@ -831,11 +830,12 @@ func (c *DirectConnect) AssociateMacSecKeyRequest(input *AssociateMacSecKeyInput
 // API operation AssociateMacSecKey for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateMacSecKey
 func (c *DirectConnect) AssociateMacSecKey(input *AssociateMacSecKeyInput) (*AssociateMacSecKeyOutput, error) {
@@ -875,14 +875,13 @@ const opAssociateVirtualInterface = "AssociateVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateVirtualInterfaceRequest method.
+//	req, resp := client.AssociateVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the AssociateVirtualInterfaceRequest method.
-//    req, resp := client.AssociateVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateVirtualInterface
 func (c *DirectConnect) AssociateVirtualInterfaceRequest(input *AssociateVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
@@ -926,11 +925,12 @@ func (c *DirectConnect) AssociateVirtualInterfaceRequest(input *AssociateVirtual
 // API operation AssociateVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AssociateVirtualInterface
 func (c *DirectConnect) AssociateVirtualInterface(input *AssociateVirtualInterfaceInput) (*VirtualInterface, error) {
@@ -970,14 +970,13 @@ const opConfirmConnection = "ConfirmConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfirmConnectionRequest method.
+//	req, resp := client.ConfirmConnectionRequest(params)
 //
-//    // Example sending a request using the ConfirmConnectionRequest method.
-//    req, resp := client.ConfirmConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmConnection
 func (c *DirectConnect) ConfirmConnectionRequest(input *ConfirmConnectionInput) (req *request.Request, output *ConfirmConnectionOutput) {
@@ -1012,11 +1011,12 @@ func (c *DirectConnect) ConfirmConnectionRequest(input *ConfirmConnectionInput) 
 // API operation ConfirmConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmConnection
 func (c *DirectConnect) ConfirmConnection(input *ConfirmConnectionInput) (*ConfirmConnectionOutput, error) {
@@ -1056,14 +1056,13 @@ const opConfirmCustomerAgreement = "ConfirmCustomerAgreement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfirmCustomerAgreementRequest method.
+//	req, resp := client.ConfirmCustomerAgreementRequest(params)
 //
-//    // Example sending a request using the ConfirmCustomerAgreementRequest method.
-//    req, resp := client.ConfirmCustomerAgreementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmCustomerAgreement
 func (c *DirectConnect) ConfirmCustomerAgreementRequest(input *ConfirmCustomerAgreementInput) (req *request.Request, output *ConfirmCustomerAgreementOutput) {
@@ -1095,11 +1094,12 @@ func (c *DirectConnect) ConfirmCustomerAgreementRequest(input *ConfirmCustomerAg
 // API operation ConfirmCustomerAgreement for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmCustomerAgreement
 func (c *DirectConnect) ConfirmCustomerAgreement(input *ConfirmCustomerAgreementInput) (*ConfirmCustomerAgreementOutput, error) {
@@ -1139,14 +1139,13 @@ const opConfirmPrivateVirtualInterface = "ConfirmPrivateVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfirmPrivateVirtualInterfaceRequest method.
+//	req, resp := client.ConfirmPrivateVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the ConfirmPrivateVirtualInterfaceRequest method.
-//    req, resp := client.ConfirmPrivateVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPrivateVirtualInterface
 func (c *DirectConnect) ConfirmPrivateVirtualInterfaceRequest(input *ConfirmPrivateVirtualInterfaceInput) (req *request.Request, output *ConfirmPrivateVirtualInterfaceOutput) {
@@ -1182,11 +1181,12 @@ func (c *DirectConnect) ConfirmPrivateVirtualInterfaceRequest(input *ConfirmPriv
 // API operation ConfirmPrivateVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPrivateVirtualInterface
 func (c *DirectConnect) ConfirmPrivateVirtualInterface(input *ConfirmPrivateVirtualInterfaceInput) (*ConfirmPrivateVirtualInterfaceOutput, error) {
@@ -1226,14 +1226,13 @@ const opConfirmPublicVirtualInterface = "ConfirmPublicVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfirmPublicVirtualInterfaceRequest method.
+//	req, resp := client.ConfirmPublicVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the ConfirmPublicVirtualInterfaceRequest method.
-//    req, resp := client.ConfirmPublicVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPublicVirtualInterface
 func (c *DirectConnect) ConfirmPublicVirtualInterfaceRequest(input *ConfirmPublicVirtualInterfaceInput) (req *request.Request, output *ConfirmPublicVirtualInterfaceOutput) {
@@ -1268,11 +1267,12 @@ func (c *DirectConnect) ConfirmPublicVirtualInterfaceRequest(input *ConfirmPubli
 // API operation ConfirmPublicVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPublicVirtualInterface
 func (c *DirectConnect) ConfirmPublicVirtualInterface(input *ConfirmPublicVirtualInterfaceInput) (*ConfirmPublicVirtualInterfaceOutput, error) {
@@ -1312,14 +1312,13 @@ const opConfirmTransitVirtualInterface = "ConfirmTransitVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfirmTransitVirtualInterfaceRequest method.
+//	req, resp := client.ConfirmTransitVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the ConfirmTransitVirtualInterfaceRequest method.
-//    req, resp := client.ConfirmTransitVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmTransitVirtualInterface
 func (c *DirectConnect) ConfirmTransitVirtualInterfaceRequest(input *ConfirmTransitVirtualInterfaceInput) (req *request.Request, output *ConfirmTransitVirtualInterfaceOutput) {
@@ -1354,11 +1353,12 @@ func (c *DirectConnect) ConfirmTransitVirtualInterfaceRequest(input *ConfirmTran
 // API operation ConfirmTransitVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmTransitVirtualInterface
 func (c *DirectConnect) ConfirmTransitVirtualInterface(input *ConfirmTransitVirtualInterfaceInput) (*ConfirmTransitVirtualInterfaceOutput, error) {
@@ -1398,14 +1398,13 @@ const opCreateBGPPeer = "CreateBGPPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBGPPeerRequest method.
+//	req, resp := client.CreateBGPPeerRequest(params)
 //
-//    // Example sending a request using the CreateBGPPeerRequest method.
-//    req, resp := client.CreateBGPPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateBGPPeer
 func (c *DirectConnect) CreateBGPPeerRequest(input *CreateBGPPeerInput) (req *request.Request, output *CreateBGPPeerOutput) {
@@ -1451,11 +1450,12 @@ func (c *DirectConnect) CreateBGPPeerRequest(input *CreateBGPPeerInput) (req *re
 // API operation CreateBGPPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateBGPPeer
 func (c *DirectConnect) CreateBGPPeer(input *CreateBGPPeerInput) (*CreateBGPPeerOutput, error) {
@@ -1495,14 +1495,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateConnection
 func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *Connection) {
@@ -1546,17 +1545,18 @@ func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (r
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateConnection
 func (c *DirectConnect) CreateConnection(input *CreateConnectionInput) (*Connection, error) {
@@ -1596,14 +1596,13 @@ const opCreateDirectConnectGateway = "CreateDirectConnectGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDirectConnectGatewayRequest method.
+//	req, resp := client.CreateDirectConnectGatewayRequest(params)
 //
-//    // Example sending a request using the CreateDirectConnectGatewayRequest method.
-//    req, resp := client.CreateDirectConnectGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateDirectConnectGateway
 func (c *DirectConnect) CreateDirectConnectGatewayRequest(input *CreateDirectConnectGatewayInput) (req *request.Request, output *CreateDirectConnectGatewayOutput) {
@@ -1641,11 +1640,12 @@ func (c *DirectConnect) CreateDirectConnectGatewayRequest(input *CreateDirectCon
 // API operation CreateDirectConnectGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateDirectConnectGateway
 func (c *DirectConnect) CreateDirectConnectGateway(input *CreateDirectConnectGatewayInput) (*CreateDirectConnectGatewayOutput, error) {
@@ -1685,14 +1685,13 @@ const opCreateDirectConnectGatewayAssociation = "CreateDirectConnectGatewayAssoc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDirectConnectGatewayAssociationRequest method.
+//	req, resp := client.CreateDirectConnectGatewayAssociationRequest(params)
 //
-//    // Example sending a request using the CreateDirectConnectGatewayAssociationRequest method.
-//    req, resp := client.CreateDirectConnectGatewayAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateDirectConnectGatewayAssociation
 func (c *DirectConnect) CreateDirectConnectGatewayAssociationRequest(input *CreateDirectConnectGatewayAssociationInput) (req *request.Request, output *CreateDirectConnectGatewayAssociationOutput) {
@@ -1725,11 +1724,12 @@ func (c *DirectConnect) CreateDirectConnectGatewayAssociationRequest(input *Crea
 // API operation CreateDirectConnectGatewayAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateDirectConnectGatewayAssociation
 func (c *DirectConnect) CreateDirectConnectGatewayAssociation(input *CreateDirectConnectGatewayAssociationInput) (*CreateDirectConnectGatewayAssociationOutput, error) {
@@ -1769,14 +1769,13 @@ const opCreateDirectConnectGatewayAssociationProposal = "CreateDirectConnectGate
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDirectConnectGatewayAssociationProposalRequest method.
+//	req, resp := client.CreateDirectConnectGatewayAssociationProposalRequest(params)
 //
-//    // Example sending a request using the CreateDirectConnectGatewayAssociationProposalRequest method.
-//    req, resp := client.CreateDirectConnectGatewayAssociationProposalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateDirectConnectGatewayAssociationProposal
 func (c *DirectConnect) CreateDirectConnectGatewayAssociationProposalRequest(input *CreateDirectConnectGatewayAssociationProposalInput) (req *request.Request, output *CreateDirectConnectGatewayAssociationProposalOutput) {
@@ -1811,11 +1810,12 @@ func (c *DirectConnect) CreateDirectConnectGatewayAssociationProposalRequest(inp
 // API operation CreateDirectConnectGatewayAssociationProposal for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateDirectConnectGatewayAssociationProposal
 func (c *DirectConnect) CreateDirectConnectGatewayAssociationProposal(input *CreateDirectConnectGatewayAssociationProposalInput) (*CreateDirectConnectGatewayAssociationProposalOutput, error) {
@@ -1855,14 +1855,13 @@ const opCreateInterconnect = "CreateInterconnect"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInterconnectRequest method.
+//	req, resp := client.CreateInterconnectRequest(params)
 //
-//    // Example sending a request using the CreateInterconnectRequest method.
-//    req, resp := client.CreateInterconnectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateInterconnect
 func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput) (req *request.Request, output *Interconnect) {
@@ -1915,17 +1914,18 @@ func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput
 // API operation CreateInterconnect for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateInterconnect
 func (c *DirectConnect) CreateInterconnect(input *CreateInterconnectInput) (*Interconnect, error) {
@@ -1965,14 +1965,13 @@ const opCreateLag = "CreateLag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLagRequest method.
+//	req, resp := client.CreateLagRequest(params)
 //
-//    // Example sending a request using the CreateLagRequest method.
-//    req, resp := client.CreateLagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateLag
 func (c *DirectConnect) CreateLagRequest(input *CreateLagInput) (req *request.Request, output *Lag) {
@@ -2027,17 +2026,18 @@ func (c *DirectConnect) CreateLagRequest(input *CreateLagInput) (req *request.Re
 // API operation CreateLag for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateLag
 func (c *DirectConnect) CreateLag(input *CreateLagInput) (*Lag, error) {
@@ -2077,14 +2077,13 @@ const opCreatePrivateVirtualInterface = "CreatePrivateVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePrivateVirtualInterfaceRequest method.
+//	req, resp := client.CreatePrivateVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the CreatePrivateVirtualInterfaceRequest method.
-//    req, resp := client.CreatePrivateVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePrivateVirtualInterface
 func (c *DirectConnect) CreatePrivateVirtualInterfaceRequest(input *CreatePrivateVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
@@ -2128,17 +2127,18 @@ func (c *DirectConnect) CreatePrivateVirtualInterfaceRequest(input *CreatePrivat
 // API operation CreatePrivateVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePrivateVirtualInterface
 func (c *DirectConnect) CreatePrivateVirtualInterface(input *CreatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
@@ -2178,14 +2178,13 @@ const opCreatePublicVirtualInterface = "CreatePublicVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePublicVirtualInterfaceRequest method.
+//	req, resp := client.CreatePublicVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the CreatePublicVirtualInterfaceRequest method.
-//    req, resp := client.CreatePublicVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePublicVirtualInterface
 func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
@@ -2222,17 +2221,18 @@ func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicV
 // API operation CreatePublicVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePublicVirtualInterface
 func (c *DirectConnect) CreatePublicVirtualInterface(input *CreatePublicVirtualInterfaceInput) (*VirtualInterface, error) {
@@ -2272,14 +2272,13 @@ const opCreateTransitVirtualInterface = "CreateTransitVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitVirtualInterfaceRequest method.
+//	req, resp := client.CreateTransitVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the CreateTransitVirtualInterfaceRequest method.
-//    req, resp := client.CreateTransitVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateTransitVirtualInterface
 func (c *DirectConnect) CreateTransitVirtualInterfaceRequest(input *CreateTransitVirtualInterfaceInput) (req *request.Request, output *CreateTransitVirtualInterfaceOutput) {
@@ -2326,17 +2325,18 @@ func (c *DirectConnect) CreateTransitVirtualInterfaceRequest(input *CreateTransi
 // API operation CreateTransitVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateTransitVirtualInterface
 func (c *DirectConnect) CreateTransitVirtualInterface(input *CreateTransitVirtualInterfaceInput) (*CreateTransitVirtualInterfaceOutput, error) {
@@ -2376,14 +2376,13 @@ const opDeleteBGPPeer = "DeleteBGPPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBGPPeerRequest method.
+//	req, resp := client.DeleteBGPPeerRequest(params)
 //
-//    // Example sending a request using the DeleteBGPPeerRequest method.
-//    req, resp := client.DeleteBGPPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteBGPPeer
 func (c *DirectConnect) DeleteBGPPeerRequest(input *DeleteBGPPeerInput) (req *request.Request, output *DeleteBGPPeerOutput) {
@@ -2417,11 +2416,12 @@ func (c *DirectConnect) DeleteBGPPeerRequest(input *DeleteBGPPeerInput) (req *re
 // API operation DeleteBGPPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteBGPPeer
 func (c *DirectConnect) DeleteBGPPeer(input *DeleteBGPPeerInput) (*DeleteBGPPeerOutput, error) {
@@ -2461,14 +2461,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteConnection
 func (c *DirectConnect) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *Connection) {
@@ -2503,11 +2502,12 @@ func (c *DirectConnect) DeleteConnectionRequest(input *DeleteConnectionInput) (r
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteConnection
 func (c *DirectConnect) DeleteConnection(input *DeleteConnectionInput) (*Connection, error) {
@@ -2547,14 +2547,13 @@ const opDeleteDirectConnectGateway = "DeleteDirectConnectGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDirectConnectGatewayRequest method.
+//	req, resp := client.DeleteDirectConnectGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteDirectConnectGatewayRequest method.
-//    req, resp := client.DeleteDirectConnectGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteDirectConnectGateway
 func (c *DirectConnect) DeleteDirectConnectGatewayRequest(input *DeleteDirectConnectGatewayInput) (req *request.Request, output *DeleteDirectConnectGatewayOutput) {
@@ -2587,11 +2586,12 @@ func (c *DirectConnect) DeleteDirectConnectGatewayRequest(input *DeleteDirectCon
 // API operation DeleteDirectConnectGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteDirectConnectGateway
 func (c *DirectConnect) DeleteDirectConnectGateway(input *DeleteDirectConnectGatewayInput) (*DeleteDirectConnectGatewayOutput, error) {
@@ -2631,14 +2631,13 @@ const opDeleteDirectConnectGatewayAssociation = "DeleteDirectConnectGatewayAssoc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDirectConnectGatewayAssociationRequest method.
+//	req, resp := client.DeleteDirectConnectGatewayAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteDirectConnectGatewayAssociationRequest method.
-//    req, resp := client.DeleteDirectConnectGatewayAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteDirectConnectGatewayAssociation
 func (c *DirectConnect) DeleteDirectConnectGatewayAssociationRequest(input *DeleteDirectConnectGatewayAssociationInput) (req *request.Request, output *DeleteDirectConnectGatewayAssociationOutput) {
@@ -2675,11 +2674,12 @@ func (c *DirectConnect) DeleteDirectConnectGatewayAssociationRequest(input *Dele
 // API operation DeleteDirectConnectGatewayAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteDirectConnectGatewayAssociation
 func (c *DirectConnect) DeleteDirectConnectGatewayAssociation(input *DeleteDirectConnectGatewayAssociationInput) (*DeleteDirectConnectGatewayAssociationOutput, error) {
@@ -2719,14 +2719,13 @@ const opDeleteDirectConnectGatewayAssociationProposal = "DeleteDirectConnectGate
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDirectConnectGatewayAssociationProposalRequest method.
+//	req, resp := client.DeleteDirectConnectGatewayAssociationProposalRequest(params)
 //
-//    // Example sending a request using the DeleteDirectConnectGatewayAssociationProposalRequest method.
-//    req, resp := client.DeleteDirectConnectGatewayAssociationProposalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteDirectConnectGatewayAssociationProposal
 func (c *DirectConnect) DeleteDirectConnectGatewayAssociationProposalRequest(input *DeleteDirectConnectGatewayAssociationProposalInput) (req *request.Request, output *DeleteDirectConnectGatewayAssociationProposalOutput) {
@@ -2758,11 +2757,12 @@ func (c *DirectConnect) DeleteDirectConnectGatewayAssociationProposalRequest(inp
 // API operation DeleteDirectConnectGatewayAssociationProposal for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteDirectConnectGatewayAssociationProposal
 func (c *DirectConnect) DeleteDirectConnectGatewayAssociationProposal(input *DeleteDirectConnectGatewayAssociationProposalInput) (*DeleteDirectConnectGatewayAssociationProposalOutput, error) {
@@ -2802,14 +2802,13 @@ const opDeleteInterconnect = "DeleteInterconnect"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInterconnectRequest method.
+//	req, resp := client.DeleteInterconnectRequest(params)
 //
-//    // Example sending a request using the DeleteInterconnectRequest method.
-//    req, resp := client.DeleteInterconnectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteInterconnect
 func (c *DirectConnect) DeleteInterconnectRequest(input *DeleteInterconnectInput) (req *request.Request, output *DeleteInterconnectOutput) {
@@ -2842,11 +2841,12 @@ func (c *DirectConnect) DeleteInterconnectRequest(input *DeleteInterconnectInput
 // API operation DeleteInterconnect for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteInterconnect
 func (c *DirectConnect) DeleteInterconnect(input *DeleteInterconnectInput) (*DeleteInterconnectOutput, error) {
@@ -2886,14 +2886,13 @@ const opDeleteLag = "DeleteLag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLagRequest method.
+//	req, resp := client.DeleteLagRequest(params)
 //
-//    // Example sending a request using the DeleteLagRequest method.
-//    req, resp := client.DeleteLagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteLag
 func (c *DirectConnect) DeleteLagRequest(input *DeleteLagInput) (req *request.Request, output *Lag) {
@@ -2925,11 +2924,12 @@ func (c *DirectConnect) DeleteLagRequest(input *DeleteLagInput) (req *request.Re
 // API operation DeleteLag for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteLag
 func (c *DirectConnect) DeleteLag(input *DeleteLagInput) (*Lag, error) {
@@ -2969,14 +2969,13 @@ const opDeleteVirtualInterface = "DeleteVirtualInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVirtualInterfaceRequest method.
+//	req, resp := client.DeleteVirtualInterfaceRequest(params)
 //
-//    // Example sending a request using the DeleteVirtualInterfaceRequest method.
-//    req, resp := client.DeleteVirtualInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteVirtualInterface
 func (c *DirectConnect) DeleteVirtualInterfaceRequest(input *DeleteVirtualInterfaceInput) (req *request.Request, output *DeleteVirtualInterfaceOutput) {
@@ -3007,11 +3006,12 @@ func (c *DirectConnect) DeleteVirtualInterfaceRequest(input *DeleteVirtualInterf
 // API operation DeleteVirtualInterface for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteVirtualInterface
 func (c *DirectConnect) DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (*DeleteVirtualInterfaceOutput, error) {
@@ -3051,14 +3051,13 @@ const opDescribeConnectionLoa = "DescribeConnectionLoa"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionLoaRequest method.
+//	req, resp := client.DescribeConnectionLoaRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionLoaRequest method.
-//    req, resp := client.DescribeConnectionLoaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionLoa
 //
@@ -3103,11 +3102,12 @@ func (c *DirectConnect) DescribeConnectionLoaRequest(input *DescribeConnectionLo
 // API operation DescribeConnectionLoa for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionLoa
 //
@@ -3151,14 +3151,13 @@ const opDescribeConnections = "DescribeConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionsRequest method.
+//	req, resp := client.DescribeConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionsRequest method.
-//    req, resp := client.DescribeConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnections
 func (c *DirectConnect) DescribeConnectionsRequest(input *DescribeConnectionsInput) (req *request.Request, output *Connections) {
@@ -3189,11 +3188,12 @@ func (c *DirectConnect) DescribeConnectionsRequest(input *DescribeConnectionsInp
 // API operation DescribeConnections for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnections
 func (c *DirectConnect) DescribeConnections(input *DescribeConnectionsInput) (*Connections, error) {
@@ -3233,14 +3233,13 @@ const opDescribeConnectionsOnInterconnect = "DescribeConnectionsOnInterconnect"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionsOnInterconnectRequest method.
+//	req, resp := client.DescribeConnectionsOnInterconnectRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionsOnInterconnectRequest method.
-//    req, resp := client.DescribeConnectionsOnInterconnectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionsOnInterconnect
 //
@@ -3280,11 +3279,12 @@ func (c *DirectConnect) DescribeConnectionsOnInterconnectRequest(input *Describe
 // API operation DescribeConnectionsOnInterconnect for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionsOnInterconnect
 //
@@ -3328,14 +3328,13 @@ const opDescribeCustomerMetadata = "DescribeCustomerMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomerMetadataRequest method.
+//	req, resp := client.DescribeCustomerMetadataRequest(params)
 //
-//    // Example sending a request using the DescribeCustomerMetadataRequest method.
-//    req, resp := client.DescribeCustomerMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeCustomerMetadata
 func (c *DirectConnect) DescribeCustomerMetadataRequest(input *DescribeCustomerMetadataInput) (req *request.Request, output *DescribeCustomerMetadataOutput) {
@@ -3367,11 +3366,12 @@ func (c *DirectConnect) DescribeCustomerMetadataRequest(input *DescribeCustomerM
 // API operation DescribeCustomerMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeCustomerMetadata
 func (c *DirectConnect) DescribeCustomerMetadata(input *DescribeCustomerMetadataInput) (*DescribeCustomerMetadataOutput, error) {
@@ -3411,14 +3411,13 @@ const opDescribeDirectConnectGatewayAssociationProposals = "DescribeDirectConnec
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDirectConnectGatewayAssociationProposalsRequest method.
+//	req, resp := client.DescribeDirectConnectGatewayAssociationProposalsRequest(params)
 //
-//    // Example sending a request using the DescribeDirectConnectGatewayAssociationProposalsRequest method.
-//    req, resp := client.DescribeDirectConnectGatewayAssociationProposalsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGatewayAssociationProposals
 func (c *DirectConnect) DescribeDirectConnectGatewayAssociationProposalsRequest(input *DescribeDirectConnectGatewayAssociationProposalsInput) (req *request.Request, output *DescribeDirectConnectGatewayAssociationProposalsOutput) {
@@ -3450,11 +3449,12 @@ func (c *DirectConnect) DescribeDirectConnectGatewayAssociationProposalsRequest(
 // API operation DescribeDirectConnectGatewayAssociationProposals for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGatewayAssociationProposals
 func (c *DirectConnect) DescribeDirectConnectGatewayAssociationProposals(input *DescribeDirectConnectGatewayAssociationProposalsInput) (*DescribeDirectConnectGatewayAssociationProposalsOutput, error) {
@@ -3494,14 +3494,13 @@ const opDescribeDirectConnectGatewayAssociations = "DescribeDirectConnectGateway
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDirectConnectGatewayAssociationsRequest method.
+//	req, resp := client.DescribeDirectConnectGatewayAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeDirectConnectGatewayAssociationsRequest method.
-//    req, resp := client.DescribeDirectConnectGatewayAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGatewayAssociations
 func (c *DirectConnect) DescribeDirectConnectGatewayAssociationsRequest(input *DescribeDirectConnectGatewayAssociationsInput) (req *request.Request, output *DescribeDirectConnectGatewayAssociationsOutput) {
@@ -3525,19 +3524,19 @@ func (c *DirectConnect) DescribeDirectConnectGatewayAssociationsRequest(input *D
 // Lists the associations between your Direct Connect gateways and virtual private
 // gateways and transit gateways. You must specify one of the following:
 //
-//    * A Direct Connect gateway The response contains all virtual private gateways
-//    and transit gateways associated with the Direct Connect gateway.
+//   - A Direct Connect gateway The response contains all virtual private gateways
+//     and transit gateways associated with the Direct Connect gateway.
 //
-//    * A virtual private gateway The response contains the Direct Connect gateway.
+//   - A virtual private gateway The response contains the Direct Connect gateway.
 //
-//    * A transit gateway The response contains the Direct Connect gateway.
+//   - A transit gateway The response contains the Direct Connect gateway.
 //
-//    * A Direct Connect gateway and a virtual private gateway The response
-//    contains the association between the Direct Connect gateway and virtual
-//    private gateway.
+//   - A Direct Connect gateway and a virtual private gateway The response
+//     contains the association between the Direct Connect gateway and virtual
+//     private gateway.
 //
-//    * A Direct Connect gateway and a transit gateway The response contains
-//    the association between the Direct Connect gateway and transit gateway.
+//   - A Direct Connect gateway and a transit gateway The response contains
+//     the association between the Direct Connect gateway and transit gateway.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3547,11 +3546,12 @@ func (c *DirectConnect) DescribeDirectConnectGatewayAssociationsRequest(input *D
 // API operation DescribeDirectConnectGatewayAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGatewayAssociations
 func (c *DirectConnect) DescribeDirectConnectGatewayAssociations(input *DescribeDirectConnectGatewayAssociationsInput) (*DescribeDirectConnectGatewayAssociationsOutput, error) {
@@ -3591,14 +3591,13 @@ const opDescribeDirectConnectGatewayAttachments = "DescribeDirectConnectGatewayA
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDirectConnectGatewayAttachmentsRequest method.
+//	req, resp := client.DescribeDirectConnectGatewayAttachmentsRequest(params)
 //
-//    // Example sending a request using the DescribeDirectConnectGatewayAttachmentsRequest method.
-//    req, resp := client.DescribeDirectConnectGatewayAttachmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGatewayAttachments
 func (c *DirectConnect) DescribeDirectConnectGatewayAttachmentsRequest(input *DescribeDirectConnectGatewayAttachmentsInput) (req *request.Request, output *DescribeDirectConnectGatewayAttachmentsOutput) {
@@ -3635,11 +3634,12 @@ func (c *DirectConnect) DescribeDirectConnectGatewayAttachmentsRequest(input *De
 // API operation DescribeDirectConnectGatewayAttachments for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGatewayAttachments
 func (c *DirectConnect) DescribeDirectConnectGatewayAttachments(input *DescribeDirectConnectGatewayAttachmentsInput) (*DescribeDirectConnectGatewayAttachmentsOutput, error) {
@@ -3679,14 +3679,13 @@ const opDescribeDirectConnectGateways = "DescribeDirectConnectGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDirectConnectGatewaysRequest method.
+//	req, resp := client.DescribeDirectConnectGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeDirectConnectGatewaysRequest method.
-//    req, resp := client.DescribeDirectConnectGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGateways
 func (c *DirectConnect) DescribeDirectConnectGatewaysRequest(input *DescribeDirectConnectGatewaysInput) (req *request.Request, output *DescribeDirectConnectGatewaysOutput) {
@@ -3718,11 +3717,12 @@ func (c *DirectConnect) DescribeDirectConnectGatewaysRequest(input *DescribeDire
 // API operation DescribeDirectConnectGateways for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeDirectConnectGateways
 func (c *DirectConnect) DescribeDirectConnectGateways(input *DescribeDirectConnectGatewaysInput) (*DescribeDirectConnectGatewaysOutput, error) {
@@ -3762,14 +3762,13 @@ const opDescribeHostedConnections = "DescribeHostedConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHostedConnectionsRequest method.
+//	req, resp := client.DescribeHostedConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeHostedConnectionsRequest method.
-//    req, resp := client.DescribeHostedConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeHostedConnections
 func (c *DirectConnect) DescribeHostedConnectionsRequest(input *DescribeHostedConnectionsInput) (req *request.Request, output *Connections) {
@@ -3803,11 +3802,12 @@ func (c *DirectConnect) DescribeHostedConnectionsRequest(input *DescribeHostedCo
 // API operation DescribeHostedConnections for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeHostedConnections
 func (c *DirectConnect) DescribeHostedConnections(input *DescribeHostedConnectionsInput) (*Connections, error) {
@@ -3847,14 +3847,13 @@ const opDescribeInterconnectLoa = "DescribeInterconnectLoa"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInterconnectLoaRequest method.
+//	req, resp := client.DescribeInterconnectLoaRequest(params)
 //
-//    // Example sending a request using the DescribeInterconnectLoaRequest method.
-//    req, resp := client.DescribeInterconnectLoaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectLoa
 //
@@ -3898,11 +3897,12 @@ func (c *DirectConnect) DescribeInterconnectLoaRequest(input *DescribeInterconne
 // API operation DescribeInterconnectLoa for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectLoa
 //
@@ -3946,14 +3946,13 @@ const opDescribeInterconnects = "DescribeInterconnects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInterconnectsRequest method.
+//	req, resp := client.DescribeInterconnectsRequest(params)
 //
-//    // Example sending a request using the DescribeInterconnectsRequest method.
-//    req, resp := client.DescribeInterconnectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnects
 func (c *DirectConnect) DescribeInterconnectsRequest(input *DescribeInterconnectsInput) (req *request.Request, output *DescribeInterconnectsOutput) {
@@ -3985,11 +3984,12 @@ func (c *DirectConnect) DescribeInterconnectsRequest(input *DescribeInterconnect
 // API operation DescribeInterconnects for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnects
 func (c *DirectConnect) DescribeInterconnects(input *DescribeInterconnectsInput) (*DescribeInterconnectsOutput, error) {
@@ -4029,14 +4029,13 @@ const opDescribeLags = "DescribeLags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLagsRequest method.
+//	req, resp := client.DescribeLagsRequest(params)
 //
-//    // Example sending a request using the DescribeLagsRequest method.
-//    req, resp := client.DescribeLagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLags
 func (c *DirectConnect) DescribeLagsRequest(input *DescribeLagsInput) (req *request.Request, output *DescribeLagsOutput) {
@@ -4067,11 +4066,12 @@ func (c *DirectConnect) DescribeLagsRequest(input *DescribeLagsInput) (req *requ
 // API operation DescribeLags for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLags
 func (c *DirectConnect) DescribeLags(input *DescribeLagsInput) (*DescribeLagsOutput, error) {
@@ -4111,14 +4111,13 @@ const opDescribeLoa = "DescribeLoa"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoaRequest method.
+//	req, resp := client.DescribeLoaRequest(params)
 //
-//    // Example sending a request using the DescribeLoaRequest method.
-//    req, resp := client.DescribeLoaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLoa
 func (c *DirectConnect) DescribeLoaRequest(input *DescribeLoaInput) (req *request.Request, output *Loa) {
@@ -4156,11 +4155,12 @@ func (c *DirectConnect) DescribeLoaRequest(input *DescribeLoaInput) (req *reques
 // API operation DescribeLoa for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLoa
 func (c *DirectConnect) DescribeLoa(input *DescribeLoaInput) (*Loa, error) {
@@ -4200,14 +4200,13 @@ const opDescribeLocations = "DescribeLocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationsRequest method.
+//	req, resp := client.DescribeLocationsRequest(params)
 //
-//    // Example sending a request using the DescribeLocationsRequest method.
-//    req, resp := client.DescribeLocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLocations
 func (c *DirectConnect) DescribeLocationsRequest(input *DescribeLocationsInput) (req *request.Request, output *DescribeLocationsOutput) {
@@ -4240,11 +4239,12 @@ func (c *DirectConnect) DescribeLocationsRequest(input *DescribeLocationsInput) 
 // API operation DescribeLocations for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLocations
 func (c *DirectConnect) DescribeLocations(input *DescribeLocationsInput) (*DescribeLocationsOutput, error) {
@@ -4284,14 +4284,13 @@ const opDescribeRouterConfiguration = "DescribeRouterConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRouterConfigurationRequest method.
+//	req, resp := client.DescribeRouterConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeRouterConfigurationRequest method.
-//    req, resp := client.DescribeRouterConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeRouterConfiguration
 func (c *DirectConnect) DescribeRouterConfigurationRequest(input *DescribeRouterConfigurationInput) (req *request.Request, output *DescribeRouterConfigurationOutput) {
@@ -4322,11 +4321,12 @@ func (c *DirectConnect) DescribeRouterConfigurationRequest(input *DescribeRouter
 // API operation DescribeRouterConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeRouterConfiguration
 func (c *DirectConnect) DescribeRouterConfiguration(input *DescribeRouterConfigurationInput) (*DescribeRouterConfigurationOutput, error) {
@@ -4366,14 +4366,13 @@ const opDescribeTags = "DescribeTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTagsRequest method.
+//	req, resp := client.DescribeTagsRequest(params)
 //
-//    // Example sending a request using the DescribeTagsRequest method.
-//    req, resp := client.DescribeTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeTags
 func (c *DirectConnect) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
@@ -4404,11 +4403,12 @@ func (c *DirectConnect) DescribeTagsRequest(input *DescribeTagsInput) (req *requ
 // API operation DescribeTags for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeTags
 func (c *DirectConnect) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
@@ -4448,14 +4448,13 @@ const opDescribeVirtualGateways = "DescribeVirtualGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVirtualGatewaysRequest method.
+//	req, resp := client.DescribeVirtualGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeVirtualGatewaysRequest method.
-//    req, resp := client.DescribeVirtualGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualGateways
 func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGatewaysInput) (req *request.Request, output *DescribeVirtualGatewaysOutput) {
@@ -4489,11 +4488,12 @@ func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGat
 // API operation DescribeVirtualGateways for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualGateways
 func (c *DirectConnect) DescribeVirtualGateways(input *DescribeVirtualGatewaysInput) (*DescribeVirtualGatewaysOutput, error) {
@@ -4533,14 +4533,13 @@ const opDescribeVirtualInterfaces = "DescribeVirtualInterfaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVirtualInterfacesRequest method.
+//	req, resp := client.DescribeVirtualInterfacesRequest(params)
 //
-//    // Example sending a request using the DescribeVirtualInterfacesRequest method.
-//    req, resp := client.DescribeVirtualInterfacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualInterfaces
 func (c *DirectConnect) DescribeVirtualInterfacesRequest(input *DescribeVirtualInterfacesInput) (req *request.Request, output *DescribeVirtualInterfacesOutput) {
@@ -4578,11 +4577,12 @@ func (c *DirectConnect) DescribeVirtualInterfacesRequest(input *DescribeVirtualI
 // API operation DescribeVirtualInterfaces for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualInterfaces
 func (c *DirectConnect) DescribeVirtualInterfaces(input *DescribeVirtualInterfacesInput) (*DescribeVirtualInterfacesOutput, error) {
@@ -4622,14 +4622,13 @@ const opDisassociateConnectionFromLag = "DisassociateConnectionFromLag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateConnectionFromLagRequest method.
+//	req, resp := client.DisassociateConnectionFromLagRequest(params)
 //
-//    // Example sending a request using the DisassociateConnectionFromLagRequest method.
-//    req, resp := client.DisassociateConnectionFromLagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DisassociateConnectionFromLag
 func (c *DirectConnect) DisassociateConnectionFromLagRequest(input *DisassociateConnectionFromLagInput) (req *request.Request, output *Connection) {
@@ -4670,11 +4669,12 @@ func (c *DirectConnect) DisassociateConnectionFromLagRequest(input *Disassociate
 // API operation DisassociateConnectionFromLag for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DisassociateConnectionFromLag
 func (c *DirectConnect) DisassociateConnectionFromLag(input *DisassociateConnectionFromLagInput) (*Connection, error) {
@@ -4714,14 +4714,13 @@ const opDisassociateMacSecKey = "DisassociateMacSecKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateMacSecKeyRequest method.
+//	req, resp := client.DisassociateMacSecKeyRequest(params)
 //
-//    // Example sending a request using the DisassociateMacSecKeyRequest method.
-//    req, resp := client.DisassociateMacSecKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DisassociateMacSecKey
 func (c *DirectConnect) DisassociateMacSecKeyRequest(input *DisassociateMacSecKeyInput) (req *request.Request, output *DisassociateMacSecKeyOutput) {
@@ -4753,11 +4752,12 @@ func (c *DirectConnect) DisassociateMacSecKeyRequest(input *DisassociateMacSecKe
 // API operation DisassociateMacSecKey for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DisassociateMacSecKey
 func (c *DirectConnect) DisassociateMacSecKey(input *DisassociateMacSecKeyInput) (*DisassociateMacSecKeyOutput, error) {
@@ -4797,14 +4797,13 @@ const opListVirtualInterfaceTestHistory = "ListVirtualInterfaceTestHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVirtualInterfaceTestHistoryRequest method.
+//	req, resp := client.ListVirtualInterfaceTestHistoryRequest(params)
 //
-//    // Example sending a request using the ListVirtualInterfaceTestHistoryRequest method.
-//    req, resp := client.ListVirtualInterfaceTestHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ListVirtualInterfaceTestHistory
 func (c *DirectConnect) ListVirtualInterfaceTestHistoryRequest(input *ListVirtualInterfaceTestHistoryInput) (req *request.Request, output *ListVirtualInterfaceTestHistoryOutput) {
@@ -4835,11 +4834,12 @@ func (c *DirectConnect) ListVirtualInterfaceTestHistoryRequest(input *ListVirtua
 // API operation ListVirtualInterfaceTestHistory for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ListVirtualInterfaceTestHistory
 func (c *DirectConnect) ListVirtualInterfaceTestHistory(input *ListVirtualInterfaceTestHistoryInput) (*ListVirtualInterfaceTestHistoryOutput, error) {
@@ -4879,14 +4879,13 @@ const opStartBgpFailoverTest = "StartBgpFailoverTest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartBgpFailoverTestRequest method.
+//	req, resp := client.StartBgpFailoverTestRequest(params)
 //
-//    // Example sending a request using the StartBgpFailoverTestRequest method.
-//    req, resp := client.StartBgpFailoverTestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/StartBgpFailoverTest
 func (c *DirectConnect) StartBgpFailoverTestRequest(input *StartBgpFailoverTestInput) (req *request.Request, output *StartBgpFailoverTestOutput) {
@@ -4927,11 +4926,12 @@ func (c *DirectConnect) StartBgpFailoverTestRequest(input *StartBgpFailoverTestI
 // API operation StartBgpFailoverTest for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/StartBgpFailoverTest
 func (c *DirectConnect) StartBgpFailoverTest(input *StartBgpFailoverTestInput) (*StartBgpFailoverTestOutput, error) {
@@ -4971,14 +4971,13 @@ const opStopBgpFailoverTest = "StopBgpFailoverTest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopBgpFailoverTestRequest method.
+//	req, resp := client.StopBgpFailoverTestRequest(params)
 //
-//    // Example sending a request using the StopBgpFailoverTestRequest method.
-//    req, resp := client.StopBgpFailoverTestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/StopBgpFailoverTest
 func (c *DirectConnect) StopBgpFailoverTestRequest(input *StopBgpFailoverTestInput) (req *request.Request, output *StopBgpFailoverTestOutput) {
@@ -5009,11 +5008,12 @@ func (c *DirectConnect) StopBgpFailoverTestRequest(input *StopBgpFailoverTestInp
 // API operation StopBgpFailoverTest for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/StopBgpFailoverTest
 func (c *DirectConnect) StopBgpFailoverTest(input *StopBgpFailoverTestInput) (*StopBgpFailoverTestOutput, error) {
@@ -5053,14 +5053,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/TagResource
 func (c *DirectConnect) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5096,17 +5095,18 @@ func (c *DirectConnect) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateTagKeysException
-//   A tag key was specified more than once.
 //
-//   * TooManyTagsException
-//   You have reached the limit on the number of tags that can be assigned.
+//   - DuplicateTagKeysException
+//     A tag key was specified more than once.
 //
-//   * ServerException
-//   A server-side error occurred.
+//   - TooManyTagsException
+//     You have reached the limit on the number of tags that can be assigned.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/TagResource
 func (c *DirectConnect) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5146,14 +5146,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UntagResource
 func (c *DirectConnect) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5185,11 +5184,12 @@ func (c *DirectConnect) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UntagResource
 func (c *DirectConnect) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5229,14 +5229,13 @@ const opUpdateConnection = "UpdateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectionRequest method.
+//	req, resp := client.UpdateConnectionRequest(params)
 //
-//    // Example sending a request using the UpdateConnectionRequest method.
-//    req, resp := client.UpdateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateConnection
 func (c *DirectConnect) UpdateConnectionRequest(input *UpdateConnectionInput) (req *request.Request, output *UpdateConnectionOutput) {
@@ -5261,9 +5260,9 @@ func (c *DirectConnect) UpdateConnectionRequest(input *UpdateConnectionInput) (r
 //
 // You can update the following parameters for a connection:
 //
-//    * The connection name
+//   - The connection name
 //
-//    * The connection's MAC Security (MACsec) encryption mode.
+//   - The connection's MAC Security (MACsec) encryption mode.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5273,11 +5272,12 @@ func (c *DirectConnect) UpdateConnectionRequest(input *UpdateConnectionInput) (r
 // API operation UpdateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateConnection
 func (c *DirectConnect) UpdateConnection(input *UpdateConnectionInput) (*UpdateConnectionOutput, error) {
@@ -5317,14 +5317,13 @@ const opUpdateDirectConnectGateway = "UpdateDirectConnectGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDirectConnectGatewayRequest method.
+//	req, resp := client.UpdateDirectConnectGatewayRequest(params)
 //
-//    // Example sending a request using the UpdateDirectConnectGatewayRequest method.
-//    req, resp := client.UpdateDirectConnectGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateDirectConnectGateway
 func (c *DirectConnect) UpdateDirectConnectGatewayRequest(input *UpdateDirectConnectGatewayInput) (req *request.Request, output *UpdateDirectConnectGatewayOutput) {
@@ -5355,11 +5354,12 @@ func (c *DirectConnect) UpdateDirectConnectGatewayRequest(input *UpdateDirectCon
 // API operation UpdateDirectConnectGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateDirectConnectGateway
 func (c *DirectConnect) UpdateDirectConnectGateway(input *UpdateDirectConnectGatewayInput) (*UpdateDirectConnectGatewayOutput, error) {
@@ -5399,14 +5399,13 @@ const opUpdateDirectConnectGatewayAssociation = "UpdateDirectConnectGatewayAssoc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDirectConnectGatewayAssociationRequest method.
+//	req, resp := client.UpdateDirectConnectGatewayAssociationRequest(params)
 //
-//    // Example sending a request using the UpdateDirectConnectGatewayAssociationRequest method.
-//    req, resp := client.UpdateDirectConnectGatewayAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateDirectConnectGatewayAssociation
 func (c *DirectConnect) UpdateDirectConnectGatewayAssociationRequest(input *UpdateDirectConnectGatewayAssociationInput) (req *request.Request, output *UpdateDirectConnectGatewayAssociationOutput) {
@@ -5439,11 +5438,12 @@ func (c *DirectConnect) UpdateDirectConnectGatewayAssociationRequest(input *Upda
 // API operation UpdateDirectConnectGatewayAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateDirectConnectGatewayAssociation
 func (c *DirectConnect) UpdateDirectConnectGatewayAssociation(input *UpdateDirectConnectGatewayAssociationInput) (*UpdateDirectConnectGatewayAssociationOutput, error) {
@@ -5483,14 +5483,13 @@ const opUpdateLag = "UpdateLag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLagRequest method.
+//	req, resp := client.UpdateLagRequest(params)
 //
-//    // Example sending a request using the UpdateLagRequest method.
-//    req, resp := client.UpdateLagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateLag
 func (c *DirectConnect) UpdateLagRequest(input *UpdateLagInput) (req *request.Request, output *Lag) {
@@ -5515,15 +5514,15 @@ func (c *DirectConnect) UpdateLagRequest(input *UpdateLagInput) (req *request.Re
 //
 // You can update the following LAG attributes:
 //
-//    * The name of the LAG.
+//   - The name of the LAG.
 //
-//    * The value for the minimum number of connections that must be operational
-//    for the LAG itself to be operational.
+//   - The value for the minimum number of connections that must be operational
+//     for the LAG itself to be operational.
 //
-//    * The LAG's MACsec encryption mode. Amazon Web Services assigns this value
-//    to each connection which is part of the LAG.
+//   - The LAG's MACsec encryption mode. Amazon Web Services assigns this value
+//     to each connection which is part of the LAG.
 //
-//    * The tags
+//   - The tags
 //
 // If you adjust the threshold value for the minimum number of operational connections,
 // ensure that the new value does not cause the LAG to fall below the threshold
@@ -5537,11 +5536,12 @@ func (c *DirectConnect) UpdateLagRequest(input *UpdateLagInput) (req *request.Re
 // API operation UpdateLag for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateLag
 func (c *DirectConnect) UpdateLag(input *UpdateLagInput) (*Lag, error) {
@@ -5581,14 +5581,13 @@ const opUpdateVirtualInterfaceAttributes = "UpdateVirtualInterfaceAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVirtualInterfaceAttributesRequest method.
+//	req, resp := client.UpdateVirtualInterfaceAttributesRequest(params)
 //
-//    // Example sending a request using the UpdateVirtualInterfaceAttributesRequest method.
-//    req, resp := client.UpdateVirtualInterfaceAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateVirtualInterfaceAttributes
 func (c *DirectConnect) UpdateVirtualInterfaceAttributesRequest(input *UpdateVirtualInterfaceAttributesInput) (req *request.Request, output *UpdateVirtualInterfaceAttributesOutput) {
@@ -5626,11 +5625,12 @@ func (c *DirectConnect) UpdateVirtualInterfaceAttributesRequest(input *UpdateVir
 // API operation UpdateVirtualInterfaceAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   A server-side error occurred.
 //
-//   * ClientException
-//   One or more parameters are not valid.
+//   - ServerException
+//     A server-side error occurred.
+//
+//   - ClientException
+//     One or more parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UpdateVirtualInterfaceAttributes
 func (c *DirectConnect) UpdateVirtualInterfaceAttributes(input *UpdateVirtualInterfaceAttributesInput) (*UpdateVirtualInterfaceAttributesOutput, error) {

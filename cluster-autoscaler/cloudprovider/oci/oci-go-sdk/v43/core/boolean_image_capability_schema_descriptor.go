@@ -27,7 +27,7 @@ type BooleanImageCapabilitySchemaDescriptor struct {
 	Source ImageCapabilitySchemaDescriptorSourceEnum `mandatory:"true" json:"source"`
 }
 
-//GetSource returns Source
+// GetSource returns Source
 func (m BooleanImageCapabilitySchemaDescriptor) GetSource() ImageCapabilitySchemaDescriptorSourceEnum {
 	return m.Source
 }

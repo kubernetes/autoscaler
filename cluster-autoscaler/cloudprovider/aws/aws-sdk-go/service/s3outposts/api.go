@@ -29,14 +29,13 @@ const opCreateEndpoint = "CreateEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEndpointRequest method.
+//	req, resp := client.CreateEndpointRequest(params)
 //
-//    // Example sending a request using the CreateEndpointRequest method.
-//    req, resp := client.CreateEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/CreateEndpoint
 func (c *S3Outposts) CreateEndpointRequest(input *CreateEndpointInput) (req *request.Request, output *CreateEndpointOutput) {
@@ -63,9 +62,9 @@ func (c *S3Outposts) CreateEndpointRequest(input *CreateEndpointInput) (req *req
 //
 // Related actions include:
 //
-//    * DeleteEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_DeleteEndpoint.html)
+//   - DeleteEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_DeleteEndpoint.html)
 //
-//    * ListEndpoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_ListEndpoints.html)
+//   - ListEndpoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_ListEndpoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -75,20 +74,21 @@ func (c *S3Outposts) CreateEndpointRequest(input *CreateEndpointInput) (req *req
 // API operation CreateEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an exception with the internal server.
 //
-//   * ValidationException
-//   There was an exception validating this data.
+//   - InternalServerException
+//     There was an exception with the internal server.
 //
-//   * AccessDeniedException
-//   Access was denied for this action.
+//   - ValidationException
+//     There was an exception validating this data.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - AccessDeniedException
+//     Access was denied for this action.
 //
-//   * ConflictException
-//   There was a conflict with this action, and it could not be completed.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - ConflictException
+//     There was a conflict with this action, and it could not be completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/CreateEndpoint
 func (c *S3Outposts) CreateEndpoint(input *CreateEndpointInput) (*CreateEndpointOutput, error) {
@@ -128,14 +128,13 @@ const opDeleteEndpoint = "DeleteEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEndpointRequest method.
+//	req, resp := client.DeleteEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteEndpointRequest method.
-//    req, resp := client.DeleteEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/DeleteEndpoint
 func (c *S3Outposts) DeleteEndpointRequest(input *DeleteEndpointInput) (req *request.Request, output *DeleteEndpointOutput) {
@@ -163,9 +162,9 @@ func (c *S3Outposts) DeleteEndpointRequest(input *DeleteEndpointInput) (req *req
 //
 // Related actions include:
 //
-//    * CreateEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_CreateEndpoint.html)
+//   - CreateEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_CreateEndpoint.html)
 //
-//    * ListEndpoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_ListEndpoints.html)
+//   - ListEndpoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_ListEndpoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -175,17 +174,18 @@ func (c *S3Outposts) DeleteEndpointRequest(input *DeleteEndpointInput) (req *req
 // API operation DeleteEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an exception with the internal server.
 //
-//   * AccessDeniedException
-//   Access was denied for this action.
+//   - InternalServerException
+//     There was an exception with the internal server.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - AccessDeniedException
+//     Access was denied for this action.
 //
-//   * ValidationException
-//   There was an exception validating this data.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - ValidationException
+//     There was an exception validating this data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/DeleteEndpoint
 func (c *S3Outposts) DeleteEndpoint(input *DeleteEndpointInput) (*DeleteEndpointOutput, error) {
@@ -225,14 +225,13 @@ const opListEndpoints = "ListEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEndpointsRequest method.
+//	req, resp := client.ListEndpointsRequest(params)
 //
-//    // Example sending a request using the ListEndpointsRequest method.
-//    req, resp := client.ListEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListEndpoints
 func (c *S3Outposts) ListEndpointsRequest(input *ListEndpointsInput) (req *request.Request, output *ListEndpointsOutput) {
@@ -263,9 +262,9 @@ func (c *S3Outposts) ListEndpointsRequest(input *ListEndpointsInput) (req *reque
 //
 // Related actions include:
 //
-//    * CreateEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_CreateEndpoint.html)
+//   - CreateEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_CreateEndpoint.html)
 //
-//    * DeleteEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_DeleteEndpoint.html)
+//   - DeleteEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_DeleteEndpoint.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -275,17 +274,18 @@ func (c *S3Outposts) ListEndpointsRequest(input *ListEndpointsInput) (req *reque
 // API operation ListEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an exception with the internal server.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InternalServerException
+//     There was an exception with the internal server.
 //
-//   * AccessDeniedException
-//   Access was denied for this action.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * ValidationException
-//   There was an exception validating this data.
+//   - AccessDeniedException
+//     Access was denied for this action.
+//
+//   - ValidationException
+//     There was an exception validating this data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListEndpoints
 func (c *S3Outposts) ListEndpoints(input *ListEndpointsInput) (*ListEndpointsOutput, error) {
@@ -317,15 +317,14 @@ func (c *S3Outposts) ListEndpointsWithContext(ctx aws.Context, input *ListEndpoi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEndpoints operation.
-//    pageNum := 0
-//    err := client.ListEndpointsPages(params,
-//        func(page *s3outposts.ListEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEndpoints operation.
+//	pageNum := 0
+//	err := client.ListEndpointsPages(params,
+//	    func(page *s3outposts.ListEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Outposts) ListEndpointsPages(input *ListEndpointsInput, fn func(*ListEndpointsOutput, bool) bool) error {
 	return c.ListEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -377,14 +376,13 @@ const opListSharedEndpoints = "ListSharedEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSharedEndpointsRequest method.
+//	req, resp := client.ListSharedEndpointsRequest(params)
 //
-//    // Example sending a request using the ListSharedEndpointsRequest method.
-//    req, resp := client.ListSharedEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListSharedEndpoints
 func (c *S3Outposts) ListSharedEndpointsRequest(input *ListSharedEndpointsInput) (req *request.Request, output *ListSharedEndpointsOutput) {
@@ -416,9 +414,9 @@ func (c *S3Outposts) ListSharedEndpointsRequest(input *ListSharedEndpointsInput)
 //
 // Related actions include:
 //
-//    * CreateEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_CreateEndpoint.html)
+//   - CreateEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_CreateEndpoint.html)
 //
-//    * DeleteEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_DeleteEndpoint.html)
+//   - DeleteEndpoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_s3outposts_DeleteEndpoint.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -428,17 +426,18 @@ func (c *S3Outposts) ListSharedEndpointsRequest(input *ListSharedEndpointsInput)
 // API operation ListSharedEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an exception with the internal server.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InternalServerException
+//     There was an exception with the internal server.
 //
-//   * AccessDeniedException
-//   Access was denied for this action.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * ValidationException
-//   There was an exception validating this data.
+//   - AccessDeniedException
+//     Access was denied for this action.
+//
+//   - ValidationException
+//     There was an exception validating this data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListSharedEndpoints
 func (c *S3Outposts) ListSharedEndpoints(input *ListSharedEndpointsInput) (*ListSharedEndpointsOutput, error) {
@@ -470,15 +469,14 @@ func (c *S3Outposts) ListSharedEndpointsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSharedEndpoints operation.
-//    pageNum := 0
-//    err := client.ListSharedEndpointsPages(params,
-//        func(page *s3outposts.ListSharedEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSharedEndpoints operation.
+//	pageNum := 0
+//	err := client.ListSharedEndpointsPages(params,
+//	    func(page *s3outposts.ListSharedEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Outposts) ListSharedEndpointsPages(input *ListSharedEndpointsInput, fn func(*ListSharedEndpointsOutput, bool) bool) error {
 	return c.ListSharedEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }

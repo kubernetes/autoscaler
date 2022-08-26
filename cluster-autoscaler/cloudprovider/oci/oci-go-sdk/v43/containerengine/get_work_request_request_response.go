@@ -11,7 +11,7 @@ import (
 
 // GetWorkRequestRequest wrapper for the GetWorkRequest operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetWorkRequest.go.html to see an example of how to use GetWorkRequestRequest.
 type GetWorkRequestRequest struct {

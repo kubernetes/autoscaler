@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Macie client from just a session.
-//     svc := macie.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Macie client with additional configuration
-//     svc := macie.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Macie client from just a session.
+//	svc := macie.New(mySession)
+//
+//	// Create a Macie client with additional configuration
+//	svc := macie.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Macie {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

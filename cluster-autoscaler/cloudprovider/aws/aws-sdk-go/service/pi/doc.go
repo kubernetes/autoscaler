@@ -21,21 +21,21 @@
 // measured at that time point. Examples include SQL, Wait event, User, and
 // Host.
 //
-//    * To learn more about Performance Insights and Amazon Aurora DB instances,
-//    go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html) .
+//   - To learn more about Performance Insights and Amazon Aurora DB instances,
+//     go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html) .
 //
-//    * To learn more about Performance Insights and Amazon RDS DB instances,
-//    go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html) .
+//   - To learn more about Performance Insights and Amazon RDS DB instances,
+//     go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html) .
 //
-//    * To learn more about Performance Insights and Amazon DocumentDB clusters,
-//    go to the Amazon DocumentDB Developer Guide (https://docs.aws.amazon.com/documentdb/latest/developerguide/performance-insights.html) .
+//   - To learn more about Performance Insights and Amazon DocumentDB clusters,
+//     go to the Amazon DocumentDB Developer Guide (https://docs.aws.amazon.com/documentdb/latest/developerguide/performance-insights.html) .
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27 for more information on this service.
 //
 // See pi package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/pi/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Performance Insights with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

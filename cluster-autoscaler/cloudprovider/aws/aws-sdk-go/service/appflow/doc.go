@@ -14,17 +14,17 @@
 //
 // Use the following links to get started on the Amazon AppFlow API:
 //
-//    * Actions (https://docs.aws.amazon.com/appflow/1.0/APIReference/API_Operations.html):
-//    An alphabetical list of all Amazon AppFlow API operations.
+//   - Actions (https://docs.aws.amazon.com/appflow/1.0/APIReference/API_Operations.html):
+//     An alphabetical list of all Amazon AppFlow API operations.
 //
-//    * Data types (https://docs.aws.amazon.com/appflow/1.0/APIReference/API_Types.html):
-//    An alphabetical list of all Amazon AppFlow data types.
+//   - Data types (https://docs.aws.amazon.com/appflow/1.0/APIReference/API_Types.html):
+//     An alphabetical list of all Amazon AppFlow data types.
 //
-//    * Common parameters (https://docs.aws.amazon.com/appflow/1.0/APIReference/CommonParameters.html):
-//    Parameters that all Query operations can use.
+//   - Common parameters (https://docs.aws.amazon.com/appflow/1.0/APIReference/CommonParameters.html):
+//     Parameters that all Query operations can use.
 //
-//    * Common errors (https://docs.aws.amazon.com/appflow/1.0/APIReference/CommonErrors.html):
-//    Client and server errors that all operations can return.
+//   - Common errors (https://docs.aws.amazon.com/appflow/1.0/APIReference/CommonErrors.html):
+//     Client and server errors that all operations can return.
 //
 // If you're new to Amazon AppFlow, we recommend that you review the Amazon
 // AppFlow User Guide (https://docs.aws.amazon.com/appflow/latest/userguide/what-is-appflow.html).
@@ -41,7 +41,7 @@
 // See appflow package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/appflow/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Appflow with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

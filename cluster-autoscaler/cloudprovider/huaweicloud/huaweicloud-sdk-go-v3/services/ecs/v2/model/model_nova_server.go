@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-//
 type NovaServer struct {
 	// 云服务器名称。
 

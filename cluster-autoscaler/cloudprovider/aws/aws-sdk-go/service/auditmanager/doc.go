@@ -21,17 +21,17 @@
 //
 // Use the following links to get started with the Audit Manager API:
 //
-//    * Actions (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_Operations.html):
-//    An alphabetical list of all Audit Manager API operations.
+//   - Actions (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_Operations.html):
+//     An alphabetical list of all Audit Manager API operations.
 //
-//    * Data types (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_Types.html):
-//    An alphabetical list of all Audit Manager data types.
+//   - Data types (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_Types.html):
+//     An alphabetical list of all Audit Manager data types.
 //
-//    * Common parameters (https://docs.aws.amazon.com/audit-manager/latest/APIReference/CommonParameters.html):
-//    Parameters that all Query operations can use.
+//   - Common parameters (https://docs.aws.amazon.com/audit-manager/latest/APIReference/CommonParameters.html):
+//     Parameters that all Query operations can use.
 //
-//    * Common errors (https://docs.aws.amazon.com/audit-manager/latest/APIReference/CommonErrors.html):
-//    Client and server errors that all operations can return.
+//   - Common errors (https://docs.aws.amazon.com/audit-manager/latest/APIReference/CommonErrors.html):
+//     Client and server errors that all operations can return.
 //
 // If you're new to Audit Manager, we recommend that you review the Audit Manager
 // User Guide (https://docs.aws.amazon.com/audit-manager/latest/userguide/what-is.html).
@@ -41,7 +41,7 @@
 // See auditmanager package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/auditmanager/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Audit Manager with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

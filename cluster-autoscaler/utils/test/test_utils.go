@@ -289,7 +289,8 @@ func boolptr(val bool) *bool {
 // // Call http server in your code.
 // instances, err := g.GetManagedInstances()
 // // Check if expected calls were executed.
-// 	mock.AssertExpectationsForObjects(t, server)
+//
+//	mock.AssertExpectationsForObjects(t, server)
 //
 // Note: to provide a content type, you may pass in the desired
 // fields:

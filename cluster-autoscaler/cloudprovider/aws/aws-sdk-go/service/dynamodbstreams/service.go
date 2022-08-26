@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a DynamoDBStreams client from just a session.
-//     svc := dynamodbstreams.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a DynamoDBStreams client with additional configuration
-//     svc := dynamodbstreams.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a DynamoDBStreams client from just a session.
+//	svc := dynamodbstreams.New(mySession)
+//
+//	// Create a DynamoDBStreams client with additional configuration
+//	svc := dynamodbstreams.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *DynamoDBStreams {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

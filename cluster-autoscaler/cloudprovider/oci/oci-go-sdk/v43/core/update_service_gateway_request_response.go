@@ -11,7 +11,7 @@ import (
 
 // UpdateServiceGatewayRequest wrapper for the UpdateServiceGateway operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateServiceGateway.go.html to see an example of how to use UpdateServiceGatewayRequest.
 type UpdateServiceGatewayRequest struct {

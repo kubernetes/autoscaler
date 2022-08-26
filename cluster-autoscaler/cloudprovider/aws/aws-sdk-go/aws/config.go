@@ -20,16 +20,16 @@ type RequestRetryer interface{}
 // A Config provides service configuration for service clients. By default,
 // all clients will use the defaults.DefaultConfig structure.
 //
-//     // Create Session with MaxRetries configuration to be shared by multiple
-//     // service clients.
-//     sess := session.Must(session.NewSession(&aws.Config{
-//         MaxRetries: aws.Int(3),
-//     }))
+//	// Create Session with MaxRetries configuration to be shared by multiple
+//	// service clients.
+//	sess := session.Must(session.NewSession(&aws.Config{
+//	    MaxRetries: aws.Int(3),
+//	}))
 //
-//     // Create S3 service client with a specific Region.
-//     svc := s3.New(sess, &aws.Config{
-//         Region: aws.String("us-west-2"),
-//     })
+//	// Create S3 service client with a specific Region.
+//	svc := s3.New(sess, &aws.Config{
+//	    Region: aws.String("us-west-2"),
+//	})
 type Config struct {
 	// Enables verbose error printing of all credential chain errors.
 	// Should be used when wanting to see all errors while attempting to
@@ -283,16 +283,16 @@ type Config struct {
 // NewConfig returns a new Config pointer that can be chained with builder
 // methods to set multiple configuration values inline without using pointers.
 //
-//     // Create Session with MaxRetries configuration to be shared by multiple
-//     // service clients.
-//     sess := session.Must(session.NewSession(aws.NewConfig().
-//         WithMaxRetries(3),
-//     ))
+//	// Create Session with MaxRetries configuration to be shared by multiple
+//	// service clients.
+//	sess := session.Must(session.NewSession(aws.NewConfig().
+//	    WithMaxRetries(3),
+//	))
 //
-//     // Create S3 service client with a specific Region.
-//     svc := s3.New(sess, aws.NewConfig().
-//         WithRegion("us-west-2"),
-//     )
+//	// Create S3 service client with a specific Region.
+//	svc := s3.New(sess, aws.NewConfig().
+//	    WithRegion("us-west-2"),
+//	)
 func NewConfig() *Config {
 	return &Config{}
 }

@@ -29,14 +29,13 @@ const opBatchPutPropertyValues = "BatchPutPropertyValues"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchPutPropertyValuesRequest method.
+//	req, resp := client.BatchPutPropertyValuesRequest(params)
 //
-//    // Example sending a request using the BatchPutPropertyValuesRequest method.
-//    req, resp := client.BatchPutPropertyValuesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/BatchPutPropertyValues
 func (c *IoTTwinMaker) BatchPutPropertyValuesRequest(input *BatchPutPropertyValuesInput) (req *request.Request, output *BatchPutPropertyValuesOutput) {
@@ -69,17 +68,18 @@ func (c *IoTTwinMaker) BatchPutPropertyValuesRequest(input *BatchPutPropertyValu
 // API operation BatchPutPropertyValues for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/BatchPutPropertyValues
 func (c *IoTTwinMaker) BatchPutPropertyValues(input *BatchPutPropertyValuesInput) (*BatchPutPropertyValuesOutput, error) {
@@ -119,14 +119,13 @@ const opCreateComponentType = "CreateComponentType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateComponentTypeRequest method.
+//	req, resp := client.CreateComponentTypeRequest(params)
 //
-//    // Example sending a request using the CreateComponentTypeRequest method.
-//    req, resp := client.CreateComponentTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateComponentType
 func (c *IoTTwinMaker) CreateComponentTypeRequest(input *CreateComponentTypeInput) (req *request.Request, output *CreateComponentTypeOutput) {
@@ -159,23 +158,24 @@ func (c *IoTTwinMaker) CreateComponentTypeRequest(input *CreateComponentTypeInpu
 // API operation CreateComponentType for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - ValidationException
+//     Failed
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ConflictException
+//     A conflict occurred.
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateComponentType
 func (c *IoTTwinMaker) CreateComponentType(input *CreateComponentTypeInput) (*CreateComponentTypeOutput, error) {
@@ -215,14 +215,13 @@ const opCreateEntity = "CreateEntity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEntityRequest method.
+//	req, resp := client.CreateEntityRequest(params)
 //
-//    // Example sending a request using the CreateEntityRequest method.
-//    req, resp := client.CreateEntityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateEntity
 func (c *IoTTwinMaker) CreateEntityRequest(input *CreateEntityInput) (req *request.Request, output *CreateEntityOutput) {
@@ -255,23 +254,24 @@ func (c *IoTTwinMaker) CreateEntityRequest(input *CreateEntityInput) (req *reque
 // API operation CreateEntity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - ValidationException
+//     Failed
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ConflictException
+//     A conflict occurred.
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateEntity
 func (c *IoTTwinMaker) CreateEntity(input *CreateEntityInput) (*CreateEntityOutput, error) {
@@ -311,14 +311,13 @@ const opCreateScene = "CreateScene"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSceneRequest method.
+//	req, resp := client.CreateSceneRequest(params)
 //
-//    // Example sending a request using the CreateSceneRequest method.
-//    req, resp := client.CreateSceneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateScene
 func (c *IoTTwinMaker) CreateSceneRequest(input *CreateSceneInput) (req *request.Request, output *CreateSceneOutput) {
@@ -351,23 +350,24 @@ func (c *IoTTwinMaker) CreateSceneRequest(input *CreateSceneInput) (req *request
 // API operation CreateScene for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - ValidationException
+//     Failed
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ConflictException
+//     A conflict occurred.
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateScene
 func (c *IoTTwinMaker) CreateScene(input *CreateSceneInput) (*CreateSceneOutput, error) {
@@ -407,14 +407,13 @@ const opCreateWorkspace = "CreateWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkspaceRequest method.
+//	req, resp := client.CreateWorkspaceRequest(params)
 //
-//    // Example sending a request using the CreateWorkspaceRequest method.
-//    req, resp := client.CreateWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateWorkspace
 func (c *IoTTwinMaker) CreateWorkspaceRequest(input *CreateWorkspaceInput) (req *request.Request, output *CreateWorkspaceOutput) {
@@ -447,23 +446,24 @@ func (c *IoTTwinMaker) CreateWorkspaceRequest(input *CreateWorkspaceInput) (req 
 // API operation CreateWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - ValidationException
+//     Failed
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ConflictException
+//     A conflict occurred.
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/CreateWorkspace
 func (c *IoTTwinMaker) CreateWorkspace(input *CreateWorkspaceInput) (*CreateWorkspaceOutput, error) {
@@ -503,14 +503,13 @@ const opDeleteComponentType = "DeleteComponentType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteComponentTypeRequest method.
+//	req, resp := client.DeleteComponentTypeRequest(params)
 //
-//    // Example sending a request using the DeleteComponentTypeRequest method.
-//    req, resp := client.DeleteComponentTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteComponentType
 func (c *IoTTwinMaker) DeleteComponentTypeRequest(input *DeleteComponentTypeInput) (req *request.Request, output *DeleteComponentTypeOutput) {
@@ -543,20 +542,21 @@ func (c *IoTTwinMaker) DeleteComponentTypeRequest(input *DeleteComponentTypeInpu
 // API operation DeleteComponentType for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteComponentType
 func (c *IoTTwinMaker) DeleteComponentType(input *DeleteComponentTypeInput) (*DeleteComponentTypeOutput, error) {
@@ -596,14 +596,13 @@ const opDeleteEntity = "DeleteEntity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEntityRequest method.
+//	req, resp := client.DeleteEntityRequest(params)
 //
-//    // Example sending a request using the DeleteEntityRequest method.
-//    req, resp := client.DeleteEntityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteEntity
 func (c *IoTTwinMaker) DeleteEntityRequest(input *DeleteEntityInput) (req *request.Request, output *DeleteEntityOutput) {
@@ -636,20 +635,21 @@ func (c *IoTTwinMaker) DeleteEntityRequest(input *DeleteEntityInput) (req *reque
 // API operation DeleteEntity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteEntity
 func (c *IoTTwinMaker) DeleteEntity(input *DeleteEntityInput) (*DeleteEntityOutput, error) {
@@ -689,14 +689,13 @@ const opDeleteScene = "DeleteScene"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSceneRequest method.
+//	req, resp := client.DeleteSceneRequest(params)
 //
-//    // Example sending a request using the DeleteSceneRequest method.
-//    req, resp := client.DeleteSceneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteScene
 func (c *IoTTwinMaker) DeleteSceneRequest(input *DeleteSceneInput) (req *request.Request, output *DeleteSceneOutput) {
@@ -730,20 +729,21 @@ func (c *IoTTwinMaker) DeleteSceneRequest(input *DeleteSceneInput) (req *request
 // API operation DeleteScene for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteScene
 func (c *IoTTwinMaker) DeleteScene(input *DeleteSceneInput) (*DeleteSceneOutput, error) {
@@ -783,14 +783,13 @@ const opDeleteWorkspace = "DeleteWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkspaceRequest method.
+//	req, resp := client.DeleteWorkspaceRequest(params)
 //
-//    // Example sending a request using the DeleteWorkspaceRequest method.
-//    req, resp := client.DeleteWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteWorkspace
 func (c *IoTTwinMaker) DeleteWorkspaceRequest(input *DeleteWorkspaceInput) (req *request.Request, output *DeleteWorkspaceOutput) {
@@ -824,20 +823,21 @@ func (c *IoTTwinMaker) DeleteWorkspaceRequest(input *DeleteWorkspaceInput) (req 
 // API operation DeleteWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/DeleteWorkspace
 func (c *IoTTwinMaker) DeleteWorkspace(input *DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error) {
@@ -877,14 +877,13 @@ const opGetComponentType = "GetComponentType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComponentTypeRequest method.
+//	req, resp := client.GetComponentTypeRequest(params)
 //
-//    // Example sending a request using the GetComponentTypeRequest method.
-//    req, resp := client.GetComponentTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetComponentType
 func (c *IoTTwinMaker) GetComponentTypeRequest(input *GetComponentTypeInput) (req *request.Request, output *GetComponentTypeOutput) {
@@ -917,17 +916,18 @@ func (c *IoTTwinMaker) GetComponentTypeRequest(input *GetComponentTypeInput) (re
 // API operation GetComponentType for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
+//
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetComponentType
 func (c *IoTTwinMaker) GetComponentType(input *GetComponentTypeInput) (*GetComponentTypeOutput, error) {
@@ -967,14 +967,13 @@ const opGetEntity = "GetEntity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEntityRequest method.
+//	req, resp := client.GetEntityRequest(params)
 //
-//    // Example sending a request using the GetEntityRequest method.
-//    req, resp := client.GetEntityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetEntity
 func (c *IoTTwinMaker) GetEntityRequest(input *GetEntityInput) (req *request.Request, output *GetEntityOutput) {
@@ -1007,20 +1006,21 @@ func (c *IoTTwinMaker) GetEntityRequest(input *GetEntityInput) (req *request.Req
 // API operation GetEntity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetEntity
 func (c *IoTTwinMaker) GetEntity(input *GetEntityInput) (*GetEntityOutput, error) {
@@ -1060,14 +1060,13 @@ const opGetPropertyValue = "GetPropertyValue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPropertyValueRequest method.
+//	req, resp := client.GetPropertyValueRequest(params)
 //
-//    // Example sending a request using the GetPropertyValueRequest method.
-//    req, resp := client.GetPropertyValueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetPropertyValue
 func (c *IoTTwinMaker) GetPropertyValueRequest(input *GetPropertyValueInput) (req *request.Request, output *GetPropertyValueOutput) {
@@ -1103,26 +1102,27 @@ func (c *IoTTwinMaker) GetPropertyValueRequest(input *GetPropertyValueInput) (re
 // API operation GetPropertyValue for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ConnectorFailureException
-//   The connector failed.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ConnectorFailureException
+//     The connector failed.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConnectorTimeoutException
-//   The connector timed out.
+//   - ValidationException
+//     Failed
+//
+//   - ConnectorTimeoutException
+//     The connector timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetPropertyValue
 func (c *IoTTwinMaker) GetPropertyValue(input *GetPropertyValueInput) (*GetPropertyValueOutput, error) {
@@ -1162,14 +1162,13 @@ const opGetPropertyValueHistory = "GetPropertyValueHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPropertyValueHistoryRequest method.
+//	req, resp := client.GetPropertyValueHistoryRequest(params)
 //
-//    // Example sending a request using the GetPropertyValueHistoryRequest method.
-//    req, resp := client.GetPropertyValueHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetPropertyValueHistory
 func (c *IoTTwinMaker) GetPropertyValueHistoryRequest(input *GetPropertyValueHistoryInput) (req *request.Request, output *GetPropertyValueHistoryOutput) {
@@ -1213,26 +1212,27 @@ func (c *IoTTwinMaker) GetPropertyValueHistoryRequest(input *GetPropertyValueHis
 // API operation GetPropertyValueHistory for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ConnectorFailureException
-//   The connector failed.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ConnectorFailureException
+//     The connector failed.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConnectorTimeoutException
-//   The connector timed out.
+//   - ValidationException
+//     Failed
+//
+//   - ConnectorTimeoutException
+//     The connector timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetPropertyValueHistory
 func (c *IoTTwinMaker) GetPropertyValueHistory(input *GetPropertyValueHistoryInput) (*GetPropertyValueHistoryOutput, error) {
@@ -1264,15 +1264,14 @@ func (c *IoTTwinMaker) GetPropertyValueHistoryWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetPropertyValueHistory operation.
-//    pageNum := 0
-//    err := client.GetPropertyValueHistoryPages(params,
-//        func(page *iottwinmaker.GetPropertyValueHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetPropertyValueHistory operation.
+//	pageNum := 0
+//	err := client.GetPropertyValueHistoryPages(params,
+//	    func(page *iottwinmaker.GetPropertyValueHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTTwinMaker) GetPropertyValueHistoryPages(input *GetPropertyValueHistoryInput, fn func(*GetPropertyValueHistoryOutput, bool) bool) error {
 	return c.GetPropertyValueHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1324,14 +1323,13 @@ const opGetScene = "GetScene"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSceneRequest method.
+//	req, resp := client.GetSceneRequest(params)
 //
-//    // Example sending a request using the GetSceneRequest method.
-//    req, resp := client.GetSceneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetScene
 func (c *IoTTwinMaker) GetSceneRequest(input *GetSceneInput) (req *request.Request, output *GetSceneOutput) {
@@ -1364,20 +1362,21 @@ func (c *IoTTwinMaker) GetSceneRequest(input *GetSceneInput) (req *request.Reque
 // API operation GetScene for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetScene
 func (c *IoTTwinMaker) GetScene(input *GetSceneInput) (*GetSceneOutput, error) {
@@ -1417,14 +1416,13 @@ const opGetWorkspace = "GetWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkspaceRequest method.
+//	req, resp := client.GetWorkspaceRequest(params)
 //
-//    // Example sending a request using the GetWorkspaceRequest method.
-//    req, resp := client.GetWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetWorkspace
 func (c *IoTTwinMaker) GetWorkspaceRequest(input *GetWorkspaceInput) (req *request.Request, output *GetWorkspaceOutput) {
@@ -1457,20 +1455,21 @@ func (c *IoTTwinMaker) GetWorkspaceRequest(input *GetWorkspaceInput) (req *reque
 // API operation GetWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/GetWorkspace
 func (c *IoTTwinMaker) GetWorkspace(input *GetWorkspaceInput) (*GetWorkspaceOutput, error) {
@@ -1510,14 +1509,13 @@ const opListComponentTypes = "ListComponentTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentTypesRequest method.
+//	req, resp := client.ListComponentTypesRequest(params)
 //
-//    // Example sending a request using the ListComponentTypesRequest method.
-//    req, resp := client.ListComponentTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListComponentTypes
 func (c *IoTTwinMaker) ListComponentTypesRequest(input *ListComponentTypesInput) (req *request.Request, output *ListComponentTypesOutput) {
@@ -1556,17 +1554,18 @@ func (c *IoTTwinMaker) ListComponentTypesRequest(input *ListComponentTypesInput)
 // API operation ListComponentTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListComponentTypes
 func (c *IoTTwinMaker) ListComponentTypes(input *ListComponentTypesInput) (*ListComponentTypesOutput, error) {
@@ -1598,15 +1597,14 @@ func (c *IoTTwinMaker) ListComponentTypesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponentTypes operation.
-//    pageNum := 0
-//    err := client.ListComponentTypesPages(params,
-//        func(page *iottwinmaker.ListComponentTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponentTypes operation.
+//	pageNum := 0
+//	err := client.ListComponentTypesPages(params,
+//	    func(page *iottwinmaker.ListComponentTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTTwinMaker) ListComponentTypesPages(input *ListComponentTypesInput, fn func(*ListComponentTypesOutput, bool) bool) error {
 	return c.ListComponentTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1658,14 +1656,13 @@ const opListEntities = "ListEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitiesRequest method.
+//	req, resp := client.ListEntitiesRequest(params)
 //
-//    // Example sending a request using the ListEntitiesRequest method.
-//    req, resp := client.ListEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListEntities
 func (c *IoTTwinMaker) ListEntitiesRequest(input *ListEntitiesInput) (req *request.Request, output *ListEntitiesOutput) {
@@ -1704,17 +1701,18 @@ func (c *IoTTwinMaker) ListEntitiesRequest(input *ListEntitiesInput) (req *reque
 // API operation ListEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListEntities
 func (c *IoTTwinMaker) ListEntities(input *ListEntitiesInput) (*ListEntitiesOutput, error) {
@@ -1746,15 +1744,14 @@ func (c *IoTTwinMaker) ListEntitiesWithContext(ctx aws.Context, input *ListEntit
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntities operation.
-//    pageNum := 0
-//    err := client.ListEntitiesPages(params,
-//        func(page *iottwinmaker.ListEntitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntities operation.
+//	pageNum := 0
+//	err := client.ListEntitiesPages(params,
+//	    func(page *iottwinmaker.ListEntitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTTwinMaker) ListEntitiesPages(input *ListEntitiesInput, fn func(*ListEntitiesOutput, bool) bool) error {
 	return c.ListEntitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1806,14 +1803,13 @@ const opListScenes = "ListScenes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListScenesRequest method.
+//	req, resp := client.ListScenesRequest(params)
 //
-//    // Example sending a request using the ListScenesRequest method.
-//    req, resp := client.ListScenesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListScenes
 func (c *IoTTwinMaker) ListScenesRequest(input *ListScenesInput) (req *request.Request, output *ListScenesOutput) {
@@ -1852,17 +1848,18 @@ func (c *IoTTwinMaker) ListScenesRequest(input *ListScenesInput) (req *request.R
 // API operation ListScenes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListScenes
 func (c *IoTTwinMaker) ListScenes(input *ListScenesInput) (*ListScenesOutput, error) {
@@ -1894,15 +1891,14 @@ func (c *IoTTwinMaker) ListScenesWithContext(ctx aws.Context, input *ListScenesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListScenes operation.
-//    pageNum := 0
-//    err := client.ListScenesPages(params,
-//        func(page *iottwinmaker.ListScenesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListScenes operation.
+//	pageNum := 0
+//	err := client.ListScenesPages(params,
+//	    func(page *iottwinmaker.ListScenesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTTwinMaker) ListScenesPages(input *ListScenesInput, fn func(*ListScenesOutput, bool) bool) error {
 	return c.ListScenesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1954,14 +1950,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListTagsForResource
 func (c *IoTTwinMaker) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1994,11 +1989,12 @@ func (c *IoTTwinMaker) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access is denied.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListTagsForResource
 func (c *IoTTwinMaker) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2038,14 +2034,13 @@ const opListWorkspaces = "ListWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkspacesRequest method.
+//	req, resp := client.ListWorkspacesRequest(params)
 //
-//    // Example sending a request using the ListWorkspacesRequest method.
-//    req, resp := client.ListWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListWorkspaces
 func (c *IoTTwinMaker) ListWorkspacesRequest(input *ListWorkspacesInput) (req *request.Request, output *ListWorkspacesOutput) {
@@ -2084,17 +2079,18 @@ func (c *IoTTwinMaker) ListWorkspacesRequest(input *ListWorkspacesInput) (req *r
 // API operation ListWorkspaces for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/ListWorkspaces
 func (c *IoTTwinMaker) ListWorkspaces(input *ListWorkspacesInput) (*ListWorkspacesOutput, error) {
@@ -2126,15 +2122,14 @@ func (c *IoTTwinMaker) ListWorkspacesWithContext(ctx aws.Context, input *ListWor
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkspaces operation.
-//    pageNum := 0
-//    err := client.ListWorkspacesPages(params,
-//        func(page *iottwinmaker.ListWorkspacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkspaces operation.
+//	pageNum := 0
+//	err := client.ListWorkspacesPages(params,
+//	    func(page *iottwinmaker.ListWorkspacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTTwinMaker) ListWorkspacesPages(input *ListWorkspacesInput, fn func(*ListWorkspacesOutput, bool) bool) error {
 	return c.ListWorkspacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2186,14 +2181,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/TagResource
 func (c *IoTTwinMaker) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2227,14 +2221,15 @@ func (c *IoTTwinMaker) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyTagsException
-//   The number of tags exceeds the limit.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - TooManyTagsException
+//     The number of tags exceeds the limit.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/TagResource
 func (c *IoTTwinMaker) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2274,14 +2269,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UntagResource
 func (c *IoTTwinMaker) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2315,11 +2309,12 @@ func (c *IoTTwinMaker) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access is denied.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UntagResource
 func (c *IoTTwinMaker) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2359,14 +2354,13 @@ const opUpdateComponentType = "UpdateComponentType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateComponentTypeRequest method.
+//	req, resp := client.UpdateComponentTypeRequest(params)
 //
-//    // Example sending a request using the UpdateComponentTypeRequest method.
-//    req, resp := client.UpdateComponentTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateComponentType
 func (c *IoTTwinMaker) UpdateComponentTypeRequest(input *UpdateComponentTypeInput) (req *request.Request, output *UpdateComponentTypeOutput) {
@@ -2399,23 +2393,24 @@ func (c *IoTTwinMaker) UpdateComponentTypeRequest(input *UpdateComponentTypeInpu
 // API operation UpdateComponentType for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateComponentType
 func (c *IoTTwinMaker) UpdateComponentType(input *UpdateComponentTypeInput) (*UpdateComponentTypeOutput, error) {
@@ -2455,14 +2450,13 @@ const opUpdateEntity = "UpdateEntity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEntityRequest method.
+//	req, resp := client.UpdateEntityRequest(params)
 //
-//    // Example sending a request using the UpdateEntityRequest method.
-//    req, resp := client.UpdateEntityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateEntity
 func (c *IoTTwinMaker) UpdateEntityRequest(input *UpdateEntityInput) (req *request.Request, output *UpdateEntityOutput) {
@@ -2495,26 +2489,27 @@ func (c *IoTTwinMaker) UpdateEntityRequest(input *UpdateEntityInput) (req *reque
 // API operation UpdateEntity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - ValidationException
+//     Failed
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ConflictException
+//     A conflict occurred.
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateEntity
 func (c *IoTTwinMaker) UpdateEntity(input *UpdateEntityInput) (*UpdateEntityOutput, error) {
@@ -2554,14 +2549,13 @@ const opUpdateScene = "UpdateScene"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSceneRequest method.
+//	req, resp := client.UpdateSceneRequest(params)
 //
-//    // Example sending a request using the UpdateSceneRequest method.
-//    req, resp := client.UpdateSceneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateScene
 func (c *IoTTwinMaker) UpdateSceneRequest(input *UpdateSceneInput) (req *request.Request, output *UpdateSceneOutput) {
@@ -2594,20 +2588,21 @@ func (c *IoTTwinMaker) UpdateSceneRequest(input *UpdateSceneInput) (req *request
 // API operation UpdateScene for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
+//
+//   - ValidationException
+//     Failed
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateScene
 func (c *IoTTwinMaker) UpdateScene(input *UpdateSceneInput) (*UpdateSceneOutput, error) {
@@ -2647,14 +2642,13 @@ const opUpdateWorkspace = "UpdateWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWorkspaceRequest method.
+//	req, resp := client.UpdateWorkspaceRequest(params)
 //
-//    // Example sending a request using the UpdateWorkspaceRequest method.
-//    req, resp := client.UpdateWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateWorkspace
 func (c *IoTTwinMaker) UpdateWorkspaceRequest(input *UpdateWorkspaceInput) (req *request.Request, output *UpdateWorkspaceOutput) {
@@ -2687,23 +2681,24 @@ func (c *IoTTwinMaker) UpdateWorkspaceRequest(input *UpdateWorkspaceInput) (req 
 // API operation UpdateWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error has occurred.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     An unexpected error has occurred.
 //
-//   * ResourceNotFoundException
-//   The resource wasn't found.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The resource wasn't found.
 //
-//   * ValidationException
-//   Failed
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceQuotaExceededException
-//   The service quota was exceeded.
+//   - ValidationException
+//     Failed
+//
+//   - ServiceQuotaExceededException
+//     The service quota was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iottwinmaker-2021-11-29/UpdateWorkspace
 func (c *IoTTwinMaker) UpdateWorkspace(input *UpdateWorkspaceInput) (*UpdateWorkspaceOutput, error) {

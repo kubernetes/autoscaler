@@ -30,14 +30,13 @@ const opAssociateExternalConnection = "AssociateExternalConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateExternalConnectionRequest method.
+//	req, resp := client.AssociateExternalConnectionRequest(params)
 //
-//    // Example sending a request using the AssociateExternalConnectionRequest method.
-//    req, resp := client.AssociateExternalConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/AssociateExternalConnection
 func (c *CodeArtifact) AssociateExternalConnectionRequest(input *AssociateExternalConnectionInput) (req *request.Request, output *AssociateExternalConnectionOutput) {
@@ -71,30 +70,31 @@ func (c *CodeArtifact) AssociateExternalConnectionRequest(input *AssociateExtern
 // API operation AssociateExternalConnection for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/AssociateExternalConnection
 func (c *CodeArtifact) AssociateExternalConnection(input *AssociateExternalConnectionInput) (*AssociateExternalConnectionOutput, error) {
@@ -134,14 +134,13 @@ const opCopyPackageVersions = "CopyPackageVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyPackageVersionsRequest method.
+//	req, resp := client.CopyPackageVersionsRequest(params)
 //
-//    // Example sending a request using the CopyPackageVersionsRequest method.
-//    req, resp := client.CopyPackageVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/CopyPackageVersions
 func (c *CodeArtifact) CopyPackageVersionsRequest(input *CopyPackageVersionsInput) (req *request.Request, output *CopyPackageVersionsOutput) {
@@ -175,30 +174,31 @@ func (c *CodeArtifact) CopyPackageVersionsRequest(input *CopyPackageVersionsInpu
 // API operation CopyPackageVersions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/CopyPackageVersions
 func (c *CodeArtifact) CopyPackageVersions(input *CopyPackageVersionsInput) (*CopyPackageVersionsOutput, error) {
@@ -238,14 +238,13 @@ const opCreateDomain = "CreateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainRequest method.
+//	req, resp := client.CreateDomainRequest(params)
 //
-//    // Example sending a request using the CreateDomainRequest method.
-//    req, resp := client.CreateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/CreateDomain
 func (c *CodeArtifact) CreateDomainRequest(input *CreateDomainInput) (req *request.Request, output *CreateDomainOutput) {
@@ -284,30 +283,31 @@ func (c *CodeArtifact) CreateDomainRequest(input *CreateDomainInput) (req *reque
 // API operation CreateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/CreateDomain
 func (c *CodeArtifact) CreateDomain(input *CreateDomainInput) (*CreateDomainOutput, error) {
@@ -347,14 +347,13 @@ const opCreateRepository = "CreateRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRepositoryRequest method.
+//	req, resp := client.CreateRepositoryRequest(params)
 //
-//    // Example sending a request using the CreateRepositoryRequest method.
-//    req, resp := client.CreateRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/CreateRepository
 func (c *CodeArtifact) CreateRepositoryRequest(input *CreateRepositoryInput) (req *request.Request, output *CreateRepositoryOutput) {
@@ -385,30 +384,31 @@ func (c *CodeArtifact) CreateRepositoryRequest(input *CreateRepositoryInput) (re
 // API operation CreateRepository for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/CreateRepository
 func (c *CodeArtifact) CreateRepository(input *CreateRepositoryInput) (*CreateRepositoryOutput, error) {
@@ -448,14 +448,13 @@ const opDeleteDomain = "DeleteDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainRequest method.
+//	req, resp := client.DeleteDomainRequest(params)
 //
-//    // Example sending a request using the DeleteDomainRequest method.
-//    req, resp := client.DeleteDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteDomain
 func (c *CodeArtifact) DeleteDomainRequest(input *DeleteDomainInput) (req *request.Request, output *DeleteDomainOutput) {
@@ -487,22 +486,23 @@ func (c *CodeArtifact) DeleteDomainRequest(input *DeleteDomainInput) (req *reque
 // API operation DeleteDomain for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteDomain
 func (c *CodeArtifact) DeleteDomain(input *DeleteDomainInput) (*DeleteDomainOutput, error) {
@@ -542,14 +542,13 @@ const opDeleteDomainPermissionsPolicy = "DeleteDomainPermissionsPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainPermissionsPolicyRequest method.
+//	req, resp := client.DeleteDomainPermissionsPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteDomainPermissionsPolicyRequest method.
-//    req, resp := client.DeleteDomainPermissionsPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteDomainPermissionsPolicy
 func (c *CodeArtifact) DeleteDomainPermissionsPolicyRequest(input *DeleteDomainPermissionsPolicyInput) (req *request.Request, output *DeleteDomainPermissionsPolicyOutput) {
@@ -580,26 +579,27 @@ func (c *CodeArtifact) DeleteDomainPermissionsPolicyRequest(input *DeleteDomainP
 // API operation DeleteDomainPermissionsPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteDomainPermissionsPolicy
 func (c *CodeArtifact) DeleteDomainPermissionsPolicy(input *DeleteDomainPermissionsPolicyInput) (*DeleteDomainPermissionsPolicyOutput, error) {
@@ -639,14 +639,13 @@ const opDeletePackageVersions = "DeletePackageVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePackageVersionsRequest method.
+//	req, resp := client.DeletePackageVersionsRequest(params)
 //
-//    // Example sending a request using the DeletePackageVersionsRequest method.
-//    req, resp := client.DeletePackageVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeletePackageVersions
 func (c *CodeArtifact) DeletePackageVersionsRequest(input *DeletePackageVersionsInput) (req *request.Request, output *DeletePackageVersionsOutput) {
@@ -682,26 +681,27 @@ func (c *CodeArtifact) DeletePackageVersionsRequest(input *DeletePackageVersions
 // API operation DeletePackageVersions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeletePackageVersions
 func (c *CodeArtifact) DeletePackageVersions(input *DeletePackageVersionsInput) (*DeletePackageVersionsOutput, error) {
@@ -741,14 +741,13 @@ const opDeleteRepository = "DeleteRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRepositoryRequest method.
+//	req, resp := client.DeleteRepositoryRequest(params)
 //
-//    // Example sending a request using the DeleteRepositoryRequest method.
-//    req, resp := client.DeleteRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteRepository
 func (c *CodeArtifact) DeleteRepositoryRequest(input *DeleteRepositoryInput) (req *request.Request, output *DeleteRepositoryOutput) {
@@ -779,26 +778,27 @@ func (c *CodeArtifact) DeleteRepositoryRequest(input *DeleteRepositoryInput) (re
 // API operation DeleteRepository for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteRepository
 func (c *CodeArtifact) DeleteRepository(input *DeleteRepositoryInput) (*DeleteRepositoryOutput, error) {
@@ -838,14 +838,13 @@ const opDeleteRepositoryPermissionsPolicy = "DeleteRepositoryPermissionsPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRepositoryPermissionsPolicyRequest method.
+//	req, resp := client.DeleteRepositoryPermissionsPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteRepositoryPermissionsPolicyRequest method.
-//    req, resp := client.DeleteRepositoryPermissionsPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteRepositoryPermissionsPolicy
 func (c *CodeArtifact) DeleteRepositoryPermissionsPolicyRequest(input *DeleteRepositoryPermissionsPolicyInput) (req *request.Request, output *DeleteRepositoryPermissionsPolicyOutput) {
@@ -882,26 +881,27 @@ func (c *CodeArtifact) DeleteRepositoryPermissionsPolicyRequest(input *DeleteRep
 // API operation DeleteRepositoryPermissionsPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DeleteRepositoryPermissionsPolicy
 func (c *CodeArtifact) DeleteRepositoryPermissionsPolicy(input *DeleteRepositoryPermissionsPolicyInput) (*DeleteRepositoryPermissionsPolicyOutput, error) {
@@ -941,14 +941,13 @@ const opDescribeDomain = "DescribeDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainRequest method.
+//	req, resp := client.DescribeDomainRequest(params)
 //
-//    // Example sending a request using the DescribeDomainRequest method.
-//    req, resp := client.DescribeDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DescribeDomain
 func (c *CodeArtifact) DescribeDomainRequest(input *DescribeDomainInput) (req *request.Request, output *DescribeDomainOutput) {
@@ -980,23 +979,24 @@ func (c *CodeArtifact) DescribeDomainRequest(input *DescribeDomainInput) (req *r
 // API operation DescribeDomain for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DescribeDomain
 func (c *CodeArtifact) DescribeDomain(input *DescribeDomainInput) (*DescribeDomainOutput, error) {
@@ -1036,14 +1036,13 @@ const opDescribePackageVersion = "DescribePackageVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackageVersionRequest method.
+//	req, resp := client.DescribePackageVersionRequest(params)
 //
-//    // Example sending a request using the DescribePackageVersionRequest method.
-//    req, resp := client.DescribePackageVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DescribePackageVersion
 func (c *CodeArtifact) DescribePackageVersionRequest(input *DescribePackageVersionInput) (req *request.Request, output *DescribePackageVersionOutput) {
@@ -1075,26 +1074,27 @@ func (c *CodeArtifact) DescribePackageVersionRequest(input *DescribePackageVersi
 // API operation DescribePackageVersion for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DescribePackageVersion
 func (c *CodeArtifact) DescribePackageVersion(input *DescribePackageVersionInput) (*DescribePackageVersionOutput, error) {
@@ -1134,14 +1134,13 @@ const opDescribeRepository = "DescribeRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRepositoryRequest method.
+//	req, resp := client.DescribeRepositoryRequest(params)
 //
-//    // Example sending a request using the DescribeRepositoryRequest method.
-//    req, resp := client.DescribeRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DescribeRepository
 func (c *CodeArtifact) DescribeRepositoryRequest(input *DescribeRepositoryInput) (req *request.Request, output *DescribeRepositoryOutput) {
@@ -1173,23 +1172,24 @@ func (c *CodeArtifact) DescribeRepositoryRequest(input *DescribeRepositoryInput)
 // API operation DescribeRepository for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DescribeRepository
 func (c *CodeArtifact) DescribeRepository(input *DescribeRepositoryInput) (*DescribeRepositoryOutput, error) {
@@ -1229,14 +1229,13 @@ const opDisassociateExternalConnection = "DisassociateExternalConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateExternalConnectionRequest method.
+//	req, resp := client.DisassociateExternalConnectionRequest(params)
 //
-//    // Example sending a request using the DisassociateExternalConnectionRequest method.
-//    req, resp := client.DisassociateExternalConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DisassociateExternalConnection
 func (c *CodeArtifact) DisassociateExternalConnectionRequest(input *DisassociateExternalConnectionInput) (req *request.Request, output *DisassociateExternalConnectionOutput) {
@@ -1267,30 +1266,31 @@ func (c *CodeArtifact) DisassociateExternalConnectionRequest(input *Disassociate
 // API operation DisassociateExternalConnection for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DisassociateExternalConnection
 func (c *CodeArtifact) DisassociateExternalConnection(input *DisassociateExternalConnectionInput) (*DisassociateExternalConnectionOutput, error) {
@@ -1330,14 +1330,13 @@ const opDisposePackageVersions = "DisposePackageVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisposePackageVersionsRequest method.
+//	req, resp := client.DisposePackageVersionsRequest(params)
 //
-//    // Example sending a request using the DisposePackageVersionsRequest method.
-//    req, resp := client.DisposePackageVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DisposePackageVersions
 func (c *CodeArtifact) DisposePackageVersionsRequest(input *DisposePackageVersionsInput) (req *request.Request, output *DisposePackageVersionsOutput) {
@@ -1378,26 +1377,27 @@ func (c *CodeArtifact) DisposePackageVersionsRequest(input *DisposePackageVersio
 // API operation DisposePackageVersions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/DisposePackageVersions
 func (c *CodeArtifact) DisposePackageVersions(input *DisposePackageVersionsInput) (*DisposePackageVersionsOutput, error) {
@@ -1437,14 +1437,13 @@ const opGetAuthorizationToken = "GetAuthorizationToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAuthorizationTokenRequest method.
+//	req, resp := client.GetAuthorizationTokenRequest(params)
 //
-//    // Example sending a request using the GetAuthorizationTokenRequest method.
-//    req, resp := client.GetAuthorizationTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetAuthorizationToken
 func (c *CodeArtifact) GetAuthorizationTokenRequest(input *GetAuthorizationTokenInput) (req *request.Request, output *GetAuthorizationTokenOutput) {
@@ -1495,23 +1494,24 @@ func (c *CodeArtifact) GetAuthorizationTokenRequest(input *GetAuthorizationToken
 // API operation GetAuthorizationToken for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetAuthorizationToken
 func (c *CodeArtifact) GetAuthorizationToken(input *GetAuthorizationTokenInput) (*GetAuthorizationTokenOutput, error) {
@@ -1551,14 +1551,13 @@ const opGetDomainPermissionsPolicy = "GetDomainPermissionsPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainPermissionsPolicyRequest method.
+//	req, resp := client.GetDomainPermissionsPolicyRequest(params)
 //
-//    // Example sending a request using the GetDomainPermissionsPolicyRequest method.
-//    req, resp := client.GetDomainPermissionsPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetDomainPermissionsPolicy
 func (c *CodeArtifact) GetDomainPermissionsPolicyRequest(input *GetDomainPermissionsPolicyInput) (req *request.Request, output *GetDomainPermissionsPolicyOutput) {
@@ -1594,23 +1593,24 @@ func (c *CodeArtifact) GetDomainPermissionsPolicyRequest(input *GetDomainPermiss
 // API operation GetDomainPermissionsPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetDomainPermissionsPolicy
 func (c *CodeArtifact) GetDomainPermissionsPolicy(input *GetDomainPermissionsPolicyInput) (*GetDomainPermissionsPolicyOutput, error) {
@@ -1650,14 +1650,13 @@ const opGetPackageVersionAsset = "GetPackageVersionAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPackageVersionAssetRequest method.
+//	req, resp := client.GetPackageVersionAssetRequest(params)
 //
-//    // Example sending a request using the GetPackageVersionAssetRequest method.
-//    req, resp := client.GetPackageVersionAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetPackageVersionAsset
 func (c *CodeArtifact) GetPackageVersionAssetRequest(input *GetPackageVersionAssetInput) (req *request.Request, output *GetPackageVersionAssetOutput) {
@@ -1690,26 +1689,27 @@ func (c *CodeArtifact) GetPackageVersionAssetRequest(input *GetPackageVersionAss
 // API operation GetPackageVersionAsset for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
+//
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetPackageVersionAsset
 func (c *CodeArtifact) GetPackageVersionAsset(input *GetPackageVersionAssetInput) (*GetPackageVersionAssetOutput, error) {
@@ -1749,14 +1749,13 @@ const opGetPackageVersionReadme = "GetPackageVersionReadme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPackageVersionReadmeRequest method.
+//	req, resp := client.GetPackageVersionReadmeRequest(params)
 //
-//    // Example sending a request using the GetPackageVersionReadmeRequest method.
-//    req, resp := client.GetPackageVersionReadmeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetPackageVersionReadme
 func (c *CodeArtifact) GetPackageVersionReadmeRequest(input *GetPackageVersionReadmeInput) (req *request.Request, output *GetPackageVersionReadmeOutput) {
@@ -1793,23 +1792,24 @@ func (c *CodeArtifact) GetPackageVersionReadmeRequest(input *GetPackageVersionRe
 // API operation GetPackageVersionReadme for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetPackageVersionReadme
 func (c *CodeArtifact) GetPackageVersionReadme(input *GetPackageVersionReadmeInput) (*GetPackageVersionReadmeOutput, error) {
@@ -1849,14 +1849,13 @@ const opGetRepositoryEndpoint = "GetRepositoryEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRepositoryEndpointRequest method.
+//	req, resp := client.GetRepositoryEndpointRequest(params)
 //
-//    // Example sending a request using the GetRepositoryEndpointRequest method.
-//    req, resp := client.GetRepositoryEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetRepositoryEndpoint
 func (c *CodeArtifact) GetRepositoryEndpointRequest(input *GetRepositoryEndpointInput) (req *request.Request, output *GetRepositoryEndpointOutput) {
@@ -1880,11 +1879,11 @@ func (c *CodeArtifact) GetRepositoryEndpointRequest(input *GetRepositoryEndpoint
 // Returns the endpoint of a repository for a specific package format. A repository
 // has one endpoint for each package format:
 //
-//    * npm
+//   - npm
 //
-//    * pypi
+//   - pypi
 //
-//    * maven
+//   - maven
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1894,23 +1893,24 @@ func (c *CodeArtifact) GetRepositoryEndpointRequest(input *GetRepositoryEndpoint
 // API operation GetRepositoryEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetRepositoryEndpoint
 func (c *CodeArtifact) GetRepositoryEndpoint(input *GetRepositoryEndpointInput) (*GetRepositoryEndpointOutput, error) {
@@ -1950,14 +1950,13 @@ const opGetRepositoryPermissionsPolicy = "GetRepositoryPermissionsPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRepositoryPermissionsPolicyRequest method.
+//	req, resp := client.GetRepositoryPermissionsPolicyRequest(params)
 //
-//    // Example sending a request using the GetRepositoryPermissionsPolicyRequest method.
-//    req, resp := client.GetRepositoryPermissionsPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetRepositoryPermissionsPolicy
 func (c *CodeArtifact) GetRepositoryPermissionsPolicyRequest(input *GetRepositoryPermissionsPolicyInput) (req *request.Request, output *GetRepositoryPermissionsPolicyOutput) {
@@ -1988,23 +1987,24 @@ func (c *CodeArtifact) GetRepositoryPermissionsPolicyRequest(input *GetRepositor
 // API operation GetRepositoryPermissionsPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/GetRepositoryPermissionsPolicy
 func (c *CodeArtifact) GetRepositoryPermissionsPolicy(input *GetRepositoryPermissionsPolicyInput) (*GetRepositoryPermissionsPolicyOutput, error) {
@@ -2044,14 +2044,13 @@ const opListDomains = "ListDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsRequest method.
+//	req, resp := client.ListDomainsRequest(params)
 //
-//    // Example sending a request using the ListDomainsRequest method.
-//    req, resp := client.ListDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListDomains
 func (c *CodeArtifact) ListDomainsRequest(input *ListDomainsInput) (req *request.Request, output *ListDomainsOutput) {
@@ -2090,19 +2089,20 @@ func (c *CodeArtifact) ListDomainsRequest(input *ListDomainsInput) (req *request
 // API operation ListDomains for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListDomains
 func (c *CodeArtifact) ListDomains(input *ListDomainsInput) (*ListDomainsOutput, error) {
@@ -2134,15 +2134,14 @@ func (c *CodeArtifact) ListDomainsWithContext(ctx aws.Context, input *ListDomain
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomains operation.
-//    pageNum := 0
-//    err := client.ListDomainsPages(params,
-//        func(page *codeartifact.ListDomainsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomains operation.
+//	pageNum := 0
+//	err := client.ListDomainsPages(params,
+//	    func(page *codeartifact.ListDomainsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeArtifact) ListDomainsPages(input *ListDomainsInput, fn func(*ListDomainsOutput, bool) bool) error {
 	return c.ListDomainsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2194,14 +2193,13 @@ const opListPackageVersionAssets = "ListPackageVersionAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackageVersionAssetsRequest method.
+//	req, resp := client.ListPackageVersionAssetsRequest(params)
 //
-//    // Example sending a request using the ListPackageVersionAssetsRequest method.
-//    req, resp := client.ListPackageVersionAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackageVersionAssets
 func (c *CodeArtifact) ListPackageVersionAssetsRequest(input *ListPackageVersionAssetsInput) (req *request.Request, output *ListPackageVersionAssetsOutput) {
@@ -2239,23 +2237,24 @@ func (c *CodeArtifact) ListPackageVersionAssetsRequest(input *ListPackageVersion
 // API operation ListPackageVersionAssets for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackageVersionAssets
 func (c *CodeArtifact) ListPackageVersionAssets(input *ListPackageVersionAssetsInput) (*ListPackageVersionAssetsOutput, error) {
@@ -2287,15 +2286,14 @@ func (c *CodeArtifact) ListPackageVersionAssetsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackageVersionAssets operation.
-//    pageNum := 0
-//    err := client.ListPackageVersionAssetsPages(params,
-//        func(page *codeartifact.ListPackageVersionAssetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackageVersionAssets operation.
+//	pageNum := 0
+//	err := client.ListPackageVersionAssetsPages(params,
+//	    func(page *codeartifact.ListPackageVersionAssetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeArtifact) ListPackageVersionAssetsPages(input *ListPackageVersionAssetsInput, fn func(*ListPackageVersionAssetsOutput, bool) bool) error {
 	return c.ListPackageVersionAssetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2347,14 +2345,13 @@ const opListPackageVersionDependencies = "ListPackageVersionDependencies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackageVersionDependenciesRequest method.
+//	req, resp := client.ListPackageVersionDependenciesRequest(params)
 //
-//    // Example sending a request using the ListPackageVersionDependenciesRequest method.
-//    req, resp := client.ListPackageVersionDependenciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackageVersionDependencies
 func (c *CodeArtifact) ListPackageVersionDependenciesRequest(input *ListPackageVersionDependenciesInput) (req *request.Request, output *ListPackageVersionDependenciesOutput) {
@@ -2390,23 +2387,24 @@ func (c *CodeArtifact) ListPackageVersionDependenciesRequest(input *ListPackageV
 // API operation ListPackageVersionDependencies for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackageVersionDependencies
 func (c *CodeArtifact) ListPackageVersionDependencies(input *ListPackageVersionDependenciesInput) (*ListPackageVersionDependenciesOutput, error) {
@@ -2446,14 +2444,13 @@ const opListPackageVersions = "ListPackageVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackageVersionsRequest method.
+//	req, resp := client.ListPackageVersionsRequest(params)
 //
-//    // Example sending a request using the ListPackageVersionsRequest method.
-//    req, resp := client.ListPackageVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackageVersions
 func (c *CodeArtifact) ListPackageVersionsRequest(input *ListPackageVersionsInput) (req *request.Request, output *ListPackageVersionsOutput) {
@@ -2491,23 +2488,24 @@ func (c *CodeArtifact) ListPackageVersionsRequest(input *ListPackageVersionsInpu
 // API operation ListPackageVersions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackageVersions
 func (c *CodeArtifact) ListPackageVersions(input *ListPackageVersionsInput) (*ListPackageVersionsOutput, error) {
@@ -2539,15 +2537,14 @@ func (c *CodeArtifact) ListPackageVersionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackageVersions operation.
-//    pageNum := 0
-//    err := client.ListPackageVersionsPages(params,
-//        func(page *codeartifact.ListPackageVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackageVersions operation.
+//	pageNum := 0
+//	err := client.ListPackageVersionsPages(params,
+//	    func(page *codeartifact.ListPackageVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeArtifact) ListPackageVersionsPages(input *ListPackageVersionsInput, fn func(*ListPackageVersionsOutput, bool) bool) error {
 	return c.ListPackageVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2599,14 +2596,13 @@ const opListPackages = "ListPackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackagesRequest method.
+//	req, resp := client.ListPackagesRequest(params)
 //
-//    // Example sending a request using the ListPackagesRequest method.
-//    req, resp := client.ListPackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackages
 func (c *CodeArtifact) ListPackagesRequest(input *ListPackagesInput) (req *request.Request, output *ListPackagesOutput) {
@@ -2644,23 +2640,24 @@ func (c *CodeArtifact) ListPackagesRequest(input *ListPackagesInput) (req *reque
 // API operation ListPackages for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListPackages
 func (c *CodeArtifact) ListPackages(input *ListPackagesInput) (*ListPackagesOutput, error) {
@@ -2692,15 +2689,14 @@ func (c *CodeArtifact) ListPackagesWithContext(ctx aws.Context, input *ListPacka
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackages operation.
-//    pageNum := 0
-//    err := client.ListPackagesPages(params,
-//        func(page *codeartifact.ListPackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackages operation.
+//	pageNum := 0
+//	err := client.ListPackagesPages(params,
+//	    func(page *codeartifact.ListPackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeArtifact) ListPackagesPages(input *ListPackagesInput, fn func(*ListPackagesOutput, bool) bool) error {
 	return c.ListPackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2752,14 +2748,13 @@ const opListRepositories = "ListRepositories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositoriesRequest method.
+//	req, resp := client.ListRepositoriesRequest(params)
 //
-//    // Example sending a request using the ListRepositoriesRequest method.
-//    req, resp := client.ListRepositoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListRepositories
 func (c *CodeArtifact) ListRepositoriesRequest(input *ListRepositoriesInput) (req *request.Request, output *ListRepositoriesOutput) {
@@ -2798,19 +2793,20 @@ func (c *CodeArtifact) ListRepositoriesRequest(input *ListRepositoriesInput) (re
 // API operation ListRepositories for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListRepositories
 func (c *CodeArtifact) ListRepositories(input *ListRepositoriesInput) (*ListRepositoriesOutput, error) {
@@ -2842,15 +2838,14 @@ func (c *CodeArtifact) ListRepositoriesWithContext(ctx aws.Context, input *ListR
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositories operation.
-//    pageNum := 0
-//    err := client.ListRepositoriesPages(params,
-//        func(page *codeartifact.ListRepositoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositories operation.
+//	pageNum := 0
+//	err := client.ListRepositoriesPages(params,
+//	    func(page *codeartifact.ListRepositoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeArtifact) ListRepositoriesPages(input *ListRepositoriesInput, fn func(*ListRepositoriesOutput, bool) bool) error {
 	return c.ListRepositoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2902,14 +2897,13 @@ const opListRepositoriesInDomain = "ListRepositoriesInDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositoriesInDomainRequest method.
+//	req, resp := client.ListRepositoriesInDomainRequest(params)
 //
-//    // Example sending a request using the ListRepositoriesInDomainRequest method.
-//    req, resp := client.ListRepositoriesInDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListRepositoriesInDomain
 func (c *CodeArtifact) ListRepositoriesInDomainRequest(input *ListRepositoriesInDomainInput) (req *request.Request, output *ListRepositoriesInDomainOutput) {
@@ -2948,23 +2942,24 @@ func (c *CodeArtifact) ListRepositoriesInDomainRequest(input *ListRepositoriesIn
 // API operation ListRepositoriesInDomain for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListRepositoriesInDomain
 func (c *CodeArtifact) ListRepositoriesInDomain(input *ListRepositoriesInDomainInput) (*ListRepositoriesInDomainOutput, error) {
@@ -2996,15 +2991,14 @@ func (c *CodeArtifact) ListRepositoriesInDomainWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositoriesInDomain operation.
-//    pageNum := 0
-//    err := client.ListRepositoriesInDomainPages(params,
-//        func(page *codeartifact.ListRepositoriesInDomainOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositoriesInDomain operation.
+//	pageNum := 0
+//	err := client.ListRepositoriesInDomainPages(params,
+//	    func(page *codeartifact.ListRepositoriesInDomainOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeArtifact) ListRepositoriesInDomainPages(input *ListRepositoriesInDomainInput, fn func(*ListRepositoriesInDomainOutput, bool) bool) error {
 	return c.ListRepositoriesInDomainPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3056,14 +3050,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListTagsForResource
 func (c *CodeArtifact) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3095,19 +3088,20 @@ func (c *CodeArtifact) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/ListTagsForResource
 func (c *CodeArtifact) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3147,14 +3141,13 @@ const opPutDomainPermissionsPolicy = "PutDomainPermissionsPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDomainPermissionsPolicyRequest method.
+//	req, resp := client.PutDomainPermissionsPolicyRequest(params)
 //
-//    // Example sending a request using the PutDomainPermissionsPolicyRequest method.
-//    req, resp := client.PutDomainPermissionsPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/PutDomainPermissionsPolicy
 func (c *CodeArtifact) PutDomainPermissionsPolicyRequest(input *PutDomainPermissionsPolicyInput) (req *request.Request, output *PutDomainPermissionsPolicyOutput) {
@@ -3190,30 +3183,31 @@ func (c *CodeArtifact) PutDomainPermissionsPolicyRequest(input *PutDomainPermiss
 // API operation PutDomainPermissionsPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/PutDomainPermissionsPolicy
 func (c *CodeArtifact) PutDomainPermissionsPolicy(input *PutDomainPermissionsPolicyInput) (*PutDomainPermissionsPolicyOutput, error) {
@@ -3253,14 +3247,13 @@ const opPutRepositoryPermissionsPolicy = "PutRepositoryPermissionsPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRepositoryPermissionsPolicyRequest method.
+//	req, resp := client.PutRepositoryPermissionsPolicyRequest(params)
 //
-//    // Example sending a request using the PutRepositoryPermissionsPolicyRequest method.
-//    req, resp := client.PutRepositoryPermissionsPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/PutRepositoryPermissionsPolicy
 func (c *CodeArtifact) PutRepositoryPermissionsPolicyRequest(input *PutRepositoryPermissionsPolicyInput) (req *request.Request, output *PutRepositoryPermissionsPolicyOutput) {
@@ -3297,30 +3290,31 @@ func (c *CodeArtifact) PutRepositoryPermissionsPolicyRequest(input *PutRepositor
 // API operation PutRepositoryPermissionsPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/PutRepositoryPermissionsPolicy
 func (c *CodeArtifact) PutRepositoryPermissionsPolicy(input *PutRepositoryPermissionsPolicyInput) (*PutRepositoryPermissionsPolicyOutput, error) {
@@ -3360,14 +3354,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/TagResource
 func (c *CodeArtifact) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3399,23 +3392,24 @@ func (c *CodeArtifact) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/TagResource
 func (c *CodeArtifact) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3455,14 +3449,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/UntagResource
 func (c *CodeArtifact) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3494,19 +3487,20 @@ func (c *CodeArtifact) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/UntagResource
 func (c *CodeArtifact) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3546,14 +3540,13 @@ const opUpdatePackageVersionsStatus = "UpdatePackageVersionsStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePackageVersionsStatusRequest method.
+//	req, resp := client.UpdatePackageVersionsStatusRequest(params)
 //
-//    // Example sending a request using the UpdatePackageVersionsStatusRequest method.
-//    req, resp := client.UpdatePackageVersionsStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/UpdatePackageVersionsStatus
 func (c *CodeArtifact) UpdatePackageVersionsStatusRequest(input *UpdatePackageVersionsStatusInput) (req *request.Request, output *UpdatePackageVersionsStatusOutput) {
@@ -3584,26 +3577,27 @@ func (c *CodeArtifact) UpdatePackageVersionsStatusRequest(input *UpdatePackageVe
 // API operation UpdatePackageVersionsStatus for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/UpdatePackageVersionsStatus
 func (c *CodeArtifact) UpdatePackageVersionsStatus(input *UpdatePackageVersionsStatusInput) (*UpdatePackageVersionsStatusOutput, error) {
@@ -3643,14 +3637,13 @@ const opUpdateRepository = "UpdateRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRepositoryRequest method.
+//	req, resp := client.UpdateRepositoryRequest(params)
 //
-//    // Example sending a request using the UpdateRepositoryRequest method.
-//    req, resp := client.UpdateRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/UpdateRepository
 func (c *CodeArtifact) UpdateRepositoryRequest(input *UpdateRepositoryInput) (req *request.Request, output *UpdateRepositoryOutput) {
@@ -3681,30 +3674,31 @@ func (c *CodeArtifact) UpdateRepositoryRequest(input *UpdateRepositoryInput) (re
 // API operation UpdateRepository for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The operation did not succeed because of an unauthorized access attempt.
 //
-//   * ConflictException
-//   The operation did not succeed because prerequisites are not met.
+//   - AccessDeniedException
+//     The operation did not succeed because of an unauthorized access attempt.
 //
-//   * InternalServerException
-//   The operation did not succeed because of an error that occurred inside AWS
-//   CodeArtifact.
+//   - ConflictException
+//     The operation did not succeed because prerequisites are not met.
 //
-//   * ResourceNotFoundException
-//   The operation did not succeed because the resource requested is not found
-//   in the service.
+//   - InternalServerException
+//     The operation did not succeed because of an error that occurred inside AWS
+//     CodeArtifact.
 //
-//   * ServiceQuotaExceededException
-//   The operation did not succeed because it would have exceeded a service limit
-//   for your account.
+//   - ResourceNotFoundException
+//     The operation did not succeed because the resource requested is not found
+//     in the service.
 //
-//   * ThrottlingException
-//   The operation did not succeed because too many requests are sent to the service.
+//   - ServiceQuotaExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account.
 //
-//   * ValidationException
-//   The operation did not succeed because a parameter in the request was sent
-//   with an invalid value.
+//   - ThrottlingException
+//     The operation did not succeed because too many requests are sent to the service.
+//
+//   - ValidationException
+//     The operation did not succeed because a parameter in the request was sent
+//     with an invalid value.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeartifact-2018-09-22/UpdateRepository
 func (c *CodeArtifact) UpdateRepository(input *UpdateRepositoryInput) (*UpdateRepositoryOutput, error) {

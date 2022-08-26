@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-//Region type for regions
+// Region type for regions
 type Region string
 
 const (
@@ -229,7 +229,7 @@ func (region Region) secondLevelDomain() string {
 	return realm["oc1"]
 }
 
-//StringToRegion convert a string to Region type
+// StringToRegion convert a string to Region type
 func StringToRegion(stringRegion string) (r Region) {
 	regionStr := strings.ToLower(stringRegion)
 	// check if short region name provided

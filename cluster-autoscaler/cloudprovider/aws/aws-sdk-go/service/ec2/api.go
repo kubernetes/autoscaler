@@ -29,14 +29,13 @@ const opAcceptReservedInstancesExchangeQuote = "AcceptReservedInstancesExchangeQ
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptReservedInstancesExchangeQuoteRequest method.
+//	req, resp := client.AcceptReservedInstancesExchangeQuoteRequest(params)
 //
-//    // Example sending a request using the AcceptReservedInstancesExchangeQuoteRequest method.
-//    req, resp := client.AcceptReservedInstancesExchangeQuoteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptReservedInstancesExchangeQuote
 func (c *EC2) AcceptReservedInstancesExchangeQuoteRequest(input *AcceptReservedInstancesExchangeQuoteInput) (req *request.Request, output *AcceptReservedInstancesExchangeQuoteOutput) {
@@ -104,14 +103,13 @@ const opAcceptTransitGatewayMulticastDomainAssociations = "AcceptTransitGatewayM
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptTransitGatewayMulticastDomainAssociationsRequest method.
+//	req, resp := client.AcceptTransitGatewayMulticastDomainAssociationsRequest(params)
 //
-//    // Example sending a request using the AcceptTransitGatewayMulticastDomainAssociationsRequest method.
-//    req, resp := client.AcceptTransitGatewayMulticastDomainAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptTransitGatewayMulticastDomainAssociations
 func (c *EC2) AcceptTransitGatewayMulticastDomainAssociationsRequest(input *AcceptTransitGatewayMulticastDomainAssociationsInput) (req *request.Request, output *AcceptTransitGatewayMulticastDomainAssociationsOutput) {
@@ -178,14 +176,13 @@ const opAcceptTransitGatewayPeeringAttachment = "AcceptTransitGatewayPeeringAtta
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptTransitGatewayPeeringAttachmentRequest method.
+//	req, resp := client.AcceptTransitGatewayPeeringAttachmentRequest(params)
 //
-//    // Example sending a request using the AcceptTransitGatewayPeeringAttachmentRequest method.
-//    req, resp := client.AcceptTransitGatewayPeeringAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptTransitGatewayPeeringAttachment
 func (c *EC2) AcceptTransitGatewayPeeringAttachmentRequest(input *AcceptTransitGatewayPeeringAttachmentInput) (req *request.Request, output *AcceptTransitGatewayPeeringAttachmentOutput) {
@@ -253,14 +250,13 @@ const opAcceptTransitGatewayVpcAttachment = "AcceptTransitGatewayVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptTransitGatewayVpcAttachmentRequest method.
+//	req, resp := client.AcceptTransitGatewayVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the AcceptTransitGatewayVpcAttachmentRequest method.
-//    req, resp := client.AcceptTransitGatewayVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptTransitGatewayVpcAttachment
 func (c *EC2) AcceptTransitGatewayVpcAttachmentRequest(input *AcceptTransitGatewayVpcAttachmentInput) (req *request.Request, output *AcceptTransitGatewayVpcAttachmentOutput) {
@@ -331,14 +327,13 @@ const opAcceptVpcEndpointConnections = "AcceptVpcEndpointConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptVpcEndpointConnectionsRequest method.
+//	req, resp := client.AcceptVpcEndpointConnectionsRequest(params)
 //
-//    // Example sending a request using the AcceptVpcEndpointConnectionsRequest method.
-//    req, resp := client.AcceptVpcEndpointConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptVpcEndpointConnections
 func (c *EC2) AcceptVpcEndpointConnectionsRequest(input *AcceptVpcEndpointConnectionsInput) (req *request.Request, output *AcceptVpcEndpointConnectionsOutput) {
@@ -406,14 +401,13 @@ const opAcceptVpcPeeringConnection = "AcceptVpcPeeringConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptVpcPeeringConnectionRequest method.
+//	req, resp := client.AcceptVpcPeeringConnectionRequest(params)
 //
-//    // Example sending a request using the AcceptVpcPeeringConnectionRequest method.
-//    req, resp := client.AcceptVpcPeeringConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptVpcPeeringConnection
 func (c *EC2) AcceptVpcPeeringConnectionRequest(input *AcceptVpcPeeringConnectionInput) (req *request.Request, output *AcceptVpcPeeringConnectionOutput) {
@@ -486,14 +480,13 @@ const opAdvertiseByoipCidr = "AdvertiseByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AdvertiseByoipCidrRequest method.
+//	req, resp := client.AdvertiseByoipCidrRequest(params)
 //
-//    // Example sending a request using the AdvertiseByoipCidrRequest method.
-//    req, resp := client.AdvertiseByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AdvertiseByoipCidr
 func (c *EC2) AdvertiseByoipCidrRequest(input *AdvertiseByoipCidrInput) (req *request.Request, output *AdvertiseByoipCidrOutput) {
@@ -576,14 +569,13 @@ const opAllocateAddress = "AllocateAddress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocateAddressRequest method.
+//	req, resp := client.AllocateAddressRequest(params)
 //
-//    // Example sending a request using the AllocateAddressRequest method.
-//    req, resp := client.AllocateAddressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AllocateAddress
 func (c *EC2) AllocateAddressRequest(input *AllocateAddressInput) (req *request.Request, output *AllocateAddressOutput) {
@@ -678,14 +670,13 @@ const opAllocateHosts = "AllocateHosts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocateHostsRequest method.
+//	req, resp := client.AllocateHostsRequest(params)
 //
-//    // Example sending a request using the AllocateHostsRequest method.
-//    req, resp := client.AllocateHostsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AllocateHosts
 func (c *EC2) AllocateHostsRequest(input *AllocateHostsInput) (req *request.Request, output *AllocateHostsOutput) {
@@ -754,14 +745,13 @@ const opAllocateIpamPoolCidr = "AllocateIpamPoolCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllocateIpamPoolCidrRequest method.
+//	req, resp := client.AllocateIpamPoolCidrRequest(params)
 //
-//    // Example sending a request using the AllocateIpamPoolCidrRequest method.
-//    req, resp := client.AllocateIpamPoolCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AllocateIpamPoolCidr
 func (c *EC2) AllocateIpamPoolCidrRequest(input *AllocateIpamPoolCidrInput) (req *request.Request, output *AllocateIpamPoolCidrOutput) {
@@ -831,14 +821,13 @@ const opApplySecurityGroupsToClientVpnTargetNetwork = "ApplySecurityGroupsToClie
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ApplySecurityGroupsToClientVpnTargetNetworkRequest method.
+//	req, resp := client.ApplySecurityGroupsToClientVpnTargetNetworkRequest(params)
 //
-//    // Example sending a request using the ApplySecurityGroupsToClientVpnTargetNetworkRequest method.
-//    req, resp := client.ApplySecurityGroupsToClientVpnTargetNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ApplySecurityGroupsToClientVpnTargetNetwork
 func (c *EC2) ApplySecurityGroupsToClientVpnTargetNetworkRequest(input *ApplySecurityGroupsToClientVpnTargetNetworkInput) (req *request.Request, output *ApplySecurityGroupsToClientVpnTargetNetworkOutput) {
@@ -907,14 +896,13 @@ const opAssignIpv6Addresses = "AssignIpv6Addresses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssignIpv6AddressesRequest method.
+//	req, resp := client.AssignIpv6AddressesRequest(params)
 //
-//    // Example sending a request using the AssignIpv6AddressesRequest method.
-//    req, resp := client.AssignIpv6AddressesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssignIpv6Addresses
 func (c *EC2) AssignIpv6AddressesRequest(input *AssignIpv6AddressesInput) (req *request.Request, output *AssignIpv6AddressesOutput) {
@@ -997,14 +985,13 @@ const opAssignPrivateIpAddresses = "AssignPrivateIpAddresses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssignPrivateIpAddressesRequest method.
+//	req, resp := client.AssignPrivateIpAddressesRequest(params)
 //
-//    // Example sending a request using the AssignPrivateIpAddressesRequest method.
-//    req, resp := client.AssignPrivateIpAddressesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssignPrivateIpAddresses
 func (c *EC2) AssignPrivateIpAddressesRequest(input *AssignPrivateIpAddressesInput) (req *request.Request, output *AssignPrivateIpAddressesOutput) {
@@ -1096,14 +1083,13 @@ const opAssociateAddress = "AssociateAddress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateAddressRequest method.
+//	req, resp := client.AssociateAddressRequest(params)
 //
-//    // Example sending a request using the AssociateAddressRequest method.
-//    req, resp := client.AssociateAddressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateAddress
 func (c *EC2) AssociateAddressRequest(input *AssociateAddressInput) (req *request.Request, output *AssociateAddressOutput) {
@@ -1201,14 +1187,13 @@ const opAssociateClientVpnTargetNetwork = "AssociateClientVpnTargetNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateClientVpnTargetNetworkRequest method.
+//	req, resp := client.AssociateClientVpnTargetNetworkRequest(params)
 //
-//    // Example sending a request using the AssociateClientVpnTargetNetworkRequest method.
-//    req, resp := client.AssociateClientVpnTargetNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateClientVpnTargetNetwork
 func (c *EC2) AssociateClientVpnTargetNetworkRequest(input *AssociateClientVpnTargetNetworkInput) (req *request.Request, output *AssociateClientVpnTargetNetworkOutput) {
@@ -1285,14 +1270,13 @@ const opAssociateDhcpOptions = "AssociateDhcpOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDhcpOptionsRequest method.
+//	req, resp := client.AssociateDhcpOptionsRequest(params)
 //
-//    // Example sending a request using the AssociateDhcpOptionsRequest method.
-//    req, resp := client.AssociateDhcpOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptions
 func (c *EC2) AssociateDhcpOptionsRequest(input *AssociateDhcpOptionsInput) (req *request.Request, output *AssociateDhcpOptionsOutput) {
@@ -1371,14 +1355,13 @@ const opAssociateEnclaveCertificateIamRole = "AssociateEnclaveCertificateIamRole
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateEnclaveCertificateIamRoleRequest method.
+//	req, resp := client.AssociateEnclaveCertificateIamRoleRequest(params)
 //
-//    // Example sending a request using the AssociateEnclaveCertificateIamRoleRequest method.
-//    req, resp := client.AssociateEnclaveCertificateIamRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateEnclaveCertificateIamRole
 func (c *EC2) AssociateEnclaveCertificateIamRoleRequest(input *AssociateEnclaveCertificateIamRoleInput) (req *request.Request, output *AssociateEnclaveCertificateIamRoleOutput) {
@@ -1463,14 +1446,13 @@ const opAssociateIamInstanceProfile = "AssociateIamInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateIamInstanceProfileRequest method.
+//	req, resp := client.AssociateIamInstanceProfileRequest(params)
 //
-//    // Example sending a request using the AssociateIamInstanceProfileRequest method.
-//    req, resp := client.AssociateIamInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateIamInstanceProfile
 func (c *EC2) AssociateIamInstanceProfileRequest(input *AssociateIamInstanceProfileInput) (req *request.Request, output *AssociateIamInstanceProfileOutput) {
@@ -1538,14 +1520,13 @@ const opAssociateInstanceEventWindow = "AssociateInstanceEventWindow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateInstanceEventWindowRequest method.
+//	req, resp := client.AssociateInstanceEventWindowRequest(params)
 //
-//    // Example sending a request using the AssociateInstanceEventWindowRequest method.
-//    req, resp := client.AssociateInstanceEventWindowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateInstanceEventWindow
 func (c *EC2) AssociateInstanceEventWindowRequest(input *AssociateInstanceEventWindowInput) (req *request.Request, output *AssociateInstanceEventWindowOutput) {
@@ -1617,14 +1598,13 @@ const opAssociateRouteTable = "AssociateRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateRouteTableRequest method.
+//	req, resp := client.AssociateRouteTableRequest(params)
 //
-//    // Example sending a request using the AssociateRouteTableRequest method.
-//    req, resp := client.AssociateRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateRouteTable
 func (c *EC2) AssociateRouteTableRequest(input *AssociateRouteTableInput) (req *request.Request, output *AssociateRouteTableOutput) {
@@ -1699,14 +1679,13 @@ const opAssociateSubnetCidrBlock = "AssociateSubnetCidrBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateSubnetCidrBlockRequest method.
+//	req, resp := client.AssociateSubnetCidrBlockRequest(params)
 //
-//    // Example sending a request using the AssociateSubnetCidrBlockRequest method.
-//    req, resp := client.AssociateSubnetCidrBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateSubnetCidrBlock
 func (c *EC2) AssociateSubnetCidrBlockRequest(input *AssociateSubnetCidrBlockInput) (req *request.Request, output *AssociateSubnetCidrBlockOutput) {
@@ -1775,14 +1754,13 @@ const opAssociateTransitGatewayMulticastDomain = "AssociateTransitGatewayMultica
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTransitGatewayMulticastDomainRequest method.
+//	req, resp := client.AssociateTransitGatewayMulticastDomainRequest(params)
 //
-//    // Example sending a request using the AssociateTransitGatewayMulticastDomainRequest method.
-//    req, resp := client.AssociateTransitGatewayMulticastDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateTransitGatewayMulticastDomain
 func (c *EC2) AssociateTransitGatewayMulticastDomainRequest(input *AssociateTransitGatewayMulticastDomainInput) (req *request.Request, output *AssociateTransitGatewayMulticastDomainOutput) {
@@ -1854,14 +1832,13 @@ const opAssociateTransitGatewayRouteTable = "AssociateTransitGatewayRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTransitGatewayRouteTableRequest method.
+//	req, resp := client.AssociateTransitGatewayRouteTableRequest(params)
 //
-//    // Example sending a request using the AssociateTransitGatewayRouteTableRequest method.
-//    req, resp := client.AssociateTransitGatewayRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateTransitGatewayRouteTable
 func (c *EC2) AssociateTransitGatewayRouteTableRequest(input *AssociateTransitGatewayRouteTableInput) (req *request.Request, output *AssociateTransitGatewayRouteTableOutput) {
@@ -1929,14 +1906,13 @@ const opAssociateTrunkInterface = "AssociateTrunkInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTrunkInterfaceRequest method.
+//	req, resp := client.AssociateTrunkInterfaceRequest(params)
 //
-//    // Example sending a request using the AssociateTrunkInterfaceRequest method.
-//    req, resp := client.AssociateTrunkInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateTrunkInterface
 func (c *EC2) AssociateTrunkInterfaceRequest(input *AssociateTrunkInterfaceInput) (req *request.Request, output *AssociateTrunkInterfaceOutput) {
@@ -1956,7 +1932,6 @@ func (c *EC2) AssociateTrunkInterfaceRequest(input *AssociateTrunkInterfaceInput
 }
 
 // AssociateTrunkInterface API operation for Amazon Elastic Compute Cloud.
-//
 //
 // This API action is currently in limited preview only. If you are interested
 // in using this feature, contact your account manager.
@@ -2012,14 +1987,13 @@ const opAssociateVpcCidrBlock = "AssociateVpcCidrBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateVpcCidrBlockRequest method.
+//	req, resp := client.AssociateVpcCidrBlockRequest(params)
 //
-//    // Example sending a request using the AssociateVpcCidrBlockRequest method.
-//    req, resp := client.AssociateVpcCidrBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateVpcCidrBlock
 func (c *EC2) AssociateVpcCidrBlockRequest(input *AssociateVpcCidrBlockInput) (req *request.Request, output *AssociateVpcCidrBlockOutput) {
@@ -2097,14 +2071,13 @@ const opAttachClassicLinkVpc = "AttachClassicLinkVpc"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachClassicLinkVpcRequest method.
+//	req, resp := client.AttachClassicLinkVpcRequest(params)
 //
-//    // Example sending a request using the AttachClassicLinkVpcRequest method.
-//    req, resp := client.AttachClassicLinkVpcRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachClassicLinkVpc
 func (c *EC2) AttachClassicLinkVpcRequest(input *AttachClassicLinkVpcInput) (req *request.Request, output *AttachClassicLinkVpcOutput) {
@@ -2182,14 +2155,13 @@ const opAttachInternetGateway = "AttachInternetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachInternetGatewayRequest method.
+//	req, resp := client.AttachInternetGatewayRequest(params)
 //
-//    // Example sending a request using the AttachInternetGatewayRequest method.
-//    req, resp := client.AttachInternetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachInternetGateway
 func (c *EC2) AttachInternetGatewayRequest(input *AttachInternetGatewayInput) (req *request.Request, output *AttachInternetGatewayOutput) {
@@ -2260,14 +2232,13 @@ const opAttachNetworkInterface = "AttachNetworkInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachNetworkInterfaceRequest method.
+//	req, resp := client.AttachNetworkInterfaceRequest(params)
 //
-//    // Example sending a request using the AttachNetworkInterfaceRequest method.
-//    req, resp := client.AttachNetworkInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachNetworkInterface
 func (c *EC2) AttachNetworkInterfaceRequest(input *AttachNetworkInterfaceInput) (req *request.Request, output *AttachNetworkInterfaceOutput) {
@@ -2334,14 +2305,13 @@ const opAttachVolume = "AttachVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachVolumeRequest method.
+//	req, resp := client.AttachVolumeRequest(params)
 //
-//    // Example sending a request using the AttachVolumeRequest method.
-//    req, resp := client.AttachVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVolume
 func (c *EC2) AttachVolumeRequest(input *AttachVolumeInput) (req *request.Request, output *VolumeAttachment) {
@@ -2374,16 +2344,16 @@ func (c *EC2) AttachVolumeRequest(input *AttachVolumeInput) (req *request.Reques
 //
 // If a volume has an Amazon Web Services Marketplace product code:
 //
-//    * The volume can be attached only to a stopped instance.
+//   - The volume can be attached only to a stopped instance.
 //
-//    * Amazon Web Services Marketplace product codes are copied from the volume
-//    to the instance.
+//   - Amazon Web Services Marketplace product codes are copied from the volume
+//     to the instance.
 //
-//    * You must be subscribed to the product.
+//   - You must be subscribed to the product.
 //
-//    * The instance type and operating system of the instance must support
-//    the product. For example, you can't detach a volume from a Windows instance
-//    and attach it to a Linux instance.
+//   - The instance type and operating system of the instance must support
+//     the product. For example, you can't detach a volume from a Windows instance
+//     and attach it to a Linux instance.
 //
 // For more information, see Attach an Amazon EBS volume to an instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html)
 // in the Amazon Elastic Compute Cloud User Guide.
@@ -2432,14 +2402,13 @@ const opAttachVpnGateway = "AttachVpnGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachVpnGatewayRequest method.
+//	req, resp := client.AttachVpnGatewayRequest(params)
 //
-//    // Example sending a request using the AttachVpnGatewayRequest method.
-//    req, resp := client.AttachVpnGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVpnGateway
 func (c *EC2) AttachVpnGatewayRequest(input *AttachVpnGatewayInput) (req *request.Request, output *AttachVpnGatewayOutput) {
@@ -2510,14 +2479,13 @@ const opAuthorizeClientVpnIngress = "AuthorizeClientVpnIngress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeClientVpnIngressRequest method.
+//	req, resp := client.AuthorizeClientVpnIngressRequest(params)
 //
-//    // Example sending a request using the AuthorizeClientVpnIngressRequest method.
-//    req, resp := client.AuthorizeClientVpnIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AuthorizeClientVpnIngress
 func (c *EC2) AuthorizeClientVpnIngressRequest(input *AuthorizeClientVpnIngressInput) (req *request.Request, output *AuthorizeClientVpnIngressOutput) {
@@ -2587,14 +2555,13 @@ const opAuthorizeSecurityGroupEgress = "AuthorizeSecurityGroupEgress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeSecurityGroupEgressRequest method.
+//	req, resp := client.AuthorizeSecurityGroupEgressRequest(params)
 //
-//    // Example sending a request using the AuthorizeSecurityGroupEgressRequest method.
-//    req, resp := client.AuthorizeSecurityGroupEgressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AuthorizeSecurityGroupEgress
 func (c *EC2) AuthorizeSecurityGroupEgressRequest(input *AuthorizeSecurityGroupEgressInput) (req *request.Request, output *AuthorizeSecurityGroupEgressOutput) {
@@ -2676,14 +2643,13 @@ const opAuthorizeSecurityGroupIngress = "AuthorizeSecurityGroupIngress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeSecurityGroupIngressRequest method.
+//	req, resp := client.AuthorizeSecurityGroupIngressRequest(params)
 //
-//    // Example sending a request using the AuthorizeSecurityGroupIngressRequest method.
-//    req, resp := client.AuthorizeSecurityGroupIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AuthorizeSecurityGroupIngress
 func (c *EC2) AuthorizeSecurityGroupIngressRequest(input *AuthorizeSecurityGroupIngressInput) (req *request.Request, output *AuthorizeSecurityGroupIngressOutput) {
@@ -2765,14 +2731,13 @@ const opBundleInstance = "BundleInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BundleInstanceRequest method.
+//	req, resp := client.BundleInstanceRequest(params)
 //
-//    // Example sending a request using the BundleInstanceRequest method.
-//    req, resp := client.BundleInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/BundleInstance
 func (c *EC2) BundleInstanceRequest(input *BundleInstanceInput) (req *request.Request, output *BundleInstanceOutput) {
@@ -2845,14 +2810,13 @@ const opCancelBundleTask = "CancelBundleTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelBundleTaskRequest method.
+//	req, resp := client.CancelBundleTaskRequest(params)
 //
-//    // Example sending a request using the CancelBundleTaskRequest method.
-//    req, resp := client.CancelBundleTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelBundleTask
 func (c *EC2) CancelBundleTaskRequest(input *CancelBundleTaskInput) (req *request.Request, output *CancelBundleTaskOutput) {
@@ -2919,14 +2883,13 @@ const opCancelCapacityReservation = "CancelCapacityReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelCapacityReservationRequest method.
+//	req, resp := client.CancelCapacityReservationRequest(params)
 //
-//    // Example sending a request using the CancelCapacityReservationRequest method.
-//    req, resp := client.CancelCapacityReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelCapacityReservation
 func (c *EC2) CancelCapacityReservationRequest(input *CancelCapacityReservationInput) (req *request.Request, output *CancelCapacityReservationOutput) {
@@ -3000,14 +2963,13 @@ const opCancelCapacityReservationFleets = "CancelCapacityReservationFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelCapacityReservationFleetsRequest method.
+//	req, resp := client.CancelCapacityReservationFleetsRequest(params)
 //
-//    // Example sending a request using the CancelCapacityReservationFleetsRequest method.
-//    req, resp := client.CancelCapacityReservationFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelCapacityReservationFleets
 func (c *EC2) CancelCapacityReservationFleetsRequest(input *CancelCapacityReservationFleetsInput) (req *request.Request, output *CancelCapacityReservationFleetsOutput) {
@@ -3031,13 +2993,13 @@ func (c *EC2) CancelCapacityReservationFleetsRequest(input *CancelCapacityReserv
 // Cancels one or more Capacity Reservation Fleets. When you cancel a Capacity
 // Reservation Fleet, the following happens:
 //
-//    * The Capacity Reservation Fleet's status changes to cancelled.
+//   - The Capacity Reservation Fleet's status changes to cancelled.
 //
-//    * The individual Capacity Reservations in the Fleet are cancelled. Instances
-//    running in the Capacity Reservations at the time of cancelling the Fleet
-//    continue to run in shared capacity.
+//   - The individual Capacity Reservations in the Fleet are cancelled. Instances
+//     running in the Capacity Reservations at the time of cancelling the Fleet
+//     continue to run in shared capacity.
 //
-//    * The Fleet stops creating new Capacity Reservations.
+//   - The Fleet stops creating new Capacity Reservations.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3083,14 +3045,13 @@ const opCancelConversionTask = "CancelConversionTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelConversionTaskRequest method.
+//	req, resp := client.CancelConversionTaskRequest(params)
 //
-//    // Example sending a request using the CancelConversionTaskRequest method.
-//    req, resp := client.CancelConversionTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelConversionTask
 func (c *EC2) CancelConversionTaskRequest(input *CancelConversionTaskInput) (req *request.Request, output *CancelConversionTaskOutput) {
@@ -3165,14 +3126,13 @@ const opCancelExportTask = "CancelExportTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelExportTaskRequest method.
+//	req, resp := client.CancelExportTaskRequest(params)
 //
-//    // Example sending a request using the CancelExportTaskRequest method.
-//    req, resp := client.CancelExportTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelExportTask
 func (c *EC2) CancelExportTaskRequest(input *CancelExportTaskInput) (req *request.Request, output *CancelExportTaskOutput) {
@@ -3243,14 +3203,13 @@ const opCancelImportTask = "CancelImportTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelImportTaskRequest method.
+//	req, resp := client.CancelImportTaskRequest(params)
 //
-//    // Example sending a request using the CancelImportTaskRequest method.
-//    req, resp := client.CancelImportTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelImportTask
 func (c *EC2) CancelImportTaskRequest(input *CancelImportTaskInput) (req *request.Request, output *CancelImportTaskOutput) {
@@ -3317,14 +3276,13 @@ const opCancelReservedInstancesListing = "CancelReservedInstancesListing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelReservedInstancesListingRequest method.
+//	req, resp := client.CancelReservedInstancesListingRequest(params)
 //
-//    // Example sending a request using the CancelReservedInstancesListingRequest method.
-//    req, resp := client.CancelReservedInstancesListingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelReservedInstancesListing
 func (c *EC2) CancelReservedInstancesListingRequest(input *CancelReservedInstancesListingInput) (req *request.Request, output *CancelReservedInstancesListingOutput) {
@@ -3395,14 +3353,13 @@ const opCancelSpotFleetRequests = "CancelSpotFleetRequests"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelSpotFleetRequestsRequest method.
+//	req, resp := client.CancelSpotFleetRequestsRequest(params)
 //
-//    // Example sending a request using the CancelSpotFleetRequestsRequest method.
-//    req, resp := client.CancelSpotFleetRequestsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelSpotFleetRequests
 func (c *EC2) CancelSpotFleetRequestsRequest(input *CancelSpotFleetRequestsInput) (req *request.Request, output *CancelSpotFleetRequestsOutput) {
@@ -3476,14 +3433,13 @@ const opCancelSpotInstanceRequests = "CancelSpotInstanceRequests"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelSpotInstanceRequestsRequest method.
+//	req, resp := client.CancelSpotInstanceRequestsRequest(params)
 //
-//    // Example sending a request using the CancelSpotInstanceRequestsRequest method.
-//    req, resp := client.CancelSpotInstanceRequestsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CancelSpotInstanceRequests
 func (c *EC2) CancelSpotInstanceRequestsRequest(input *CancelSpotInstanceRequestsInput) (req *request.Request, output *CancelSpotInstanceRequestsOutput) {
@@ -3553,14 +3509,13 @@ const opConfirmProductInstance = "ConfirmProductInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfirmProductInstanceRequest method.
+//	req, resp := client.ConfirmProductInstanceRequest(params)
 //
-//    // Example sending a request using the ConfirmProductInstanceRequest method.
-//    req, resp := client.ConfirmProductInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ConfirmProductInstance
 func (c *EC2) ConfirmProductInstanceRequest(input *ConfirmProductInstanceInput) (req *request.Request, output *ConfirmProductInstanceOutput) {
@@ -3629,14 +3584,13 @@ const opCopyFpgaImage = "CopyFpgaImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyFpgaImageRequest method.
+//	req, resp := client.CopyFpgaImageRequest(params)
 //
-//    // Example sending a request using the CopyFpgaImageRequest method.
-//    req, resp := client.CopyFpgaImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopyFpgaImage
 func (c *EC2) CopyFpgaImageRequest(input *CopyFpgaImageInput) (req *request.Request, output *CopyFpgaImageOutput) {
@@ -3703,14 +3657,13 @@ const opCopyImage = "CopyImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyImageRequest method.
+//	req, resp := client.CopyImageRequest(params)
 //
-//    // Example sending a request using the CopyImageRequest method.
-//    req, resp := client.CopyImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopyImage
 func (c *EC2) CopyImageRequest(input *CopyImageInput) (req *request.Request, output *CopyImageOutput) {
@@ -3800,14 +3753,13 @@ const opCopySnapshot = "CopySnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopySnapshotRequest method.
+//	req, resp := client.CopySnapshotRequest(params)
 //
-//    // Example sending a request using the CopySnapshotRequest method.
-//    req, resp := client.CopySnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopySnapshot
 func (c *EC2) CopySnapshotRequest(input *CopySnapshotInput) (req *request.Request, output *CopySnapshotOutput) {
@@ -3899,14 +3851,13 @@ const opCreateCapacityReservation = "CreateCapacityReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCapacityReservationRequest method.
+//	req, resp := client.CreateCapacityReservationRequest(params)
 //
-//    // Example sending a request using the CreateCapacityReservationRequest method.
-//    req, resp := client.CreateCapacityReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCapacityReservation
 func (c *EC2) CreateCapacityReservationRequest(input *CreateCapacityReservationInput) (req *request.Request, output *CreateCapacityReservationOutput) {
@@ -3996,14 +3947,13 @@ const opCreateCapacityReservationFleet = "CreateCapacityReservationFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCapacityReservationFleetRequest method.
+//	req, resp := client.CreateCapacityReservationFleetRequest(params)
 //
-//    // Example sending a request using the CreateCapacityReservationFleetRequest method.
-//    req, resp := client.CreateCapacityReservationFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCapacityReservationFleet
 func (c *EC2) CreateCapacityReservationFleetRequest(input *CreateCapacityReservationFleetInput) (req *request.Request, output *CreateCapacityReservationFleetOutput) {
@@ -4072,14 +4022,13 @@ const opCreateCarrierGateway = "CreateCarrierGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCarrierGatewayRequest method.
+//	req, resp := client.CreateCarrierGatewayRequest(params)
 //
-//    // Example sending a request using the CreateCarrierGatewayRequest method.
-//    req, resp := client.CreateCarrierGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCarrierGateway
 func (c *EC2) CreateCarrierGatewayRequest(input *CreateCarrierGatewayInput) (req *request.Request, output *CreateCarrierGatewayOutput) {
@@ -4148,14 +4097,13 @@ const opCreateClientVpnEndpoint = "CreateClientVpnEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClientVpnEndpointRequest method.
+//	req, resp := client.CreateClientVpnEndpointRequest(params)
 //
-//    // Example sending a request using the CreateClientVpnEndpointRequest method.
-//    req, resp := client.CreateClientVpnEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateClientVpnEndpoint
 func (c *EC2) CreateClientVpnEndpointRequest(input *CreateClientVpnEndpointInput) (req *request.Request, output *CreateClientVpnEndpointOutput) {
@@ -4224,14 +4172,13 @@ const opCreateClientVpnRoute = "CreateClientVpnRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClientVpnRouteRequest method.
+//	req, resp := client.CreateClientVpnRouteRequest(params)
 //
-//    // Example sending a request using the CreateClientVpnRouteRequest method.
-//    req, resp := client.CreateClientVpnRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateClientVpnRoute
 func (c *EC2) CreateClientVpnRouteRequest(input *CreateClientVpnRouteInput) (req *request.Request, output *CreateClientVpnRouteOutput) {
@@ -4301,14 +4248,13 @@ const opCreateCustomerGateway = "CreateCustomerGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomerGatewayRequest method.
+//	req, resp := client.CreateCustomerGatewayRequest(params)
 //
-//    // Example sending a request using the CreateCustomerGatewayRequest method.
-//    req, resp := client.CreateCustomerGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCustomerGateway
 func (c *EC2) CreateCustomerGatewayRequest(input *CreateCustomerGatewayInput) (req *request.Request, output *CreateCustomerGatewayOutput) {
@@ -4392,14 +4338,13 @@ const opCreateDefaultSubnet = "CreateDefaultSubnet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDefaultSubnetRequest method.
+//	req, resp := client.CreateDefaultSubnetRequest(params)
 //
-//    // Example sending a request using the CreateDefaultSubnetRequest method.
-//    req, resp := client.CreateDefaultSubnetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDefaultSubnet
 func (c *EC2) CreateDefaultSubnetRequest(input *CreateDefaultSubnetInput) (req *request.Request, output *CreateDefaultSubnetOutput) {
@@ -4470,14 +4415,13 @@ const opCreateDefaultVpc = "CreateDefaultVpc"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDefaultVpcRequest method.
+//	req, resp := client.CreateDefaultVpcRequest(params)
 //
-//    // Example sending a request using the CreateDefaultVpcRequest method.
-//    req, resp := client.CreateDefaultVpcRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDefaultVpc
 func (c *EC2) CreateDefaultVpcRequest(input *CreateDefaultVpcInput) (req *request.Request, output *CreateDefaultVpcOutput) {
@@ -4556,14 +4500,13 @@ const opCreateDhcpOptions = "CreateDhcpOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDhcpOptionsRequest method.
+//	req, resp := client.CreateDhcpOptionsRequest(params)
 //
-//    // Example sending a request using the CreateDhcpOptionsRequest method.
-//    req, resp := client.CreateDhcpOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptions
 func (c *EC2) CreateDhcpOptionsRequest(input *CreateDhcpOptionsInput) (req *request.Request, output *CreateDhcpOptionsOutput) {
@@ -4590,32 +4533,32 @@ func (c *EC2) CreateDhcpOptionsRequest(input *CreateDhcpOptionsInput) (req *requ
 // individual DHCP options you can specify. For more information about the options,
 // see RFC 2132 (http://www.ietf.org/rfc/rfc2132.txt).
 //
-//    * domain-name-servers - The IP addresses of up to four domain name servers,
-//    or AmazonProvidedDNS. The default DHCP option set specifies AmazonProvidedDNS.
-//    If specifying more than one domain name server, specify the IP addresses
-//    in a single parameter, separated by commas. To have your instance receive
-//    a custom DNS hostname as specified in domain-name, you must set domain-name-servers
-//    to a custom DNS server.
+//   - domain-name-servers - The IP addresses of up to four domain name servers,
+//     or AmazonProvidedDNS. The default DHCP option set specifies AmazonProvidedDNS.
+//     If specifying more than one domain name server, specify the IP addresses
+//     in a single parameter, separated by commas. To have your instance receive
+//     a custom DNS hostname as specified in domain-name, you must set domain-name-servers
+//     to a custom DNS server.
 //
-//    * domain-name - If you're using AmazonProvidedDNS in us-east-1, specify
-//    ec2.internal. If you're using AmazonProvidedDNS in another Region, specify
-//    region.compute.internal (for example, ap-northeast-1.compute.internal).
-//    Otherwise, specify a domain name (for example, ExampleCompany.com). This
-//    value is used to complete unqualified DNS hostnames. Important: Some Linux
-//    operating systems accept multiple domain names separated by spaces. However,
-//    Windows and other Linux operating systems treat the value as a single
-//    domain, which results in unexpected behavior. If your DHCP options set
-//    is associated with a VPC that has instances with multiple operating systems,
-//    specify only one domain name.
+//   - domain-name - If you're using AmazonProvidedDNS in us-east-1, specify
+//     ec2.internal. If you're using AmazonProvidedDNS in another Region, specify
+//     region.compute.internal (for example, ap-northeast-1.compute.internal).
+//     Otherwise, specify a domain name (for example, ExampleCompany.com). This
+//     value is used to complete unqualified DNS hostnames. Important: Some Linux
+//     operating systems accept multiple domain names separated by spaces. However,
+//     Windows and other Linux operating systems treat the value as a single
+//     domain, which results in unexpected behavior. If your DHCP options set
+//     is associated with a VPC that has instances with multiple operating systems,
+//     specify only one domain name.
 //
-//    * ntp-servers - The IP addresses of up to four Network Time Protocol (NTP)
-//    servers.
+//   - ntp-servers - The IP addresses of up to four Network Time Protocol (NTP)
+//     servers.
 //
-//    * netbios-name-servers - The IP addresses of up to four NetBIOS name servers.
+//   - netbios-name-servers - The IP addresses of up to four NetBIOS name servers.
 //
-//    * netbios-node-type - The NetBIOS node type (1, 2, 4, or 8). We recommend
-//    that you specify 2 (broadcast and multicast are not currently supported).
-//    For more information about these node types, see RFC 2132 (http://www.ietf.org/rfc/rfc2132.txt).
+//   - netbios-node-type - The NetBIOS node type (1, 2, 4, or 8). We recommend
+//     that you specify 2 (broadcast and multicast are not currently supported).
+//     For more information about these node types, see RFC 2132 (http://www.ietf.org/rfc/rfc2132.txt).
 //
 // Your VPC automatically starts out with a set of DHCP options that includes
 // only a DNS server that we provide (AmazonProvidedDNS). If you create a set
@@ -4668,14 +4611,13 @@ const opCreateEgressOnlyInternetGateway = "CreateEgressOnlyInternetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEgressOnlyInternetGatewayRequest method.
+//	req, resp := client.CreateEgressOnlyInternetGatewayRequest(params)
 //
-//    // Example sending a request using the CreateEgressOnlyInternetGatewayRequest method.
-//    req, resp := client.CreateEgressOnlyInternetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateEgressOnlyInternetGateway
 func (c *EC2) CreateEgressOnlyInternetGatewayRequest(input *CreateEgressOnlyInternetGatewayInput) (req *request.Request, output *CreateEgressOnlyInternetGatewayOutput) {
@@ -4745,14 +4687,13 @@ const opCreateFleet = "CreateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFleetRequest method.
+//	req, resp := client.CreateFleetRequest(params)
 //
-//    // Example sending a request using the CreateFleetRequest method.
-//    req, resp := client.CreateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateFleet
 func (c *EC2) CreateFleetRequest(input *CreateFleetInput) (req *request.Request, output *CreateFleetOutput) {
@@ -4825,14 +4766,13 @@ const opCreateFlowLogs = "CreateFlowLogs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFlowLogsRequest method.
+//	req, resp := client.CreateFlowLogsRequest(params)
 //
-//    // Example sending a request using the CreateFlowLogsRequest method.
-//    req, resp := client.CreateFlowLogsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateFlowLogs
 func (c *EC2) CreateFlowLogsRequest(input *CreateFlowLogsInput) (req *request.Request, output *CreateFlowLogsOutput) {
@@ -4914,14 +4854,13 @@ const opCreateFpgaImage = "CreateFpgaImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFpgaImageRequest method.
+//	req, resp := client.CreateFpgaImageRequest(params)
 //
-//    // Example sending a request using the CreateFpgaImageRequest method.
-//    req, resp := client.CreateFpgaImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateFpgaImage
 func (c *EC2) CreateFpgaImageRequest(input *CreateFpgaImageInput) (req *request.Request, output *CreateFpgaImageOutput) {
@@ -4996,14 +4935,13 @@ const opCreateImage = "CreateImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageRequest method.
+//	req, resp := client.CreateImageRequest(params)
 //
-//    // Example sending a request using the CreateImageRequest method.
-//    req, resp := client.CreateImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateImage
 func (c *EC2) CreateImageRequest(input *CreateImageInput) (req *request.Request, output *CreateImageOutput) {
@@ -5090,14 +5028,13 @@ const opCreateInstanceEventWindow = "CreateInstanceEventWindow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInstanceEventWindowRequest method.
+//	req, resp := client.CreateInstanceEventWindowRequest(params)
 //
-//    // Example sending a request using the CreateInstanceEventWindowRequest method.
-//    req, resp := client.CreateInstanceEventWindowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateInstanceEventWindow
 func (c *EC2) CreateInstanceEventWindowRequest(input *CreateInstanceEventWindowInput) (req *request.Request, output *CreateInstanceEventWindowOutput) {
@@ -5136,9 +5073,9 @@ func (c *EC2) CreateInstanceEventWindowRequest(input *CreateInstanceEventWindowI
 //
 // Event windows are not applicable for:
 //
-//    * Expedited scheduled events and network maintenance events.
+//   - Expedited scheduled events and network maintenance events.
 //
-//    * Unscheduled maintenance such as AutoRecovery and unplanned reboots.
+//   - Unscheduled maintenance such as AutoRecovery and unplanned reboots.
 //
 // For more information, see Define event windows for scheduled events (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/event-windows.html)
 // in the Amazon EC2 User Guide.
@@ -5187,14 +5124,13 @@ const opCreateInstanceExportTask = "CreateInstanceExportTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInstanceExportTaskRequest method.
+//	req, resp := client.CreateInstanceExportTaskRequest(params)
 //
-//    // Example sending a request using the CreateInstanceExportTaskRequest method.
-//    req, resp := client.CreateInstanceExportTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateInstanceExportTask
 func (c *EC2) CreateInstanceExportTaskRequest(input *CreateInstanceExportTaskInput) (req *request.Request, output *CreateInstanceExportTaskOutput) {
@@ -5266,14 +5202,13 @@ const opCreateInternetGateway = "CreateInternetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInternetGatewayRequest method.
+//	req, resp := client.CreateInternetGatewayRequest(params)
 //
-//    // Example sending a request using the CreateInternetGatewayRequest method.
-//    req, resp := client.CreateInternetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateInternetGateway
 func (c *EC2) CreateInternetGatewayRequest(input *CreateInternetGatewayInput) (req *request.Request, output *CreateInternetGatewayOutput) {
@@ -5344,14 +5279,13 @@ const opCreateIpam = "CreateIpam"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIpamRequest method.
+//	req, resp := client.CreateIpamRequest(params)
 //
-//    // Example sending a request using the CreateIpamRequest method.
-//    req, resp := client.CreateIpamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateIpam
 func (c *EC2) CreateIpamRequest(input *CreateIpamInput) (req *request.Request, output *CreateIpamOutput) {
@@ -5424,14 +5358,13 @@ const opCreateIpamPool = "CreateIpamPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIpamPoolRequest method.
+//	req, resp := client.CreateIpamPoolRequest(params)
 //
-//    // Example sending a request using the CreateIpamPoolRequest method.
-//    req, resp := client.CreateIpamPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateIpamPool
 func (c *EC2) CreateIpamPoolRequest(input *CreateIpamPoolInput) (req *request.Request, output *CreateIpamPoolOutput) {
@@ -5505,14 +5438,13 @@ const opCreateIpamScope = "CreateIpamScope"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIpamScopeRequest method.
+//	req, resp := client.CreateIpamScopeRequest(params)
 //
-//    // Example sending a request using the CreateIpamScopeRequest method.
-//    req, resp := client.CreateIpamScopeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateIpamScope
 func (c *EC2) CreateIpamScopeRequest(input *CreateIpamScopeInput) (req *request.Request, output *CreateIpamScopeOutput) {
@@ -5587,14 +5519,13 @@ const opCreateKeyPair = "CreateKeyPair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateKeyPairRequest method.
+//	req, resp := client.CreateKeyPairRequest(params)
 //
-//    // Example sending a request using the CreateKeyPairRequest method.
-//    req, resp := client.CreateKeyPairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateKeyPair
 func (c *EC2) CreateKeyPairRequest(input *CreateKeyPairInput) (req *request.Request, output *CreateKeyPairOutput) {
@@ -5675,14 +5606,13 @@ const opCreateLaunchTemplate = "CreateLaunchTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLaunchTemplateRequest method.
+//	req, resp := client.CreateLaunchTemplateRequest(params)
 //
-//    // Example sending a request using the CreateLaunchTemplateRequest method.
-//    req, resp := client.CreateLaunchTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateLaunchTemplate
 func (c *EC2) CreateLaunchTemplateRequest(input *CreateLaunchTemplateInput) (req *request.Request, output *CreateLaunchTemplateOutput) {
@@ -5761,14 +5691,13 @@ const opCreateLaunchTemplateVersion = "CreateLaunchTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLaunchTemplateVersionRequest method.
+//	req, resp := client.CreateLaunchTemplateVersionRequest(params)
 //
-//    // Example sending a request using the CreateLaunchTemplateVersionRequest method.
-//    req, resp := client.CreateLaunchTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateLaunchTemplateVersion
 func (c *EC2) CreateLaunchTemplateVersionRequest(input *CreateLaunchTemplateVersionInput) (req *request.Request, output *CreateLaunchTemplateVersionOutput) {
@@ -5847,14 +5776,13 @@ const opCreateLocalGatewayRoute = "CreateLocalGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocalGatewayRouteRequest method.
+//	req, resp := client.CreateLocalGatewayRouteRequest(params)
 //
-//    // Example sending a request using the CreateLocalGatewayRouteRequest method.
-//    req, resp := client.CreateLocalGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateLocalGatewayRoute
 func (c *EC2) CreateLocalGatewayRouteRequest(input *CreateLocalGatewayRouteInput) (req *request.Request, output *CreateLocalGatewayRouteOutput) {
@@ -5921,14 +5849,13 @@ const opCreateLocalGatewayRouteTableVpcAssociation = "CreateLocalGatewayRouteTab
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocalGatewayRouteTableVpcAssociationRequest method.
+//	req, resp := client.CreateLocalGatewayRouteTableVpcAssociationRequest(params)
 //
-//    // Example sending a request using the CreateLocalGatewayRouteTableVpcAssociationRequest method.
-//    req, resp := client.CreateLocalGatewayRouteTableVpcAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateLocalGatewayRouteTableVpcAssociation
 func (c *EC2) CreateLocalGatewayRouteTableVpcAssociationRequest(input *CreateLocalGatewayRouteTableVpcAssociationInput) (req *request.Request, output *CreateLocalGatewayRouteTableVpcAssociationOutput) {
@@ -5995,14 +5922,13 @@ const opCreateManagedPrefixList = "CreateManagedPrefixList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateManagedPrefixListRequest method.
+//	req, resp := client.CreateManagedPrefixListRequest(params)
 //
-//    // Example sending a request using the CreateManagedPrefixListRequest method.
-//    req, resp := client.CreateManagedPrefixListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateManagedPrefixList
 func (c *EC2) CreateManagedPrefixListRequest(input *CreateManagedPrefixListInput) (req *request.Request, output *CreateManagedPrefixListOutput) {
@@ -6070,14 +5996,13 @@ const opCreateNatGateway = "CreateNatGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNatGatewayRequest method.
+//	req, resp := client.CreateNatGatewayRequest(params)
 //
-//    // Example sending a request using the CreateNatGatewayRequest method.
-//    req, resp := client.CreateNatGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNatGateway
 func (c *EC2) CreateNatGatewayRequest(input *CreateNatGatewayInput) (req *request.Request, output *CreateNatGatewayOutput) {
@@ -6160,14 +6085,13 @@ const opCreateNetworkAcl = "CreateNetworkAcl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkAclRequest method.
+//	req, resp := client.CreateNetworkAclRequest(params)
 //
-//    // Example sending a request using the CreateNetworkAclRequest method.
-//    req, resp := client.CreateNetworkAclRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkAcl
 func (c *EC2) CreateNetworkAclRequest(input *CreateNetworkAclInput) (req *request.Request, output *CreateNetworkAclOutput) {
@@ -6238,14 +6162,13 @@ const opCreateNetworkAclEntry = "CreateNetworkAclEntry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkAclEntryRequest method.
+//	req, resp := client.CreateNetworkAclEntryRequest(params)
 //
-//    // Example sending a request using the CreateNetworkAclEntryRequest method.
-//    req, resp := client.CreateNetworkAclEntryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkAclEntry
 func (c *EC2) CreateNetworkAclEntryRequest(input *CreateNetworkAclEntryInput) (req *request.Request, output *CreateNetworkAclEntryOutput) {
@@ -6329,14 +6252,13 @@ const opCreateNetworkInsightsAccessScope = "CreateNetworkInsightsAccessScope"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkInsightsAccessScopeRequest method.
+//	req, resp := client.CreateNetworkInsightsAccessScopeRequest(params)
 //
-//    // Example sending a request using the CreateNetworkInsightsAccessScopeRequest method.
-//    req, resp := client.CreateNetworkInsightsAccessScopeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkInsightsAccessScope
 func (c *EC2) CreateNetworkInsightsAccessScopeRequest(input *CreateNetworkInsightsAccessScopeInput) (req *request.Request, output *CreateNetworkInsightsAccessScopeOutput) {
@@ -6408,14 +6330,13 @@ const opCreateNetworkInsightsPath = "CreateNetworkInsightsPath"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkInsightsPathRequest method.
+//	req, resp := client.CreateNetworkInsightsPathRequest(params)
 //
-//    // Example sending a request using the CreateNetworkInsightsPathRequest method.
-//    req, resp := client.CreateNetworkInsightsPathRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkInsightsPath
 func (c *EC2) CreateNetworkInsightsPathRequest(input *CreateNetworkInsightsPathInput) (req *request.Request, output *CreateNetworkInsightsPathOutput) {
@@ -6486,14 +6407,13 @@ const opCreateNetworkInterface = "CreateNetworkInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkInterfaceRequest method.
+//	req, resp := client.CreateNetworkInterfaceRequest(params)
 //
-//    // Example sending a request using the CreateNetworkInterfaceRequest method.
-//    req, resp := client.CreateNetworkInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkInterface
 func (c *EC2) CreateNetworkInterfaceRequest(input *CreateNetworkInterfaceInput) (req *request.Request, output *CreateNetworkInterfaceOutput) {
@@ -6564,14 +6484,13 @@ const opCreateNetworkInterfacePermission = "CreateNetworkInterfacePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkInterfacePermissionRequest method.
+//	req, resp := client.CreateNetworkInterfacePermissionRequest(params)
 //
-//    // Example sending a request using the CreateNetworkInterfacePermissionRequest method.
-//    req, resp := client.CreateNetworkInterfacePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkInterfacePermission
 func (c *EC2) CreateNetworkInterfacePermissionRequest(input *CreateNetworkInterfacePermissionInput) (req *request.Request, output *CreateNetworkInterfacePermissionOutput) {
@@ -6642,14 +6561,13 @@ const opCreatePlacementGroup = "CreatePlacementGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePlacementGroupRequest method.
+//	req, resp := client.CreatePlacementGroupRequest(params)
 //
-//    // Example sending a request using the CreatePlacementGroupRequest method.
-//    req, resp := client.CreatePlacementGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreatePlacementGroup
 func (c *EC2) CreatePlacementGroupRequest(input *CreatePlacementGroupInput) (req *request.Request, output *CreatePlacementGroupOutput) {
@@ -6727,14 +6645,13 @@ const opCreatePublicIpv4Pool = "CreatePublicIpv4Pool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePublicIpv4PoolRequest method.
+//	req, resp := client.CreatePublicIpv4PoolRequest(params)
 //
-//    // Example sending a request using the CreatePublicIpv4PoolRequest method.
-//    req, resp := client.CreatePublicIpv4PoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreatePublicIpv4Pool
 func (c *EC2) CreatePublicIpv4PoolRequest(input *CreatePublicIpv4PoolInput) (req *request.Request, output *CreatePublicIpv4PoolOutput) {
@@ -6805,14 +6722,13 @@ const opCreateReplaceRootVolumeTask = "CreateReplaceRootVolumeTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReplaceRootVolumeTaskRequest method.
+//	req, resp := client.CreateReplaceRootVolumeTaskRequest(params)
 //
-//    // Example sending a request using the CreateReplaceRootVolumeTaskRequest method.
-//    req, resp := client.CreateReplaceRootVolumeTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateReplaceRootVolumeTask
 func (c *EC2) CreateReplaceRootVolumeTaskRequest(input *CreateReplaceRootVolumeTaskInput) (req *request.Request, output *CreateReplaceRootVolumeTaskOutput) {
@@ -6884,14 +6800,13 @@ const opCreateReservedInstancesListing = "CreateReservedInstancesListing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReservedInstancesListingRequest method.
+//	req, resp := client.CreateReservedInstancesListingRequest(params)
 //
-//    // Example sending a request using the CreateReservedInstancesListingRequest method.
-//    req, resp := client.CreateReservedInstancesListingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateReservedInstancesListing
 func (c *EC2) CreateReservedInstancesListingRequest(input *CreateReservedInstancesListingInput) (req *request.Request, output *CreateReservedInstancesListingOutput) {
@@ -6980,14 +6895,13 @@ const opCreateRestoreImageTask = "CreateRestoreImageTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRestoreImageTaskRequest method.
+//	req, resp := client.CreateRestoreImageTaskRequest(params)
 //
-//    // Example sending a request using the CreateRestoreImageTaskRequest method.
-//    req, resp := client.CreateRestoreImageTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateRestoreImageTask
 func (c *EC2) CreateRestoreImageTaskRequest(input *CreateRestoreImageTaskInput) (req *request.Request, output *CreateRestoreImageTaskOutput) {
@@ -7062,14 +6976,13 @@ const opCreateRoute = "CreateRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRouteRequest method.
+//	req, resp := client.CreateRouteRequest(params)
 //
-//    // Example sending a request using the CreateRouteRequest method.
-//    req, resp := client.CreateRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateRoute
 func (c *EC2) CreateRouteRequest(input *CreateRouteInput) (req *request.Request, output *CreateRouteOutput) {
@@ -7100,9 +7013,9 @@ func (c *EC2) CreateRouteRequest(input *CreateRouteInput) (req *request.Request,
 // match. For example, traffic is destined for the IPv4 address 192.0.2.3, and
 // the route table includes the following two IPv4 routes:
 //
-//    * 192.0.2.0/24 (goes to some target A)
+//   - 192.0.2.0/24 (goes to some target A)
 //
-//    * 192.0.2.0/28 (goes to some target B)
+//   - 192.0.2.0/28 (goes to some target B)
 //
 // Both routes apply to the traffic destined for 192.0.2.3. However, the second
 // route in the list covers a smaller number of IP addresses and is therefore
@@ -7155,14 +7068,13 @@ const opCreateRouteTable = "CreateRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRouteTableRequest method.
+//	req, resp := client.CreateRouteTableRequest(params)
 //
-//    // Example sending a request using the CreateRouteTableRequest method.
-//    req, resp := client.CreateRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateRouteTable
 func (c *EC2) CreateRouteTableRequest(input *CreateRouteTableInput) (req *request.Request, output *CreateRouteTableOutput) {
@@ -7233,14 +7145,13 @@ const opCreateSecurityGroup = "CreateSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSecurityGroupRequest method.
+//	req, resp := client.CreateSecurityGroupRequest(params)
 //
-//    // Example sending a request using the CreateSecurityGroupRequest method.
-//    req, resp := client.CreateSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateSecurityGroup
 func (c *EC2) CreateSecurityGroupRequest(input *CreateSecurityGroupInput) (req *request.Request, output *CreateSecurityGroupOutput) {
@@ -7332,14 +7243,13 @@ const opCreateSnapshot = "CreateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotRequest method.
+//	req, resp := client.CreateSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotRequest method.
-//    req, resp := client.CreateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateSnapshot
 func (c *EC2) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Request, output *Snapshot) {
@@ -7444,14 +7354,13 @@ const opCreateSnapshots = "CreateSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotsRequest method.
+//	req, resp := client.CreateSnapshotsRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotsRequest method.
-//    req, resp := client.CreateSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateSnapshots
 func (c *EC2) CreateSnapshotsRequest(input *CreateSnapshotsInput) (req *request.Request, output *CreateSnapshotsOutput) {
@@ -7527,14 +7436,13 @@ const opCreateSpotDatafeedSubscription = "CreateSpotDatafeedSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSpotDatafeedSubscriptionRequest method.
+//	req, resp := client.CreateSpotDatafeedSubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateSpotDatafeedSubscriptionRequest method.
-//    req, resp := client.CreateSpotDatafeedSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateSpotDatafeedSubscription
 func (c *EC2) CreateSpotDatafeedSubscriptionRequest(input *CreateSpotDatafeedSubscriptionInput) (req *request.Request, output *CreateSpotDatafeedSubscriptionOutput) {
@@ -7604,14 +7512,13 @@ const opCreateStoreImageTask = "CreateStoreImageTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStoreImageTaskRequest method.
+//	req, resp := client.CreateStoreImageTaskRequest(params)
 //
-//    // Example sending a request using the CreateStoreImageTaskRequest method.
-//    req, resp := client.CreateStoreImageTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateStoreImageTask
 func (c *EC2) CreateStoreImageTaskRequest(input *CreateStoreImageTaskInput) (req *request.Request, output *CreateStoreImageTaskOutput) {
@@ -7685,14 +7592,13 @@ const opCreateSubnet = "CreateSubnet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSubnetRequest method.
+//	req, resp := client.CreateSubnetRequest(params)
 //
-//    // Example sending a request using the CreateSubnetRequest method.
-//    req, resp := client.CreateSubnetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateSubnet
 func (c *EC2) CreateSubnetRequest(input *CreateSubnetInput) (req *request.Request, output *CreateSubnetOutput) {
@@ -7780,14 +7686,13 @@ const opCreateSubnetCidrReservation = "CreateSubnetCidrReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSubnetCidrReservationRequest method.
+//	req, resp := client.CreateSubnetCidrReservationRequest(params)
 //
-//    // Example sending a request using the CreateSubnetCidrReservationRequest method.
-//    req, resp := client.CreateSubnetCidrReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateSubnetCidrReservation
 func (c *EC2) CreateSubnetCidrReservationRequest(input *CreateSubnetCidrReservationInput) (req *request.Request, output *CreateSubnetCidrReservationOutput) {
@@ -7856,14 +7761,13 @@ const opCreateTags = "CreateTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTagsRequest method.
+//	req, resp := client.CreateTagsRequest(params)
 //
-//    // Example sending a request using the CreateTagsRequest method.
-//    req, resp := client.CreateTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTags
 func (c *EC2) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
@@ -7940,14 +7844,13 @@ const opCreateTrafficMirrorFilter = "CreateTrafficMirrorFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficMirrorFilterRequest method.
+//	req, resp := client.CreateTrafficMirrorFilterRequest(params)
 //
-//    // Example sending a request using the CreateTrafficMirrorFilterRequest method.
-//    req, resp := client.CreateTrafficMirrorFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTrafficMirrorFilter
 func (c *EC2) CreateTrafficMirrorFilterRequest(input *CreateTrafficMirrorFilterInput) (req *request.Request, output *CreateTrafficMirrorFilterOutput) {
@@ -8023,14 +7926,13 @@ const opCreateTrafficMirrorFilterRule = "CreateTrafficMirrorFilterRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficMirrorFilterRuleRequest method.
+//	req, resp := client.CreateTrafficMirrorFilterRuleRequest(params)
 //
-//    // Example sending a request using the CreateTrafficMirrorFilterRuleRequest method.
-//    req, resp := client.CreateTrafficMirrorFilterRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTrafficMirrorFilterRule
 func (c *EC2) CreateTrafficMirrorFilterRuleRequest(input *CreateTrafficMirrorFilterRuleInput) (req *request.Request, output *CreateTrafficMirrorFilterRuleOutput) {
@@ -8101,14 +8003,13 @@ const opCreateTrafficMirrorSession = "CreateTrafficMirrorSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficMirrorSessionRequest method.
+//	req, resp := client.CreateTrafficMirrorSessionRequest(params)
 //
-//    // Example sending a request using the CreateTrafficMirrorSessionRequest method.
-//    req, resp := client.CreateTrafficMirrorSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTrafficMirrorSession
 func (c *EC2) CreateTrafficMirrorSessionRequest(input *CreateTrafficMirrorSessionInput) (req *request.Request, output *CreateTrafficMirrorSessionOutput) {
@@ -8186,14 +8087,13 @@ const opCreateTrafficMirrorTarget = "CreateTrafficMirrorTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficMirrorTargetRequest method.
+//	req, resp := client.CreateTrafficMirrorTargetRequest(params)
 //
-//    // Example sending a request using the CreateTrafficMirrorTargetRequest method.
-//    req, resp := client.CreateTrafficMirrorTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTrafficMirrorTarget
 func (c *EC2) CreateTrafficMirrorTargetRequest(input *CreateTrafficMirrorTargetInput) (req *request.Request, output *CreateTrafficMirrorTargetOutput) {
@@ -8271,14 +8171,13 @@ const opCreateTransitGateway = "CreateTransitGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayRequest method.
+//	req, resp := client.CreateTransitGatewayRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayRequest method.
-//    req, resp := client.CreateTransitGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGateway
 func (c *EC2) CreateTransitGatewayRequest(input *CreateTransitGatewayInput) (req *request.Request, output *CreateTransitGatewayOutput) {
@@ -8364,14 +8263,13 @@ const opCreateTransitGatewayConnect = "CreateTransitGatewayConnect"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayConnectRequest method.
+//	req, resp := client.CreateTransitGatewayConnectRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayConnectRequest method.
-//    req, resp := client.CreateTransitGatewayConnectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayConnect
 func (c *EC2) CreateTransitGatewayConnectRequest(input *CreateTransitGatewayConnectInput) (req *request.Request, output *CreateTransitGatewayConnectOutput) {
@@ -8443,14 +8341,13 @@ const opCreateTransitGatewayConnectPeer = "CreateTransitGatewayConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayConnectPeerRequest method.
+//	req, resp := client.CreateTransitGatewayConnectPeerRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayConnectPeerRequest method.
-//    req, resp := client.CreateTransitGatewayConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayConnectPeer
 func (c *EC2) CreateTransitGatewayConnectPeerRequest(input *CreateTransitGatewayConnectPeerInput) (req *request.Request, output *CreateTransitGatewayConnectPeerOutput) {
@@ -8524,14 +8421,13 @@ const opCreateTransitGatewayMulticastDomain = "CreateTransitGatewayMulticastDoma
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayMulticastDomainRequest method.
+//	req, resp := client.CreateTransitGatewayMulticastDomainRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayMulticastDomainRequest method.
-//    req, resp := client.CreateTransitGatewayMulticastDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayMulticastDomain
 func (c *EC2) CreateTransitGatewayMulticastDomainRequest(input *CreateTransitGatewayMulticastDomainInput) (req *request.Request, output *CreateTransitGatewayMulticastDomainOutput) {
@@ -8602,14 +8498,13 @@ const opCreateTransitGatewayPeeringAttachment = "CreateTransitGatewayPeeringAtta
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayPeeringAttachmentRequest method.
+//	req, resp := client.CreateTransitGatewayPeeringAttachmentRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayPeeringAttachmentRequest method.
-//    req, resp := client.CreateTransitGatewayPeeringAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayPeeringAttachment
 func (c *EC2) CreateTransitGatewayPeeringAttachmentRequest(input *CreateTransitGatewayPeeringAttachmentInput) (req *request.Request, output *CreateTransitGatewayPeeringAttachmentOutput) {
@@ -8682,14 +8577,13 @@ const opCreateTransitGatewayPrefixListReference = "CreateTransitGatewayPrefixLis
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayPrefixListReferenceRequest method.
+//	req, resp := client.CreateTransitGatewayPrefixListReferenceRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayPrefixListReferenceRequest method.
-//    req, resp := client.CreateTransitGatewayPrefixListReferenceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayPrefixListReference
 func (c *EC2) CreateTransitGatewayPrefixListReferenceRequest(input *CreateTransitGatewayPrefixListReferenceInput) (req *request.Request, output *CreateTransitGatewayPrefixListReferenceOutput) {
@@ -8757,14 +8651,13 @@ const opCreateTransitGatewayRoute = "CreateTransitGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayRouteRequest method.
+//	req, resp := client.CreateTransitGatewayRouteRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayRouteRequest method.
-//    req, resp := client.CreateTransitGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayRoute
 func (c *EC2) CreateTransitGatewayRouteRequest(input *CreateTransitGatewayRouteInput) (req *request.Request, output *CreateTransitGatewayRouteOutput) {
@@ -8831,14 +8724,13 @@ const opCreateTransitGatewayRouteTable = "CreateTransitGatewayRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayRouteTableRequest method.
+//	req, resp := client.CreateTransitGatewayRouteTableRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayRouteTableRequest method.
-//    req, resp := client.CreateTransitGatewayRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayRouteTable
 func (c *EC2) CreateTransitGatewayRouteTableRequest(input *CreateTransitGatewayRouteTableInput) (req *request.Request, output *CreateTransitGatewayRouteTableOutput) {
@@ -8905,14 +8797,13 @@ const opCreateTransitGatewayVpcAttachment = "CreateTransitGatewayVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTransitGatewayVpcAttachmentRequest method.
+//	req, resp := client.CreateTransitGatewayVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the CreateTransitGatewayVpcAttachmentRequest method.
-//    req, resp := client.CreateTransitGatewayVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateTransitGatewayVpcAttachment
 func (c *EC2) CreateTransitGatewayVpcAttachmentRequest(input *CreateTransitGatewayVpcAttachmentInput) (req *request.Request, output *CreateTransitGatewayVpcAttachmentOutput) {
@@ -8986,14 +8877,13 @@ const opCreateVolume = "CreateVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVolumeRequest method.
+//	req, resp := client.CreateVolumeRequest(params)
 //
-//    // Example sending a request using the CreateVolumeRequest method.
-//    req, resp := client.CreateVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVolume
 func (c *EC2) CreateVolumeRequest(input *CreateVolumeInput) (req *request.Request, output *Volume) {
@@ -9078,14 +8968,13 @@ const opCreateVpc = "CreateVpc"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcRequest method.
+//	req, resp := client.CreateVpcRequest(params)
 //
-//    // Example sending a request using the CreateVpcRequest method.
-//    req, resp := client.CreateVpcRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpc
 func (c *EC2) CreateVpcRequest(input *CreateVpcInput) (req *request.Request, output *CreateVpcOutput) {
@@ -9171,14 +9060,13 @@ const opCreateVpcEndpoint = "CreateVpcEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcEndpointRequest method.
+//	req, resp := client.CreateVpcEndpointRequest(params)
 //
-//    // Example sending a request using the CreateVpcEndpointRequest method.
-//    req, resp := client.CreateVpcEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcEndpoint
 func (c *EC2) CreateVpcEndpointRequest(input *CreateVpcEndpointInput) (req *request.Request, output *CreateVpcEndpointOutput) {
@@ -9249,14 +9137,13 @@ const opCreateVpcEndpointConnectionNotification = "CreateVpcEndpointConnectionNo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcEndpointConnectionNotificationRequest method.
+//	req, resp := client.CreateVpcEndpointConnectionNotificationRequest(params)
 //
-//    // Example sending a request using the CreateVpcEndpointConnectionNotificationRequest method.
-//    req, resp := client.CreateVpcEndpointConnectionNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcEndpointConnectionNotification
 func (c *EC2) CreateVpcEndpointConnectionNotificationRequest(input *CreateVpcEndpointConnectionNotificationInput) (req *request.Request, output *CreateVpcEndpointConnectionNotificationOutput) {
@@ -9329,14 +9216,13 @@ const opCreateVpcEndpointServiceConfiguration = "CreateVpcEndpointServiceConfigu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcEndpointServiceConfigurationRequest method.
+//	req, resp := client.CreateVpcEndpointServiceConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateVpcEndpointServiceConfigurationRequest method.
-//    req, resp := client.CreateVpcEndpointServiceConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcEndpointServiceConfiguration
 func (c *EC2) CreateVpcEndpointServiceConfigurationRequest(input *CreateVpcEndpointServiceConfigurationInput) (req *request.Request, output *CreateVpcEndpointServiceConfigurationOutput) {
@@ -9363,12 +9249,12 @@ func (c *EC2) CreateVpcEndpointServiceConfigurationRequest(input *CreateVpcEndpo
 // Before you create an endpoint service, you must create one of the following
 // for your service:
 //
-//    * A Network Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/).
-//    Service consumers connect to your service using an interface endpoint.
+//   - A Network Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/).
+//     Service consumers connect to your service using an interface endpoint.
 //
-//    * A Gateway Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/).
-//    Service consumers connect to your service using a Gateway Load Balancer
-//    endpoint.
+//   - A Gateway Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/).
+//     Service consumers connect to your service using a Gateway Load Balancer
+//     endpoint.
 //
 // If you set the private DNS name, you must prove that you own the private
 // DNS domain name.
@@ -9419,14 +9305,13 @@ const opCreateVpcPeeringConnection = "CreateVpcPeeringConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcPeeringConnectionRequest method.
+//	req, resp := client.CreateVpcPeeringConnectionRequest(params)
 //
-//    // Example sending a request using the CreateVpcPeeringConnectionRequest method.
-//    req, resp := client.CreateVpcPeeringConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcPeeringConnection
 func (c *EC2) CreateVpcPeeringConnectionRequest(input *CreateVpcPeeringConnectionInput) (req *request.Request, output *CreateVpcPeeringConnectionOutput) {
@@ -9508,14 +9393,13 @@ const opCreateVpnConnection = "CreateVpnConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpnConnectionRequest method.
+//	req, resp := client.CreateVpnConnectionRequest(params)
 //
-//    // Example sending a request using the CreateVpnConnectionRequest method.
-//    req, resp := client.CreateVpnConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpnConnection
 func (c *EC2) CreateVpnConnectionRequest(input *CreateVpnConnectionInput) (req *request.Request, output *CreateVpnConnectionOutput) {
@@ -9600,14 +9484,13 @@ const opCreateVpnConnectionRoute = "CreateVpnConnectionRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpnConnectionRouteRequest method.
+//	req, resp := client.CreateVpnConnectionRouteRequest(params)
 //
-//    // Example sending a request using the CreateVpnConnectionRouteRequest method.
-//    req, resp := client.CreateVpnConnectionRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpnConnectionRoute
 func (c *EC2) CreateVpnConnectionRouteRequest(input *CreateVpnConnectionRouteInput) (req *request.Request, output *CreateVpnConnectionRouteOutput) {
@@ -9681,14 +9564,13 @@ const opCreateVpnGateway = "CreateVpnGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpnGatewayRequest method.
+//	req, resp := client.CreateVpnGatewayRequest(params)
 //
-//    // Example sending a request using the CreateVpnGatewayRequest method.
-//    req, resp := client.CreateVpnGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpnGateway
 func (c *EC2) CreateVpnGatewayRequest(input *CreateVpnGatewayInput) (req *request.Request, output *CreateVpnGatewayOutput) {
@@ -9760,14 +9642,13 @@ const opDeleteCarrierGateway = "DeleteCarrierGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCarrierGatewayRequest method.
+//	req, resp := client.DeleteCarrierGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteCarrierGatewayRequest method.
-//    req, resp := client.DeleteCarrierGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCarrierGateway
 func (c *EC2) DeleteCarrierGatewayRequest(input *DeleteCarrierGatewayInput) (req *request.Request, output *DeleteCarrierGatewayOutput) {
@@ -9838,14 +9719,13 @@ const opDeleteClientVpnEndpoint = "DeleteClientVpnEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClientVpnEndpointRequest method.
+//	req, resp := client.DeleteClientVpnEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteClientVpnEndpointRequest method.
-//    req, resp := client.DeleteClientVpnEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteClientVpnEndpoint
 func (c *EC2) DeleteClientVpnEndpointRequest(input *DeleteClientVpnEndpointInput) (req *request.Request, output *DeleteClientVpnEndpointOutput) {
@@ -9913,14 +9793,13 @@ const opDeleteClientVpnRoute = "DeleteClientVpnRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClientVpnRouteRequest method.
+//	req, resp := client.DeleteClientVpnRouteRequest(params)
 //
-//    // Example sending a request using the DeleteClientVpnRouteRequest method.
-//    req, resp := client.DeleteClientVpnRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteClientVpnRoute
 func (c *EC2) DeleteClientVpnRouteRequest(input *DeleteClientVpnRouteInput) (req *request.Request, output *DeleteClientVpnRouteOutput) {
@@ -9991,14 +9870,13 @@ const opDeleteCustomerGateway = "DeleteCustomerGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomerGatewayRequest method.
+//	req, resp := client.DeleteCustomerGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteCustomerGatewayRequest method.
-//    req, resp := client.DeleteCustomerGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCustomerGateway
 func (c *EC2) DeleteCustomerGatewayRequest(input *DeleteCustomerGatewayInput) (req *request.Request, output *DeleteCustomerGatewayOutput) {
@@ -10067,14 +9945,13 @@ const opDeleteDhcpOptions = "DeleteDhcpOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDhcpOptionsRequest method.
+//	req, resp := client.DeleteDhcpOptionsRequest(params)
 //
-//    // Example sending a request using the DeleteDhcpOptionsRequest method.
-//    req, resp := client.DeleteDhcpOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptions
 func (c *EC2) DeleteDhcpOptionsRequest(input *DeleteDhcpOptionsInput) (req *request.Request, output *DeleteDhcpOptionsOutput) {
@@ -10145,14 +10022,13 @@ const opDeleteEgressOnlyInternetGateway = "DeleteEgressOnlyInternetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEgressOnlyInternetGatewayRequest method.
+//	req, resp := client.DeleteEgressOnlyInternetGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteEgressOnlyInternetGatewayRequest method.
-//    req, resp := client.DeleteEgressOnlyInternetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteEgressOnlyInternetGateway
 func (c *EC2) DeleteEgressOnlyInternetGatewayRequest(input *DeleteEgressOnlyInternetGatewayInput) (req *request.Request, output *DeleteEgressOnlyInternetGatewayOutput) {
@@ -10219,14 +10095,13 @@ const opDeleteFleets = "DeleteFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFleetsRequest method.
+//	req, resp := client.DeleteFleetsRequest(params)
 //
-//    // Example sending a request using the DeleteFleetsRequest method.
-//    req, resp := client.DeleteFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteFleets
 func (c *EC2) DeleteFleetsRequest(input *DeleteFleetsInput) (req *request.Request, output *DeleteFleetsOutput) {
@@ -10262,13 +10137,13 @@ func (c *EC2) DeleteFleetsRequest(input *DeleteFleetsInput) (req *request.Reques
 //
 // Restrictions
 //
-//    * You can delete up to 25 instant fleets in a single request. If you exceed
-//    this number, no instant fleets are deleted and an error is returned. There
-//    is no restriction on the number of fleets of type maintain or request
-//    that can be deleted in a single request.
+//   - You can delete up to 25 instant fleets in a single request. If you exceed
+//     this number, no instant fleets are deleted and an error is returned. There
+//     is no restriction on the number of fleets of type maintain or request
+//     that can be deleted in a single request.
 //
-//    * Up to 1000 instances can be terminated in a single request to delete
-//    instant fleets.
+//   - Up to 1000 instances can be terminated in a single request to delete
+//     instant fleets.
 //
 // For more information, see Delete an EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/manage-ec2-fleet.html#delete-fleet)
 // in the Amazon EC2 User Guide.
@@ -10317,14 +10192,13 @@ const opDeleteFlowLogs = "DeleteFlowLogs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFlowLogsRequest method.
+//	req, resp := client.DeleteFlowLogsRequest(params)
 //
-//    // Example sending a request using the DeleteFlowLogsRequest method.
-//    req, resp := client.DeleteFlowLogsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteFlowLogs
 func (c *EC2) DeleteFlowLogsRequest(input *DeleteFlowLogsInput) (req *request.Request, output *DeleteFlowLogsOutput) {
@@ -10391,14 +10265,13 @@ const opDeleteFpgaImage = "DeleteFpgaImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFpgaImageRequest method.
+//	req, resp := client.DeleteFpgaImageRequest(params)
 //
-//    // Example sending a request using the DeleteFpgaImageRequest method.
-//    req, resp := client.DeleteFpgaImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteFpgaImage
 func (c *EC2) DeleteFpgaImageRequest(input *DeleteFpgaImageInput) (req *request.Request, output *DeleteFpgaImageOutput) {
@@ -10465,14 +10338,13 @@ const opDeleteInstanceEventWindow = "DeleteInstanceEventWindow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInstanceEventWindowRequest method.
+//	req, resp := client.DeleteInstanceEventWindowRequest(params)
 //
-//    // Example sending a request using the DeleteInstanceEventWindowRequest method.
-//    req, resp := client.DeleteInstanceEventWindowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteInstanceEventWindow
 func (c *EC2) DeleteInstanceEventWindowRequest(input *DeleteInstanceEventWindowInput) (req *request.Request, output *DeleteInstanceEventWindowOutput) {
@@ -10542,14 +10414,13 @@ const opDeleteInternetGateway = "DeleteInternetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInternetGatewayRequest method.
+//	req, resp := client.DeleteInternetGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteInternetGatewayRequest method.
-//    req, resp := client.DeleteInternetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteInternetGateway
 func (c *EC2) DeleteInternetGatewayRequest(input *DeleteInternetGatewayInput) (req *request.Request, output *DeleteInternetGatewayOutput) {
@@ -10618,14 +10489,13 @@ const opDeleteIpam = "DeleteIpam"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIpamRequest method.
+//	req, resp := client.DeleteIpamRequest(params)
 //
-//    // Example sending a request using the DeleteIpamRequest method.
-//    req, resp := client.DeleteIpamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteIpam
 func (c *EC2) DeleteIpamRequest(input *DeleteIpamInput) (req *request.Request, output *DeleteIpamOutput) {
@@ -10696,14 +10566,13 @@ const opDeleteIpamPool = "DeleteIpamPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIpamPoolRequest method.
+//	req, resp := client.DeleteIpamPoolRequest(params)
 //
-//    // Example sending a request using the DeleteIpamPoolRequest method.
-//    req, resp := client.DeleteIpamPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteIpamPool
 func (c *EC2) DeleteIpamPoolRequest(input *DeleteIpamPoolInput) (req *request.Request, output *DeleteIpamPoolOutput) {
@@ -10777,14 +10646,13 @@ const opDeleteIpamScope = "DeleteIpamScope"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIpamScopeRequest method.
+//	req, resp := client.DeleteIpamScopeRequest(params)
 //
-//    // Example sending a request using the DeleteIpamScopeRequest method.
-//    req, resp := client.DeleteIpamScopeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteIpamScope
 func (c *EC2) DeleteIpamScopeRequest(input *DeleteIpamScopeInput) (req *request.Request, output *DeleteIpamScopeOutput) {
@@ -10854,14 +10722,13 @@ const opDeleteKeyPair = "DeleteKeyPair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKeyPairRequest method.
+//	req, resp := client.DeleteKeyPairRequest(params)
 //
-//    // Example sending a request using the DeleteKeyPairRequest method.
-//    req, resp := client.DeleteKeyPairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteKeyPair
 func (c *EC2) DeleteKeyPairRequest(input *DeleteKeyPairInput) (req *request.Request, output *DeleteKeyPairOutput) {
@@ -10929,14 +10796,13 @@ const opDeleteLaunchTemplate = "DeleteLaunchTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLaunchTemplateRequest method.
+//	req, resp := client.DeleteLaunchTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteLaunchTemplateRequest method.
-//    req, resp := client.DeleteLaunchTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteLaunchTemplate
 func (c *EC2) DeleteLaunchTemplateRequest(input *DeleteLaunchTemplateInput) (req *request.Request, output *DeleteLaunchTemplateOutput) {
@@ -11004,14 +10870,13 @@ const opDeleteLaunchTemplateVersions = "DeleteLaunchTemplateVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLaunchTemplateVersionsRequest method.
+//	req, resp := client.DeleteLaunchTemplateVersionsRequest(params)
 //
-//    // Example sending a request using the DeleteLaunchTemplateVersionsRequest method.
-//    req, resp := client.DeleteLaunchTemplateVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteLaunchTemplateVersions
 func (c *EC2) DeleteLaunchTemplateVersionsRequest(input *DeleteLaunchTemplateVersionsInput) (req *request.Request, output *DeleteLaunchTemplateVersionsOutput) {
@@ -11081,14 +10946,13 @@ const opDeleteLocalGatewayRoute = "DeleteLocalGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLocalGatewayRouteRequest method.
+//	req, resp := client.DeleteLocalGatewayRouteRequest(params)
 //
-//    // Example sending a request using the DeleteLocalGatewayRouteRequest method.
-//    req, resp := client.DeleteLocalGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteLocalGatewayRoute
 func (c *EC2) DeleteLocalGatewayRouteRequest(input *DeleteLocalGatewayRouteInput) (req *request.Request, output *DeleteLocalGatewayRouteOutput) {
@@ -11155,14 +11019,13 @@ const opDeleteLocalGatewayRouteTableVpcAssociation = "DeleteLocalGatewayRouteTab
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLocalGatewayRouteTableVpcAssociationRequest method.
+//	req, resp := client.DeleteLocalGatewayRouteTableVpcAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteLocalGatewayRouteTableVpcAssociationRequest method.
-//    req, resp := client.DeleteLocalGatewayRouteTableVpcAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteLocalGatewayRouteTableVpcAssociation
 func (c *EC2) DeleteLocalGatewayRouteTableVpcAssociationRequest(input *DeleteLocalGatewayRouteTableVpcAssociationInput) (req *request.Request, output *DeleteLocalGatewayRouteTableVpcAssociationOutput) {
@@ -11229,14 +11092,13 @@ const opDeleteManagedPrefixList = "DeleteManagedPrefixList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteManagedPrefixListRequest method.
+//	req, resp := client.DeleteManagedPrefixListRequest(params)
 //
-//    // Example sending a request using the DeleteManagedPrefixListRequest method.
-//    req, resp := client.DeleteManagedPrefixListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteManagedPrefixList
 func (c *EC2) DeleteManagedPrefixListRequest(input *DeleteManagedPrefixListInput) (req *request.Request, output *DeleteManagedPrefixListOutput) {
@@ -11304,14 +11166,13 @@ const opDeleteNatGateway = "DeleteNatGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNatGatewayRequest method.
+//	req, resp := client.DeleteNatGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteNatGatewayRequest method.
-//    req, resp := client.DeleteNatGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNatGateway
 func (c *EC2) DeleteNatGatewayRequest(input *DeleteNatGatewayInput) (req *request.Request, output *DeleteNatGatewayOutput) {
@@ -11381,14 +11242,13 @@ const opDeleteNetworkAcl = "DeleteNetworkAcl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkAclRequest method.
+//	req, resp := client.DeleteNetworkAclRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkAclRequest method.
-//    req, resp := client.DeleteNetworkAclRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkAcl
 func (c *EC2) DeleteNetworkAclRequest(input *DeleteNetworkAclInput) (req *request.Request, output *DeleteNetworkAclOutput) {
@@ -11457,14 +11317,13 @@ const opDeleteNetworkAclEntry = "DeleteNetworkAclEntry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkAclEntryRequest method.
+//	req, resp := client.DeleteNetworkAclEntryRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkAclEntryRequest method.
-//    req, resp := client.DeleteNetworkAclEntryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkAclEntry
 func (c *EC2) DeleteNetworkAclEntryRequest(input *DeleteNetworkAclEntryInput) (req *request.Request, output *DeleteNetworkAclEntryOutput) {
@@ -11533,14 +11392,13 @@ const opDeleteNetworkInsightsAccessScope = "DeleteNetworkInsightsAccessScope"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkInsightsAccessScopeRequest method.
+//	req, resp := client.DeleteNetworkInsightsAccessScopeRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkInsightsAccessScopeRequest method.
-//    req, resp := client.DeleteNetworkInsightsAccessScopeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInsightsAccessScope
 func (c *EC2) DeleteNetworkInsightsAccessScopeRequest(input *DeleteNetworkInsightsAccessScopeInput) (req *request.Request, output *DeleteNetworkInsightsAccessScopeOutput) {
@@ -11607,14 +11465,13 @@ const opDeleteNetworkInsightsAccessScopeAnalysis = "DeleteNetworkInsightsAccessS
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkInsightsAccessScopeAnalysisRequest method.
+//	req, resp := client.DeleteNetworkInsightsAccessScopeAnalysisRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkInsightsAccessScopeAnalysisRequest method.
-//    req, resp := client.DeleteNetworkInsightsAccessScopeAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInsightsAccessScopeAnalysis
 func (c *EC2) DeleteNetworkInsightsAccessScopeAnalysisRequest(input *DeleteNetworkInsightsAccessScopeAnalysisInput) (req *request.Request, output *DeleteNetworkInsightsAccessScopeAnalysisOutput) {
@@ -11681,14 +11538,13 @@ const opDeleteNetworkInsightsAnalysis = "DeleteNetworkInsightsAnalysis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkInsightsAnalysisRequest method.
+//	req, resp := client.DeleteNetworkInsightsAnalysisRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkInsightsAnalysisRequest method.
-//    req, resp := client.DeleteNetworkInsightsAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInsightsAnalysis
 func (c *EC2) DeleteNetworkInsightsAnalysisRequest(input *DeleteNetworkInsightsAnalysisInput) (req *request.Request, output *DeleteNetworkInsightsAnalysisOutput) {
@@ -11755,14 +11611,13 @@ const opDeleteNetworkInsightsPath = "DeleteNetworkInsightsPath"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkInsightsPathRequest method.
+//	req, resp := client.DeleteNetworkInsightsPathRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkInsightsPathRequest method.
-//    req, resp := client.DeleteNetworkInsightsPathRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInsightsPath
 func (c *EC2) DeleteNetworkInsightsPathRequest(input *DeleteNetworkInsightsPathInput) (req *request.Request, output *DeleteNetworkInsightsPathOutput) {
@@ -11829,14 +11684,13 @@ const opDeleteNetworkInterface = "DeleteNetworkInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkInterfaceRequest method.
+//	req, resp := client.DeleteNetworkInterfaceRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkInterfaceRequest method.
-//    req, resp := client.DeleteNetworkInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInterface
 func (c *EC2) DeleteNetworkInterfaceRequest(input *DeleteNetworkInterfaceInput) (req *request.Request, output *DeleteNetworkInterfaceOutput) {
@@ -11905,14 +11759,13 @@ const opDeleteNetworkInterfacePermission = "DeleteNetworkInterfacePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkInterfacePermissionRequest method.
+//	req, resp := client.DeleteNetworkInterfacePermissionRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkInterfacePermissionRequest method.
-//    req, resp := client.DeleteNetworkInterfacePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInterfacePermission
 func (c *EC2) DeleteNetworkInterfacePermissionRequest(input *DeleteNetworkInterfacePermissionInput) (req *request.Request, output *DeleteNetworkInterfacePermissionOutput) {
@@ -11982,14 +11835,13 @@ const opDeletePlacementGroup = "DeletePlacementGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePlacementGroupRequest method.
+//	req, resp := client.DeletePlacementGroupRequest(params)
 //
-//    // Example sending a request using the DeletePlacementGroupRequest method.
-//    req, resp := client.DeletePlacementGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeletePlacementGroup
 func (c *EC2) DeletePlacementGroupRequest(input *DeletePlacementGroupInput) (req *request.Request, output *DeletePlacementGroupOutput) {
@@ -12060,14 +11912,13 @@ const opDeletePublicIpv4Pool = "DeletePublicIpv4Pool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePublicIpv4PoolRequest method.
+//	req, resp := client.DeletePublicIpv4PoolRequest(params)
 //
-//    // Example sending a request using the DeletePublicIpv4PoolRequest method.
-//    req, resp := client.DeletePublicIpv4PoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeletePublicIpv4Pool
 func (c *EC2) DeletePublicIpv4PoolRequest(input *DeletePublicIpv4PoolInput) (req *request.Request, output *DeletePublicIpv4PoolOutput) {
@@ -12137,14 +11988,13 @@ const opDeleteQueuedReservedInstances = "DeleteQueuedReservedInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteQueuedReservedInstancesRequest method.
+//	req, resp := client.DeleteQueuedReservedInstancesRequest(params)
 //
-//    // Example sending a request using the DeleteQueuedReservedInstancesRequest method.
-//    req, resp := client.DeleteQueuedReservedInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteQueuedReservedInstances
 func (c *EC2) DeleteQueuedReservedInstancesRequest(input *DeleteQueuedReservedInstancesInput) (req *request.Request, output *DeleteQueuedReservedInstancesOutput) {
@@ -12211,14 +12061,13 @@ const opDeleteRoute = "DeleteRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteRequest method.
+//	req, resp := client.DeleteRouteRequest(params)
 //
-//    // Example sending a request using the DeleteRouteRequest method.
-//    req, resp := client.DeleteRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteRoute
 func (c *EC2) DeleteRouteRequest(input *DeleteRouteInput) (req *request.Request, output *DeleteRouteOutput) {
@@ -12286,14 +12135,13 @@ const opDeleteRouteTable = "DeleteRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteTableRequest method.
+//	req, resp := client.DeleteRouteTableRequest(params)
 //
-//    // Example sending a request using the DeleteRouteTableRequest method.
-//    req, resp := client.DeleteRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteRouteTable
 func (c *EC2) DeleteRouteTableRequest(input *DeleteRouteTableInput) (req *request.Request, output *DeleteRouteTableOutput) {
@@ -12363,14 +12211,13 @@ const opDeleteSecurityGroup = "DeleteSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSecurityGroupRequest method.
+//	req, resp := client.DeleteSecurityGroupRequest(params)
 //
-//    // Example sending a request using the DeleteSecurityGroupRequest method.
-//    req, resp := client.DeleteSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSecurityGroup
 func (c *EC2) DeleteSecurityGroupRequest(input *DeleteSecurityGroupInput) (req *request.Request, output *DeleteSecurityGroupOutput) {
@@ -12442,14 +12289,13 @@ const opDeleteSnapshot = "DeleteSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSnapshotRequest method.
+//	req, resp := client.DeleteSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteSnapshotRequest method.
-//    req, resp := client.DeleteSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSnapshot
 func (c *EC2) DeleteSnapshotRequest(input *DeleteSnapshotInput) (req *request.Request, output *DeleteSnapshotOutput) {
@@ -12531,14 +12377,13 @@ const opDeleteSpotDatafeedSubscription = "DeleteSpotDatafeedSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSpotDatafeedSubscriptionRequest method.
+//	req, resp := client.DeleteSpotDatafeedSubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteSpotDatafeedSubscriptionRequest method.
-//    req, resp := client.DeleteSpotDatafeedSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSpotDatafeedSubscription
 func (c *EC2) DeleteSpotDatafeedSubscriptionRequest(input *DeleteSpotDatafeedSubscriptionInput) (req *request.Request, output *DeleteSpotDatafeedSubscriptionOutput) {
@@ -12606,14 +12451,13 @@ const opDeleteSubnet = "DeleteSubnet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSubnetRequest method.
+//	req, resp := client.DeleteSubnetRequest(params)
 //
-//    // Example sending a request using the DeleteSubnetRequest method.
-//    req, resp := client.DeleteSubnetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSubnet
 func (c *EC2) DeleteSubnetRequest(input *DeleteSubnetInput) (req *request.Request, output *DeleteSubnetOutput) {
@@ -12682,14 +12526,13 @@ const opDeleteSubnetCidrReservation = "DeleteSubnetCidrReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSubnetCidrReservationRequest method.
+//	req, resp := client.DeleteSubnetCidrReservationRequest(params)
 //
-//    // Example sending a request using the DeleteSubnetCidrReservationRequest method.
-//    req, resp := client.DeleteSubnetCidrReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSubnetCidrReservation
 func (c *EC2) DeleteSubnetCidrReservationRequest(input *DeleteSubnetCidrReservationInput) (req *request.Request, output *DeleteSubnetCidrReservationOutput) {
@@ -12756,14 +12599,13 @@ const opDeleteTags = "DeleteTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTagsRequest method.
+//	req, resp := client.DeleteTagsRequest(params)
 //
-//    // Example sending a request using the DeleteTagsRequest method.
-//    req, resp := client.DeleteTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTags
 func (c *EC2) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
@@ -12835,14 +12677,13 @@ const opDeleteTrafficMirrorFilter = "DeleteTrafficMirrorFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrafficMirrorFilterRequest method.
+//	req, resp := client.DeleteTrafficMirrorFilterRequest(params)
 //
-//    // Example sending a request using the DeleteTrafficMirrorFilterRequest method.
-//    req, resp := client.DeleteTrafficMirrorFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTrafficMirrorFilter
 func (c *EC2) DeleteTrafficMirrorFilterRequest(input *DeleteTrafficMirrorFilterInput) (req *request.Request, output *DeleteTrafficMirrorFilterOutput) {
@@ -12912,14 +12753,13 @@ const opDeleteTrafficMirrorFilterRule = "DeleteTrafficMirrorFilterRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrafficMirrorFilterRuleRequest method.
+//	req, resp := client.DeleteTrafficMirrorFilterRuleRequest(params)
 //
-//    // Example sending a request using the DeleteTrafficMirrorFilterRuleRequest method.
-//    req, resp := client.DeleteTrafficMirrorFilterRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTrafficMirrorFilterRule
 func (c *EC2) DeleteTrafficMirrorFilterRuleRequest(input *DeleteTrafficMirrorFilterRuleInput) (req *request.Request, output *DeleteTrafficMirrorFilterRuleOutput) {
@@ -12986,14 +12826,13 @@ const opDeleteTrafficMirrorSession = "DeleteTrafficMirrorSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrafficMirrorSessionRequest method.
+//	req, resp := client.DeleteTrafficMirrorSessionRequest(params)
 //
-//    // Example sending a request using the DeleteTrafficMirrorSessionRequest method.
-//    req, resp := client.DeleteTrafficMirrorSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTrafficMirrorSession
 func (c *EC2) DeleteTrafficMirrorSessionRequest(input *DeleteTrafficMirrorSessionInput) (req *request.Request, output *DeleteTrafficMirrorSessionOutput) {
@@ -13060,14 +12899,13 @@ const opDeleteTrafficMirrorTarget = "DeleteTrafficMirrorTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrafficMirrorTargetRequest method.
+//	req, resp := client.DeleteTrafficMirrorTargetRequest(params)
 //
-//    // Example sending a request using the DeleteTrafficMirrorTargetRequest method.
-//    req, resp := client.DeleteTrafficMirrorTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTrafficMirrorTarget
 func (c *EC2) DeleteTrafficMirrorTargetRequest(input *DeleteTrafficMirrorTargetInput) (req *request.Request, output *DeleteTrafficMirrorTargetOutput) {
@@ -13137,14 +12975,13 @@ const opDeleteTransitGateway = "DeleteTransitGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayRequest method.
+//	req, resp := client.DeleteTransitGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayRequest method.
-//    req, resp := client.DeleteTransitGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGateway
 func (c *EC2) DeleteTransitGatewayRequest(input *DeleteTransitGatewayInput) (req *request.Request, output *DeleteTransitGatewayOutput) {
@@ -13211,14 +13048,13 @@ const opDeleteTransitGatewayConnect = "DeleteTransitGatewayConnect"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayConnectRequest method.
+//	req, resp := client.DeleteTransitGatewayConnectRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayConnectRequest method.
-//    req, resp := client.DeleteTransitGatewayConnectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayConnect
 func (c *EC2) DeleteTransitGatewayConnectRequest(input *DeleteTransitGatewayConnectInput) (req *request.Request, output *DeleteTransitGatewayConnectOutput) {
@@ -13286,14 +13122,13 @@ const opDeleteTransitGatewayConnectPeer = "DeleteTransitGatewayConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayConnectPeerRequest method.
+//	req, resp := client.DeleteTransitGatewayConnectPeerRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayConnectPeerRequest method.
-//    req, resp := client.DeleteTransitGatewayConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayConnectPeer
 func (c *EC2) DeleteTransitGatewayConnectPeerRequest(input *DeleteTransitGatewayConnectPeerInput) (req *request.Request, output *DeleteTransitGatewayConnectPeerOutput) {
@@ -13360,14 +13195,13 @@ const opDeleteTransitGatewayMulticastDomain = "DeleteTransitGatewayMulticastDoma
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayMulticastDomainRequest method.
+//	req, resp := client.DeleteTransitGatewayMulticastDomainRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayMulticastDomainRequest method.
-//    req, resp := client.DeleteTransitGatewayMulticastDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayMulticastDomain
 func (c *EC2) DeleteTransitGatewayMulticastDomainRequest(input *DeleteTransitGatewayMulticastDomainInput) (req *request.Request, output *DeleteTransitGatewayMulticastDomainOutput) {
@@ -13434,14 +13268,13 @@ const opDeleteTransitGatewayPeeringAttachment = "DeleteTransitGatewayPeeringAtta
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayPeeringAttachmentRequest method.
+//	req, resp := client.DeleteTransitGatewayPeeringAttachmentRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayPeeringAttachmentRequest method.
-//    req, resp := client.DeleteTransitGatewayPeeringAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayPeeringAttachment
 func (c *EC2) DeleteTransitGatewayPeeringAttachmentRequest(input *DeleteTransitGatewayPeeringAttachmentInput) (req *request.Request, output *DeleteTransitGatewayPeeringAttachmentOutput) {
@@ -13508,14 +13341,13 @@ const opDeleteTransitGatewayPrefixListReference = "DeleteTransitGatewayPrefixLis
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayPrefixListReferenceRequest method.
+//	req, resp := client.DeleteTransitGatewayPrefixListReferenceRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayPrefixListReferenceRequest method.
-//    req, resp := client.DeleteTransitGatewayPrefixListReferenceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayPrefixListReference
 func (c *EC2) DeleteTransitGatewayPrefixListReferenceRequest(input *DeleteTransitGatewayPrefixListReferenceInput) (req *request.Request, output *DeleteTransitGatewayPrefixListReferenceOutput) {
@@ -13583,14 +13415,13 @@ const opDeleteTransitGatewayRoute = "DeleteTransitGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayRouteRequest method.
+//	req, resp := client.DeleteTransitGatewayRouteRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayRouteRequest method.
-//    req, resp := client.DeleteTransitGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayRoute
 func (c *EC2) DeleteTransitGatewayRouteRequest(input *DeleteTransitGatewayRouteInput) (req *request.Request, output *DeleteTransitGatewayRouteOutput) {
@@ -13657,14 +13488,13 @@ const opDeleteTransitGatewayRouteTable = "DeleteTransitGatewayRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayRouteTableRequest method.
+//	req, resp := client.DeleteTransitGatewayRouteTableRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayRouteTableRequest method.
-//    req, resp := client.DeleteTransitGatewayRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayRouteTable
 func (c *EC2) DeleteTransitGatewayRouteTableRequest(input *DeleteTransitGatewayRouteTableInput) (req *request.Request, output *DeleteTransitGatewayRouteTableOutput) {
@@ -13733,14 +13563,13 @@ const opDeleteTransitGatewayVpcAttachment = "DeleteTransitGatewayVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTransitGatewayVpcAttachmentRequest method.
+//	req, resp := client.DeleteTransitGatewayVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the DeleteTransitGatewayVpcAttachmentRequest method.
-//    req, resp := client.DeleteTransitGatewayVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteTransitGatewayVpcAttachment
 func (c *EC2) DeleteTransitGatewayVpcAttachmentRequest(input *DeleteTransitGatewayVpcAttachmentInput) (req *request.Request, output *DeleteTransitGatewayVpcAttachmentOutput) {
@@ -13807,14 +13636,13 @@ const opDeleteVolume = "DeleteVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVolumeRequest method.
+//	req, resp := client.DeleteVolumeRequest(params)
 //
-//    // Example sending a request using the DeleteVolumeRequest method.
-//    req, resp := client.DeleteVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVolume
 func (c *EC2) DeleteVolumeRequest(input *DeleteVolumeInput) (req *request.Request, output *DeleteVolumeOutput) {
@@ -13888,14 +13716,13 @@ const opDeleteVpc = "DeleteVpc"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcRequest method.
+//	req, resp := client.DeleteVpcRequest(params)
 //
-//    // Example sending a request using the DeleteVpcRequest method.
-//    req, resp := client.DeleteVpcRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpc
 func (c *EC2) DeleteVpcRequest(input *DeleteVpcInput) (req *request.Request, output *DeleteVpcOutput) {
@@ -13967,14 +13794,13 @@ const opDeleteVpcEndpointConnectionNotifications = "DeleteVpcEndpointConnectionN
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcEndpointConnectionNotificationsRequest method.
+//	req, resp := client.DeleteVpcEndpointConnectionNotificationsRequest(params)
 //
-//    // Example sending a request using the DeleteVpcEndpointConnectionNotificationsRequest method.
-//    req, resp := client.DeleteVpcEndpointConnectionNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcEndpointConnectionNotifications
 func (c *EC2) DeleteVpcEndpointConnectionNotificationsRequest(input *DeleteVpcEndpointConnectionNotificationsInput) (req *request.Request, output *DeleteVpcEndpointConnectionNotificationsOutput) {
@@ -14041,14 +13867,13 @@ const opDeleteVpcEndpointServiceConfigurations = "DeleteVpcEndpointServiceConfig
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcEndpointServiceConfigurationsRequest method.
+//	req, resp := client.DeleteVpcEndpointServiceConfigurationsRequest(params)
 //
-//    // Example sending a request using the DeleteVpcEndpointServiceConfigurationsRequest method.
-//    req, resp := client.DeleteVpcEndpointServiceConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcEndpointServiceConfigurations
 func (c *EC2) DeleteVpcEndpointServiceConfigurationsRequest(input *DeleteVpcEndpointServiceConfigurationsInput) (req *request.Request, output *DeleteVpcEndpointServiceConfigurationsOutput) {
@@ -14118,14 +13943,13 @@ const opDeleteVpcEndpoints = "DeleteVpcEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcEndpointsRequest method.
+//	req, resp := client.DeleteVpcEndpointsRequest(params)
 //
-//    // Example sending a request using the DeleteVpcEndpointsRequest method.
-//    req, resp := client.DeleteVpcEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcEndpoints
 func (c *EC2) DeleteVpcEndpointsRequest(input *DeleteVpcEndpointsInput) (req *request.Request, output *DeleteVpcEndpointsOutput) {
@@ -14149,23 +13973,23 @@ func (c *EC2) DeleteVpcEndpointsRequest(input *DeleteVpcEndpointsInput) (req *re
 // Deletes one or more specified VPC endpoints. You can delete any of the following
 // types of VPC endpoints.
 //
-//    * Gateway endpoint,
+//   - Gateway endpoint,
 //
-//    * Gateway Load Balancer endpoint,
+//   - Gateway Load Balancer endpoint,
 //
-//    * Interface endpoint
+//   - Interface endpoint
 //
 // The following rules apply when you delete a VPC endpoint:
 //
-//    * When you delete a gateway endpoint, we delete the endpoint routes in
-//    the route tables that are associated with the endpoint.
+//   - When you delete a gateway endpoint, we delete the endpoint routes in
+//     the route tables that are associated with the endpoint.
 //
-//    * When you delete a Gateway Load Balancer endpoint, we delete the endpoint
-//    network interfaces. You can only delete Gateway Load Balancer endpoints
-//    when the routes that are associated with the endpoint are deleted.
+//   - When you delete a Gateway Load Balancer endpoint, we delete the endpoint
+//     network interfaces. You can only delete Gateway Load Balancer endpoints
+//     when the routes that are associated with the endpoint are deleted.
 //
-//    * When you delete an interface endpoint, we delete the endpoint network
-//    interfaces.
+//   - When you delete an interface endpoint, we delete the endpoint network
+//     interfaces.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14211,14 +14035,13 @@ const opDeleteVpcPeeringConnection = "DeleteVpcPeeringConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcPeeringConnectionRequest method.
+//	req, resp := client.DeleteVpcPeeringConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteVpcPeeringConnectionRequest method.
-//    req, resp := client.DeleteVpcPeeringConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcPeeringConnection
 func (c *EC2) DeleteVpcPeeringConnectionRequest(input *DeleteVpcPeeringConnectionInput) (req *request.Request, output *DeleteVpcPeeringConnectionOutput) {
@@ -14289,14 +14112,13 @@ const opDeleteVpnConnection = "DeleteVpnConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpnConnectionRequest method.
+//	req, resp := client.DeleteVpnConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteVpnConnectionRequest method.
-//    req, resp := client.DeleteVpnConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpnConnection
 func (c *EC2) DeleteVpnConnectionRequest(input *DeleteVpnConnectionInput) (req *request.Request, output *DeleteVpnConnectionOutput) {
@@ -14377,14 +14199,13 @@ const opDeleteVpnConnectionRoute = "DeleteVpnConnectionRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpnConnectionRouteRequest method.
+//	req, resp := client.DeleteVpnConnectionRouteRequest(params)
 //
-//    // Example sending a request using the DeleteVpnConnectionRouteRequest method.
-//    req, resp := client.DeleteVpnConnectionRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpnConnectionRoute
 func (c *EC2) DeleteVpnConnectionRouteRequest(input *DeleteVpnConnectionRouteInput) (req *request.Request, output *DeleteVpnConnectionRouteOutput) {
@@ -14455,14 +14276,13 @@ const opDeleteVpnGateway = "DeleteVpnGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpnGatewayRequest method.
+//	req, resp := client.DeleteVpnGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteVpnGatewayRequest method.
-//    req, resp := client.DeleteVpnGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpnGateway
 func (c *EC2) DeleteVpnGatewayRequest(input *DeleteVpnGatewayInput) (req *request.Request, output *DeleteVpnGatewayOutput) {
@@ -14533,14 +14353,13 @@ const opDeprovisionByoipCidr = "DeprovisionByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprovisionByoipCidrRequest method.
+//	req, resp := client.DeprovisionByoipCidrRequest(params)
 //
-//    // Example sending a request using the DeprovisionByoipCidrRequest method.
-//    req, resp := client.DeprovisionByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeprovisionByoipCidr
 func (c *EC2) DeprovisionByoipCidrRequest(input *DeprovisionByoipCidrInput) (req *request.Request, output *DeprovisionByoipCidrOutput) {
@@ -14613,14 +14432,13 @@ const opDeprovisionIpamPoolCidr = "DeprovisionIpamPoolCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprovisionIpamPoolCidrRequest method.
+//	req, resp := client.DeprovisionIpamPoolCidrRequest(params)
 //
-//    // Example sending a request using the DeprovisionIpamPoolCidrRequest method.
-//    req, resp := client.DeprovisionIpamPoolCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeprovisionIpamPoolCidr
 func (c *EC2) DeprovisionIpamPoolCidrRequest(input *DeprovisionIpamPoolCidrInput) (req *request.Request, output *DeprovisionIpamPoolCidrOutput) {
@@ -14690,14 +14508,13 @@ const opDeprovisionPublicIpv4PoolCidr = "DeprovisionPublicIpv4PoolCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprovisionPublicIpv4PoolCidrRequest method.
+//	req, resp := client.DeprovisionPublicIpv4PoolCidrRequest(params)
 //
-//    // Example sending a request using the DeprovisionPublicIpv4PoolCidrRequest method.
-//    req, resp := client.DeprovisionPublicIpv4PoolCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeprovisionPublicIpv4PoolCidr
 func (c *EC2) DeprovisionPublicIpv4PoolCidrRequest(input *DeprovisionPublicIpv4PoolCidrInput) (req *request.Request, output *DeprovisionPublicIpv4PoolCidrOutput) {
@@ -14764,14 +14581,13 @@ const opDeregisterImage = "DeregisterImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterImageRequest method.
+//	req, resp := client.DeregisterImageRequest(params)
 //
-//    // Example sending a request using the DeregisterImageRequest method.
-//    req, resp := client.DeregisterImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeregisterImage
 func (c *EC2) DeregisterImageRequest(input *DeregisterImageInput) (req *request.Request, output *DeregisterImageOutput) {
@@ -14854,14 +14670,13 @@ const opDeregisterInstanceEventNotificationAttributes = "DeregisterInstanceEvent
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterInstanceEventNotificationAttributesRequest method.
+//	req, resp := client.DeregisterInstanceEventNotificationAttributesRequest(params)
 //
-//    // Example sending a request using the DeregisterInstanceEventNotificationAttributesRequest method.
-//    req, resp := client.DeregisterInstanceEventNotificationAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeregisterInstanceEventNotificationAttributes
 func (c *EC2) DeregisterInstanceEventNotificationAttributesRequest(input *DeregisterInstanceEventNotificationAttributesInput) (req *request.Request, output *DeregisterInstanceEventNotificationAttributesOutput) {
@@ -14929,14 +14744,13 @@ const opDeregisterTransitGatewayMulticastGroupMembers = "DeregisterTransitGatewa
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterTransitGatewayMulticastGroupMembersRequest method.
+//	req, resp := client.DeregisterTransitGatewayMulticastGroupMembersRequest(params)
 //
-//    // Example sending a request using the DeregisterTransitGatewayMulticastGroupMembersRequest method.
-//    req, resp := client.DeregisterTransitGatewayMulticastGroupMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeregisterTransitGatewayMulticastGroupMembers
 func (c *EC2) DeregisterTransitGatewayMulticastGroupMembersRequest(input *DeregisterTransitGatewayMulticastGroupMembersInput) (req *request.Request, output *DeregisterTransitGatewayMulticastGroupMembersOutput) {
@@ -15004,14 +14818,13 @@ const opDeregisterTransitGatewayMulticastGroupSources = "DeregisterTransitGatewa
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterTransitGatewayMulticastGroupSourcesRequest method.
+//	req, resp := client.DeregisterTransitGatewayMulticastGroupSourcesRequest(params)
 //
-//    // Example sending a request using the DeregisterTransitGatewayMulticastGroupSourcesRequest method.
-//    req, resp := client.DeregisterTransitGatewayMulticastGroupSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeregisterTransitGatewayMulticastGroupSources
 func (c *EC2) DeregisterTransitGatewayMulticastGroupSourcesRequest(input *DeregisterTransitGatewayMulticastGroupSourcesInput) (req *request.Request, output *DeregisterTransitGatewayMulticastGroupSourcesOutput) {
@@ -15079,14 +14892,13 @@ const opDescribeAccountAttributes = "DescribeAccountAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAttributesRequest method.
+//	req, resp := client.DescribeAccountAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAttributesRequest method.
-//    req, resp := client.DescribeAccountAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAccountAttributes
 func (c *EC2) DescribeAccountAttributesRequest(input *DescribeAccountAttributesInput) (req *request.Request, output *DescribeAccountAttributesOutput) {
@@ -15110,24 +14922,24 @@ func (c *EC2) DescribeAccountAttributesRequest(input *DescribeAccountAttributesI
 // Describes attributes of your Amazon Web Services account. The following are
 // the supported account attributes:
 //
-//    * supported-platforms: Indicates whether your account can launch instances
-//    into EC2-Classic and EC2-VPC, or only into EC2-VPC.
+//   - supported-platforms: Indicates whether your account can launch instances
+//     into EC2-Classic and EC2-VPC, or only into EC2-VPC.
 //
-//    * default-vpc: The ID of the default VPC for your account, or none.
+//   - default-vpc: The ID of the default VPC for your account, or none.
 //
-//    * max-instances: This attribute is no longer supported. The returned value
-//    does not reflect your actual vCPU limit for running On-Demand Instances.
-//    For more information, see On-Demand Instance Limits (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-on-demand-instances.html#ec2-on-demand-instances-limits)
-//    in the Amazon Elastic Compute Cloud User Guide.
+//   - max-instances: This attribute is no longer supported. The returned value
+//     does not reflect your actual vCPU limit for running On-Demand Instances.
+//     For more information, see On-Demand Instance Limits (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-on-demand-instances.html#ec2-on-demand-instances-limits)
+//     in the Amazon Elastic Compute Cloud User Guide.
 //
-//    * vpc-max-security-groups-per-interface: The maximum number of security
-//    groups that you can assign to a network interface.
+//   - vpc-max-security-groups-per-interface: The maximum number of security
+//     groups that you can assign to a network interface.
 //
-//    * max-elastic-ips: The maximum number of Elastic IP addresses that you
-//    can allocate for use with EC2-Classic.
+//   - max-elastic-ips: The maximum number of Elastic IP addresses that you
+//     can allocate for use with EC2-Classic.
 //
-//    * vpc-max-elastic-ips: The maximum number of Elastic IP addresses that
-//    you can allocate for use with EC2-VPC.
+//   - vpc-max-elastic-ips: The maximum number of Elastic IP addresses that
+//     you can allocate for use with EC2-VPC.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15173,14 +14985,13 @@ const opDescribeAddresses = "DescribeAddresses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAddressesRequest method.
+//	req, resp := client.DescribeAddressesRequest(params)
 //
-//    // Example sending a request using the DescribeAddressesRequest method.
-//    req, resp := client.DescribeAddressesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAddresses
 func (c *EC2) DescribeAddressesRequest(input *DescribeAddressesInput) (req *request.Request, output *DescribeAddressesOutput) {
@@ -15251,14 +15062,13 @@ const opDescribeAddressesAttribute = "DescribeAddressesAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAddressesAttributeRequest method.
+//	req, resp := client.DescribeAddressesAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeAddressesAttributeRequest method.
-//    req, resp := client.DescribeAddressesAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAddressesAttribute
 func (c *EC2) DescribeAddressesAttributeRequest(input *DescribeAddressesAttributeInput) (req *request.Request, output *DescribeAddressesAttributeOutput) {
@@ -15324,15 +15134,14 @@ func (c *EC2) DescribeAddressesAttributeWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAddressesAttribute operation.
-//    pageNum := 0
-//    err := client.DescribeAddressesAttributePages(params,
-//        func(page *ec2.DescribeAddressesAttributeOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAddressesAttribute operation.
+//	pageNum := 0
+//	err := client.DescribeAddressesAttributePages(params,
+//	    func(page *ec2.DescribeAddressesAttributeOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeAddressesAttributePages(input *DescribeAddressesAttributeInput, fn func(*DescribeAddressesAttributeOutput, bool) bool) error {
 	return c.DescribeAddressesAttributePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -15384,14 +15193,13 @@ const opDescribeAggregateIdFormat = "DescribeAggregateIdFormat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAggregateIdFormatRequest method.
+//	req, resp := client.DescribeAggregateIdFormatRequest(params)
 //
-//    // Example sending a request using the DescribeAggregateIdFormatRequest method.
-//    req, resp := client.DescribeAggregateIdFormatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAggregateIdFormat
 func (c *EC2) DescribeAggregateIdFormatRequest(input *DescribeAggregateIdFormatInput) (req *request.Request, output *DescribeAggregateIdFormatOutput) {
@@ -15472,14 +15280,13 @@ const opDescribeAvailabilityZones = "DescribeAvailabilityZones"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAvailabilityZonesRequest method.
+//	req, resp := client.DescribeAvailabilityZonesRequest(params)
 //
-//    // Example sending a request using the DescribeAvailabilityZonesRequest method.
-//    req, resp := client.DescribeAvailabilityZonesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAvailabilityZones
 func (c *EC2) DescribeAvailabilityZonesRequest(input *DescribeAvailabilityZonesInput) (req *request.Request, output *DescribeAvailabilityZonesOutput) {
@@ -15552,14 +15359,13 @@ const opDescribeBundleTasks = "DescribeBundleTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBundleTasksRequest method.
+//	req, resp := client.DescribeBundleTasksRequest(params)
 //
-//    // Example sending a request using the DescribeBundleTasksRequest method.
-//    req, resp := client.DescribeBundleTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeBundleTasks
 func (c *EC2) DescribeBundleTasksRequest(input *DescribeBundleTasksInput) (req *request.Request, output *DescribeBundleTasksOutput) {
@@ -15631,14 +15437,13 @@ const opDescribeByoipCidrs = "DescribeByoipCidrs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeByoipCidrsRequest method.
+//	req, resp := client.DescribeByoipCidrsRequest(params)
 //
-//    // Example sending a request using the DescribeByoipCidrsRequest method.
-//    req, resp := client.DescribeByoipCidrsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeByoipCidrs
 func (c *EC2) DescribeByoipCidrsRequest(input *DescribeByoipCidrsInput) (req *request.Request, output *DescribeByoipCidrsOutput) {
@@ -15706,15 +15511,14 @@ func (c *EC2) DescribeByoipCidrsWithContext(ctx aws.Context, input *DescribeByoi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeByoipCidrs operation.
-//    pageNum := 0
-//    err := client.DescribeByoipCidrsPages(params,
-//        func(page *ec2.DescribeByoipCidrsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeByoipCidrs operation.
+//	pageNum := 0
+//	err := client.DescribeByoipCidrsPages(params,
+//	    func(page *ec2.DescribeByoipCidrsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeByoipCidrsPages(input *DescribeByoipCidrsInput, fn func(*DescribeByoipCidrsOutput, bool) bool) error {
 	return c.DescribeByoipCidrsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -15766,14 +15570,13 @@ const opDescribeCapacityReservationFleets = "DescribeCapacityReservationFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCapacityReservationFleetsRequest method.
+//	req, resp := client.DescribeCapacityReservationFleetsRequest(params)
 //
-//    // Example sending a request using the DescribeCapacityReservationFleetsRequest method.
-//    req, resp := client.DescribeCapacityReservationFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCapacityReservationFleets
 func (c *EC2) DescribeCapacityReservationFleetsRequest(input *DescribeCapacityReservationFleetsInput) (req *request.Request, output *DescribeCapacityReservationFleetsOutput) {
@@ -15838,15 +15641,14 @@ func (c *EC2) DescribeCapacityReservationFleetsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCapacityReservationFleets operation.
-//    pageNum := 0
-//    err := client.DescribeCapacityReservationFleetsPages(params,
-//        func(page *ec2.DescribeCapacityReservationFleetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCapacityReservationFleets operation.
+//	pageNum := 0
+//	err := client.DescribeCapacityReservationFleetsPages(params,
+//	    func(page *ec2.DescribeCapacityReservationFleetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeCapacityReservationFleetsPages(input *DescribeCapacityReservationFleetsInput, fn func(*DescribeCapacityReservationFleetsOutput, bool) bool) error {
 	return c.DescribeCapacityReservationFleetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -15898,14 +15700,13 @@ const opDescribeCapacityReservations = "DescribeCapacityReservations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCapacityReservationsRequest method.
+//	req, resp := client.DescribeCapacityReservationsRequest(params)
 //
-//    // Example sending a request using the DescribeCapacityReservationsRequest method.
-//    req, resp := client.DescribeCapacityReservationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCapacityReservations
 func (c *EC2) DescribeCapacityReservationsRequest(input *DescribeCapacityReservationsInput) (req *request.Request, output *DescribeCapacityReservationsOutput) {
@@ -15972,15 +15773,14 @@ func (c *EC2) DescribeCapacityReservationsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCapacityReservations operation.
-//    pageNum := 0
-//    err := client.DescribeCapacityReservationsPages(params,
-//        func(page *ec2.DescribeCapacityReservationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCapacityReservations operation.
+//	pageNum := 0
+//	err := client.DescribeCapacityReservationsPages(params,
+//	    func(page *ec2.DescribeCapacityReservationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeCapacityReservationsPages(input *DescribeCapacityReservationsInput, fn func(*DescribeCapacityReservationsOutput, bool) bool) error {
 	return c.DescribeCapacityReservationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16032,14 +15832,13 @@ const opDescribeCarrierGateways = "DescribeCarrierGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCarrierGatewaysRequest method.
+//	req, resp := client.DescribeCarrierGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeCarrierGatewaysRequest method.
-//    req, resp := client.DescribeCarrierGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCarrierGateways
 func (c *EC2) DescribeCarrierGatewaysRequest(input *DescribeCarrierGatewaysInput) (req *request.Request, output *DescribeCarrierGatewaysOutput) {
@@ -16104,15 +15903,14 @@ func (c *EC2) DescribeCarrierGatewaysWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCarrierGateways operation.
-//    pageNum := 0
-//    err := client.DescribeCarrierGatewaysPages(params,
-//        func(page *ec2.DescribeCarrierGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCarrierGateways operation.
+//	pageNum := 0
+//	err := client.DescribeCarrierGatewaysPages(params,
+//	    func(page *ec2.DescribeCarrierGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeCarrierGatewaysPages(input *DescribeCarrierGatewaysInput, fn func(*DescribeCarrierGatewaysOutput, bool) bool) error {
 	return c.DescribeCarrierGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16164,14 +15962,13 @@ const opDescribeClassicLinkInstances = "DescribeClassicLinkInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClassicLinkInstancesRequest method.
+//	req, resp := client.DescribeClassicLinkInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeClassicLinkInstancesRequest method.
-//    req, resp := client.DescribeClassicLinkInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeClassicLinkInstances
 func (c *EC2) DescribeClassicLinkInstancesRequest(input *DescribeClassicLinkInstancesInput) (req *request.Request, output *DescribeClassicLinkInstancesOutput) {
@@ -16239,15 +16036,14 @@ func (c *EC2) DescribeClassicLinkInstancesWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClassicLinkInstances operation.
-//    pageNum := 0
-//    err := client.DescribeClassicLinkInstancesPages(params,
-//        func(page *ec2.DescribeClassicLinkInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClassicLinkInstances operation.
+//	pageNum := 0
+//	err := client.DescribeClassicLinkInstancesPages(params,
+//	    func(page *ec2.DescribeClassicLinkInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeClassicLinkInstancesPages(input *DescribeClassicLinkInstancesInput, fn func(*DescribeClassicLinkInstancesOutput, bool) bool) error {
 	return c.DescribeClassicLinkInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16299,14 +16095,13 @@ const opDescribeClientVpnAuthorizationRules = "DescribeClientVpnAuthorizationRul
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientVpnAuthorizationRulesRequest method.
+//	req, resp := client.DescribeClientVpnAuthorizationRulesRequest(params)
 //
-//    // Example sending a request using the DescribeClientVpnAuthorizationRulesRequest method.
-//    req, resp := client.DescribeClientVpnAuthorizationRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeClientVpnAuthorizationRules
 func (c *EC2) DescribeClientVpnAuthorizationRulesRequest(input *DescribeClientVpnAuthorizationRulesInput) (req *request.Request, output *DescribeClientVpnAuthorizationRulesOutput) {
@@ -16371,15 +16166,14 @@ func (c *EC2) DescribeClientVpnAuthorizationRulesWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClientVpnAuthorizationRules operation.
-//    pageNum := 0
-//    err := client.DescribeClientVpnAuthorizationRulesPages(params,
-//        func(page *ec2.DescribeClientVpnAuthorizationRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClientVpnAuthorizationRules operation.
+//	pageNum := 0
+//	err := client.DescribeClientVpnAuthorizationRulesPages(params,
+//	    func(page *ec2.DescribeClientVpnAuthorizationRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeClientVpnAuthorizationRulesPages(input *DescribeClientVpnAuthorizationRulesInput, fn func(*DescribeClientVpnAuthorizationRulesOutput, bool) bool) error {
 	return c.DescribeClientVpnAuthorizationRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16431,14 +16225,13 @@ const opDescribeClientVpnConnections = "DescribeClientVpnConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientVpnConnectionsRequest method.
+//	req, resp := client.DescribeClientVpnConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeClientVpnConnectionsRequest method.
-//    req, resp := client.DescribeClientVpnConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeClientVpnConnections
 func (c *EC2) DescribeClientVpnConnectionsRequest(input *DescribeClientVpnConnectionsInput) (req *request.Request, output *DescribeClientVpnConnectionsOutput) {
@@ -16504,15 +16297,14 @@ func (c *EC2) DescribeClientVpnConnectionsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClientVpnConnections operation.
-//    pageNum := 0
-//    err := client.DescribeClientVpnConnectionsPages(params,
-//        func(page *ec2.DescribeClientVpnConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClientVpnConnections operation.
+//	pageNum := 0
+//	err := client.DescribeClientVpnConnectionsPages(params,
+//	    func(page *ec2.DescribeClientVpnConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeClientVpnConnectionsPages(input *DescribeClientVpnConnectionsInput, fn func(*DescribeClientVpnConnectionsOutput, bool) bool) error {
 	return c.DescribeClientVpnConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16564,14 +16356,13 @@ const opDescribeClientVpnEndpoints = "DescribeClientVpnEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientVpnEndpointsRequest method.
+//	req, resp := client.DescribeClientVpnEndpointsRequest(params)
 //
-//    // Example sending a request using the DescribeClientVpnEndpointsRequest method.
-//    req, resp := client.DescribeClientVpnEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeClientVpnEndpoints
 func (c *EC2) DescribeClientVpnEndpointsRequest(input *DescribeClientVpnEndpointsInput) (req *request.Request, output *DescribeClientVpnEndpointsOutput) {
@@ -16636,15 +16427,14 @@ func (c *EC2) DescribeClientVpnEndpointsWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClientVpnEndpoints operation.
-//    pageNum := 0
-//    err := client.DescribeClientVpnEndpointsPages(params,
-//        func(page *ec2.DescribeClientVpnEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClientVpnEndpoints operation.
+//	pageNum := 0
+//	err := client.DescribeClientVpnEndpointsPages(params,
+//	    func(page *ec2.DescribeClientVpnEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeClientVpnEndpointsPages(input *DescribeClientVpnEndpointsInput, fn func(*DescribeClientVpnEndpointsOutput, bool) bool) error {
 	return c.DescribeClientVpnEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16696,14 +16486,13 @@ const opDescribeClientVpnRoutes = "DescribeClientVpnRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientVpnRoutesRequest method.
+//	req, resp := client.DescribeClientVpnRoutesRequest(params)
 //
-//    // Example sending a request using the DescribeClientVpnRoutesRequest method.
-//    req, resp := client.DescribeClientVpnRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeClientVpnRoutes
 func (c *EC2) DescribeClientVpnRoutesRequest(input *DescribeClientVpnRoutesInput) (req *request.Request, output *DescribeClientVpnRoutesOutput) {
@@ -16768,15 +16557,14 @@ func (c *EC2) DescribeClientVpnRoutesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClientVpnRoutes operation.
-//    pageNum := 0
-//    err := client.DescribeClientVpnRoutesPages(params,
-//        func(page *ec2.DescribeClientVpnRoutesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClientVpnRoutes operation.
+//	pageNum := 0
+//	err := client.DescribeClientVpnRoutesPages(params,
+//	    func(page *ec2.DescribeClientVpnRoutesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeClientVpnRoutesPages(input *DescribeClientVpnRoutesInput, fn func(*DescribeClientVpnRoutesOutput, bool) bool) error {
 	return c.DescribeClientVpnRoutesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16828,14 +16616,13 @@ const opDescribeClientVpnTargetNetworks = "DescribeClientVpnTargetNetworks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientVpnTargetNetworksRequest method.
+//	req, resp := client.DescribeClientVpnTargetNetworksRequest(params)
 //
-//    // Example sending a request using the DescribeClientVpnTargetNetworksRequest method.
-//    req, resp := client.DescribeClientVpnTargetNetworksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeClientVpnTargetNetworks
 func (c *EC2) DescribeClientVpnTargetNetworksRequest(input *DescribeClientVpnTargetNetworksInput) (req *request.Request, output *DescribeClientVpnTargetNetworksOutput) {
@@ -16900,15 +16687,14 @@ func (c *EC2) DescribeClientVpnTargetNetworksWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClientVpnTargetNetworks operation.
-//    pageNum := 0
-//    err := client.DescribeClientVpnTargetNetworksPages(params,
-//        func(page *ec2.DescribeClientVpnTargetNetworksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClientVpnTargetNetworks operation.
+//	pageNum := 0
+//	err := client.DescribeClientVpnTargetNetworksPages(params,
+//	    func(page *ec2.DescribeClientVpnTargetNetworksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeClientVpnTargetNetworksPages(input *DescribeClientVpnTargetNetworksInput, fn func(*DescribeClientVpnTargetNetworksOutput, bool) bool) error {
 	return c.DescribeClientVpnTargetNetworksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -16960,14 +16746,13 @@ const opDescribeCoipPools = "DescribeCoipPools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCoipPoolsRequest method.
+//	req, resp := client.DescribeCoipPoolsRequest(params)
 //
-//    // Example sending a request using the DescribeCoipPoolsRequest method.
-//    req, resp := client.DescribeCoipPoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCoipPools
 func (c *EC2) DescribeCoipPoolsRequest(input *DescribeCoipPoolsInput) (req *request.Request, output *DescribeCoipPoolsOutput) {
@@ -17033,15 +16818,14 @@ func (c *EC2) DescribeCoipPoolsWithContext(ctx aws.Context, input *DescribeCoipP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCoipPools operation.
-//    pageNum := 0
-//    err := client.DescribeCoipPoolsPages(params,
-//        func(page *ec2.DescribeCoipPoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCoipPools operation.
+//	pageNum := 0
+//	err := client.DescribeCoipPoolsPages(params,
+//	    func(page *ec2.DescribeCoipPoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeCoipPoolsPages(input *DescribeCoipPoolsInput, fn func(*DescribeCoipPoolsOutput, bool) bool) error {
 	return c.DescribeCoipPoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -17093,14 +16877,13 @@ const opDescribeConversionTasks = "DescribeConversionTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConversionTasksRequest method.
+//	req, resp := client.DescribeConversionTasksRequest(params)
 //
-//    // Example sending a request using the DescribeConversionTasksRequest method.
-//    req, resp := client.DescribeConversionTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeConversionTasks
 func (c *EC2) DescribeConversionTasksRequest(input *DescribeConversionTasksInput) (req *request.Request, output *DescribeConversionTasksOutput) {
@@ -17171,14 +16954,13 @@ const opDescribeCustomerGateways = "DescribeCustomerGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomerGatewaysRequest method.
+//	req, resp := client.DescribeCustomerGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeCustomerGatewaysRequest method.
-//    req, resp := client.DescribeCustomerGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCustomerGateways
 func (c *EC2) DescribeCustomerGatewaysRequest(input *DescribeCustomerGatewaysInput) (req *request.Request, output *DescribeCustomerGatewaysOutput) {
@@ -17248,14 +17030,13 @@ const opDescribeDhcpOptions = "DescribeDhcpOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDhcpOptionsRequest method.
+//	req, resp := client.DescribeDhcpOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeDhcpOptionsRequest method.
-//    req, resp := client.DescribeDhcpOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptions
 func (c *EC2) DescribeDhcpOptionsRequest(input *DescribeDhcpOptionsInput) (req *request.Request, output *DescribeDhcpOptionsOutput) {
@@ -17323,15 +17104,14 @@ func (c *EC2) DescribeDhcpOptionsWithContext(ctx aws.Context, input *DescribeDhc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDhcpOptions operation.
-//    pageNum := 0
-//    err := client.DescribeDhcpOptionsPages(params,
-//        func(page *ec2.DescribeDhcpOptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDhcpOptions operation.
+//	pageNum := 0
+//	err := client.DescribeDhcpOptionsPages(params,
+//	    func(page *ec2.DescribeDhcpOptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeDhcpOptionsPages(input *DescribeDhcpOptionsInput, fn func(*DescribeDhcpOptionsOutput, bool) bool) error {
 	return c.DescribeDhcpOptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -17383,14 +17163,13 @@ const opDescribeEgressOnlyInternetGateways = "DescribeEgressOnlyInternetGateways
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEgressOnlyInternetGatewaysRequest method.
+//	req, resp := client.DescribeEgressOnlyInternetGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeEgressOnlyInternetGatewaysRequest method.
-//    req, resp := client.DescribeEgressOnlyInternetGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeEgressOnlyInternetGateways
 func (c *EC2) DescribeEgressOnlyInternetGatewaysRequest(input *DescribeEgressOnlyInternetGatewaysInput) (req *request.Request, output *DescribeEgressOnlyInternetGatewaysOutput) {
@@ -17455,15 +17234,14 @@ func (c *EC2) DescribeEgressOnlyInternetGatewaysWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEgressOnlyInternetGateways operation.
-//    pageNum := 0
-//    err := client.DescribeEgressOnlyInternetGatewaysPages(params,
-//        func(page *ec2.DescribeEgressOnlyInternetGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEgressOnlyInternetGateways operation.
+//	pageNum := 0
+//	err := client.DescribeEgressOnlyInternetGatewaysPages(params,
+//	    func(page *ec2.DescribeEgressOnlyInternetGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeEgressOnlyInternetGatewaysPages(input *DescribeEgressOnlyInternetGatewaysInput, fn func(*DescribeEgressOnlyInternetGatewaysOutput, bool) bool) error {
 	return c.DescribeEgressOnlyInternetGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -17515,14 +17293,13 @@ const opDescribeElasticGpus = "DescribeElasticGpus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticGpusRequest method.
+//	req, resp := client.DescribeElasticGpusRequest(params)
 //
-//    // Example sending a request using the DescribeElasticGpusRequest method.
-//    req, resp := client.DescribeElasticGpusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeElasticGpus
 func (c *EC2) DescribeElasticGpusRequest(input *DescribeElasticGpusInput) (req *request.Request, output *DescribeElasticGpusOutput) {
@@ -17591,14 +17368,13 @@ const opDescribeExportImageTasks = "DescribeExportImageTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExportImageTasksRequest method.
+//	req, resp := client.DescribeExportImageTasksRequest(params)
 //
-//    // Example sending a request using the DescribeExportImageTasksRequest method.
-//    req, resp := client.DescribeExportImageTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeExportImageTasks
 func (c *EC2) DescribeExportImageTasksRequest(input *DescribeExportImageTasksInput) (req *request.Request, output *DescribeExportImageTasksOutput) {
@@ -17663,15 +17439,14 @@ func (c *EC2) DescribeExportImageTasksWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeExportImageTasks operation.
-//    pageNum := 0
-//    err := client.DescribeExportImageTasksPages(params,
-//        func(page *ec2.DescribeExportImageTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeExportImageTasks operation.
+//	pageNum := 0
+//	err := client.DescribeExportImageTasksPages(params,
+//	    func(page *ec2.DescribeExportImageTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeExportImageTasksPages(input *DescribeExportImageTasksInput, fn func(*DescribeExportImageTasksOutput, bool) bool) error {
 	return c.DescribeExportImageTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -17723,14 +17498,13 @@ const opDescribeExportTasks = "DescribeExportTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExportTasksRequest method.
+//	req, resp := client.DescribeExportTasksRequest(params)
 //
-//    // Example sending a request using the DescribeExportTasksRequest method.
-//    req, resp := client.DescribeExportTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeExportTasks
 func (c *EC2) DescribeExportTasksRequest(input *DescribeExportTasksInput) (req *request.Request, output *DescribeExportTasksOutput) {
@@ -17798,14 +17572,13 @@ const opDescribeFastLaunchImages = "DescribeFastLaunchImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFastLaunchImagesRequest method.
+//	req, resp := client.DescribeFastLaunchImagesRequest(params)
 //
-//    // Example sending a request using the DescribeFastLaunchImagesRequest method.
-//    req, resp := client.DescribeFastLaunchImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFastLaunchImages
 func (c *EC2) DescribeFastLaunchImagesRequest(input *DescribeFastLaunchImagesInput) (req *request.Request, output *DescribeFastLaunchImagesOutput) {
@@ -17870,15 +17643,14 @@ func (c *EC2) DescribeFastLaunchImagesWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFastLaunchImages operation.
-//    pageNum := 0
-//    err := client.DescribeFastLaunchImagesPages(params,
-//        func(page *ec2.DescribeFastLaunchImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFastLaunchImages operation.
+//	pageNum := 0
+//	err := client.DescribeFastLaunchImagesPages(params,
+//	    func(page *ec2.DescribeFastLaunchImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeFastLaunchImagesPages(input *DescribeFastLaunchImagesInput, fn func(*DescribeFastLaunchImagesOutput, bool) bool) error {
 	return c.DescribeFastLaunchImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -17930,14 +17702,13 @@ const opDescribeFastSnapshotRestores = "DescribeFastSnapshotRestores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFastSnapshotRestoresRequest method.
+//	req, resp := client.DescribeFastSnapshotRestoresRequest(params)
 //
-//    // Example sending a request using the DescribeFastSnapshotRestoresRequest method.
-//    req, resp := client.DescribeFastSnapshotRestoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFastSnapshotRestores
 func (c *EC2) DescribeFastSnapshotRestoresRequest(input *DescribeFastSnapshotRestoresInput) (req *request.Request, output *DescribeFastSnapshotRestoresOutput) {
@@ -18002,15 +17773,14 @@ func (c *EC2) DescribeFastSnapshotRestoresWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFastSnapshotRestores operation.
-//    pageNum := 0
-//    err := client.DescribeFastSnapshotRestoresPages(params,
-//        func(page *ec2.DescribeFastSnapshotRestoresOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFastSnapshotRestores operation.
+//	pageNum := 0
+//	err := client.DescribeFastSnapshotRestoresPages(params,
+//	    func(page *ec2.DescribeFastSnapshotRestoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeFastSnapshotRestoresPages(input *DescribeFastSnapshotRestoresInput, fn func(*DescribeFastSnapshotRestoresOutput, bool) bool) error {
 	return c.DescribeFastSnapshotRestoresPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -18062,14 +17832,13 @@ const opDescribeFleetHistory = "DescribeFleetHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetHistoryRequest method.
+//	req, resp := client.DescribeFleetHistoryRequest(params)
 //
-//    // Example sending a request using the DescribeFleetHistoryRequest method.
-//    req, resp := client.DescribeFleetHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFleetHistory
 func (c *EC2) DescribeFleetHistoryRequest(input *DescribeFleetHistoryInput) (req *request.Request, output *DescribeFleetHistoryOutput) {
@@ -18143,14 +17912,13 @@ const opDescribeFleetInstances = "DescribeFleetInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetInstancesRequest method.
+//	req, resp := client.DescribeFleetInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeFleetInstancesRequest method.
-//    req, resp := client.DescribeFleetInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFleetInstances
 func (c *EC2) DescribeFleetInstancesRequest(input *DescribeFleetInstancesInput) (req *request.Request, output *DescribeFleetInstancesOutput) {
@@ -18220,14 +17988,13 @@ const opDescribeFleets = "DescribeFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetsRequest method.
+//	req, resp := client.DescribeFleetsRequest(params)
 //
-//    // Example sending a request using the DescribeFleetsRequest method.
-//    req, resp := client.DescribeFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFleets
 func (c *EC2) DescribeFleetsRequest(input *DescribeFleetsInput) (req *request.Request, output *DescribeFleetsOutput) {
@@ -18295,15 +18062,14 @@ func (c *EC2) DescribeFleetsWithContext(ctx aws.Context, input *DescribeFleetsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFleets operation.
-//    pageNum := 0
-//    err := client.DescribeFleetsPages(params,
-//        func(page *ec2.DescribeFleetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFleets operation.
+//	pageNum := 0
+//	err := client.DescribeFleetsPages(params,
+//	    func(page *ec2.DescribeFleetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeFleetsPages(input *DescribeFleetsInput, fn func(*DescribeFleetsOutput, bool) bool) error {
 	return c.DescribeFleetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -18355,14 +18121,13 @@ const opDescribeFlowLogs = "DescribeFlowLogs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFlowLogsRequest method.
+//	req, resp := client.DescribeFlowLogsRequest(params)
 //
-//    // Example sending a request using the DescribeFlowLogsRequest method.
-//    req, resp := client.DescribeFlowLogsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFlowLogs
 func (c *EC2) DescribeFlowLogsRequest(input *DescribeFlowLogsInput) (req *request.Request, output *DescribeFlowLogsOutput) {
@@ -18429,15 +18194,14 @@ func (c *EC2) DescribeFlowLogsWithContext(ctx aws.Context, input *DescribeFlowLo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFlowLogs operation.
-//    pageNum := 0
-//    err := client.DescribeFlowLogsPages(params,
-//        func(page *ec2.DescribeFlowLogsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFlowLogs operation.
+//	pageNum := 0
+//	err := client.DescribeFlowLogsPages(params,
+//	    func(page *ec2.DescribeFlowLogsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeFlowLogsPages(input *DescribeFlowLogsInput, fn func(*DescribeFlowLogsOutput, bool) bool) error {
 	return c.DescribeFlowLogsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -18489,14 +18253,13 @@ const opDescribeFpgaImageAttribute = "DescribeFpgaImageAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFpgaImageAttributeRequest method.
+//	req, resp := client.DescribeFpgaImageAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeFpgaImageAttributeRequest method.
-//    req, resp := client.DescribeFpgaImageAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFpgaImageAttribute
 func (c *EC2) DescribeFpgaImageAttributeRequest(input *DescribeFpgaImageAttributeInput) (req *request.Request, output *DescribeFpgaImageAttributeOutput) {
@@ -18563,14 +18326,13 @@ const opDescribeFpgaImages = "DescribeFpgaImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFpgaImagesRequest method.
+//	req, resp := client.DescribeFpgaImagesRequest(params)
 //
-//    // Example sending a request using the DescribeFpgaImagesRequest method.
-//    req, resp := client.DescribeFpgaImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeFpgaImages
 func (c *EC2) DescribeFpgaImagesRequest(input *DescribeFpgaImagesInput) (req *request.Request, output *DescribeFpgaImagesOutput) {
@@ -18637,15 +18399,14 @@ func (c *EC2) DescribeFpgaImagesWithContext(ctx aws.Context, input *DescribeFpga
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFpgaImages operation.
-//    pageNum := 0
-//    err := client.DescribeFpgaImagesPages(params,
-//        func(page *ec2.DescribeFpgaImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFpgaImages operation.
+//	pageNum := 0
+//	err := client.DescribeFpgaImagesPages(params,
+//	    func(page *ec2.DescribeFpgaImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeFpgaImagesPages(input *DescribeFpgaImagesInput, fn func(*DescribeFpgaImagesOutput, bool) bool) error {
 	return c.DescribeFpgaImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -18697,14 +18458,13 @@ const opDescribeHostReservationOfferings = "DescribeHostReservationOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHostReservationOfferingsRequest method.
+//	req, resp := client.DescribeHostReservationOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeHostReservationOfferingsRequest method.
-//    req, resp := client.DescribeHostReservationOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeHostReservationOfferings
 func (c *EC2) DescribeHostReservationOfferingsRequest(input *DescribeHostReservationOfferingsInput) (req *request.Request, output *DescribeHostReservationOfferingsOutput) {
@@ -18777,15 +18537,14 @@ func (c *EC2) DescribeHostReservationOfferingsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeHostReservationOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeHostReservationOfferingsPages(params,
-//        func(page *ec2.DescribeHostReservationOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeHostReservationOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeHostReservationOfferingsPages(params,
+//	    func(page *ec2.DescribeHostReservationOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeHostReservationOfferingsPages(input *DescribeHostReservationOfferingsInput, fn func(*DescribeHostReservationOfferingsOutput, bool) bool) error {
 	return c.DescribeHostReservationOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -18837,14 +18596,13 @@ const opDescribeHostReservations = "DescribeHostReservations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHostReservationsRequest method.
+//	req, resp := client.DescribeHostReservationsRequest(params)
 //
-//    // Example sending a request using the DescribeHostReservationsRequest method.
-//    req, resp := client.DescribeHostReservationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeHostReservations
 func (c *EC2) DescribeHostReservationsRequest(input *DescribeHostReservationsInput) (req *request.Request, output *DescribeHostReservationsOutput) {
@@ -18909,15 +18667,14 @@ func (c *EC2) DescribeHostReservationsWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeHostReservations operation.
-//    pageNum := 0
-//    err := client.DescribeHostReservationsPages(params,
-//        func(page *ec2.DescribeHostReservationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeHostReservations operation.
+//	pageNum := 0
+//	err := client.DescribeHostReservationsPages(params,
+//	    func(page *ec2.DescribeHostReservationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeHostReservationsPages(input *DescribeHostReservationsInput, fn func(*DescribeHostReservationsOutput, bool) bool) error {
 	return c.DescribeHostReservationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -18969,14 +18726,13 @@ const opDescribeHosts = "DescribeHosts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHostsRequest method.
+//	req, resp := client.DescribeHostsRequest(params)
 //
-//    // Example sending a request using the DescribeHostsRequest method.
-//    req, resp := client.DescribeHostsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeHosts
 func (c *EC2) DescribeHostsRequest(input *DescribeHostsInput) (req *request.Request, output *DescribeHostsOutput) {
@@ -19045,15 +18801,14 @@ func (c *EC2) DescribeHostsWithContext(ctx aws.Context, input *DescribeHostsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeHosts operation.
-//    pageNum := 0
-//    err := client.DescribeHostsPages(params,
-//        func(page *ec2.DescribeHostsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeHosts operation.
+//	pageNum := 0
+//	err := client.DescribeHostsPages(params,
+//	    func(page *ec2.DescribeHostsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeHostsPages(input *DescribeHostsInput, fn func(*DescribeHostsOutput, bool) bool) error {
 	return c.DescribeHostsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -19105,14 +18860,13 @@ const opDescribeIamInstanceProfileAssociations = "DescribeIamInstanceProfileAsso
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIamInstanceProfileAssociationsRequest method.
+//	req, resp := client.DescribeIamInstanceProfileAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeIamInstanceProfileAssociationsRequest method.
-//    req, resp := client.DescribeIamInstanceProfileAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIamInstanceProfileAssociations
 func (c *EC2) DescribeIamInstanceProfileAssociationsRequest(input *DescribeIamInstanceProfileAssociationsInput) (req *request.Request, output *DescribeIamInstanceProfileAssociationsOutput) {
@@ -19177,15 +18931,14 @@ func (c *EC2) DescribeIamInstanceProfileAssociationsWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeIamInstanceProfileAssociations operation.
-//    pageNum := 0
-//    err := client.DescribeIamInstanceProfileAssociationsPages(params,
-//        func(page *ec2.DescribeIamInstanceProfileAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeIamInstanceProfileAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeIamInstanceProfileAssociationsPages(params,
+//	    func(page *ec2.DescribeIamInstanceProfileAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeIamInstanceProfileAssociationsPages(input *DescribeIamInstanceProfileAssociationsInput, fn func(*DescribeIamInstanceProfileAssociationsOutput, bool) bool) error {
 	return c.DescribeIamInstanceProfileAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -19237,14 +18990,13 @@ const opDescribeIdFormat = "DescribeIdFormat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIdFormatRequest method.
+//	req, resp := client.DescribeIdFormatRequest(params)
 //
-//    // Example sending a request using the DescribeIdFormatRequest method.
-//    req, resp := client.DescribeIdFormatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIdFormat
 func (c *EC2) DescribeIdFormatRequest(input *DescribeIdFormatInput) (req *request.Request, output *DescribeIdFormatOutput) {
@@ -19330,14 +19082,13 @@ const opDescribeIdentityIdFormat = "DescribeIdentityIdFormat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIdentityIdFormatRequest method.
+//	req, resp := client.DescribeIdentityIdFormatRequest(params)
 //
-//    // Example sending a request using the DescribeIdentityIdFormatRequest method.
-//    req, resp := client.DescribeIdentityIdFormatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIdentityIdFormat
 func (c *EC2) DescribeIdentityIdFormatRequest(input *DescribeIdentityIdFormatInput) (req *request.Request, output *DescribeIdentityIdFormatOutput) {
@@ -19420,14 +19171,13 @@ const opDescribeImageAttribute = "DescribeImageAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImageAttributeRequest method.
+//	req, resp := client.DescribeImageAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeImageAttributeRequest method.
-//    req, resp := client.DescribeImageAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeImageAttribute
 func (c *EC2) DescribeImageAttributeRequest(input *DescribeImageAttributeInput) (req *request.Request, output *DescribeImageAttributeOutput) {
@@ -19495,14 +19245,13 @@ const opDescribeImages = "DescribeImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImagesRequest method.
+//	req, resp := client.DescribeImagesRequest(params)
 //
-//    // Example sending a request using the DescribeImagesRequest method.
-//    req, resp := client.DescribeImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeImages
 func (c *EC2) DescribeImagesRequest(input *DescribeImagesInput) (req *request.Request, output *DescribeImagesOutput) {
@@ -19579,14 +19328,13 @@ const opDescribeImportImageTasks = "DescribeImportImageTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImportImageTasksRequest method.
+//	req, resp := client.DescribeImportImageTasksRequest(params)
 //
-//    // Example sending a request using the DescribeImportImageTasksRequest method.
-//    req, resp := client.DescribeImportImageTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeImportImageTasks
 func (c *EC2) DescribeImportImageTasksRequest(input *DescribeImportImageTasksInput) (req *request.Request, output *DescribeImportImageTasksOutput) {
@@ -19652,15 +19400,14 @@ func (c *EC2) DescribeImportImageTasksWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeImportImageTasks operation.
-//    pageNum := 0
-//    err := client.DescribeImportImageTasksPages(params,
-//        func(page *ec2.DescribeImportImageTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeImportImageTasks operation.
+//	pageNum := 0
+//	err := client.DescribeImportImageTasksPages(params,
+//	    func(page *ec2.DescribeImportImageTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeImportImageTasksPages(input *DescribeImportImageTasksInput, fn func(*DescribeImportImageTasksOutput, bool) bool) error {
 	return c.DescribeImportImageTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -19712,14 +19459,13 @@ const opDescribeImportSnapshotTasks = "DescribeImportSnapshotTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImportSnapshotTasksRequest method.
+//	req, resp := client.DescribeImportSnapshotTasksRequest(params)
 //
-//    // Example sending a request using the DescribeImportSnapshotTasksRequest method.
-//    req, resp := client.DescribeImportSnapshotTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeImportSnapshotTasks
 func (c *EC2) DescribeImportSnapshotTasksRequest(input *DescribeImportSnapshotTasksInput) (req *request.Request, output *DescribeImportSnapshotTasksOutput) {
@@ -19784,15 +19530,14 @@ func (c *EC2) DescribeImportSnapshotTasksWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeImportSnapshotTasks operation.
-//    pageNum := 0
-//    err := client.DescribeImportSnapshotTasksPages(params,
-//        func(page *ec2.DescribeImportSnapshotTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeImportSnapshotTasks operation.
+//	pageNum := 0
+//	err := client.DescribeImportSnapshotTasksPages(params,
+//	    func(page *ec2.DescribeImportSnapshotTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeImportSnapshotTasksPages(input *DescribeImportSnapshotTasksInput, fn func(*DescribeImportSnapshotTasksOutput, bool) bool) error {
 	return c.DescribeImportSnapshotTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -19844,14 +19589,13 @@ const opDescribeInstanceAttribute = "DescribeInstanceAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceAttributeRequest method.
+//	req, resp := client.DescribeInstanceAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceAttributeRequest method.
-//    req, resp := client.DescribeInstanceAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceAttribute
 func (c *EC2) DescribeInstanceAttributeRequest(input *DescribeInstanceAttributeInput) (req *request.Request, output *DescribeInstanceAttributeOutput) {
@@ -19922,14 +19666,13 @@ const opDescribeInstanceCreditSpecifications = "DescribeInstanceCreditSpecificat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceCreditSpecificationsRequest method.
+//	req, resp := client.DescribeInstanceCreditSpecificationsRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceCreditSpecificationsRequest method.
-//    req, resp := client.DescribeInstanceCreditSpecificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceCreditSpecifications
 func (c *EC2) DescribeInstanceCreditSpecificationsRequest(input *DescribeInstanceCreditSpecificationsInput) (req *request.Request, output *DescribeInstanceCreditSpecificationsOutput) {
@@ -20017,15 +19760,14 @@ func (c *EC2) DescribeInstanceCreditSpecificationsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstanceCreditSpecifications operation.
-//    pageNum := 0
-//    err := client.DescribeInstanceCreditSpecificationsPages(params,
-//        func(page *ec2.DescribeInstanceCreditSpecificationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstanceCreditSpecifications operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceCreditSpecificationsPages(params,
+//	    func(page *ec2.DescribeInstanceCreditSpecificationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInstanceCreditSpecificationsPages(input *DescribeInstanceCreditSpecificationsInput, fn func(*DescribeInstanceCreditSpecificationsOutput, bool) bool) error {
 	return c.DescribeInstanceCreditSpecificationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20077,14 +19819,13 @@ const opDescribeInstanceEventNotificationAttributes = "DescribeInstanceEventNoti
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceEventNotificationAttributesRequest method.
+//	req, resp := client.DescribeInstanceEventNotificationAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceEventNotificationAttributesRequest method.
-//    req, resp := client.DescribeInstanceEventNotificationAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceEventNotificationAttributes
 func (c *EC2) DescribeInstanceEventNotificationAttributesRequest(input *DescribeInstanceEventNotificationAttributesInput) (req *request.Request, output *DescribeInstanceEventNotificationAttributesOutput) {
@@ -20152,14 +19893,13 @@ const opDescribeInstanceEventWindows = "DescribeInstanceEventWindows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceEventWindowsRequest method.
+//	req, resp := client.DescribeInstanceEventWindowsRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceEventWindowsRequest method.
-//    req, resp := client.DescribeInstanceEventWindowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceEventWindows
 func (c *EC2) DescribeInstanceEventWindowsRequest(input *DescribeInstanceEventWindowsInput) (req *request.Request, output *DescribeInstanceEventWindowsOutput) {
@@ -20234,15 +19974,14 @@ func (c *EC2) DescribeInstanceEventWindowsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstanceEventWindows operation.
-//    pageNum := 0
-//    err := client.DescribeInstanceEventWindowsPages(params,
-//        func(page *ec2.DescribeInstanceEventWindowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstanceEventWindows operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceEventWindowsPages(params,
+//	    func(page *ec2.DescribeInstanceEventWindowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInstanceEventWindowsPages(input *DescribeInstanceEventWindowsInput, fn func(*DescribeInstanceEventWindowsOutput, bool) bool) error {
 	return c.DescribeInstanceEventWindowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20294,14 +20033,13 @@ const opDescribeInstanceStatus = "DescribeInstanceStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceStatusRequest method.
+//	req, resp := client.DescribeInstanceStatusRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceStatusRequest method.
-//    req, resp := client.DescribeInstanceStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceStatus
 func (c *EC2) DescribeInstanceStatusRequest(input *DescribeInstanceStatusInput) (req *request.Request, output *DescribeInstanceStatusOutput) {
@@ -20334,22 +20072,22 @@ func (c *EC2) DescribeInstanceStatusRequest(input *DescribeInstanceStatusInput) 
 //
 // Instance status includes the following components:
 //
-//    * Status checks - Amazon EC2 performs status checks on running EC2 instances
-//    to identify hardware and software issues. For more information, see Status
-//    checks for your instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html)
-//    and Troubleshoot instances with failed status checks (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/TroubleshootingInstances.html)
-//    in the Amazon EC2 User Guide.
+//   - Status checks - Amazon EC2 performs status checks on running EC2 instances
+//     to identify hardware and software issues. For more information, see Status
+//     checks for your instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html)
+//     and Troubleshoot instances with failed status checks (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/TroubleshootingInstances.html)
+//     in the Amazon EC2 User Guide.
 //
-//    * Scheduled events - Amazon EC2 can schedule events (such as reboot, stop,
-//    or terminate) for your instances related to hardware issues, software
-//    updates, or system maintenance. For more information, see Scheduled events
-//    for your instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-instances-status-check_sched.html)
-//    in the Amazon EC2 User Guide.
+//   - Scheduled events - Amazon EC2 can schedule events (such as reboot, stop,
+//     or terminate) for your instances related to hardware issues, software
+//     updates, or system maintenance. For more information, see Scheduled events
+//     for your instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-instances-status-check_sched.html)
+//     in the Amazon EC2 User Guide.
 //
-//    * Instance state - You can manage your instances from the moment you launch
-//    them through their termination. For more information, see Instance lifecycle
-//    (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html)
-//    in the Amazon EC2 User Guide.
+//   - Instance state - You can manage your instances from the moment you launch
+//     them through their termination. For more information, see Instance lifecycle
+//     (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html)
+//     in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20387,15 +20125,14 @@ func (c *EC2) DescribeInstanceStatusWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstanceStatus operation.
-//    pageNum := 0
-//    err := client.DescribeInstanceStatusPages(params,
-//        func(page *ec2.DescribeInstanceStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstanceStatus operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceStatusPages(params,
+//	    func(page *ec2.DescribeInstanceStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInstanceStatusPages(input *DescribeInstanceStatusInput, fn func(*DescribeInstanceStatusOutput, bool) bool) error {
 	return c.DescribeInstanceStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20447,14 +20184,13 @@ const opDescribeInstanceTypeOfferings = "DescribeInstanceTypeOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceTypeOfferingsRequest method.
+//	req, resp := client.DescribeInstanceTypeOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceTypeOfferingsRequest method.
-//    req, resp := client.DescribeInstanceTypeOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceTypeOfferings
 func (c *EC2) DescribeInstanceTypeOfferingsRequest(input *DescribeInstanceTypeOfferingsInput) (req *request.Request, output *DescribeInstanceTypeOfferingsOutput) {
@@ -20521,15 +20257,14 @@ func (c *EC2) DescribeInstanceTypeOfferingsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstanceTypeOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeInstanceTypeOfferingsPages(params,
-//        func(page *ec2.DescribeInstanceTypeOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstanceTypeOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceTypeOfferingsPages(params,
+//	    func(page *ec2.DescribeInstanceTypeOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInstanceTypeOfferingsPages(input *DescribeInstanceTypeOfferingsInput, fn func(*DescribeInstanceTypeOfferingsOutput, bool) bool) error {
 	return c.DescribeInstanceTypeOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20581,14 +20316,13 @@ const opDescribeInstanceTypes = "DescribeInstanceTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceTypesRequest method.
+//	req, resp := client.DescribeInstanceTypesRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceTypesRequest method.
-//    req, resp := client.DescribeInstanceTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstanceTypes
 func (c *EC2) DescribeInstanceTypesRequest(input *DescribeInstanceTypesInput) (req *request.Request, output *DescribeInstanceTypesOutput) {
@@ -20654,15 +20388,14 @@ func (c *EC2) DescribeInstanceTypesWithContext(ctx aws.Context, input *DescribeI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstanceTypes operation.
-//    pageNum := 0
-//    err := client.DescribeInstanceTypesPages(params,
-//        func(page *ec2.DescribeInstanceTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstanceTypes operation.
+//	pageNum := 0
+//	err := client.DescribeInstanceTypesPages(params,
+//	    func(page *ec2.DescribeInstanceTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInstanceTypesPages(input *DescribeInstanceTypesInput, fn func(*DescribeInstanceTypesOutput, bool) bool) error {
 	return c.DescribeInstanceTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20714,14 +20447,13 @@ const opDescribeInstances = "DescribeInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstancesRequest method.
+//	req, resp := client.DescribeInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeInstancesRequest method.
-//    req, resp := client.DescribeInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInstances
 func (c *EC2) DescribeInstancesRequest(input *DescribeInstancesInput) (req *request.Request, output *DescribeInstancesOutput) {
@@ -20805,15 +20537,14 @@ func (c *EC2) DescribeInstancesWithContext(ctx aws.Context, input *DescribeInsta
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstances operation.
-//    pageNum := 0
-//    err := client.DescribeInstancesPages(params,
-//        func(page *ec2.DescribeInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstances operation.
+//	pageNum := 0
+//	err := client.DescribeInstancesPages(params,
+//	    func(page *ec2.DescribeInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInstancesPages(input *DescribeInstancesInput, fn func(*DescribeInstancesOutput, bool) bool) error {
 	return c.DescribeInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20865,14 +20596,13 @@ const opDescribeInternetGateways = "DescribeInternetGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInternetGatewaysRequest method.
+//	req, resp := client.DescribeInternetGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeInternetGatewaysRequest method.
-//    req, resp := client.DescribeInternetGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeInternetGateways
 func (c *EC2) DescribeInternetGatewaysRequest(input *DescribeInternetGatewaysInput) (req *request.Request, output *DescribeInternetGatewaysOutput) {
@@ -20937,15 +20667,14 @@ func (c *EC2) DescribeInternetGatewaysWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInternetGateways operation.
-//    pageNum := 0
-//    err := client.DescribeInternetGatewaysPages(params,
-//        func(page *ec2.DescribeInternetGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInternetGateways operation.
+//	pageNum := 0
+//	err := client.DescribeInternetGatewaysPages(params,
+//	    func(page *ec2.DescribeInternetGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeInternetGatewaysPages(input *DescribeInternetGatewaysInput, fn func(*DescribeInternetGatewaysOutput, bool) bool) error {
 	return c.DescribeInternetGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -20997,14 +20726,13 @@ const opDescribeIpamPools = "DescribeIpamPools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIpamPoolsRequest method.
+//	req, resp := client.DescribeIpamPoolsRequest(params)
 //
-//    // Example sending a request using the DescribeIpamPoolsRequest method.
-//    req, resp := client.DescribeIpamPoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpamPools
 func (c *EC2) DescribeIpamPoolsRequest(input *DescribeIpamPoolsInput) (req *request.Request, output *DescribeIpamPoolsOutput) {
@@ -21069,15 +20797,14 @@ func (c *EC2) DescribeIpamPoolsWithContext(ctx aws.Context, input *DescribeIpamP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeIpamPools operation.
-//    pageNum := 0
-//    err := client.DescribeIpamPoolsPages(params,
-//        func(page *ec2.DescribeIpamPoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeIpamPools operation.
+//	pageNum := 0
+//	err := client.DescribeIpamPoolsPages(params,
+//	    func(page *ec2.DescribeIpamPoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeIpamPoolsPages(input *DescribeIpamPoolsInput, fn func(*DescribeIpamPoolsOutput, bool) bool) error {
 	return c.DescribeIpamPoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -21129,14 +20856,13 @@ const opDescribeIpamScopes = "DescribeIpamScopes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIpamScopesRequest method.
+//	req, resp := client.DescribeIpamScopesRequest(params)
 //
-//    // Example sending a request using the DescribeIpamScopesRequest method.
-//    req, resp := client.DescribeIpamScopesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpamScopes
 func (c *EC2) DescribeIpamScopesRequest(input *DescribeIpamScopesInput) (req *request.Request, output *DescribeIpamScopesOutput) {
@@ -21201,15 +20927,14 @@ func (c *EC2) DescribeIpamScopesWithContext(ctx aws.Context, input *DescribeIpam
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeIpamScopes operation.
-//    pageNum := 0
-//    err := client.DescribeIpamScopesPages(params,
-//        func(page *ec2.DescribeIpamScopesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeIpamScopes operation.
+//	pageNum := 0
+//	err := client.DescribeIpamScopesPages(params,
+//	    func(page *ec2.DescribeIpamScopesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeIpamScopesPages(input *DescribeIpamScopesInput, fn func(*DescribeIpamScopesOutput, bool) bool) error {
 	return c.DescribeIpamScopesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -21261,14 +20986,13 @@ const opDescribeIpams = "DescribeIpams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIpamsRequest method.
+//	req, resp := client.DescribeIpamsRequest(params)
 //
-//    // Example sending a request using the DescribeIpamsRequest method.
-//    req, resp := client.DescribeIpamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpams
 func (c *EC2) DescribeIpamsRequest(input *DescribeIpamsInput) (req *request.Request, output *DescribeIpamsOutput) {
@@ -21336,15 +21060,14 @@ func (c *EC2) DescribeIpamsWithContext(ctx aws.Context, input *DescribeIpamsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeIpams operation.
-//    pageNum := 0
-//    err := client.DescribeIpamsPages(params,
-//        func(page *ec2.DescribeIpamsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeIpams operation.
+//	pageNum := 0
+//	err := client.DescribeIpamsPages(params,
+//	    func(page *ec2.DescribeIpamsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeIpamsPages(input *DescribeIpamsInput, fn func(*DescribeIpamsOutput, bool) bool) error {
 	return c.DescribeIpamsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -21396,14 +21119,13 @@ const opDescribeIpv6Pools = "DescribeIpv6Pools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIpv6PoolsRequest method.
+//	req, resp := client.DescribeIpv6PoolsRequest(params)
 //
-//    // Example sending a request using the DescribeIpv6PoolsRequest method.
-//    req, resp := client.DescribeIpv6PoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpv6Pools
 func (c *EC2) DescribeIpv6PoolsRequest(input *DescribeIpv6PoolsInput) (req *request.Request, output *DescribeIpv6PoolsOutput) {
@@ -21468,15 +21190,14 @@ func (c *EC2) DescribeIpv6PoolsWithContext(ctx aws.Context, input *DescribeIpv6P
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeIpv6Pools operation.
-//    pageNum := 0
-//    err := client.DescribeIpv6PoolsPages(params,
-//        func(page *ec2.DescribeIpv6PoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeIpv6Pools operation.
+//	pageNum := 0
+//	err := client.DescribeIpv6PoolsPages(params,
+//	    func(page *ec2.DescribeIpv6PoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeIpv6PoolsPages(input *DescribeIpv6PoolsInput, fn func(*DescribeIpv6PoolsOutput, bool) bool) error {
 	return c.DescribeIpv6PoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -21528,14 +21249,13 @@ const opDescribeKeyPairs = "DescribeKeyPairs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeKeyPairsRequest method.
+//	req, resp := client.DescribeKeyPairsRequest(params)
 //
-//    // Example sending a request using the DescribeKeyPairsRequest method.
-//    req, resp := client.DescribeKeyPairsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeKeyPairs
 func (c *EC2) DescribeKeyPairsRequest(input *DescribeKeyPairsInput) (req *request.Request, output *DescribeKeyPairsOutput) {
@@ -21605,14 +21325,13 @@ const opDescribeLaunchTemplateVersions = "DescribeLaunchTemplateVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLaunchTemplateVersionsRequest method.
+//	req, resp := client.DescribeLaunchTemplateVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeLaunchTemplateVersionsRequest method.
-//    req, resp := client.DescribeLaunchTemplateVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLaunchTemplateVersions
 func (c *EC2) DescribeLaunchTemplateVersionsRequest(input *DescribeLaunchTemplateVersionsInput) (req *request.Request, output *DescribeLaunchTemplateVersionsOutput) {
@@ -21680,15 +21399,14 @@ func (c *EC2) DescribeLaunchTemplateVersionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLaunchTemplateVersions operation.
-//    pageNum := 0
-//    err := client.DescribeLaunchTemplateVersionsPages(params,
-//        func(page *ec2.DescribeLaunchTemplateVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLaunchTemplateVersions operation.
+//	pageNum := 0
+//	err := client.DescribeLaunchTemplateVersionsPages(params,
+//	    func(page *ec2.DescribeLaunchTemplateVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLaunchTemplateVersionsPages(input *DescribeLaunchTemplateVersionsInput, fn func(*DescribeLaunchTemplateVersionsOutput, bool) bool) error {
 	return c.DescribeLaunchTemplateVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -21740,14 +21458,13 @@ const opDescribeLaunchTemplates = "DescribeLaunchTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLaunchTemplatesRequest method.
+//	req, resp := client.DescribeLaunchTemplatesRequest(params)
 //
-//    // Example sending a request using the DescribeLaunchTemplatesRequest method.
-//    req, resp := client.DescribeLaunchTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLaunchTemplates
 func (c *EC2) DescribeLaunchTemplatesRequest(input *DescribeLaunchTemplatesInput) (req *request.Request, output *DescribeLaunchTemplatesOutput) {
@@ -21812,15 +21529,14 @@ func (c *EC2) DescribeLaunchTemplatesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLaunchTemplates operation.
-//    pageNum := 0
-//    err := client.DescribeLaunchTemplatesPages(params,
-//        func(page *ec2.DescribeLaunchTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLaunchTemplates operation.
+//	pageNum := 0
+//	err := client.DescribeLaunchTemplatesPages(params,
+//	    func(page *ec2.DescribeLaunchTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLaunchTemplatesPages(input *DescribeLaunchTemplatesInput, fn func(*DescribeLaunchTemplatesOutput, bool) bool) error {
 	return c.DescribeLaunchTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -21872,14 +21588,13 @@ const opDescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociations = "Descr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsRequest method.
+//	req, resp := client.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsRequest method.
-//    req, resp := client.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociations
 func (c *EC2) DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsRequest(input *DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsInput) (req *request.Request, output *DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsOutput) {
@@ -21945,15 +21660,14 @@ func (c *EC2) DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsWit
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociations operation.
-//    pageNum := 0
-//    err := client.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsPages(params,
-//        func(page *ec2.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsPages(params,
+//	    func(page *ec2.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsPages(input *DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsInput, fn func(*DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsOutput, bool) bool) error {
 	return c.DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22005,14 +21719,13 @@ const opDescribeLocalGatewayRouteTableVpcAssociations = "DescribeLocalGatewayRou
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocalGatewayRouteTableVpcAssociationsRequest method.
+//	req, resp := client.DescribeLocalGatewayRouteTableVpcAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeLocalGatewayRouteTableVpcAssociationsRequest method.
-//    req, resp := client.DescribeLocalGatewayRouteTableVpcAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLocalGatewayRouteTableVpcAssociations
 func (c *EC2) DescribeLocalGatewayRouteTableVpcAssociationsRequest(input *DescribeLocalGatewayRouteTableVpcAssociationsInput) (req *request.Request, output *DescribeLocalGatewayRouteTableVpcAssociationsOutput) {
@@ -22078,15 +21791,14 @@ func (c *EC2) DescribeLocalGatewayRouteTableVpcAssociationsWithContext(ctx aws.C
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLocalGatewayRouteTableVpcAssociations operation.
-//    pageNum := 0
-//    err := client.DescribeLocalGatewayRouteTableVpcAssociationsPages(params,
-//        func(page *ec2.DescribeLocalGatewayRouteTableVpcAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLocalGatewayRouteTableVpcAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeLocalGatewayRouteTableVpcAssociationsPages(params,
+//	    func(page *ec2.DescribeLocalGatewayRouteTableVpcAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLocalGatewayRouteTableVpcAssociationsPages(input *DescribeLocalGatewayRouteTableVpcAssociationsInput, fn func(*DescribeLocalGatewayRouteTableVpcAssociationsOutput, bool) bool) error {
 	return c.DescribeLocalGatewayRouteTableVpcAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22138,14 +21850,13 @@ const opDescribeLocalGatewayRouteTables = "DescribeLocalGatewayRouteTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocalGatewayRouteTablesRequest method.
+//	req, resp := client.DescribeLocalGatewayRouteTablesRequest(params)
 //
-//    // Example sending a request using the DescribeLocalGatewayRouteTablesRequest method.
-//    req, resp := client.DescribeLocalGatewayRouteTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLocalGatewayRouteTables
 func (c *EC2) DescribeLocalGatewayRouteTablesRequest(input *DescribeLocalGatewayRouteTablesInput) (req *request.Request, output *DescribeLocalGatewayRouteTablesOutput) {
@@ -22211,15 +21922,14 @@ func (c *EC2) DescribeLocalGatewayRouteTablesWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLocalGatewayRouteTables operation.
-//    pageNum := 0
-//    err := client.DescribeLocalGatewayRouteTablesPages(params,
-//        func(page *ec2.DescribeLocalGatewayRouteTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLocalGatewayRouteTables operation.
+//	pageNum := 0
+//	err := client.DescribeLocalGatewayRouteTablesPages(params,
+//	    func(page *ec2.DescribeLocalGatewayRouteTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLocalGatewayRouteTablesPages(input *DescribeLocalGatewayRouteTablesInput, fn func(*DescribeLocalGatewayRouteTablesOutput, bool) bool) error {
 	return c.DescribeLocalGatewayRouteTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22271,14 +21981,13 @@ const opDescribeLocalGatewayVirtualInterfaceGroups = "DescribeLocalGatewayVirtua
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocalGatewayVirtualInterfaceGroupsRequest method.
+//	req, resp := client.DescribeLocalGatewayVirtualInterfaceGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeLocalGatewayVirtualInterfaceGroupsRequest method.
-//    req, resp := client.DescribeLocalGatewayVirtualInterfaceGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLocalGatewayVirtualInterfaceGroups
 func (c *EC2) DescribeLocalGatewayVirtualInterfaceGroupsRequest(input *DescribeLocalGatewayVirtualInterfaceGroupsInput) (req *request.Request, output *DescribeLocalGatewayVirtualInterfaceGroupsOutput) {
@@ -22343,15 +22052,14 @@ func (c *EC2) DescribeLocalGatewayVirtualInterfaceGroupsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLocalGatewayVirtualInterfaceGroups operation.
-//    pageNum := 0
-//    err := client.DescribeLocalGatewayVirtualInterfaceGroupsPages(params,
-//        func(page *ec2.DescribeLocalGatewayVirtualInterfaceGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLocalGatewayVirtualInterfaceGroups operation.
+//	pageNum := 0
+//	err := client.DescribeLocalGatewayVirtualInterfaceGroupsPages(params,
+//	    func(page *ec2.DescribeLocalGatewayVirtualInterfaceGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLocalGatewayVirtualInterfaceGroupsPages(input *DescribeLocalGatewayVirtualInterfaceGroupsInput, fn func(*DescribeLocalGatewayVirtualInterfaceGroupsOutput, bool) bool) error {
 	return c.DescribeLocalGatewayVirtualInterfaceGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22403,14 +22111,13 @@ const opDescribeLocalGatewayVirtualInterfaces = "DescribeLocalGatewayVirtualInte
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocalGatewayVirtualInterfacesRequest method.
+//	req, resp := client.DescribeLocalGatewayVirtualInterfacesRequest(params)
 //
-//    // Example sending a request using the DescribeLocalGatewayVirtualInterfacesRequest method.
-//    req, resp := client.DescribeLocalGatewayVirtualInterfacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLocalGatewayVirtualInterfaces
 func (c *EC2) DescribeLocalGatewayVirtualInterfacesRequest(input *DescribeLocalGatewayVirtualInterfacesInput) (req *request.Request, output *DescribeLocalGatewayVirtualInterfacesOutput) {
@@ -22475,15 +22182,14 @@ func (c *EC2) DescribeLocalGatewayVirtualInterfacesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLocalGatewayVirtualInterfaces operation.
-//    pageNum := 0
-//    err := client.DescribeLocalGatewayVirtualInterfacesPages(params,
-//        func(page *ec2.DescribeLocalGatewayVirtualInterfacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLocalGatewayVirtualInterfaces operation.
+//	pageNum := 0
+//	err := client.DescribeLocalGatewayVirtualInterfacesPages(params,
+//	    func(page *ec2.DescribeLocalGatewayVirtualInterfacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLocalGatewayVirtualInterfacesPages(input *DescribeLocalGatewayVirtualInterfacesInput, fn func(*DescribeLocalGatewayVirtualInterfacesOutput, bool) bool) error {
 	return c.DescribeLocalGatewayVirtualInterfacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22535,14 +22241,13 @@ const opDescribeLocalGateways = "DescribeLocalGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocalGatewaysRequest method.
+//	req, resp := client.DescribeLocalGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeLocalGatewaysRequest method.
-//    req, resp := client.DescribeLocalGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeLocalGateways
 func (c *EC2) DescribeLocalGatewaysRequest(input *DescribeLocalGatewaysInput) (req *request.Request, output *DescribeLocalGatewaysOutput) {
@@ -22608,15 +22313,14 @@ func (c *EC2) DescribeLocalGatewaysWithContext(ctx aws.Context, input *DescribeL
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLocalGateways operation.
-//    pageNum := 0
-//    err := client.DescribeLocalGatewaysPages(params,
-//        func(page *ec2.DescribeLocalGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLocalGateways operation.
+//	pageNum := 0
+//	err := client.DescribeLocalGatewaysPages(params,
+//	    func(page *ec2.DescribeLocalGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeLocalGatewaysPages(input *DescribeLocalGatewaysInput, fn func(*DescribeLocalGatewaysOutput, bool) bool) error {
 	return c.DescribeLocalGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22668,14 +22372,13 @@ const opDescribeManagedPrefixLists = "DescribeManagedPrefixLists"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeManagedPrefixListsRequest method.
+//	req, resp := client.DescribeManagedPrefixListsRequest(params)
 //
-//    // Example sending a request using the DescribeManagedPrefixListsRequest method.
-//    req, resp := client.DescribeManagedPrefixListsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeManagedPrefixLists
 func (c *EC2) DescribeManagedPrefixListsRequest(input *DescribeManagedPrefixListsInput) (req *request.Request, output *DescribeManagedPrefixListsOutput) {
@@ -22743,15 +22446,14 @@ func (c *EC2) DescribeManagedPrefixListsWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeManagedPrefixLists operation.
-//    pageNum := 0
-//    err := client.DescribeManagedPrefixListsPages(params,
-//        func(page *ec2.DescribeManagedPrefixListsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeManagedPrefixLists operation.
+//	pageNum := 0
+//	err := client.DescribeManagedPrefixListsPages(params,
+//	    func(page *ec2.DescribeManagedPrefixListsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeManagedPrefixListsPages(input *DescribeManagedPrefixListsInput, fn func(*DescribeManagedPrefixListsOutput, bool) bool) error {
 	return c.DescribeManagedPrefixListsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22803,14 +22505,13 @@ const opDescribeMovingAddresses = "DescribeMovingAddresses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMovingAddressesRequest method.
+//	req, resp := client.DescribeMovingAddressesRequest(params)
 //
-//    // Example sending a request using the DescribeMovingAddressesRequest method.
-//    req, resp := client.DescribeMovingAddressesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeMovingAddresses
 func (c *EC2) DescribeMovingAddressesRequest(input *DescribeMovingAddressesInput) (req *request.Request, output *DescribeMovingAddressesOutput) {
@@ -22877,15 +22578,14 @@ func (c *EC2) DescribeMovingAddressesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeMovingAddresses operation.
-//    pageNum := 0
-//    err := client.DescribeMovingAddressesPages(params,
-//        func(page *ec2.DescribeMovingAddressesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeMovingAddresses operation.
+//	pageNum := 0
+//	err := client.DescribeMovingAddressesPages(params,
+//	    func(page *ec2.DescribeMovingAddressesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeMovingAddressesPages(input *DescribeMovingAddressesInput, fn func(*DescribeMovingAddressesOutput, bool) bool) error {
 	return c.DescribeMovingAddressesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -22937,14 +22637,13 @@ const opDescribeNatGateways = "DescribeNatGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNatGatewaysRequest method.
+//	req, resp := client.DescribeNatGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeNatGatewaysRequest method.
-//    req, resp := client.DescribeNatGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNatGateways
 func (c *EC2) DescribeNatGatewaysRequest(input *DescribeNatGatewaysInput) (req *request.Request, output *DescribeNatGatewaysOutput) {
@@ -23009,15 +22708,14 @@ func (c *EC2) DescribeNatGatewaysWithContext(ctx aws.Context, input *DescribeNat
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNatGateways operation.
-//    pageNum := 0
-//    err := client.DescribeNatGatewaysPages(params,
-//        func(page *ec2.DescribeNatGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNatGateways operation.
+//	pageNum := 0
+//	err := client.DescribeNatGatewaysPages(params,
+//	    func(page *ec2.DescribeNatGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNatGatewaysPages(input *DescribeNatGatewaysInput, fn func(*DescribeNatGatewaysOutput, bool) bool) error {
 	return c.DescribeNatGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23069,14 +22767,13 @@ const opDescribeNetworkAcls = "DescribeNetworkAcls"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkAclsRequest method.
+//	req, resp := client.DescribeNetworkAclsRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkAclsRequest method.
-//    req, resp := client.DescribeNetworkAclsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkAcls
 func (c *EC2) DescribeNetworkAclsRequest(input *DescribeNetworkAclsInput) (req *request.Request, output *DescribeNetworkAclsOutput) {
@@ -23144,15 +22841,14 @@ func (c *EC2) DescribeNetworkAclsWithContext(ctx aws.Context, input *DescribeNet
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkAcls operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkAclsPages(params,
-//        func(page *ec2.DescribeNetworkAclsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkAcls operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkAclsPages(params,
+//	    func(page *ec2.DescribeNetworkAclsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkAclsPages(input *DescribeNetworkAclsInput, fn func(*DescribeNetworkAclsOutput, bool) bool) error {
 	return c.DescribeNetworkAclsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23204,14 +22900,13 @@ const opDescribeNetworkInsightsAccessScopeAnalyses = "DescribeNetworkInsightsAcc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInsightsAccessScopeAnalysesRequest method.
+//	req, resp := client.DescribeNetworkInsightsAccessScopeAnalysesRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInsightsAccessScopeAnalysesRequest method.
-//    req, resp := client.DescribeNetworkInsightsAccessScopeAnalysesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInsightsAccessScopeAnalyses
 func (c *EC2) DescribeNetworkInsightsAccessScopeAnalysesRequest(input *DescribeNetworkInsightsAccessScopeAnalysesInput) (req *request.Request, output *DescribeNetworkInsightsAccessScopeAnalysesOutput) {
@@ -23276,15 +22971,14 @@ func (c *EC2) DescribeNetworkInsightsAccessScopeAnalysesWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkInsightsAccessScopeAnalyses operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkInsightsAccessScopeAnalysesPages(params,
-//        func(page *ec2.DescribeNetworkInsightsAccessScopeAnalysesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkInsightsAccessScopeAnalyses operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkInsightsAccessScopeAnalysesPages(params,
+//	    func(page *ec2.DescribeNetworkInsightsAccessScopeAnalysesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkInsightsAccessScopeAnalysesPages(input *DescribeNetworkInsightsAccessScopeAnalysesInput, fn func(*DescribeNetworkInsightsAccessScopeAnalysesOutput, bool) bool) error {
 	return c.DescribeNetworkInsightsAccessScopeAnalysesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23336,14 +23030,13 @@ const opDescribeNetworkInsightsAccessScopes = "DescribeNetworkInsightsAccessScop
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInsightsAccessScopesRequest method.
+//	req, resp := client.DescribeNetworkInsightsAccessScopesRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInsightsAccessScopesRequest method.
-//    req, resp := client.DescribeNetworkInsightsAccessScopesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInsightsAccessScopes
 func (c *EC2) DescribeNetworkInsightsAccessScopesRequest(input *DescribeNetworkInsightsAccessScopesInput) (req *request.Request, output *DescribeNetworkInsightsAccessScopesOutput) {
@@ -23408,15 +23101,14 @@ func (c *EC2) DescribeNetworkInsightsAccessScopesWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkInsightsAccessScopes operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkInsightsAccessScopesPages(params,
-//        func(page *ec2.DescribeNetworkInsightsAccessScopesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkInsightsAccessScopes operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkInsightsAccessScopesPages(params,
+//	    func(page *ec2.DescribeNetworkInsightsAccessScopesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkInsightsAccessScopesPages(input *DescribeNetworkInsightsAccessScopesInput, fn func(*DescribeNetworkInsightsAccessScopesOutput, bool) bool) error {
 	return c.DescribeNetworkInsightsAccessScopesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23468,14 +23160,13 @@ const opDescribeNetworkInsightsAnalyses = "DescribeNetworkInsightsAnalyses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInsightsAnalysesRequest method.
+//	req, resp := client.DescribeNetworkInsightsAnalysesRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInsightsAnalysesRequest method.
-//    req, resp := client.DescribeNetworkInsightsAnalysesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInsightsAnalyses
 func (c *EC2) DescribeNetworkInsightsAnalysesRequest(input *DescribeNetworkInsightsAnalysesInput) (req *request.Request, output *DescribeNetworkInsightsAnalysesOutput) {
@@ -23540,15 +23231,14 @@ func (c *EC2) DescribeNetworkInsightsAnalysesWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkInsightsAnalyses operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkInsightsAnalysesPages(params,
-//        func(page *ec2.DescribeNetworkInsightsAnalysesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkInsightsAnalyses operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkInsightsAnalysesPages(params,
+//	    func(page *ec2.DescribeNetworkInsightsAnalysesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkInsightsAnalysesPages(input *DescribeNetworkInsightsAnalysesInput, fn func(*DescribeNetworkInsightsAnalysesOutput, bool) bool) error {
 	return c.DescribeNetworkInsightsAnalysesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23600,14 +23290,13 @@ const opDescribeNetworkInsightsPaths = "DescribeNetworkInsightsPaths"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInsightsPathsRequest method.
+//	req, resp := client.DescribeNetworkInsightsPathsRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInsightsPathsRequest method.
-//    req, resp := client.DescribeNetworkInsightsPathsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInsightsPaths
 func (c *EC2) DescribeNetworkInsightsPathsRequest(input *DescribeNetworkInsightsPathsInput) (req *request.Request, output *DescribeNetworkInsightsPathsOutput) {
@@ -23672,15 +23361,14 @@ func (c *EC2) DescribeNetworkInsightsPathsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkInsightsPaths operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkInsightsPathsPages(params,
-//        func(page *ec2.DescribeNetworkInsightsPathsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkInsightsPaths operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkInsightsPathsPages(params,
+//	    func(page *ec2.DescribeNetworkInsightsPathsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkInsightsPathsPages(input *DescribeNetworkInsightsPathsInput, fn func(*DescribeNetworkInsightsPathsOutput, bool) bool) error {
 	return c.DescribeNetworkInsightsPathsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23732,14 +23420,13 @@ const opDescribeNetworkInterfaceAttribute = "DescribeNetworkInterfaceAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInterfaceAttributeRequest method.
+//	req, resp := client.DescribeNetworkInterfaceAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInterfaceAttributeRequest method.
-//    req, resp := client.DescribeNetworkInterfaceAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfaceAttribute
 func (c *EC2) DescribeNetworkInterfaceAttributeRequest(input *DescribeNetworkInterfaceAttributeInput) (req *request.Request, output *DescribeNetworkInterfaceAttributeOutput) {
@@ -23807,14 +23494,13 @@ const opDescribeNetworkInterfacePermissions = "DescribeNetworkInterfacePermissio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInterfacePermissionsRequest method.
+//	req, resp := client.DescribeNetworkInterfacePermissionsRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInterfacePermissionsRequest method.
-//    req, resp := client.DescribeNetworkInterfacePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfacePermissions
 func (c *EC2) DescribeNetworkInterfacePermissionsRequest(input *DescribeNetworkInterfacePermissionsInput) (req *request.Request, output *DescribeNetworkInterfacePermissionsOutput) {
@@ -23879,15 +23565,14 @@ func (c *EC2) DescribeNetworkInterfacePermissionsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkInterfacePermissions operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkInterfacePermissionsPages(params,
-//        func(page *ec2.DescribeNetworkInterfacePermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkInterfacePermissions operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkInterfacePermissionsPages(params,
+//	    func(page *ec2.DescribeNetworkInterfacePermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkInterfacePermissionsPages(input *DescribeNetworkInterfacePermissionsInput, fn func(*DescribeNetworkInterfacePermissionsOutput, bool) bool) error {
 	return c.DescribeNetworkInterfacePermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -23939,14 +23624,13 @@ const opDescribeNetworkInterfaces = "DescribeNetworkInterfaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNetworkInterfacesRequest method.
+//	req, resp := client.DescribeNetworkInterfacesRequest(params)
 //
-//    // Example sending a request using the DescribeNetworkInterfacesRequest method.
-//    req, resp := client.DescribeNetworkInterfacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfaces
 func (c *EC2) DescribeNetworkInterfacesRequest(input *DescribeNetworkInterfacesInput) (req *request.Request, output *DescribeNetworkInterfacesOutput) {
@@ -24011,15 +23695,14 @@ func (c *EC2) DescribeNetworkInterfacesWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNetworkInterfaces operation.
-//    pageNum := 0
-//    err := client.DescribeNetworkInterfacesPages(params,
-//        func(page *ec2.DescribeNetworkInterfacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNetworkInterfaces operation.
+//	pageNum := 0
+//	err := client.DescribeNetworkInterfacesPages(params,
+//	    func(page *ec2.DescribeNetworkInterfacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeNetworkInterfacesPages(input *DescribeNetworkInterfacesInput, fn func(*DescribeNetworkInterfacesOutput, bool) bool) error {
 	return c.DescribeNetworkInterfacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -24071,14 +23754,13 @@ const opDescribePlacementGroups = "DescribePlacementGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePlacementGroupsRequest method.
+//	req, resp := client.DescribePlacementGroupsRequest(params)
 //
-//    // Example sending a request using the DescribePlacementGroupsRequest method.
-//    req, resp := client.DescribePlacementGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribePlacementGroups
 func (c *EC2) DescribePlacementGroupsRequest(input *DescribePlacementGroupsInput) (req *request.Request, output *DescribePlacementGroupsOutput) {
@@ -24147,14 +23829,13 @@ const opDescribePrefixLists = "DescribePrefixLists"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePrefixListsRequest method.
+//	req, resp := client.DescribePrefixListsRequest(params)
 //
-//    // Example sending a request using the DescribePrefixListsRequest method.
-//    req, resp := client.DescribePrefixListsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribePrefixLists
 func (c *EC2) DescribePrefixListsRequest(input *DescribePrefixListsInput) (req *request.Request, output *DescribePrefixListsOutput) {
@@ -24223,15 +23904,14 @@ func (c *EC2) DescribePrefixListsWithContext(ctx aws.Context, input *DescribePre
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePrefixLists operation.
-//    pageNum := 0
-//    err := client.DescribePrefixListsPages(params,
-//        func(page *ec2.DescribePrefixListsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePrefixLists operation.
+//	pageNum := 0
+//	err := client.DescribePrefixListsPages(params,
+//	    func(page *ec2.DescribePrefixListsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribePrefixListsPages(input *DescribePrefixListsInput, fn func(*DescribePrefixListsOutput, bool) bool) error {
 	return c.DescribePrefixListsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -24283,14 +23963,13 @@ const opDescribePrincipalIdFormat = "DescribePrincipalIdFormat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePrincipalIdFormatRequest method.
+//	req, resp := client.DescribePrincipalIdFormatRequest(params)
 //
-//    // Example sending a request using the DescribePrincipalIdFormatRequest method.
-//    req, resp := client.DescribePrincipalIdFormatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribePrincipalIdFormat
 func (c *EC2) DescribePrincipalIdFormatRequest(input *DescribePrincipalIdFormatInput) (req *request.Request, output *DescribePrincipalIdFormatOutput) {
@@ -24369,15 +24048,14 @@ func (c *EC2) DescribePrincipalIdFormatWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePrincipalIdFormat operation.
-//    pageNum := 0
-//    err := client.DescribePrincipalIdFormatPages(params,
-//        func(page *ec2.DescribePrincipalIdFormatOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePrincipalIdFormat operation.
+//	pageNum := 0
+//	err := client.DescribePrincipalIdFormatPages(params,
+//	    func(page *ec2.DescribePrincipalIdFormatOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribePrincipalIdFormatPages(input *DescribePrincipalIdFormatInput, fn func(*DescribePrincipalIdFormatOutput, bool) bool) error {
 	return c.DescribePrincipalIdFormatPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -24429,14 +24107,13 @@ const opDescribePublicIpv4Pools = "DescribePublicIpv4Pools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePublicIpv4PoolsRequest method.
+//	req, resp := client.DescribePublicIpv4PoolsRequest(params)
 //
-//    // Example sending a request using the DescribePublicIpv4PoolsRequest method.
-//    req, resp := client.DescribePublicIpv4PoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribePublicIpv4Pools
 func (c *EC2) DescribePublicIpv4PoolsRequest(input *DescribePublicIpv4PoolsInput) (req *request.Request, output *DescribePublicIpv4PoolsOutput) {
@@ -24501,15 +24178,14 @@ func (c *EC2) DescribePublicIpv4PoolsWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePublicIpv4Pools operation.
-//    pageNum := 0
-//    err := client.DescribePublicIpv4PoolsPages(params,
-//        func(page *ec2.DescribePublicIpv4PoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePublicIpv4Pools operation.
+//	pageNum := 0
+//	err := client.DescribePublicIpv4PoolsPages(params,
+//	    func(page *ec2.DescribePublicIpv4PoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribePublicIpv4PoolsPages(input *DescribePublicIpv4PoolsInput, fn func(*DescribePublicIpv4PoolsOutput, bool) bool) error {
 	return c.DescribePublicIpv4PoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -24561,14 +24237,13 @@ const opDescribeRegions = "DescribeRegions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRegionsRequest method.
+//	req, resp := client.DescribeRegionsRequest(params)
 //
-//    // Example sending a request using the DescribeRegionsRequest method.
-//    req, resp := client.DescribeRegionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeRegions
 func (c *EC2) DescribeRegionsRequest(input *DescribeRegionsInput) (req *request.Request, output *DescribeRegionsOutput) {
@@ -24642,14 +24317,13 @@ const opDescribeReplaceRootVolumeTasks = "DescribeReplaceRootVolumeTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReplaceRootVolumeTasksRequest method.
+//	req, resp := client.DescribeReplaceRootVolumeTasksRequest(params)
 //
-//    // Example sending a request using the DescribeReplaceRootVolumeTasksRequest method.
-//    req, resp := client.DescribeReplaceRootVolumeTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeReplaceRootVolumeTasks
 func (c *EC2) DescribeReplaceRootVolumeTasksRequest(input *DescribeReplaceRootVolumeTasksInput) (req *request.Request, output *DescribeReplaceRootVolumeTasksOutput) {
@@ -24716,15 +24390,14 @@ func (c *EC2) DescribeReplaceRootVolumeTasksWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReplaceRootVolumeTasks operation.
-//    pageNum := 0
-//    err := client.DescribeReplaceRootVolumeTasksPages(params,
-//        func(page *ec2.DescribeReplaceRootVolumeTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReplaceRootVolumeTasks operation.
+//	pageNum := 0
+//	err := client.DescribeReplaceRootVolumeTasksPages(params,
+//	    func(page *ec2.DescribeReplaceRootVolumeTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeReplaceRootVolumeTasksPages(input *DescribeReplaceRootVolumeTasksInput, fn func(*DescribeReplaceRootVolumeTasksOutput, bool) bool) error {
 	return c.DescribeReplaceRootVolumeTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -24776,14 +24449,13 @@ const opDescribeReservedInstances = "DescribeReservedInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedInstancesRequest method.
+//	req, resp := client.DescribeReservedInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeReservedInstancesRequest method.
-//    req, resp := client.DescribeReservedInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeReservedInstances
 func (c *EC2) DescribeReservedInstancesRequest(input *DescribeReservedInstancesInput) (req *request.Request, output *DescribeReservedInstancesOutput) {
@@ -24853,14 +24525,13 @@ const opDescribeReservedInstancesListings = "DescribeReservedInstancesListings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedInstancesListingsRequest method.
+//	req, resp := client.DescribeReservedInstancesListingsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedInstancesListingsRequest method.
-//    req, resp := client.DescribeReservedInstancesListingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeReservedInstancesListings
 func (c *EC2) DescribeReservedInstancesListingsRequest(input *DescribeReservedInstancesListingsInput) (req *request.Request, output *DescribeReservedInstancesListingsOutput) {
@@ -24948,14 +24619,13 @@ const opDescribeReservedInstancesModifications = "DescribeReservedInstancesModif
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedInstancesModificationsRequest method.
+//	req, resp := client.DescribeReservedInstancesModificationsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedInstancesModificationsRequest method.
-//    req, resp := client.DescribeReservedInstancesModificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeReservedInstancesModifications
 func (c *EC2) DescribeReservedInstancesModificationsRequest(input *DescribeReservedInstancesModificationsInput) (req *request.Request, output *DescribeReservedInstancesModificationsOutput) {
@@ -25026,15 +24696,14 @@ func (c *EC2) DescribeReservedInstancesModificationsWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedInstancesModifications operation.
-//    pageNum := 0
-//    err := client.DescribeReservedInstancesModificationsPages(params,
-//        func(page *ec2.DescribeReservedInstancesModificationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedInstancesModifications operation.
+//	pageNum := 0
+//	err := client.DescribeReservedInstancesModificationsPages(params,
+//	    func(page *ec2.DescribeReservedInstancesModificationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeReservedInstancesModificationsPages(input *DescribeReservedInstancesModificationsInput, fn func(*DescribeReservedInstancesModificationsOutput, bool) bool) error {
 	return c.DescribeReservedInstancesModificationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25086,14 +24755,13 @@ const opDescribeReservedInstancesOfferings = "DescribeReservedInstancesOfferings
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedInstancesOfferingsRequest method.
+//	req, resp := client.DescribeReservedInstancesOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedInstancesOfferingsRequest method.
-//    req, resp := client.DescribeReservedInstancesOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeReservedInstancesOfferings
 func (c *EC2) DescribeReservedInstancesOfferingsRequest(input *DescribeReservedInstancesOfferingsInput) (req *request.Request, output *DescribeReservedInstancesOfferingsOutput) {
@@ -25169,15 +24837,14 @@ func (c *EC2) DescribeReservedInstancesOfferingsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedInstancesOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeReservedInstancesOfferingsPages(params,
-//        func(page *ec2.DescribeReservedInstancesOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedInstancesOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeReservedInstancesOfferingsPages(params,
+//	    func(page *ec2.DescribeReservedInstancesOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeReservedInstancesOfferingsPages(input *DescribeReservedInstancesOfferingsInput, fn func(*DescribeReservedInstancesOfferingsOutput, bool) bool) error {
 	return c.DescribeReservedInstancesOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25229,14 +24896,13 @@ const opDescribeRouteTables = "DescribeRouteTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRouteTablesRequest method.
+//	req, resp := client.DescribeRouteTablesRequest(params)
 //
-//    // Example sending a request using the DescribeRouteTablesRequest method.
-//    req, resp := client.DescribeRouteTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeRouteTables
 func (c *EC2) DescribeRouteTablesRequest(input *DescribeRouteTablesInput) (req *request.Request, output *DescribeRouteTablesOutput) {
@@ -25309,15 +24975,14 @@ func (c *EC2) DescribeRouteTablesWithContext(ctx aws.Context, input *DescribeRou
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeRouteTables operation.
-//    pageNum := 0
-//    err := client.DescribeRouteTablesPages(params,
-//        func(page *ec2.DescribeRouteTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeRouteTables operation.
+//	pageNum := 0
+//	err := client.DescribeRouteTablesPages(params,
+//	    func(page *ec2.DescribeRouteTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeRouteTablesPages(input *DescribeRouteTablesInput, fn func(*DescribeRouteTablesOutput, bool) bool) error {
 	return c.DescribeRouteTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25369,14 +25034,13 @@ const opDescribeScheduledInstanceAvailability = "DescribeScheduledInstanceAvaila
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduledInstanceAvailabilityRequest method.
+//	req, resp := client.DescribeScheduledInstanceAvailabilityRequest(params)
 //
-//    // Example sending a request using the DescribeScheduledInstanceAvailabilityRequest method.
-//    req, resp := client.DescribeScheduledInstanceAvailabilityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeScheduledInstanceAvailability
 func (c *EC2) DescribeScheduledInstanceAvailabilityRequest(input *DescribeScheduledInstanceAvailabilityInput) (req *request.Request, output *DescribeScheduledInstanceAvailabilityOutput) {
@@ -25449,15 +25113,14 @@ func (c *EC2) DescribeScheduledInstanceAvailabilityWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScheduledInstanceAvailability operation.
-//    pageNum := 0
-//    err := client.DescribeScheduledInstanceAvailabilityPages(params,
-//        func(page *ec2.DescribeScheduledInstanceAvailabilityOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScheduledInstanceAvailability operation.
+//	pageNum := 0
+//	err := client.DescribeScheduledInstanceAvailabilityPages(params,
+//	    func(page *ec2.DescribeScheduledInstanceAvailabilityOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeScheduledInstanceAvailabilityPages(input *DescribeScheduledInstanceAvailabilityInput, fn func(*DescribeScheduledInstanceAvailabilityOutput, bool) bool) error {
 	return c.DescribeScheduledInstanceAvailabilityPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25509,14 +25172,13 @@ const opDescribeScheduledInstances = "DescribeScheduledInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduledInstancesRequest method.
+//	req, resp := client.DescribeScheduledInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeScheduledInstancesRequest method.
-//    req, resp := client.DescribeScheduledInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeScheduledInstances
 func (c *EC2) DescribeScheduledInstancesRequest(input *DescribeScheduledInstancesInput) (req *request.Request, output *DescribeScheduledInstancesOutput) {
@@ -25581,15 +25243,14 @@ func (c *EC2) DescribeScheduledInstancesWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScheduledInstances operation.
-//    pageNum := 0
-//    err := client.DescribeScheduledInstancesPages(params,
-//        func(page *ec2.DescribeScheduledInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScheduledInstances operation.
+//	pageNum := 0
+//	err := client.DescribeScheduledInstancesPages(params,
+//	    func(page *ec2.DescribeScheduledInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeScheduledInstancesPages(input *DescribeScheduledInstancesInput, fn func(*DescribeScheduledInstancesOutput, bool) bool) error {
 	return c.DescribeScheduledInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25641,14 +25302,13 @@ const opDescribeSecurityGroupReferences = "DescribeSecurityGroupReferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSecurityGroupReferencesRequest method.
+//	req, resp := client.DescribeSecurityGroupReferencesRequest(params)
 //
-//    // Example sending a request using the DescribeSecurityGroupReferencesRequest method.
-//    req, resp := client.DescribeSecurityGroupReferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSecurityGroupReferences
 func (c *EC2) DescribeSecurityGroupReferencesRequest(input *DescribeSecurityGroupReferencesInput) (req *request.Request, output *DescribeSecurityGroupReferencesOutput) {
@@ -25716,14 +25376,13 @@ const opDescribeSecurityGroupRules = "DescribeSecurityGroupRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSecurityGroupRulesRequest method.
+//	req, resp := client.DescribeSecurityGroupRulesRequest(params)
 //
-//    // Example sending a request using the DescribeSecurityGroupRulesRequest method.
-//    req, resp := client.DescribeSecurityGroupRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSecurityGroupRules
 func (c *EC2) DescribeSecurityGroupRulesRequest(input *DescribeSecurityGroupRulesInput) (req *request.Request, output *DescribeSecurityGroupRulesOutput) {
@@ -25788,15 +25447,14 @@ func (c *EC2) DescribeSecurityGroupRulesWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSecurityGroupRules operation.
-//    pageNum := 0
-//    err := client.DescribeSecurityGroupRulesPages(params,
-//        func(page *ec2.DescribeSecurityGroupRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSecurityGroupRules operation.
+//	pageNum := 0
+//	err := client.DescribeSecurityGroupRulesPages(params,
+//	    func(page *ec2.DescribeSecurityGroupRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSecurityGroupRulesPages(input *DescribeSecurityGroupRulesInput, fn func(*DescribeSecurityGroupRulesOutput, bool) bool) error {
 	return c.DescribeSecurityGroupRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25848,14 +25506,13 @@ const opDescribeSecurityGroups = "DescribeSecurityGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSecurityGroupsRequest method.
+//	req, resp := client.DescribeSecurityGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeSecurityGroupsRequest method.
-//    req, resp := client.DescribeSecurityGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSecurityGroups
 func (c *EC2) DescribeSecurityGroupsRequest(input *DescribeSecurityGroupsInput) (req *request.Request, output *DescribeSecurityGroupsOutput) {
@@ -25927,15 +25584,14 @@ func (c *EC2) DescribeSecurityGroupsWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSecurityGroups operation.
-//    pageNum := 0
-//    err := client.DescribeSecurityGroupsPages(params,
-//        func(page *ec2.DescribeSecurityGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSecurityGroups operation.
+//	pageNum := 0
+//	err := client.DescribeSecurityGroupsPages(params,
+//	    func(page *ec2.DescribeSecurityGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSecurityGroupsPages(input *DescribeSecurityGroupsInput, fn func(*DescribeSecurityGroupsOutput, bool) bool) error {
 	return c.DescribeSecurityGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -25987,14 +25643,13 @@ const opDescribeSnapshotAttribute = "DescribeSnapshotAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotAttributeRequest method.
+//	req, resp := client.DescribeSnapshotAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotAttributeRequest method.
-//    req, resp := client.DescribeSnapshotAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshotAttribute
 func (c *EC2) DescribeSnapshotAttributeRequest(input *DescribeSnapshotAttributeInput) (req *request.Request, output *DescribeSnapshotAttributeOutput) {
@@ -26065,14 +25720,13 @@ const opDescribeSnapshotTierStatus = "DescribeSnapshotTierStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotTierStatusRequest method.
+//	req, resp := client.DescribeSnapshotTierStatusRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotTierStatusRequest method.
-//    req, resp := client.DescribeSnapshotTierStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshotTierStatus
 func (c *EC2) DescribeSnapshotTierStatusRequest(input *DescribeSnapshotTierStatusInput) (req *request.Request, output *DescribeSnapshotTierStatusOutput) {
@@ -26137,15 +25791,14 @@ func (c *EC2) DescribeSnapshotTierStatusWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSnapshotTierStatus operation.
-//    pageNum := 0
-//    err := client.DescribeSnapshotTierStatusPages(params,
-//        func(page *ec2.DescribeSnapshotTierStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSnapshotTierStatus operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotTierStatusPages(params,
+//	    func(page *ec2.DescribeSnapshotTierStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSnapshotTierStatusPages(input *DescribeSnapshotTierStatusInput, fn func(*DescribeSnapshotTierStatusOutput, bool) bool) error {
 	return c.DescribeSnapshotTierStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -26197,14 +25850,13 @@ const opDescribeSnapshots = "DescribeSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotsRequest method.
+//	req, resp := client.DescribeSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotsRequest method.
-//    req, resp := client.DescribeSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshots
 func (c *EC2) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *request.Request, output *DescribeSnapshotsOutput) {
@@ -26240,15 +25892,15 @@ func (c *EC2) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *requ
 //
 // The create volume permissions fall into the following categories:
 //
-//    * public: The owner of the snapshot granted create volume permissions
-//    for the snapshot to the all group. All Amazon Web Services accounts have
-//    create volume permissions for these snapshots.
+//   - public: The owner of the snapshot granted create volume permissions
+//     for the snapshot to the all group. All Amazon Web Services accounts have
+//     create volume permissions for these snapshots.
 //
-//    * explicit: The owner of the snapshot granted create volume permissions
-//    to a specific Amazon Web Services account.
+//   - explicit: The owner of the snapshot granted create volume permissions
+//     to a specific Amazon Web Services account.
 //
-//    * implicit: An Amazon Web Services account has implicit create volume
-//    permissions for all snapshots it owns.
+//   - implicit: An Amazon Web Services account has implicit create volume
+//     permissions for all snapshots it owns.
 //
 // The list of snapshots returned can be filtered by specifying snapshot IDs,
 // snapshot owners, or Amazon Web Services accounts with create volume permissions.
@@ -26319,15 +25971,14 @@ func (c *EC2) DescribeSnapshotsWithContext(ctx aws.Context, input *DescribeSnaps
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSnapshots operation.
-//    pageNum := 0
-//    err := client.DescribeSnapshotsPages(params,
-//        func(page *ec2.DescribeSnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotsPages(params,
+//	    func(page *ec2.DescribeSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSnapshotsPages(input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool) error {
 	return c.DescribeSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -26379,14 +26030,13 @@ const opDescribeSpotDatafeedSubscription = "DescribeSpotDatafeedSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpotDatafeedSubscriptionRequest method.
+//	req, resp := client.DescribeSpotDatafeedSubscriptionRequest(params)
 //
-//    // Example sending a request using the DescribeSpotDatafeedSubscriptionRequest method.
-//    req, resp := client.DescribeSpotDatafeedSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSpotDatafeedSubscription
 func (c *EC2) DescribeSpotDatafeedSubscriptionRequest(input *DescribeSpotDatafeedSubscriptionInput) (req *request.Request, output *DescribeSpotDatafeedSubscriptionOutput) {
@@ -26455,14 +26105,13 @@ const opDescribeSpotFleetInstances = "DescribeSpotFleetInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpotFleetInstancesRequest method.
+//	req, resp := client.DescribeSpotFleetInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeSpotFleetInstancesRequest method.
-//    req, resp := client.DescribeSpotFleetInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSpotFleetInstances
 func (c *EC2) DescribeSpotFleetInstancesRequest(input *DescribeSpotFleetInstancesInput) (req *request.Request, output *DescribeSpotFleetInstancesOutput) {
@@ -26529,14 +26178,13 @@ const opDescribeSpotFleetRequestHistory = "DescribeSpotFleetRequestHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpotFleetRequestHistoryRequest method.
+//	req, resp := client.DescribeSpotFleetRequestHistoryRequest(params)
 //
-//    // Example sending a request using the DescribeSpotFleetRequestHistoryRequest method.
-//    req, resp := client.DescribeSpotFleetRequestHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSpotFleetRequestHistory
 func (c *EC2) DescribeSpotFleetRequestHistoryRequest(input *DescribeSpotFleetRequestHistoryInput) (req *request.Request, output *DescribeSpotFleetRequestHistoryOutput) {
@@ -26611,14 +26259,13 @@ const opDescribeSpotFleetRequests = "DescribeSpotFleetRequests"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpotFleetRequestsRequest method.
+//	req, resp := client.DescribeSpotFleetRequestsRequest(params)
 //
-//    // Example sending a request using the DescribeSpotFleetRequestsRequest method.
-//    req, resp := client.DescribeSpotFleetRequestsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSpotFleetRequests
 func (c *EC2) DescribeSpotFleetRequestsRequest(input *DescribeSpotFleetRequestsInput) (req *request.Request, output *DescribeSpotFleetRequestsOutput) {
@@ -26686,15 +26333,14 @@ func (c *EC2) DescribeSpotFleetRequestsWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSpotFleetRequests operation.
-//    pageNum := 0
-//    err := client.DescribeSpotFleetRequestsPages(params,
-//        func(page *ec2.DescribeSpotFleetRequestsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSpotFleetRequests operation.
+//	pageNum := 0
+//	err := client.DescribeSpotFleetRequestsPages(params,
+//	    func(page *ec2.DescribeSpotFleetRequestsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSpotFleetRequestsPages(input *DescribeSpotFleetRequestsInput, fn func(*DescribeSpotFleetRequestsOutput, bool) bool) error {
 	return c.DescribeSpotFleetRequestsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -26746,14 +26392,13 @@ const opDescribeSpotInstanceRequests = "DescribeSpotInstanceRequests"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpotInstanceRequestsRequest method.
+//	req, resp := client.DescribeSpotInstanceRequestsRequest(params)
 //
-//    // Example sending a request using the DescribeSpotInstanceRequestsRequest method.
-//    req, resp := client.DescribeSpotInstanceRequestsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSpotInstanceRequests
 func (c *EC2) DescribeSpotInstanceRequestsRequest(input *DescribeSpotInstanceRequestsInput) (req *request.Request, output *DescribeSpotInstanceRequestsOutput) {
@@ -26834,15 +26479,14 @@ func (c *EC2) DescribeSpotInstanceRequestsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSpotInstanceRequests operation.
-//    pageNum := 0
-//    err := client.DescribeSpotInstanceRequestsPages(params,
-//        func(page *ec2.DescribeSpotInstanceRequestsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSpotInstanceRequests operation.
+//	pageNum := 0
+//	err := client.DescribeSpotInstanceRequestsPages(params,
+//	    func(page *ec2.DescribeSpotInstanceRequestsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSpotInstanceRequestsPages(input *DescribeSpotInstanceRequestsInput, fn func(*DescribeSpotInstanceRequestsOutput, bool) bool) error {
 	return c.DescribeSpotInstanceRequestsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -26894,14 +26538,13 @@ const opDescribeSpotPriceHistory = "DescribeSpotPriceHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpotPriceHistoryRequest method.
+//	req, resp := client.DescribeSpotPriceHistoryRequest(params)
 //
-//    // Example sending a request using the DescribeSpotPriceHistoryRequest method.
-//    req, resp := client.DescribeSpotPriceHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSpotPriceHistory
 func (c *EC2) DescribeSpotPriceHistoryRequest(input *DescribeSpotPriceHistoryInput) (req *request.Request, output *DescribeSpotPriceHistoryOutput) {
@@ -26973,15 +26616,14 @@ func (c *EC2) DescribeSpotPriceHistoryWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSpotPriceHistory operation.
-//    pageNum := 0
-//    err := client.DescribeSpotPriceHistoryPages(params,
-//        func(page *ec2.DescribeSpotPriceHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSpotPriceHistory operation.
+//	pageNum := 0
+//	err := client.DescribeSpotPriceHistoryPages(params,
+//	    func(page *ec2.DescribeSpotPriceHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSpotPriceHistoryPages(input *DescribeSpotPriceHistoryInput, fn func(*DescribeSpotPriceHistoryOutput, bool) bool) error {
 	return c.DescribeSpotPriceHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27033,14 +26675,13 @@ const opDescribeStaleSecurityGroups = "DescribeStaleSecurityGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStaleSecurityGroupsRequest method.
+//	req, resp := client.DescribeStaleSecurityGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeStaleSecurityGroupsRequest method.
-//    req, resp := client.DescribeStaleSecurityGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeStaleSecurityGroups
 func (c *EC2) DescribeStaleSecurityGroupsRequest(input *DescribeStaleSecurityGroupsInput) (req *request.Request, output *DescribeStaleSecurityGroupsOutput) {
@@ -27108,15 +26749,14 @@ func (c *EC2) DescribeStaleSecurityGroupsWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeStaleSecurityGroups operation.
-//    pageNum := 0
-//    err := client.DescribeStaleSecurityGroupsPages(params,
-//        func(page *ec2.DescribeStaleSecurityGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeStaleSecurityGroups operation.
+//	pageNum := 0
+//	err := client.DescribeStaleSecurityGroupsPages(params,
+//	    func(page *ec2.DescribeStaleSecurityGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeStaleSecurityGroupsPages(input *DescribeStaleSecurityGroupsInput, fn func(*DescribeStaleSecurityGroupsOutput, bool) bool) error {
 	return c.DescribeStaleSecurityGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27168,14 +26808,13 @@ const opDescribeStoreImageTasks = "DescribeStoreImageTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStoreImageTasksRequest method.
+//	req, resp := client.DescribeStoreImageTasksRequest(params)
 //
-//    // Example sending a request using the DescribeStoreImageTasksRequest method.
-//    req, resp := client.DescribeStoreImageTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeStoreImageTasks
 func (c *EC2) DescribeStoreImageTasksRequest(input *DescribeStoreImageTasksInput) (req *request.Request, output *DescribeStoreImageTasksOutput) {
@@ -27256,15 +26895,14 @@ func (c *EC2) DescribeStoreImageTasksWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeStoreImageTasks operation.
-//    pageNum := 0
-//    err := client.DescribeStoreImageTasksPages(params,
-//        func(page *ec2.DescribeStoreImageTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeStoreImageTasks operation.
+//	pageNum := 0
+//	err := client.DescribeStoreImageTasksPages(params,
+//	    func(page *ec2.DescribeStoreImageTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeStoreImageTasksPages(input *DescribeStoreImageTasksInput, fn func(*DescribeStoreImageTasksOutput, bool) bool) error {
 	return c.DescribeStoreImageTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27316,14 +26954,13 @@ const opDescribeSubnets = "DescribeSubnets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSubnetsRequest method.
+//	req, resp := client.DescribeSubnetsRequest(params)
 //
-//    // Example sending a request using the DescribeSubnetsRequest method.
-//    req, resp := client.DescribeSubnetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSubnets
 func (c *EC2) DescribeSubnetsRequest(input *DescribeSubnetsInput) (req *request.Request, output *DescribeSubnetsOutput) {
@@ -27391,15 +27028,14 @@ func (c *EC2) DescribeSubnetsWithContext(ctx aws.Context, input *DescribeSubnets
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSubnets operation.
-//    pageNum := 0
-//    err := client.DescribeSubnetsPages(params,
-//        func(page *ec2.DescribeSubnetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSubnets operation.
+//	pageNum := 0
+//	err := client.DescribeSubnetsPages(params,
+//	    func(page *ec2.DescribeSubnetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeSubnetsPages(input *DescribeSubnetsInput, fn func(*DescribeSubnetsOutput, bool) bool) error {
 	return c.DescribeSubnetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27451,14 +27087,13 @@ const opDescribeTags = "DescribeTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTagsRequest method.
+//	req, resp := client.DescribeTagsRequest(params)
 //
-//    // Example sending a request using the DescribeTagsRequest method.
-//    req, resp := client.DescribeTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTags
 func (c *EC2) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
@@ -27526,15 +27161,14 @@ func (c *EC2) DescribeTagsWithContext(ctx aws.Context, input *DescribeTagsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTags operation.
-//    pageNum := 0
-//    err := client.DescribeTagsPages(params,
-//        func(page *ec2.DescribeTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTags operation.
+//	pageNum := 0
+//	err := client.DescribeTagsPages(params,
+//	    func(page *ec2.DescribeTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTagsPages(input *DescribeTagsInput, fn func(*DescribeTagsOutput, bool) bool) error {
 	return c.DescribeTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27586,14 +27220,13 @@ const opDescribeTrafficMirrorFilters = "DescribeTrafficMirrorFilters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrafficMirrorFiltersRequest method.
+//	req, resp := client.DescribeTrafficMirrorFiltersRequest(params)
 //
-//    // Example sending a request using the DescribeTrafficMirrorFiltersRequest method.
-//    req, resp := client.DescribeTrafficMirrorFiltersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTrafficMirrorFilters
 func (c *EC2) DescribeTrafficMirrorFiltersRequest(input *DescribeTrafficMirrorFiltersInput) (req *request.Request, output *DescribeTrafficMirrorFiltersOutput) {
@@ -27658,15 +27291,14 @@ func (c *EC2) DescribeTrafficMirrorFiltersWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTrafficMirrorFilters operation.
-//    pageNum := 0
-//    err := client.DescribeTrafficMirrorFiltersPages(params,
-//        func(page *ec2.DescribeTrafficMirrorFiltersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTrafficMirrorFilters operation.
+//	pageNum := 0
+//	err := client.DescribeTrafficMirrorFiltersPages(params,
+//	    func(page *ec2.DescribeTrafficMirrorFiltersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTrafficMirrorFiltersPages(input *DescribeTrafficMirrorFiltersInput, fn func(*DescribeTrafficMirrorFiltersOutput, bool) bool) error {
 	return c.DescribeTrafficMirrorFiltersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27718,14 +27350,13 @@ const opDescribeTrafficMirrorSessions = "DescribeTrafficMirrorSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrafficMirrorSessionsRequest method.
+//	req, resp := client.DescribeTrafficMirrorSessionsRequest(params)
 //
-//    // Example sending a request using the DescribeTrafficMirrorSessionsRequest method.
-//    req, resp := client.DescribeTrafficMirrorSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTrafficMirrorSessions
 func (c *EC2) DescribeTrafficMirrorSessionsRequest(input *DescribeTrafficMirrorSessionsInput) (req *request.Request, output *DescribeTrafficMirrorSessionsOutput) {
@@ -27791,15 +27422,14 @@ func (c *EC2) DescribeTrafficMirrorSessionsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTrafficMirrorSessions operation.
-//    pageNum := 0
-//    err := client.DescribeTrafficMirrorSessionsPages(params,
-//        func(page *ec2.DescribeTrafficMirrorSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTrafficMirrorSessions operation.
+//	pageNum := 0
+//	err := client.DescribeTrafficMirrorSessionsPages(params,
+//	    func(page *ec2.DescribeTrafficMirrorSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTrafficMirrorSessionsPages(input *DescribeTrafficMirrorSessionsInput, fn func(*DescribeTrafficMirrorSessionsOutput, bool) bool) error {
 	return c.DescribeTrafficMirrorSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27851,14 +27481,13 @@ const opDescribeTrafficMirrorTargets = "DescribeTrafficMirrorTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrafficMirrorTargetsRequest method.
+//	req, resp := client.DescribeTrafficMirrorTargetsRequest(params)
 //
-//    // Example sending a request using the DescribeTrafficMirrorTargetsRequest method.
-//    req, resp := client.DescribeTrafficMirrorTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTrafficMirrorTargets
 func (c *EC2) DescribeTrafficMirrorTargetsRequest(input *DescribeTrafficMirrorTargetsInput) (req *request.Request, output *DescribeTrafficMirrorTargetsOutput) {
@@ -27923,15 +27552,14 @@ func (c *EC2) DescribeTrafficMirrorTargetsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTrafficMirrorTargets operation.
-//    pageNum := 0
-//    err := client.DescribeTrafficMirrorTargetsPages(params,
-//        func(page *ec2.DescribeTrafficMirrorTargetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTrafficMirrorTargets operation.
+//	pageNum := 0
+//	err := client.DescribeTrafficMirrorTargetsPages(params,
+//	    func(page *ec2.DescribeTrafficMirrorTargetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTrafficMirrorTargetsPages(input *DescribeTrafficMirrorTargetsInput, fn func(*DescribeTrafficMirrorTargetsOutput, bool) bool) error {
 	return c.DescribeTrafficMirrorTargetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -27983,14 +27611,13 @@ const opDescribeTransitGatewayAttachments = "DescribeTransitGatewayAttachments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayAttachmentsRequest method.
+//	req, resp := client.DescribeTransitGatewayAttachmentsRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayAttachmentsRequest method.
-//    req, resp := client.DescribeTransitGatewayAttachmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayAttachments
 func (c *EC2) DescribeTransitGatewayAttachmentsRequest(input *DescribeTransitGatewayAttachmentsInput) (req *request.Request, output *DescribeTransitGatewayAttachmentsOutput) {
@@ -28058,15 +27685,14 @@ func (c *EC2) DescribeTransitGatewayAttachmentsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayAttachments operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayAttachmentsPages(params,
-//        func(page *ec2.DescribeTransitGatewayAttachmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayAttachments operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayAttachmentsPages(params,
+//	    func(page *ec2.DescribeTransitGatewayAttachmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayAttachmentsPages(input *DescribeTransitGatewayAttachmentsInput, fn func(*DescribeTransitGatewayAttachmentsOutput, bool) bool) error {
 	return c.DescribeTransitGatewayAttachmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28118,14 +27744,13 @@ const opDescribeTransitGatewayConnectPeers = "DescribeTransitGatewayConnectPeers
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayConnectPeersRequest method.
+//	req, resp := client.DescribeTransitGatewayConnectPeersRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayConnectPeersRequest method.
-//    req, resp := client.DescribeTransitGatewayConnectPeersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayConnectPeers
 func (c *EC2) DescribeTransitGatewayConnectPeersRequest(input *DescribeTransitGatewayConnectPeersInput) (req *request.Request, output *DescribeTransitGatewayConnectPeersOutput) {
@@ -28190,15 +27815,14 @@ func (c *EC2) DescribeTransitGatewayConnectPeersWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayConnectPeers operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayConnectPeersPages(params,
-//        func(page *ec2.DescribeTransitGatewayConnectPeersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayConnectPeers operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayConnectPeersPages(params,
+//	    func(page *ec2.DescribeTransitGatewayConnectPeersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayConnectPeersPages(input *DescribeTransitGatewayConnectPeersInput, fn func(*DescribeTransitGatewayConnectPeersOutput, bool) bool) error {
 	return c.DescribeTransitGatewayConnectPeersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28250,14 +27874,13 @@ const opDescribeTransitGatewayConnects = "DescribeTransitGatewayConnects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayConnectsRequest method.
+//	req, resp := client.DescribeTransitGatewayConnectsRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayConnectsRequest method.
-//    req, resp := client.DescribeTransitGatewayConnectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayConnects
 func (c *EC2) DescribeTransitGatewayConnectsRequest(input *DescribeTransitGatewayConnectsInput) (req *request.Request, output *DescribeTransitGatewayConnectsOutput) {
@@ -28322,15 +27945,14 @@ func (c *EC2) DescribeTransitGatewayConnectsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayConnects operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayConnectsPages(params,
-//        func(page *ec2.DescribeTransitGatewayConnectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayConnects operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayConnectsPages(params,
+//	    func(page *ec2.DescribeTransitGatewayConnectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayConnectsPages(input *DescribeTransitGatewayConnectsInput, fn func(*DescribeTransitGatewayConnectsOutput, bool) bool) error {
 	return c.DescribeTransitGatewayConnectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28382,14 +28004,13 @@ const opDescribeTransitGatewayMulticastDomains = "DescribeTransitGatewayMulticas
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayMulticastDomainsRequest method.
+//	req, resp := client.DescribeTransitGatewayMulticastDomainsRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayMulticastDomainsRequest method.
-//    req, resp := client.DescribeTransitGatewayMulticastDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayMulticastDomains
 func (c *EC2) DescribeTransitGatewayMulticastDomainsRequest(input *DescribeTransitGatewayMulticastDomainsInput) (req *request.Request, output *DescribeTransitGatewayMulticastDomainsOutput) {
@@ -28454,15 +28075,14 @@ func (c *EC2) DescribeTransitGatewayMulticastDomainsWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayMulticastDomains operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayMulticastDomainsPages(params,
-//        func(page *ec2.DescribeTransitGatewayMulticastDomainsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayMulticastDomains operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayMulticastDomainsPages(params,
+//	    func(page *ec2.DescribeTransitGatewayMulticastDomainsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayMulticastDomainsPages(input *DescribeTransitGatewayMulticastDomainsInput, fn func(*DescribeTransitGatewayMulticastDomainsOutput, bool) bool) error {
 	return c.DescribeTransitGatewayMulticastDomainsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28514,14 +28134,13 @@ const opDescribeTransitGatewayPeeringAttachments = "DescribeTransitGatewayPeerin
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayPeeringAttachmentsRequest method.
+//	req, resp := client.DescribeTransitGatewayPeeringAttachmentsRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayPeeringAttachmentsRequest method.
-//    req, resp := client.DescribeTransitGatewayPeeringAttachmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayPeeringAttachments
 func (c *EC2) DescribeTransitGatewayPeeringAttachmentsRequest(input *DescribeTransitGatewayPeeringAttachmentsInput) (req *request.Request, output *DescribeTransitGatewayPeeringAttachmentsOutput) {
@@ -28586,15 +28205,14 @@ func (c *EC2) DescribeTransitGatewayPeeringAttachmentsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayPeeringAttachments operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayPeeringAttachmentsPages(params,
-//        func(page *ec2.DescribeTransitGatewayPeeringAttachmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayPeeringAttachments operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayPeeringAttachmentsPages(params,
+//	    func(page *ec2.DescribeTransitGatewayPeeringAttachmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayPeeringAttachmentsPages(input *DescribeTransitGatewayPeeringAttachmentsInput, fn func(*DescribeTransitGatewayPeeringAttachmentsOutput, bool) bool) error {
 	return c.DescribeTransitGatewayPeeringAttachmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28646,14 +28264,13 @@ const opDescribeTransitGatewayRouteTables = "DescribeTransitGatewayRouteTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayRouteTablesRequest method.
+//	req, resp := client.DescribeTransitGatewayRouteTablesRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayRouteTablesRequest method.
-//    req, resp := client.DescribeTransitGatewayRouteTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayRouteTables
 func (c *EC2) DescribeTransitGatewayRouteTablesRequest(input *DescribeTransitGatewayRouteTablesInput) (req *request.Request, output *DescribeTransitGatewayRouteTablesOutput) {
@@ -28719,15 +28336,14 @@ func (c *EC2) DescribeTransitGatewayRouteTablesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayRouteTables operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayRouteTablesPages(params,
-//        func(page *ec2.DescribeTransitGatewayRouteTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayRouteTables operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayRouteTablesPages(params,
+//	    func(page *ec2.DescribeTransitGatewayRouteTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayRouteTablesPages(input *DescribeTransitGatewayRouteTablesInput, fn func(*DescribeTransitGatewayRouteTablesOutput, bool) bool) error {
 	return c.DescribeTransitGatewayRouteTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28779,14 +28395,13 @@ const opDescribeTransitGatewayVpcAttachments = "DescribeTransitGatewayVpcAttachm
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewayVpcAttachmentsRequest method.
+//	req, resp := client.DescribeTransitGatewayVpcAttachmentsRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewayVpcAttachmentsRequest method.
-//    req, resp := client.DescribeTransitGatewayVpcAttachmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGatewayVpcAttachments
 func (c *EC2) DescribeTransitGatewayVpcAttachmentsRequest(input *DescribeTransitGatewayVpcAttachmentsInput) (req *request.Request, output *DescribeTransitGatewayVpcAttachmentsOutput) {
@@ -28852,15 +28467,14 @@ func (c *EC2) DescribeTransitGatewayVpcAttachmentsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGatewayVpcAttachments operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewayVpcAttachmentsPages(params,
-//        func(page *ec2.DescribeTransitGatewayVpcAttachmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGatewayVpcAttachments operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewayVpcAttachmentsPages(params,
+//	    func(page *ec2.DescribeTransitGatewayVpcAttachmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewayVpcAttachmentsPages(input *DescribeTransitGatewayVpcAttachmentsInput, fn func(*DescribeTransitGatewayVpcAttachmentsOutput, bool) bool) error {
 	return c.DescribeTransitGatewayVpcAttachmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -28912,14 +28526,13 @@ const opDescribeTransitGateways = "DescribeTransitGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransitGatewaysRequest method.
+//	req, resp := client.DescribeTransitGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeTransitGatewaysRequest method.
-//    req, resp := client.DescribeTransitGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTransitGateways
 func (c *EC2) DescribeTransitGatewaysRequest(input *DescribeTransitGatewaysInput) (req *request.Request, output *DescribeTransitGatewaysOutput) {
@@ -28985,15 +28598,14 @@ func (c *EC2) DescribeTransitGatewaysWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTransitGateways operation.
-//    pageNum := 0
-//    err := client.DescribeTransitGatewaysPages(params,
-//        func(page *ec2.DescribeTransitGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTransitGateways operation.
+//	pageNum := 0
+//	err := client.DescribeTransitGatewaysPages(params,
+//	    func(page *ec2.DescribeTransitGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTransitGatewaysPages(input *DescribeTransitGatewaysInput, fn func(*DescribeTransitGatewaysOutput, bool) bool) error {
 	return c.DescribeTransitGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -29045,14 +28657,13 @@ const opDescribeTrunkInterfaceAssociations = "DescribeTrunkInterfaceAssociations
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrunkInterfaceAssociationsRequest method.
+//	req, resp := client.DescribeTrunkInterfaceAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeTrunkInterfaceAssociationsRequest method.
-//    req, resp := client.DescribeTrunkInterfaceAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTrunkInterfaceAssociations
 func (c *EC2) DescribeTrunkInterfaceAssociationsRequest(input *DescribeTrunkInterfaceAssociationsInput) (req *request.Request, output *DescribeTrunkInterfaceAssociationsOutput) {
@@ -29078,7 +28689,6 @@ func (c *EC2) DescribeTrunkInterfaceAssociationsRequest(input *DescribeTrunkInte
 }
 
 // DescribeTrunkInterfaceAssociations API operation for Amazon Elastic Compute Cloud.
-//
 //
 // This API action is currently in limited preview only. If you are interested
 // in using this feature, contact your account manager.
@@ -29121,15 +28731,14 @@ func (c *EC2) DescribeTrunkInterfaceAssociationsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTrunkInterfaceAssociations operation.
-//    pageNum := 0
-//    err := client.DescribeTrunkInterfaceAssociationsPages(params,
-//        func(page *ec2.DescribeTrunkInterfaceAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTrunkInterfaceAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeTrunkInterfaceAssociationsPages(params,
+//	    func(page *ec2.DescribeTrunkInterfaceAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeTrunkInterfaceAssociationsPages(input *DescribeTrunkInterfaceAssociationsInput, fn func(*DescribeTrunkInterfaceAssociationsOutput, bool) bool) error {
 	return c.DescribeTrunkInterfaceAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -29181,14 +28790,13 @@ const opDescribeVolumeAttribute = "DescribeVolumeAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVolumeAttributeRequest method.
+//	req, resp := client.DescribeVolumeAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeVolumeAttributeRequest method.
-//    req, resp := client.DescribeVolumeAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVolumeAttribute
 func (c *EC2) DescribeVolumeAttributeRequest(input *DescribeVolumeAttributeInput) (req *request.Request, output *DescribeVolumeAttributeOutput) {
@@ -29259,14 +28867,13 @@ const opDescribeVolumeStatus = "DescribeVolumeStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVolumeStatusRequest method.
+//	req, resp := client.DescribeVolumeStatusRequest(params)
 //
-//    // Example sending a request using the DescribeVolumeStatusRequest method.
-//    req, resp := client.DescribeVolumeStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVolumeStatus
 func (c *EC2) DescribeVolumeStatusRequest(input *DescribeVolumeStatusInput) (req *request.Request, output *DescribeVolumeStatusOutput) {
@@ -29366,15 +28973,14 @@ func (c *EC2) DescribeVolumeStatusWithContext(ctx aws.Context, input *DescribeVo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVolumeStatus operation.
-//    pageNum := 0
-//    err := client.DescribeVolumeStatusPages(params,
-//        func(page *ec2.DescribeVolumeStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVolumeStatus operation.
+//	pageNum := 0
+//	err := client.DescribeVolumeStatusPages(params,
+//	    func(page *ec2.DescribeVolumeStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVolumeStatusPages(input *DescribeVolumeStatusInput, fn func(*DescribeVolumeStatusOutput, bool) bool) error {
 	return c.DescribeVolumeStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -29426,14 +29032,13 @@ const opDescribeVolumes = "DescribeVolumes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVolumesRequest method.
+//	req, resp := client.DescribeVolumesRequest(params)
 //
-//    // Example sending a request using the DescribeVolumesRequest method.
-//    req, resp := client.DescribeVolumesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVolumes
 func (c *EC2) DescribeVolumesRequest(input *DescribeVolumesInput) (req *request.Request, output *DescribeVolumesOutput) {
@@ -29508,15 +29113,14 @@ func (c *EC2) DescribeVolumesWithContext(ctx aws.Context, input *DescribeVolumes
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVolumes operation.
-//    pageNum := 0
-//    err := client.DescribeVolumesPages(params,
-//        func(page *ec2.DescribeVolumesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVolumes operation.
+//	pageNum := 0
+//	err := client.DescribeVolumesPages(params,
+//	    func(page *ec2.DescribeVolumesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVolumesPages(input *DescribeVolumesInput, fn func(*DescribeVolumesOutput, bool) bool) error {
 	return c.DescribeVolumesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -29568,14 +29172,13 @@ const opDescribeVolumesModifications = "DescribeVolumesModifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVolumesModificationsRequest method.
+//	req, resp := client.DescribeVolumesModificationsRequest(params)
 //
-//    // Example sending a request using the DescribeVolumesModificationsRequest method.
-//    req, resp := client.DescribeVolumesModificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVolumesModifications
 func (c *EC2) DescribeVolumesModificationsRequest(input *DescribeVolumesModificationsInput) (req *request.Request, output *DescribeVolumesModificationsOutput) {
@@ -29651,15 +29254,14 @@ func (c *EC2) DescribeVolumesModificationsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVolumesModifications operation.
-//    pageNum := 0
-//    err := client.DescribeVolumesModificationsPages(params,
-//        func(page *ec2.DescribeVolumesModificationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVolumesModifications operation.
+//	pageNum := 0
+//	err := client.DescribeVolumesModificationsPages(params,
+//	    func(page *ec2.DescribeVolumesModificationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVolumesModificationsPages(input *DescribeVolumesModificationsInput, fn func(*DescribeVolumesModificationsOutput, bool) bool) error {
 	return c.DescribeVolumesModificationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -29711,14 +29313,13 @@ const opDescribeVpcAttribute = "DescribeVpcAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcAttributeRequest method.
+//	req, resp := client.DescribeVpcAttributeRequest(params)
 //
-//    // Example sending a request using the DescribeVpcAttributeRequest method.
-//    req, resp := client.DescribeVpcAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcAttribute
 func (c *EC2) DescribeVpcAttributeRequest(input *DescribeVpcAttributeInput) (req *request.Request, output *DescribeVpcAttributeOutput) {
@@ -29786,14 +29387,13 @@ const opDescribeVpcClassicLink = "DescribeVpcClassicLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcClassicLinkRequest method.
+//	req, resp := client.DescribeVpcClassicLinkRequest(params)
 //
-//    // Example sending a request using the DescribeVpcClassicLinkRequest method.
-//    req, resp := client.DescribeVpcClassicLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcClassicLink
 func (c *EC2) DescribeVpcClassicLinkRequest(input *DescribeVpcClassicLinkInput) (req *request.Request, output *DescribeVpcClassicLinkOutput) {
@@ -29860,14 +29460,13 @@ const opDescribeVpcClassicLinkDnsSupport = "DescribeVpcClassicLinkDnsSupport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcClassicLinkDnsSupportRequest method.
+//	req, resp := client.DescribeVpcClassicLinkDnsSupportRequest(params)
 //
-//    // Example sending a request using the DescribeVpcClassicLinkDnsSupportRequest method.
-//    req, resp := client.DescribeVpcClassicLinkDnsSupportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcClassicLinkDnsSupport
 func (c *EC2) DescribeVpcClassicLinkDnsSupportRequest(input *DescribeVpcClassicLinkDnsSupportInput) (req *request.Request, output *DescribeVpcClassicLinkDnsSupportOutput) {
@@ -29938,15 +29537,14 @@ func (c *EC2) DescribeVpcClassicLinkDnsSupportWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcClassicLinkDnsSupport operation.
-//    pageNum := 0
-//    err := client.DescribeVpcClassicLinkDnsSupportPages(params,
-//        func(page *ec2.DescribeVpcClassicLinkDnsSupportOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcClassicLinkDnsSupport operation.
+//	pageNum := 0
+//	err := client.DescribeVpcClassicLinkDnsSupportPages(params,
+//	    func(page *ec2.DescribeVpcClassicLinkDnsSupportOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcClassicLinkDnsSupportPages(input *DescribeVpcClassicLinkDnsSupportInput, fn func(*DescribeVpcClassicLinkDnsSupportOutput, bool) bool) error {
 	return c.DescribeVpcClassicLinkDnsSupportPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -29998,14 +29596,13 @@ const opDescribeVpcEndpointConnectionNotifications = "DescribeVpcEndpointConnect
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcEndpointConnectionNotificationsRequest method.
+//	req, resp := client.DescribeVpcEndpointConnectionNotificationsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcEndpointConnectionNotificationsRequest method.
-//    req, resp := client.DescribeVpcEndpointConnectionNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcEndpointConnectionNotifications
 func (c *EC2) DescribeVpcEndpointConnectionNotificationsRequest(input *DescribeVpcEndpointConnectionNotificationsInput) (req *request.Request, output *DescribeVpcEndpointConnectionNotificationsOutput) {
@@ -30071,15 +29668,14 @@ func (c *EC2) DescribeVpcEndpointConnectionNotificationsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcEndpointConnectionNotifications operation.
-//    pageNum := 0
-//    err := client.DescribeVpcEndpointConnectionNotificationsPages(params,
-//        func(page *ec2.DescribeVpcEndpointConnectionNotificationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcEndpointConnectionNotifications operation.
+//	pageNum := 0
+//	err := client.DescribeVpcEndpointConnectionNotificationsPages(params,
+//	    func(page *ec2.DescribeVpcEndpointConnectionNotificationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcEndpointConnectionNotificationsPages(input *DescribeVpcEndpointConnectionNotificationsInput, fn func(*DescribeVpcEndpointConnectionNotificationsOutput, bool) bool) error {
 	return c.DescribeVpcEndpointConnectionNotificationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -30131,14 +29727,13 @@ const opDescribeVpcEndpointConnections = "DescribeVpcEndpointConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcEndpointConnectionsRequest method.
+//	req, resp := client.DescribeVpcEndpointConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcEndpointConnectionsRequest method.
-//    req, resp := client.DescribeVpcEndpointConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcEndpointConnections
 func (c *EC2) DescribeVpcEndpointConnectionsRequest(input *DescribeVpcEndpointConnectionsInput) (req *request.Request, output *DescribeVpcEndpointConnectionsOutput) {
@@ -30204,15 +29799,14 @@ func (c *EC2) DescribeVpcEndpointConnectionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcEndpointConnections operation.
-//    pageNum := 0
-//    err := client.DescribeVpcEndpointConnectionsPages(params,
-//        func(page *ec2.DescribeVpcEndpointConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcEndpointConnections operation.
+//	pageNum := 0
+//	err := client.DescribeVpcEndpointConnectionsPages(params,
+//	    func(page *ec2.DescribeVpcEndpointConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcEndpointConnectionsPages(input *DescribeVpcEndpointConnectionsInput, fn func(*DescribeVpcEndpointConnectionsOutput, bool) bool) error {
 	return c.DescribeVpcEndpointConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -30264,14 +29858,13 @@ const opDescribeVpcEndpointServiceConfigurations = "DescribeVpcEndpointServiceCo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcEndpointServiceConfigurationsRequest method.
+//	req, resp := client.DescribeVpcEndpointServiceConfigurationsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcEndpointServiceConfigurationsRequest method.
-//    req, resp := client.DescribeVpcEndpointServiceConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcEndpointServiceConfigurations
 func (c *EC2) DescribeVpcEndpointServiceConfigurationsRequest(input *DescribeVpcEndpointServiceConfigurationsInput) (req *request.Request, output *DescribeVpcEndpointServiceConfigurationsOutput) {
@@ -30336,15 +29929,14 @@ func (c *EC2) DescribeVpcEndpointServiceConfigurationsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcEndpointServiceConfigurations operation.
-//    pageNum := 0
-//    err := client.DescribeVpcEndpointServiceConfigurationsPages(params,
-//        func(page *ec2.DescribeVpcEndpointServiceConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcEndpointServiceConfigurations operation.
+//	pageNum := 0
+//	err := client.DescribeVpcEndpointServiceConfigurationsPages(params,
+//	    func(page *ec2.DescribeVpcEndpointServiceConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcEndpointServiceConfigurationsPages(input *DescribeVpcEndpointServiceConfigurationsInput, fn func(*DescribeVpcEndpointServiceConfigurationsOutput, bool) bool) error {
 	return c.DescribeVpcEndpointServiceConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -30396,14 +29988,13 @@ const opDescribeVpcEndpointServicePermissions = "DescribeVpcEndpointServicePermi
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcEndpointServicePermissionsRequest method.
+//	req, resp := client.DescribeVpcEndpointServicePermissionsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcEndpointServicePermissionsRequest method.
-//    req, resp := client.DescribeVpcEndpointServicePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcEndpointServicePermissions
 func (c *EC2) DescribeVpcEndpointServicePermissionsRequest(input *DescribeVpcEndpointServicePermissionsInput) (req *request.Request, output *DescribeVpcEndpointServicePermissionsOutput) {
@@ -30469,15 +30060,14 @@ func (c *EC2) DescribeVpcEndpointServicePermissionsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcEndpointServicePermissions operation.
-//    pageNum := 0
-//    err := client.DescribeVpcEndpointServicePermissionsPages(params,
-//        func(page *ec2.DescribeVpcEndpointServicePermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcEndpointServicePermissions operation.
+//	pageNum := 0
+//	err := client.DescribeVpcEndpointServicePermissionsPages(params,
+//	    func(page *ec2.DescribeVpcEndpointServicePermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcEndpointServicePermissionsPages(input *DescribeVpcEndpointServicePermissionsInput, fn func(*DescribeVpcEndpointServicePermissionsOutput, bool) bool) error {
 	return c.DescribeVpcEndpointServicePermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -30529,14 +30119,13 @@ const opDescribeVpcEndpointServices = "DescribeVpcEndpointServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcEndpointServicesRequest method.
+//	req, resp := client.DescribeVpcEndpointServicesRequest(params)
 //
-//    // Example sending a request using the DescribeVpcEndpointServicesRequest method.
-//    req, resp := client.DescribeVpcEndpointServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcEndpointServices
 func (c *EC2) DescribeVpcEndpointServicesRequest(input *DescribeVpcEndpointServicesInput) (req *request.Request, output *DescribeVpcEndpointServicesOutput) {
@@ -30610,14 +30199,13 @@ const opDescribeVpcEndpoints = "DescribeVpcEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcEndpointsRequest method.
+//	req, resp := client.DescribeVpcEndpointsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcEndpointsRequest method.
-//    req, resp := client.DescribeVpcEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcEndpoints
 func (c *EC2) DescribeVpcEndpointsRequest(input *DescribeVpcEndpointsInput) (req *request.Request, output *DescribeVpcEndpointsOutput) {
@@ -30682,15 +30270,14 @@ func (c *EC2) DescribeVpcEndpointsWithContext(ctx aws.Context, input *DescribeVp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcEndpoints operation.
-//    pageNum := 0
-//    err := client.DescribeVpcEndpointsPages(params,
-//        func(page *ec2.DescribeVpcEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcEndpoints operation.
+//	pageNum := 0
+//	err := client.DescribeVpcEndpointsPages(params,
+//	    func(page *ec2.DescribeVpcEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcEndpointsPages(input *DescribeVpcEndpointsInput, fn func(*DescribeVpcEndpointsOutput, bool) bool) error {
 	return c.DescribeVpcEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -30742,14 +30329,13 @@ const opDescribeVpcPeeringConnections = "DescribeVpcPeeringConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcPeeringConnectionsRequest method.
+//	req, resp := client.DescribeVpcPeeringConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcPeeringConnectionsRequest method.
-//    req, resp := client.DescribeVpcPeeringConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcPeeringConnections
 func (c *EC2) DescribeVpcPeeringConnectionsRequest(input *DescribeVpcPeeringConnectionsInput) (req *request.Request, output *DescribeVpcPeeringConnectionsOutput) {
@@ -30814,15 +30400,14 @@ func (c *EC2) DescribeVpcPeeringConnectionsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcPeeringConnections operation.
-//    pageNum := 0
-//    err := client.DescribeVpcPeeringConnectionsPages(params,
-//        func(page *ec2.DescribeVpcPeeringConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcPeeringConnections operation.
+//	pageNum := 0
+//	err := client.DescribeVpcPeeringConnectionsPages(params,
+//	    func(page *ec2.DescribeVpcPeeringConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcPeeringConnectionsPages(input *DescribeVpcPeeringConnectionsInput, fn func(*DescribeVpcPeeringConnectionsOutput, bool) bool) error {
 	return c.DescribeVpcPeeringConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -30874,14 +30459,13 @@ const opDescribeVpcs = "DescribeVpcs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcsRequest method.
+//	req, resp := client.DescribeVpcsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcsRequest method.
-//    req, resp := client.DescribeVpcsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcs
 func (c *EC2) DescribeVpcsRequest(input *DescribeVpcsInput) (req *request.Request, output *DescribeVpcsOutput) {
@@ -30946,15 +30530,14 @@ func (c *EC2) DescribeVpcsWithContext(ctx aws.Context, input *DescribeVpcsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVpcs operation.
-//    pageNum := 0
-//    err := client.DescribeVpcsPages(params,
-//        func(page *ec2.DescribeVpcsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVpcs operation.
+//	pageNum := 0
+//	err := client.DescribeVpcsPages(params,
+//	    func(page *ec2.DescribeVpcsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) DescribeVpcsPages(input *DescribeVpcsInput, fn func(*DescribeVpcsOutput, bool) bool) error {
 	return c.DescribeVpcsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -31006,14 +30589,13 @@ const opDescribeVpnConnections = "DescribeVpnConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpnConnectionsRequest method.
+//	req, resp := client.DescribeVpnConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeVpnConnectionsRequest method.
-//    req, resp := client.DescribeVpnConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpnConnections
 func (c *EC2) DescribeVpnConnectionsRequest(input *DescribeVpnConnectionsInput) (req *request.Request, output *DescribeVpnConnectionsOutput) {
@@ -31083,14 +30665,13 @@ const opDescribeVpnGateways = "DescribeVpnGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpnGatewaysRequest method.
+//	req, resp := client.DescribeVpnGatewaysRequest(params)
 //
-//    // Example sending a request using the DescribeVpnGatewaysRequest method.
-//    req, resp := client.DescribeVpnGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpnGateways
 func (c *EC2) DescribeVpnGatewaysRequest(input *DescribeVpnGatewaysInput) (req *request.Request, output *DescribeVpnGatewaysOutput) {
@@ -31160,14 +30741,13 @@ const opDetachClassicLinkVpc = "DetachClassicLinkVpc"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachClassicLinkVpcRequest method.
+//	req, resp := client.DetachClassicLinkVpcRequest(params)
 //
-//    // Example sending a request using the DetachClassicLinkVpcRequest method.
-//    req, resp := client.DetachClassicLinkVpcRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachClassicLinkVpc
 func (c *EC2) DetachClassicLinkVpcRequest(input *DetachClassicLinkVpcInput) (req *request.Request, output *DetachClassicLinkVpcOutput) {
@@ -31236,14 +30816,13 @@ const opDetachInternetGateway = "DetachInternetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachInternetGatewayRequest method.
+//	req, resp := client.DetachInternetGatewayRequest(params)
 //
-//    // Example sending a request using the DetachInternetGatewayRequest method.
-//    req, resp := client.DetachInternetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachInternetGateway
 func (c *EC2) DetachInternetGatewayRequest(input *DetachInternetGatewayInput) (req *request.Request, output *DetachInternetGatewayOutput) {
@@ -31313,14 +30892,13 @@ const opDetachNetworkInterface = "DetachNetworkInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachNetworkInterfaceRequest method.
+//	req, resp := client.DetachNetworkInterfaceRequest(params)
 //
-//    // Example sending a request using the DetachNetworkInterfaceRequest method.
-//    req, resp := client.DetachNetworkInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachNetworkInterface
 func (c *EC2) DetachNetworkInterfaceRequest(input *DetachNetworkInterfaceInput) (req *request.Request, output *DetachNetworkInterfaceOutput) {
@@ -31388,14 +30966,13 @@ const opDetachVolume = "DetachVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachVolumeRequest method.
+//	req, resp := client.DetachVolumeRequest(params)
 //
-//    // Example sending a request using the DetachVolumeRequest method.
-//    req, resp := client.DetachVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachVolume
 func (c *EC2) DetachVolumeRequest(input *DetachVolumeInput) (req *request.Request, output *VolumeAttachment) {
@@ -31475,14 +31052,13 @@ const opDetachVpnGateway = "DetachVpnGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachVpnGatewayRequest method.
+//	req, resp := client.DetachVpnGatewayRequest(params)
 //
-//    // Example sending a request using the DetachVpnGatewayRequest method.
-//    req, resp := client.DetachVpnGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachVpnGateway
 func (c *EC2) DetachVpnGatewayRequest(input *DetachVpnGatewayInput) (req *request.Request, output *DetachVpnGatewayOutput) {
@@ -31557,14 +31133,13 @@ const opDisableEbsEncryptionByDefault = "DisableEbsEncryptionByDefault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableEbsEncryptionByDefaultRequest method.
+//	req, resp := client.DisableEbsEncryptionByDefaultRequest(params)
 //
-//    // Example sending a request using the DisableEbsEncryptionByDefaultRequest method.
-//    req, resp := client.DisableEbsEncryptionByDefaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableEbsEncryptionByDefault
 func (c *EC2) DisableEbsEncryptionByDefaultRequest(input *DisableEbsEncryptionByDefaultInput) (req *request.Request, output *DisableEbsEncryptionByDefaultOutput) {
@@ -31640,14 +31215,13 @@ const opDisableFastLaunch = "DisableFastLaunch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableFastLaunchRequest method.
+//	req, resp := client.DisableFastLaunchRequest(params)
 //
-//    // Example sending a request using the DisableFastLaunchRequest method.
-//    req, resp := client.DisableFastLaunchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableFastLaunch
 func (c *EC2) DisableFastLaunchRequest(input *DisableFastLaunchInput) (req *request.Request, output *DisableFastLaunchOutput) {
@@ -31719,14 +31293,13 @@ const opDisableFastSnapshotRestores = "DisableFastSnapshotRestores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableFastSnapshotRestoresRequest method.
+//	req, resp := client.DisableFastSnapshotRestoresRequest(params)
 //
-//    // Example sending a request using the DisableFastSnapshotRestoresRequest method.
-//    req, resp := client.DisableFastSnapshotRestoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableFastSnapshotRestores
 func (c *EC2) DisableFastSnapshotRestoresRequest(input *DisableFastSnapshotRestoresInput) (req *request.Request, output *DisableFastSnapshotRestoresOutput) {
@@ -31794,14 +31367,13 @@ const opDisableImageDeprecation = "DisableImageDeprecation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableImageDeprecationRequest method.
+//	req, resp := client.DisableImageDeprecationRequest(params)
 //
-//    // Example sending a request using the DisableImageDeprecationRequest method.
-//    req, resp := client.DisableImageDeprecationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableImageDeprecation
 func (c *EC2) DisableImageDeprecationRequest(input *DisableImageDeprecationInput) (req *request.Request, output *DisableImageDeprecationOutput) {
@@ -31871,14 +31443,13 @@ const opDisableIpamOrganizationAdminAccount = "DisableIpamOrganizationAdminAccou
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableIpamOrganizationAdminAccountRequest method.
+//	req, resp := client.DisableIpamOrganizationAdminAccountRequest(params)
 //
-//    // Example sending a request using the DisableIpamOrganizationAdminAccountRequest method.
-//    req, resp := client.DisableIpamOrganizationAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableIpamOrganizationAdminAccount
 func (c *EC2) DisableIpamOrganizationAdminAccountRequest(input *DisableIpamOrganizationAdminAccountInput) (req *request.Request, output *DisableIpamOrganizationAdminAccountOutput) {
@@ -31947,14 +31518,13 @@ const opDisableSerialConsoleAccess = "DisableSerialConsoleAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableSerialConsoleAccessRequest method.
+//	req, resp := client.DisableSerialConsoleAccessRequest(params)
 //
-//    // Example sending a request using the DisableSerialConsoleAccessRequest method.
-//    req, resp := client.DisableSerialConsoleAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableSerialConsoleAccess
 func (c *EC2) DisableSerialConsoleAccessRequest(input *DisableSerialConsoleAccessInput) (req *request.Request, output *DisableSerialConsoleAccessOutput) {
@@ -32025,14 +31595,13 @@ const opDisableTransitGatewayRouteTablePropagation = "DisableTransitGatewayRoute
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableTransitGatewayRouteTablePropagationRequest method.
+//	req, resp := client.DisableTransitGatewayRouteTablePropagationRequest(params)
 //
-//    // Example sending a request using the DisableTransitGatewayRouteTablePropagationRequest method.
-//    req, resp := client.DisableTransitGatewayRouteTablePropagationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableTransitGatewayRouteTablePropagation
 func (c *EC2) DisableTransitGatewayRouteTablePropagationRequest(input *DisableTransitGatewayRouteTablePropagationInput) (req *request.Request, output *DisableTransitGatewayRouteTablePropagationOutput) {
@@ -32100,14 +31669,13 @@ const opDisableVgwRoutePropagation = "DisableVgwRoutePropagation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableVgwRoutePropagationRequest method.
+//	req, resp := client.DisableVgwRoutePropagationRequest(params)
 //
-//    // Example sending a request using the DisableVgwRoutePropagationRequest method.
-//    req, resp := client.DisableVgwRoutePropagationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableVgwRoutePropagation
 func (c *EC2) DisableVgwRoutePropagationRequest(input *DisableVgwRoutePropagationInput) (req *request.Request, output *DisableVgwRoutePropagationOutput) {
@@ -32176,14 +31744,13 @@ const opDisableVpcClassicLink = "DisableVpcClassicLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableVpcClassicLinkRequest method.
+//	req, resp := client.DisableVpcClassicLinkRequest(params)
 //
-//    // Example sending a request using the DisableVpcClassicLinkRequest method.
-//    req, resp := client.DisableVpcClassicLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableVpcClassicLink
 func (c *EC2) DisableVpcClassicLinkRequest(input *DisableVpcClassicLinkInput) (req *request.Request, output *DisableVpcClassicLinkOutput) {
@@ -32251,14 +31818,13 @@ const opDisableVpcClassicLinkDnsSupport = "DisableVpcClassicLinkDnsSupport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableVpcClassicLinkDnsSupportRequest method.
+//	req, resp := client.DisableVpcClassicLinkDnsSupportRequest(params)
 //
-//    // Example sending a request using the DisableVpcClassicLinkDnsSupportRequest method.
-//    req, resp := client.DisableVpcClassicLinkDnsSupportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableVpcClassicLinkDnsSupport
 func (c *EC2) DisableVpcClassicLinkDnsSupportRequest(input *DisableVpcClassicLinkDnsSupportInput) (req *request.Request, output *DisableVpcClassicLinkDnsSupportOutput) {
@@ -32331,14 +31897,13 @@ const opDisassociateAddress = "DisassociateAddress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateAddressRequest method.
+//	req, resp := client.DisassociateAddressRequest(params)
 //
-//    // Example sending a request using the DisassociateAddressRequest method.
-//    req, resp := client.DisassociateAddressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateAddress
 func (c *EC2) DisassociateAddressRequest(input *DisassociateAddressInput) (req *request.Request, output *DisassociateAddressOutput) {
@@ -32414,14 +31979,13 @@ const opDisassociateClientVpnTargetNetwork = "DisassociateClientVpnTargetNetwork
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateClientVpnTargetNetworkRequest method.
+//	req, resp := client.DisassociateClientVpnTargetNetworkRequest(params)
 //
-//    // Example sending a request using the DisassociateClientVpnTargetNetworkRequest method.
-//    req, resp := client.DisassociateClientVpnTargetNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateClientVpnTargetNetwork
 func (c *EC2) DisassociateClientVpnTargetNetworkRequest(input *DisassociateClientVpnTargetNetworkInput) (req *request.Request, output *DisassociateClientVpnTargetNetworkOutput) {
@@ -32446,13 +32010,13 @@ func (c *EC2) DisassociateClientVpnTargetNetworkRequest(input *DisassociateClien
 // you disassociate the last target network from a Client VPN, the following
 // happens:
 //
-//    * The route that was automatically added for the VPC is deleted
+//   - The route that was automatically added for the VPC is deleted
 //
-//    * All active client connections are terminated
+//   - All active client connections are terminated
 //
-//    * New client connections are disallowed
+//   - New client connections are disallowed
 //
-//    * The Client VPN endpoint's status changes to pending-associate
+//   - The Client VPN endpoint's status changes to pending-associate
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -32498,14 +32062,13 @@ const opDisassociateEnclaveCertificateIamRole = "DisassociateEnclaveCertificateI
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateEnclaveCertificateIamRoleRequest method.
+//	req, resp := client.DisassociateEnclaveCertificateIamRoleRequest(params)
 //
-//    // Example sending a request using the DisassociateEnclaveCertificateIamRoleRequest method.
-//    req, resp := client.DisassociateEnclaveCertificateIamRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateEnclaveCertificateIamRole
 func (c *EC2) DisassociateEnclaveCertificateIamRoleRequest(input *DisassociateEnclaveCertificateIamRoleInput) (req *request.Request, output *DisassociateEnclaveCertificateIamRoleOutput) {
@@ -32577,14 +32140,13 @@ const opDisassociateIamInstanceProfile = "DisassociateIamInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateIamInstanceProfileRequest method.
+//	req, resp := client.DisassociateIamInstanceProfileRequest(params)
 //
-//    // Example sending a request using the DisassociateIamInstanceProfileRequest method.
-//    req, resp := client.DisassociateIamInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateIamInstanceProfile
 func (c *EC2) DisassociateIamInstanceProfileRequest(input *DisassociateIamInstanceProfileInput) (req *request.Request, output *DisassociateIamInstanceProfileOutput) {
@@ -32653,14 +32215,13 @@ const opDisassociateInstanceEventWindow = "DisassociateInstanceEventWindow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateInstanceEventWindowRequest method.
+//	req, resp := client.DisassociateInstanceEventWindowRequest(params)
 //
-//    // Example sending a request using the DisassociateInstanceEventWindowRequest method.
-//    req, resp := client.DisassociateInstanceEventWindowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateInstanceEventWindow
 func (c *EC2) DisassociateInstanceEventWindowRequest(input *DisassociateInstanceEventWindowInput) (req *request.Request, output *DisassociateInstanceEventWindowOutput) {
@@ -32730,14 +32291,13 @@ const opDisassociateRouteTable = "DisassociateRouteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateRouteTableRequest method.
+//	req, resp := client.DisassociateRouteTableRequest(params)
 //
-//    // Example sending a request using the DisassociateRouteTableRequest method.
-//    req, resp := client.DisassociateRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateRouteTable
 func (c *EC2) DisassociateRouteTableRequest(input *DisassociateRouteTableInput) (req *request.Request, output *DisassociateRouteTableOutput) {
@@ -32810,14 +32370,13 @@ const opDisassociateSubnetCidrBlock = "DisassociateSubnetCidrBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateSubnetCidrBlockRequest method.
+//	req, resp := client.DisassociateSubnetCidrBlockRequest(params)
 //
-//    // Example sending a request using the DisassociateSubnetCidrBlockRequest method.
-//    req, resp := client.DisassociateSubnetCidrBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateSubnetCidrBlock
 func (c *EC2) DisassociateSubnetCidrBlockRequest(input *DisassociateSubnetCidrBlockInput) (req *request.Request, output *DisassociateSubnetCidrBlockOutput) {
@@ -32886,14 +32445,13 @@ const opDisassociateTransitGatewayMulticastDomain = "DisassociateTransitGatewayM
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTransitGatewayMulticastDomainRequest method.
+//	req, resp := client.DisassociateTransitGatewayMulticastDomainRequest(params)
 //
-//    // Example sending a request using the DisassociateTransitGatewayMulticastDomainRequest method.
-//    req, resp := client.DisassociateTransitGatewayMulticastDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateTransitGatewayMulticastDomain
 func (c *EC2) DisassociateTransitGatewayMulticastDomainRequest(input *DisassociateTransitGatewayMulticastDomainInput) (req *request.Request, output *DisassociateTransitGatewayMulticastDomainOutput) {
@@ -32960,14 +32518,13 @@ const opDisassociateTransitGatewayRouteTable = "DisassociateTransitGatewayRouteT
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTransitGatewayRouteTableRequest method.
+//	req, resp := client.DisassociateTransitGatewayRouteTableRequest(params)
 //
-//    // Example sending a request using the DisassociateTransitGatewayRouteTableRequest method.
-//    req, resp := client.DisassociateTransitGatewayRouteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateTransitGatewayRouteTable
 func (c *EC2) DisassociateTransitGatewayRouteTableRequest(input *DisassociateTransitGatewayRouteTableInput) (req *request.Request, output *DisassociateTransitGatewayRouteTableOutput) {
@@ -33034,14 +32591,13 @@ const opDisassociateTrunkInterface = "DisassociateTrunkInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTrunkInterfaceRequest method.
+//	req, resp := client.DisassociateTrunkInterfaceRequest(params)
 //
-//    // Example sending a request using the DisassociateTrunkInterfaceRequest method.
-//    req, resp := client.DisassociateTrunkInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateTrunkInterface
 func (c *EC2) DisassociateTrunkInterfaceRequest(input *DisassociateTrunkInterfaceInput) (req *request.Request, output *DisassociateTrunkInterfaceOutput) {
@@ -33061,7 +32617,6 @@ func (c *EC2) DisassociateTrunkInterfaceRequest(input *DisassociateTrunkInterfac
 }
 
 // DisassociateTrunkInterface API operation for Amazon Elastic Compute Cloud.
-//
 //
 // This API action is currently in limited preview only. If you are interested
 // in using this feature, contact your account manager.
@@ -33113,14 +32668,13 @@ const opDisassociateVpcCidrBlock = "DisassociateVpcCidrBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateVpcCidrBlockRequest method.
+//	req, resp := client.DisassociateVpcCidrBlockRequest(params)
 //
-//    // Example sending a request using the DisassociateVpcCidrBlockRequest method.
-//    req, resp := client.DisassociateVpcCidrBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateVpcCidrBlock
 func (c *EC2) DisassociateVpcCidrBlockRequest(input *DisassociateVpcCidrBlockInput) (req *request.Request, output *DisassociateVpcCidrBlockOutput) {
@@ -33193,14 +32747,13 @@ const opEnableEbsEncryptionByDefault = "EnableEbsEncryptionByDefault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableEbsEncryptionByDefaultRequest method.
+//	req, resp := client.EnableEbsEncryptionByDefaultRequest(params)
 //
-//    // Example sending a request using the EnableEbsEncryptionByDefaultRequest method.
-//    req, resp := client.EnableEbsEncryptionByDefaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableEbsEncryptionByDefault
 func (c *EC2) EnableEbsEncryptionByDefaultRequest(input *EnableEbsEncryptionByDefaultInput) (req *request.Request, output *EnableEbsEncryptionByDefaultOutput) {
@@ -33283,14 +32836,13 @@ const opEnableFastLaunch = "EnableFastLaunch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableFastLaunchRequest method.
+//	req, resp := client.EnableFastLaunchRequest(params)
 //
-//    // Example sending a request using the EnableFastLaunchRequest method.
-//    req, resp := client.EnableFastLaunchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableFastLaunch
 func (c *EC2) EnableFastLaunchRequest(input *EnableFastLaunchInput) (req *request.Request, output *EnableFastLaunchOutput) {
@@ -33364,14 +32916,13 @@ const opEnableFastSnapshotRestores = "EnableFastSnapshotRestores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableFastSnapshotRestoresRequest method.
+//	req, resp := client.EnableFastSnapshotRestoresRequest(params)
 //
-//    // Example sending a request using the EnableFastSnapshotRestoresRequest method.
-//    req, resp := client.EnableFastSnapshotRestoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableFastSnapshotRestores
 func (c *EC2) EnableFastSnapshotRestoresRequest(input *EnableFastSnapshotRestoresInput) (req *request.Request, output *EnableFastSnapshotRestoresOutput) {
@@ -33446,14 +32997,13 @@ const opEnableImageDeprecation = "EnableImageDeprecation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableImageDeprecationRequest method.
+//	req, resp := client.EnableImageDeprecationRequest(params)
 //
-//    // Example sending a request using the EnableImageDeprecationRequest method.
-//    req, resp := client.EnableImageDeprecationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableImageDeprecation
 func (c *EC2) EnableImageDeprecationRequest(input *EnableImageDeprecationInput) (req *request.Request, output *EnableImageDeprecationOutput) {
@@ -33523,14 +33073,13 @@ const opEnableIpamOrganizationAdminAccount = "EnableIpamOrganizationAdminAccount
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableIpamOrganizationAdminAccountRequest method.
+//	req, resp := client.EnableIpamOrganizationAdminAccountRequest(params)
 //
-//    // Example sending a request using the EnableIpamOrganizationAdminAccountRequest method.
-//    req, resp := client.EnableIpamOrganizationAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableIpamOrganizationAdminAccount
 func (c *EC2) EnableIpamOrganizationAdminAccountRequest(input *EnableIpamOrganizationAdminAccountInput) (req *request.Request, output *EnableIpamOrganizationAdminAccountOutput) {
@@ -33600,14 +33149,13 @@ const opEnableSerialConsoleAccess = "EnableSerialConsoleAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableSerialConsoleAccessRequest method.
+//	req, resp := client.EnableSerialConsoleAccessRequest(params)
 //
-//    // Example sending a request using the EnableSerialConsoleAccessRequest method.
-//    req, resp := client.EnableSerialConsoleAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableSerialConsoleAccess
 func (c *EC2) EnableSerialConsoleAccessRequest(input *EnableSerialConsoleAccessInput) (req *request.Request, output *EnableSerialConsoleAccessOutput) {
@@ -33678,14 +33226,13 @@ const opEnableTransitGatewayRouteTablePropagation = "EnableTransitGatewayRouteTa
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableTransitGatewayRouteTablePropagationRequest method.
+//	req, resp := client.EnableTransitGatewayRouteTablePropagationRequest(params)
 //
-//    // Example sending a request using the EnableTransitGatewayRouteTablePropagationRequest method.
-//    req, resp := client.EnableTransitGatewayRouteTablePropagationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableTransitGatewayRouteTablePropagation
 func (c *EC2) EnableTransitGatewayRouteTablePropagationRequest(input *EnableTransitGatewayRouteTablePropagationInput) (req *request.Request, output *EnableTransitGatewayRouteTablePropagationOutput) {
@@ -33753,14 +33300,13 @@ const opEnableVgwRoutePropagation = "EnableVgwRoutePropagation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableVgwRoutePropagationRequest method.
+//	req, resp := client.EnableVgwRoutePropagationRequest(params)
 //
-//    // Example sending a request using the EnableVgwRoutePropagationRequest method.
-//    req, resp := client.EnableVgwRoutePropagationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableVgwRoutePropagation
 func (c *EC2) EnableVgwRoutePropagationRequest(input *EnableVgwRoutePropagationInput) (req *request.Request, output *EnableVgwRoutePropagationOutput) {
@@ -33829,14 +33375,13 @@ const opEnableVolumeIO = "EnableVolumeIO"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableVolumeIORequest method.
+//	req, resp := client.EnableVolumeIORequest(params)
 //
-//    // Example sending a request using the EnableVolumeIORequest method.
-//    req, resp := client.EnableVolumeIORequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableVolumeIO
 func (c *EC2) EnableVolumeIORequest(input *EnableVolumeIOInput) (req *request.Request, output *EnableVolumeIOOutput) {
@@ -33905,14 +33450,13 @@ const opEnableVpcClassicLink = "EnableVpcClassicLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableVpcClassicLinkRequest method.
+//	req, resp := client.EnableVpcClassicLinkRequest(params)
 //
-//    // Example sending a request using the EnableVpcClassicLinkRequest method.
-//    req, resp := client.EnableVpcClassicLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableVpcClassicLink
 func (c *EC2) EnableVpcClassicLinkRequest(input *EnableVpcClassicLinkInput) (req *request.Request, output *EnableVpcClassicLinkOutput) {
@@ -33985,14 +33529,13 @@ const opEnableVpcClassicLinkDnsSupport = "EnableVpcClassicLinkDnsSupport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableVpcClassicLinkDnsSupportRequest method.
+//	req, resp := client.EnableVpcClassicLinkDnsSupportRequest(params)
 //
-//    // Example sending a request using the EnableVpcClassicLinkDnsSupportRequest method.
-//    req, resp := client.EnableVpcClassicLinkDnsSupportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableVpcClassicLinkDnsSupport
 func (c *EC2) EnableVpcClassicLinkDnsSupportRequest(input *EnableVpcClassicLinkDnsSupportInput) (req *request.Request, output *EnableVpcClassicLinkDnsSupportOutput) {
@@ -34067,14 +33610,13 @@ const opExportClientVpnClientCertificateRevocationList = "ExportClientVpnClientC
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportClientVpnClientCertificateRevocationListRequest method.
+//	req, resp := client.ExportClientVpnClientCertificateRevocationListRequest(params)
 //
-//    // Example sending a request using the ExportClientVpnClientCertificateRevocationListRequest method.
-//    req, resp := client.ExportClientVpnClientCertificateRevocationListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportClientVpnClientCertificateRevocationList
 func (c *EC2) ExportClientVpnClientCertificateRevocationListRequest(input *ExportClientVpnClientCertificateRevocationListInput) (req *request.Request, output *ExportClientVpnClientCertificateRevocationListOutput) {
@@ -34142,14 +33684,13 @@ const opExportClientVpnClientConfiguration = "ExportClientVpnClientConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportClientVpnClientConfigurationRequest method.
+//	req, resp := client.ExportClientVpnClientConfigurationRequest(params)
 //
-//    // Example sending a request using the ExportClientVpnClientConfigurationRequest method.
-//    req, resp := client.ExportClientVpnClientConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportClientVpnClientConfiguration
 func (c *EC2) ExportClientVpnClientConfigurationRequest(input *ExportClientVpnClientConfigurationInput) (req *request.Request, output *ExportClientVpnClientConfigurationOutput) {
@@ -34219,14 +33760,13 @@ const opExportImage = "ExportImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportImageRequest method.
+//	req, resp := client.ExportImageRequest(params)
 //
-//    // Example sending a request using the ExportImageRequest method.
-//    req, resp := client.ExportImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportImage
 func (c *EC2) ExportImageRequest(input *ExportImageInput) (req *request.Request, output *ExportImageOutput) {
@@ -34295,14 +33835,13 @@ const opExportTransitGatewayRoutes = "ExportTransitGatewayRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportTransitGatewayRoutesRequest method.
+//	req, resp := client.ExportTransitGatewayRoutesRequest(params)
 //
-//    // Example sending a request using the ExportTransitGatewayRoutesRequest method.
-//    req, resp := client.ExportTransitGatewayRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportTransitGatewayRoutes
 func (c *EC2) ExportTransitGatewayRoutesRequest(input *ExportTransitGatewayRoutesInput) (req *request.Request, output *ExportTransitGatewayRoutesOutput) {
@@ -34375,14 +33914,13 @@ const opGetAssociatedEnclaveCertificateIamRoles = "GetAssociatedEnclaveCertifica
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssociatedEnclaveCertificateIamRolesRequest method.
+//	req, resp := client.GetAssociatedEnclaveCertificateIamRolesRequest(params)
 //
-//    // Example sending a request using the GetAssociatedEnclaveCertificateIamRolesRequest method.
-//    req, resp := client.GetAssociatedEnclaveCertificateIamRolesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetAssociatedEnclaveCertificateIamRoles
 func (c *EC2) GetAssociatedEnclaveCertificateIamRolesRequest(input *GetAssociatedEnclaveCertificateIamRolesInput) (req *request.Request, output *GetAssociatedEnclaveCertificateIamRolesOutput) {
@@ -34453,14 +33991,13 @@ const opGetAssociatedIpv6PoolCidrs = "GetAssociatedIpv6PoolCidrs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssociatedIpv6PoolCidrsRequest method.
+//	req, resp := client.GetAssociatedIpv6PoolCidrsRequest(params)
 //
-//    // Example sending a request using the GetAssociatedIpv6PoolCidrsRequest method.
-//    req, resp := client.GetAssociatedIpv6PoolCidrsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetAssociatedIpv6PoolCidrs
 func (c *EC2) GetAssociatedIpv6PoolCidrsRequest(input *GetAssociatedIpv6PoolCidrsInput) (req *request.Request, output *GetAssociatedIpv6PoolCidrsOutput) {
@@ -34526,15 +34063,14 @@ func (c *EC2) GetAssociatedIpv6PoolCidrsWithContext(ctx aws.Context, input *GetA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetAssociatedIpv6PoolCidrs operation.
-//    pageNum := 0
-//    err := client.GetAssociatedIpv6PoolCidrsPages(params,
-//        func(page *ec2.GetAssociatedIpv6PoolCidrsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetAssociatedIpv6PoolCidrs operation.
+//	pageNum := 0
+//	err := client.GetAssociatedIpv6PoolCidrsPages(params,
+//	    func(page *ec2.GetAssociatedIpv6PoolCidrsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetAssociatedIpv6PoolCidrsPages(input *GetAssociatedIpv6PoolCidrsInput, fn func(*GetAssociatedIpv6PoolCidrsOutput, bool) bool) error {
 	return c.GetAssociatedIpv6PoolCidrsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -34586,14 +34122,13 @@ const opGetCapacityReservationUsage = "GetCapacityReservationUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCapacityReservationUsageRequest method.
+//	req, resp := client.GetCapacityReservationUsageRequest(params)
 //
-//    // Example sending a request using the GetCapacityReservationUsageRequest method.
-//    req, resp := client.GetCapacityReservationUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetCapacityReservationUsage
 func (c *EC2) GetCapacityReservationUsageRequest(input *GetCapacityReservationUsageInput) (req *request.Request, output *GetCapacityReservationUsageOutput) {
@@ -34664,14 +34199,13 @@ const opGetCoipPoolUsage = "GetCoipPoolUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCoipPoolUsageRequest method.
+//	req, resp := client.GetCoipPoolUsageRequest(params)
 //
-//    // Example sending a request using the GetCoipPoolUsageRequest method.
-//    req, resp := client.GetCoipPoolUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetCoipPoolUsage
 func (c *EC2) GetCoipPoolUsageRequest(input *GetCoipPoolUsageInput) (req *request.Request, output *GetCoipPoolUsageOutput) {
@@ -34738,14 +34272,13 @@ const opGetConsoleOutput = "GetConsoleOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConsoleOutputRequest method.
+//	req, resp := client.GetConsoleOutputRequest(params)
 //
-//    // Example sending a request using the GetConsoleOutputRequest method.
-//    req, resp := client.GetConsoleOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetConsoleOutput
 func (c *EC2) GetConsoleOutputRequest(input *GetConsoleOutputInput) (req *request.Request, output *GetConsoleOutputOutput) {
@@ -34828,14 +34361,13 @@ const opGetConsoleScreenshot = "GetConsoleScreenshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConsoleScreenshotRequest method.
+//	req, resp := client.GetConsoleScreenshotRequest(params)
 //
-//    // Example sending a request using the GetConsoleScreenshotRequest method.
-//    req, resp := client.GetConsoleScreenshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetConsoleScreenshot
 func (c *EC2) GetConsoleScreenshotRequest(input *GetConsoleScreenshotInput) (req *request.Request, output *GetConsoleScreenshotOutput) {
@@ -34904,14 +34436,13 @@ const opGetDefaultCreditSpecification = "GetDefaultCreditSpecification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDefaultCreditSpecificationRequest method.
+//	req, resp := client.GetDefaultCreditSpecificationRequest(params)
 //
-//    // Example sending a request using the GetDefaultCreditSpecificationRequest method.
-//    req, resp := client.GetDefaultCreditSpecificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetDefaultCreditSpecification
 func (c *EC2) GetDefaultCreditSpecificationRequest(input *GetDefaultCreditSpecificationInput) (req *request.Request, output *GetDefaultCreditSpecificationOutput) {
@@ -34982,14 +34513,13 @@ const opGetEbsDefaultKmsKeyId = "GetEbsDefaultKmsKeyId"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEbsDefaultKmsKeyIdRequest method.
+//	req, resp := client.GetEbsDefaultKmsKeyIdRequest(params)
 //
-//    // Example sending a request using the GetEbsDefaultKmsKeyIdRequest method.
-//    req, resp := client.GetEbsDefaultKmsKeyIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetEbsDefaultKmsKeyId
 func (c *EC2) GetEbsDefaultKmsKeyIdRequest(input *GetEbsDefaultKmsKeyIdInput) (req *request.Request, output *GetEbsDefaultKmsKeyIdOutput) {
@@ -35061,14 +34591,13 @@ const opGetEbsEncryptionByDefault = "GetEbsEncryptionByDefault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEbsEncryptionByDefaultRequest method.
+//	req, resp := client.GetEbsEncryptionByDefaultRequest(params)
 //
-//    // Example sending a request using the GetEbsEncryptionByDefaultRequest method.
-//    req, resp := client.GetEbsEncryptionByDefaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetEbsEncryptionByDefault
 func (c *EC2) GetEbsEncryptionByDefaultRequest(input *GetEbsEncryptionByDefaultInput) (req *request.Request, output *GetEbsEncryptionByDefaultOutput) {
@@ -35139,14 +34668,13 @@ const opGetFlowLogsIntegrationTemplate = "GetFlowLogsIntegrationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFlowLogsIntegrationTemplateRequest method.
+//	req, resp := client.GetFlowLogsIntegrationTemplateRequest(params)
 //
-//    // Example sending a request using the GetFlowLogsIntegrationTemplateRequest method.
-//    req, resp := client.GetFlowLogsIntegrationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetFlowLogsIntegrationTemplate
 func (c *EC2) GetFlowLogsIntegrationTemplateRequest(input *GetFlowLogsIntegrationTemplateInput) (req *request.Request, output *GetFlowLogsIntegrationTemplateOutput) {
@@ -35172,15 +34700,15 @@ func (c *EC2) GetFlowLogsIntegrationTemplateRequest(input *GetFlowLogsIntegratio
 // and gain insights from VPC flow logs data. Based on the information that
 // you provide, we configure resources in the template to do the following:
 //
-//    * Create a table in Athena that maps fields to a custom log format
+//   - Create a table in Athena that maps fields to a custom log format
 //
-//    * Create a Lambda function that updates the table with new partitions
-//    on a daily, weekly, or monthly basis
+//   - Create a Lambda function that updates the table with new partitions
+//     on a daily, weekly, or monthly basis
 //
-//    * Create a table partitioned between two timestamps in the past
+//   - Create a table partitioned between two timestamps in the past
 //
-//    * Create a set of named queries in Athena that you can use to get started
-//    quickly
+//   - Create a set of named queries in Athena that you can use to get started
+//     quickly
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -35226,14 +34754,13 @@ const opGetGroupsForCapacityReservation = "GetGroupsForCapacityReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGroupsForCapacityReservationRequest method.
+//	req, resp := client.GetGroupsForCapacityReservationRequest(params)
 //
-//    // Example sending a request using the GetGroupsForCapacityReservationRequest method.
-//    req, resp := client.GetGroupsForCapacityReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetGroupsForCapacityReservation
 func (c *EC2) GetGroupsForCapacityReservationRequest(input *GetGroupsForCapacityReservationInput) (req *request.Request, output *GetGroupsForCapacityReservationOutput) {
@@ -35298,15 +34825,14 @@ func (c *EC2) GetGroupsForCapacityReservationWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetGroupsForCapacityReservation operation.
-//    pageNum := 0
-//    err := client.GetGroupsForCapacityReservationPages(params,
-//        func(page *ec2.GetGroupsForCapacityReservationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetGroupsForCapacityReservation operation.
+//	pageNum := 0
+//	err := client.GetGroupsForCapacityReservationPages(params,
+//	    func(page *ec2.GetGroupsForCapacityReservationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetGroupsForCapacityReservationPages(input *GetGroupsForCapacityReservationInput, fn func(*GetGroupsForCapacityReservationOutput, bool) bool) error {
 	return c.GetGroupsForCapacityReservationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -35358,14 +34884,13 @@ const opGetHostReservationPurchasePreview = "GetHostReservationPurchasePreview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostReservationPurchasePreviewRequest method.
+//	req, resp := client.GetHostReservationPurchasePreviewRequest(params)
 //
-//    // Example sending a request using the GetHostReservationPurchasePreviewRequest method.
-//    req, resp := client.GetHostReservationPurchasePreviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetHostReservationPurchasePreview
 func (c *EC2) GetHostReservationPurchasePreviewRequest(input *GetHostReservationPurchasePreviewInput) (req *request.Request, output *GetHostReservationPurchasePreviewOutput) {
@@ -35437,14 +34962,13 @@ const opGetInstanceTypesFromInstanceRequirements = "GetInstanceTypesFromInstance
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInstanceTypesFromInstanceRequirementsRequest method.
+//	req, resp := client.GetInstanceTypesFromInstanceRequirementsRequest(params)
 //
-//    // Example sending a request using the GetInstanceTypesFromInstanceRequirementsRequest method.
-//    req, resp := client.GetInstanceTypesFromInstanceRequirementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetInstanceTypesFromInstanceRequirements
 func (c *EC2) GetInstanceTypesFromInstanceRequirementsRequest(input *GetInstanceTypesFromInstanceRequirementsInput) (req *request.Request, output *GetInstanceTypesFromInstanceRequirementsOutput) {
@@ -35524,15 +35048,14 @@ func (c *EC2) GetInstanceTypesFromInstanceRequirementsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetInstanceTypesFromInstanceRequirements operation.
-//    pageNum := 0
-//    err := client.GetInstanceTypesFromInstanceRequirementsPages(params,
-//        func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetInstanceTypesFromInstanceRequirements operation.
+//	pageNum := 0
+//	err := client.GetInstanceTypesFromInstanceRequirementsPages(params,
+//	    func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetInstanceTypesFromInstanceRequirementsPages(input *GetInstanceTypesFromInstanceRequirementsInput, fn func(*GetInstanceTypesFromInstanceRequirementsOutput, bool) bool) error {
 	return c.GetInstanceTypesFromInstanceRequirementsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -35584,14 +35107,13 @@ const opGetInstanceUefiData = "GetInstanceUefiData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInstanceUefiDataRequest method.
+//	req, resp := client.GetInstanceUefiDataRequest(params)
 //
-//    // Example sending a request using the GetInstanceUefiDataRequest method.
-//    req, resp := client.GetInstanceUefiDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetInstanceUefiData
 func (c *EC2) GetInstanceUefiDataRequest(input *GetInstanceUefiDataInput) (req *request.Request, output *GetInstanceUefiDataOutput) {
@@ -35671,14 +35193,13 @@ const opGetIpamAddressHistory = "GetIpamAddressHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIpamAddressHistoryRequest method.
+//	req, resp := client.GetIpamAddressHistoryRequest(params)
 //
-//    // Example sending a request using the GetIpamAddressHistoryRequest method.
-//    req, resp := client.GetIpamAddressHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamAddressHistory
 func (c *EC2) GetIpamAddressHistoryRequest(input *GetIpamAddressHistoryInput) (req *request.Request, output *GetIpamAddressHistoryOutput) {
@@ -35745,15 +35266,14 @@ func (c *EC2) GetIpamAddressHistoryWithContext(ctx aws.Context, input *GetIpamAd
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetIpamAddressHistory operation.
-//    pageNum := 0
-//    err := client.GetIpamAddressHistoryPages(params,
-//        func(page *ec2.GetIpamAddressHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetIpamAddressHistory operation.
+//	pageNum := 0
+//	err := client.GetIpamAddressHistoryPages(params,
+//	    func(page *ec2.GetIpamAddressHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetIpamAddressHistoryPages(input *GetIpamAddressHistoryInput, fn func(*GetIpamAddressHistoryOutput, bool) bool) error {
 	return c.GetIpamAddressHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -35805,14 +35325,13 @@ const opGetIpamPoolAllocations = "GetIpamPoolAllocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIpamPoolAllocationsRequest method.
+//	req, resp := client.GetIpamPoolAllocationsRequest(params)
 //
-//    // Example sending a request using the GetIpamPoolAllocationsRequest method.
-//    req, resp := client.GetIpamPoolAllocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamPoolAllocations
 func (c *EC2) GetIpamPoolAllocationsRequest(input *GetIpamPoolAllocationsInput) (req *request.Request, output *GetIpamPoolAllocationsOutput) {
@@ -35877,15 +35396,14 @@ func (c *EC2) GetIpamPoolAllocationsWithContext(ctx aws.Context, input *GetIpamP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetIpamPoolAllocations operation.
-//    pageNum := 0
-//    err := client.GetIpamPoolAllocationsPages(params,
-//        func(page *ec2.GetIpamPoolAllocationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetIpamPoolAllocations operation.
+//	pageNum := 0
+//	err := client.GetIpamPoolAllocationsPages(params,
+//	    func(page *ec2.GetIpamPoolAllocationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetIpamPoolAllocationsPages(input *GetIpamPoolAllocationsInput, fn func(*GetIpamPoolAllocationsOutput, bool) bool) error {
 	return c.GetIpamPoolAllocationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -35937,14 +35455,13 @@ const opGetIpamPoolCidrs = "GetIpamPoolCidrs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIpamPoolCidrsRequest method.
+//	req, resp := client.GetIpamPoolCidrsRequest(params)
 //
-//    // Example sending a request using the GetIpamPoolCidrsRequest method.
-//    req, resp := client.GetIpamPoolCidrsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamPoolCidrs
 func (c *EC2) GetIpamPoolCidrsRequest(input *GetIpamPoolCidrsInput) (req *request.Request, output *GetIpamPoolCidrsOutput) {
@@ -36009,15 +35526,14 @@ func (c *EC2) GetIpamPoolCidrsWithContext(ctx aws.Context, input *GetIpamPoolCid
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetIpamPoolCidrs operation.
-//    pageNum := 0
-//    err := client.GetIpamPoolCidrsPages(params,
-//        func(page *ec2.GetIpamPoolCidrsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetIpamPoolCidrs operation.
+//	pageNum := 0
+//	err := client.GetIpamPoolCidrsPages(params,
+//	    func(page *ec2.GetIpamPoolCidrsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetIpamPoolCidrsPages(input *GetIpamPoolCidrsInput, fn func(*GetIpamPoolCidrsOutput, bool) bool) error {
 	return c.GetIpamPoolCidrsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -36069,14 +35585,13 @@ const opGetIpamResourceCidrs = "GetIpamResourceCidrs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIpamResourceCidrsRequest method.
+//	req, resp := client.GetIpamResourceCidrsRequest(params)
 //
-//    // Example sending a request using the GetIpamResourceCidrsRequest method.
-//    req, resp := client.GetIpamResourceCidrsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamResourceCidrs
 func (c *EC2) GetIpamResourceCidrsRequest(input *GetIpamResourceCidrsInput) (req *request.Request, output *GetIpamResourceCidrsOutput) {
@@ -36141,15 +35656,14 @@ func (c *EC2) GetIpamResourceCidrsWithContext(ctx aws.Context, input *GetIpamRes
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetIpamResourceCidrs operation.
-//    pageNum := 0
-//    err := client.GetIpamResourceCidrsPages(params,
-//        func(page *ec2.GetIpamResourceCidrsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetIpamResourceCidrs operation.
+//	pageNum := 0
+//	err := client.GetIpamResourceCidrsPages(params,
+//	    func(page *ec2.GetIpamResourceCidrsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetIpamResourceCidrsPages(input *GetIpamResourceCidrsInput, fn func(*GetIpamResourceCidrsOutput, bool) bool) error {
 	return c.GetIpamResourceCidrsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -36201,14 +35715,13 @@ const opGetLaunchTemplateData = "GetLaunchTemplateData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchTemplateDataRequest method.
+//	req, resp := client.GetLaunchTemplateDataRequest(params)
 //
-//    // Example sending a request using the GetLaunchTemplateDataRequest method.
-//    req, resp := client.GetLaunchTemplateDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetLaunchTemplateData
 func (c *EC2) GetLaunchTemplateDataRequest(input *GetLaunchTemplateDataInput) (req *request.Request, output *GetLaunchTemplateDataOutput) {
@@ -36282,14 +35795,13 @@ const opGetManagedPrefixListAssociations = "GetManagedPrefixListAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetManagedPrefixListAssociationsRequest method.
+//	req, resp := client.GetManagedPrefixListAssociationsRequest(params)
 //
-//    // Example sending a request using the GetManagedPrefixListAssociationsRequest method.
-//    req, resp := client.GetManagedPrefixListAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetManagedPrefixListAssociations
 func (c *EC2) GetManagedPrefixListAssociationsRequest(input *GetManagedPrefixListAssociationsInput) (req *request.Request, output *GetManagedPrefixListAssociationsOutput) {
@@ -36355,15 +35867,14 @@ func (c *EC2) GetManagedPrefixListAssociationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetManagedPrefixListAssociations operation.
-//    pageNum := 0
-//    err := client.GetManagedPrefixListAssociationsPages(params,
-//        func(page *ec2.GetManagedPrefixListAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetManagedPrefixListAssociations operation.
+//	pageNum := 0
+//	err := client.GetManagedPrefixListAssociationsPages(params,
+//	    func(page *ec2.GetManagedPrefixListAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetManagedPrefixListAssociationsPages(input *GetManagedPrefixListAssociationsInput, fn func(*GetManagedPrefixListAssociationsOutput, bool) bool) error {
 	return c.GetManagedPrefixListAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -36415,14 +35926,13 @@ const opGetManagedPrefixListEntries = "GetManagedPrefixListEntries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetManagedPrefixListEntriesRequest method.
+//	req, resp := client.GetManagedPrefixListEntriesRequest(params)
 //
-//    // Example sending a request using the GetManagedPrefixListEntriesRequest method.
-//    req, resp := client.GetManagedPrefixListEntriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetManagedPrefixListEntries
 func (c *EC2) GetManagedPrefixListEntriesRequest(input *GetManagedPrefixListEntriesInput) (req *request.Request, output *GetManagedPrefixListEntriesOutput) {
@@ -36487,15 +35997,14 @@ func (c *EC2) GetManagedPrefixListEntriesWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetManagedPrefixListEntries operation.
-//    pageNum := 0
-//    err := client.GetManagedPrefixListEntriesPages(params,
-//        func(page *ec2.GetManagedPrefixListEntriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetManagedPrefixListEntries operation.
+//	pageNum := 0
+//	err := client.GetManagedPrefixListEntriesPages(params,
+//	    func(page *ec2.GetManagedPrefixListEntriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetManagedPrefixListEntriesPages(input *GetManagedPrefixListEntriesInput, fn func(*GetManagedPrefixListEntriesOutput, bool) bool) error {
 	return c.GetManagedPrefixListEntriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -36547,14 +36056,13 @@ const opGetNetworkInsightsAccessScopeAnalysisFindings = "GetNetworkInsightsAcces
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkInsightsAccessScopeAnalysisFindingsRequest method.
+//	req, resp := client.GetNetworkInsightsAccessScopeAnalysisFindingsRequest(params)
 //
-//    // Example sending a request using the GetNetworkInsightsAccessScopeAnalysisFindingsRequest method.
-//    req, resp := client.GetNetworkInsightsAccessScopeAnalysisFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetNetworkInsightsAccessScopeAnalysisFindings
 func (c *EC2) GetNetworkInsightsAccessScopeAnalysisFindingsRequest(input *GetNetworkInsightsAccessScopeAnalysisFindingsInput) (req *request.Request, output *GetNetworkInsightsAccessScopeAnalysisFindingsOutput) {
@@ -36621,14 +36129,13 @@ const opGetNetworkInsightsAccessScopeContent = "GetNetworkInsightsAccessScopeCon
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkInsightsAccessScopeContentRequest method.
+//	req, resp := client.GetNetworkInsightsAccessScopeContentRequest(params)
 //
-//    // Example sending a request using the GetNetworkInsightsAccessScopeContentRequest method.
-//    req, resp := client.GetNetworkInsightsAccessScopeContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetNetworkInsightsAccessScopeContent
 func (c *EC2) GetNetworkInsightsAccessScopeContentRequest(input *GetNetworkInsightsAccessScopeContentInput) (req *request.Request, output *GetNetworkInsightsAccessScopeContentOutput) {
@@ -36695,14 +36202,13 @@ const opGetPasswordData = "GetPasswordData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPasswordDataRequest method.
+//	req, resp := client.GetPasswordDataRequest(params)
 //
-//    // Example sending a request using the GetPasswordDataRequest method.
-//    req, resp := client.GetPasswordDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetPasswordData
 func (c *EC2) GetPasswordDataRequest(input *GetPasswordDataInput) (req *request.Request, output *GetPasswordDataOutput) {
@@ -36786,14 +36292,13 @@ const opGetReservedInstancesExchangeQuote = "GetReservedInstancesExchangeQuote"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReservedInstancesExchangeQuoteRequest method.
+//	req, resp := client.GetReservedInstancesExchangeQuoteRequest(params)
 //
-//    // Example sending a request using the GetReservedInstancesExchangeQuoteRequest method.
-//    req, resp := client.GetReservedInstancesExchangeQuoteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetReservedInstancesExchangeQuote
 func (c *EC2) GetReservedInstancesExchangeQuoteRequest(input *GetReservedInstancesExchangeQuoteInput) (req *request.Request, output *GetReservedInstancesExchangeQuoteOutput) {
@@ -36863,14 +36368,13 @@ const opGetSerialConsoleAccessStatus = "GetSerialConsoleAccessStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSerialConsoleAccessStatusRequest method.
+//	req, resp := client.GetSerialConsoleAccessStatusRequest(params)
 //
-//    // Example sending a request using the GetSerialConsoleAccessStatusRequest method.
-//    req, resp := client.GetSerialConsoleAccessStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetSerialConsoleAccessStatus
 func (c *EC2) GetSerialConsoleAccessStatusRequest(input *GetSerialConsoleAccessStatusInput) (req *request.Request, output *GetSerialConsoleAccessStatusOutput) {
@@ -36941,14 +36445,13 @@ const opGetSpotPlacementScores = "GetSpotPlacementScores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSpotPlacementScoresRequest method.
+//	req, resp := client.GetSpotPlacementScoresRequest(params)
 //
-//    // Example sending a request using the GetSpotPlacementScoresRequest method.
-//    req, resp := client.GetSpotPlacementScoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetSpotPlacementScores
 func (c *EC2) GetSpotPlacementScoresRequest(input *GetSpotPlacementScoresInput) (req *request.Request, output *GetSpotPlacementScoresOutput) {
@@ -37021,15 +36524,14 @@ func (c *EC2) GetSpotPlacementScoresWithContext(ctx aws.Context, input *GetSpotP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSpotPlacementScores operation.
-//    pageNum := 0
-//    err := client.GetSpotPlacementScoresPages(params,
-//        func(page *ec2.GetSpotPlacementScoresOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSpotPlacementScores operation.
+//	pageNum := 0
+//	err := client.GetSpotPlacementScoresPages(params,
+//	    func(page *ec2.GetSpotPlacementScoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetSpotPlacementScoresPages(input *GetSpotPlacementScoresInput, fn func(*GetSpotPlacementScoresOutput, bool) bool) error {
 	return c.GetSpotPlacementScoresPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -37081,14 +36583,13 @@ const opGetSubnetCidrReservations = "GetSubnetCidrReservations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSubnetCidrReservationsRequest method.
+//	req, resp := client.GetSubnetCidrReservationsRequest(params)
 //
-//    // Example sending a request using the GetSubnetCidrReservationsRequest method.
-//    req, resp := client.GetSubnetCidrReservationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetSubnetCidrReservations
 func (c *EC2) GetSubnetCidrReservationsRequest(input *GetSubnetCidrReservationsInput) (req *request.Request, output *GetSubnetCidrReservationsOutput) {
@@ -37155,14 +36656,13 @@ const opGetTransitGatewayAttachmentPropagations = "GetTransitGatewayAttachmentPr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayAttachmentPropagationsRequest method.
+//	req, resp := client.GetTransitGatewayAttachmentPropagationsRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayAttachmentPropagationsRequest method.
-//    req, resp := client.GetTransitGatewayAttachmentPropagationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetTransitGatewayAttachmentPropagations
 func (c *EC2) GetTransitGatewayAttachmentPropagationsRequest(input *GetTransitGatewayAttachmentPropagationsInput) (req *request.Request, output *GetTransitGatewayAttachmentPropagationsOutput) {
@@ -37228,15 +36728,14 @@ func (c *EC2) GetTransitGatewayAttachmentPropagationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayAttachmentPropagations operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayAttachmentPropagationsPages(params,
-//        func(page *ec2.GetTransitGatewayAttachmentPropagationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayAttachmentPropagations operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayAttachmentPropagationsPages(params,
+//	    func(page *ec2.GetTransitGatewayAttachmentPropagationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetTransitGatewayAttachmentPropagationsPages(input *GetTransitGatewayAttachmentPropagationsInput, fn func(*GetTransitGatewayAttachmentPropagationsOutput, bool) bool) error {
 	return c.GetTransitGatewayAttachmentPropagationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -37288,14 +36787,13 @@ const opGetTransitGatewayMulticastDomainAssociations = "GetTransitGatewayMultica
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayMulticastDomainAssociationsRequest method.
+//	req, resp := client.GetTransitGatewayMulticastDomainAssociationsRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayMulticastDomainAssociationsRequest method.
-//    req, resp := client.GetTransitGatewayMulticastDomainAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetTransitGatewayMulticastDomainAssociations
 func (c *EC2) GetTransitGatewayMulticastDomainAssociationsRequest(input *GetTransitGatewayMulticastDomainAssociationsInput) (req *request.Request, output *GetTransitGatewayMulticastDomainAssociationsOutput) {
@@ -37361,15 +36859,14 @@ func (c *EC2) GetTransitGatewayMulticastDomainAssociationsWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayMulticastDomainAssociations operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayMulticastDomainAssociationsPages(params,
-//        func(page *ec2.GetTransitGatewayMulticastDomainAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayMulticastDomainAssociations operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayMulticastDomainAssociationsPages(params,
+//	    func(page *ec2.GetTransitGatewayMulticastDomainAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetTransitGatewayMulticastDomainAssociationsPages(input *GetTransitGatewayMulticastDomainAssociationsInput, fn func(*GetTransitGatewayMulticastDomainAssociationsOutput, bool) bool) error {
 	return c.GetTransitGatewayMulticastDomainAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -37421,14 +36918,13 @@ const opGetTransitGatewayPrefixListReferences = "GetTransitGatewayPrefixListRefe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayPrefixListReferencesRequest method.
+//	req, resp := client.GetTransitGatewayPrefixListReferencesRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayPrefixListReferencesRequest method.
-//    req, resp := client.GetTransitGatewayPrefixListReferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetTransitGatewayPrefixListReferences
 func (c *EC2) GetTransitGatewayPrefixListReferencesRequest(input *GetTransitGatewayPrefixListReferencesInput) (req *request.Request, output *GetTransitGatewayPrefixListReferencesOutput) {
@@ -37494,15 +36990,14 @@ func (c *EC2) GetTransitGatewayPrefixListReferencesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayPrefixListReferences operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayPrefixListReferencesPages(params,
-//        func(page *ec2.GetTransitGatewayPrefixListReferencesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayPrefixListReferences operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayPrefixListReferencesPages(params,
+//	    func(page *ec2.GetTransitGatewayPrefixListReferencesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetTransitGatewayPrefixListReferencesPages(input *GetTransitGatewayPrefixListReferencesInput, fn func(*GetTransitGatewayPrefixListReferencesOutput, bool) bool) error {
 	return c.GetTransitGatewayPrefixListReferencesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -37554,14 +37049,13 @@ const opGetTransitGatewayRouteTableAssociations = "GetTransitGatewayRouteTableAs
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayRouteTableAssociationsRequest method.
+//	req, resp := client.GetTransitGatewayRouteTableAssociationsRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayRouteTableAssociationsRequest method.
-//    req, resp := client.GetTransitGatewayRouteTableAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetTransitGatewayRouteTableAssociations
 func (c *EC2) GetTransitGatewayRouteTableAssociationsRequest(input *GetTransitGatewayRouteTableAssociationsInput) (req *request.Request, output *GetTransitGatewayRouteTableAssociationsOutput) {
@@ -37627,15 +37121,14 @@ func (c *EC2) GetTransitGatewayRouteTableAssociationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayRouteTableAssociations operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayRouteTableAssociationsPages(params,
-//        func(page *ec2.GetTransitGatewayRouteTableAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayRouteTableAssociations operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayRouteTableAssociationsPages(params,
+//	    func(page *ec2.GetTransitGatewayRouteTableAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetTransitGatewayRouteTableAssociationsPages(input *GetTransitGatewayRouteTableAssociationsInput, fn func(*GetTransitGatewayRouteTableAssociationsOutput, bool) bool) error {
 	return c.GetTransitGatewayRouteTableAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -37687,14 +37180,13 @@ const opGetTransitGatewayRouteTablePropagations = "GetTransitGatewayRouteTablePr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayRouteTablePropagationsRequest method.
+//	req, resp := client.GetTransitGatewayRouteTablePropagationsRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayRouteTablePropagationsRequest method.
-//    req, resp := client.GetTransitGatewayRouteTablePropagationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetTransitGatewayRouteTablePropagations
 func (c *EC2) GetTransitGatewayRouteTablePropagationsRequest(input *GetTransitGatewayRouteTablePropagationsInput) (req *request.Request, output *GetTransitGatewayRouteTablePropagationsOutput) {
@@ -37760,15 +37252,14 @@ func (c *EC2) GetTransitGatewayRouteTablePropagationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayRouteTablePropagations operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayRouteTablePropagationsPages(params,
-//        func(page *ec2.GetTransitGatewayRouteTablePropagationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayRouteTablePropagations operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayRouteTablePropagationsPages(params,
+//	    func(page *ec2.GetTransitGatewayRouteTablePropagationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetTransitGatewayRouteTablePropagationsPages(input *GetTransitGatewayRouteTablePropagationsInput, fn func(*GetTransitGatewayRouteTablePropagationsOutput, bool) bool) error {
 	return c.GetTransitGatewayRouteTablePropagationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -37820,14 +37311,13 @@ const opGetVpnConnectionDeviceSampleConfiguration = "GetVpnConnectionDeviceSampl
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpnConnectionDeviceSampleConfigurationRequest method.
+//	req, resp := client.GetVpnConnectionDeviceSampleConfigurationRequest(params)
 //
-//    // Example sending a request using the GetVpnConnectionDeviceSampleConfigurationRequest method.
-//    req, resp := client.GetVpnConnectionDeviceSampleConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVpnConnectionDeviceSampleConfiguration
 func (c *EC2) GetVpnConnectionDeviceSampleConfigurationRequest(input *GetVpnConnectionDeviceSampleConfigurationInput) (req *request.Request, output *GetVpnConnectionDeviceSampleConfigurationOutput) {
@@ -37896,14 +37386,13 @@ const opGetVpnConnectionDeviceTypes = "GetVpnConnectionDeviceTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpnConnectionDeviceTypesRequest method.
+//	req, resp := client.GetVpnConnectionDeviceTypesRequest(params)
 //
-//    // Example sending a request using the GetVpnConnectionDeviceTypesRequest method.
-//    req, resp := client.GetVpnConnectionDeviceTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVpnConnectionDeviceTypes
 func (c *EC2) GetVpnConnectionDeviceTypesRequest(input *GetVpnConnectionDeviceTypesInput) (req *request.Request, output *GetVpnConnectionDeviceTypesOutput) {
@@ -37972,15 +37461,14 @@ func (c *EC2) GetVpnConnectionDeviceTypesWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetVpnConnectionDeviceTypes operation.
-//    pageNum := 0
-//    err := client.GetVpnConnectionDeviceTypesPages(params,
-//        func(page *ec2.GetVpnConnectionDeviceTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetVpnConnectionDeviceTypes operation.
+//	pageNum := 0
+//	err := client.GetVpnConnectionDeviceTypesPages(params,
+//	    func(page *ec2.GetVpnConnectionDeviceTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) GetVpnConnectionDeviceTypesPages(input *GetVpnConnectionDeviceTypesInput, fn func(*GetVpnConnectionDeviceTypesOutput, bool) bool) error {
 	return c.GetVpnConnectionDeviceTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -38032,14 +37520,13 @@ const opImportClientVpnClientCertificateRevocationList = "ImportClientVpnClientC
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportClientVpnClientCertificateRevocationListRequest method.
+//	req, resp := client.ImportClientVpnClientCertificateRevocationListRequest(params)
 //
-//    // Example sending a request using the ImportClientVpnClientCertificateRevocationListRequest method.
-//    req, resp := client.ImportClientVpnClientCertificateRevocationListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportClientVpnClientCertificateRevocationList
 func (c *EC2) ImportClientVpnClientCertificateRevocationListRequest(input *ImportClientVpnClientCertificateRevocationListInput) (req *request.Request, output *ImportClientVpnClientCertificateRevocationListOutput) {
@@ -38110,14 +37597,13 @@ const opImportImage = "ImportImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportImageRequest method.
+//	req, resp := client.ImportImageRequest(params)
 //
-//    // Example sending a request using the ImportImageRequest method.
-//    req, resp := client.ImportImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportImage
 func (c *EC2) ImportImageRequest(input *ImportImageInput) (req *request.Request, output *ImportImageOutput) {
@@ -38189,14 +37675,13 @@ const opImportInstance = "ImportInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportInstanceRequest method.
+//	req, resp := client.ImportInstanceRequest(params)
 //
-//    // Example sending a request using the ImportInstanceRequest method.
-//    req, resp := client.ImportInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportInstance
 func (c *EC2) ImportInstanceRequest(input *ImportInstanceInput) (req *request.Request, output *ImportInstanceOutput) {
@@ -38274,14 +37759,13 @@ const opImportKeyPair = "ImportKeyPair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportKeyPairRequest method.
+//	req, resp := client.ImportKeyPairRequest(params)
 //
-//    // Example sending a request using the ImportKeyPairRequest method.
-//    req, resp := client.ImportKeyPairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportKeyPair
 func (c *EC2) ImportKeyPairRequest(input *ImportKeyPairInput) (req *request.Request, output *ImportKeyPairOutput) {
@@ -38356,14 +37840,13 @@ const opImportSnapshot = "ImportSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportSnapshotRequest method.
+//	req, resp := client.ImportSnapshotRequest(params)
 //
-//    // Example sending a request using the ImportSnapshotRequest method.
-//    req, resp := client.ImportSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportSnapshot
 func (c *EC2) ImportSnapshotRequest(input *ImportSnapshotInput) (req *request.Request, output *ImportSnapshotOutput) {
@@ -38434,14 +37917,13 @@ const opImportVolume = "ImportVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportVolumeRequest method.
+//	req, resp := client.ImportVolumeRequest(params)
 //
-//    // Example sending a request using the ImportVolumeRequest method.
-//    req, resp := client.ImportVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportVolume
 func (c *EC2) ImportVolumeRequest(input *ImportVolumeInput) (req *request.Request, output *ImportVolumeOutput) {
@@ -38520,14 +38002,13 @@ const opListImagesInRecycleBin = "ListImagesInRecycleBin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagesInRecycleBinRequest method.
+//	req, resp := client.ListImagesInRecycleBinRequest(params)
 //
-//    // Example sending a request using the ListImagesInRecycleBinRequest method.
-//    req, resp := client.ListImagesInRecycleBinRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ListImagesInRecycleBin
 func (c *EC2) ListImagesInRecycleBinRequest(input *ListImagesInRecycleBinInput) (req *request.Request, output *ListImagesInRecycleBinOutput) {
@@ -38594,15 +38075,14 @@ func (c *EC2) ListImagesInRecycleBinWithContext(ctx aws.Context, input *ListImag
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagesInRecycleBin operation.
-//    pageNum := 0
-//    err := client.ListImagesInRecycleBinPages(params,
-//        func(page *ec2.ListImagesInRecycleBinOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagesInRecycleBin operation.
+//	pageNum := 0
+//	err := client.ListImagesInRecycleBinPages(params,
+//	    func(page *ec2.ListImagesInRecycleBinOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) ListImagesInRecycleBinPages(input *ListImagesInRecycleBinInput, fn func(*ListImagesInRecycleBinOutput, bool) bool) error {
 	return c.ListImagesInRecycleBinPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -38654,14 +38134,13 @@ const opListSnapshotsInRecycleBin = "ListSnapshotsInRecycleBin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSnapshotsInRecycleBinRequest method.
+//	req, resp := client.ListSnapshotsInRecycleBinRequest(params)
 //
-//    // Example sending a request using the ListSnapshotsInRecycleBinRequest method.
-//    req, resp := client.ListSnapshotsInRecycleBinRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ListSnapshotsInRecycleBin
 func (c *EC2) ListSnapshotsInRecycleBinRequest(input *ListSnapshotsInRecycleBinInput) (req *request.Request, output *ListSnapshotsInRecycleBinOutput) {
@@ -38726,15 +38205,14 @@ func (c *EC2) ListSnapshotsInRecycleBinWithContext(ctx aws.Context, input *ListS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSnapshotsInRecycleBin operation.
-//    pageNum := 0
-//    err := client.ListSnapshotsInRecycleBinPages(params,
-//        func(page *ec2.ListSnapshotsInRecycleBinOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSnapshotsInRecycleBin operation.
+//	pageNum := 0
+//	err := client.ListSnapshotsInRecycleBinPages(params,
+//	    func(page *ec2.ListSnapshotsInRecycleBinOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) ListSnapshotsInRecycleBinPages(input *ListSnapshotsInRecycleBinInput, fn func(*ListSnapshotsInRecycleBinOutput, bool) bool) error {
 	return c.ListSnapshotsInRecycleBinPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -38786,14 +38264,13 @@ const opModifyAddressAttribute = "ModifyAddressAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyAddressAttributeRequest method.
+//	req, resp := client.ModifyAddressAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyAddressAttributeRequest method.
-//    req, resp := client.ModifyAddressAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyAddressAttribute
 func (c *EC2) ModifyAddressAttributeRequest(input *ModifyAddressAttributeInput) (req *request.Request, output *ModifyAddressAttributeOutput) {
@@ -38861,14 +38338,13 @@ const opModifyAvailabilityZoneGroup = "ModifyAvailabilityZoneGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyAvailabilityZoneGroupRequest method.
+//	req, resp := client.ModifyAvailabilityZoneGroupRequest(params)
 //
-//    // Example sending a request using the ModifyAvailabilityZoneGroupRequest method.
-//    req, resp := client.ModifyAvailabilityZoneGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyAvailabilityZoneGroup
 func (c *EC2) ModifyAvailabilityZoneGroupRequest(input *ModifyAvailabilityZoneGroupInput) (req *request.Request, output *ModifyAvailabilityZoneGroupOutput) {
@@ -38939,14 +38415,13 @@ const opModifyCapacityReservation = "ModifyCapacityReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyCapacityReservationRequest method.
+//	req, resp := client.ModifyCapacityReservationRequest(params)
 //
-//    // Example sending a request using the ModifyCapacityReservationRequest method.
-//    req, resp := client.ModifyCapacityReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyCapacityReservation
 func (c *EC2) ModifyCapacityReservationRequest(input *ModifyCapacityReservationInput) (req *request.Request, output *ModifyCapacityReservationOutput) {
@@ -39018,14 +38493,13 @@ const opModifyCapacityReservationFleet = "ModifyCapacityReservationFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyCapacityReservationFleetRequest method.
+//	req, resp := client.ModifyCapacityReservationFleetRequest(params)
 //
-//    // Example sending a request using the ModifyCapacityReservationFleetRequest method.
-//    req, resp := client.ModifyCapacityReservationFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyCapacityReservationFleet
 func (c *EC2) ModifyCapacityReservationFleetRequest(input *ModifyCapacityReservationFleetInput) (req *request.Request, output *ModifyCapacityReservationFleetOutput) {
@@ -39099,14 +38573,13 @@ const opModifyClientVpnEndpoint = "ModifyClientVpnEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClientVpnEndpointRequest method.
+//	req, resp := client.ModifyClientVpnEndpointRequest(params)
 //
-//    // Example sending a request using the ModifyClientVpnEndpointRequest method.
-//    req, resp := client.ModifyClientVpnEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyClientVpnEndpoint
 func (c *EC2) ModifyClientVpnEndpointRequest(input *ModifyClientVpnEndpointInput) (req *request.Request, output *ModifyClientVpnEndpointOutput) {
@@ -39174,14 +38647,13 @@ const opModifyDefaultCreditSpecification = "ModifyDefaultCreditSpecification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDefaultCreditSpecificationRequest method.
+//	req, resp := client.ModifyDefaultCreditSpecificationRequest(params)
 //
-//    // Example sending a request using the ModifyDefaultCreditSpecificationRequest method.
-//    req, resp := client.ModifyDefaultCreditSpecificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyDefaultCreditSpecification
 func (c *EC2) ModifyDefaultCreditSpecificationRequest(input *ModifyDefaultCreditSpecificationInput) (req *request.Request, output *ModifyDefaultCreditSpecificationOutput) {
@@ -39262,14 +38734,13 @@ const opModifyEbsDefaultKmsKeyId = "ModifyEbsDefaultKmsKeyId"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyEbsDefaultKmsKeyIdRequest method.
+//	req, resp := client.ModifyEbsDefaultKmsKeyIdRequest(params)
 //
-//    // Example sending a request using the ModifyEbsDefaultKmsKeyIdRequest method.
-//    req, resp := client.ModifyEbsDefaultKmsKeyIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyEbsDefaultKmsKeyId
 func (c *EC2) ModifyEbsDefaultKmsKeyIdRequest(input *ModifyEbsDefaultKmsKeyIdInput) (req *request.Request, output *ModifyEbsDefaultKmsKeyIdOutput) {
@@ -39350,14 +38821,13 @@ const opModifyFleet = "ModifyFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyFleetRequest method.
+//	req, resp := client.ModifyFleetRequest(params)
 //
-//    // Example sending a request using the ModifyFleetRequest method.
-//    req, resp := client.ModifyFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyFleet
 func (c *EC2) ModifyFleetRequest(input *ModifyFleetInput) (req *request.Request, output *ModifyFleetOutput) {
@@ -39453,14 +38923,13 @@ const opModifyFpgaImageAttribute = "ModifyFpgaImageAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyFpgaImageAttributeRequest method.
+//	req, resp := client.ModifyFpgaImageAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyFpgaImageAttributeRequest method.
-//    req, resp := client.ModifyFpgaImageAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyFpgaImageAttribute
 func (c *EC2) ModifyFpgaImageAttributeRequest(input *ModifyFpgaImageAttributeInput) (req *request.Request, output *ModifyFpgaImageAttributeOutput) {
@@ -39527,14 +38996,13 @@ const opModifyHosts = "ModifyHosts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyHostsRequest method.
+//	req, resp := client.ModifyHostsRequest(params)
 //
-//    // Example sending a request using the ModifyHostsRequest method.
-//    req, resp := client.ModifyHostsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyHosts
 func (c *EC2) ModifyHostsRequest(input *ModifyHostsInput) (req *request.Request, output *ModifyHostsOutput) {
@@ -39611,14 +39079,13 @@ const opModifyIdFormat = "ModifyIdFormat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyIdFormatRequest method.
+//	req, resp := client.ModifyIdFormatRequest(params)
 //
-//    // Example sending a request using the ModifyIdFormatRequest method.
-//    req, resp := client.ModifyIdFormatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIdFormat
 func (c *EC2) ModifyIdFormatRequest(input *ModifyIdFormatInput) (req *request.Request, output *ModifyIdFormatOutput) {
@@ -39709,14 +39176,13 @@ const opModifyIdentityIdFormat = "ModifyIdentityIdFormat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyIdentityIdFormatRequest method.
+//	req, resp := client.ModifyIdentityIdFormatRequest(params)
 //
-//    // Example sending a request using the ModifyIdentityIdFormatRequest method.
-//    req, resp := client.ModifyIdentityIdFormatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIdentityIdFormat
 func (c *EC2) ModifyIdentityIdFormatRequest(input *ModifyIdentityIdFormatInput) (req *request.Request, output *ModifyIdentityIdFormatOutput) {
@@ -39806,14 +39272,13 @@ const opModifyImageAttribute = "ModifyImageAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyImageAttributeRequest method.
+//	req, resp := client.ModifyImageAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyImageAttributeRequest method.
-//    req, resp := client.ModifyImageAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyImageAttribute
 func (c *EC2) ModifyImageAttributeRequest(input *ModifyImageAttributeInput) (req *request.Request, output *ModifyImageAttributeOutput) {
@@ -39889,14 +39354,13 @@ const opModifyInstanceAttribute = "ModifyInstanceAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceAttributeRequest method.
+//	req, resp := client.ModifyInstanceAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceAttributeRequest method.
-//    req, resp := client.ModifyInstanceAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceAttribute
 func (c *EC2) ModifyInstanceAttributeRequest(input *ModifyInstanceAttributeInput) (req *request.Request, output *ModifyInstanceAttributeOutput) {
@@ -39975,14 +39439,13 @@ const opModifyInstanceCapacityReservationAttributes = "ModifyInstanceCapacityRes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceCapacityReservationAttributesRequest method.
+//	req, resp := client.ModifyInstanceCapacityReservationAttributesRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceCapacityReservationAttributesRequest method.
-//    req, resp := client.ModifyInstanceCapacityReservationAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceCapacityReservationAttributes
 func (c *EC2) ModifyInstanceCapacityReservationAttributesRequest(input *ModifyInstanceCapacityReservationAttributesInput) (req *request.Request, output *ModifyInstanceCapacityReservationAttributesOutput) {
@@ -40052,14 +39515,13 @@ const opModifyInstanceCreditSpecification = "ModifyInstanceCreditSpecification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceCreditSpecificationRequest method.
+//	req, resp := client.ModifyInstanceCreditSpecificationRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceCreditSpecificationRequest method.
-//    req, resp := client.ModifyInstanceCreditSpecificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceCreditSpecification
 func (c *EC2) ModifyInstanceCreditSpecificationRequest(input *ModifyInstanceCreditSpecificationInput) (req *request.Request, output *ModifyInstanceCreditSpecificationOutput) {
@@ -40130,14 +39592,13 @@ const opModifyInstanceEventStartTime = "ModifyInstanceEventStartTime"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceEventStartTimeRequest method.
+//	req, resp := client.ModifyInstanceEventStartTimeRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceEventStartTimeRequest method.
-//    req, resp := client.ModifyInstanceEventStartTimeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceEventStartTime
 func (c *EC2) ModifyInstanceEventStartTimeRequest(input *ModifyInstanceEventStartTimeInput) (req *request.Request, output *ModifyInstanceEventStartTimeOutput) {
@@ -40204,14 +39665,13 @@ const opModifyInstanceEventWindow = "ModifyInstanceEventWindow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceEventWindowRequest method.
+//	req, resp := client.ModifyInstanceEventWindowRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceEventWindowRequest method.
-//    req, resp := client.ModifyInstanceEventWindowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceEventWindow
 func (c *EC2) ModifyInstanceEventWindowRequest(input *ModifyInstanceEventWindowInput) (req *request.Request, output *ModifyInstanceEventWindowOutput) {
@@ -40290,14 +39750,13 @@ const opModifyInstanceMaintenanceOptions = "ModifyInstanceMaintenanceOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceMaintenanceOptionsRequest method.
+//	req, resp := client.ModifyInstanceMaintenanceOptionsRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceMaintenanceOptionsRequest method.
-//    req, resp := client.ModifyInstanceMaintenanceOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceMaintenanceOptions
 func (c *EC2) ModifyInstanceMaintenanceOptionsRequest(input *ModifyInstanceMaintenanceOptionsInput) (req *request.Request, output *ModifyInstanceMaintenanceOptionsOutput) {
@@ -40367,14 +39826,13 @@ const opModifyInstanceMetadataOptions = "ModifyInstanceMetadataOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceMetadataOptionsRequest method.
+//	req, resp := client.ModifyInstanceMetadataOptionsRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceMetadataOptionsRequest method.
-//    req, resp := client.ModifyInstanceMetadataOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceMetadataOptions
 func (c *EC2) ModifyInstanceMetadataOptionsRequest(input *ModifyInstanceMetadataOptionsInput) (req *request.Request, output *ModifyInstanceMetadataOptionsOutput) {
@@ -40448,14 +39906,13 @@ const opModifyInstancePlacement = "ModifyInstancePlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstancePlacementRequest method.
+//	req, resp := client.ModifyInstancePlacementRequest(params)
 //
-//    // Example sending a request using the ModifyInstancePlacementRequest method.
-//    req, resp := client.ModifyInstancePlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstancePlacement
 func (c *EC2) ModifyInstancePlacementRequest(input *ModifyInstancePlacementInput) (req *request.Request, output *ModifyInstancePlacementOutput) {
@@ -40479,17 +39936,17 @@ func (c *EC2) ModifyInstancePlacementRequest(input *ModifyInstancePlacementInput
 // Modifies the placement attributes for a specified instance. You can do the
 // following:
 //
-//    * Modify the affinity between an instance and a Dedicated Host (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html).
-//    When affinity is set to host and the instance is not associated with a
-//    specific Dedicated Host, the next time the instance is launched, it is
-//    automatically associated with the host on which it lands. If the instance
-//    is restarted or rebooted, this relationship persists.
+//   - Modify the affinity between an instance and a Dedicated Host (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html).
+//     When affinity is set to host and the instance is not associated with a
+//     specific Dedicated Host, the next time the instance is launched, it is
+//     automatically associated with the host on which it lands. If the instance
+//     is restarted or rebooted, this relationship persists.
 //
-//    * Change the Dedicated Host with which an instance is associated.
+//   - Change the Dedicated Host with which an instance is associated.
 //
-//    * Change the instance tenancy of an instance.
+//   - Change the instance tenancy of an instance.
 //
-//    * Move an instance to or from a placement group (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html).
+//   - Move an instance to or from a placement group (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html).
 //
 // At least one attribute for affinity, host ID, tenancy, or placement group
 // name must be specified in the request. Affinity and tenancy can be modified
@@ -40542,14 +39999,13 @@ const opModifyIpam = "ModifyIpam"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyIpamRequest method.
+//	req, resp := client.ModifyIpamRequest(params)
 //
-//    // Example sending a request using the ModifyIpamRequest method.
-//    req, resp := client.ModifyIpamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIpam
 func (c *EC2) ModifyIpamRequest(input *ModifyIpamInput) (req *request.Request, output *ModifyIpamOutput) {
@@ -40616,14 +40072,13 @@ const opModifyIpamPool = "ModifyIpamPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyIpamPoolRequest method.
+//	req, resp := client.ModifyIpamPoolRequest(params)
 //
-//    // Example sending a request using the ModifyIpamPoolRequest method.
-//    req, resp := client.ModifyIpamPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIpamPool
 func (c *EC2) ModifyIpamPoolRequest(input *ModifyIpamPoolInput) (req *request.Request, output *ModifyIpamPoolOutput) {
@@ -40693,14 +40148,13 @@ const opModifyIpamResourceCidr = "ModifyIpamResourceCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyIpamResourceCidrRequest method.
+//	req, resp := client.ModifyIpamResourceCidrRequest(params)
 //
-//    // Example sending a request using the ModifyIpamResourceCidrRequest method.
-//    req, resp := client.ModifyIpamResourceCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIpamResourceCidr
 func (c *EC2) ModifyIpamResourceCidrRequest(input *ModifyIpamResourceCidrInput) (req *request.Request, output *ModifyIpamResourceCidrOutput) {
@@ -40775,14 +40229,13 @@ const opModifyIpamScope = "ModifyIpamScope"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyIpamScopeRequest method.
+//	req, resp := client.ModifyIpamScopeRequest(params)
 //
-//    // Example sending a request using the ModifyIpamScopeRequest method.
-//    req, resp := client.ModifyIpamScopeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIpamScope
 func (c *EC2) ModifyIpamScopeRequest(input *ModifyIpamScopeInput) (req *request.Request, output *ModifyIpamScopeOutput) {
@@ -40849,14 +40302,13 @@ const opModifyLaunchTemplate = "ModifyLaunchTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyLaunchTemplateRequest method.
+//	req, resp := client.ModifyLaunchTemplateRequest(params)
 //
-//    // Example sending a request using the ModifyLaunchTemplateRequest method.
-//    req, resp := client.ModifyLaunchTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyLaunchTemplate
 func (c *EC2) ModifyLaunchTemplateRequest(input *ModifyLaunchTemplateInput) (req *request.Request, output *ModifyLaunchTemplateOutput) {
@@ -40925,14 +40377,13 @@ const opModifyManagedPrefixList = "ModifyManagedPrefixList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyManagedPrefixListRequest method.
+//	req, resp := client.ModifyManagedPrefixListRequest(params)
 //
-//    // Example sending a request using the ModifyManagedPrefixListRequest method.
-//    req, resp := client.ModifyManagedPrefixListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyManagedPrefixList
 func (c *EC2) ModifyManagedPrefixListRequest(input *ModifyManagedPrefixListInput) (req *request.Request, output *ModifyManagedPrefixListOutput) {
@@ -41005,14 +40456,13 @@ const opModifyNetworkInterfaceAttribute = "ModifyNetworkInterfaceAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyNetworkInterfaceAttributeRequest method.
+//	req, resp := client.ModifyNetworkInterfaceAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyNetworkInterfaceAttributeRequest method.
-//    req, resp := client.ModifyNetworkInterfaceAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyNetworkInterfaceAttribute
 func (c *EC2) ModifyNetworkInterfaceAttributeRequest(input *ModifyNetworkInterfaceAttributeInput) (req *request.Request, output *ModifyNetworkInterfaceAttributeOutput) {
@@ -41082,14 +40532,13 @@ const opModifyPrivateDnsNameOptions = "ModifyPrivateDnsNameOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyPrivateDnsNameOptionsRequest method.
+//	req, resp := client.ModifyPrivateDnsNameOptionsRequest(params)
 //
-//    // Example sending a request using the ModifyPrivateDnsNameOptionsRequest method.
-//    req, resp := client.ModifyPrivateDnsNameOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyPrivateDnsNameOptions
 func (c *EC2) ModifyPrivateDnsNameOptionsRequest(input *ModifyPrivateDnsNameOptionsInput) (req *request.Request, output *ModifyPrivateDnsNameOptionsOutput) {
@@ -41156,14 +40605,13 @@ const opModifyReservedInstances = "ModifyReservedInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyReservedInstancesRequest method.
+//	req, resp := client.ModifyReservedInstancesRequest(params)
 //
-//    // Example sending a request using the ModifyReservedInstancesRequest method.
-//    req, resp := client.ModifyReservedInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyReservedInstances
 func (c *EC2) ModifyReservedInstancesRequest(input *ModifyReservedInstancesInput) (req *request.Request, output *ModifyReservedInstancesOutput) {
@@ -41236,14 +40684,13 @@ const opModifySecurityGroupRules = "ModifySecurityGroupRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySecurityGroupRulesRequest method.
+//	req, resp := client.ModifySecurityGroupRulesRequest(params)
 //
-//    // Example sending a request using the ModifySecurityGroupRulesRequest method.
-//    req, resp := client.ModifySecurityGroupRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifySecurityGroupRules
 func (c *EC2) ModifySecurityGroupRulesRequest(input *ModifySecurityGroupRulesInput) (req *request.Request, output *ModifySecurityGroupRulesOutput) {
@@ -41310,14 +40757,13 @@ const opModifySnapshotAttribute = "ModifySnapshotAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySnapshotAttributeRequest method.
+//	req, resp := client.ModifySnapshotAttributeRequest(params)
 //
-//    // Example sending a request using the ModifySnapshotAttributeRequest method.
-//    req, resp := client.ModifySnapshotAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifySnapshotAttribute
 func (c *EC2) ModifySnapshotAttributeRequest(input *ModifySnapshotAttributeInput) (req *request.Request, output *ModifySnapshotAttributeOutput) {
@@ -41398,14 +40844,13 @@ const opModifySnapshotTier = "ModifySnapshotTier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySnapshotTierRequest method.
+//	req, resp := client.ModifySnapshotTierRequest(params)
 //
-//    // Example sending a request using the ModifySnapshotTierRequest method.
-//    req, resp := client.ModifySnapshotTierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifySnapshotTier
 func (c *EC2) ModifySnapshotTierRequest(input *ModifySnapshotTierInput) (req *request.Request, output *ModifySnapshotTierOutput) {
@@ -41477,14 +40922,13 @@ const opModifySpotFleetRequest = "ModifySpotFleetRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySpotFleetRequestRequest method.
+//	req, resp := client.ModifySpotFleetRequestRequest(params)
 //
-//    // Example sending a request using the ModifySpotFleetRequestRequest method.
-//    req, resp := client.ModifySpotFleetRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifySpotFleetRequest
 func (c *EC2) ModifySpotFleetRequestRequest(input *ModifySpotFleetRequestInput) (req *request.Request, output *ModifySpotFleetRequestOutput) {
@@ -41580,14 +41024,13 @@ const opModifySubnetAttribute = "ModifySubnetAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySubnetAttributeRequest method.
+//	req, resp := client.ModifySubnetAttributeRequest(params)
 //
-//    // Example sending a request using the ModifySubnetAttributeRequest method.
-//    req, resp := client.ModifySubnetAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifySubnetAttribute
 func (c *EC2) ModifySubnetAttributeRequest(input *ModifySubnetAttributeInput) (req *request.Request, output *ModifySubnetAttributeOutput) {
@@ -41613,17 +41056,17 @@ func (c *EC2) ModifySubnetAttributeRequest(input *ModifySubnetAttributeInput) (r
 //
 // Use this action to modify subnets on Amazon Web Services Outposts.
 //
-//    * To modify a subnet on an Outpost rack, set both MapCustomerOwnedIpOnLaunch
-//    and CustomerOwnedIpv4Pool. These two parameters act as a single attribute.
+//   - To modify a subnet on an Outpost rack, set both MapCustomerOwnedIpOnLaunch
+//     and CustomerOwnedIpv4Pool. These two parameters act as a single attribute.
 //
-//    * To modify a subnet on an Outpost server, set either EnableLniAtDeviceIndex
-//    or DisableLniAtDeviceIndex.
+//   - To modify a subnet on an Outpost server, set either EnableLniAtDeviceIndex
+//     or DisableLniAtDeviceIndex.
 //
 // For more information about Amazon Web Services Outposts, see the following:
 //
-//    * Outpost servers (https://docs.aws.amazon.com/outposts/latest/userguide/how-servers-work.html)
+//   - Outpost servers (https://docs.aws.amazon.com/outposts/latest/userguide/how-servers-work.html)
 //
-//    * Outpost racks (https://docs.aws.amazon.com/outposts/latest/userguide/how-racks-work.html)
+//   - Outpost racks (https://docs.aws.amazon.com/outposts/latest/userguide/how-racks-work.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -41669,14 +41112,13 @@ const opModifyTrafficMirrorFilterNetworkServices = "ModifyTrafficMirrorFilterNet
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTrafficMirrorFilterNetworkServicesRequest method.
+//	req, resp := client.ModifyTrafficMirrorFilterNetworkServicesRequest(params)
 //
-//    // Example sending a request using the ModifyTrafficMirrorFilterNetworkServicesRequest method.
-//    req, resp := client.ModifyTrafficMirrorFilterNetworkServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyTrafficMirrorFilterNetworkServices
 func (c *EC2) ModifyTrafficMirrorFilterNetworkServicesRequest(input *ModifyTrafficMirrorFilterNetworkServicesInput) (req *request.Request, output *ModifyTrafficMirrorFilterNetworkServicesOutput) {
@@ -41750,14 +41192,13 @@ const opModifyTrafficMirrorFilterRule = "ModifyTrafficMirrorFilterRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTrafficMirrorFilterRuleRequest method.
+//	req, resp := client.ModifyTrafficMirrorFilterRuleRequest(params)
 //
-//    // Example sending a request using the ModifyTrafficMirrorFilterRuleRequest method.
-//    req, resp := client.ModifyTrafficMirrorFilterRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyTrafficMirrorFilterRule
 func (c *EC2) ModifyTrafficMirrorFilterRuleRequest(input *ModifyTrafficMirrorFilterRuleInput) (req *request.Request, output *ModifyTrafficMirrorFilterRuleOutput) {
@@ -41827,14 +41268,13 @@ const opModifyTrafficMirrorSession = "ModifyTrafficMirrorSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTrafficMirrorSessionRequest method.
+//	req, resp := client.ModifyTrafficMirrorSessionRequest(params)
 //
-//    // Example sending a request using the ModifyTrafficMirrorSessionRequest method.
-//    req, resp := client.ModifyTrafficMirrorSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyTrafficMirrorSession
 func (c *EC2) ModifyTrafficMirrorSessionRequest(input *ModifyTrafficMirrorSessionInput) (req *request.Request, output *ModifyTrafficMirrorSessionOutput) {
@@ -41901,14 +41341,13 @@ const opModifyTransitGateway = "ModifyTransitGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTransitGatewayRequest method.
+//	req, resp := client.ModifyTransitGatewayRequest(params)
 //
-//    // Example sending a request using the ModifyTransitGatewayRequest method.
-//    req, resp := client.ModifyTransitGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyTransitGateway
 func (c *EC2) ModifyTransitGatewayRequest(input *ModifyTransitGatewayInput) (req *request.Request, output *ModifyTransitGatewayOutput) {
@@ -41977,14 +41416,13 @@ const opModifyTransitGatewayPrefixListReference = "ModifyTransitGatewayPrefixLis
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTransitGatewayPrefixListReferenceRequest method.
+//	req, resp := client.ModifyTransitGatewayPrefixListReferenceRequest(params)
 //
-//    // Example sending a request using the ModifyTransitGatewayPrefixListReferenceRequest method.
-//    req, resp := client.ModifyTransitGatewayPrefixListReferenceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyTransitGatewayPrefixListReference
 func (c *EC2) ModifyTransitGatewayPrefixListReferenceRequest(input *ModifyTransitGatewayPrefixListReferenceInput) (req *request.Request, output *ModifyTransitGatewayPrefixListReferenceOutput) {
@@ -42052,14 +41490,13 @@ const opModifyTransitGatewayVpcAttachment = "ModifyTransitGatewayVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTransitGatewayVpcAttachmentRequest method.
+//	req, resp := client.ModifyTransitGatewayVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the ModifyTransitGatewayVpcAttachmentRequest method.
-//    req, resp := client.ModifyTransitGatewayVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyTransitGatewayVpcAttachment
 func (c *EC2) ModifyTransitGatewayVpcAttachmentRequest(input *ModifyTransitGatewayVpcAttachmentInput) (req *request.Request, output *ModifyTransitGatewayVpcAttachmentOutput) {
@@ -42126,14 +41563,13 @@ const opModifyVolume = "ModifyVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVolumeRequest method.
+//	req, resp := client.ModifyVolumeRequest(params)
 //
-//    // Example sending a request using the ModifyVolumeRequest method.
-//    req, resp := client.ModifyVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVolume
 func (c *EC2) ModifyVolumeRequest(input *ModifyVolumeInput) (req *request.Request, output *ModifyVolumeOutput) {
@@ -42225,14 +41661,13 @@ const opModifyVolumeAttribute = "ModifyVolumeAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVolumeAttributeRequest method.
+//	req, resp := client.ModifyVolumeAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyVolumeAttributeRequest method.
-//    req, resp := client.ModifyVolumeAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVolumeAttribute
 func (c *EC2) ModifyVolumeAttributeRequest(input *ModifyVolumeAttributeInput) (req *request.Request, output *ModifyVolumeAttributeOutput) {
@@ -42309,14 +41744,13 @@ const opModifyVpcAttribute = "ModifyVpcAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcAttributeRequest method.
+//	req, resp := client.ModifyVpcAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyVpcAttributeRequest method.
-//    req, resp := client.ModifyVpcAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcAttribute
 func (c *EC2) ModifyVpcAttributeRequest(input *ModifyVpcAttributeInput) (req *request.Request, output *ModifyVpcAttributeOutput) {
@@ -42384,14 +41818,13 @@ const opModifyVpcEndpoint = "ModifyVpcEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcEndpointRequest method.
+//	req, resp := client.ModifyVpcEndpointRequest(params)
 //
-//    // Example sending a request using the ModifyVpcEndpointRequest method.
-//    req, resp := client.ModifyVpcEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcEndpoint
 func (c *EC2) ModifyVpcEndpointRequest(input *ModifyVpcEndpointInput) (req *request.Request, output *ModifyVpcEndpointOutput) {
@@ -42461,14 +41894,13 @@ const opModifyVpcEndpointConnectionNotification = "ModifyVpcEndpointConnectionNo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcEndpointConnectionNotificationRequest method.
+//	req, resp := client.ModifyVpcEndpointConnectionNotificationRequest(params)
 //
-//    // Example sending a request using the ModifyVpcEndpointConnectionNotificationRequest method.
-//    req, resp := client.ModifyVpcEndpointConnectionNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcEndpointConnectionNotification
 func (c *EC2) ModifyVpcEndpointConnectionNotificationRequest(input *ModifyVpcEndpointConnectionNotificationInput) (req *request.Request, output *ModifyVpcEndpointConnectionNotificationOutput) {
@@ -42537,14 +41969,13 @@ const opModifyVpcEndpointServiceConfiguration = "ModifyVpcEndpointServiceConfigu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcEndpointServiceConfigurationRequest method.
+//	req, resp := client.ModifyVpcEndpointServiceConfigurationRequest(params)
 //
-//    // Example sending a request using the ModifyVpcEndpointServiceConfigurationRequest method.
-//    req, resp := client.ModifyVpcEndpointServiceConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcEndpointServiceConfiguration
 func (c *EC2) ModifyVpcEndpointServiceConfigurationRequest(input *ModifyVpcEndpointServiceConfigurationInput) (req *request.Request, output *ModifyVpcEndpointServiceConfigurationOutput) {
@@ -42617,14 +42048,13 @@ const opModifyVpcEndpointServicePayerResponsibility = "ModifyVpcEndpointServiceP
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcEndpointServicePayerResponsibilityRequest method.
+//	req, resp := client.ModifyVpcEndpointServicePayerResponsibilityRequest(params)
 //
-//    // Example sending a request using the ModifyVpcEndpointServicePayerResponsibilityRequest method.
-//    req, resp := client.ModifyVpcEndpointServicePayerResponsibilityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcEndpointServicePayerResponsibility
 func (c *EC2) ModifyVpcEndpointServicePayerResponsibilityRequest(input *ModifyVpcEndpointServicePayerResponsibilityInput) (req *request.Request, output *ModifyVpcEndpointServicePayerResponsibilityOutput) {
@@ -42691,14 +42121,13 @@ const opModifyVpcEndpointServicePermissions = "ModifyVpcEndpointServicePermissio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcEndpointServicePermissionsRequest method.
+//	req, resp := client.ModifyVpcEndpointServicePermissionsRequest(params)
 //
-//    // Example sending a request using the ModifyVpcEndpointServicePermissionsRequest method.
-//    req, resp := client.ModifyVpcEndpointServicePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcEndpointServicePermissions
 func (c *EC2) ModifyVpcEndpointServicePermissionsRequest(input *ModifyVpcEndpointServicePermissionsInput) (req *request.Request, output *ModifyVpcEndpointServicePermissionsOutput) {
@@ -42772,14 +42201,13 @@ const opModifyVpcPeeringConnectionOptions = "ModifyVpcPeeringConnectionOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcPeeringConnectionOptionsRequest method.
+//	req, resp := client.ModifyVpcPeeringConnectionOptionsRequest(params)
 //
-//    // Example sending a request using the ModifyVpcPeeringConnectionOptionsRequest method.
-//    req, resp := client.ModifyVpcPeeringConnectionOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcPeeringConnectionOptions
 func (c *EC2) ModifyVpcPeeringConnectionOptionsRequest(input *ModifyVpcPeeringConnectionOptionsInput) (req *request.Request, output *ModifyVpcPeeringConnectionOptionsOutput) {
@@ -42803,15 +42231,15 @@ func (c *EC2) ModifyVpcPeeringConnectionOptionsRequest(input *ModifyVpcPeeringCo
 // Modifies the VPC peering connection options on one side of a VPC peering
 // connection. You can do the following:
 //
-//    * Enable/disable communication over the peering connection between an
-//    EC2-Classic instance that's linked to your VPC (using ClassicLink) and
-//    instances in the peer VPC.
+//   - Enable/disable communication over the peering connection between an
+//     EC2-Classic instance that's linked to your VPC (using ClassicLink) and
+//     instances in the peer VPC.
 //
-//    * Enable/disable communication over the peering connection between instances
-//    in your VPC and an EC2-Classic instance that's linked to the peer VPC.
+//   - Enable/disable communication over the peering connection between instances
+//     in your VPC and an EC2-Classic instance that's linked to the peer VPC.
 //
-//    * Enable/disable the ability to resolve public DNS hostnames to private
-//    IP addresses when queried from instances in the peer VPC.
+//   - Enable/disable the ability to resolve public DNS hostnames to private
+//     IP addresses when queried from instances in the peer VPC.
 //
 // If the peered VPCs are in the same Amazon Web Services account, you can enable
 // DNS resolution for queries from the local VPC. This ensures that queries
@@ -42870,14 +42298,13 @@ const opModifyVpcTenancy = "ModifyVpcTenancy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpcTenancyRequest method.
+//	req, resp := client.ModifyVpcTenancyRequest(params)
 //
-//    // Example sending a request using the ModifyVpcTenancyRequest method.
-//    req, resp := client.ModifyVpcTenancyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcTenancy
 func (c *EC2) ModifyVpcTenancyRequest(input *ModifyVpcTenancyInput) (req *request.Request, output *ModifyVpcTenancyOutput) {
@@ -42953,14 +42380,13 @@ const opModifyVpnConnection = "ModifyVpnConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpnConnectionRequest method.
+//	req, resp := client.ModifyVpnConnectionRequest(params)
 //
-//    // Example sending a request using the ModifyVpnConnectionRequest method.
-//    req, resp := client.ModifyVpnConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnConnection
 func (c *EC2) ModifyVpnConnectionRequest(input *ModifyVpnConnectionInput) (req *request.Request, output *ModifyVpnConnectionOutput) {
@@ -42985,13 +42411,13 @@ func (c *EC2) ModifyVpnConnectionRequest(input *ModifyVpnConnectionInput) (req *
 // Site-to-Site VPN connection. To modify the target gateway, the following
 // migration options are available:
 //
-//    * An existing virtual private gateway to a new virtual private gateway
+//   - An existing virtual private gateway to a new virtual private gateway
 //
-//    * An existing virtual private gateway to a transit gateway
+//   - An existing virtual private gateway to a transit gateway
 //
-//    * An existing transit gateway to a new transit gateway
+//   - An existing transit gateway to a new transit gateway
 //
-//    * An existing transit gateway to a virtual private gateway
+//   - An existing transit gateway to a virtual private gateway
 //
 // Before you perform the migration to the new gateway, you must configure the
 // new gateway. Use CreateVpnGateway to create a virtual private gateway, or
@@ -43067,14 +42493,13 @@ const opModifyVpnConnectionOptions = "ModifyVpnConnectionOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpnConnectionOptionsRequest method.
+//	req, resp := client.ModifyVpnConnectionOptionsRequest(params)
 //
-//    // Example sending a request using the ModifyVpnConnectionOptionsRequest method.
-//    req, resp := client.ModifyVpnConnectionOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnConnectionOptions
 func (c *EC2) ModifyVpnConnectionOptionsRequest(input *ModifyVpnConnectionOptionsInput) (req *request.Request, output *ModifyVpnConnectionOptionsOutput) {
@@ -43146,14 +42571,13 @@ const opModifyVpnTunnelCertificate = "ModifyVpnTunnelCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpnTunnelCertificateRequest method.
+//	req, resp := client.ModifyVpnTunnelCertificateRequest(params)
 //
-//    // Example sending a request using the ModifyVpnTunnelCertificateRequest method.
-//    req, resp := client.ModifyVpnTunnelCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnTunnelCertificate
 func (c *EC2) ModifyVpnTunnelCertificateRequest(input *ModifyVpnTunnelCertificateInput) (req *request.Request, output *ModifyVpnTunnelCertificateOutput) {
@@ -43220,14 +42644,13 @@ const opModifyVpnTunnelOptions = "ModifyVpnTunnelOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyVpnTunnelOptionsRequest method.
+//	req, resp := client.ModifyVpnTunnelOptionsRequest(params)
 //
-//    // Example sending a request using the ModifyVpnTunnelOptionsRequest method.
-//    req, resp := client.ModifyVpnTunnelOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnTunnelOptions
 func (c *EC2) ModifyVpnTunnelOptionsRequest(input *ModifyVpnTunnelOptionsInput) (req *request.Request, output *ModifyVpnTunnelOptionsOutput) {
@@ -43299,14 +42722,13 @@ const opMonitorInstances = "MonitorInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MonitorInstancesRequest method.
+//	req, resp := client.MonitorInstancesRequest(params)
 //
-//    // Example sending a request using the MonitorInstancesRequest method.
-//    req, resp := client.MonitorInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/MonitorInstances
 func (c *EC2) MonitorInstancesRequest(input *MonitorInstancesInput) (req *request.Request, output *MonitorInstancesOutput) {
@@ -43378,14 +42800,13 @@ const opMoveAddressToVpc = "MoveAddressToVpc"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MoveAddressToVpcRequest method.
+//	req, resp := client.MoveAddressToVpcRequest(params)
 //
-//    // Example sending a request using the MoveAddressToVpcRequest method.
-//    req, resp := client.MoveAddressToVpcRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/MoveAddressToVpc
 func (c *EC2) MoveAddressToVpcRequest(input *MoveAddressToVpcInput) (req *request.Request, output *MoveAddressToVpcOutput) {
@@ -43458,14 +42879,13 @@ const opMoveByoipCidrToIpam = "MoveByoipCidrToIpam"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MoveByoipCidrToIpamRequest method.
+//	req, resp := client.MoveByoipCidrToIpamRequest(params)
 //
-//    // Example sending a request using the MoveByoipCidrToIpamRequest method.
-//    req, resp := client.MoveByoipCidrToIpamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/MoveByoipCidrToIpam
 func (c *EC2) MoveByoipCidrToIpamRequest(input *MoveByoipCidrToIpamInput) (req *request.Request, output *MoveByoipCidrToIpamOutput) {
@@ -43538,14 +42958,13 @@ const opProvisionByoipCidr = "ProvisionByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvisionByoipCidrRequest method.
+//	req, resp := client.ProvisionByoipCidrRequest(params)
 //
-//    // Example sending a request using the ProvisionByoipCidrRequest method.
-//    req, resp := client.ProvisionByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ProvisionByoipCidr
 func (c *EC2) ProvisionByoipCidrRequest(input *ProvisionByoipCidrInput) (req *request.Request, output *ProvisionByoipCidrOutput) {
@@ -43629,14 +43048,13 @@ const opProvisionIpamPoolCidr = "ProvisionIpamPoolCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvisionIpamPoolCidrRequest method.
+//	req, resp := client.ProvisionIpamPoolCidrRequest(params)
 //
-//    // Example sending a request using the ProvisionIpamPoolCidrRequest method.
-//    req, resp := client.ProvisionIpamPoolCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ProvisionIpamPoolCidr
 func (c *EC2) ProvisionIpamPoolCidrRequest(input *ProvisionIpamPoolCidrInput) (req *request.Request, output *ProvisionIpamPoolCidrOutput) {
@@ -43708,14 +43126,13 @@ const opProvisionPublicIpv4PoolCidr = "ProvisionPublicIpv4PoolCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvisionPublicIpv4PoolCidrRequest method.
+//	req, resp := client.ProvisionPublicIpv4PoolCidrRequest(params)
 //
-//    // Example sending a request using the ProvisionPublicIpv4PoolCidrRequest method.
-//    req, resp := client.ProvisionPublicIpv4PoolCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ProvisionPublicIpv4PoolCidr
 func (c *EC2) ProvisionPublicIpv4PoolCidrRequest(input *ProvisionPublicIpv4PoolCidrInput) (req *request.Request, output *ProvisionPublicIpv4PoolCidrOutput) {
@@ -43785,14 +43202,13 @@ const opPurchaseHostReservation = "PurchaseHostReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseHostReservationRequest method.
+//	req, resp := client.PurchaseHostReservationRequest(params)
 //
-//    // Example sending a request using the PurchaseHostReservationRequest method.
-//    req, resp := client.PurchaseHostReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/PurchaseHostReservation
 func (c *EC2) PurchaseHostReservationRequest(input *PurchaseHostReservationInput) (req *request.Request, output *PurchaseHostReservationOutput) {
@@ -43862,14 +43278,13 @@ const opPurchaseReservedInstancesOffering = "PurchaseReservedInstancesOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseReservedInstancesOfferingRequest method.
+//	req, resp := client.PurchaseReservedInstancesOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseReservedInstancesOfferingRequest method.
-//    req, resp := client.PurchaseReservedInstancesOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/PurchaseReservedInstancesOffering
 func (c *EC2) PurchaseReservedInstancesOfferingRequest(input *PurchaseReservedInstancesOfferingInput) (req *request.Request, output *PurchaseReservedInstancesOfferingOutput) {
@@ -43948,14 +43363,13 @@ const opPurchaseScheduledInstances = "PurchaseScheduledInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseScheduledInstancesRequest method.
+//	req, resp := client.PurchaseScheduledInstancesRequest(params)
 //
-//    // Example sending a request using the PurchaseScheduledInstancesRequest method.
-//    req, resp := client.PurchaseScheduledInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/PurchaseScheduledInstances
 func (c *EC2) PurchaseScheduledInstancesRequest(input *PurchaseScheduledInstancesInput) (req *request.Request, output *PurchaseScheduledInstancesOutput) {
@@ -44031,14 +43445,13 @@ const opRebootInstances = "RebootInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootInstancesRequest method.
+//	req, resp := client.RebootInstancesRequest(params)
 //
-//    // Example sending a request using the RebootInstancesRequest method.
-//    req, resp := client.RebootInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RebootInstances
 func (c *EC2) RebootInstancesRequest(input *RebootInstancesInput) (req *request.Request, output *RebootInstancesOutput) {
@@ -44116,14 +43529,13 @@ const opRegisterImage = "RegisterImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterImageRequest method.
+//	req, resp := client.RegisterImageRequest(params)
 //
-//    // Example sending a request using the RegisterImageRequest method.
-//    req, resp := client.RegisterImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RegisterImage
 func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Request, output *RegisterImageOutput) {
@@ -44157,7 +43569,7 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 // If you make changes to an image, deregister the previous image and register
 // the new image.
 //
-// Register a snapshot of a root device volume
+// # Register a snapshot of a root device volume
 //
 // You can use RegisterImage to create an Amazon EBS-backed Linux AMI from a
 // snapshot of a root device volume. You specify the snapshot using a block
@@ -44169,7 +43581,7 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 // and Use encryption with Amazon EBS-backed AMIs (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIEncryption.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
-// Amazon Web Services Marketplace product codes
+// # Amazon Web Services Marketplace product codes
 //
 // If any snapshots have Amazon Web Services Marketplace product codes, they
 // are copied to the new AMI.
@@ -44240,14 +43652,13 @@ const opRegisterInstanceEventNotificationAttributes = "RegisterInstanceEventNoti
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterInstanceEventNotificationAttributesRequest method.
+//	req, resp := client.RegisterInstanceEventNotificationAttributesRequest(params)
 //
-//    // Example sending a request using the RegisterInstanceEventNotificationAttributesRequest method.
-//    req, resp := client.RegisterInstanceEventNotificationAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RegisterInstanceEventNotificationAttributes
 func (c *EC2) RegisterInstanceEventNotificationAttributesRequest(input *RegisterInstanceEventNotificationAttributesInput) (req *request.Request, output *RegisterInstanceEventNotificationAttributesOutput) {
@@ -44317,14 +43728,13 @@ const opRegisterTransitGatewayMulticastGroupMembers = "RegisterTransitGatewayMul
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterTransitGatewayMulticastGroupMembersRequest method.
+//	req, resp := client.RegisterTransitGatewayMulticastGroupMembersRequest(params)
 //
-//    // Example sending a request using the RegisterTransitGatewayMulticastGroupMembersRequest method.
-//    req, resp := client.RegisterTransitGatewayMulticastGroupMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RegisterTransitGatewayMulticastGroupMembers
 func (c *EC2) RegisterTransitGatewayMulticastGroupMembersRequest(input *RegisterTransitGatewayMulticastGroupMembersInput) (req *request.Request, output *RegisterTransitGatewayMulticastGroupMembersOutput) {
@@ -44398,14 +43808,13 @@ const opRegisterTransitGatewayMulticastGroupSources = "RegisterTransitGatewayMul
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterTransitGatewayMulticastGroupSourcesRequest method.
+//	req, resp := client.RegisterTransitGatewayMulticastGroupSourcesRequest(params)
 //
-//    // Example sending a request using the RegisterTransitGatewayMulticastGroupSourcesRequest method.
-//    req, resp := client.RegisterTransitGatewayMulticastGroupSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RegisterTransitGatewayMulticastGroupSources
 func (c *EC2) RegisterTransitGatewayMulticastGroupSourcesRequest(input *RegisterTransitGatewayMulticastGroupSourcesInput) (req *request.Request, output *RegisterTransitGatewayMulticastGroupSourcesOutput) {
@@ -44481,14 +43890,13 @@ const opRejectTransitGatewayMulticastDomainAssociations = "RejectTransitGatewayM
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectTransitGatewayMulticastDomainAssociationsRequest method.
+//	req, resp := client.RejectTransitGatewayMulticastDomainAssociationsRequest(params)
 //
-//    // Example sending a request using the RejectTransitGatewayMulticastDomainAssociationsRequest method.
-//    req, resp := client.RejectTransitGatewayMulticastDomainAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RejectTransitGatewayMulticastDomainAssociations
 func (c *EC2) RejectTransitGatewayMulticastDomainAssociationsRequest(input *RejectTransitGatewayMulticastDomainAssociationsInput) (req *request.Request, output *RejectTransitGatewayMulticastDomainAssociationsOutput) {
@@ -44556,14 +43964,13 @@ const opRejectTransitGatewayPeeringAttachment = "RejectTransitGatewayPeeringAtta
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectTransitGatewayPeeringAttachmentRequest method.
+//	req, resp := client.RejectTransitGatewayPeeringAttachmentRequest(params)
 //
-//    // Example sending a request using the RejectTransitGatewayPeeringAttachmentRequest method.
-//    req, resp := client.RejectTransitGatewayPeeringAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RejectTransitGatewayPeeringAttachment
 func (c *EC2) RejectTransitGatewayPeeringAttachmentRequest(input *RejectTransitGatewayPeeringAttachmentInput) (req *request.Request, output *RejectTransitGatewayPeeringAttachmentOutput) {
@@ -44630,14 +44037,13 @@ const opRejectTransitGatewayVpcAttachment = "RejectTransitGatewayVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectTransitGatewayVpcAttachmentRequest method.
+//	req, resp := client.RejectTransitGatewayVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the RejectTransitGatewayVpcAttachmentRequest method.
-//    req, resp := client.RejectTransitGatewayVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RejectTransitGatewayVpcAttachment
 func (c *EC2) RejectTransitGatewayVpcAttachmentRequest(input *RejectTransitGatewayVpcAttachmentInput) (req *request.Request, output *RejectTransitGatewayVpcAttachmentOutput) {
@@ -44708,14 +44114,13 @@ const opRejectVpcEndpointConnections = "RejectVpcEndpointConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectVpcEndpointConnectionsRequest method.
+//	req, resp := client.RejectVpcEndpointConnectionsRequest(params)
 //
-//    // Example sending a request using the RejectVpcEndpointConnectionsRequest method.
-//    req, resp := client.RejectVpcEndpointConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RejectVpcEndpointConnections
 func (c *EC2) RejectVpcEndpointConnectionsRequest(input *RejectVpcEndpointConnectionsInput) (req *request.Request, output *RejectVpcEndpointConnectionsOutput) {
@@ -44783,14 +44188,13 @@ const opRejectVpcPeeringConnection = "RejectVpcPeeringConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectVpcPeeringConnectionRequest method.
+//	req, resp := client.RejectVpcPeeringConnectionRequest(params)
 //
-//    // Example sending a request using the RejectVpcPeeringConnectionRequest method.
-//    req, resp := client.RejectVpcPeeringConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RejectVpcPeeringConnection
 func (c *EC2) RejectVpcPeeringConnectionRequest(input *RejectVpcPeeringConnectionInput) (req *request.Request, output *RejectVpcPeeringConnectionOutput) {
@@ -44861,14 +44265,13 @@ const opReleaseAddress = "ReleaseAddress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReleaseAddressRequest method.
+//	req, resp := client.ReleaseAddressRequest(params)
 //
-//    // Example sending a request using the ReleaseAddressRequest method.
-//    req, resp := client.ReleaseAddressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReleaseAddress
 func (c *EC2) ReleaseAddressRequest(input *ReleaseAddressInput) (req *request.Request, output *ReleaseAddressOutput) {
@@ -44953,14 +44356,13 @@ const opReleaseHosts = "ReleaseHosts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReleaseHostsRequest method.
+//	req, resp := client.ReleaseHostsRequest(params)
 //
-//    // Example sending a request using the ReleaseHostsRequest method.
-//    req, resp := client.ReleaseHostsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReleaseHosts
 func (c *EC2) ReleaseHostsRequest(input *ReleaseHostsInput) (req *request.Request, output *ReleaseHostsOutput) {
@@ -45037,14 +44439,13 @@ const opReleaseIpamPoolAllocation = "ReleaseIpamPoolAllocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReleaseIpamPoolAllocationRequest method.
+//	req, resp := client.ReleaseIpamPoolAllocationRequest(params)
 //
-//    // Example sending a request using the ReleaseIpamPoolAllocationRequest method.
-//    req, resp := client.ReleaseIpamPoolAllocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReleaseIpamPoolAllocation
 func (c *EC2) ReleaseIpamPoolAllocationRequest(input *ReleaseIpamPoolAllocationInput) (req *request.Request, output *ReleaseIpamPoolAllocationOutput) {
@@ -45116,14 +44517,13 @@ const opReplaceIamInstanceProfileAssociation = "ReplaceIamInstanceProfileAssocia
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReplaceIamInstanceProfileAssociationRequest method.
+//	req, resp := client.ReplaceIamInstanceProfileAssociationRequest(params)
 //
-//    // Example sending a request using the ReplaceIamInstanceProfileAssociationRequest method.
-//    req, resp := client.ReplaceIamInstanceProfileAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceIamInstanceProfileAssociation
 func (c *EC2) ReplaceIamInstanceProfileAssociationRequest(input *ReplaceIamInstanceProfileAssociationInput) (req *request.Request, output *ReplaceIamInstanceProfileAssociationOutput) {
@@ -45195,14 +44595,13 @@ const opReplaceNetworkAclAssociation = "ReplaceNetworkAclAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReplaceNetworkAclAssociationRequest method.
+//	req, resp := client.ReplaceNetworkAclAssociationRequest(params)
 //
-//    // Example sending a request using the ReplaceNetworkAclAssociationRequest method.
-//    req, resp := client.ReplaceNetworkAclAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceNetworkAclAssociation
 func (c *EC2) ReplaceNetworkAclAssociationRequest(input *ReplaceNetworkAclAssociationInput) (req *request.Request, output *ReplaceNetworkAclAssociationOutput) {
@@ -45274,14 +44673,13 @@ const opReplaceNetworkAclEntry = "ReplaceNetworkAclEntry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReplaceNetworkAclEntryRequest method.
+//	req, resp := client.ReplaceNetworkAclEntryRequest(params)
 //
-//    // Example sending a request using the ReplaceNetworkAclEntryRequest method.
-//    req, resp := client.ReplaceNetworkAclEntryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceNetworkAclEntry
 func (c *EC2) ReplaceNetworkAclEntryRequest(input *ReplaceNetworkAclEntryInput) (req *request.Request, output *ReplaceNetworkAclEntryOutput) {
@@ -45351,14 +44749,13 @@ const opReplaceRoute = "ReplaceRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReplaceRouteRequest method.
+//	req, resp := client.ReplaceRouteRequest(params)
 //
-//    // Example sending a request using the ReplaceRouteRequest method.
-//    req, resp := client.ReplaceRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceRoute
 func (c *EC2) ReplaceRouteRequest(input *ReplaceRouteInput) (req *request.Request, output *ReplaceRouteOutput) {
@@ -45432,14 +44829,13 @@ const opReplaceRouteTableAssociation = "ReplaceRouteTableAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReplaceRouteTableAssociationRequest method.
+//	req, resp := client.ReplaceRouteTableAssociationRequest(params)
 //
-//    // Example sending a request using the ReplaceRouteTableAssociationRequest method.
-//    req, resp := client.ReplaceRouteTableAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceRouteTableAssociation
 func (c *EC2) ReplaceRouteTableAssociationRequest(input *ReplaceRouteTableAssociationInput) (req *request.Request, output *ReplaceRouteTableAssociationOutput) {
@@ -45514,14 +44910,13 @@ const opReplaceTransitGatewayRoute = "ReplaceTransitGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReplaceTransitGatewayRouteRequest method.
+//	req, resp := client.ReplaceTransitGatewayRouteRequest(params)
 //
-//    // Example sending a request using the ReplaceTransitGatewayRouteRequest method.
-//    req, resp := client.ReplaceTransitGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceTransitGatewayRoute
 func (c *EC2) ReplaceTransitGatewayRouteRequest(input *ReplaceTransitGatewayRouteInput) (req *request.Request, output *ReplaceTransitGatewayRouteOutput) {
@@ -45588,14 +44983,13 @@ const opReportInstanceStatus = "ReportInstanceStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReportInstanceStatusRequest method.
+//	req, resp := client.ReportInstanceStatusRequest(params)
 //
-//    // Example sending a request using the ReportInstanceStatusRequest method.
-//    req, resp := client.ReportInstanceStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReportInstanceStatus
 func (c *EC2) ReportInstanceStatusRequest(input *ReportInstanceStatusInput) (req *request.Request, output *ReportInstanceStatusOutput) {
@@ -45669,14 +45063,13 @@ const opRequestSpotFleet = "RequestSpotFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestSpotFleetRequest method.
+//	req, resp := client.RequestSpotFleetRequest(params)
 //
-//    // Example sending a request using the RequestSpotFleetRequest method.
-//    req, resp := client.RequestSpotFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RequestSpotFleet
 func (c *EC2) RequestSpotFleetRequest(input *RequestSpotFleetInput) (req *request.Request, output *RequestSpotFleetOutput) {
@@ -45772,14 +45165,13 @@ const opRequestSpotInstances = "RequestSpotInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestSpotInstancesRequest method.
+//	req, resp := client.RequestSpotInstancesRequest(params)
 //
-//    // Example sending a request using the RequestSpotInstancesRequest method.
-//    req, resp := client.RequestSpotInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RequestSpotInstances
 func (c *EC2) RequestSpotInstancesRequest(input *RequestSpotInstancesInput) (req *request.Request, output *RequestSpotInstancesOutput) {
@@ -45854,14 +45246,13 @@ const opResetAddressAttribute = "ResetAddressAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetAddressAttributeRequest method.
+//	req, resp := client.ResetAddressAttributeRequest(params)
 //
-//    // Example sending a request using the ResetAddressAttributeRequest method.
-//    req, resp := client.ResetAddressAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetAddressAttribute
 func (c *EC2) ResetAddressAttributeRequest(input *ResetAddressAttributeInput) (req *request.Request, output *ResetAddressAttributeOutput) {
@@ -45929,14 +45320,13 @@ const opResetEbsDefaultKmsKeyId = "ResetEbsDefaultKmsKeyId"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetEbsDefaultKmsKeyIdRequest method.
+//	req, resp := client.ResetEbsDefaultKmsKeyIdRequest(params)
 //
-//    // Example sending a request using the ResetEbsDefaultKmsKeyIdRequest method.
-//    req, resp := client.ResetEbsDefaultKmsKeyIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetEbsDefaultKmsKeyId
 func (c *EC2) ResetEbsDefaultKmsKeyIdRequest(input *ResetEbsDefaultKmsKeyIdInput) (req *request.Request, output *ResetEbsDefaultKmsKeyIdOutput) {
@@ -46010,14 +45400,13 @@ const opResetFpgaImageAttribute = "ResetFpgaImageAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetFpgaImageAttributeRequest method.
+//	req, resp := client.ResetFpgaImageAttributeRequest(params)
 //
-//    // Example sending a request using the ResetFpgaImageAttributeRequest method.
-//    req, resp := client.ResetFpgaImageAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetFpgaImageAttribute
 func (c *EC2) ResetFpgaImageAttributeRequest(input *ResetFpgaImageAttributeInput) (req *request.Request, output *ResetFpgaImageAttributeOutput) {
@@ -46085,14 +45474,13 @@ const opResetImageAttribute = "ResetImageAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetImageAttributeRequest method.
+//	req, resp := client.ResetImageAttributeRequest(params)
 //
-//    // Example sending a request using the ResetImageAttributeRequest method.
-//    req, resp := client.ResetImageAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetImageAttribute
 func (c *EC2) ResetImageAttributeRequest(input *ResetImageAttributeInput) (req *request.Request, output *ResetImageAttributeOutput) {
@@ -46160,14 +45548,13 @@ const opResetInstanceAttribute = "ResetInstanceAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetInstanceAttributeRequest method.
+//	req, resp := client.ResetInstanceAttributeRequest(params)
 //
-//    // Example sending a request using the ResetInstanceAttributeRequest method.
-//    req, resp := client.ResetInstanceAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetInstanceAttribute
 func (c *EC2) ResetInstanceAttributeRequest(input *ResetInstanceAttributeInput) (req *request.Request, output *ResetInstanceAttributeOutput) {
@@ -46243,14 +45630,13 @@ const opResetNetworkInterfaceAttribute = "ResetNetworkInterfaceAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetNetworkInterfaceAttributeRequest method.
+//	req, resp := client.ResetNetworkInterfaceAttributeRequest(params)
 //
-//    // Example sending a request using the ResetNetworkInterfaceAttributeRequest method.
-//    req, resp := client.ResetNetworkInterfaceAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetNetworkInterfaceAttribute
 func (c *EC2) ResetNetworkInterfaceAttributeRequest(input *ResetNetworkInterfaceAttributeInput) (req *request.Request, output *ResetNetworkInterfaceAttributeOutput) {
@@ -46319,14 +45705,13 @@ const opResetSnapshotAttribute = "ResetSnapshotAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetSnapshotAttributeRequest method.
+//	req, resp := client.ResetSnapshotAttributeRequest(params)
 //
-//    // Example sending a request using the ResetSnapshotAttributeRequest method.
-//    req, resp := client.ResetSnapshotAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ResetSnapshotAttribute
 func (c *EC2) ResetSnapshotAttributeRequest(input *ResetSnapshotAttributeInput) (req *request.Request, output *ResetSnapshotAttributeOutput) {
@@ -46398,14 +45783,13 @@ const opRestoreAddressToClassic = "RestoreAddressToClassic"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreAddressToClassicRequest method.
+//	req, resp := client.RestoreAddressToClassicRequest(params)
 //
-//    // Example sending a request using the RestoreAddressToClassicRequest method.
-//    req, resp := client.RestoreAddressToClassicRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RestoreAddressToClassic
 func (c *EC2) RestoreAddressToClassicRequest(input *RestoreAddressToClassicInput) (req *request.Request, output *RestoreAddressToClassicOutput) {
@@ -46475,14 +45859,13 @@ const opRestoreImageFromRecycleBin = "RestoreImageFromRecycleBin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreImageFromRecycleBinRequest method.
+//	req, resp := client.RestoreImageFromRecycleBinRequest(params)
 //
-//    // Example sending a request using the RestoreImageFromRecycleBinRequest method.
-//    req, resp := client.RestoreImageFromRecycleBinRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RestoreImageFromRecycleBin
 func (c *EC2) RestoreImageFromRecycleBinRequest(input *RestoreImageFromRecycleBinInput) (req *request.Request, output *RestoreImageFromRecycleBinOutput) {
@@ -46551,14 +45934,13 @@ const opRestoreManagedPrefixListVersion = "RestoreManagedPrefixListVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreManagedPrefixListVersionRequest method.
+//	req, resp := client.RestoreManagedPrefixListVersionRequest(params)
 //
-//    // Example sending a request using the RestoreManagedPrefixListVersionRequest method.
-//    req, resp := client.RestoreManagedPrefixListVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RestoreManagedPrefixListVersion
 func (c *EC2) RestoreManagedPrefixListVersionRequest(input *RestoreManagedPrefixListVersionInput) (req *request.Request, output *RestoreManagedPrefixListVersionOutput) {
@@ -46626,14 +46008,13 @@ const opRestoreSnapshotFromRecycleBin = "RestoreSnapshotFromRecycleBin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreSnapshotFromRecycleBinRequest method.
+//	req, resp := client.RestoreSnapshotFromRecycleBinRequest(params)
 //
-//    // Example sending a request using the RestoreSnapshotFromRecycleBinRequest method.
-//    req, resp := client.RestoreSnapshotFromRecycleBinRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RestoreSnapshotFromRecycleBin
 func (c *EC2) RestoreSnapshotFromRecycleBinRequest(input *RestoreSnapshotFromRecycleBinInput) (req *request.Request, output *RestoreSnapshotFromRecycleBinOutput) {
@@ -46702,14 +46083,13 @@ const opRestoreSnapshotTier = "RestoreSnapshotTier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreSnapshotTierRequest method.
+//	req, resp := client.RestoreSnapshotTierRequest(params)
 //
-//    // Example sending a request using the RestoreSnapshotTierRequest method.
-//    req, resp := client.RestoreSnapshotTierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RestoreSnapshotTier
 func (c *EC2) RestoreSnapshotTierRequest(input *RestoreSnapshotTierInput) (req *request.Request, output *RestoreSnapshotTierOutput) {
@@ -46783,14 +46163,13 @@ const opRevokeClientVpnIngress = "RevokeClientVpnIngress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeClientVpnIngressRequest method.
+//	req, resp := client.RevokeClientVpnIngressRequest(params)
 //
-//    // Example sending a request using the RevokeClientVpnIngressRequest method.
-//    req, resp := client.RevokeClientVpnIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RevokeClientVpnIngress
 func (c *EC2) RevokeClientVpnIngressRequest(input *RevokeClientVpnIngressInput) (req *request.Request, output *RevokeClientVpnIngressOutput) {
@@ -46857,14 +46236,13 @@ const opRevokeSecurityGroupEgress = "RevokeSecurityGroupEgress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeSecurityGroupEgressRequest method.
+//	req, resp := client.RevokeSecurityGroupEgressRequest(params)
 //
-//    // Example sending a request using the RevokeSecurityGroupEgressRequest method.
-//    req, resp := client.RevokeSecurityGroupEgressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RevokeSecurityGroupEgress
 func (c *EC2) RevokeSecurityGroupEgressRequest(input *RevokeSecurityGroupEgressInput) (req *request.Request, output *RevokeSecurityGroupEgressOutput) {
@@ -46952,14 +46330,13 @@ const opRevokeSecurityGroupIngress = "RevokeSecurityGroupIngress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeSecurityGroupIngressRequest method.
+//	req, resp := client.RevokeSecurityGroupIngressRequest(params)
 //
-//    // Example sending a request using the RevokeSecurityGroupIngressRequest method.
-//    req, resp := client.RevokeSecurityGroupIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RevokeSecurityGroupIngress
 func (c *EC2) RevokeSecurityGroupIngressRequest(input *RevokeSecurityGroupIngressInput) (req *request.Request, output *RevokeSecurityGroupIngressOutput) {
@@ -47045,14 +46422,13 @@ const opRunInstances = "RunInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RunInstancesRequest method.
+//	req, resp := client.RunInstancesRequest(params)
 //
-//    // Example sending a request using the RunInstancesRequest method.
-//    req, resp := client.RunInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RunInstances
 func (c *EC2) RunInstancesRequest(input *RunInstancesInput) (req *request.Request, output *Reservation) {
@@ -47079,29 +46455,29 @@ func (c *EC2) RunInstancesRequest(input *RunInstancesInput) (req *request.Reques
 // You can specify a number of options, or leave the default options. The following
 // rules apply:
 //
-//    * [EC2-VPC] If you don't specify a subnet ID, we choose a default subnet
-//    from your default VPC for you. If you don't have a default VPC, you must
-//    specify a subnet ID in the request.
+//   - [EC2-VPC] If you don't specify a subnet ID, we choose a default subnet
+//     from your default VPC for you. If you don't have a default VPC, you must
+//     specify a subnet ID in the request.
 //
-//    * [EC2-Classic] If don't specify an Availability Zone, we choose one for
-//    you.
+//   - [EC2-Classic] If don't specify an Availability Zone, we choose one for
+//     you.
 //
-//    * Some instance types must be launched into a VPC. If you do not have
-//    a default VPC, or if you do not specify a subnet ID, the request fails.
-//    For more information, see Instance types available only in a VPC (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-vpc.html#vpc-only-instance-types).
+//   - Some instance types must be launched into a VPC. If you do not have
+//     a default VPC, or if you do not specify a subnet ID, the request fails.
+//     For more information, see Instance types available only in a VPC (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-vpc.html#vpc-only-instance-types).
 //
-//    * [EC2-VPC] All instances have a network interface with a primary private
-//    IPv4 address. If you don't specify this address, we choose one from the
-//    IPv4 range of your subnet.
+//   - [EC2-VPC] All instances have a network interface with a primary private
+//     IPv4 address. If you don't specify this address, we choose one from the
+//     IPv4 range of your subnet.
 //
-//    * Not all instance types support IPv6 addresses. For more information,
-//    see Instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
+//   - Not all instance types support IPv6 addresses. For more information,
+//     see Instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
 //
-//    * If you don't specify a security group ID, we use the default security
-//    group. For more information, see Security groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-network-security.html).
+//   - If you don't specify a security group ID, we use the default security
+//     group. For more information, see Security groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-network-security.html).
 //
-//    * If any of the AMIs have a product code attached for which the user has
-//    not subscribed, the request fails.
+//   - If any of the AMIs have a product code attached for which the user has
+//     not subscribed, the request fails.
 //
 // You can create a launch template (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html),
 // which is a resource that contains the parameters to launch an instance. When
@@ -47170,14 +46546,13 @@ const opRunScheduledInstances = "RunScheduledInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RunScheduledInstancesRequest method.
+//	req, resp := client.RunScheduledInstancesRequest(params)
 //
-//    // Example sending a request using the RunScheduledInstancesRequest method.
-//    req, resp := client.RunScheduledInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RunScheduledInstances
 func (c *EC2) RunScheduledInstancesRequest(input *RunScheduledInstancesInput) (req *request.Request, output *RunScheduledInstancesOutput) {
@@ -47254,14 +46629,13 @@ const opSearchLocalGatewayRoutes = "SearchLocalGatewayRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchLocalGatewayRoutesRequest method.
+//	req, resp := client.SearchLocalGatewayRoutesRequest(params)
 //
-//    // Example sending a request using the SearchLocalGatewayRoutesRequest method.
-//    req, resp := client.SearchLocalGatewayRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SearchLocalGatewayRoutes
 func (c *EC2) SearchLocalGatewayRoutesRequest(input *SearchLocalGatewayRoutesInput) (req *request.Request, output *SearchLocalGatewayRoutesOutput) {
@@ -47326,15 +46700,14 @@ func (c *EC2) SearchLocalGatewayRoutesWithContext(ctx aws.Context, input *Search
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchLocalGatewayRoutes operation.
-//    pageNum := 0
-//    err := client.SearchLocalGatewayRoutesPages(params,
-//        func(page *ec2.SearchLocalGatewayRoutesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchLocalGatewayRoutes operation.
+//	pageNum := 0
+//	err := client.SearchLocalGatewayRoutesPages(params,
+//	    func(page *ec2.SearchLocalGatewayRoutesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) SearchLocalGatewayRoutesPages(input *SearchLocalGatewayRoutesInput, fn func(*SearchLocalGatewayRoutesOutput, bool) bool) error {
 	return c.SearchLocalGatewayRoutesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -47386,14 +46759,13 @@ const opSearchTransitGatewayMulticastGroups = "SearchTransitGatewayMulticastGrou
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchTransitGatewayMulticastGroupsRequest method.
+//	req, resp := client.SearchTransitGatewayMulticastGroupsRequest(params)
 //
-//    // Example sending a request using the SearchTransitGatewayMulticastGroupsRequest method.
-//    req, resp := client.SearchTransitGatewayMulticastGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SearchTransitGatewayMulticastGroups
 func (c *EC2) SearchTransitGatewayMulticastGroupsRequest(input *SearchTransitGatewayMulticastGroupsInput) (req *request.Request, output *SearchTransitGatewayMulticastGroupsOutput) {
@@ -47459,15 +46831,14 @@ func (c *EC2) SearchTransitGatewayMulticastGroupsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchTransitGatewayMulticastGroups operation.
-//    pageNum := 0
-//    err := client.SearchTransitGatewayMulticastGroupsPages(params,
-//        func(page *ec2.SearchTransitGatewayMulticastGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchTransitGatewayMulticastGroups operation.
+//	pageNum := 0
+//	err := client.SearchTransitGatewayMulticastGroupsPages(params,
+//	    func(page *ec2.SearchTransitGatewayMulticastGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EC2) SearchTransitGatewayMulticastGroupsPages(input *SearchTransitGatewayMulticastGroupsInput, fn func(*SearchTransitGatewayMulticastGroupsOutput, bool) bool) error {
 	return c.SearchTransitGatewayMulticastGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -47519,14 +46890,13 @@ const opSearchTransitGatewayRoutes = "SearchTransitGatewayRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchTransitGatewayRoutesRequest method.
+//	req, resp := client.SearchTransitGatewayRoutesRequest(params)
 //
-//    // Example sending a request using the SearchTransitGatewayRoutesRequest method.
-//    req, resp := client.SearchTransitGatewayRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SearchTransitGatewayRoutes
 func (c *EC2) SearchTransitGatewayRoutesRequest(input *SearchTransitGatewayRoutesInput) (req *request.Request, output *SearchTransitGatewayRoutesOutput) {
@@ -47593,14 +46963,13 @@ const opSendDiagnosticInterrupt = "SendDiagnosticInterrupt"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendDiagnosticInterruptRequest method.
+//	req, resp := client.SendDiagnosticInterruptRequest(params)
 //
-//    // Example sending a request using the SendDiagnosticInterruptRequest method.
-//    req, resp := client.SendDiagnosticInterruptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SendDiagnosticInterrupt
 func (c *EC2) SendDiagnosticInterruptRequest(input *SendDiagnosticInterruptInput) (req *request.Request, output *SendDiagnosticInterruptOutput) {
@@ -47685,14 +47054,13 @@ const opStartInstances = "StartInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartInstancesRequest method.
+//	req, resp := client.StartInstancesRequest(params)
 //
-//    // Example sending a request using the StartInstancesRequest method.
-//    req, resp := client.StartInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/StartInstances
 func (c *EC2) StartInstancesRequest(input *StartInstancesInput) (req *request.Request, output *StartInstancesOutput) {
@@ -47782,14 +47150,13 @@ const opStartNetworkInsightsAccessScopeAnalysis = "StartNetworkInsightsAccessSco
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartNetworkInsightsAccessScopeAnalysisRequest method.
+//	req, resp := client.StartNetworkInsightsAccessScopeAnalysisRequest(params)
 //
-//    // Example sending a request using the StartNetworkInsightsAccessScopeAnalysisRequest method.
-//    req, resp := client.StartNetworkInsightsAccessScopeAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/StartNetworkInsightsAccessScopeAnalysis
 func (c *EC2) StartNetworkInsightsAccessScopeAnalysisRequest(input *StartNetworkInsightsAccessScopeAnalysisInput) (req *request.Request, output *StartNetworkInsightsAccessScopeAnalysisOutput) {
@@ -47856,14 +47223,13 @@ const opStartNetworkInsightsAnalysis = "StartNetworkInsightsAnalysis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartNetworkInsightsAnalysisRequest method.
+//	req, resp := client.StartNetworkInsightsAnalysisRequest(params)
 //
-//    // Example sending a request using the StartNetworkInsightsAnalysisRequest method.
-//    req, resp := client.StartNetworkInsightsAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/StartNetworkInsightsAnalysis
 func (c *EC2) StartNetworkInsightsAnalysisRequest(input *StartNetworkInsightsAnalysisInput) (req *request.Request, output *StartNetworkInsightsAnalysisOutput) {
@@ -47931,14 +47297,13 @@ const opStartVpcEndpointServicePrivateDnsVerification = "StartVpcEndpointService
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartVpcEndpointServicePrivateDnsVerificationRequest method.
+//	req, resp := client.StartVpcEndpointServicePrivateDnsVerificationRequest(params)
 //
-//    // Example sending a request using the StartVpcEndpointServicePrivateDnsVerificationRequest method.
-//    req, resp := client.StartVpcEndpointServicePrivateDnsVerificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/StartVpcEndpointServicePrivateDnsVerification
 func (c *EC2) StartVpcEndpointServicePrivateDnsVerificationRequest(input *StartVpcEndpointServicePrivateDnsVerificationInput) (req *request.Request, output *StartVpcEndpointServicePrivateDnsVerificationOutput) {
@@ -48012,14 +47377,13 @@ const opStopInstances = "StopInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopInstancesRequest method.
+//	req, resp := client.StopInstancesRequest(params)
 //
-//    // Example sending a request using the StopInstancesRequest method.
-//    req, resp := client.StopInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/StopInstances
 func (c *EC2) StopInstancesRequest(input *StopInstancesInput) (req *request.Request, output *StopInstancesOutput) {
@@ -48128,14 +47492,13 @@ const opTerminateClientVpnConnections = "TerminateClientVpnConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateClientVpnConnectionsRequest method.
+//	req, resp := client.TerminateClientVpnConnectionsRequest(params)
 //
-//    // Example sending a request using the TerminateClientVpnConnectionsRequest method.
-//    req, resp := client.TerminateClientVpnConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/TerminateClientVpnConnections
 func (c *EC2) TerminateClientVpnConnectionsRequest(input *TerminateClientVpnConnectionsInput) (req *request.Request, output *TerminateClientVpnConnectionsOutput) {
@@ -48204,14 +47567,13 @@ const opTerminateInstances = "TerminateInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateInstancesRequest method.
+//	req, resp := client.TerminateInstancesRequest(params)
 //
-//    // Example sending a request using the TerminateInstancesRequest method.
-//    req, resp := client.TerminateInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/TerminateInstances
 func (c *EC2) TerminateInstancesRequest(input *TerminateInstancesInput) (req *request.Request, output *TerminateInstancesOutput) {
@@ -48242,31 +47604,31 @@ func (c *EC2) TerminateInstancesRequest(input *TerminateInstancesInput) (req *re
 // one or more of the specified instances are enabled for termination protection,
 // the request fails with the following results:
 //
-//    * The specified instances that are in the same Availability Zone as the
-//    protected instance are not terminated.
+//   - The specified instances that are in the same Availability Zone as the
+//     protected instance are not terminated.
 //
-//    * The specified instances that are in different Availability Zones, where
-//    no other specified instances are protected, are successfully terminated.
+//   - The specified instances that are in different Availability Zones, where
+//     no other specified instances are protected, are successfully terminated.
 //
 // For example, say you have the following instances:
 //
-//    * Instance A: us-east-1a; Not protected
+//   - Instance A: us-east-1a; Not protected
 //
-//    * Instance B: us-east-1a; Not protected
+//   - Instance B: us-east-1a; Not protected
 //
-//    * Instance C: us-east-1b; Protected
+//   - Instance C: us-east-1b; Protected
 //
-//    * Instance D: us-east-1b; not protected
+//   - Instance D: us-east-1b; not protected
 //
 // If you attempt to terminate all of these instances in the same request, the
 // request reports failure with the following results:
 //
-//    * Instance A and Instance B are successfully terminated because none of
-//    the specified instances in us-east-1a are enabled for termination protection.
+//   - Instance A and Instance B are successfully terminated because none of
+//     the specified instances in us-east-1a are enabled for termination protection.
 //
-//    * Instance C and Instance D fail to terminate because at least one of
-//    the specified instances in us-east-1b (Instance C) is enabled for termination
-//    protection.
+//   - Instance C and Instance D fail to terminate because at least one of
+//     the specified instances in us-east-1b (Instance C) is enabled for termination
+//     protection.
 //
 // Terminated instances remain visible after termination (for approximately
 // one hour).
@@ -48332,14 +47694,13 @@ const opUnassignIpv6Addresses = "UnassignIpv6Addresses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnassignIpv6AddressesRequest method.
+//	req, resp := client.UnassignIpv6AddressesRequest(params)
 //
-//    // Example sending a request using the UnassignIpv6AddressesRequest method.
-//    req, resp := client.UnassignIpv6AddressesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignIpv6Addresses
 func (c *EC2) UnassignIpv6AddressesRequest(input *UnassignIpv6AddressesInput) (req *request.Request, output *UnassignIpv6AddressesOutput) {
@@ -48407,14 +47768,13 @@ const opUnassignPrivateIpAddresses = "UnassignPrivateIpAddresses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnassignPrivateIpAddressesRequest method.
+//	req, resp := client.UnassignPrivateIpAddressesRequest(params)
 //
-//    // Example sending a request using the UnassignPrivateIpAddressesRequest method.
-//    req, resp := client.UnassignPrivateIpAddressesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignPrivateIpAddresses
 func (c *EC2) UnassignPrivateIpAddressesRequest(input *UnassignPrivateIpAddressesInput) (req *request.Request, output *UnassignPrivateIpAddressesOutput) {
@@ -48483,14 +47843,13 @@ const opUnmonitorInstances = "UnmonitorInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnmonitorInstancesRequest method.
+//	req, resp := client.UnmonitorInstancesRequest(params)
 //
-//    // Example sending a request using the UnmonitorInstancesRequest method.
-//    req, resp := client.UnmonitorInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnmonitorInstances
 func (c *EC2) UnmonitorInstancesRequest(input *UnmonitorInstancesInput) (req *request.Request, output *UnmonitorInstancesOutput) {
@@ -48559,14 +47918,13 @@ const opUpdateSecurityGroupRuleDescriptionsEgress = "UpdateSecurityGroupRuleDesc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSecurityGroupRuleDescriptionsEgressRequest method.
+//	req, resp := client.UpdateSecurityGroupRuleDescriptionsEgressRequest(params)
 //
-//    // Example sending a request using the UpdateSecurityGroupRuleDescriptionsEgressRequest method.
-//    req, resp := client.UpdateSecurityGroupRuleDescriptionsEgressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UpdateSecurityGroupRuleDescriptionsEgress
 func (c *EC2) UpdateSecurityGroupRuleDescriptionsEgressRequest(input *UpdateSecurityGroupRuleDescriptionsEgressInput) (req *request.Request, output *UpdateSecurityGroupRuleDescriptionsEgressOutput) {
@@ -48636,14 +47994,13 @@ const opUpdateSecurityGroupRuleDescriptionsIngress = "UpdateSecurityGroupRuleDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSecurityGroupRuleDescriptionsIngressRequest method.
+//	req, resp := client.UpdateSecurityGroupRuleDescriptionsIngressRequest(params)
 //
-//    // Example sending a request using the UpdateSecurityGroupRuleDescriptionsIngressRequest method.
-//    req, resp := client.UpdateSecurityGroupRuleDescriptionsIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UpdateSecurityGroupRuleDescriptionsIngress
 func (c *EC2) UpdateSecurityGroupRuleDescriptionsIngressRequest(input *UpdateSecurityGroupRuleDescriptionsIngressInput) (req *request.Request, output *UpdateSecurityGroupRuleDescriptionsIngressOutput) {
@@ -48713,14 +48070,13 @@ const opWithdrawByoipCidr = "WithdrawByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the WithdrawByoipCidrRequest method.
+//	req, resp := client.WithdrawByoipCidrRequest(params)
 //
-//    // Example sending a request using the WithdrawByoipCidrRequest method.
-//    req, resp := client.WithdrawByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/WithdrawByoipCidr
 func (c *EC2) WithdrawByoipCidrRequest(input *WithdrawByoipCidrInput) (req *request.Request, output *WithdrawByoipCidrOutput) {
@@ -148173,13 +147529,13 @@ func (s *SecurityGroupRuleDescription) SetSecurityGroupRuleId(v string) *Securit
 // You must specify exactly one of the following parameters, based on the rule
 // type:
 //
-//    * CidrIpv4
+//   - CidrIpv4
 //
-//    * CidrIpv6
+//   - CidrIpv6
 //
-//    * PrefixListId
+//   - PrefixListId
 //
-//    * ReferencedGroupId
+//   - ReferencedGroupId
 //
 // When you modify a rule, you cannot change the rule type. For example, if
 // the rule uses an IPv4 address range, you must use CidrIpv4 to specify a new
@@ -156885,7 +156241,6 @@ func (s *TransitGatewayVpcAttachmentOptions) SetIpv6Support(v string) *TransitGa
 	return s
 }
 
-//
 // Currently available in limited preview only. If you are interested in using
 // this feature, contact your account manager.
 //

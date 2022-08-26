@@ -29,14 +29,13 @@ const opCreateSavingsPlan = "CreateSavingsPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSavingsPlanRequest method.
+//	req, resp := client.CreateSavingsPlanRequest(params)
 //
-//    // Example sending a request using the CreateSavingsPlanRequest method.
-//    req, resp := client.CreateSavingsPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/CreateSavingsPlan
 func (c *SavingsPlans) CreateSavingsPlanRequest(input *CreateSavingsPlanInput) (req *request.Request, output *CreateSavingsPlanOutput) {
@@ -67,17 +66,18 @@ func (c *SavingsPlans) CreateSavingsPlanRequest(input *CreateSavingsPlanInput) (
 // API operation CreateSavingsPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ValidationException
-//   One of the input parameters is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ValidationException
+//     One of the input parameters is not valid.
 //
-//   * ServiceQuotaExceededException
-//   A service quota has been exceeded.
+//   - InternalServerException
+//     An unexpected error occurred.
+//
+//   - ServiceQuotaExceededException
+//     A service quota has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/CreateSavingsPlan
 func (c *SavingsPlans) CreateSavingsPlan(input *CreateSavingsPlanInput) (*CreateSavingsPlanOutput, error) {
@@ -117,14 +117,13 @@ const opDeleteQueuedSavingsPlan = "DeleteQueuedSavingsPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteQueuedSavingsPlanRequest method.
+//	req, resp := client.DeleteQueuedSavingsPlanRequest(params)
 //
-//    // Example sending a request using the DeleteQueuedSavingsPlanRequest method.
-//    req, resp := client.DeleteQueuedSavingsPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DeleteQueuedSavingsPlan
 func (c *SavingsPlans) DeleteQueuedSavingsPlanRequest(input *DeleteQueuedSavingsPlanInput) (req *request.Request, output *DeleteQueuedSavingsPlanOutput) {
@@ -156,17 +155,18 @@ func (c *SavingsPlans) DeleteQueuedSavingsPlanRequest(input *DeleteQueuedSavings
 // API operation DeleteQueuedSavingsPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the input parameters is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     One of the input parameters is not valid.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota has been exceeded.
+//   - InternalServerException
+//     An unexpected error occurred.
+//
+//   - ServiceQuotaExceededException
+//     A service quota has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DeleteQueuedSavingsPlan
 func (c *SavingsPlans) DeleteQueuedSavingsPlan(input *DeleteQueuedSavingsPlanInput) (*DeleteQueuedSavingsPlanOutput, error) {
@@ -206,14 +206,13 @@ const opDescribeSavingsPlanRates = "DescribeSavingsPlanRates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSavingsPlanRatesRequest method.
+//	req, resp := client.DescribeSavingsPlanRatesRequest(params)
 //
-//    // Example sending a request using the DescribeSavingsPlanRatesRequest method.
-//    req, resp := client.DescribeSavingsPlanRatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlanRates
 func (c *SavingsPlans) DescribeSavingsPlanRatesRequest(input *DescribeSavingsPlanRatesInput) (req *request.Request, output *DescribeSavingsPlanRatesOutput) {
@@ -244,11 +243,12 @@ func (c *SavingsPlans) DescribeSavingsPlanRatesRequest(input *DescribeSavingsPla
 // API operation DescribeSavingsPlanRates for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ValidationException
-//   One of the input parameters is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ValidationException
+//     One of the input parameters is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlanRates
 func (c *SavingsPlans) DescribeSavingsPlanRates(input *DescribeSavingsPlanRatesInput) (*DescribeSavingsPlanRatesOutput, error) {
@@ -288,14 +288,13 @@ const opDescribeSavingsPlans = "DescribeSavingsPlans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSavingsPlansRequest method.
+//	req, resp := client.DescribeSavingsPlansRequest(params)
 //
-//    // Example sending a request using the DescribeSavingsPlansRequest method.
-//    req, resp := client.DescribeSavingsPlansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlans
 func (c *SavingsPlans) DescribeSavingsPlansRequest(input *DescribeSavingsPlansInput) (req *request.Request, output *DescribeSavingsPlansOutput) {
@@ -326,11 +325,12 @@ func (c *SavingsPlans) DescribeSavingsPlansRequest(input *DescribeSavingsPlansIn
 // API operation DescribeSavingsPlans for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error occurred.
 //
-//   * ValidationException
-//   One of the input parameters is not valid.
+//   - InternalServerException
+//     An unexpected error occurred.
+//
+//   - ValidationException
+//     One of the input parameters is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlans
 func (c *SavingsPlans) DescribeSavingsPlans(input *DescribeSavingsPlansInput) (*DescribeSavingsPlansOutput, error) {
@@ -370,14 +370,13 @@ const opDescribeSavingsPlansOfferingRates = "DescribeSavingsPlansOfferingRates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSavingsPlansOfferingRatesRequest method.
+//	req, resp := client.DescribeSavingsPlansOfferingRatesRequest(params)
 //
-//    // Example sending a request using the DescribeSavingsPlansOfferingRatesRequest method.
-//    req, resp := client.DescribeSavingsPlansOfferingRatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlansOfferingRates
 func (c *SavingsPlans) DescribeSavingsPlansOfferingRatesRequest(input *DescribeSavingsPlansOfferingRatesInput) (req *request.Request, output *DescribeSavingsPlansOfferingRatesOutput) {
@@ -408,11 +407,12 @@ func (c *SavingsPlans) DescribeSavingsPlansOfferingRatesRequest(input *DescribeS
 // API operation DescribeSavingsPlansOfferingRates for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the input parameters is not valid.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ValidationException
+//     One of the input parameters is not valid.
+//
+//   - InternalServerException
+//     An unexpected error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlansOfferingRates
 func (c *SavingsPlans) DescribeSavingsPlansOfferingRates(input *DescribeSavingsPlansOfferingRatesInput) (*DescribeSavingsPlansOfferingRatesOutput, error) {
@@ -452,14 +452,13 @@ const opDescribeSavingsPlansOfferings = "DescribeSavingsPlansOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSavingsPlansOfferingsRequest method.
+//	req, resp := client.DescribeSavingsPlansOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeSavingsPlansOfferingsRequest method.
-//    req, resp := client.DescribeSavingsPlansOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlansOfferings
 func (c *SavingsPlans) DescribeSavingsPlansOfferingsRequest(input *DescribeSavingsPlansOfferingsInput) (req *request.Request, output *DescribeSavingsPlansOfferingsOutput) {
@@ -490,11 +489,12 @@ func (c *SavingsPlans) DescribeSavingsPlansOfferingsRequest(input *DescribeSavin
 // API operation DescribeSavingsPlansOfferings for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the input parameters is not valid.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ValidationException
+//     One of the input parameters is not valid.
+//
+//   - InternalServerException
+//     An unexpected error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/DescribeSavingsPlansOfferings
 func (c *SavingsPlans) DescribeSavingsPlansOfferings(input *DescribeSavingsPlansOfferingsInput) (*DescribeSavingsPlansOfferingsOutput, error) {
@@ -534,14 +534,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/ListTagsForResource
 func (c *SavingsPlans) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -572,14 +571,15 @@ func (c *SavingsPlans) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ValidationException
-//   One of the input parameters is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ValidationException
+//     One of the input parameters is not valid.
+//
+//   - InternalServerException
+//     An unexpected error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/ListTagsForResource
 func (c *SavingsPlans) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -619,14 +619,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/TagResource
 func (c *SavingsPlans) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -658,17 +657,18 @@ func (c *SavingsPlans) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota has been exceeded.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ValidationException
-//   One of the input parameters is not valid.
+//   - ServiceQuotaExceededException
+//     A service quota has been exceeded.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ValidationException
+//     One of the input parameters is not valid.
+//
+//   - InternalServerException
+//     An unexpected error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/TagResource
 func (c *SavingsPlans) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -708,14 +708,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/UntagResource
 func (c *SavingsPlans) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -747,14 +746,15 @@ func (c *SavingsPlans) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ValidationException
-//   One of the input parameters is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * InternalServerException
-//   An unexpected error occurred.
+//   - ValidationException
+//     One of the input parameters is not valid.
+//
+//   - InternalServerException
+//     An unexpected error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/savingsplans-2019-06-28/UntagResource
 func (c *SavingsPlans) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

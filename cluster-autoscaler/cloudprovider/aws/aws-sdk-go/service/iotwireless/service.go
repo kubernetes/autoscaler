@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTWireless client from just a session.
-//     svc := iotwireless.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTWireless client with additional configuration
-//     svc := iotwireless.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IoTWireless client from just a session.
+//	svc := iotwireless.New(mySession)
+//
+//	// Create a IoTWireless client with additional configuration
+//	svc := iotwireless.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoTWireless {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

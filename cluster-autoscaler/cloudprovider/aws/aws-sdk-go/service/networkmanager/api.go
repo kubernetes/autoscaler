@@ -29,14 +29,13 @@ const opAcceptAttachment = "AcceptAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptAttachmentRequest method.
+//	req, resp := client.AcceptAttachmentRequest(params)
 //
-//    // Example sending a request using the AcceptAttachmentRequest method.
-//    req, resp := client.AcceptAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AcceptAttachment
 func (c *NetworkManager) AcceptAttachmentRequest(input *AcceptAttachmentInput) (req *request.Request, output *AcceptAttachmentOutput) {
@@ -70,24 +69,25 @@ func (c *NetworkManager) AcceptAttachmentRequest(input *AcceptAttachmentInput) (
 // API operation AcceptAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AcceptAttachment
 func (c *NetworkManager) AcceptAttachment(input *AcceptAttachmentInput) (*AcceptAttachmentOutput, error) {
@@ -127,14 +127,13 @@ const opAssociateConnectPeer = "AssociateConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateConnectPeerRequest method.
+//	req, resp := client.AssociateConnectPeerRequest(params)
 //
-//    // Example sending a request using the AssociateConnectPeerRequest method.
-//    req, resp := client.AssociateConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateConnectPeer
 func (c *NetworkManager) AssociateConnectPeerRequest(input *AssociateConnectPeerInput) (req *request.Request, output *AssociateConnectPeerOutput) {
@@ -170,27 +169,28 @@ func (c *NetworkManager) AssociateConnectPeerRequest(input *AssociateConnectPeer
 // API operation AssociateConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateConnectPeer
 func (c *NetworkManager) AssociateConnectPeer(input *AssociateConnectPeerInput) (*AssociateConnectPeerOutput, error) {
@@ -230,14 +230,13 @@ const opAssociateCustomerGateway = "AssociateCustomerGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateCustomerGatewayRequest method.
+//	req, resp := client.AssociateCustomerGatewayRequest(params)
 //
-//    // Example sending a request using the AssociateCustomerGatewayRequest method.
-//    req, resp := client.AssociateCustomerGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateCustomerGateway
 func (c *NetworkManager) AssociateCustomerGatewayRequest(input *AssociateCustomerGatewayInput) (req *request.Request, output *AssociateCustomerGatewayOutput) {
@@ -279,27 +278,28 @@ func (c *NetworkManager) AssociateCustomerGatewayRequest(input *AssociateCustome
 // API operation AssociateCustomerGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateCustomerGateway
 func (c *NetworkManager) AssociateCustomerGateway(input *AssociateCustomerGatewayInput) (*AssociateCustomerGatewayOutput, error) {
@@ -339,14 +339,13 @@ const opAssociateLink = "AssociateLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateLinkRequest method.
+//	req, resp := client.AssociateLinkRequest(params)
 //
-//    // Example sending a request using the AssociateLinkRequest method.
-//    req, resp := client.AssociateLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateLink
 func (c *NetworkManager) AssociateLinkRequest(input *AssociateLinkInput) (req *request.Request, output *AssociateLinkOutput) {
@@ -379,27 +378,28 @@ func (c *NetworkManager) AssociateLinkRequest(input *AssociateLinkInput) (req *r
 // API operation AssociateLink for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateLink
 func (c *NetworkManager) AssociateLink(input *AssociateLinkInput) (*AssociateLinkOutput, error) {
@@ -439,14 +439,13 @@ const opAssociateTransitGatewayConnectPeer = "AssociateTransitGatewayConnectPeer
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTransitGatewayConnectPeerRequest method.
+//	req, resp := client.AssociateTransitGatewayConnectPeerRequest(params)
 //
-//    // Example sending a request using the AssociateTransitGatewayConnectPeerRequest method.
-//    req, resp := client.AssociateTransitGatewayConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateTransitGatewayConnectPeer
 func (c *NetworkManager) AssociateTransitGatewayConnectPeerRequest(input *AssociateTransitGatewayConnectPeerInput) (req *request.Request, output *AssociateTransitGatewayConnectPeerOutput) {
@@ -485,27 +484,28 @@ func (c *NetworkManager) AssociateTransitGatewayConnectPeerRequest(input *Associ
 // API operation AssociateTransitGatewayConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/AssociateTransitGatewayConnectPeer
 func (c *NetworkManager) AssociateTransitGatewayConnectPeer(input *AssociateTransitGatewayConnectPeerInput) (*AssociateTransitGatewayConnectPeerOutput, error) {
@@ -545,14 +545,13 @@ const opCreateConnectAttachment = "CreateConnectAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectAttachmentRequest method.
+//	req, resp := client.CreateConnectAttachmentRequest(params)
 //
-//    // Example sending a request using the CreateConnectAttachmentRequest method.
-//    req, resp := client.CreateConnectAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateConnectAttachment
 func (c *NetworkManager) CreateConnectAttachmentRequest(input *CreateConnectAttachmentInput) (req *request.Request, output *CreateConnectAttachmentOutput) {
@@ -588,24 +587,25 @@ func (c *NetworkManager) CreateConnectAttachmentRequest(input *CreateConnectAtta
 // API operation CreateConnectAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateConnectAttachment
 func (c *NetworkManager) CreateConnectAttachment(input *CreateConnectAttachmentInput) (*CreateConnectAttachmentOutput, error) {
@@ -645,14 +645,13 @@ const opCreateConnectPeer = "CreateConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectPeerRequest method.
+//	req, resp := client.CreateConnectPeerRequest(params)
 //
-//    // Example sending a request using the CreateConnectPeerRequest method.
-//    req, resp := client.CreateConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateConnectPeer
 func (c *NetworkManager) CreateConnectPeerRequest(input *CreateConnectPeerInput) (req *request.Request, output *CreateConnectPeerOutput) {
@@ -685,24 +684,25 @@ func (c *NetworkManager) CreateConnectPeerRequest(input *CreateConnectPeerInput)
 // API operation CreateConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateConnectPeer
 func (c *NetworkManager) CreateConnectPeer(input *CreateConnectPeerInput) (*CreateConnectPeerOutput, error) {
@@ -742,14 +742,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateConnection
 func (c *NetworkManager) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *CreateConnectionOutput) {
@@ -783,24 +782,25 @@ func (c *NetworkManager) CreateConnectionRequest(input *CreateConnectionInput) (
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateConnection
 func (c *NetworkManager) CreateConnection(input *CreateConnectionInput) (*CreateConnectionOutput, error) {
@@ -840,14 +840,13 @@ const opCreateCoreNetwork = "CreateCoreNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCoreNetworkRequest method.
+//	req, resp := client.CreateCoreNetworkRequest(params)
 //
-//    // Example sending a request using the CreateCoreNetworkRequest method.
-//    req, resp := client.CreateCoreNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateCoreNetwork
 func (c *NetworkManager) CreateCoreNetworkRequest(input *CreateCoreNetworkInput) (req *request.Request, output *CreateCoreNetworkOutput) {
@@ -879,27 +878,28 @@ func (c *NetworkManager) CreateCoreNetworkRequest(input *CreateCoreNetworkInput)
 // API operation CreateCoreNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * CoreNetworkPolicyException
-//   Describes a core network policy exception.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints.
+//   - CoreNetworkPolicyException
+//     Describes a core network policy exception.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateCoreNetwork
 func (c *NetworkManager) CreateCoreNetwork(input *CreateCoreNetworkInput) (*CreateCoreNetworkOutput, error) {
@@ -939,14 +939,13 @@ const opCreateDevice = "CreateDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeviceRequest method.
+//	req, resp := client.CreateDeviceRequest(params)
 //
-//    // Example sending a request using the CreateDeviceRequest method.
-//    req, resp := client.CreateDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateDevice
 func (c *NetworkManager) CreateDeviceRequest(input *CreateDeviceInput) (req *request.Request, output *CreateDeviceOutput) {
@@ -979,27 +978,28 @@ func (c *NetworkManager) CreateDeviceRequest(input *CreateDeviceInput) (req *req
 // API operation CreateDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateDevice
 func (c *NetworkManager) CreateDevice(input *CreateDeviceInput) (*CreateDeviceOutput, error) {
@@ -1039,14 +1039,13 @@ const opCreateGlobalNetwork = "CreateGlobalNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGlobalNetworkRequest method.
+//	req, resp := client.CreateGlobalNetworkRequest(params)
 //
-//    // Example sending a request using the CreateGlobalNetworkRequest method.
-//    req, resp := client.CreateGlobalNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateGlobalNetwork
 func (c *NetworkManager) CreateGlobalNetworkRequest(input *CreateGlobalNetworkInput) (req *request.Request, output *CreateGlobalNetworkOutput) {
@@ -1077,24 +1076,25 @@ func (c *NetworkManager) CreateGlobalNetworkRequest(input *CreateGlobalNetworkIn
 // API operation CreateGlobalNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateGlobalNetwork
 func (c *NetworkManager) CreateGlobalNetwork(input *CreateGlobalNetworkInput) (*CreateGlobalNetworkOutput, error) {
@@ -1134,14 +1134,13 @@ const opCreateLink = "CreateLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLinkRequest method.
+//	req, resp := client.CreateLinkRequest(params)
 //
-//    // Example sending a request using the CreateLinkRequest method.
-//    req, resp := client.CreateLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateLink
 func (c *NetworkManager) CreateLinkRequest(input *CreateLinkInput) (req *request.Request, output *CreateLinkOutput) {
@@ -1172,27 +1171,28 @@ func (c *NetworkManager) CreateLinkRequest(input *CreateLinkInput) (req *request
 // API operation CreateLink for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateLink
 func (c *NetworkManager) CreateLink(input *CreateLinkInput) (*CreateLinkOutput, error) {
@@ -1232,14 +1232,13 @@ const opCreateSite = "CreateSite"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSiteRequest method.
+//	req, resp := client.CreateSiteRequest(params)
 //
-//    // Example sending a request using the CreateSiteRequest method.
-//    req, resp := client.CreateSiteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateSite
 func (c *NetworkManager) CreateSiteRequest(input *CreateSiteInput) (req *request.Request, output *CreateSiteOutput) {
@@ -1270,27 +1269,28 @@ func (c *NetworkManager) CreateSiteRequest(input *CreateSiteInput) (req *request
 // API operation CreateSite for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateSite
 func (c *NetworkManager) CreateSite(input *CreateSiteInput) (*CreateSiteOutput, error) {
@@ -1330,14 +1330,13 @@ const opCreateSiteToSiteVpnAttachment = "CreateSiteToSiteVpnAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSiteToSiteVpnAttachmentRequest method.
+//	req, resp := client.CreateSiteToSiteVpnAttachmentRequest(params)
 //
-//    // Example sending a request using the CreateSiteToSiteVpnAttachmentRequest method.
-//    req, resp := client.CreateSiteToSiteVpnAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateSiteToSiteVpnAttachment
 func (c *NetworkManager) CreateSiteToSiteVpnAttachmentRequest(input *CreateSiteToSiteVpnAttachmentInput) (req *request.Request, output *CreateSiteToSiteVpnAttachmentOutput) {
@@ -1369,24 +1368,25 @@ func (c *NetworkManager) CreateSiteToSiteVpnAttachmentRequest(input *CreateSiteT
 // API operation CreateSiteToSiteVpnAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateSiteToSiteVpnAttachment
 func (c *NetworkManager) CreateSiteToSiteVpnAttachment(input *CreateSiteToSiteVpnAttachmentInput) (*CreateSiteToSiteVpnAttachmentOutput, error) {
@@ -1426,14 +1426,13 @@ const opCreateVpcAttachment = "CreateVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcAttachmentRequest method.
+//	req, resp := client.CreateVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the CreateVpcAttachmentRequest method.
-//    req, resp := client.CreateVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateVpcAttachment
 func (c *NetworkManager) CreateVpcAttachmentRequest(input *CreateVpcAttachmentInput) (req *request.Request, output *CreateVpcAttachmentOutput) {
@@ -1464,24 +1463,25 @@ func (c *NetworkManager) CreateVpcAttachmentRequest(input *CreateVpcAttachmentIn
 // API operation CreateVpcAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/CreateVpcAttachment
 func (c *NetworkManager) CreateVpcAttachment(input *CreateVpcAttachmentInput) (*CreateVpcAttachmentOutput, error) {
@@ -1521,14 +1521,13 @@ const opDeleteAttachment = "DeleteAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAttachmentRequest method.
+//	req, resp := client.DeleteAttachmentRequest(params)
 //
-//    // Example sending a request using the DeleteAttachmentRequest method.
-//    req, resp := client.DeleteAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteAttachment
 func (c *NetworkManager) DeleteAttachmentRequest(input *DeleteAttachmentInput) (req *request.Request, output *DeleteAttachmentOutput) {
@@ -1559,24 +1558,25 @@ func (c *NetworkManager) DeleteAttachmentRequest(input *DeleteAttachmentInput) (
 // API operation DeleteAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteAttachment
 func (c *NetworkManager) DeleteAttachment(input *DeleteAttachmentInput) (*DeleteAttachmentOutput, error) {
@@ -1616,14 +1616,13 @@ const opDeleteConnectPeer = "DeleteConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectPeerRequest method.
+//	req, resp := client.DeleteConnectPeerRequest(params)
 //
-//    // Example sending a request using the DeleteConnectPeerRequest method.
-//    req, resp := client.DeleteConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteConnectPeer
 func (c *NetworkManager) DeleteConnectPeerRequest(input *DeleteConnectPeerInput) (req *request.Request, output *DeleteConnectPeerOutput) {
@@ -1654,24 +1653,25 @@ func (c *NetworkManager) DeleteConnectPeerRequest(input *DeleteConnectPeerInput)
 // API operation DeleteConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteConnectPeer
 func (c *NetworkManager) DeleteConnectPeer(input *DeleteConnectPeerInput) (*DeleteConnectPeerOutput, error) {
@@ -1711,14 +1711,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteConnection
 func (c *NetworkManager) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *DeleteConnectionOutput) {
@@ -1749,24 +1748,25 @@ func (c *NetworkManager) DeleteConnectionRequest(input *DeleteConnectionInput) (
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteConnection
 func (c *NetworkManager) DeleteConnection(input *DeleteConnectionInput) (*DeleteConnectionOutput, error) {
@@ -1806,14 +1806,13 @@ const opDeleteCoreNetwork = "DeleteCoreNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCoreNetworkRequest method.
+//	req, resp := client.DeleteCoreNetworkRequest(params)
 //
-//    // Example sending a request using the DeleteCoreNetworkRequest method.
-//    req, resp := client.DeleteCoreNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteCoreNetwork
 func (c *NetworkManager) DeleteCoreNetworkRequest(input *DeleteCoreNetworkInput) (req *request.Request, output *DeleteCoreNetworkOutput) {
@@ -1845,24 +1844,25 @@ func (c *NetworkManager) DeleteCoreNetworkRequest(input *DeleteCoreNetworkInput)
 // API operation DeleteCoreNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteCoreNetwork
 func (c *NetworkManager) DeleteCoreNetwork(input *DeleteCoreNetworkInput) (*DeleteCoreNetworkOutput, error) {
@@ -1902,14 +1902,13 @@ const opDeleteCoreNetworkPolicyVersion = "DeleteCoreNetworkPolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCoreNetworkPolicyVersionRequest method.
+//	req, resp := client.DeleteCoreNetworkPolicyVersionRequest(params)
 //
-//    // Example sending a request using the DeleteCoreNetworkPolicyVersionRequest method.
-//    req, resp := client.DeleteCoreNetworkPolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteCoreNetworkPolicyVersion
 func (c *NetworkManager) DeleteCoreNetworkPolicyVersionRequest(input *DeleteCoreNetworkPolicyVersionInput) (req *request.Request, output *DeleteCoreNetworkPolicyVersionOutput) {
@@ -1941,24 +1940,25 @@ func (c *NetworkManager) DeleteCoreNetworkPolicyVersionRequest(input *DeleteCore
 // API operation DeleteCoreNetworkPolicyVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - InternalServerException
+//     The request has failed due to an internal error.
+//
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteCoreNetworkPolicyVersion
 func (c *NetworkManager) DeleteCoreNetworkPolicyVersion(input *DeleteCoreNetworkPolicyVersionInput) (*DeleteCoreNetworkPolicyVersionOutput, error) {
@@ -1998,14 +1998,13 @@ const opDeleteDevice = "DeleteDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeviceRequest method.
+//	req, resp := client.DeleteDeviceRequest(params)
 //
-//    // Example sending a request using the DeleteDeviceRequest method.
-//    req, resp := client.DeleteDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteDevice
 func (c *NetworkManager) DeleteDeviceRequest(input *DeleteDeviceInput) (req *request.Request, output *DeleteDeviceOutput) {
@@ -2037,24 +2036,25 @@ func (c *NetworkManager) DeleteDeviceRequest(input *DeleteDeviceInput) (req *req
 // API operation DeleteDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteDevice
 func (c *NetworkManager) DeleteDevice(input *DeleteDeviceInput) (*DeleteDeviceOutput, error) {
@@ -2094,14 +2094,13 @@ const opDeleteGlobalNetwork = "DeleteGlobalNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGlobalNetworkRequest method.
+//	req, resp := client.DeleteGlobalNetworkRequest(params)
 //
-//    // Example sending a request using the DeleteGlobalNetworkRequest method.
-//    req, resp := client.DeleteGlobalNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteGlobalNetwork
 func (c *NetworkManager) DeleteGlobalNetworkRequest(input *DeleteGlobalNetworkInput) (req *request.Request, output *DeleteGlobalNetworkOutput) {
@@ -2134,24 +2133,25 @@ func (c *NetworkManager) DeleteGlobalNetworkRequest(input *DeleteGlobalNetworkIn
 // API operation DeleteGlobalNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteGlobalNetwork
 func (c *NetworkManager) DeleteGlobalNetwork(input *DeleteGlobalNetworkInput) (*DeleteGlobalNetworkOutput, error) {
@@ -2191,14 +2191,13 @@ const opDeleteLink = "DeleteLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLinkRequest method.
+//	req, resp := client.DeleteLinkRequest(params)
 //
-//    // Example sending a request using the DeleteLinkRequest method.
-//    req, resp := client.DeleteLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteLink
 func (c *NetworkManager) DeleteLinkRequest(input *DeleteLinkInput) (req *request.Request, output *DeleteLinkOutput) {
@@ -2230,24 +2229,25 @@ func (c *NetworkManager) DeleteLinkRequest(input *DeleteLinkInput) (req *request
 // API operation DeleteLink for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteLink
 func (c *NetworkManager) DeleteLink(input *DeleteLinkInput) (*DeleteLinkOutput, error) {
@@ -2287,14 +2287,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteResourcePolicy
 func (c *NetworkManager) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -2327,21 +2326,22 @@ func (c *NetworkManager) DeleteResourcePolicyRequest(input *DeleteResourcePolicy
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteResourcePolicy
 func (c *NetworkManager) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -2381,14 +2381,13 @@ const opDeleteSite = "DeleteSite"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSiteRequest method.
+//	req, resp := client.DeleteSiteRequest(params)
 //
-//    // Example sending a request using the DeleteSiteRequest method.
-//    req, resp := client.DeleteSiteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteSite
 func (c *NetworkManager) DeleteSiteRequest(input *DeleteSiteInput) (req *request.Request, output *DeleteSiteOutput) {
@@ -2420,24 +2419,25 @@ func (c *NetworkManager) DeleteSiteRequest(input *DeleteSiteInput) (req *request
 // API operation DeleteSite for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeleteSite
 func (c *NetworkManager) DeleteSite(input *DeleteSiteInput) (*DeleteSiteOutput, error) {
@@ -2477,14 +2477,13 @@ const opDeregisterTransitGateway = "DeregisterTransitGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterTransitGatewayRequest method.
+//	req, resp := client.DeregisterTransitGatewayRequest(params)
 //
-//    // Example sending a request using the DeregisterTransitGatewayRequest method.
-//    req, resp := client.DeregisterTransitGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeregisterTransitGateway
 func (c *NetworkManager) DeregisterTransitGatewayRequest(input *DeregisterTransitGatewayInput) (req *request.Request, output *DeregisterTransitGatewayOutput) {
@@ -2517,24 +2516,25 @@ func (c *NetworkManager) DeregisterTransitGatewayRequest(input *DeregisterTransi
 // API operation DeregisterTransitGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DeregisterTransitGateway
 func (c *NetworkManager) DeregisterTransitGateway(input *DeregisterTransitGatewayInput) (*DeregisterTransitGatewayOutput, error) {
@@ -2574,14 +2574,13 @@ const opDescribeGlobalNetworks = "DescribeGlobalNetworks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGlobalNetworksRequest method.
+//	req, resp := client.DescribeGlobalNetworksRequest(params)
 //
-//    // Example sending a request using the DescribeGlobalNetworksRequest method.
-//    req, resp := client.DescribeGlobalNetworksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DescribeGlobalNetworks
 func (c *NetworkManager) DescribeGlobalNetworksRequest(input *DescribeGlobalNetworksInput) (req *request.Request, output *DescribeGlobalNetworksOutput) {
@@ -2621,20 +2620,21 @@ func (c *NetworkManager) DescribeGlobalNetworksRequest(input *DescribeGlobalNetw
 // API operation DescribeGlobalNetworks for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DescribeGlobalNetworks
 func (c *NetworkManager) DescribeGlobalNetworks(input *DescribeGlobalNetworksInput) (*DescribeGlobalNetworksOutput, error) {
@@ -2666,15 +2666,14 @@ func (c *NetworkManager) DescribeGlobalNetworksWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeGlobalNetworks operation.
-//    pageNum := 0
-//    err := client.DescribeGlobalNetworksPages(params,
-//        func(page *networkmanager.DescribeGlobalNetworksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeGlobalNetworks operation.
+//	pageNum := 0
+//	err := client.DescribeGlobalNetworksPages(params,
+//	    func(page *networkmanager.DescribeGlobalNetworksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) DescribeGlobalNetworksPages(input *DescribeGlobalNetworksInput, fn func(*DescribeGlobalNetworksOutput, bool) bool) error {
 	return c.DescribeGlobalNetworksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2726,14 +2725,13 @@ const opDisassociateConnectPeer = "DisassociateConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateConnectPeerRequest method.
+//	req, resp := client.DisassociateConnectPeerRequest(params)
 //
-//    // Example sending a request using the DisassociateConnectPeerRequest method.
-//    req, resp := client.DisassociateConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateConnectPeer
 func (c *NetworkManager) DisassociateConnectPeerRequest(input *DisassociateConnectPeerInput) (req *request.Request, output *DisassociateConnectPeerOutput) {
@@ -2764,24 +2762,25 @@ func (c *NetworkManager) DisassociateConnectPeerRequest(input *DisassociateConne
 // API operation DisassociateConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateConnectPeer
 func (c *NetworkManager) DisassociateConnectPeer(input *DisassociateConnectPeerInput) (*DisassociateConnectPeerOutput, error) {
@@ -2821,14 +2820,13 @@ const opDisassociateCustomerGateway = "DisassociateCustomerGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateCustomerGatewayRequest method.
+//	req, resp := client.DisassociateCustomerGatewayRequest(params)
 //
-//    // Example sending a request using the DisassociateCustomerGatewayRequest method.
-//    req, resp := client.DisassociateCustomerGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateCustomerGateway
 func (c *NetworkManager) DisassociateCustomerGatewayRequest(input *DisassociateCustomerGatewayInput) (req *request.Request, output *DisassociateCustomerGatewayOutput) {
@@ -2859,24 +2857,25 @@ func (c *NetworkManager) DisassociateCustomerGatewayRequest(input *DisassociateC
 // API operation DisassociateCustomerGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateCustomerGateway
 func (c *NetworkManager) DisassociateCustomerGateway(input *DisassociateCustomerGatewayInput) (*DisassociateCustomerGatewayOutput, error) {
@@ -2916,14 +2915,13 @@ const opDisassociateLink = "DisassociateLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateLinkRequest method.
+//	req, resp := client.DisassociateLinkRequest(params)
 //
-//    // Example sending a request using the DisassociateLinkRequest method.
-//    req, resp := client.DisassociateLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateLink
 func (c *NetworkManager) DisassociateLinkRequest(input *DisassociateLinkInput) (req *request.Request, output *DisassociateLinkOutput) {
@@ -2955,24 +2953,25 @@ func (c *NetworkManager) DisassociateLinkRequest(input *DisassociateLinkInput) (
 // API operation DisassociateLink for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateLink
 func (c *NetworkManager) DisassociateLink(input *DisassociateLinkInput) (*DisassociateLinkOutput, error) {
@@ -3012,14 +3011,13 @@ const opDisassociateTransitGatewayConnectPeer = "DisassociateTransitGatewayConne
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTransitGatewayConnectPeerRequest method.
+//	req, resp := client.DisassociateTransitGatewayConnectPeerRequest(params)
 //
-//    // Example sending a request using the DisassociateTransitGatewayConnectPeerRequest method.
-//    req, resp := client.DisassociateTransitGatewayConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateTransitGatewayConnectPeer
 func (c *NetworkManager) DisassociateTransitGatewayConnectPeerRequest(input *DisassociateTransitGatewayConnectPeerInput) (req *request.Request, output *DisassociateTransitGatewayConnectPeerOutput) {
@@ -3050,24 +3048,25 @@ func (c *NetworkManager) DisassociateTransitGatewayConnectPeerRequest(input *Dis
 // API operation DisassociateTransitGatewayConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/DisassociateTransitGatewayConnectPeer
 func (c *NetworkManager) DisassociateTransitGatewayConnectPeer(input *DisassociateTransitGatewayConnectPeerInput) (*DisassociateTransitGatewayConnectPeerOutput, error) {
@@ -3107,14 +3106,13 @@ const opExecuteCoreNetworkChangeSet = "ExecuteCoreNetworkChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExecuteCoreNetworkChangeSetRequest method.
+//	req, resp := client.ExecuteCoreNetworkChangeSetRequest(params)
 //
-//    // Example sending a request using the ExecuteCoreNetworkChangeSetRequest method.
-//    req, resp := client.ExecuteCoreNetworkChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ExecuteCoreNetworkChangeSet
 func (c *NetworkManager) ExecuteCoreNetworkChangeSetRequest(input *ExecuteCoreNetworkChangeSetInput) (req *request.Request, output *ExecuteCoreNetworkChangeSetOutput) {
@@ -3147,24 +3145,25 @@ func (c *NetworkManager) ExecuteCoreNetworkChangeSetRequest(input *ExecuteCoreNe
 // API operation ExecuteCoreNetworkChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - InternalServerException
+//     The request has failed due to an internal error.
+//
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ExecuteCoreNetworkChangeSet
 func (c *NetworkManager) ExecuteCoreNetworkChangeSet(input *ExecuteCoreNetworkChangeSetInput) (*ExecuteCoreNetworkChangeSetOutput, error) {
@@ -3204,14 +3203,13 @@ const opGetConnectAttachment = "GetConnectAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectAttachmentRequest method.
+//	req, resp := client.GetConnectAttachmentRequest(params)
 //
-//    // Example sending a request using the GetConnectAttachmentRequest method.
-//    req, resp := client.GetConnectAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnectAttachment
 func (c *NetworkManager) GetConnectAttachmentRequest(input *GetConnectAttachmentInput) (req *request.Request, output *GetConnectAttachmentOutput) {
@@ -3242,20 +3240,21 @@ func (c *NetworkManager) GetConnectAttachmentRequest(input *GetConnectAttachment
 // API operation GetConnectAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnectAttachment
 func (c *NetworkManager) GetConnectAttachment(input *GetConnectAttachmentInput) (*GetConnectAttachmentOutput, error) {
@@ -3295,14 +3294,13 @@ const opGetConnectPeer = "GetConnectPeer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectPeerRequest method.
+//	req, resp := client.GetConnectPeerRequest(params)
 //
-//    // Example sending a request using the GetConnectPeerRequest method.
-//    req, resp := client.GetConnectPeerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnectPeer
 func (c *NetworkManager) GetConnectPeerRequest(input *GetConnectPeerInput) (req *request.Request, output *GetConnectPeerOutput) {
@@ -3333,20 +3331,21 @@ func (c *NetworkManager) GetConnectPeerRequest(input *GetConnectPeerInput) (req 
 // API operation GetConnectPeer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnectPeer
 func (c *NetworkManager) GetConnectPeer(input *GetConnectPeerInput) (*GetConnectPeerOutput, error) {
@@ -3386,14 +3385,13 @@ const opGetConnectPeerAssociations = "GetConnectPeerAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectPeerAssociationsRequest method.
+//	req, resp := client.GetConnectPeerAssociationsRequest(params)
 //
-//    // Example sending a request using the GetConnectPeerAssociationsRequest method.
-//    req, resp := client.GetConnectPeerAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnectPeerAssociations
 func (c *NetworkManager) GetConnectPeerAssociationsRequest(input *GetConnectPeerAssociationsInput) (req *request.Request, output *GetConnectPeerAssociationsOutput) {
@@ -3430,24 +3428,25 @@ func (c *NetworkManager) GetConnectPeerAssociationsRequest(input *GetConnectPeer
 // API operation GetConnectPeerAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnectPeerAssociations
 func (c *NetworkManager) GetConnectPeerAssociations(input *GetConnectPeerAssociationsInput) (*GetConnectPeerAssociationsOutput, error) {
@@ -3479,15 +3478,14 @@ func (c *NetworkManager) GetConnectPeerAssociationsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetConnectPeerAssociations operation.
-//    pageNum := 0
-//    err := client.GetConnectPeerAssociationsPages(params,
-//        func(page *networkmanager.GetConnectPeerAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetConnectPeerAssociations operation.
+//	pageNum := 0
+//	err := client.GetConnectPeerAssociationsPages(params,
+//	    func(page *networkmanager.GetConnectPeerAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetConnectPeerAssociationsPages(input *GetConnectPeerAssociationsInput, fn func(*GetConnectPeerAssociationsOutput, bool) bool) error {
 	return c.GetConnectPeerAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3539,14 +3537,13 @@ const opGetConnections = "GetConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectionsRequest method.
+//	req, resp := client.GetConnectionsRequest(params)
 //
-//    // Example sending a request using the GetConnectionsRequest method.
-//    req, resp := client.GetConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnections
 func (c *NetworkManager) GetConnectionsRequest(input *GetConnectionsInput) (req *request.Request, output *GetConnectionsOutput) {
@@ -3583,20 +3580,21 @@ func (c *NetworkManager) GetConnectionsRequest(input *GetConnectionsInput) (req 
 // API operation GetConnections for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetConnections
 func (c *NetworkManager) GetConnections(input *GetConnectionsInput) (*GetConnectionsOutput, error) {
@@ -3628,15 +3626,14 @@ func (c *NetworkManager) GetConnectionsWithContext(ctx aws.Context, input *GetCo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetConnections operation.
-//    pageNum := 0
-//    err := client.GetConnectionsPages(params,
-//        func(page *networkmanager.GetConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetConnections operation.
+//	pageNum := 0
+//	err := client.GetConnectionsPages(params,
+//	    func(page *networkmanager.GetConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetConnectionsPages(input *GetConnectionsInput, fn func(*GetConnectionsOutput, bool) bool) error {
 	return c.GetConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3688,14 +3685,13 @@ const opGetCoreNetwork = "GetCoreNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCoreNetworkRequest method.
+//	req, resp := client.GetCoreNetworkRequest(params)
 //
-//    // Example sending a request using the GetCoreNetworkRequest method.
-//    req, resp := client.GetCoreNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCoreNetwork
 func (c *NetworkManager) GetCoreNetworkRequest(input *GetCoreNetworkInput) (req *request.Request, output *GetCoreNetworkOutput) {
@@ -3726,20 +3722,21 @@ func (c *NetworkManager) GetCoreNetworkRequest(input *GetCoreNetworkInput) (req 
 // API operation GetCoreNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCoreNetwork
 func (c *NetworkManager) GetCoreNetwork(input *GetCoreNetworkInput) (*GetCoreNetworkOutput, error) {
@@ -3779,14 +3776,13 @@ const opGetCoreNetworkChangeSet = "GetCoreNetworkChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCoreNetworkChangeSetRequest method.
+//	req, resp := client.GetCoreNetworkChangeSetRequest(params)
 //
-//    // Example sending a request using the GetCoreNetworkChangeSetRequest method.
-//    req, resp := client.GetCoreNetworkChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCoreNetworkChangeSet
 func (c *NetworkManager) GetCoreNetworkChangeSetRequest(input *GetCoreNetworkChangeSetInput) (req *request.Request, output *GetCoreNetworkChangeSetOutput) {
@@ -3824,20 +3820,21 @@ func (c *NetworkManager) GetCoreNetworkChangeSetRequest(input *GetCoreNetworkCha
 // API operation GetCoreNetworkChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCoreNetworkChangeSet
 func (c *NetworkManager) GetCoreNetworkChangeSet(input *GetCoreNetworkChangeSetInput) (*GetCoreNetworkChangeSetOutput, error) {
@@ -3869,15 +3866,14 @@ func (c *NetworkManager) GetCoreNetworkChangeSetWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCoreNetworkChangeSet operation.
-//    pageNum := 0
-//    err := client.GetCoreNetworkChangeSetPages(params,
-//        func(page *networkmanager.GetCoreNetworkChangeSetOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCoreNetworkChangeSet operation.
+//	pageNum := 0
+//	err := client.GetCoreNetworkChangeSetPages(params,
+//	    func(page *networkmanager.GetCoreNetworkChangeSetOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetCoreNetworkChangeSetPages(input *GetCoreNetworkChangeSetInput, fn func(*GetCoreNetworkChangeSetOutput, bool) bool) error {
 	return c.GetCoreNetworkChangeSetPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3929,14 +3925,13 @@ const opGetCoreNetworkPolicy = "GetCoreNetworkPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCoreNetworkPolicyRequest method.
+//	req, resp := client.GetCoreNetworkPolicyRequest(params)
 //
-//    // Example sending a request using the GetCoreNetworkPolicyRequest method.
-//    req, resp := client.GetCoreNetworkPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCoreNetworkPolicy
 func (c *NetworkManager) GetCoreNetworkPolicyRequest(input *GetCoreNetworkPolicyInput) (req *request.Request, output *GetCoreNetworkPolicyOutput) {
@@ -3968,20 +3963,21 @@ func (c *NetworkManager) GetCoreNetworkPolicyRequest(input *GetCoreNetworkPolicy
 // API operation GetCoreNetworkPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCoreNetworkPolicy
 func (c *NetworkManager) GetCoreNetworkPolicy(input *GetCoreNetworkPolicyInput) (*GetCoreNetworkPolicyOutput, error) {
@@ -4021,14 +4017,13 @@ const opGetCustomerGatewayAssociations = "GetCustomerGatewayAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCustomerGatewayAssociationsRequest method.
+//	req, resp := client.GetCustomerGatewayAssociationsRequest(params)
 //
-//    // Example sending a request using the GetCustomerGatewayAssociationsRequest method.
-//    req, resp := client.GetCustomerGatewayAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCustomerGatewayAssociations
 func (c *NetworkManager) GetCustomerGatewayAssociationsRequest(input *GetCustomerGatewayAssociationsInput) (req *request.Request, output *GetCustomerGatewayAssociationsOutput) {
@@ -4066,24 +4061,25 @@ func (c *NetworkManager) GetCustomerGatewayAssociationsRequest(input *GetCustome
 // API operation GetCustomerGatewayAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetCustomerGatewayAssociations
 func (c *NetworkManager) GetCustomerGatewayAssociations(input *GetCustomerGatewayAssociationsInput) (*GetCustomerGatewayAssociationsOutput, error) {
@@ -4115,15 +4111,14 @@ func (c *NetworkManager) GetCustomerGatewayAssociationsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCustomerGatewayAssociations operation.
-//    pageNum := 0
-//    err := client.GetCustomerGatewayAssociationsPages(params,
-//        func(page *networkmanager.GetCustomerGatewayAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCustomerGatewayAssociations operation.
+//	pageNum := 0
+//	err := client.GetCustomerGatewayAssociationsPages(params,
+//	    func(page *networkmanager.GetCustomerGatewayAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetCustomerGatewayAssociationsPages(input *GetCustomerGatewayAssociationsInput, fn func(*GetCustomerGatewayAssociationsOutput, bool) bool) error {
 	return c.GetCustomerGatewayAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4175,14 +4170,13 @@ const opGetDevices = "GetDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDevicesRequest method.
+//	req, resp := client.GetDevicesRequest(params)
 //
-//    // Example sending a request using the GetDevicesRequest method.
-//    req, resp := client.GetDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetDevices
 func (c *NetworkManager) GetDevicesRequest(input *GetDevicesInput) (req *request.Request, output *GetDevicesOutput) {
@@ -4219,20 +4213,21 @@ func (c *NetworkManager) GetDevicesRequest(input *GetDevicesInput) (req *request
 // API operation GetDevices for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetDevices
 func (c *NetworkManager) GetDevices(input *GetDevicesInput) (*GetDevicesOutput, error) {
@@ -4264,15 +4259,14 @@ func (c *NetworkManager) GetDevicesWithContext(ctx aws.Context, input *GetDevice
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDevices operation.
-//    pageNum := 0
-//    err := client.GetDevicesPages(params,
-//        func(page *networkmanager.GetDevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDevices operation.
+//	pageNum := 0
+//	err := client.GetDevicesPages(params,
+//	    func(page *networkmanager.GetDevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetDevicesPages(input *GetDevicesInput, fn func(*GetDevicesOutput, bool) bool) error {
 	return c.GetDevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4324,14 +4318,13 @@ const opGetLinkAssociations = "GetLinkAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLinkAssociationsRequest method.
+//	req, resp := client.GetLinkAssociationsRequest(params)
 //
-//    // Example sending a request using the GetLinkAssociationsRequest method.
-//    req, resp := client.GetLinkAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetLinkAssociations
 func (c *NetworkManager) GetLinkAssociationsRequest(input *GetLinkAssociationsInput) (req *request.Request, output *GetLinkAssociationsOutput) {
@@ -4369,20 +4362,21 @@ func (c *NetworkManager) GetLinkAssociationsRequest(input *GetLinkAssociationsIn
 // API operation GetLinkAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetLinkAssociations
 func (c *NetworkManager) GetLinkAssociations(input *GetLinkAssociationsInput) (*GetLinkAssociationsOutput, error) {
@@ -4414,15 +4408,14 @@ func (c *NetworkManager) GetLinkAssociationsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetLinkAssociations operation.
-//    pageNum := 0
-//    err := client.GetLinkAssociationsPages(params,
-//        func(page *networkmanager.GetLinkAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetLinkAssociations operation.
+//	pageNum := 0
+//	err := client.GetLinkAssociationsPages(params,
+//	    func(page *networkmanager.GetLinkAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetLinkAssociationsPages(input *GetLinkAssociationsInput, fn func(*GetLinkAssociationsOutput, bool) bool) error {
 	return c.GetLinkAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4474,14 +4467,13 @@ const opGetLinks = "GetLinks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLinksRequest method.
+//	req, resp := client.GetLinksRequest(params)
 //
-//    // Example sending a request using the GetLinksRequest method.
-//    req, resp := client.GetLinksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetLinks
 func (c *NetworkManager) GetLinksRequest(input *GetLinksInput) (req *request.Request, output *GetLinksOutput) {
@@ -4521,20 +4513,21 @@ func (c *NetworkManager) GetLinksRequest(input *GetLinksInput) (req *request.Req
 // API operation GetLinks for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetLinks
 func (c *NetworkManager) GetLinks(input *GetLinksInput) (*GetLinksOutput, error) {
@@ -4566,15 +4559,14 @@ func (c *NetworkManager) GetLinksWithContext(ctx aws.Context, input *GetLinksInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetLinks operation.
-//    pageNum := 0
-//    err := client.GetLinksPages(params,
-//        func(page *networkmanager.GetLinksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetLinks operation.
+//	pageNum := 0
+//	err := client.GetLinksPages(params,
+//	    func(page *networkmanager.GetLinksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetLinksPages(input *GetLinksInput, fn func(*GetLinksOutput, bool) bool) error {
 	return c.GetLinksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4626,14 +4618,13 @@ const opGetNetworkResourceCounts = "GetNetworkResourceCounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkResourceCountsRequest method.
+//	req, resp := client.GetNetworkResourceCountsRequest(params)
 //
-//    // Example sending a request using the GetNetworkResourceCountsRequest method.
-//    req, resp := client.GetNetworkResourceCountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkResourceCounts
 func (c *NetworkManager) GetNetworkResourceCountsRequest(input *GetNetworkResourceCountsInput) (req *request.Request, output *GetNetworkResourceCountsOutput) {
@@ -4671,17 +4662,18 @@ func (c *NetworkManager) GetNetworkResourceCountsRequest(input *GetNetworkResour
 // API operation GetNetworkResourceCounts for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkResourceCounts
 func (c *NetworkManager) GetNetworkResourceCounts(input *GetNetworkResourceCountsInput) (*GetNetworkResourceCountsOutput, error) {
@@ -4713,15 +4705,14 @@ func (c *NetworkManager) GetNetworkResourceCountsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetNetworkResourceCounts operation.
-//    pageNum := 0
-//    err := client.GetNetworkResourceCountsPages(params,
-//        func(page *networkmanager.GetNetworkResourceCountsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetNetworkResourceCounts operation.
+//	pageNum := 0
+//	err := client.GetNetworkResourceCountsPages(params,
+//	    func(page *networkmanager.GetNetworkResourceCountsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetNetworkResourceCountsPages(input *GetNetworkResourceCountsInput, fn func(*GetNetworkResourceCountsOutput, bool) bool) error {
 	return c.GetNetworkResourceCountsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4773,14 +4764,13 @@ const opGetNetworkResourceRelationships = "GetNetworkResourceRelationships"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkResourceRelationshipsRequest method.
+//	req, resp := client.GetNetworkResourceRelationshipsRequest(params)
 //
-//    // Example sending a request using the GetNetworkResourceRelationshipsRequest method.
-//    req, resp := client.GetNetworkResourceRelationshipsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkResourceRelationships
 func (c *NetworkManager) GetNetworkResourceRelationshipsRequest(input *GetNetworkResourceRelationshipsInput) (req *request.Request, output *GetNetworkResourceRelationshipsOutput) {
@@ -4817,20 +4807,21 @@ func (c *NetworkManager) GetNetworkResourceRelationshipsRequest(input *GetNetwor
 // API operation GetNetworkResourceRelationships for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkResourceRelationships
 func (c *NetworkManager) GetNetworkResourceRelationships(input *GetNetworkResourceRelationshipsInput) (*GetNetworkResourceRelationshipsOutput, error) {
@@ -4862,15 +4853,14 @@ func (c *NetworkManager) GetNetworkResourceRelationshipsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetNetworkResourceRelationships operation.
-//    pageNum := 0
-//    err := client.GetNetworkResourceRelationshipsPages(params,
-//        func(page *networkmanager.GetNetworkResourceRelationshipsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetNetworkResourceRelationships operation.
+//	pageNum := 0
+//	err := client.GetNetworkResourceRelationshipsPages(params,
+//	    func(page *networkmanager.GetNetworkResourceRelationshipsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetNetworkResourceRelationshipsPages(input *GetNetworkResourceRelationshipsInput, fn func(*GetNetworkResourceRelationshipsOutput, bool) bool) error {
 	return c.GetNetworkResourceRelationshipsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4922,14 +4912,13 @@ const opGetNetworkResources = "GetNetworkResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkResourcesRequest method.
+//	req, resp := client.GetNetworkResourcesRequest(params)
 //
-//    // Example sending a request using the GetNetworkResourcesRequest method.
-//    req, resp := client.GetNetworkResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkResources
 func (c *NetworkManager) GetNetworkResourcesRequest(input *GetNetworkResourcesInput) (req *request.Request, output *GetNetworkResourcesOutput) {
@@ -4969,20 +4958,21 @@ func (c *NetworkManager) GetNetworkResourcesRequest(input *GetNetworkResourcesIn
 // API operation GetNetworkResources for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkResources
 func (c *NetworkManager) GetNetworkResources(input *GetNetworkResourcesInput) (*GetNetworkResourcesOutput, error) {
@@ -5014,15 +5004,14 @@ func (c *NetworkManager) GetNetworkResourcesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetNetworkResources operation.
-//    pageNum := 0
-//    err := client.GetNetworkResourcesPages(params,
-//        func(page *networkmanager.GetNetworkResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetNetworkResources operation.
+//	pageNum := 0
+//	err := client.GetNetworkResourcesPages(params,
+//	    func(page *networkmanager.GetNetworkResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetNetworkResourcesPages(input *GetNetworkResourcesInput, fn func(*GetNetworkResourcesOutput, bool) bool) error {
 	return c.GetNetworkResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5074,14 +5063,13 @@ const opGetNetworkRoutes = "GetNetworkRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkRoutesRequest method.
+//	req, resp := client.GetNetworkRoutesRequest(params)
 //
-//    // Example sending a request using the GetNetworkRoutesRequest method.
-//    req, resp := client.GetNetworkRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkRoutes
 func (c *NetworkManager) GetNetworkRoutesRequest(input *GetNetworkRoutesInput) (req *request.Request, output *GetNetworkRoutesOutput) {
@@ -5112,20 +5100,21 @@ func (c *NetworkManager) GetNetworkRoutesRequest(input *GetNetworkRoutesInput) (
 // API operation GetNetworkRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkRoutes
 func (c *NetworkManager) GetNetworkRoutes(input *GetNetworkRoutesInput) (*GetNetworkRoutesOutput, error) {
@@ -5165,14 +5154,13 @@ const opGetNetworkTelemetry = "GetNetworkTelemetry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkTelemetryRequest method.
+//	req, resp := client.GetNetworkTelemetryRequest(params)
 //
-//    // Example sending a request using the GetNetworkTelemetryRequest method.
-//    req, resp := client.GetNetworkTelemetryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkTelemetry
 func (c *NetworkManager) GetNetworkTelemetryRequest(input *GetNetworkTelemetryInput) (req *request.Request, output *GetNetworkTelemetryOutput) {
@@ -5209,20 +5197,21 @@ func (c *NetworkManager) GetNetworkTelemetryRequest(input *GetNetworkTelemetryIn
 // API operation GetNetworkTelemetry for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetNetworkTelemetry
 func (c *NetworkManager) GetNetworkTelemetry(input *GetNetworkTelemetryInput) (*GetNetworkTelemetryOutput, error) {
@@ -5254,15 +5243,14 @@ func (c *NetworkManager) GetNetworkTelemetryWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetNetworkTelemetry operation.
-//    pageNum := 0
-//    err := client.GetNetworkTelemetryPages(params,
-//        func(page *networkmanager.GetNetworkTelemetryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetNetworkTelemetry operation.
+//	pageNum := 0
+//	err := client.GetNetworkTelemetryPages(params,
+//	    func(page *networkmanager.GetNetworkTelemetryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetNetworkTelemetryPages(input *GetNetworkTelemetryInput, fn func(*GetNetworkTelemetryOutput, bool) bool) error {
 	return c.GetNetworkTelemetryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5314,14 +5302,13 @@ const opGetResourcePolicy = "GetResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePolicyRequest method.
+//	req, resp := client.GetResourcePolicyRequest(params)
 //
-//    // Example sending a request using the GetResourcePolicyRequest method.
-//    req, resp := client.GetResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetResourcePolicy
 func (c *NetworkManager) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *request.Request, output *GetResourcePolicyOutput) {
@@ -5352,17 +5339,18 @@ func (c *NetworkManager) GetResourcePolicyRequest(input *GetResourcePolicyInput)
 // API operation GetResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetResourcePolicy
 func (c *NetworkManager) GetResourcePolicy(input *GetResourcePolicyInput) (*GetResourcePolicyOutput, error) {
@@ -5402,14 +5390,13 @@ const opGetRouteAnalysis = "GetRouteAnalysis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRouteAnalysisRequest method.
+//	req, resp := client.GetRouteAnalysisRequest(params)
 //
-//    // Example sending a request using the GetRouteAnalysisRequest method.
-//    req, resp := client.GetRouteAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetRouteAnalysis
 func (c *NetworkManager) GetRouteAnalysisRequest(input *GetRouteAnalysisInput) (req *request.Request, output *GetRouteAnalysisOutput) {
@@ -5440,20 +5427,21 @@ func (c *NetworkManager) GetRouteAnalysisRequest(input *GetRouteAnalysisInput) (
 // API operation GetRouteAnalysis for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetRouteAnalysis
 func (c *NetworkManager) GetRouteAnalysis(input *GetRouteAnalysisInput) (*GetRouteAnalysisOutput, error) {
@@ -5493,14 +5481,13 @@ const opGetSiteToSiteVpnAttachment = "GetSiteToSiteVpnAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSiteToSiteVpnAttachmentRequest method.
+//	req, resp := client.GetSiteToSiteVpnAttachmentRequest(params)
 //
-//    // Example sending a request using the GetSiteToSiteVpnAttachmentRequest method.
-//    req, resp := client.GetSiteToSiteVpnAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetSiteToSiteVpnAttachment
 func (c *NetworkManager) GetSiteToSiteVpnAttachmentRequest(input *GetSiteToSiteVpnAttachmentInput) (req *request.Request, output *GetSiteToSiteVpnAttachmentOutput) {
@@ -5531,20 +5518,21 @@ func (c *NetworkManager) GetSiteToSiteVpnAttachmentRequest(input *GetSiteToSiteV
 // API operation GetSiteToSiteVpnAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetSiteToSiteVpnAttachment
 func (c *NetworkManager) GetSiteToSiteVpnAttachment(input *GetSiteToSiteVpnAttachmentInput) (*GetSiteToSiteVpnAttachmentOutput, error) {
@@ -5584,14 +5572,13 @@ const opGetSites = "GetSites"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSitesRequest method.
+//	req, resp := client.GetSitesRequest(params)
 //
-//    // Example sending a request using the GetSitesRequest method.
-//    req, resp := client.GetSitesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetSites
 func (c *NetworkManager) GetSitesRequest(input *GetSitesInput) (req *request.Request, output *GetSitesOutput) {
@@ -5628,20 +5615,21 @@ func (c *NetworkManager) GetSitesRequest(input *GetSitesInput) (req *request.Req
 // API operation GetSites for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetSites
 func (c *NetworkManager) GetSites(input *GetSitesInput) (*GetSitesOutput, error) {
@@ -5673,15 +5661,14 @@ func (c *NetworkManager) GetSitesWithContext(ctx aws.Context, input *GetSitesInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSites operation.
-//    pageNum := 0
-//    err := client.GetSitesPages(params,
-//        func(page *networkmanager.GetSitesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSites operation.
+//	pageNum := 0
+//	err := client.GetSitesPages(params,
+//	    func(page *networkmanager.GetSitesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetSitesPages(input *GetSitesInput, fn func(*GetSitesOutput, bool) bool) error {
 	return c.GetSitesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5733,14 +5720,13 @@ const opGetTransitGatewayConnectPeerAssociations = "GetTransitGatewayConnectPeer
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayConnectPeerAssociationsRequest method.
+//	req, resp := client.GetTransitGatewayConnectPeerAssociationsRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayConnectPeerAssociationsRequest method.
-//    req, resp := client.GetTransitGatewayConnectPeerAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetTransitGatewayConnectPeerAssociations
 func (c *NetworkManager) GetTransitGatewayConnectPeerAssociationsRequest(input *GetTransitGatewayConnectPeerAssociationsInput) (req *request.Request, output *GetTransitGatewayConnectPeerAssociationsOutput) {
@@ -5778,24 +5764,25 @@ func (c *NetworkManager) GetTransitGatewayConnectPeerAssociationsRequest(input *
 // API operation GetTransitGatewayConnectPeerAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetTransitGatewayConnectPeerAssociations
 func (c *NetworkManager) GetTransitGatewayConnectPeerAssociations(input *GetTransitGatewayConnectPeerAssociationsInput) (*GetTransitGatewayConnectPeerAssociationsOutput, error) {
@@ -5827,15 +5814,14 @@ func (c *NetworkManager) GetTransitGatewayConnectPeerAssociationsWithContext(ctx
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayConnectPeerAssociations operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayConnectPeerAssociationsPages(params,
-//        func(page *networkmanager.GetTransitGatewayConnectPeerAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayConnectPeerAssociations operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayConnectPeerAssociationsPages(params,
+//	    func(page *networkmanager.GetTransitGatewayConnectPeerAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetTransitGatewayConnectPeerAssociationsPages(input *GetTransitGatewayConnectPeerAssociationsInput, fn func(*GetTransitGatewayConnectPeerAssociationsOutput, bool) bool) error {
 	return c.GetTransitGatewayConnectPeerAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5887,14 +5873,13 @@ const opGetTransitGatewayRegistrations = "GetTransitGatewayRegistrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTransitGatewayRegistrationsRequest method.
+//	req, resp := client.GetTransitGatewayRegistrationsRequest(params)
 //
-//    // Example sending a request using the GetTransitGatewayRegistrationsRequest method.
-//    req, resp := client.GetTransitGatewayRegistrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetTransitGatewayRegistrations
 func (c *NetworkManager) GetTransitGatewayRegistrationsRequest(input *GetTransitGatewayRegistrationsInput) (req *request.Request, output *GetTransitGatewayRegistrationsOutput) {
@@ -5932,20 +5917,21 @@ func (c *NetworkManager) GetTransitGatewayRegistrationsRequest(input *GetTransit
 // API operation GetTransitGatewayRegistrations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetTransitGatewayRegistrations
 func (c *NetworkManager) GetTransitGatewayRegistrations(input *GetTransitGatewayRegistrationsInput) (*GetTransitGatewayRegistrationsOutput, error) {
@@ -5977,15 +5963,14 @@ func (c *NetworkManager) GetTransitGatewayRegistrationsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTransitGatewayRegistrations operation.
-//    pageNum := 0
-//    err := client.GetTransitGatewayRegistrationsPages(params,
-//        func(page *networkmanager.GetTransitGatewayRegistrationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTransitGatewayRegistrations operation.
+//	pageNum := 0
+//	err := client.GetTransitGatewayRegistrationsPages(params,
+//	    func(page *networkmanager.GetTransitGatewayRegistrationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) GetTransitGatewayRegistrationsPages(input *GetTransitGatewayRegistrationsInput, fn func(*GetTransitGatewayRegistrationsOutput, bool) bool) error {
 	return c.GetTransitGatewayRegistrationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6037,14 +6022,13 @@ const opGetVpcAttachment = "GetVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpcAttachmentRequest method.
+//	req, resp := client.GetVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the GetVpcAttachmentRequest method.
-//    req, resp := client.GetVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetVpcAttachment
 func (c *NetworkManager) GetVpcAttachmentRequest(input *GetVpcAttachmentInput) (req *request.Request, output *GetVpcAttachmentOutput) {
@@ -6075,20 +6059,21 @@ func (c *NetworkManager) GetVpcAttachmentRequest(input *GetVpcAttachmentInput) (
 // API operation GetVpcAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/GetVpcAttachment
 func (c *NetworkManager) GetVpcAttachment(input *GetVpcAttachmentInput) (*GetVpcAttachmentOutput, error) {
@@ -6128,14 +6113,13 @@ const opListAttachments = "ListAttachments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAttachmentsRequest method.
+//	req, resp := client.ListAttachmentsRequest(params)
 //
-//    // Example sending a request using the ListAttachmentsRequest method.
-//    req, resp := client.ListAttachmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListAttachments
 func (c *NetworkManager) ListAttachmentsRequest(input *ListAttachmentsInput) (req *request.Request, output *ListAttachmentsOutput) {
@@ -6172,17 +6156,18 @@ func (c *NetworkManager) ListAttachmentsRequest(input *ListAttachmentsInput) (re
 // API operation ListAttachments for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListAttachments
 func (c *NetworkManager) ListAttachments(input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
@@ -6214,15 +6199,14 @@ func (c *NetworkManager) ListAttachmentsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAttachments operation.
-//    pageNum := 0
-//    err := client.ListAttachmentsPages(params,
-//        func(page *networkmanager.ListAttachmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAttachments operation.
+//	pageNum := 0
+//	err := client.ListAttachmentsPages(params,
+//	    func(page *networkmanager.ListAttachmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) ListAttachmentsPages(input *ListAttachmentsInput, fn func(*ListAttachmentsOutput, bool) bool) error {
 	return c.ListAttachmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6274,14 +6258,13 @@ const opListConnectPeers = "ListConnectPeers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectPeersRequest method.
+//	req, resp := client.ListConnectPeersRequest(params)
 //
-//    // Example sending a request using the ListConnectPeersRequest method.
-//    req, resp := client.ListConnectPeersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListConnectPeers
 func (c *NetworkManager) ListConnectPeersRequest(input *ListConnectPeersInput) (req *request.Request, output *ListConnectPeersOutput) {
@@ -6318,17 +6301,18 @@ func (c *NetworkManager) ListConnectPeersRequest(input *ListConnectPeersInput) (
 // API operation ListConnectPeers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListConnectPeers
 func (c *NetworkManager) ListConnectPeers(input *ListConnectPeersInput) (*ListConnectPeersOutput, error) {
@@ -6360,15 +6344,14 @@ func (c *NetworkManager) ListConnectPeersWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConnectPeers operation.
-//    pageNum := 0
-//    err := client.ListConnectPeersPages(params,
-//        func(page *networkmanager.ListConnectPeersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConnectPeers operation.
+//	pageNum := 0
+//	err := client.ListConnectPeersPages(params,
+//	    func(page *networkmanager.ListConnectPeersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) ListConnectPeersPages(input *ListConnectPeersInput, fn func(*ListConnectPeersOutput, bool) bool) error {
 	return c.ListConnectPeersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6420,14 +6403,13 @@ const opListCoreNetworkPolicyVersions = "ListCoreNetworkPolicyVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCoreNetworkPolicyVersionsRequest method.
+//	req, resp := client.ListCoreNetworkPolicyVersionsRequest(params)
 //
-//    // Example sending a request using the ListCoreNetworkPolicyVersionsRequest method.
-//    req, resp := client.ListCoreNetworkPolicyVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListCoreNetworkPolicyVersions
 func (c *NetworkManager) ListCoreNetworkPolicyVersionsRequest(input *ListCoreNetworkPolicyVersionsInput) (req *request.Request, output *ListCoreNetworkPolicyVersionsOutput) {
@@ -6464,20 +6446,21 @@ func (c *NetworkManager) ListCoreNetworkPolicyVersionsRequest(input *ListCoreNet
 // API operation ListCoreNetworkPolicyVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListCoreNetworkPolicyVersions
 func (c *NetworkManager) ListCoreNetworkPolicyVersions(input *ListCoreNetworkPolicyVersionsInput) (*ListCoreNetworkPolicyVersionsOutput, error) {
@@ -6509,15 +6492,14 @@ func (c *NetworkManager) ListCoreNetworkPolicyVersionsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCoreNetworkPolicyVersions operation.
-//    pageNum := 0
-//    err := client.ListCoreNetworkPolicyVersionsPages(params,
-//        func(page *networkmanager.ListCoreNetworkPolicyVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCoreNetworkPolicyVersions operation.
+//	pageNum := 0
+//	err := client.ListCoreNetworkPolicyVersionsPages(params,
+//	    func(page *networkmanager.ListCoreNetworkPolicyVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) ListCoreNetworkPolicyVersionsPages(input *ListCoreNetworkPolicyVersionsInput, fn func(*ListCoreNetworkPolicyVersionsOutput, bool) bool) error {
 	return c.ListCoreNetworkPolicyVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6569,14 +6551,13 @@ const opListCoreNetworks = "ListCoreNetworks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCoreNetworksRequest method.
+//	req, resp := client.ListCoreNetworksRequest(params)
 //
-//    // Example sending a request using the ListCoreNetworksRequest method.
-//    req, resp := client.ListCoreNetworksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListCoreNetworks
 func (c *NetworkManager) ListCoreNetworksRequest(input *ListCoreNetworksInput) (req *request.Request, output *ListCoreNetworksOutput) {
@@ -6613,17 +6594,18 @@ func (c *NetworkManager) ListCoreNetworksRequest(input *ListCoreNetworksInput) (
 // API operation ListCoreNetworks for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListCoreNetworks
 func (c *NetworkManager) ListCoreNetworks(input *ListCoreNetworksInput) (*ListCoreNetworksOutput, error) {
@@ -6655,15 +6637,14 @@ func (c *NetworkManager) ListCoreNetworksWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCoreNetworks operation.
-//    pageNum := 0
-//    err := client.ListCoreNetworksPages(params,
-//        func(page *networkmanager.ListCoreNetworksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCoreNetworks operation.
+//	pageNum := 0
+//	err := client.ListCoreNetworksPages(params,
+//	    func(page *networkmanager.ListCoreNetworksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NetworkManager) ListCoreNetworksPages(input *ListCoreNetworksInput, fn func(*ListCoreNetworksOutput, bool) bool) error {
 	return c.ListCoreNetworksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6715,14 +6696,13 @@ const opListOrganizationServiceAccessStatus = "ListOrganizationServiceAccessStat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOrganizationServiceAccessStatusRequest method.
+//	req, resp := client.ListOrganizationServiceAccessStatusRequest(params)
 //
-//    // Example sending a request using the ListOrganizationServiceAccessStatusRequest method.
-//    req, resp := client.ListOrganizationServiceAccessStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListOrganizationServiceAccessStatus
 func (c *NetworkManager) ListOrganizationServiceAccessStatusRequest(input *ListOrganizationServiceAccessStatusInput) (req *request.Request, output *ListOrganizationServiceAccessStatusOutput) {
@@ -6787,14 +6767,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListTagsForResource
 func (c *NetworkManager) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -6825,20 +6804,21 @@ func (c *NetworkManager) ListTagsForResourceRequest(input *ListTagsForResourceIn
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/ListTagsForResource
 func (c *NetworkManager) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -6878,14 +6858,13 @@ const opPutCoreNetworkPolicy = "PutCoreNetworkPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutCoreNetworkPolicyRequest method.
+//	req, resp := client.PutCoreNetworkPolicyRequest(params)
 //
-//    // Example sending a request using the PutCoreNetworkPolicyRequest method.
-//    req, resp := client.PutCoreNetworkPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/PutCoreNetworkPolicy
 func (c *NetworkManager) PutCoreNetworkPolicyRequest(input *PutCoreNetworkPolicyInput) (req *request.Request, output *PutCoreNetworkPolicyOutput) {
@@ -6918,27 +6897,28 @@ func (c *NetworkManager) PutCoreNetworkPolicyRequest(input *PutCoreNetworkPolicy
 // API operation PutCoreNetworkPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * CoreNetworkPolicyException
-//   Describes a core network policy exception.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints.
+//   - CoreNetworkPolicyException
+//     Describes a core network policy exception.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - InternalServerException
+//     The request has failed due to an internal error.
+//
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/PutCoreNetworkPolicy
 func (c *NetworkManager) PutCoreNetworkPolicy(input *PutCoreNetworkPolicyInput) (*PutCoreNetworkPolicyOutput, error) {
@@ -6978,14 +6958,13 @@ const opPutResourcePolicy = "PutResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
 //
-//    // Example sending a request using the PutResourcePolicyRequest method.
-//    req, resp := client.PutResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/PutResourcePolicy
 func (c *NetworkManager) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
@@ -7017,24 +6996,25 @@ func (c *NetworkManager) PutResourcePolicyRequest(input *PutResourcePolicyInput)
 // API operation PutResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/PutResourcePolicy
 func (c *NetworkManager) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
@@ -7074,14 +7054,13 @@ const opRegisterTransitGateway = "RegisterTransitGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterTransitGatewayRequest method.
+//	req, resp := client.RegisterTransitGatewayRequest(params)
 //
-//    // Example sending a request using the RegisterTransitGatewayRequest method.
-//    req, resp := client.RegisterTransitGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/RegisterTransitGateway
 func (c *NetworkManager) RegisterTransitGatewayRequest(input *RegisterTransitGatewayInput) (req *request.Request, output *RegisterTransitGatewayOutput) {
@@ -7115,24 +7094,25 @@ func (c *NetworkManager) RegisterTransitGatewayRequest(input *RegisterTransitGat
 // API operation RegisterTransitGateway for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/RegisterTransitGateway
 func (c *NetworkManager) RegisterTransitGateway(input *RegisterTransitGatewayInput) (*RegisterTransitGatewayOutput, error) {
@@ -7172,14 +7152,13 @@ const opRejectAttachment = "RejectAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectAttachmentRequest method.
+//	req, resp := client.RejectAttachmentRequest(params)
 //
-//    // Example sending a request using the RejectAttachmentRequest method.
-//    req, resp := client.RejectAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/RejectAttachment
 func (c *NetworkManager) RejectAttachmentRequest(input *RejectAttachmentInput) (req *request.Request, output *RejectAttachmentOutput) {
@@ -7210,24 +7189,25 @@ func (c *NetworkManager) RejectAttachmentRequest(input *RejectAttachmentInput) (
 // API operation RejectAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/RejectAttachment
 func (c *NetworkManager) RejectAttachment(input *RejectAttachmentInput) (*RejectAttachmentOutput, error) {
@@ -7267,14 +7247,13 @@ const opRestoreCoreNetworkPolicyVersion = "RestoreCoreNetworkPolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreCoreNetworkPolicyVersionRequest method.
+//	req, resp := client.RestoreCoreNetworkPolicyVersionRequest(params)
 //
-//    // Example sending a request using the RestoreCoreNetworkPolicyVersionRequest method.
-//    req, resp := client.RestoreCoreNetworkPolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/RestoreCoreNetworkPolicyVersion
 func (c *NetworkManager) RestoreCoreNetworkPolicyVersionRequest(input *RestoreCoreNetworkPolicyVersionInput) (req *request.Request, output *RestoreCoreNetworkPolicyVersionOutput) {
@@ -7307,24 +7286,25 @@ func (c *NetworkManager) RestoreCoreNetworkPolicyVersionRequest(input *RestoreCo
 // API operation RestoreCoreNetworkPolicyVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - InternalServerException
+//     The request has failed due to an internal error.
+//
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/RestoreCoreNetworkPolicyVersion
 func (c *NetworkManager) RestoreCoreNetworkPolicyVersion(input *RestoreCoreNetworkPolicyVersionInput) (*RestoreCoreNetworkPolicyVersionOutput, error) {
@@ -7364,14 +7344,13 @@ const opStartOrganizationServiceAccessUpdate = "StartOrganizationServiceAccessUp
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartOrganizationServiceAccessUpdateRequest method.
+//	req, resp := client.StartOrganizationServiceAccessUpdateRequest(params)
 //
-//    // Example sending a request using the StartOrganizationServiceAccessUpdateRequest method.
-//    req, resp := client.StartOrganizationServiceAccessUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/StartOrganizationServiceAccessUpdate
 func (c *NetworkManager) StartOrganizationServiceAccessUpdateRequest(input *StartOrganizationServiceAccessUpdateInput) (req *request.Request, output *StartOrganizationServiceAccessUpdateOutput) {
@@ -7400,24 +7379,25 @@ func (c *NetworkManager) StartOrganizationServiceAccessUpdateRequest(input *Star
 // API operation StartOrganizationServiceAccessUpdate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/StartOrganizationServiceAccessUpdate
 func (c *NetworkManager) StartOrganizationServiceAccessUpdate(input *StartOrganizationServiceAccessUpdateInput) (*StartOrganizationServiceAccessUpdateOutput, error) {
@@ -7457,14 +7437,13 @@ const opStartRouteAnalysis = "StartRouteAnalysis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartRouteAnalysisRequest method.
+//	req, resp := client.StartRouteAnalysisRequest(params)
 //
-//    // Example sending a request using the StartRouteAnalysisRequest method.
-//    req, resp := client.StartRouteAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/StartRouteAnalysis
 func (c *NetworkManager) StartRouteAnalysisRequest(input *StartRouteAnalysisInput) (req *request.Request, output *StartRouteAnalysisOutput) {
@@ -7496,24 +7475,25 @@ func (c *NetworkManager) StartRouteAnalysisRequest(input *StartRouteAnalysisInpu
 // API operation StartRouteAnalysis for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/StartRouteAnalysis
 func (c *NetworkManager) StartRouteAnalysis(input *StartRouteAnalysisInput) (*StartRouteAnalysisOutput, error) {
@@ -7553,14 +7533,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/TagResource
 func (c *NetworkManager) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -7592,27 +7571,28 @@ func (c *NetworkManager) TagResourceRequest(input *TagResourceInput) (req *reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/TagResource
 func (c *NetworkManager) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -7652,14 +7632,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UntagResource
 func (c *NetworkManager) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -7691,24 +7670,25 @@ func (c *NetworkManager) UntagResourceRequest(input *UntagResourceInput) (req *r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UntagResource
 func (c *NetworkManager) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -7748,14 +7728,13 @@ const opUpdateConnection = "UpdateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectionRequest method.
+//	req, resp := client.UpdateConnectionRequest(params)
 //
-//    // Example sending a request using the UpdateConnectionRequest method.
-//    req, resp := client.UpdateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateConnection
 func (c *NetworkManager) UpdateConnectionRequest(input *UpdateConnectionInput) (req *request.Request, output *UpdateConnectionOutput) {
@@ -7787,24 +7766,25 @@ func (c *NetworkManager) UpdateConnectionRequest(input *UpdateConnectionInput) (
 // API operation UpdateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateConnection
 func (c *NetworkManager) UpdateConnection(input *UpdateConnectionInput) (*UpdateConnectionOutput, error) {
@@ -7844,14 +7824,13 @@ const opUpdateCoreNetwork = "UpdateCoreNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCoreNetworkRequest method.
+//	req, resp := client.UpdateCoreNetworkRequest(params)
 //
-//    // Example sending a request using the UpdateCoreNetworkRequest method.
-//    req, resp := client.UpdateCoreNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateCoreNetwork
 func (c *NetworkManager) UpdateCoreNetworkRequest(input *UpdateCoreNetworkInput) (req *request.Request, output *UpdateCoreNetworkOutput) {
@@ -7882,24 +7861,25 @@ func (c *NetworkManager) UpdateCoreNetworkRequest(input *UpdateCoreNetworkInput)
 // API operation UpdateCoreNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateCoreNetwork
 func (c *NetworkManager) UpdateCoreNetwork(input *UpdateCoreNetworkInput) (*UpdateCoreNetworkOutput, error) {
@@ -7939,14 +7919,13 @@ const opUpdateDevice = "UpdateDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeviceRequest method.
+//	req, resp := client.UpdateDeviceRequest(params)
 //
-//    // Example sending a request using the UpdateDeviceRequest method.
-//    req, resp := client.UpdateDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateDevice
 func (c *NetworkManager) UpdateDeviceRequest(input *UpdateDeviceInput) (req *request.Request, output *UpdateDeviceOutput) {
@@ -7978,24 +7957,25 @@ func (c *NetworkManager) UpdateDeviceRequest(input *UpdateDeviceInput) (req *req
 // API operation UpdateDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateDevice
 func (c *NetworkManager) UpdateDevice(input *UpdateDeviceInput) (*UpdateDeviceOutput, error) {
@@ -8035,14 +8015,13 @@ const opUpdateGlobalNetwork = "UpdateGlobalNetwork"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGlobalNetworkRequest method.
+//	req, resp := client.UpdateGlobalNetworkRequest(params)
 //
-//    // Example sending a request using the UpdateGlobalNetworkRequest method.
-//    req, resp := client.UpdateGlobalNetworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateGlobalNetwork
 func (c *NetworkManager) UpdateGlobalNetworkRequest(input *UpdateGlobalNetworkInput) (req *request.Request, output *UpdateGlobalNetworkOutput) {
@@ -8074,24 +8053,25 @@ func (c *NetworkManager) UpdateGlobalNetworkRequest(input *UpdateGlobalNetworkIn
 // API operation UpdateGlobalNetwork for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateGlobalNetwork
 func (c *NetworkManager) UpdateGlobalNetwork(input *UpdateGlobalNetworkInput) (*UpdateGlobalNetworkOutput, error) {
@@ -8131,14 +8111,13 @@ const opUpdateLink = "UpdateLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLinkRequest method.
+//	req, resp := client.UpdateLinkRequest(params)
 //
-//    // Example sending a request using the UpdateLinkRequest method.
-//    req, resp := client.UpdateLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateLink
 func (c *NetworkManager) UpdateLinkRequest(input *UpdateLinkInput) (req *request.Request, output *UpdateLinkOutput) {
@@ -8170,27 +8149,28 @@ func (c *NetworkManager) UpdateLinkRequest(input *UpdateLinkInput) (req *request
 // API operation UpdateLink for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * ServiceQuotaExceededException
-//   A service limit was exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     A service limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateLink
 func (c *NetworkManager) UpdateLink(input *UpdateLinkInput) (*UpdateLinkOutput, error) {
@@ -8230,14 +8210,13 @@ const opUpdateNetworkResourceMetadata = "UpdateNetworkResourceMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNetworkResourceMetadataRequest method.
+//	req, resp := client.UpdateNetworkResourceMetadataRequest(params)
 //
-//    // Example sending a request using the UpdateNetworkResourceMetadataRequest method.
-//    req, resp := client.UpdateNetworkResourceMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateNetworkResourceMetadata
 func (c *NetworkManager) UpdateNetworkResourceMetadataRequest(input *UpdateNetworkResourceMetadataInput) (req *request.Request, output *UpdateNetworkResourceMetadataOutput) {
@@ -8268,24 +8247,25 @@ func (c *NetworkManager) UpdateNetworkResourceMetadataRequest(input *UpdateNetwo
 // API operation UpdateNetworkResourceMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateNetworkResourceMetadata
 func (c *NetworkManager) UpdateNetworkResourceMetadata(input *UpdateNetworkResourceMetadataInput) (*UpdateNetworkResourceMetadataOutput, error) {
@@ -8325,14 +8305,13 @@ const opUpdateSite = "UpdateSite"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSiteRequest method.
+//	req, resp := client.UpdateSiteRequest(params)
 //
-//    // Example sending a request using the UpdateSiteRequest method.
-//    req, resp := client.UpdateSiteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateSite
 func (c *NetworkManager) UpdateSiteRequest(input *UpdateSiteInput) (req *request.Request, output *UpdateSiteOutput) {
@@ -8364,24 +8343,25 @@ func (c *NetworkManager) UpdateSiteRequest(input *UpdateSiteInput) (req *request
 // API operation UpdateSite for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateSite
 func (c *NetworkManager) UpdateSite(input *UpdateSiteInput) (*UpdateSiteOutput, error) {
@@ -8421,14 +8401,13 @@ const opUpdateVpcAttachment = "UpdateVpcAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVpcAttachmentRequest method.
+//	req, resp := client.UpdateVpcAttachmentRequest(params)
 //
-//    // Example sending a request using the UpdateVpcAttachmentRequest method.
-//    req, resp := client.UpdateVpcAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateVpcAttachment
 func (c *NetworkManager) UpdateVpcAttachmentRequest(input *UpdateVpcAttachmentInput) (req *request.Request, output *UpdateVpcAttachmentOutput) {
@@ -8459,24 +8438,25 @@ func (c *NetworkManager) UpdateVpcAttachmentRequest(input *UpdateVpcAttachmentIn
 // API operation UpdateVpcAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Updating or deleting the resource
-//   can cause an inconsistent state.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     There was a conflict processing the request. Updating or deleting the resource
+//     can cause an inconsistent state.
 //
-//   * InternalServerException
-//   The request has failed due to an internal error.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request has failed due to an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/networkmanager-2019-07-05/UpdateVpcAttachment
 func (c *NetworkManager) UpdateVpcAttachment(input *UpdateVpcAttachmentInput) (*UpdateVpcAttachmentOutput, error) {

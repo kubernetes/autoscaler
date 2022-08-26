@@ -86,7 +86,6 @@ func (c *Client) DestroyFirewallPolicy(identifier string) error {
 
 // ApplyFirewallPolicy issues a request to apply the given firewall policy to
 // the given server group.
-//
 func (c *Client) ApplyFirewallPolicy(policyId string, serverGroupId string) (*FirewallPolicy, error) {
 	policy := new(FirewallPolicy)
 	_, err := c.MakeApiRequest("POST", "/1.0/firewall_policies/"+policyId+"/apply_to",
@@ -99,7 +98,6 @@ func (c *Client) ApplyFirewallPolicy(policyId string, serverGroupId string) (*Fi
 
 // RemoveFirewallPolicy issues a request to remove the given firewall policy from
 // the given server group.
-//
 func (c *Client) RemoveFirewallPolicy(policyId string, serverGroupId string) (*FirewallPolicy, error) {
 	policy := new(FirewallPolicy)
 	_, err := c.MakeApiRequest("POST", "/1.0/firewall_policies/"+policyId+"/remove",

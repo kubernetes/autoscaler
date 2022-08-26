@@ -29,14 +29,13 @@ const opAssociateTeamMember = "AssociateTeamMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTeamMemberRequest method.
+//	req, resp := client.AssociateTeamMemberRequest(params)
 //
-//    // Example sending a request using the AssociateTeamMemberRequest method.
-//    req, resp := client.AssociateTeamMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/AssociateTeamMember
 func (c *CodeStar) AssociateTeamMemberRequest(input *AssociateTeamMemberInput) (req *request.Request, output *AssociateTeamMemberOutput) {
@@ -67,27 +66,28 @@ func (c *CodeStar) AssociateTeamMemberRequest(input *AssociateTeamMemberInput) (
 // API operation AssociateTeamMember for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   A resource limit has been exceeded.
 //
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
+//   - LimitExceededException
+//     A resource limit has been exceeded.
 //
-//   * TeamMemberAlreadyAssociatedException
-//   The team member is already associated with a role in this project.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - TeamMemberAlreadyAssociatedException
+//     The team member is already associated with a role in this project.
 //
-//   * InvalidServiceRoleException
-//   The service role is not valid.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * ProjectConfigurationException
-//   Project configuration information is required but not specified.
+//   - InvalidServiceRoleException
+//     The service role is not valid.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - ProjectConfigurationException
+//     Project configuration information is required but not specified.
+//
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/AssociateTeamMember
 func (c *CodeStar) AssociateTeamMember(input *AssociateTeamMemberInput) (*AssociateTeamMemberOutput, error) {
@@ -127,14 +127,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/CreateProject
 func (c *CodeStar) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -168,31 +167,32 @@ func (c *CodeStar) CreateProjectRequest(input *CreateProjectInput) (req *request
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectAlreadyExistsException
-//   An AWS CodeStar project with the same ID already exists in this region for
-//   the AWS account. AWS CodeStar project IDs must be unique within a region
-//   for the AWS account.
 //
-//   * LimitExceededException
-//   A resource limit has been exceeded.
+//   - ProjectAlreadyExistsException
+//     An AWS CodeStar project with the same ID already exists in this region for
+//     the AWS account. AWS CodeStar project IDs must be unique within a region
+//     for the AWS account.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - LimitExceededException
+//     A resource limit has been exceeded.
 //
-//   * ProjectCreationFailedException
-//   The project creation request was valid, but a nonspecific exception or error
-//   occurred during project creation. The project could not be created in AWS
-//   CodeStar.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * InvalidServiceRoleException
-//   The service role is not valid.
+//   - ProjectCreationFailedException
+//     The project creation request was valid, but a nonspecific exception or error
+//     occurred during project creation. The project could not be created in AWS
+//     CodeStar.
 //
-//   * ProjectConfigurationException
-//   Project configuration information is required but not specified.
+//   - InvalidServiceRoleException
+//     The service role is not valid.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - ProjectConfigurationException
+//     Project configuration information is required but not specified.
+//
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/CreateProject
 func (c *CodeStar) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -232,14 +232,13 @@ const opCreateUserProfile = "CreateUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserProfileRequest method.
+//	req, resp := client.CreateUserProfileRequest(params)
 //
-//    // Example sending a request using the CreateUserProfileRequest method.
-//    req, resp := client.CreateUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/CreateUserProfile
 func (c *CodeStar) CreateUserProfileRequest(input *CreateUserProfileInput) (req *request.Request, output *CreateUserProfileOutput) {
@@ -274,13 +273,14 @@ func (c *CodeStar) CreateUserProfileRequest(input *CreateUserProfileInput) (req 
 // API operation CreateUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * UserProfileAlreadyExistsException
-//   A user profile with that name already exists in this region for the AWS account.
-//   AWS CodeStar user profile names must be unique within a region for the AWS
-//   account.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - UserProfileAlreadyExistsException
+//     A user profile with that name already exists in this region for the AWS account.
+//     AWS CodeStar user profile names must be unique within a region for the AWS
+//     account.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/CreateUserProfile
 func (c *CodeStar) CreateUserProfile(input *CreateUserProfileInput) (*CreateUserProfileOutput, error) {
@@ -320,14 +320,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DeleteProject
 func (c *CodeStar) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -360,15 +359,16 @@ func (c *CodeStar) DeleteProjectRequest(input *DeleteProjectInput) (req *request
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
-//   * InvalidServiceRoleException
-//   The service role is not valid.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
+//
+//   - InvalidServiceRoleException
+//     The service role is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DeleteProject
 func (c *CodeStar) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -408,14 +408,13 @@ const opDeleteUserProfile = "DeleteUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserProfileRequest method.
+//	req, resp := client.DeleteUserProfileRequest(params)
 //
-//    // Example sending a request using the DeleteUserProfileRequest method.
-//    req, resp := client.DeleteUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DeleteUserProfile
 func (c *CodeStar) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req *request.Request, output *DeleteUserProfileOutput) {
@@ -449,8 +448,8 @@ func (c *CodeStar) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req 
 // API operation DeleteUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DeleteUserProfile
 func (c *CodeStar) DeleteUserProfile(input *DeleteUserProfileInput) (*DeleteUserProfileOutput, error) {
@@ -490,14 +489,13 @@ const opDescribeProject = "DescribeProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProjectRequest method.
+//	req, resp := client.DescribeProjectRequest(params)
 //
-//    // Example sending a request using the DescribeProjectRequest method.
-//    req, resp := client.DescribeProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DescribeProject
 func (c *CodeStar) DescribeProjectRequest(input *DescribeProjectInput) (req *request.Request, output *DescribeProjectOutput) {
@@ -528,21 +526,22 @@ func (c *CodeStar) DescribeProjectRequest(input *DescribeProjectInput) (req *req
 // API operation DescribeProject for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * InvalidServiceRoleException
-//   The service role is not valid.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * ProjectConfigurationException
-//   Project configuration information is required but not specified.
+//   - InvalidServiceRoleException
+//     The service role is not valid.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - ProjectConfigurationException
+//     Project configuration information is required but not specified.
+//
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DescribeProject
 func (c *CodeStar) DescribeProject(input *DescribeProjectInput) (*DescribeProjectOutput, error) {
@@ -582,14 +581,13 @@ const opDescribeUserProfile = "DescribeUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUserProfileRequest method.
+//	req, resp := client.DescribeUserProfileRequest(params)
 //
-//    // Example sending a request using the DescribeUserProfileRequest method.
-//    req, resp := client.DescribeUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DescribeUserProfile
 func (c *CodeStar) DescribeUserProfileRequest(input *DescribeUserProfileInput) (req *request.Request, output *DescribeUserProfileOutput) {
@@ -620,11 +618,12 @@ func (c *CodeStar) DescribeUserProfileRequest(input *DescribeUserProfileInput) (
 // API operation DescribeUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * UserProfileNotFoundException
-//   The user profile was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - UserProfileNotFoundException
+//     The user profile was not found.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DescribeUserProfile
 func (c *CodeStar) DescribeUserProfile(input *DescribeUserProfileInput) (*DescribeUserProfileOutput, error) {
@@ -664,14 +663,13 @@ const opDisassociateTeamMember = "DisassociateTeamMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTeamMemberRequest method.
+//	req, resp := client.DisassociateTeamMemberRequest(params)
 //
-//    // Example sending a request using the DisassociateTeamMemberRequest method.
-//    req, resp := client.DisassociateTeamMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DisassociateTeamMember
 func (c *CodeStar) DisassociateTeamMemberRequest(input *DisassociateTeamMemberInput) (req *request.Request, output *DisassociateTeamMemberOutput) {
@@ -706,18 +704,19 @@ func (c *CodeStar) DisassociateTeamMemberRequest(input *DisassociateTeamMemberIn
 // API operation DisassociateTeamMember for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * InvalidServiceRoleException
-//   The service role is not valid.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - InvalidServiceRoleException
+//     The service role is not valid.
+//
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/DisassociateTeamMember
 func (c *CodeStar) DisassociateTeamMember(input *DisassociateTeamMemberInput) (*DisassociateTeamMemberOutput, error) {
@@ -757,14 +756,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListProjects
 func (c *CodeStar) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -795,11 +793,12 @@ func (c *CodeStar) ListProjectsRequest(input *ListProjectsInput) (req *request.R
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The next token is not valid.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - InvalidNextTokenException
+//     The next token is not valid.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListProjects
 func (c *CodeStar) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -839,14 +838,13 @@ const opListResources = "ListResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourcesRequest method.
+//	req, resp := client.ListResourcesRequest(params)
 //
-//    // Example sending a request using the ListResourcesRequest method.
-//    req, resp := client.ListResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListResources
 func (c *CodeStar) ListResourcesRequest(input *ListResourcesInput) (req *request.Request, output *ListResourcesOutput) {
@@ -877,14 +875,15 @@ func (c *CodeStar) ListResourcesRequest(input *ListResourcesInput) (req *request
 // API operation ListResources for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * InvalidNextTokenException
-//   The next token is not valid.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - InvalidNextTokenException
+//     The next token is not valid.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListResources
 func (c *CodeStar) ListResources(input *ListResourcesInput) (*ListResourcesOutput, error) {
@@ -924,14 +923,13 @@ const opListTagsForProject = "ListTagsForProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForProjectRequest method.
+//	req, resp := client.ListTagsForProjectRequest(params)
 //
-//    // Example sending a request using the ListTagsForProjectRequest method.
-//    req, resp := client.ListTagsForProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListTagsForProject
 func (c *CodeStar) ListTagsForProjectRequest(input *ListTagsForProjectInput) (req *request.Request, output *ListTagsForProjectOutput) {
@@ -962,14 +960,15 @@ func (c *CodeStar) ListTagsForProjectRequest(input *ListTagsForProjectInput) (re
 // API operation ListTagsForProject for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * InvalidNextTokenException
-//   The next token is not valid.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
+//
+//   - InvalidNextTokenException
+//     The next token is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListTagsForProject
 func (c *CodeStar) ListTagsForProject(input *ListTagsForProjectInput) (*ListTagsForProjectOutput, error) {
@@ -1009,14 +1008,13 @@ const opListTeamMembers = "ListTeamMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTeamMembersRequest method.
+//	req, resp := client.ListTeamMembersRequest(params)
 //
-//    // Example sending a request using the ListTeamMembersRequest method.
-//    req, resp := client.ListTeamMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListTeamMembers
 func (c *CodeStar) ListTeamMembersRequest(input *ListTeamMembersInput) (req *request.Request, output *ListTeamMembersOutput) {
@@ -1047,14 +1045,15 @@ func (c *CodeStar) ListTeamMembersRequest(input *ListTeamMembersInput) (req *req
 // API operation ListTeamMembers for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * InvalidNextTokenException
-//   The next token is not valid.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - InvalidNextTokenException
+//     The next token is not valid.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListTeamMembers
 func (c *CodeStar) ListTeamMembers(input *ListTeamMembersInput) (*ListTeamMembersOutput, error) {
@@ -1094,14 +1093,13 @@ const opListUserProfiles = "ListUserProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUserProfilesRequest method.
+//	req, resp := client.ListUserProfilesRequest(params)
 //
-//    // Example sending a request using the ListUserProfilesRequest method.
-//    req, resp := client.ListUserProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListUserProfiles
 func (c *CodeStar) ListUserProfilesRequest(input *ListUserProfilesInput) (req *request.Request, output *ListUserProfilesOutput) {
@@ -1132,11 +1130,12 @@ func (c *CodeStar) ListUserProfilesRequest(input *ListUserProfilesInput) (req *r
 // API operation ListUserProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The next token is not valid.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - InvalidNextTokenException
+//     The next token is not valid.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/ListUserProfiles
 func (c *CodeStar) ListUserProfiles(input *ListUserProfilesInput) (*ListUserProfilesOutput, error) {
@@ -1176,14 +1175,13 @@ const opTagProject = "TagProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagProjectRequest method.
+//	req, resp := client.TagProjectRequest(params)
 //
-//    // Example sending a request using the TagProjectRequest method.
-//    req, resp := client.TagProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/TagProject
 func (c *CodeStar) TagProjectRequest(input *TagProjectInput) (req *request.Request, output *TagProjectOutput) {
@@ -1214,18 +1212,19 @@ func (c *CodeStar) TagProjectRequest(input *TagProjectInput) (req *request.Reque
 // API operation TagProject for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * LimitExceededException
-//   A resource limit has been exceeded.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - LimitExceededException
+//     A resource limit has been exceeded.
+//
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/TagProject
 func (c *CodeStar) TagProject(input *TagProjectInput) (*TagProjectOutput, error) {
@@ -1265,14 +1264,13 @@ const opUntagProject = "UntagProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagProjectRequest method.
+//	req, resp := client.UntagProjectRequest(params)
 //
-//    // Example sending a request using the UntagProjectRequest method.
-//    req, resp := client.UntagProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UntagProject
 func (c *CodeStar) UntagProjectRequest(input *UntagProjectInput) (req *request.Request, output *UntagProjectOutput) {
@@ -1304,18 +1302,19 @@ func (c *CodeStar) UntagProjectRequest(input *UntagProjectInput) (req *request.R
 // API operation UntagProject for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * LimitExceededException
-//   A resource limit has been exceeded.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - LimitExceededException
+//     A resource limit has been exceeded.
+//
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UntagProject
 func (c *CodeStar) UntagProject(input *UntagProjectInput) (*UntagProjectOutput, error) {
@@ -1355,14 +1354,13 @@ const opUpdateProject = "UpdateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectRequest method.
+//	req, resp := client.UpdateProjectRequest(params)
 //
-//    // Example sending a request using the UpdateProjectRequest method.
-//    req, resp := client.UpdateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UpdateProject
 func (c *CodeStar) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
@@ -1394,11 +1392,12 @@ func (c *CodeStar) UpdateProjectRequest(input *UpdateProjectInput) (req *request
 // API operation UpdateProject for usage and error information.
 //
 // Returned Error Types:
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UpdateProject
 func (c *CodeStar) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {
@@ -1438,14 +1437,13 @@ const opUpdateTeamMember = "UpdateTeamMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTeamMemberRequest method.
+//	req, resp := client.UpdateTeamMemberRequest(params)
 //
-//    // Example sending a request using the UpdateTeamMemberRequest method.
-//    req, resp := client.UpdateTeamMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UpdateTeamMember
 func (c *CodeStar) UpdateTeamMemberRequest(input *UpdateTeamMemberInput) (req *request.Request, output *UpdateTeamMemberOutput) {
@@ -1478,27 +1476,28 @@ func (c *CodeStar) UpdateTeamMemberRequest(input *UpdateTeamMemberInput) (req *r
 // API operation UpdateTeamMember for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   A resource limit has been exceeded.
 //
-//   * ProjectNotFoundException
-//   The specified AWS CodeStar project was not found.
+//   - LimitExceededException
+//     A resource limit has been exceeded.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - ProjectNotFoundException
+//     The specified AWS CodeStar project was not found.
 //
-//   * InvalidServiceRoleException
-//   The service role is not valid.
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
-//   * ProjectConfigurationException
-//   Project configuration information is required but not specified.
+//   - InvalidServiceRoleException
+//     The service role is not valid.
 //
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
+//   - ProjectConfigurationException
+//     Project configuration information is required but not specified.
 //
-//   * TeamMemberNotFoundException
-//   The specified team member was not found.
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
+//
+//   - TeamMemberNotFoundException
+//     The specified team member was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UpdateTeamMember
 func (c *CodeStar) UpdateTeamMember(input *UpdateTeamMemberInput) (*UpdateTeamMemberOutput, error) {
@@ -1538,14 +1537,13 @@ const opUpdateUserProfile = "UpdateUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserProfileRequest method.
+//	req, resp := client.UpdateUserProfileRequest(params)
 //
-//    // Example sending a request using the UpdateUserProfileRequest method.
-//    req, resp := client.UpdateUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UpdateUserProfile
 func (c *CodeStar) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req *request.Request, output *UpdateUserProfileOutput) {
@@ -1578,11 +1576,12 @@ func (c *CodeStar) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req 
 // API operation UpdateUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * UserProfileNotFoundException
-//   The user profile was not found.
 //
-//   * ValidationException
-//   The specified input is either not valid, or it could not be validated.
+//   - UserProfileNotFoundException
+//     The user profile was not found.
+//
+//   - ValidationException
+//     The specified input is either not valid, or it could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-2017-04-19/UpdateUserProfile
 func (c *CodeStar) UpdateUserProfile(input *UpdateUserProfileInput) (*UpdateUserProfileOutput, error) {

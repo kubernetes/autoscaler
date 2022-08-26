@@ -29,14 +29,13 @@ const opCreateBudget = "CreateBudget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBudgetRequest method.
+//	req, resp := client.CreateBudgetRequest(params)
 //
-//    // Example sending a request using the CreateBudgetRequest method.
-//    req, resp := client.CreateBudgetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) CreateBudgetRequest(input *CreateBudgetInput) (req *request.Request, output *CreateBudgetOutput) {
 	op := &request.Operation{
 		Name:       opCreateBudget,
@@ -71,23 +70,23 @@ func (c *Budgets) CreateBudgetRequest(input *CreateBudgetInput) (req *request.Re
 // API operation CreateBudget for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * CreationLimitExceededException
-//   You've exceeded the notification or subscriber limit.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * DuplicateRecordException
-//   The budget name already exists. Budget names must be unique within an account.
+//   - CreationLimitExceededException
+//     You've exceeded the notification or subscriber limit.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - DuplicateRecordException
+//     The budget name already exists. Budget names must be unique within an account.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) CreateBudget(input *CreateBudgetInput) (*CreateBudgetOutput, error) {
 	req, out := c.CreateBudgetRequest(input)
 	return out, req.Send()
@@ -125,14 +124,13 @@ const opCreateBudgetAction = "CreateBudgetAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBudgetActionRequest method.
+//	req, resp := client.CreateBudgetActionRequest(params)
 //
-//    // Example sending a request using the CreateBudgetActionRequest method.
-//    req, resp := client.CreateBudgetActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) CreateBudgetActionRequest(input *CreateBudgetActionInput) (req *request.Request, output *CreateBudgetActionOutput) {
 	op := &request.Operation{
 		Name:       opCreateBudgetAction,
@@ -161,26 +159,26 @@ func (c *Budgets) CreateBudgetActionRequest(input *CreateBudgetActionInput) (req
 // API operation CreateBudgetAction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * CreationLimitExceededException
-//   You've exceeded the notification or subscriber limit.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * DuplicateRecordException
-//   The budget name already exists. Budget names must be unique within an account.
+//   - CreationLimitExceededException
+//     You've exceeded the notification or subscriber limit.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - DuplicateRecordException
+//     The budget name already exists. Budget names must be unique within an account.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) CreateBudgetAction(input *CreateBudgetActionInput) (*CreateBudgetActionOutput, error) {
 	req, out := c.CreateBudgetActionRequest(input)
 	return out, req.Send()
@@ -218,14 +216,13 @@ const opCreateNotification = "CreateNotification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNotificationRequest method.
+//	req, resp := client.CreateNotificationRequest(params)
 //
-//    // Example sending a request using the CreateNotificationRequest method.
-//    req, resp := client.CreateNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) CreateNotificationRequest(input *CreateNotificationInput) (req *request.Request, output *CreateNotificationOutput) {
 	op := &request.Operation{
 		Name:       opCreateNotification,
@@ -256,26 +253,26 @@ func (c *Budgets) CreateNotificationRequest(input *CreateNotificationInput) (req
 // API operation CreateNotification for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * CreationLimitExceededException
-//   You've exceeded the notification or subscriber limit.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * DuplicateRecordException
-//   The budget name already exists. Budget names must be unique within an account.
+//   - CreationLimitExceededException
+//     You've exceeded the notification or subscriber limit.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - DuplicateRecordException
+//     The budget name already exists. Budget names must be unique within an account.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) CreateNotification(input *CreateNotificationInput) (*CreateNotificationOutput, error) {
 	req, out := c.CreateNotificationRequest(input)
 	return out, req.Send()
@@ -313,14 +310,13 @@ const opCreateSubscriber = "CreateSubscriber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSubscriberRequest method.
+//	req, resp := client.CreateSubscriberRequest(params)
 //
-//    // Example sending a request using the CreateSubscriberRequest method.
-//    req, resp := client.CreateSubscriberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) CreateSubscriberRequest(input *CreateSubscriberInput) (req *request.Request, output *CreateSubscriberOutput) {
 	op := &request.Operation{
 		Name:       opCreateSubscriber,
@@ -351,26 +347,26 @@ func (c *Budgets) CreateSubscriberRequest(input *CreateSubscriberInput) (req *re
 // API operation CreateSubscriber for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * CreationLimitExceededException
-//   You've exceeded the notification or subscriber limit.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * DuplicateRecordException
-//   The budget name already exists. Budget names must be unique within an account.
+//   - CreationLimitExceededException
+//     You've exceeded the notification or subscriber limit.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - DuplicateRecordException
+//     The budget name already exists. Budget names must be unique within an account.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) CreateSubscriber(input *CreateSubscriberInput) (*CreateSubscriberOutput, error) {
 	req, out := c.CreateSubscriberRequest(input)
 	return out, req.Send()
@@ -408,14 +404,13 @@ const opDeleteBudget = "DeleteBudget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBudgetRequest method.
+//	req, resp := client.DeleteBudgetRequest(params)
 //
-//    // Example sending a request using the DeleteBudgetRequest method.
-//    req, resp := client.DeleteBudgetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DeleteBudgetRequest(input *DeleteBudgetInput) (req *request.Request, output *DeleteBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBudget,
@@ -448,20 +443,20 @@ func (c *Budgets) DeleteBudgetRequest(input *DeleteBudgetInput) (req *request.Re
 // API operation DeleteBudget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DeleteBudget(input *DeleteBudgetInput) (*DeleteBudgetOutput, error) {
 	req, out := c.DeleteBudgetRequest(input)
 	return out, req.Send()
@@ -499,14 +494,13 @@ const opDeleteBudgetAction = "DeleteBudgetAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBudgetActionRequest method.
+//	req, resp := client.DeleteBudgetActionRequest(params)
 //
-//    // Example sending a request using the DeleteBudgetActionRequest method.
-//    req, resp := client.DeleteBudgetActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DeleteBudgetActionRequest(input *DeleteBudgetActionInput) (req *request.Request, output *DeleteBudgetActionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBudgetAction,
@@ -535,24 +529,24 @@ func (c *Budgets) DeleteBudgetActionRequest(input *DeleteBudgetActionInput) (req
 // API operation DeleteBudgetAction for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ResourceLockedException
-//   The request was received and recognized by the server, but the server rejected
-//   that particular method for the requested resource.
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 //
+//   - ResourceLockedException
+//     The request was received and recognized by the server, but the server rejected
+//     that particular method for the requested resource.
 func (c *Budgets) DeleteBudgetAction(input *DeleteBudgetActionInput) (*DeleteBudgetActionOutput, error) {
 	req, out := c.DeleteBudgetActionRequest(input)
 	return out, req.Send()
@@ -590,14 +584,13 @@ const opDeleteNotification = "DeleteNotification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNotificationRequest method.
+//	req, resp := client.DeleteNotificationRequest(params)
 //
-//    // Example sending a request using the DeleteNotificationRequest method.
-//    req, resp := client.DeleteNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DeleteNotificationRequest(input *DeleteNotificationInput) (req *request.Request, output *DeleteNotificationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteNotification,
@@ -630,20 +623,20 @@ func (c *Budgets) DeleteNotificationRequest(input *DeleteNotificationInput) (req
 // API operation DeleteNotification for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DeleteNotification(input *DeleteNotificationInput) (*DeleteNotificationOutput, error) {
 	req, out := c.DeleteNotificationRequest(input)
 	return out, req.Send()
@@ -681,14 +674,13 @@ const opDeleteSubscriber = "DeleteSubscriber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSubscriberRequest method.
+//	req, resp := client.DeleteSubscriberRequest(params)
 //
-//    // Example sending a request using the DeleteSubscriberRequest method.
-//    req, resp := client.DeleteSubscriberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DeleteSubscriberRequest(input *DeleteSubscriberInput) (req *request.Request, output *DeleteSubscriberOutput) {
 	op := &request.Operation{
 		Name:       opDeleteSubscriber,
@@ -720,20 +712,20 @@ func (c *Budgets) DeleteSubscriberRequest(input *DeleteSubscriberInput) (req *re
 // API operation DeleteSubscriber for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DeleteSubscriber(input *DeleteSubscriberInput) (*DeleteSubscriberOutput, error) {
 	req, out := c.DeleteSubscriberRequest(input)
 	return out, req.Send()
@@ -771,14 +763,13 @@ const opDescribeBudget = "DescribeBudget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetRequest method.
+//	req, resp := client.DescribeBudgetRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetRequest method.
-//    req, resp := client.DescribeBudgetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetRequest(input *DescribeBudgetInput) (req *request.Request, output *DescribeBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudget,
@@ -811,20 +802,20 @@ func (c *Budgets) DescribeBudgetRequest(input *DescribeBudgetInput) (req *reques
 // API operation DescribeBudget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeBudget(input *DescribeBudgetInput) (*DescribeBudgetOutput, error) {
 	req, out := c.DescribeBudgetRequest(input)
 	return out, req.Send()
@@ -862,14 +853,13 @@ const opDescribeBudgetAction = "DescribeBudgetAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetActionRequest method.
+//	req, resp := client.DescribeBudgetActionRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetActionRequest method.
-//    req, resp := client.DescribeBudgetActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetActionRequest(input *DescribeBudgetActionInput) (req *request.Request, output *DescribeBudgetActionOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgetAction,
@@ -898,20 +888,20 @@ func (c *Budgets) DescribeBudgetActionRequest(input *DescribeBudgetActionInput) 
 // API operation DescribeBudgetAction for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeBudgetAction(input *DescribeBudgetActionInput) (*DescribeBudgetActionOutput, error) {
 	req, out := c.DescribeBudgetActionRequest(input)
 	return out, req.Send()
@@ -949,14 +939,13 @@ const opDescribeBudgetActionHistories = "DescribeBudgetActionHistories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetActionHistoriesRequest method.
+//	req, resp := client.DescribeBudgetActionHistoriesRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetActionHistoriesRequest method.
-//    req, resp := client.DescribeBudgetActionHistoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetActionHistoriesRequest(input *DescribeBudgetActionHistoriesInput) (req *request.Request, output *DescribeBudgetActionHistoriesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgetActionHistories,
@@ -991,23 +980,23 @@ func (c *Budgets) DescribeBudgetActionHistoriesRequest(input *DescribeBudgetActi
 // API operation DescribeBudgetActionHistories for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 //
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 func (c *Budgets) DescribeBudgetActionHistories(input *DescribeBudgetActionHistoriesInput) (*DescribeBudgetActionHistoriesOutput, error) {
 	req, out := c.DescribeBudgetActionHistoriesRequest(input)
 	return out, req.Send()
@@ -1037,15 +1026,14 @@ func (c *Budgets) DescribeBudgetActionHistoriesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBudgetActionHistories operation.
-//    pageNum := 0
-//    err := client.DescribeBudgetActionHistoriesPages(params,
-//        func(page *budgets.DescribeBudgetActionHistoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBudgetActionHistories operation.
+//	pageNum := 0
+//	err := client.DescribeBudgetActionHistoriesPages(params,
+//	    func(page *budgets.DescribeBudgetActionHistoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeBudgetActionHistoriesPages(input *DescribeBudgetActionHistoriesInput, fn func(*DescribeBudgetActionHistoriesOutput, bool) bool) error {
 	return c.DescribeBudgetActionHistoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1097,14 +1085,13 @@ const opDescribeBudgetActionsForAccount = "DescribeBudgetActionsForAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetActionsForAccountRequest method.
+//	req, resp := client.DescribeBudgetActionsForAccountRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetActionsForAccountRequest method.
-//    req, resp := client.DescribeBudgetActionsForAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetActionsForAccountRequest(input *DescribeBudgetActionsForAccountInput) (req *request.Request, output *DescribeBudgetActionsForAccountOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgetActionsForAccount,
@@ -1139,20 +1126,20 @@ func (c *Budgets) DescribeBudgetActionsForAccountRequest(input *DescribeBudgetAc
 // API operation DescribeBudgetActionsForAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 //
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 func (c *Budgets) DescribeBudgetActionsForAccount(input *DescribeBudgetActionsForAccountInput) (*DescribeBudgetActionsForAccountOutput, error) {
 	req, out := c.DescribeBudgetActionsForAccountRequest(input)
 	return out, req.Send()
@@ -1182,15 +1169,14 @@ func (c *Budgets) DescribeBudgetActionsForAccountWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBudgetActionsForAccount operation.
-//    pageNum := 0
-//    err := client.DescribeBudgetActionsForAccountPages(params,
-//        func(page *budgets.DescribeBudgetActionsForAccountOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBudgetActionsForAccount operation.
+//	pageNum := 0
+//	err := client.DescribeBudgetActionsForAccountPages(params,
+//	    func(page *budgets.DescribeBudgetActionsForAccountOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeBudgetActionsForAccountPages(input *DescribeBudgetActionsForAccountInput, fn func(*DescribeBudgetActionsForAccountOutput, bool) bool) error {
 	return c.DescribeBudgetActionsForAccountPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1242,14 +1228,13 @@ const opDescribeBudgetActionsForBudget = "DescribeBudgetActionsForBudget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetActionsForBudgetRequest method.
+//	req, resp := client.DescribeBudgetActionsForBudgetRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetActionsForBudgetRequest method.
-//    req, resp := client.DescribeBudgetActionsForBudgetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetActionsForBudgetRequest(input *DescribeBudgetActionsForBudgetInput) (req *request.Request, output *DescribeBudgetActionsForBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgetActionsForBudget,
@@ -1284,23 +1269,23 @@ func (c *Budgets) DescribeBudgetActionsForBudgetRequest(input *DescribeBudgetAct
 // API operation DescribeBudgetActionsForBudget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 //
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 func (c *Budgets) DescribeBudgetActionsForBudget(input *DescribeBudgetActionsForBudgetInput) (*DescribeBudgetActionsForBudgetOutput, error) {
 	req, out := c.DescribeBudgetActionsForBudgetRequest(input)
 	return out, req.Send()
@@ -1330,15 +1315,14 @@ func (c *Budgets) DescribeBudgetActionsForBudgetWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBudgetActionsForBudget operation.
-//    pageNum := 0
-//    err := client.DescribeBudgetActionsForBudgetPages(params,
-//        func(page *budgets.DescribeBudgetActionsForBudgetOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBudgetActionsForBudget operation.
+//	pageNum := 0
+//	err := client.DescribeBudgetActionsForBudgetPages(params,
+//	    func(page *budgets.DescribeBudgetActionsForBudgetOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeBudgetActionsForBudgetPages(input *DescribeBudgetActionsForBudgetInput, fn func(*DescribeBudgetActionsForBudgetOutput, bool) bool) error {
 	return c.DescribeBudgetActionsForBudgetPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1390,14 +1374,13 @@ const opDescribeBudgetNotificationsForAccount = "DescribeBudgetNotificationsForA
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetNotificationsForAccountRequest method.
+//	req, resp := client.DescribeBudgetNotificationsForAccountRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetNotificationsForAccountRequest method.
-//    req, resp := client.DescribeBudgetNotificationsForAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetNotificationsForAccountRequest(input *DescribeBudgetNotificationsForAccountInput) (req *request.Request, output *DescribeBudgetNotificationsForAccountOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgetNotificationsForAccount,
@@ -1432,26 +1415,26 @@ func (c *Budgets) DescribeBudgetNotificationsForAccountRequest(input *DescribeBu
 // API operation DescribeBudgetNotificationsForAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired.
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - ExpiredNextTokenException
+//     The pagination token expired.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeBudgetNotificationsForAccount(input *DescribeBudgetNotificationsForAccountInput) (*DescribeBudgetNotificationsForAccountOutput, error) {
 	req, out := c.DescribeBudgetNotificationsForAccountRequest(input)
 	return out, req.Send()
@@ -1481,15 +1464,14 @@ func (c *Budgets) DescribeBudgetNotificationsForAccountWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBudgetNotificationsForAccount operation.
-//    pageNum := 0
-//    err := client.DescribeBudgetNotificationsForAccountPages(params,
-//        func(page *budgets.DescribeBudgetNotificationsForAccountOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBudgetNotificationsForAccount operation.
+//	pageNum := 0
+//	err := client.DescribeBudgetNotificationsForAccountPages(params,
+//	    func(page *budgets.DescribeBudgetNotificationsForAccountOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeBudgetNotificationsForAccountPages(input *DescribeBudgetNotificationsForAccountInput, fn func(*DescribeBudgetNotificationsForAccountOutput, bool) bool) error {
 	return c.DescribeBudgetNotificationsForAccountPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1541,14 +1523,13 @@ const opDescribeBudgetPerformanceHistory = "DescribeBudgetPerformanceHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetPerformanceHistoryRequest method.
+//	req, resp := client.DescribeBudgetPerformanceHistoryRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetPerformanceHistoryRequest method.
-//    req, resp := client.DescribeBudgetPerformanceHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetPerformanceHistoryRequest(input *DescribeBudgetPerformanceHistoryInput) (req *request.Request, output *DescribeBudgetPerformanceHistoryOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgetPerformanceHistory,
@@ -1584,26 +1565,26 @@ func (c *Budgets) DescribeBudgetPerformanceHistoryRequest(input *DescribeBudgetP
 // API operation DescribeBudgetPerformanceHistory for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired.
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - ExpiredNextTokenException
+//     The pagination token expired.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeBudgetPerformanceHistory(input *DescribeBudgetPerformanceHistoryInput) (*DescribeBudgetPerformanceHistoryOutput, error) {
 	req, out := c.DescribeBudgetPerformanceHistoryRequest(input)
 	return out, req.Send()
@@ -1633,15 +1614,14 @@ func (c *Budgets) DescribeBudgetPerformanceHistoryWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBudgetPerformanceHistory operation.
-//    pageNum := 0
-//    err := client.DescribeBudgetPerformanceHistoryPages(params,
-//        func(page *budgets.DescribeBudgetPerformanceHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBudgetPerformanceHistory operation.
+//	pageNum := 0
+//	err := client.DescribeBudgetPerformanceHistoryPages(params,
+//	    func(page *budgets.DescribeBudgetPerformanceHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeBudgetPerformanceHistoryPages(input *DescribeBudgetPerformanceHistoryInput, fn func(*DescribeBudgetPerformanceHistoryOutput, bool) bool) error {
 	return c.DescribeBudgetPerformanceHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1693,14 +1673,13 @@ const opDescribeBudgets = "DescribeBudgets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBudgetsRequest method.
+//	req, resp := client.DescribeBudgetsRequest(params)
 //
-//    // Example sending a request using the DescribeBudgetsRequest method.
-//    req, resp := client.DescribeBudgetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeBudgetsRequest(input *DescribeBudgetsInput) (req *request.Request, output *DescribeBudgetsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBudgets,
@@ -1739,26 +1718,26 @@ func (c *Budgets) DescribeBudgetsRequest(input *DescribeBudgetsInput) (req *requ
 // API operation DescribeBudgets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired.
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - ExpiredNextTokenException
+//     The pagination token expired.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeBudgets(input *DescribeBudgetsInput) (*DescribeBudgetsOutput, error) {
 	req, out := c.DescribeBudgetsRequest(input)
 	return out, req.Send()
@@ -1788,15 +1767,14 @@ func (c *Budgets) DescribeBudgetsWithContext(ctx aws.Context, input *DescribeBud
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBudgets operation.
-//    pageNum := 0
-//    err := client.DescribeBudgetsPages(params,
-//        func(page *budgets.DescribeBudgetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBudgets operation.
+//	pageNum := 0
+//	err := client.DescribeBudgetsPages(params,
+//	    func(page *budgets.DescribeBudgetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeBudgetsPages(input *DescribeBudgetsInput, fn func(*DescribeBudgetsOutput, bool) bool) error {
 	return c.DescribeBudgetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1848,14 +1826,13 @@ const opDescribeNotificationsForBudget = "DescribeNotificationsForBudget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNotificationsForBudgetRequest method.
+//	req, resp := client.DescribeNotificationsForBudgetRequest(params)
 //
-//    // Example sending a request using the DescribeNotificationsForBudgetRequest method.
-//    req, resp := client.DescribeNotificationsForBudgetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeNotificationsForBudgetRequest(input *DescribeNotificationsForBudgetInput) (req *request.Request, output *DescribeNotificationsForBudgetOutput) {
 	op := &request.Operation{
 		Name:       opDescribeNotificationsForBudget,
@@ -1890,26 +1867,26 @@ func (c *Budgets) DescribeNotificationsForBudgetRequest(input *DescribeNotificat
 // API operation DescribeNotificationsForBudget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired.
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - ExpiredNextTokenException
+//     The pagination token expired.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeNotificationsForBudget(input *DescribeNotificationsForBudgetInput) (*DescribeNotificationsForBudgetOutput, error) {
 	req, out := c.DescribeNotificationsForBudgetRequest(input)
 	return out, req.Send()
@@ -1939,15 +1916,14 @@ func (c *Budgets) DescribeNotificationsForBudgetWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNotificationsForBudget operation.
-//    pageNum := 0
-//    err := client.DescribeNotificationsForBudgetPages(params,
-//        func(page *budgets.DescribeNotificationsForBudgetOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNotificationsForBudget operation.
+//	pageNum := 0
+//	err := client.DescribeNotificationsForBudgetPages(params,
+//	    func(page *budgets.DescribeNotificationsForBudgetOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeNotificationsForBudgetPages(input *DescribeNotificationsForBudgetInput, fn func(*DescribeNotificationsForBudgetOutput, bool) bool) error {
 	return c.DescribeNotificationsForBudgetPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1999,14 +1975,13 @@ const opDescribeSubscribersForNotification = "DescribeSubscribersForNotification
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSubscribersForNotificationRequest method.
+//	req, resp := client.DescribeSubscribersForNotificationRequest(params)
 //
-//    // Example sending a request using the DescribeSubscribersForNotificationRequest method.
-//    req, resp := client.DescribeSubscribersForNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) DescribeSubscribersForNotificationRequest(input *DescribeSubscribersForNotificationInput) (req *request.Request, output *DescribeSubscribersForNotificationOutput) {
 	op := &request.Operation{
 		Name:       opDescribeSubscribersForNotification,
@@ -2041,26 +2016,26 @@ func (c *Budgets) DescribeSubscribersForNotificationRequest(input *DescribeSubsc
 // API operation DescribeSubscribersForNotification for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired.
+//   - InvalidNextTokenException
+//     The pagination token is invalid.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - ExpiredNextTokenException
+//     The pagination token expired.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) DescribeSubscribersForNotification(input *DescribeSubscribersForNotificationInput) (*DescribeSubscribersForNotificationOutput, error) {
 	req, out := c.DescribeSubscribersForNotificationRequest(input)
 	return out, req.Send()
@@ -2090,15 +2065,14 @@ func (c *Budgets) DescribeSubscribersForNotificationWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSubscribersForNotification operation.
-//    pageNum := 0
-//    err := client.DescribeSubscribersForNotificationPages(params,
-//        func(page *budgets.DescribeSubscribersForNotificationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSubscribersForNotification operation.
+//	pageNum := 0
+//	err := client.DescribeSubscribersForNotificationPages(params,
+//	    func(page *budgets.DescribeSubscribersForNotificationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Budgets) DescribeSubscribersForNotificationPages(input *DescribeSubscribersForNotificationInput, fn func(*DescribeSubscribersForNotificationOutput, bool) bool) error {
 	return c.DescribeSubscribersForNotificationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2150,14 +2124,13 @@ const opExecuteBudgetAction = "ExecuteBudgetAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExecuteBudgetActionRequest method.
+//	req, resp := client.ExecuteBudgetActionRequest(params)
 //
-//    // Example sending a request using the ExecuteBudgetActionRequest method.
-//    req, resp := client.ExecuteBudgetActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) ExecuteBudgetActionRequest(input *ExecuteBudgetActionInput) (req *request.Request, output *ExecuteBudgetActionOutput) {
 	op := &request.Operation{
 		Name:       opExecuteBudgetAction,
@@ -2186,24 +2159,24 @@ func (c *Budgets) ExecuteBudgetActionRequest(input *ExecuteBudgetActionInput) (r
 // API operation ExecuteBudgetAction for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ResourceLockedException
-//   The request was received and recognized by the server, but the server rejected
-//   that particular method for the requested resource.
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 //
+//   - ResourceLockedException
+//     The request was received and recognized by the server, but the server rejected
+//     that particular method for the requested resource.
 func (c *Budgets) ExecuteBudgetAction(input *ExecuteBudgetActionInput) (*ExecuteBudgetActionOutput, error) {
 	req, out := c.ExecuteBudgetActionRequest(input)
 	return out, req.Send()
@@ -2241,14 +2214,13 @@ const opUpdateBudget = "UpdateBudget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBudgetRequest method.
+//	req, resp := client.UpdateBudgetRequest(params)
 //
-//    // Example sending a request using the UpdateBudgetRequest method.
-//    req, resp := client.UpdateBudgetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) UpdateBudgetRequest(input *UpdateBudgetInput) (req *request.Request, output *UpdateBudgetOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBudget,
@@ -2285,20 +2257,20 @@ func (c *Budgets) UpdateBudgetRequest(input *UpdateBudgetInput) (req *request.Re
 // API operation UpdateBudget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) UpdateBudget(input *UpdateBudgetInput) (*UpdateBudgetOutput, error) {
 	req, out := c.UpdateBudgetRequest(input)
 	return out, req.Send()
@@ -2336,14 +2308,13 @@ const opUpdateBudgetAction = "UpdateBudgetAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBudgetActionRequest method.
+//	req, resp := client.UpdateBudgetActionRequest(params)
 //
-//    // Example sending a request using the UpdateBudgetActionRequest method.
-//    req, resp := client.UpdateBudgetActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) UpdateBudgetActionRequest(input *UpdateBudgetActionInput) (req *request.Request, output *UpdateBudgetActionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBudgetAction,
@@ -2372,24 +2343,24 @@ func (c *Budgets) UpdateBudgetActionRequest(input *UpdateBudgetActionInput) (req
 // API operation UpdateBudgetAction for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * ResourceLockedException
-//   The request was received and recognized by the server, but the server rejected
-//   that particular method for the requested resource.
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 //
+//   - ResourceLockedException
+//     The request was received and recognized by the server, but the server rejected
+//     that particular method for the requested resource.
 func (c *Budgets) UpdateBudgetAction(input *UpdateBudgetActionInput) (*UpdateBudgetActionOutput, error) {
 	req, out := c.UpdateBudgetActionRequest(input)
 	return out, req.Send()
@@ -2427,14 +2398,13 @@ const opUpdateNotification = "UpdateNotification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNotificationRequest method.
+//	req, resp := client.UpdateNotificationRequest(params)
 //
-//    // Example sending a request using the UpdateNotificationRequest method.
-//    req, resp := client.UpdateNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) UpdateNotificationRequest(input *UpdateNotificationInput) (req *request.Request, output *UpdateNotificationOutput) {
 	op := &request.Operation{
 		Name:       opUpdateNotification,
@@ -2464,23 +2434,23 @@ func (c *Budgets) UpdateNotificationRequest(input *UpdateNotificationInput) (req
 // API operation UpdateNotification for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * DuplicateRecordException
-//   The budget name already exists. Budget names must be unique within an account.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - DuplicateRecordException
+//     The budget name already exists. Budget names must be unique within an account.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) UpdateNotification(input *UpdateNotificationInput) (*UpdateNotificationOutput, error) {
 	req, out := c.UpdateNotificationRequest(input)
 	return out, req.Send()
@@ -2518,14 +2488,13 @@ const opUpdateSubscriber = "UpdateSubscriber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSubscriberRequest method.
+//	req, resp := client.UpdateSubscriberRequest(params)
 //
-//    // Example sending a request using the UpdateSubscriberRequest method.
-//    req, resp := client.UpdateSubscriberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Budgets) UpdateSubscriberRequest(input *UpdateSubscriberInput) (req *request.Request, output *UpdateSubscriberOutput) {
 	op := &request.Operation{
 		Name:       opUpdateSubscriber,
@@ -2555,23 +2524,23 @@ func (c *Budgets) UpdateSubscriberRequest(input *UpdateSubscriberInput) (req *re
 // API operation UpdateSubscriber for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   We can’t locate the resource that you specified.
+//   - InvalidParameterException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * DuplicateRecordException
-//   The budget name already exists. Budget names must be unique within an account.
+//   - NotFoundException
+//     We can’t locate the resource that you specified.
 //
-//   * AccessDeniedException
-//   You are not authorized to use this operation with the given parameters.
+//   - DuplicateRecordException
+//     The budget name already exists. Budget names must be unique within an account.
 //
+//   - AccessDeniedException
+//     You are not authorized to use this operation with the given parameters.
 func (c *Budgets) UpdateSubscriber(input *UpdateSubscriberInput) (*UpdateSubscriberOutput, error) {
 	req, out := c.UpdateSubscriberRequest(input)
 	return out, req.Send()
@@ -6965,13 +6934,13 @@ func (s *NotFoundException) RequestID() string {
 // For example, if you have a budget for 200 dollars and you want to be notified
 // when you go over 160 dollars, create a notification with the following parameters:
 //
-//    * A notificationType of ACTUAL
+//   - A notificationType of ACTUAL
 //
-//    * A thresholdType of PERCENTAGE
+//   - A thresholdType of PERCENTAGE
 //
-//    * A comparisonOperator of GREATER_THAN
+//   - A comparisonOperator of GREATER_THAN
 //
-//    * A notification threshold of 80
+//   - A notification threshold of 80
 type Notification struct {
 	_ struct{} `type:"structure"`
 
@@ -7292,9 +7261,9 @@ func (s *ScpActionDefinition) SetTargetIds(v []*string) *ScpActionDefinition {
 //
 // For example, a Spend for 3 GB of S3 usage has the following parameters:
 //
-//    * An Amount of 3
+//   - An Amount of 3
 //
-//    * A unit of GB
+//   - A unit of GB
 type Spend struct {
 	_ struct{} `type:"structure"`
 
@@ -7449,9 +7418,9 @@ func (s *SsmActionDefinition) SetRegion(v string) *SsmActionDefinition {
 //
 // For example, an email subscriber has the following parameters:
 //
-//    * A subscriptionType of EMAIL
+//   - A subscriptionType of EMAIL
 //
-//    * An address of example@example.com
+//   - An address of example@example.com
 type Subscriber struct {
 	_ struct{} `type:"structure"`
 

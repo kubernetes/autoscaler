@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a AppMesh client from just a session.
-//     svc := appmesh.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a AppMesh client with additional configuration
-//     svc := appmesh.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a AppMesh client from just a session.
+//	svc := appmesh.New(mySession)
+//
+//	// Create a AppMesh client with additional configuration
+//	svc := appmesh.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *AppMesh {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

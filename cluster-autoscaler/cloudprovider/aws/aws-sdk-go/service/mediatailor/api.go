@@ -29,14 +29,13 @@ const opConfigureLogsForPlaybackConfiguration = "ConfigureLogsForPlaybackConfigu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfigureLogsForPlaybackConfigurationRequest method.
+//	req, resp := client.ConfigureLogsForPlaybackConfigurationRequest(params)
 //
-//    // Example sending a request using the ConfigureLogsForPlaybackConfigurationRequest method.
-//    req, resp := client.ConfigureLogsForPlaybackConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ConfigureLogsForPlaybackConfiguration
 func (c *MediaTailor) ConfigureLogsForPlaybackConfigurationRequest(input *ConfigureLogsForPlaybackConfigurationInput) (req *request.Request, output *ConfigureLogsForPlaybackConfigurationOutput) {
@@ -103,14 +102,13 @@ const opCreateChannel = "CreateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelRequest method.
+//	req, resp := client.CreateChannelRequest(params)
 //
-//    // Example sending a request using the CreateChannelRequest method.
-//    req, resp := client.CreateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/CreateChannel
 func (c *MediaTailor) CreateChannelRequest(input *CreateChannelInput) (req *request.Request, output *CreateChannelOutput) {
@@ -177,14 +175,13 @@ const opCreateLiveSource = "CreateLiveSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLiveSourceRequest method.
+//	req, resp := client.CreateLiveSourceRequest(params)
 //
-//    // Example sending a request using the CreateLiveSourceRequest method.
-//    req, resp := client.CreateLiveSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/CreateLiveSource
 func (c *MediaTailor) CreateLiveSourceRequest(input *CreateLiveSourceInput) (req *request.Request, output *CreateLiveSourceOutput) {
@@ -251,14 +248,13 @@ const opCreatePrefetchSchedule = "CreatePrefetchSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePrefetchScheduleRequest method.
+//	req, resp := client.CreatePrefetchScheduleRequest(params)
 //
-//    // Example sending a request using the CreatePrefetchScheduleRequest method.
-//    req, resp := client.CreatePrefetchScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/CreatePrefetchSchedule
 func (c *MediaTailor) CreatePrefetchScheduleRequest(input *CreatePrefetchScheduleInput) (req *request.Request, output *CreatePrefetchScheduleOutput) {
@@ -325,14 +321,13 @@ const opCreateProgram = "CreateProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProgramRequest method.
+//	req, resp := client.CreateProgramRequest(params)
 //
-//    // Example sending a request using the CreateProgramRequest method.
-//    req, resp := client.CreateProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/CreateProgram
 func (c *MediaTailor) CreateProgramRequest(input *CreateProgramInput) (req *request.Request, output *CreateProgramOutput) {
@@ -399,14 +394,13 @@ const opCreateSourceLocation = "CreateSourceLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSourceLocationRequest method.
+//	req, resp := client.CreateSourceLocationRequest(params)
 //
-//    // Example sending a request using the CreateSourceLocationRequest method.
-//    req, resp := client.CreateSourceLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/CreateSourceLocation
 func (c *MediaTailor) CreateSourceLocationRequest(input *CreateSourceLocationInput) (req *request.Request, output *CreateSourceLocationOutput) {
@@ -473,14 +467,13 @@ const opCreateVodSource = "CreateVodSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVodSourceRequest method.
+//	req, resp := client.CreateVodSourceRequest(params)
 //
-//    // Example sending a request using the CreateVodSourceRequest method.
-//    req, resp := client.CreateVodSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/CreateVodSource
 func (c *MediaTailor) CreateVodSourceRequest(input *CreateVodSourceInput) (req *request.Request, output *CreateVodSourceOutput) {
@@ -547,14 +540,13 @@ const opDeleteChannel = "DeleteChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelRequest method.
+//	req, resp := client.DeleteChannelRequest(params)
 //
-//    // Example sending a request using the DeleteChannelRequest method.
-//    req, resp := client.DeleteChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeleteChannel
 func (c *MediaTailor) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Request, output *DeleteChannelOutput) {
@@ -622,14 +614,13 @@ const opDeleteChannelPolicy = "DeleteChannelPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelPolicyRequest method.
+//	req, resp := client.DeleteChannelPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteChannelPolicyRequest method.
-//    req, resp := client.DeleteChannelPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeleteChannelPolicy
 func (c *MediaTailor) DeleteChannelPolicyRequest(input *DeleteChannelPolicyInput) (req *request.Request, output *DeleteChannelPolicyOutput) {
@@ -697,14 +688,13 @@ const opDeleteLiveSource = "DeleteLiveSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLiveSourceRequest method.
+//	req, resp := client.DeleteLiveSourceRequest(params)
 //
-//    // Example sending a request using the DeleteLiveSourceRequest method.
-//    req, resp := client.DeleteLiveSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeleteLiveSource
 func (c *MediaTailor) DeleteLiveSourceRequest(input *DeleteLiveSourceInput) (req *request.Request, output *DeleteLiveSourceOutput) {
@@ -772,14 +762,13 @@ const opDeletePlaybackConfiguration = "DeletePlaybackConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePlaybackConfigurationRequest method.
+//	req, resp := client.DeletePlaybackConfigurationRequest(params)
 //
-//    // Example sending a request using the DeletePlaybackConfigurationRequest method.
-//    req, resp := client.DeletePlaybackConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeletePlaybackConfiguration
 func (c *MediaTailor) DeletePlaybackConfigurationRequest(input *DeletePlaybackConfigurationInput) (req *request.Request, output *DeletePlaybackConfigurationOutput) {
@@ -847,14 +836,13 @@ const opDeletePrefetchSchedule = "DeletePrefetchSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePrefetchScheduleRequest method.
+//	req, resp := client.DeletePrefetchScheduleRequest(params)
 //
-//    // Example sending a request using the DeletePrefetchScheduleRequest method.
-//    req, resp := client.DeletePrefetchScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeletePrefetchSchedule
 func (c *MediaTailor) DeletePrefetchScheduleRequest(input *DeletePrefetchScheduleInput) (req *request.Request, output *DeletePrefetchScheduleOutput) {
@@ -924,14 +912,13 @@ const opDeleteProgram = "DeleteProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProgramRequest method.
+//	req, resp := client.DeleteProgramRequest(params)
 //
-//    // Example sending a request using the DeleteProgramRequest method.
-//    req, resp := client.DeleteProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeleteProgram
 func (c *MediaTailor) DeleteProgramRequest(input *DeleteProgramInput) (req *request.Request, output *DeleteProgramOutput) {
@@ -999,14 +986,13 @@ const opDeleteSourceLocation = "DeleteSourceLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSourceLocationRequest method.
+//	req, resp := client.DeleteSourceLocationRequest(params)
 //
-//    // Example sending a request using the DeleteSourceLocationRequest method.
-//    req, resp := client.DeleteSourceLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeleteSourceLocation
 func (c *MediaTailor) DeleteSourceLocationRequest(input *DeleteSourceLocationInput) (req *request.Request, output *DeleteSourceLocationOutput) {
@@ -1074,14 +1060,13 @@ const opDeleteVodSource = "DeleteVodSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVodSourceRequest method.
+//	req, resp := client.DeleteVodSourceRequest(params)
 //
-//    // Example sending a request using the DeleteVodSourceRequest method.
-//    req, resp := client.DeleteVodSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DeleteVodSource
 func (c *MediaTailor) DeleteVodSourceRequest(input *DeleteVodSourceInput) (req *request.Request, output *DeleteVodSourceOutput) {
@@ -1149,14 +1134,13 @@ const opDescribeChannel = "DescribeChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelRequest method.
+//	req, resp := client.DescribeChannelRequest(params)
 //
-//    // Example sending a request using the DescribeChannelRequest method.
-//    req, resp := client.DescribeChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DescribeChannel
 func (c *MediaTailor) DescribeChannelRequest(input *DescribeChannelInput) (req *request.Request, output *DescribeChannelOutput) {
@@ -1223,14 +1207,13 @@ const opDescribeLiveSource = "DescribeLiveSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLiveSourceRequest method.
+//	req, resp := client.DescribeLiveSourceRequest(params)
 //
-//    // Example sending a request using the DescribeLiveSourceRequest method.
-//    req, resp := client.DescribeLiveSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DescribeLiveSource
 func (c *MediaTailor) DescribeLiveSourceRequest(input *DescribeLiveSourceInput) (req *request.Request, output *DescribeLiveSourceOutput) {
@@ -1297,14 +1280,13 @@ const opDescribeProgram = "DescribeProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProgramRequest method.
+//	req, resp := client.DescribeProgramRequest(params)
 //
-//    // Example sending a request using the DescribeProgramRequest method.
-//    req, resp := client.DescribeProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DescribeProgram
 func (c *MediaTailor) DescribeProgramRequest(input *DescribeProgramInput) (req *request.Request, output *DescribeProgramOutput) {
@@ -1371,14 +1353,13 @@ const opDescribeSourceLocation = "DescribeSourceLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSourceLocationRequest method.
+//	req, resp := client.DescribeSourceLocationRequest(params)
 //
-//    // Example sending a request using the DescribeSourceLocationRequest method.
-//    req, resp := client.DescribeSourceLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DescribeSourceLocation
 func (c *MediaTailor) DescribeSourceLocationRequest(input *DescribeSourceLocationInput) (req *request.Request, output *DescribeSourceLocationOutput) {
@@ -1445,14 +1426,13 @@ const opDescribeVodSource = "DescribeVodSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVodSourceRequest method.
+//	req, resp := client.DescribeVodSourceRequest(params)
 //
-//    // Example sending a request using the DescribeVodSourceRequest method.
-//    req, resp := client.DescribeVodSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/DescribeVodSource
 func (c *MediaTailor) DescribeVodSourceRequest(input *DescribeVodSourceInput) (req *request.Request, output *DescribeVodSourceOutput) {
@@ -1519,14 +1499,13 @@ const opGetChannelPolicy = "GetChannelPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelPolicyRequest method.
+//	req, resp := client.GetChannelPolicyRequest(params)
 //
-//    // Example sending a request using the GetChannelPolicyRequest method.
-//    req, resp := client.GetChannelPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/GetChannelPolicy
 func (c *MediaTailor) GetChannelPolicyRequest(input *GetChannelPolicyInput) (req *request.Request, output *GetChannelPolicyOutput) {
@@ -1593,14 +1572,13 @@ const opGetChannelSchedule = "GetChannelSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelScheduleRequest method.
+//	req, resp := client.GetChannelScheduleRequest(params)
 //
-//    // Example sending a request using the GetChannelScheduleRequest method.
-//    req, resp := client.GetChannelScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/GetChannelSchedule
 func (c *MediaTailor) GetChannelScheduleRequest(input *GetChannelScheduleInput) (req *request.Request, output *GetChannelScheduleOutput) {
@@ -1665,15 +1643,14 @@ func (c *MediaTailor) GetChannelScheduleWithContext(ctx aws.Context, input *GetC
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetChannelSchedule operation.
-//    pageNum := 0
-//    err := client.GetChannelSchedulePages(params,
-//        func(page *mediatailor.GetChannelScheduleOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetChannelSchedule operation.
+//	pageNum := 0
+//	err := client.GetChannelSchedulePages(params,
+//	    func(page *mediatailor.GetChannelScheduleOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) GetChannelSchedulePages(input *GetChannelScheduleInput, fn func(*GetChannelScheduleOutput, bool) bool) error {
 	return c.GetChannelSchedulePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1725,14 +1702,13 @@ const opGetPlaybackConfiguration = "GetPlaybackConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPlaybackConfigurationRequest method.
+//	req, resp := client.GetPlaybackConfigurationRequest(params)
 //
-//    // Example sending a request using the GetPlaybackConfigurationRequest method.
-//    req, resp := client.GetPlaybackConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/GetPlaybackConfiguration
 func (c *MediaTailor) GetPlaybackConfigurationRequest(input *GetPlaybackConfigurationInput) (req *request.Request, output *GetPlaybackConfigurationOutput) {
@@ -1799,14 +1775,13 @@ const opGetPrefetchSchedule = "GetPrefetchSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPrefetchScheduleRequest method.
+//	req, resp := client.GetPrefetchScheduleRequest(params)
 //
-//    // Example sending a request using the GetPrefetchScheduleRequest method.
-//    req, resp := client.GetPrefetchScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/GetPrefetchSchedule
 func (c *MediaTailor) GetPrefetchScheduleRequest(input *GetPrefetchScheduleInput) (req *request.Request, output *GetPrefetchScheduleOutput) {
@@ -1875,14 +1850,13 @@ const opListAlerts = "ListAlerts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAlertsRequest method.
+//	req, resp := client.ListAlertsRequest(params)
 //
-//    // Example sending a request using the ListAlertsRequest method.
-//    req, resp := client.ListAlertsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListAlerts
 func (c *MediaTailor) ListAlertsRequest(input *ListAlertsInput) (req *request.Request, output *ListAlertsOutput) {
@@ -1947,15 +1921,14 @@ func (c *MediaTailor) ListAlertsWithContext(ctx aws.Context, input *ListAlertsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAlerts operation.
-//    pageNum := 0
-//    err := client.ListAlertsPages(params,
-//        func(page *mediatailor.ListAlertsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAlerts operation.
+//	pageNum := 0
+//	err := client.ListAlertsPages(params,
+//	    func(page *mediatailor.ListAlertsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListAlertsPages(input *ListAlertsInput, fn func(*ListAlertsOutput, bool) bool) error {
 	return c.ListAlertsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2007,14 +1980,13 @@ const opListChannels = "ListChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsRequest method.
+//	req, resp := client.ListChannelsRequest(params)
 //
-//    // Example sending a request using the ListChannelsRequest method.
-//    req, resp := client.ListChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListChannels
 func (c *MediaTailor) ListChannelsRequest(input *ListChannelsInput) (req *request.Request, output *ListChannelsOutput) {
@@ -2079,15 +2051,14 @@ func (c *MediaTailor) ListChannelsWithContext(ctx aws.Context, input *ListChanne
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannels operation.
-//    pageNum := 0
-//    err := client.ListChannelsPages(params,
-//        func(page *mediatailor.ListChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannels operation.
+//	pageNum := 0
+//	err := client.ListChannelsPages(params,
+//	    func(page *mediatailor.ListChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool) error {
 	return c.ListChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2139,14 +2110,13 @@ const opListLiveSources = "ListLiveSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLiveSourcesRequest method.
+//	req, resp := client.ListLiveSourcesRequest(params)
 //
-//    // Example sending a request using the ListLiveSourcesRequest method.
-//    req, resp := client.ListLiveSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListLiveSources
 func (c *MediaTailor) ListLiveSourcesRequest(input *ListLiveSourcesInput) (req *request.Request, output *ListLiveSourcesOutput) {
@@ -2211,15 +2181,14 @@ func (c *MediaTailor) ListLiveSourcesWithContext(ctx aws.Context, input *ListLiv
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLiveSources operation.
-//    pageNum := 0
-//    err := client.ListLiveSourcesPages(params,
-//        func(page *mediatailor.ListLiveSourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLiveSources operation.
+//	pageNum := 0
+//	err := client.ListLiveSourcesPages(params,
+//	    func(page *mediatailor.ListLiveSourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListLiveSourcesPages(input *ListLiveSourcesInput, fn func(*ListLiveSourcesOutput, bool) bool) error {
 	return c.ListLiveSourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2271,14 +2240,13 @@ const opListPlaybackConfigurations = "ListPlaybackConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPlaybackConfigurationsRequest method.
+//	req, resp := client.ListPlaybackConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListPlaybackConfigurationsRequest method.
-//    req, resp := client.ListPlaybackConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListPlaybackConfigurations
 func (c *MediaTailor) ListPlaybackConfigurationsRequest(input *ListPlaybackConfigurationsInput) (req *request.Request, output *ListPlaybackConfigurationsOutput) {
@@ -2347,15 +2315,14 @@ func (c *MediaTailor) ListPlaybackConfigurationsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPlaybackConfigurations operation.
-//    pageNum := 0
-//    err := client.ListPlaybackConfigurationsPages(params,
-//        func(page *mediatailor.ListPlaybackConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPlaybackConfigurations operation.
+//	pageNum := 0
+//	err := client.ListPlaybackConfigurationsPages(params,
+//	    func(page *mediatailor.ListPlaybackConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListPlaybackConfigurationsPages(input *ListPlaybackConfigurationsInput, fn func(*ListPlaybackConfigurationsOutput, bool) bool) error {
 	return c.ListPlaybackConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2407,14 +2374,13 @@ const opListPrefetchSchedules = "ListPrefetchSchedules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPrefetchSchedulesRequest method.
+//	req, resp := client.ListPrefetchSchedulesRequest(params)
 //
-//    // Example sending a request using the ListPrefetchSchedulesRequest method.
-//    req, resp := client.ListPrefetchSchedulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListPrefetchSchedules
 func (c *MediaTailor) ListPrefetchSchedulesRequest(input *ListPrefetchSchedulesInput) (req *request.Request, output *ListPrefetchSchedulesOutput) {
@@ -2479,15 +2445,14 @@ func (c *MediaTailor) ListPrefetchSchedulesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPrefetchSchedules operation.
-//    pageNum := 0
-//    err := client.ListPrefetchSchedulesPages(params,
-//        func(page *mediatailor.ListPrefetchSchedulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPrefetchSchedules operation.
+//	pageNum := 0
+//	err := client.ListPrefetchSchedulesPages(params,
+//	    func(page *mediatailor.ListPrefetchSchedulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListPrefetchSchedulesPages(input *ListPrefetchSchedulesInput, fn func(*ListPrefetchSchedulesOutput, bool) bool) error {
 	return c.ListPrefetchSchedulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2539,14 +2504,13 @@ const opListSourceLocations = "ListSourceLocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSourceLocationsRequest method.
+//	req, resp := client.ListSourceLocationsRequest(params)
 //
-//    // Example sending a request using the ListSourceLocationsRequest method.
-//    req, resp := client.ListSourceLocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListSourceLocations
 func (c *MediaTailor) ListSourceLocationsRequest(input *ListSourceLocationsInput) (req *request.Request, output *ListSourceLocationsOutput) {
@@ -2611,15 +2575,14 @@ func (c *MediaTailor) ListSourceLocationsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSourceLocations operation.
-//    pageNum := 0
-//    err := client.ListSourceLocationsPages(params,
-//        func(page *mediatailor.ListSourceLocationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSourceLocations operation.
+//	pageNum := 0
+//	err := client.ListSourceLocationsPages(params,
+//	    func(page *mediatailor.ListSourceLocationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListSourceLocationsPages(input *ListSourceLocationsInput, fn func(*ListSourceLocationsOutput, bool) bool) error {
 	return c.ListSourceLocationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2671,14 +2634,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListTagsForResource
 func (c *MediaTailor) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2710,8 +2672,8 @@ func (c *MediaTailor) ListTagsForResourceRequest(input *ListTagsForResourceInput
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListTagsForResource
 func (c *MediaTailor) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2751,14 +2713,13 @@ const opListVodSources = "ListVodSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVodSourcesRequest method.
+//	req, resp := client.ListVodSourcesRequest(params)
 //
-//    // Example sending a request using the ListVodSourcesRequest method.
-//    req, resp := client.ListVodSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/ListVodSources
 func (c *MediaTailor) ListVodSourcesRequest(input *ListVodSourcesInput) (req *request.Request, output *ListVodSourcesOutput) {
@@ -2823,15 +2784,14 @@ func (c *MediaTailor) ListVodSourcesWithContext(ctx aws.Context, input *ListVodS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVodSources operation.
-//    pageNum := 0
-//    err := client.ListVodSourcesPages(params,
-//        func(page *mediatailor.ListVodSourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVodSources operation.
+//	pageNum := 0
+//	err := client.ListVodSourcesPages(params,
+//	    func(page *mediatailor.ListVodSourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaTailor) ListVodSourcesPages(input *ListVodSourcesInput, fn func(*ListVodSourcesOutput, bool) bool) error {
 	return c.ListVodSourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2883,14 +2843,13 @@ const opPutChannelPolicy = "PutChannelPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutChannelPolicyRequest method.
+//	req, resp := client.PutChannelPolicyRequest(params)
 //
-//    // Example sending a request using the PutChannelPolicyRequest method.
-//    req, resp := client.PutChannelPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/PutChannelPolicy
 func (c *MediaTailor) PutChannelPolicyRequest(input *PutChannelPolicyInput) (req *request.Request, output *PutChannelPolicyOutput) {
@@ -2958,14 +2917,13 @@ const opPutPlaybackConfiguration = "PutPlaybackConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPlaybackConfigurationRequest method.
+//	req, resp := client.PutPlaybackConfigurationRequest(params)
 //
-//    // Example sending a request using the PutPlaybackConfigurationRequest method.
-//    req, resp := client.PutPlaybackConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/PutPlaybackConfiguration
 func (c *MediaTailor) PutPlaybackConfigurationRequest(input *PutPlaybackConfigurationInput) (req *request.Request, output *PutPlaybackConfigurationOutput) {
@@ -3032,14 +2990,13 @@ const opStartChannel = "StartChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartChannelRequest method.
+//	req, resp := client.StartChannelRequest(params)
 //
-//    // Example sending a request using the StartChannelRequest method.
-//    req, resp := client.StartChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/StartChannel
 func (c *MediaTailor) StartChannelRequest(input *StartChannelInput) (req *request.Request, output *StartChannelOutput) {
@@ -3107,14 +3064,13 @@ const opStopChannel = "StopChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopChannelRequest method.
+//	req, resp := client.StopChannelRequest(params)
 //
-//    // Example sending a request using the StopChannelRequest method.
-//    req, resp := client.StopChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/StopChannel
 func (c *MediaTailor) StopChannelRequest(input *StopChannelInput) (req *request.Request, output *StopChannelOutput) {
@@ -3182,14 +3138,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/TagResource
 func (c *MediaTailor) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3222,8 +3177,8 @@ func (c *MediaTailor) TagResourceRequest(input *TagResourceInput) (req *request.
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/TagResource
 func (c *MediaTailor) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3263,14 +3218,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/UntagResource
 func (c *MediaTailor) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3303,8 +3257,8 @@ func (c *MediaTailor) UntagResourceRequest(input *UntagResourceInput) (req *requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/UntagResource
 func (c *MediaTailor) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3344,14 +3298,13 @@ const opUpdateChannel = "UpdateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelRequest method.
+//	req, resp := client.UpdateChannelRequest(params)
 //
-//    // Example sending a request using the UpdateChannelRequest method.
-//    req, resp := client.UpdateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/UpdateChannel
 func (c *MediaTailor) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Request, output *UpdateChannelOutput) {
@@ -3418,14 +3371,13 @@ const opUpdateLiveSource = "UpdateLiveSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLiveSourceRequest method.
+//	req, resp := client.UpdateLiveSourceRequest(params)
 //
-//    // Example sending a request using the UpdateLiveSourceRequest method.
-//    req, resp := client.UpdateLiveSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/UpdateLiveSource
 func (c *MediaTailor) UpdateLiveSourceRequest(input *UpdateLiveSourceInput) (req *request.Request, output *UpdateLiveSourceOutput) {
@@ -3492,14 +3444,13 @@ const opUpdateSourceLocation = "UpdateSourceLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSourceLocationRequest method.
+//	req, resp := client.UpdateSourceLocationRequest(params)
 //
-//    // Example sending a request using the UpdateSourceLocationRequest method.
-//    req, resp := client.UpdateSourceLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/UpdateSourceLocation
 func (c *MediaTailor) UpdateSourceLocationRequest(input *UpdateSourceLocationInput) (req *request.Request, output *UpdateSourceLocationOutput) {
@@ -3566,14 +3517,13 @@ const opUpdateVodSource = "UpdateVodSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVodSourceRequest method.
+//	req, resp := client.UpdateVodSourceRequest(params)
 //
-//    // Example sending a request using the UpdateVodSourceRequest method.
-//    req, resp := client.UpdateVodSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediatailor-2018-04-23/UpdateVodSource
 func (c *MediaTailor) UpdateVodSourceRequest(input *UpdateVodSourceInput) (req *request.Request, output *UpdateVodSourceOutput) {

@@ -29,14 +29,13 @@ const opAbortMultipartUpload = "AbortMultipartUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AbortMultipartUploadRequest method.
+//	req, resp := client.AbortMultipartUploadRequest(params)
 //
-//    // Example sending a request using the AbortMultipartUploadRequest method.
-//    req, resp := client.AbortMultipartUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) AbortMultipartUploadRequest(input *AbortMultipartUploadInput) (req *request.Request, output *AbortMultipartUploadOutput) {
 	op := &request.Operation{
 		Name:       opAbortMultipartUpload,
@@ -85,19 +84,19 @@ func (c *Glacier) AbortMultipartUploadRequest(input *AbortMultipartUploadInput) 
 // API operation AbortMultipartUpload for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) AbortMultipartUpload(input *AbortMultipartUploadInput) (*AbortMultipartUploadOutput, error) {
 	req, out := c.AbortMultipartUploadRequest(input)
 	return out, req.Send()
@@ -135,14 +134,13 @@ const opAbortVaultLock = "AbortVaultLock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AbortVaultLockRequest method.
+//	req, resp := client.AbortVaultLockRequest(params)
 //
-//    // Example sending a request using the AbortVaultLockRequest method.
-//    req, resp := client.AbortVaultLockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) AbortVaultLockRequest(input *AbortVaultLockInput) (req *request.Request, output *AbortVaultLockOutput) {
 	op := &request.Operation{
 		Name:       opAbortVaultLock,
@@ -187,19 +185,19 @@ func (c *Glacier) AbortVaultLockRequest(input *AbortVaultLockInput) (req *reques
 // API operation AbortVaultLock for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) AbortVaultLock(input *AbortVaultLockInput) (*AbortVaultLockOutput, error) {
 	req, out := c.AbortVaultLockRequest(input)
 	return out, req.Send()
@@ -237,14 +235,13 @@ const opAddTagsToVault = "AddTagsToVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToVaultRequest method.
+//	req, resp := client.AddTagsToVaultRequest(params)
 //
-//    // Example sending a request using the AddTagsToVaultRequest method.
-//    req, resp := client.AddTagsToVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) AddTagsToVaultRequest(input *AddTagsToVaultInput) (req *request.Request, output *AddTagsToVaultOutput) {
 	op := &request.Operation{
 		Name:       opAddTagsToVault,
@@ -279,22 +276,22 @@ func (c *Glacier) AddTagsToVaultRequest(input *AddTagsToVaultInput) (req *reques
 // API operation AddTagsToVault for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * LimitExceededException
-//   Returned if the request results in a vault or account limit being exceeded.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - LimitExceededException
+//     Returned if the request results in a vault or account limit being exceeded.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) AddTagsToVault(input *AddTagsToVaultInput) (*AddTagsToVaultOutput, error) {
 	req, out := c.AddTagsToVaultRequest(input)
 	return out, req.Send()
@@ -332,14 +329,13 @@ const opCompleteMultipartUpload = "CompleteMultipartUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CompleteMultipartUploadRequest method.
+//	req, resp := client.CompleteMultipartUploadRequest(params)
 //
-//    // Example sending a request using the CompleteMultipartUploadRequest method.
-//    req, resp := client.CompleteMultipartUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) CompleteMultipartUploadRequest(input *CompleteMultipartUploadInput) (req *request.Request, output *ArchiveCreationOutput) {
 	op := &request.Operation{
 		Name:       opCompleteMultipartUpload,
@@ -411,19 +407,19 @@ func (c *Glacier) CompleteMultipartUploadRequest(input *CompleteMultipartUploadI
 // API operation CompleteMultipartUpload for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) CompleteMultipartUpload(input *CompleteMultipartUploadInput) (*ArchiveCreationOutput, error) {
 	req, out := c.CompleteMultipartUploadRequest(input)
 	return out, req.Send()
@@ -461,14 +457,13 @@ const opCompleteVaultLock = "CompleteVaultLock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CompleteVaultLockRequest method.
+//	req, resp := client.CompleteVaultLockRequest(params)
 //
-//    // Example sending a request using the CompleteVaultLockRequest method.
-//    req, resp := client.CompleteVaultLockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) CompleteVaultLockRequest(input *CompleteVaultLockInput) (req *request.Request, output *CompleteVaultLockOutput) {
 	op := &request.Operation{
 		Name:       opCompleteVaultLock,
@@ -512,19 +507,19 @@ func (c *Glacier) CompleteVaultLockRequest(input *CompleteVaultLockInput) (req *
 // API operation CompleteVaultLock for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) CompleteVaultLock(input *CompleteVaultLockInput) (*CompleteVaultLockOutput, error) {
 	req, out := c.CompleteVaultLockRequest(input)
 	return out, req.Send()
@@ -562,14 +557,13 @@ const opCreateVault = "CreateVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVaultRequest method.
+//	req, resp := client.CreateVaultRequest(params)
 //
-//    // Example sending a request using the CreateVaultRequest method.
-//    req, resp := client.CreateVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) CreateVaultRequest(input *CreateVaultInput) (req *request.Request, output *CreateVaultOutput) {
 	op := &request.Operation{
 		Name:       opCreateVault,
@@ -595,10 +589,10 @@ func (c *Glacier) CreateVaultRequest(input *CreateVaultInput) (req *request.Requ
 //
 // You must use the following guidelines when naming a vault.
 //
-//    * Names can be between 1 and 255 characters long.
+//   - Names can be between 1 and 255 characters long.
 //
-//    * Allowed characters are a-z, A-Z, 0-9, '_' (underscore), '-' (hyphen),
-//    and '.' (period).
+//   - Allowed characters are a-z, A-Z, 0-9, '_' (underscore), '-' (hyphen),
+//     and '.' (period).
 //
 // This operation is idempotent.
 //
@@ -621,18 +615,18 @@ func (c *Glacier) CreateVaultRequest(input *CreateVaultInput) (req *request.Requ
 // API operation CreateVault for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * LimitExceededException
-//   Returned if the request results in a vault or account limit being exceeded.
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 //
+//   - LimitExceededException
+//     Returned if the request results in a vault or account limit being exceeded.
 func (c *Glacier) CreateVault(input *CreateVaultInput) (*CreateVaultOutput, error) {
 	req, out := c.CreateVaultRequest(input)
 	return out, req.Send()
@@ -670,14 +664,13 @@ const opDeleteArchive = "DeleteArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteArchiveRequest method.
+//	req, resp := client.DeleteArchiveRequest(params)
 //
-//    // Example sending a request using the DeleteArchiveRequest method.
-//    req, resp := client.DeleteArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) DeleteArchiveRequest(input *DeleteArchiveInput) (req *request.Request, output *DeleteArchiveOutput) {
 	op := &request.Operation{
 		Name:       opDeleteArchive,
@@ -701,13 +694,13 @@ func (c *Glacier) DeleteArchiveRequest(input *DeleteArchiveInput) (req *request.
 // a retrieval of this archive will fail. Archive retrievals that are in progress
 // for this archive ID may or may not succeed according to the following scenarios:
 //
-//    * If the archive retrieval job is actively preparing the data for download
-//    when Amazon S3 Glacier receives the delete archive request, the archival
-//    retrieval operation might fail.
+//   - If the archive retrieval job is actively preparing the data for download
+//     when Amazon S3 Glacier receives the delete archive request, the archival
+//     retrieval operation might fail.
 //
-//    * If the archive retrieval job has successfully prepared the archive for
-//    download when Amazon S3 Glacier receives the delete archive request, you
-//    will be able to download the output.
+//   - If the archive retrieval job has successfully prepared the archive for
+//     download when Amazon S3 Glacier receives the delete archive request, you
+//     will be able to download the output.
 //
 // This operation is idempotent. Attempting to delete an already-deleted archive
 // does not result in an error.
@@ -731,19 +724,19 @@ func (c *Glacier) DeleteArchiveRequest(input *DeleteArchiveInput) (req *request.
 // API operation DeleteArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) DeleteArchive(input *DeleteArchiveInput) (*DeleteArchiveOutput, error) {
 	req, out := c.DeleteArchiveRequest(input)
 	return out, req.Send()
@@ -781,14 +774,13 @@ const opDeleteVault = "DeleteVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVaultRequest method.
+//	req, resp := client.DeleteVaultRequest(params)
 //
-//    // Example sending a request using the DeleteVaultRequest method.
-//    req, resp := client.DeleteVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) DeleteVaultRequest(input *DeleteVaultInput) (req *request.Request, output *DeleteVaultOutput) {
 	op := &request.Operation{
 		Name:       opDeleteVault,
@@ -840,19 +832,19 @@ func (c *Glacier) DeleteVaultRequest(input *DeleteVaultInput) (req *request.Requ
 // API operation DeleteVault for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) DeleteVault(input *DeleteVaultInput) (*DeleteVaultOutput, error) {
 	req, out := c.DeleteVaultRequest(input)
 	return out, req.Send()
@@ -890,14 +882,13 @@ const opDeleteVaultAccessPolicy = "DeleteVaultAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVaultAccessPolicyRequest method.
+//	req, resp := client.DeleteVaultAccessPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteVaultAccessPolicyRequest method.
-//    req, resp := client.DeleteVaultAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) DeleteVaultAccessPolicyRequest(input *DeleteVaultAccessPolicyInput) (req *request.Request, output *DeleteVaultAccessPolicyOutput) {
 	op := &request.Operation{
 		Name:       opDeleteVaultAccessPolicy,
@@ -936,19 +927,19 @@ func (c *Glacier) DeleteVaultAccessPolicyRequest(input *DeleteVaultAccessPolicyI
 // API operation DeleteVaultAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) DeleteVaultAccessPolicy(input *DeleteVaultAccessPolicyInput) (*DeleteVaultAccessPolicyOutput, error) {
 	req, out := c.DeleteVaultAccessPolicyRequest(input)
 	return out, req.Send()
@@ -986,14 +977,13 @@ const opDeleteVaultNotifications = "DeleteVaultNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVaultNotificationsRequest method.
+//	req, resp := client.DeleteVaultNotificationsRequest(params)
 //
-//    // Example sending a request using the DeleteVaultNotificationsRequest method.
-//    req, resp := client.DeleteVaultNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) DeleteVaultNotificationsRequest(input *DeleteVaultNotificationsInput) (req *request.Request, output *DeleteVaultNotificationsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteVaultNotifications,
@@ -1037,19 +1027,19 @@ func (c *Glacier) DeleteVaultNotificationsRequest(input *DeleteVaultNotification
 // API operation DeleteVaultNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) DeleteVaultNotifications(input *DeleteVaultNotificationsInput) (*DeleteVaultNotificationsOutput, error) {
 	req, out := c.DeleteVaultNotificationsRequest(input)
 	return out, req.Send()
@@ -1087,14 +1077,13 @@ const opDescribeJob = "DescribeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobRequest method.
+//	req, resp := client.DescribeJobRequest(params)
 //
-//    // Example sending a request using the DescribeJobRequest method.
-//    req, resp := client.DescribeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) DescribeJobRequest(input *DescribeJobInput) (req *request.Request, output *JobDescription) {
 	op := &request.Operation{
 		Name:       opDescribeJob,
@@ -1145,19 +1134,19 @@ func (c *Glacier) DescribeJobRequest(input *DescribeJobInput) (req *request.Requ
 // API operation DescribeJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) DescribeJob(input *DescribeJobInput) (*JobDescription, error) {
 	req, out := c.DescribeJobRequest(input)
 	return out, req.Send()
@@ -1195,14 +1184,13 @@ const opDescribeVault = "DescribeVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVaultRequest method.
+//	req, resp := client.DescribeVaultRequest(params)
 //
-//    // Example sending a request using the DescribeVaultRequest method.
-//    req, resp := client.DescribeVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) DescribeVaultRequest(input *DescribeVaultInput) (req *request.Request, output *DescribeVaultOutput) {
 	op := &request.Operation{
 		Name:       opDescribeVault,
@@ -1250,19 +1238,19 @@ func (c *Glacier) DescribeVaultRequest(input *DescribeVaultInput) (req *request.
 // API operation DescribeVault for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) DescribeVault(input *DescribeVaultInput) (*DescribeVaultOutput, error) {
 	req, out := c.DescribeVaultRequest(input)
 	return out, req.Send()
@@ -1300,14 +1288,13 @@ const opGetDataRetrievalPolicy = "GetDataRetrievalPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataRetrievalPolicyRequest method.
+//	req, resp := client.GetDataRetrievalPolicyRequest(params)
 //
-//    // Example sending a request using the GetDataRetrievalPolicyRequest method.
-//    req, resp := client.GetDataRetrievalPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) GetDataRetrievalPolicyRequest(input *GetDataRetrievalPolicyInput) (req *request.Request, output *GetDataRetrievalPolicyOutput) {
 	op := &request.Operation{
 		Name:       opGetDataRetrievalPolicy,
@@ -1338,15 +1325,15 @@ func (c *Glacier) GetDataRetrievalPolicyRequest(input *GetDataRetrievalPolicyInp
 // API operation GetDataRetrievalPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) GetDataRetrievalPolicy(input *GetDataRetrievalPolicyInput) (*GetDataRetrievalPolicyOutput, error) {
 	req, out := c.GetDataRetrievalPolicyRequest(input)
 	return out, req.Send()
@@ -1384,14 +1371,13 @@ const opGetJobOutput = "GetJobOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobOutputRequest method.
+//	req, resp := client.GetJobOutputRequest(params)
 //
-//    // Example sending a request using the GetJobOutputRequest method.
-//    req, resp := client.GetJobOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) GetJobOutputRequest(input *GetJobOutputInput) (req *request.Request, output *GetJobOutputOutput) {
 	op := &request.Operation{
 		Name:       opGetJobOutput,
@@ -1463,19 +1449,19 @@ func (c *Glacier) GetJobOutputRequest(input *GetJobOutputInput) (req *request.Re
 // API operation GetJobOutput for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) GetJobOutput(input *GetJobOutputInput) (*GetJobOutputOutput, error) {
 	req, out := c.GetJobOutputRequest(input)
 	return out, req.Send()
@@ -1513,14 +1499,13 @@ const opGetVaultAccessPolicy = "GetVaultAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVaultAccessPolicyRequest method.
+//	req, resp := client.GetVaultAccessPolicyRequest(params)
 //
-//    // Example sending a request using the GetVaultAccessPolicyRequest method.
-//    req, resp := client.GetVaultAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) GetVaultAccessPolicyRequest(input *GetVaultAccessPolicyInput) (req *request.Request, output *GetVaultAccessPolicyOutput) {
 	op := &request.Operation{
 		Name:       opGetVaultAccessPolicy,
@@ -1554,19 +1539,19 @@ func (c *Glacier) GetVaultAccessPolicyRequest(input *GetVaultAccessPolicyInput) 
 // API operation GetVaultAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) GetVaultAccessPolicy(input *GetVaultAccessPolicyInput) (*GetVaultAccessPolicyOutput, error) {
 	req, out := c.GetVaultAccessPolicyRequest(input)
 	return out, req.Send()
@@ -1604,14 +1589,13 @@ const opGetVaultLock = "GetVaultLock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVaultLockRequest method.
+//	req, resp := client.GetVaultLockRequest(params)
 //
-//    // Example sending a request using the GetVaultLockRequest method.
-//    req, resp := client.GetVaultLockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) GetVaultLockRequest(input *GetVaultLockInput) (req *request.Request, output *GetVaultLockOutput) {
 	op := &request.Operation{
 		Name:       opGetVaultLock,
@@ -1633,14 +1617,14 @@ func (c *Glacier) GetVaultLockRequest(input *GetVaultLockInput) (req *request.Re
 // This operation retrieves the following attributes from the lock-policy subresource
 // set on the specified vault:
 //
-//    * The vault lock policy set on the vault.
+//   - The vault lock policy set on the vault.
 //
-//    * The state of the vault lock, which is either InProgess or Locked.
+//   - The state of the vault lock, which is either InProgess or Locked.
 //
-//    * When the lock ID expires. The lock ID is used to complete the vault
-//    locking process.
+//   - When the lock ID expires. The lock ID is used to complete the vault
+//     locking process.
 //
-//    * When the vault lock was initiated and put into the InProgress state.
+//   - When the vault lock was initiated and put into the InProgress state.
 //
 // A vault lock is put into the InProgress state by calling InitiateVaultLock.
 // A vault lock is put into the Locked state by calling CompleteVaultLock. You
@@ -1659,19 +1643,19 @@ func (c *Glacier) GetVaultLockRequest(input *GetVaultLockInput) (req *request.Re
 // API operation GetVaultLock for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) GetVaultLock(input *GetVaultLockInput) (*GetVaultLockOutput, error) {
 	req, out := c.GetVaultLockRequest(input)
 	return out, req.Send()
@@ -1709,14 +1693,13 @@ const opGetVaultNotifications = "GetVaultNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVaultNotificationsRequest method.
+//	req, resp := client.GetVaultNotificationsRequest(params)
 //
-//    // Example sending a request using the GetVaultNotificationsRequest method.
-//    req, resp := client.GetVaultNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) GetVaultNotificationsRequest(input *GetVaultNotificationsInput) (req *request.Request, output *GetVaultNotificationsOutput) {
 	op := &request.Operation{
 		Name:       opGetVaultNotifications,
@@ -1763,19 +1746,19 @@ func (c *Glacier) GetVaultNotificationsRequest(input *GetVaultNotificationsInput
 // API operation GetVaultNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) GetVaultNotifications(input *GetVaultNotificationsInput) (*GetVaultNotificationsOutput, error) {
 	req, out := c.GetVaultNotificationsRequest(input)
 	return out, req.Send()
@@ -1813,14 +1796,13 @@ const opInitiateJob = "InitiateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InitiateJobRequest method.
+//	req, resp := client.InitiateJobRequest(params)
 //
-//    // Example sending a request using the InitiateJobRequest method.
-//    req, resp := client.InitiateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) InitiateJobRequest(input *InitiateJobInput) (req *request.Request, output *InitiateJobOutput) {
 	op := &request.Operation{
 		Name:       opInitiateJob,
@@ -1852,28 +1834,28 @@ func (c *Glacier) InitiateJobRequest(input *InitiateJobInput) (req *request.Requ
 // API operation InitiateJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * PolicyEnforcedException
-//   Returned if a retrieval job would exceed the current data policy's retrieval
-//   rate limit. For more information about data retrieval policies,
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - PolicyEnforcedException
+//     Returned if a retrieval job would exceed the current data policy's retrieval
+//     rate limit. For more information about data retrieval policies,
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * InsufficientCapacityException
-//   Returned if there is insufficient capacity to process this expedited request.
-//   This error only applies to expedited retrievals and not to standard or bulk
-//   retrievals.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - InsufficientCapacityException
+//     Returned if there is insufficient capacity to process this expedited request.
+//     This error only applies to expedited retrievals and not to standard or bulk
+//     retrievals.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) InitiateJob(input *InitiateJobInput) (*InitiateJobOutput, error) {
 	req, out := c.InitiateJobRequest(input)
 	return out, req.Send()
@@ -1911,14 +1893,13 @@ const opInitiateMultipartUpload = "InitiateMultipartUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InitiateMultipartUploadRequest method.
+//	req, resp := client.InitiateMultipartUploadRequest(params)
 //
-//    // Example sending a request using the InitiateMultipartUploadRequest method.
-//    req, resp := client.InitiateMultipartUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) InitiateMultipartUploadRequest(input *InitiateMultipartUploadInput) (req *request.Request, output *InitiateMultipartUploadOutput) {
 	op := &request.Operation{
 		Name:       opInitiateMultipartUpload,
@@ -1982,19 +1963,19 @@ func (c *Glacier) InitiateMultipartUploadRequest(input *InitiateMultipartUploadI
 // API operation InitiateMultipartUpload for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) InitiateMultipartUpload(input *InitiateMultipartUploadInput) (*InitiateMultipartUploadOutput, error) {
 	req, out := c.InitiateMultipartUploadRequest(input)
 	return out, req.Send()
@@ -2032,14 +2013,13 @@ const opInitiateVaultLock = "InitiateVaultLock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InitiateVaultLockRequest method.
+//	req, resp := client.InitiateVaultLockRequest(params)
 //
-//    // Example sending a request using the InitiateVaultLockRequest method.
-//    req, resp := client.InitiateVaultLockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) InitiateVaultLockRequest(input *InitiateVaultLockInput) (req *request.Request, output *InitiateVaultLockOutput) {
 	op := &request.Operation{
 		Name:       opInitiateVaultLock,
@@ -2060,11 +2040,11 @@ func (c *Glacier) InitiateVaultLockRequest(input *InitiateVaultLockInput) (req *
 //
 // This operation initiates the vault locking process by doing the following:
 //
-//    * Installing a vault lock policy on the specified vault.
+//   - Installing a vault lock policy on the specified vault.
 //
-//    * Setting the lock state of vault lock to InProgress.
+//   - Setting the lock state of vault lock to InProgress.
 //
-//    * Returning a lock ID, which is used to complete the vault locking process.
+//   - Returning a lock ID, which is used to complete the vault locking process.
 //
 // You can set one vault lock policy for each vault and this policy can be up
 // to 20 KB in size. For more information about vault lock policies, see Amazon
@@ -2096,19 +2076,19 @@ func (c *Glacier) InitiateVaultLockRequest(input *InitiateVaultLockInput) (req *
 // API operation InitiateVaultLock for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) InitiateVaultLock(input *InitiateVaultLockInput) (*InitiateVaultLockOutput, error) {
 	req, out := c.InitiateVaultLockRequest(input)
 	return out, req.Send()
@@ -2146,14 +2126,13 @@ const opListJobs = "ListJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsRequest method.
+//	req, resp := client.ListJobsRequest(params)
 //
-//    // Example sending a request using the ListJobsRequest method.
-//    req, resp := client.ListJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) ListJobsRequest(input *ListJobsInput) (req *request.Request, output *ListJobsOutput) {
 	op := &request.Operation{
 		Name:       opListJobs,
@@ -2223,19 +2202,19 @@ func (c *Glacier) ListJobsRequest(input *ListJobsInput) (req *request.Request, o
 // API operation ListJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
 	req, out := c.ListJobsRequest(input)
 	return out, req.Send()
@@ -2265,15 +2244,14 @@ func (c *Glacier) ListJobsWithContext(ctx aws.Context, input *ListJobsInput, opt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobs operation.
-//    pageNum := 0
-//    err := client.ListJobsPages(params,
-//        func(page *glacier.ListJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobs operation.
+//	pageNum := 0
+//	err := client.ListJobsPages(params,
+//	    func(page *glacier.ListJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glacier) ListJobsPages(input *ListJobsInput, fn func(*ListJobsOutput, bool) bool) error {
 	return c.ListJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2325,14 +2303,13 @@ const opListMultipartUploads = "ListMultipartUploads"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMultipartUploadsRequest method.
+//	req, resp := client.ListMultipartUploadsRequest(params)
 //
-//    // Example sending a request using the ListMultipartUploadsRequest method.
-//    req, resp := client.ListMultipartUploadsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) ListMultipartUploadsRequest(input *ListMultipartUploadsInput) (req *request.Request, output *ListMultipartUploadsOutput) {
 	op := &request.Operation{
 		Name:       opListMultipartUploads,
@@ -2396,19 +2373,19 @@ func (c *Glacier) ListMultipartUploadsRequest(input *ListMultipartUploadsInput) 
 // API operation ListMultipartUploads for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) ListMultipartUploads(input *ListMultipartUploadsInput) (*ListMultipartUploadsOutput, error) {
 	req, out := c.ListMultipartUploadsRequest(input)
 	return out, req.Send()
@@ -2438,15 +2415,14 @@ func (c *Glacier) ListMultipartUploadsWithContext(ctx aws.Context, input *ListMu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMultipartUploads operation.
-//    pageNum := 0
-//    err := client.ListMultipartUploadsPages(params,
-//        func(page *glacier.ListMultipartUploadsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMultipartUploads operation.
+//	pageNum := 0
+//	err := client.ListMultipartUploadsPages(params,
+//	    func(page *glacier.ListMultipartUploadsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glacier) ListMultipartUploadsPages(input *ListMultipartUploadsInput, fn func(*ListMultipartUploadsOutput, bool) bool) error {
 	return c.ListMultipartUploadsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2498,14 +2474,13 @@ const opListParts = "ListParts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPartsRequest method.
+//	req, resp := client.ListPartsRequest(params)
 //
-//    // Example sending a request using the ListPartsRequest method.
-//    req, resp := client.ListPartsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) ListPartsRequest(input *ListPartsInput) (req *request.Request, output *ListPartsOutput) {
 	op := &request.Operation{
 		Name:       opListParts,
@@ -2563,19 +2538,19 @@ func (c *Glacier) ListPartsRequest(input *ListPartsInput) (req *request.Request,
 // API operation ListParts for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) ListParts(input *ListPartsInput) (*ListPartsOutput, error) {
 	req, out := c.ListPartsRequest(input)
 	return out, req.Send()
@@ -2605,15 +2580,14 @@ func (c *Glacier) ListPartsWithContext(ctx aws.Context, input *ListPartsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListParts operation.
-//    pageNum := 0
-//    err := client.ListPartsPages(params,
-//        func(page *glacier.ListPartsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListParts operation.
+//	pageNum := 0
+//	err := client.ListPartsPages(params,
+//	    func(page *glacier.ListPartsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glacier) ListPartsPages(input *ListPartsInput, fn func(*ListPartsOutput, bool) bool) error {
 	return c.ListPartsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2665,14 +2639,13 @@ const opListProvisionedCapacity = "ListProvisionedCapacity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProvisionedCapacityRequest method.
+//	req, resp := client.ListProvisionedCapacityRequest(params)
 //
-//    // Example sending a request using the ListProvisionedCapacityRequest method.
-//    req, resp := client.ListProvisionedCapacityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) ListProvisionedCapacityRequest(input *ListProvisionedCapacityInput) (req *request.Request, output *ListProvisionedCapacityOutput) {
 	op := &request.Operation{
 		Name:       opListProvisionedCapacity,
@@ -2702,15 +2675,15 @@ func (c *Glacier) ListProvisionedCapacityRequest(input *ListProvisionedCapacityI
 // API operation ListProvisionedCapacity for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) ListProvisionedCapacity(input *ListProvisionedCapacityInput) (*ListProvisionedCapacityOutput, error) {
 	req, out := c.ListProvisionedCapacityRequest(input)
 	return out, req.Send()
@@ -2748,14 +2721,13 @@ const opListTagsForVault = "ListTagsForVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForVaultRequest method.
+//	req, resp := client.ListTagsForVaultRequest(params)
 //
-//    // Example sending a request using the ListTagsForVaultRequest method.
-//    req, resp := client.ListTagsForVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) ListTagsForVaultRequest(input *ListTagsForVaultInput) (req *request.Request, output *ListTagsForVaultOutput) {
 	op := &request.Operation{
 		Name:       opListTagsForVault,
@@ -2786,19 +2758,19 @@ func (c *Glacier) ListTagsForVaultRequest(input *ListTagsForVaultInput) (req *re
 // API operation ListTagsForVault for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) ListTagsForVault(input *ListTagsForVaultInput) (*ListTagsForVaultOutput, error) {
 	req, out := c.ListTagsForVaultRequest(input)
 	return out, req.Send()
@@ -2836,14 +2808,13 @@ const opListVaults = "ListVaults"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVaultsRequest method.
+//	req, resp := client.ListVaultsRequest(params)
 //
-//    // Example sending a request using the ListVaultsRequest method.
-//    req, resp := client.ListVaultsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) ListVaultsRequest(input *ListVaultsInput) (req *request.Request, output *ListVaultsOutput) {
 	op := &request.Operation{
 		Name:       opListVaults,
@@ -2898,19 +2869,19 @@ func (c *Glacier) ListVaultsRequest(input *ListVaultsInput) (req *request.Reques
 // API operation ListVaults for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) ListVaults(input *ListVaultsInput) (*ListVaultsOutput, error) {
 	req, out := c.ListVaultsRequest(input)
 	return out, req.Send()
@@ -2940,15 +2911,14 @@ func (c *Glacier) ListVaultsWithContext(ctx aws.Context, input *ListVaultsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVaults operation.
-//    pageNum := 0
-//    err := client.ListVaultsPages(params,
-//        func(page *glacier.ListVaultsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVaults operation.
+//	pageNum := 0
+//	err := client.ListVaultsPages(params,
+//	    func(page *glacier.ListVaultsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glacier) ListVaultsPages(input *ListVaultsInput, fn func(*ListVaultsOutput, bool) bool) error {
 	return c.ListVaultsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3000,14 +2970,13 @@ const opPurchaseProvisionedCapacity = "PurchaseProvisionedCapacity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseProvisionedCapacityRequest method.
+//	req, resp := client.PurchaseProvisionedCapacityRequest(params)
 //
-//    // Example sending a request using the PurchaseProvisionedCapacityRequest method.
-//    req, resp := client.PurchaseProvisionedCapacityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) PurchaseProvisionedCapacityRequest(input *PurchaseProvisionedCapacityInput) (req *request.Request, output *PurchaseProvisionedCapacityOutput) {
 	op := &request.Operation{
 		Name:       opPurchaseProvisionedCapacity,
@@ -3036,18 +3005,18 @@ func (c *Glacier) PurchaseProvisionedCapacityRequest(input *PurchaseProvisionedC
 // API operation PurchaseProvisionedCapacity for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * LimitExceededException
-//   Returned if the request results in a vault or account limit being exceeded.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - LimitExceededException
+//     Returned if the request results in a vault or account limit being exceeded.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) PurchaseProvisionedCapacity(input *PurchaseProvisionedCapacityInput) (*PurchaseProvisionedCapacityOutput, error) {
 	req, out := c.PurchaseProvisionedCapacityRequest(input)
 	return out, req.Send()
@@ -3085,14 +3054,13 @@ const opRemoveTagsFromVault = "RemoveTagsFromVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromVaultRequest method.
+//	req, resp := client.RemoveTagsFromVaultRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromVaultRequest method.
-//    req, resp := client.RemoveTagsFromVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) RemoveTagsFromVaultRequest(input *RemoveTagsFromVaultInput) (req *request.Request, output *RemoveTagsFromVaultOutput) {
 	op := &request.Operation{
 		Name:       opRemoveTagsFromVault,
@@ -3126,19 +3094,19 @@ func (c *Glacier) RemoveTagsFromVaultRequest(input *RemoveTagsFromVaultInput) (r
 // API operation RemoveTagsFromVault for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) RemoveTagsFromVault(input *RemoveTagsFromVaultInput) (*RemoveTagsFromVaultOutput, error) {
 	req, out := c.RemoveTagsFromVaultRequest(input)
 	return out, req.Send()
@@ -3176,14 +3144,13 @@ const opSetDataRetrievalPolicy = "SetDataRetrievalPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetDataRetrievalPolicyRequest method.
+//	req, resp := client.SetDataRetrievalPolicyRequest(params)
 //
-//    // Example sending a request using the SetDataRetrievalPolicyRequest method.
-//    req, resp := client.SetDataRetrievalPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) SetDataRetrievalPolicyRequest(input *SetDataRetrievalPolicyInput) (req *request.Request, output *SetDataRetrievalPolicyOutput) {
 	op := &request.Operation{
 		Name:       opSetDataRetrievalPolicy,
@@ -3219,15 +3186,15 @@ func (c *Glacier) SetDataRetrievalPolicyRequest(input *SetDataRetrievalPolicyInp
 // API operation SetDataRetrievalPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) SetDataRetrievalPolicy(input *SetDataRetrievalPolicyInput) (*SetDataRetrievalPolicyOutput, error) {
 	req, out := c.SetDataRetrievalPolicyRequest(input)
 	return out, req.Send()
@@ -3265,14 +3232,13 @@ const opSetVaultAccessPolicy = "SetVaultAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetVaultAccessPolicyRequest method.
+//	req, resp := client.SetVaultAccessPolicyRequest(params)
 //
-//    // Example sending a request using the SetVaultAccessPolicyRequest method.
-//    req, resp := client.SetVaultAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) SetVaultAccessPolicyRequest(input *SetVaultAccessPolicyInput) (req *request.Request, output *SetVaultAccessPolicyOutput) {
 	op := &request.Operation{
 		Name:       opSetVaultAccessPolicy,
@@ -3308,19 +3274,19 @@ func (c *Glacier) SetVaultAccessPolicyRequest(input *SetVaultAccessPolicyInput) 
 // API operation SetVaultAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) SetVaultAccessPolicy(input *SetVaultAccessPolicyInput) (*SetVaultAccessPolicyOutput, error) {
 	req, out := c.SetVaultAccessPolicyRequest(input)
 	return out, req.Send()
@@ -3358,14 +3324,13 @@ const opSetVaultNotifications = "SetVaultNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetVaultNotificationsRequest method.
+//	req, resp := client.SetVaultNotificationsRequest(params)
 //
-//    // Example sending a request using the SetVaultNotificationsRequest method.
-//    req, resp := client.SetVaultNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) SetVaultNotificationsRequest(input *SetVaultNotificationsInput) (req *request.Request, output *SetVaultNotificationsOutput) {
 	op := &request.Operation{
 		Name:       opSetVaultNotifications,
@@ -3397,15 +3362,15 @@ func (c *Glacier) SetVaultNotificationsRequest(input *SetVaultNotificationsInput
 // notifications to the topic. You can configure a vault to publish a notification
 // for the following vault events:
 //
-//    * ArchiveRetrievalCompleted This event occurs when a job that was initiated
-//    for an archive retrieval is completed (InitiateJob). The status of the
-//    completed job can be "Succeeded" or "Failed". The notification sent to
-//    the SNS topic is the same output as returned from DescribeJob.
+//   - ArchiveRetrievalCompleted This event occurs when a job that was initiated
+//     for an archive retrieval is completed (InitiateJob). The status of the
+//     completed job can be "Succeeded" or "Failed". The notification sent to
+//     the SNS topic is the same output as returned from DescribeJob.
 //
-//    * InventoryRetrievalCompleted This event occurs when a job that was initiated
-//    for an inventory retrieval is completed (InitiateJob). The status of the
-//    completed job can be "Succeeded" or "Failed". The notification sent to
-//    the SNS topic is the same output as returned from DescribeJob.
+//   - InventoryRetrievalCompleted This event occurs when a job that was initiated
+//     for an inventory retrieval is completed (InitiateJob). The status of the
+//     completed job can be "Succeeded" or "Failed". The notification sent to
+//     the SNS topic is the same output as returned from DescribeJob.
 //
 // An AWS account has full permission to perform all operations (actions). However,
 // AWS Identity and Access Management (IAM) users don't have any permissions
@@ -3426,19 +3391,19 @@ func (c *Glacier) SetVaultNotificationsRequest(input *SetVaultNotificationsInput
 // API operation SetVaultNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) SetVaultNotifications(input *SetVaultNotificationsInput) (*SetVaultNotificationsOutput, error) {
 	req, out := c.SetVaultNotificationsRequest(input)
 	return out, req.Send()
@@ -3476,14 +3441,13 @@ const opUploadArchive = "UploadArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadArchiveRequest method.
+//	req, resp := client.UploadArchiveRequest(params)
 //
-//    // Example sending a request using the UploadArchiveRequest method.
-//    req, resp := client.UploadArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) UploadArchiveRequest(input *UploadArchiveInput) (req *request.Request, output *ArchiveCreationOutput) {
 	op := &request.Operation{
 		Name:       opUploadArchive,
@@ -3547,23 +3511,23 @@ func (c *Glacier) UploadArchiveRequest(input *UploadArchiveInput) (req *request.
 // API operation UploadArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * RequestTimeoutException
-//   Returned if, when uploading an archive, Amazon S3 Glacier times out while
-//   receiving the upload.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - RequestTimeoutException
+//     Returned if, when uploading an archive, Amazon S3 Glacier times out while
+//     receiving the upload.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) UploadArchive(input *UploadArchiveInput) (*ArchiveCreationOutput, error) {
 	req, out := c.UploadArchiveRequest(input)
 	return out, req.Send()
@@ -3601,14 +3565,13 @@ const opUploadMultipartPart = "UploadMultipartPart"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadMultipartPartRequest method.
+//	req, resp := client.UploadMultipartPartRequest(params)
 //
-//    // Example sending a request using the UploadMultipartPartRequest method.
-//    req, resp := client.UploadMultipartPartRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *Glacier) UploadMultipartPartRequest(input *UploadMultipartPartInput) (req *request.Request, output *UploadMultipartPartOutput) {
 	op := &request.Operation{
 		Name:       opUploadMultipartPart,
@@ -3634,27 +3597,27 @@ func (c *Glacier) UploadMultipartPartRequest(input *UploadMultipartPartInput) (r
 // Amazon Glacier rejects your upload part request if any of the following conditions
 // is true:
 //
-//    * SHA256 tree hash does not matchTo ensure that part data is not corrupted
-//    in transmission, you compute a SHA256 tree hash of the part and include
-//    it in your request. Upon receiving the part data, Amazon S3 Glacier also
-//    computes a SHA256 tree hash. If these hash values don't match, the operation
-//    fails. For information about computing a SHA256 tree hash, see Computing
-//    Checksums (https://docs.aws.amazon.com/amazonglacier/latest/dev/checksum-calculations.html).
+//   - SHA256 tree hash does not matchTo ensure that part data is not corrupted
+//     in transmission, you compute a SHA256 tree hash of the part and include
+//     it in your request. Upon receiving the part data, Amazon S3 Glacier also
+//     computes a SHA256 tree hash. If these hash values don't match, the operation
+//     fails. For information about computing a SHA256 tree hash, see Computing
+//     Checksums (https://docs.aws.amazon.com/amazonglacier/latest/dev/checksum-calculations.html).
 //
-//    * Part size does not matchThe size of each part except the last must match
-//    the size specified in the corresponding InitiateMultipartUpload request.
-//    The size of the last part must be the same size as, or smaller than, the
-//    specified size. If you upload a part whose size is smaller than the part
-//    size you specified in your initiate multipart upload request and that
-//    part is not the last part, then the upload part request will succeed.
-//    However, the subsequent Complete Multipart Upload request will fail.
+//   - Part size does not matchThe size of each part except the last must match
+//     the size specified in the corresponding InitiateMultipartUpload request.
+//     The size of the last part must be the same size as, or smaller than, the
+//     specified size. If you upload a part whose size is smaller than the part
+//     size you specified in your initiate multipart upload request and that
+//     part is not the last part, then the upload part request will succeed.
+//     However, the subsequent Complete Multipart Upload request will fail.
 //
-//    * Range does not alignThe byte range value in the request does not align
-//    with the part size specified in the corresponding initiate request. For
-//    example, if you specify a part size of 4194304 bytes (4 MB), then 0 to
-//    4194303 bytes (4 MB - 1) and 4194304 (4 MB) to 8388607 (8 MB - 1) are
-//    valid part ranges. However, if you set a range value of 2 MB to 6 MB,
-//    the range does not align with the part size and the upload will fail.
+//   - Range does not alignThe byte range value in the request does not align
+//     with the part size specified in the corresponding initiate request. For
+//     example, if you specify a part size of 4194304 bytes (4 MB), then 0 to
+//     4194303 bytes (4 MB - 1) and 4194304 (4 MB) to 8388607 (8 MB - 1) are
+//     valid part ranges. However, if you set a range value of 2 MB to 6 MB,
+//     the range does not align with the part size and the upload will fail.
 //
 // This operation is idempotent. If you upload the same part multiple times,
 // the data included in the most recent request overwrites the previously uploaded
@@ -3679,23 +3642,23 @@ func (c *Glacier) UploadMultipartPartRequest(input *UploadMultipartPartInput) (r
 // API operation UploadMultipartPart for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Returned if the specified resource (such as a vault, upload ID, or job ID)
-//   doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Returned if a parameter of the request is incorrectly specified.
+//   - ResourceNotFoundException
+//     Returned if the specified resource (such as a vault, upload ID, or job ID)
+//     doesn't exist.
 //
-//   * MissingParameterValueException
-//   Returned if a required header or parameter is missing from the request.
+//   - InvalidParameterValueException
+//     Returned if a parameter of the request is incorrectly specified.
 //
-//   * RequestTimeoutException
-//   Returned if, when uploading an archive, Amazon S3 Glacier times out while
-//   receiving the upload.
+//   - MissingParameterValueException
+//     Returned if a required header or parameter is missing from the request.
 //
-//   * ServiceUnavailableException
-//   Returned if the service cannot complete the request.
+//   - RequestTimeoutException
+//     Returned if, when uploading an archive, Amazon S3 Glacier times out while
+//     receiving the upload.
 //
+//   - ServiceUnavailableException
+//     Returned if the service cannot complete the request.
 func (c *Glacier) UploadMultipartPart(input *UploadMultipartPartInput) (*UploadMultipartPartOutput, error) {
 	req, out := c.UploadMultipartPartRequest(input)
 	return out, req.Send()

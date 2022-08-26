@@ -38,11 +38,12 @@ type EncryptionClientOptions struct {
 // contentCipherBuilder has been deprecated or was constructed with a deprecated component.
 //
 // Example:
-//	cmkID := "arn:aws:kms:region:000000000000:key/00000000-0000-0000-0000-000000000000"
-//  sess := session.Must(session.NewSession())
-//	var matdesc s3crypto.MaterialDescription
-//	handler := s3crypto.NewKMSContextKeyGenerator(kms.New(sess), cmkID, matdesc)
-//	svc := s3crypto.NewEncryptionClientV2(sess, s3crypto.AESGCMContentCipherBuilderV2(handler))
+//
+//		cmkID := "arn:aws:kms:region:000000000000:key/00000000-0000-0000-0000-000000000000"
+//	 sess := session.Must(session.NewSession())
+//		var matdesc s3crypto.MaterialDescription
+//		handler := s3crypto.NewKMSContextKeyGenerator(kms.New(sess), cmkID, matdesc)
+//		svc := s3crypto.NewEncryptionClientV2(sess, s3crypto.AESGCMContentCipherBuilderV2(handler))
 func NewEncryptionClientV2(prov client.ConfigProvider, contentCipherBuilder ContentCipherBuilder, options ...func(clientOptions *EncryptionClientOptions),
 ) (
 	client *EncryptionClientV2, err error,
@@ -88,6 +89,7 @@ func NewEncryptionClientV2(prov client.ConfigProvider, contentCipherBuilder Cont
 // that data to S3.
 //
 // Example:
+//
 //	req, out := svc.PutObjectRequest(&s3.PutObjectInput {
 //	  Key: aws.String("testKey"),
 //	  Bucket: aws.String("testBucket"),

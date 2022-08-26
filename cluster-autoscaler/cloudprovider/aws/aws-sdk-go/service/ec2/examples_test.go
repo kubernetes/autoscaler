@@ -399,8 +399,8 @@ func ExampleEC2_AttachNetworkInterface_shared00() {
 
 // To attach a volume to an instance
 //
-// This example attaches a volume (``vol-1234567890abcdef0``) to an instance (``i-01474ef662b89480``)
-// as ``/dev/sdf``.
+// This example attaches a volume (“vol-1234567890abcdef0“) to an instance (“i-01474ef662b89480“)
+// as “/dev/sdf“.
 func ExampleEC2_AttachVolume_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.AttachVolumeInput{
@@ -784,8 +784,8 @@ func ExampleEC2_CopyImage_shared00() {
 
 // To copy a snapshot
 //
-// This example copies a snapshot with the snapshot ID of ``snap-066877671789bd71b``
-// from the ``us-west-2`` region to the ``us-east-1`` region and adds a short description
+// This example copies a snapshot with the snapshot ID of “snap-066877671789bd71b“
+// from the “us-west-2“ region to the “us-east-1“ region and adds a short description
 // to identify the snapshot.
 func ExampleEC2_CopySnapshot_shared00() {
 	svc := ec2.New(session.New())
@@ -1301,7 +1301,7 @@ func ExampleEC2_CreateSecurityGroup_shared00() {
 
 // To create a snapshot
 //
-// This example creates a snapshot of the volume with a volume ID of ``vol-1234567890abcdef0``
+// This example creates a snapshot of the volume with a volume ID of “vol-1234567890abcdef0“
 // and a short description to identify the snapshot.
 func ExampleEC2_CreateSnapshot_shared00() {
 	svc := ec2.New(session.New())
@@ -1424,7 +1424,7 @@ func ExampleEC2_CreateTags_shared00() {
 // To create a new volume
 //
 // This example creates an 80 GiB General Purpose (SSD) volume in the Availability Zone
-// ``us-east-1a``.
+// “us-east-1a“.
 func ExampleEC2_CreateVolume_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.CreateVolumeInput{
@@ -1454,7 +1454,7 @@ func ExampleEC2_CreateVolume_shared00() {
 // To create a new Provisioned IOPS (SSD) volume from a snapshot
 //
 // This example creates a new Provisioned IOPS (SSD) volume with 1000 provisioned IOPS
-// from a snapshot in the Availability Zone ``us-east-1a``.
+// from a snapshot in the Availability Zone “us-east-1a“.
 func ExampleEC2_CreateVolume_shared01() {
 	svc := ec2.New(session.New())
 	input := &ec2.CreateVolumeInput{
@@ -1895,7 +1895,7 @@ func ExampleEC2_DeleteSecurityGroup_shared00() {
 
 // To delete a snapshot
 //
-// This example deletes a snapshot with the snapshot ID of ``snap-1234567890abcdef0``.
+// This example deletes a snapshot with the snapshot ID of “snap-1234567890abcdef0“.
 // If the command succeeds, no output is returned.
 func ExampleEC2_DeleteSnapshot_shared00() {
 	svc := ec2.New(session.New())
@@ -2010,7 +2010,7 @@ func ExampleEC2_DeleteTags_shared00() {
 
 // To delete a volume
 //
-// This example deletes an available volume with the volume ID of ``vol-049df61146c4d7901``.
+// This example deletes an available volume with the volume ID of “vol-049df61146c4d7901“.
 // If the command succeeds, no output is returned.
 func ExampleEC2_DeleteVolume_shared00() {
 	svc := ec2.New(session.New())
@@ -2410,7 +2410,7 @@ func ExampleEC2_DescribeInstanceAttribute_shared00() {
 
 // To describe the disableApiTermination attribute
 //
-// This example describes the ``disableApiTermination`` attribute of the specified instance.
+// This example describes the “disableApiTermination“ attribute of the specified instance.
 func ExampleEC2_DescribeInstanceAttribute_shared01() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeInstanceAttributeInput{
@@ -2438,7 +2438,7 @@ func ExampleEC2_DescribeInstanceAttribute_shared01() {
 
 // To describe the block device mapping for an instance
 //
-// This example describes the ``blockDeviceMapping`` attribute of the specified instance.
+// This example describes the “blockDeviceMapping“ attribute of the specified instance.
 func ExampleEC2_DescribeInstanceAttribute_shared02() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeInstanceAttributeInput{
@@ -3153,8 +3153,8 @@ func ExampleEC2_DescribeSecurityGroups_shared01() {
 
 // To describe snapshot attributes
 //
-// This example describes the ``createVolumePermission`` attribute on a snapshot with
-// the snapshot ID of ``snap-066877671789bd71b``.
+// This example describes the “createVolumePermission“ attribute on a snapshot with
+// the snapshot ID of “snap-066877671789bd71b“.
 func ExampleEC2_DescribeSnapshotAttribute_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeSnapshotAttributeInput{
@@ -3182,7 +3182,7 @@ func ExampleEC2_DescribeSnapshotAttribute_shared00() {
 
 // To describe a snapshot
 //
-// This example describes a snapshot with the snapshot ID of ``snap-1234567890abcdef0``.
+// This example describes a snapshot with the snapshot ID of “snap-1234567890abcdef0“.
 func ExampleEC2_DescribeSnapshots_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeSnapshotsInput{
@@ -3212,7 +3212,7 @@ func ExampleEC2_DescribeSnapshots_shared00() {
 // To describe snapshots using filters
 //
 // This example describes all snapshots owned by the ID 012345678910 that are in the
-// ``pending`` status.
+// “pending“ status.
 func ExampleEC2_DescribeSnapshots_shared01() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeSnapshotsInput{
@@ -3491,7 +3491,7 @@ func ExampleEC2_DescribeTags_shared00() {
 
 // To describe a volume attribute
 //
-// This example describes the ``autoEnableIo`` attribute of the volume with the ID ``vol-049df61146c4d7901``.
+// This example describes the “autoEnableIo“ attribute of the volume with the ID “vol-049df61146c4d7901“.
 func ExampleEC2_DescribeVolumeAttribute_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeVolumeAttributeInput{
@@ -3519,7 +3519,7 @@ func ExampleEC2_DescribeVolumeAttribute_shared00() {
 
 // To describe the status of a single volume
 //
-// This example describes the status for the volume ``vol-1234567890abcdef0``.
+// This example describes the status for the volume “vol-1234567890abcdef0“.
 func ExampleEC2_DescribeVolumeStatus_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.DescribeVolumeStatusInput{
@@ -3794,7 +3794,7 @@ func ExampleEC2_DetachNetworkInterface_shared00() {
 
 // To detach a volume from an instance
 //
-// This example detaches the volume (``vol-049df61146c4d7901``) from the instance it
+// This example detaches the volume (“vol-049df61146c4d7901“) from the instance it
 // is attached to.
 func ExampleEC2_DetachVolume_shared00() {
 	svc := ec2.New(session.New())
@@ -3988,7 +3988,7 @@ func ExampleEC2_EnableVgwRoutePropagation_shared00() {
 
 // To enable I/O for a volume
 //
-// This example enables I/O on volume ``vol-1234567890abcdef0``.
+// This example enables I/O on volume “vol-1234567890abcdef0“.
 func ExampleEC2_EnableVolumeIO_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.EnableVolumeIOInput{
@@ -4349,8 +4349,8 @@ func ExampleEC2_ModifyNetworkInterfaceAttribute_shared03() {
 
 // To modify a snapshot attribute
 //
-// This example modifies snapshot ``snap-1234567890abcdef0`` to remove the create volume
-// permission for a user with the account ID ``123456789012``. If the command succeeds,
+// This example modifies snapshot “snap-1234567890abcdef0“ to remove the create volume
+// permission for a user with the account ID “123456789012“. If the command succeeds,
 // no output is returned.
 func ExampleEC2_ModifySnapshotAttribute_shared00() {
 	svc := ec2.New(session.New())
@@ -4383,7 +4383,7 @@ func ExampleEC2_ModifySnapshotAttribute_shared00() {
 
 // To make a snapshot public
 //
-// This example makes the snapshot ``snap-1234567890abcdef0`` public.
+// This example makes the snapshot “snap-1234567890abcdef0“ public.
 func ExampleEC2_ModifySnapshotAttribute_shared01() {
 	svc := ec2.New(session.New())
 	input := &ec2.ModifySnapshotAttributeInput{
@@ -4504,8 +4504,8 @@ func ExampleEC2_ModifySubnetAttribute_shared00() {
 
 // To modify a volume attribute
 //
-// This example sets the ``autoEnableIo`` attribute of the volume with the ID ``vol-1234567890abcdef0``
-// to ``true``. If the command succeeds, no output is returned.
+// This example sets the “autoEnableIo“ attribute of the volume with the ID “vol-1234567890abcdef0“
+// to “true“. If the command succeeds, no output is returned.
 func ExampleEC2_ModifyVolumeAttribute_shared00() {
 	svc := ec2.New(session.New())
 	input := &ec2.ModifyVolumeAttributeInput{
@@ -5227,7 +5227,7 @@ func ExampleEC2_ResetInstanceAttribute_shared00() {
 
 // To reset a snapshot attribute
 //
-// This example resets the create volume permissions for snapshot ``snap-1234567890abcdef0``.
+// This example resets the create volume permissions for snapshot “snap-1234567890abcdef0“.
 // If the command succeeds, no output is returned.
 func ExampleEC2_ResetSnapshotAttribute_shared00() {
 	svc := ec2.New(session.New())

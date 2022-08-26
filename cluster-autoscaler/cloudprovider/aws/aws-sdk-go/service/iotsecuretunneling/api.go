@@ -29,14 +29,13 @@ const opCloseTunnel = "CloseTunnel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CloseTunnelRequest method.
+//	req, resp := client.CloseTunnelRequest(params)
 //
-//    // Example sending a request using the CloseTunnelRequest method.
-//    req, resp := client.CloseTunnelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/CloseTunnel
 func (c *IoTSecureTunneling) CloseTunnelRequest(input *CloseTunnelInput) (req *request.Request, output *CloseTunnelOutput) {
@@ -73,8 +72,8 @@ func (c *IoTSecureTunneling) CloseTunnelRequest(input *CloseTunnelInput) (req *r
 // API operation CloseTunnel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Thrown when an operation is attempted on a resource that does not exist.
+//   - ResourceNotFoundException
+//     Thrown when an operation is attempted on a resource that does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/CloseTunnel
 func (c *IoTSecureTunneling) CloseTunnel(input *CloseTunnelInput) (*CloseTunnelOutput, error) {
@@ -114,14 +113,13 @@ const opDescribeTunnel = "DescribeTunnel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTunnelRequest method.
+//	req, resp := client.DescribeTunnelRequest(params)
 //
-//    // Example sending a request using the DescribeTunnelRequest method.
-//    req, resp := client.DescribeTunnelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/DescribeTunnel
 func (c *IoTSecureTunneling) DescribeTunnelRequest(input *DescribeTunnelInput) (req *request.Request, output *DescribeTunnelOutput) {
@@ -155,8 +153,8 @@ func (c *IoTSecureTunneling) DescribeTunnelRequest(input *DescribeTunnelInput) (
 // API operation DescribeTunnel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Thrown when an operation is attempted on a resource that does not exist.
+//   - ResourceNotFoundException
+//     Thrown when an operation is attempted on a resource that does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/DescribeTunnel
 func (c *IoTSecureTunneling) DescribeTunnel(input *DescribeTunnelInput) (*DescribeTunnelOutput, error) {
@@ -196,14 +194,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/ListTagsForResource
 func (c *IoTSecureTunneling) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -234,8 +231,8 @@ func (c *IoTSecureTunneling) ListTagsForResourceRequest(input *ListTagsForResour
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Thrown when an operation is attempted on a resource that does not exist.
+//   - ResourceNotFoundException
+//     Thrown when an operation is attempted on a resource that does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/ListTagsForResource
 func (c *IoTSecureTunneling) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -275,14 +272,13 @@ const opListTunnels = "ListTunnels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTunnelsRequest method.
+//	req, resp := client.ListTunnelsRequest(params)
 //
-//    // Example sending a request using the ListTunnelsRequest method.
-//    req, resp := client.ListTunnelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/ListTunnels
 func (c *IoTSecureTunneling) ListTunnelsRequest(input *ListTunnelsInput) (req *request.Request, output *ListTunnelsOutput) {
@@ -352,15 +348,14 @@ func (c *IoTSecureTunneling) ListTunnelsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTunnels operation.
-//    pageNum := 0
-//    err := client.ListTunnelsPages(params,
-//        func(page *iotsecuretunneling.ListTunnelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTunnels operation.
+//	pageNum := 0
+//	err := client.ListTunnelsPages(params,
+//	    func(page *iotsecuretunneling.ListTunnelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSecureTunneling) ListTunnelsPages(input *ListTunnelsInput, fn func(*ListTunnelsOutput, bool) bool) error {
 	return c.ListTunnelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -412,14 +407,13 @@ const opOpenTunnel = "OpenTunnel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OpenTunnelRequest method.
+//	req, resp := client.OpenTunnelRequest(params)
 //
-//    // Example sending a request using the OpenTunnelRequest method.
-//    req, resp := client.OpenTunnelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/OpenTunnel
 func (c *IoTSecureTunneling) OpenTunnelRequest(input *OpenTunnelInput) (req *request.Request, output *OpenTunnelOutput) {
@@ -454,8 +448,8 @@ func (c *IoTSecureTunneling) OpenTunnelRequest(input *OpenTunnelInput) (req *req
 // API operation OpenTunnel for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Thrown when a tunnel limit is exceeded.
+//   - LimitExceededException
+//     Thrown when a tunnel limit is exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/OpenTunnel
 func (c *IoTSecureTunneling) OpenTunnel(input *OpenTunnelInput) (*OpenTunnelOutput, error) {
@@ -495,14 +489,13 @@ const opRotateTunnelAccessToken = "RotateTunnelAccessToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RotateTunnelAccessTokenRequest method.
+//	req, resp := client.RotateTunnelAccessTokenRequest(params)
 //
-//    // Example sending a request using the RotateTunnelAccessTokenRequest method.
-//    req, resp := client.RotateTunnelAccessTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/RotateTunnelAccessToken
 func (c *IoTSecureTunneling) RotateTunnelAccessTokenRequest(input *RotateTunnelAccessTokenInput) (req *request.Request, output *RotateTunnelAccessTokenOutput) {
@@ -542,8 +535,8 @@ func (c *IoTSecureTunneling) RotateTunnelAccessTokenRequest(input *RotateTunnelA
 // API operation RotateTunnelAccessToken for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Thrown when an operation is attempted on a resource that does not exist.
+//   - ResourceNotFoundException
+//     Thrown when an operation is attempted on a resource that does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/RotateTunnelAccessToken
 func (c *IoTSecureTunneling) RotateTunnelAccessToken(input *RotateTunnelAccessTokenInput) (*RotateTunnelAccessTokenOutput, error) {
@@ -583,14 +576,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/TagResource
 func (c *IoTSecureTunneling) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -622,8 +614,8 @@ func (c *IoTSecureTunneling) TagResourceRequest(input *TagResourceInput) (req *r
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Thrown when an operation is attempted on a resource that does not exist.
+//   - ResourceNotFoundException
+//     Thrown when an operation is attempted on a resource that does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/TagResource
 func (c *IoTSecureTunneling) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -663,14 +655,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/UntagResource
 func (c *IoTSecureTunneling) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -702,8 +693,8 @@ func (c *IoTSecureTunneling) UntagResourceRequest(input *UntagResourceInput) (re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Thrown when an operation is attempted on a resource that does not exist.
+//   - ResourceNotFoundException
+//     Thrown when an operation is attempted on a resource that does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsecuretunneling-2018-10-05/UntagResource
 func (c *IoTSecureTunneling) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

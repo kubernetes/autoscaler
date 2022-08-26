@@ -29,14 +29,13 @@ const opCancelJobRun = "CancelJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelJobRunRequest method.
+//	req, resp := client.CancelJobRunRequest(params)
 //
-//    // Example sending a request using the CancelJobRunRequest method.
-//    req, resp := client.CancelJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/CancelJobRun
 func (c *EMRServerless) CancelJobRunRequest(input *CancelJobRunInput) (req *request.Request, output *CancelJobRunOutput) {
@@ -67,14 +66,15 @@ func (c *EMRServerless) CancelJobRunRequest(input *CancelJobRunInput) (req *requ
 // API operation CancelJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/CancelJobRun
 func (c *EMRServerless) CancelJobRun(input *CancelJobRunInput) (*CancelJobRunOutput, error) {
@@ -114,14 +114,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/CreateApplication
 func (c *EMRServerless) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
@@ -152,15 +151,16 @@ func (c *EMRServerless) CreateApplicationRequest(input *CreateApplicationInput) 
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/CreateApplication
 func (c *EMRServerless) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
@@ -200,14 +200,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/DeleteApplication
 func (c *EMRServerless) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -240,14 +239,15 @@ func (c *EMRServerless) DeleteApplicationRequest(input *DeleteApplicationInput) 
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/DeleteApplication
 func (c *EMRServerless) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -287,14 +287,13 @@ const opGetApplication = "GetApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApplicationRequest method.
+//	req, resp := client.GetApplicationRequest(params)
 //
-//    // Example sending a request using the GetApplicationRequest method.
-//    req, resp := client.GetApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/GetApplication
 func (c *EMRServerless) GetApplicationRequest(input *GetApplicationInput) (req *request.Request, output *GetApplicationOutput) {
@@ -325,14 +324,15 @@ func (c *EMRServerless) GetApplicationRequest(input *GetApplicationInput) (req *
 // API operation GetApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/GetApplication
 func (c *EMRServerless) GetApplication(input *GetApplicationInput) (*GetApplicationOutput, error) {
@@ -372,14 +372,13 @@ const opGetJobRun = "GetJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobRunRequest method.
+//	req, resp := client.GetJobRunRequest(params)
 //
-//    // Example sending a request using the GetJobRunRequest method.
-//    req, resp := client.GetJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/GetJobRun
 func (c *EMRServerless) GetJobRunRequest(input *GetJobRunInput) (req *request.Request, output *GetJobRunOutput) {
@@ -410,14 +409,15 @@ func (c *EMRServerless) GetJobRunRequest(input *GetJobRunInput) (req *request.Re
 // API operation GetJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/GetJobRun
 func (c *EMRServerless) GetJobRun(input *GetJobRunInput) (*GetJobRunOutput, error) {
@@ -457,14 +457,13 @@ const opListApplications = "ListApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
 //
-//    // Example sending a request using the ListApplicationsRequest method.
-//    req, resp := client.ListApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/ListApplications
 func (c *EMRServerless) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
@@ -501,11 +500,12 @@ func (c *EMRServerless) ListApplicationsRequest(input *ListApplicationsInput) (r
 // API operation ListApplications for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/ListApplications
 func (c *EMRServerless) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
@@ -537,15 +537,14 @@ func (c *EMRServerless) ListApplicationsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplications operation.
-//    pageNum := 0
-//    err := client.ListApplicationsPages(params,
-//        func(page *emrserverless.ListApplicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplications operation.
+//	pageNum := 0
+//	err := client.ListApplicationsPages(params,
+//	    func(page *emrserverless.ListApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMRServerless) ListApplicationsPages(input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool) error {
 	return c.ListApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -597,14 +596,13 @@ const opListJobRuns = "ListJobRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobRunsRequest method.
+//	req, resp := client.ListJobRunsRequest(params)
 //
-//    // Example sending a request using the ListJobRunsRequest method.
-//    req, resp := client.ListJobRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/ListJobRuns
 func (c *EMRServerless) ListJobRunsRequest(input *ListJobRunsInput) (req *request.Request, output *ListJobRunsOutput) {
@@ -641,11 +639,12 @@ func (c *EMRServerless) ListJobRunsRequest(input *ListJobRunsInput) (req *reques
 // API operation ListJobRuns for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/ListJobRuns
 func (c *EMRServerless) ListJobRuns(input *ListJobRunsInput) (*ListJobRunsOutput, error) {
@@ -677,15 +676,14 @@ func (c *EMRServerless) ListJobRunsWithContext(ctx aws.Context, input *ListJobRu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobRuns operation.
-//    pageNum := 0
-//    err := client.ListJobRunsPages(params,
-//        func(page *emrserverless.ListJobRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobRuns operation.
+//	pageNum := 0
+//	err := client.ListJobRunsPages(params,
+//	    func(page *emrserverless.ListJobRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMRServerless) ListJobRunsPages(input *ListJobRunsInput, fn func(*ListJobRunsOutput, bool) bool) error {
 	return c.ListJobRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -737,14 +735,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/ListTagsForResource
 func (c *EMRServerless) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -775,14 +772,15 @@ func (c *EMRServerless) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/ListTagsForResource
 func (c *EMRServerless) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -822,14 +820,13 @@ const opStartApplication = "StartApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartApplicationRequest method.
+//	req, resp := client.StartApplicationRequest(params)
 //
-//    // Example sending a request using the StartApplicationRequest method.
-//    req, resp := client.StartApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/StartApplication
 func (c *EMRServerless) StartApplicationRequest(input *StartApplicationInput) (req *request.Request, output *StartApplicationOutput) {
@@ -861,17 +858,18 @@ func (c *EMRServerless) StartApplicationRequest(input *StartApplicationInput) (r
 // API operation StartApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ServiceQuotaExceededException
-//   The maximum number of resources per account has been reached.
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
+//
+//   - ServiceQuotaExceededException
+//     The maximum number of resources per account has been reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/StartApplication
 func (c *EMRServerless) StartApplication(input *StartApplicationInput) (*StartApplicationOutput, error) {
@@ -911,14 +909,13 @@ const opStartJobRun = "StartJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartJobRunRequest method.
+//	req, resp := client.StartJobRunRequest(params)
 //
-//    // Example sending a request using the StartJobRunRequest method.
-//    req, resp := client.StartJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/StartJobRun
 func (c *EMRServerless) StartJobRunRequest(input *StartJobRunInput) (req *request.Request, output *StartJobRunOutput) {
@@ -949,18 +946,19 @@ func (c *EMRServerless) StartJobRunRequest(input *StartJobRunInput) (req *reques
 // API operation StartJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/StartJobRun
 func (c *EMRServerless) StartJobRun(input *StartJobRunInput) (*StartJobRunOutput, error) {
@@ -1000,14 +998,13 @@ const opStopApplication = "StopApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopApplicationRequest method.
+//	req, resp := client.StopApplicationRequest(params)
 //
-//    // Example sending a request using the StopApplicationRequest method.
-//    req, resp := client.StopApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/StopApplication
 func (c *EMRServerless) StopApplicationRequest(input *StopApplicationInput) (req *request.Request, output *StopApplicationOutput) {
@@ -1041,14 +1038,15 @@ func (c *EMRServerless) StopApplicationRequest(input *StopApplicationInput) (req
 // API operation StopApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/StopApplication
 func (c *EMRServerless) StopApplication(input *StopApplicationInput) (*StopApplicationOutput, error) {
@@ -1088,14 +1086,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/TagResource
 func (c *EMRServerless) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1132,14 +1129,15 @@ func (c *EMRServerless) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/TagResource
 func (c *EMRServerless) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1179,14 +1177,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/UntagResource
 func (c *EMRServerless) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1218,14 +1215,15 @@ func (c *EMRServerless) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/UntagResource
 func (c *EMRServerless) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1265,14 +1263,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/UpdateApplication
 func (c *EMRServerless) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
@@ -1304,14 +1301,15 @@ func (c *EMRServerless) UpdateApplicationRequest(input *UpdateApplicationInput) 
 // API operation UpdateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Request processing failed because of an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InternalServerException
+//     Request processing failed because of an error or failure with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/emr-serverless-2021-07-13/UpdateApplication
 func (c *EMRServerless) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {

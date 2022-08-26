@@ -28,14 +28,13 @@ const opBatchDeleteAttributes = "BatchDeleteAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteAttributesRequest method.
+//	req, resp := client.BatchDeleteAttributesRequest(params)
 //
-//    // Example sending a request using the BatchDeleteAttributesRequest method.
-//    req, resp := client.BatchDeleteAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) BatchDeleteAttributesRequest(input *BatchDeleteAttributesInput) (req *request.Request, output *BatchDeleteAttributesOutput) {
 	op := &request.Operation{
 		Name:       opBatchDeleteAttributes,
@@ -77,9 +76,10 @@ func (c *SimpleDB) BatchDeleteAttributesRequest(input *BatchDeleteAttributesInpu
 // or Expected.X.Exists.
 //
 // The following limitations are enforced for this operation:
-//    * 1 MB request size
 //
-//    * 25 item limit per BatchDeleteAttributes operation
+//   - 1 MB request size
+//
+//   - 25 item limit per BatchDeleteAttributes operation
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -124,14 +124,13 @@ const opBatchPutAttributes = "BatchPutAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchPutAttributesRequest method.
+//	req, resp := client.BatchPutAttributesRequest(params)
 //
-//    // Example sending a request using the BatchPutAttributesRequest method.
-//    req, resp := client.BatchPutAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) BatchPutAttributesRequest(input *BatchPutAttributesInput) (req *request.Request, output *BatchPutAttributesOutput) {
 	op := &request.Operation{
 		Name:       opBatchPutAttributes,
@@ -178,33 +177,40 @@ func (c *SimpleDB) BatchPutAttributesRequest(input *BatchPutAttributesInput) (re
 // a BatchPutAttributes of {'I', 'b', '4' } with the Replace parameter set to
 // true, the final attributes of the item will be { 'a', '1' } and { 'b', '4'
 // }, replacing the previous values of the 'b' attribute with the new value.
-//   You cannot specify an empty string as an item or as an attribute name.
-//   The
-//    BatchPutAttributes
-//  operation succeeds or fails in its entirety. There are no partial puts.
-//  This operation is vulnerable to exceeding the maximum URL size when making
-//  a REST request using the HTTP GET method. This operation does not support
-//  conditions using
-//    Expected.X.Name
+//
+//	 You cannot specify an empty string as an item or as an attribute name.
+//	 The
+//	  BatchPutAttributes
+//	operation succeeds or fails in its entirety. There are no partial puts.
+//	This operation is vulnerable to exceeding the maximum URL size when making
+//	a REST request using the HTTP GET method. This operation does not support
+//	conditions using
+//	  Expected.X.Name
+//
 // ,
-//    Expected.X.Value
+//
+//	Expected.X.Value
+//
 // , or
-//    Expected.X.Exists
+//
+//	Expected.X.Exists
+//
 // .
 // You can execute multiple BatchPutAttributes operations and other operations
 // in parallel. However, large numbers of concurrent BatchPutAttributes calls
 // can result in Service Unavailable (503) responses.
 //
 // The following limitations are enforced for this operation:
-//    * 256 attribute name-value pairs per item
 //
-//    * 1 MB request size
+//   - 256 attribute name-value pairs per item
 //
-//    * 1 billion attributes per domain
+//   - 1 MB request size
 //
-//    * 10 GB of total user data storage per domain
+//   - 1 billion attributes per domain
 //
-//    * 25 item limit per BatchPutAttributes operation
+//   - 10 GB of total user data storage per domain
+//
+//   - 25 item limit per BatchPutAttributes operation
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -214,33 +220,33 @@ func (c *SimpleDB) BatchPutAttributesRequest(input *BatchPutAttributesInput) (re
 // API operation BatchPutAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDuplicateItemName "DuplicateItemName"
-//   The item name was specified more than once.
 //
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeDuplicateItemName "DuplicateItemName"
+//     The item name was specified more than once.
 //
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeNoSuchDomain "NoSuchDomain"
-//   The specified domain does not exist.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
-//   * ErrCodeNumberItemAttributesExceeded "NumberItemAttributesExceeded"
-//   Too many attributes in this item.
+//   - ErrCodeNoSuchDomain "NoSuchDomain"
+//     The specified domain does not exist.
 //
-//   * ErrCodeNumberDomainAttributesExceeded "NumberDomainAttributesExceeded"
-//   Too many attributes in this domain.
+//   - ErrCodeNumberItemAttributesExceeded "NumberItemAttributesExceeded"
+//     Too many attributes in this item.
 //
-//   * ErrCodeNumberDomainBytesExceeded "NumberDomainBytesExceeded"
-//   Too many bytes in this domain.
+//   - ErrCodeNumberDomainAttributesExceeded "NumberDomainAttributesExceeded"
+//     Too many attributes in this domain.
 //
-//   * ErrCodeNumberSubmittedItemsExceeded "NumberSubmittedItemsExceeded"
-//   Too many items exist in a single call.
+//   - ErrCodeNumberDomainBytesExceeded "NumberDomainBytesExceeded"
+//     Too many bytes in this domain.
 //
-//   * ErrCodeNumberSubmittedAttributesExceeded "NumberSubmittedAttributesExceeded"
-//   Too many attributes exist in a single call.
+//   - ErrCodeNumberSubmittedItemsExceeded "NumberSubmittedItemsExceeded"
+//     Too many items exist in a single call.
 //
+//   - ErrCodeNumberSubmittedAttributesExceeded "NumberSubmittedAttributesExceeded"
+//     Too many attributes exist in a single call.
 func (c *SimpleDB) BatchPutAttributes(input *BatchPutAttributesInput) (*BatchPutAttributesOutput, error) {
 	req, out := c.BatchPutAttributesRequest(input)
 	return out, req.Send()
@@ -278,14 +284,13 @@ const opCreateDomain = "CreateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainRequest method.
+//	req, resp := client.CreateDomainRequest(params)
 //
-//    // Example sending a request using the CreateDomainRequest method.
-//    req, resp := client.CreateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) CreateDomainRequest(input *CreateDomainInput) (req *request.Request, output *CreateDomainOutput) {
 	op := &request.Operation{
 		Name:       opCreateDomain,
@@ -308,8 +313,10 @@ func (c *SimpleDB) CreateDomainRequest(input *CreateDomainInput) (req *request.R
 // The CreateDomain operation creates a new domain. The domain name should be
 // unique among the domains associated with the Access Key ID provided in the
 // request. The CreateDomain operation may take 10 or more seconds to complete.
-//   CreateDomain is an idempotent operation; running it multiple times using
-//   the same domain name will not result in an error response.
+//
+//	CreateDomain is an idempotent operation; running it multiple times using
+//	the same domain name will not result in an error response.
+//
 // The client can create up to 100 domains per account.
 //
 // If the client requires additional domains, go to http://aws.amazon.com/contact-us/simpledb-limit-request/
@@ -323,15 +330,15 @@ func (c *SimpleDB) CreateDomainRequest(input *CreateDomainInput) (req *request.R
 // API operation CreateDomain for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeNumberDomainsExceeded "NumberDomainsExceeded"
-//   Too many domains exist per this account.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
+//   - ErrCodeNumberDomainsExceeded "NumberDomainsExceeded"
+//     Too many domains exist per this account.
 func (c *SimpleDB) CreateDomain(input *CreateDomainInput) (*CreateDomainOutput, error) {
 	req, out := c.CreateDomainRequest(input)
 	return out, req.Send()
@@ -369,14 +376,13 @@ const opDeleteAttributes = "DeleteAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAttributesRequest method.
+//	req, resp := client.DeleteAttributesRequest(params)
 //
-//    // Example sending a request using the DeleteAttributesRequest method.
-//    req, resp := client.DeleteAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) DeleteAttributesRequest(input *DeleteAttributesInput) (req *request.Request, output *DeleteAttributesOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAttributes,
@@ -398,10 +404,12 @@ func (c *SimpleDB) DeleteAttributesRequest(input *DeleteAttributesInput) (req *r
 //
 // Deletes one or more attributes associated with an item. If all attributes
 // of the item are deleted, the item is deleted.
-//   If
-//    DeleteAttributes
-//  is called without being passed any attributes or values specified, all the
-//  attributes for the item are deleted.
+//
+//	 If
+//	  DeleteAttributes
+//	is called without being passed any attributes or values specified, all the
+//	attributes for the item are deleted.
+//
 // DeleteAttributes is an idempotent operation; running it multiple times on
 // the same item or attribute does not result in an error response.
 //
@@ -418,18 +426,18 @@ func (c *SimpleDB) DeleteAttributesRequest(input *DeleteAttributesInput) (req *r
 // API operation DeleteAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeNoSuchDomain "NoSuchDomain"
-//   The specified domain does not exist.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
-//   * ErrCodeAttributeDoesNotExist "AttributeDoesNotExist"
-//   The specified attribute does not exist.
+//   - ErrCodeNoSuchDomain "NoSuchDomain"
+//     The specified domain does not exist.
 //
+//   - ErrCodeAttributeDoesNotExist "AttributeDoesNotExist"
+//     The specified attribute does not exist.
 func (c *SimpleDB) DeleteAttributes(input *DeleteAttributesInput) (*DeleteAttributesOutput, error) {
 	req, out := c.DeleteAttributesRequest(input)
 	return out, req.Send()
@@ -467,14 +475,13 @@ const opDeleteDomain = "DeleteDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainRequest method.
+//	req, resp := client.DeleteDomainRequest(params)
 //
-//    // Example sending a request using the DeleteDomainRequest method.
-//    req, resp := client.DeleteDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) DeleteDomainRequest(input *DeleteDomainInput) (req *request.Request, output *DeleteDomainOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDomain,
@@ -497,10 +504,11 @@ func (c *SimpleDB) DeleteDomainRequest(input *DeleteDomainInput) (req *request.R
 // The DeleteDomain operation deletes a domain. Any items (and their attributes)
 // in the domain are deleted as well. The DeleteDomain operation might take
 // 10 or more seconds to complete.
-//   Running
-//    DeleteDomain
-//  on a domain that does not exist or running the function multiple times using
-//  the same domain name will not result in an error response.
+//
+//	 Running
+//	  DeleteDomain
+//	on a domain that does not exist or running the function multiple times using
+//	the same domain name will not result in an error response.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -510,9 +518,8 @@ func (c *SimpleDB) DeleteDomainRequest(input *DeleteDomainInput) (req *request.R
 // API operation DeleteDomain for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
-//
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 func (c *SimpleDB) DeleteDomain(input *DeleteDomainInput) (*DeleteDomainOutput, error) {
 	req, out := c.DeleteDomainRequest(input)
 	return out, req.Send()
@@ -550,14 +557,13 @@ const opDomainMetadata = "DomainMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DomainMetadataRequest method.
+//	req, resp := client.DomainMetadataRequest(params)
 //
-//    // Example sending a request using the DomainMetadataRequest method.
-//    req, resp := client.DomainMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) DomainMetadataRequest(input *DomainMetadataInput) (req *request.Request, output *DomainMetadataOutput) {
 	op := &request.Operation{
 		Name:       opDomainMetadata,
@@ -588,12 +594,12 @@ func (c *SimpleDB) DomainMetadataRequest(input *DomainMetadataInput) (req *reque
 // API operation DomainMetadata for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
 //
-//   * ErrCodeNoSuchDomain "NoSuchDomain"
-//   The specified domain does not exist.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
+//   - ErrCodeNoSuchDomain "NoSuchDomain"
+//     The specified domain does not exist.
 func (c *SimpleDB) DomainMetadata(input *DomainMetadataInput) (*DomainMetadataOutput, error) {
 	req, out := c.DomainMetadataRequest(input)
 	return out, req.Send()
@@ -631,14 +637,13 @@ const opGetAttributes = "GetAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAttributesRequest method.
+//	req, resp := client.GetAttributesRequest(params)
 //
-//    // Example sending a request using the GetAttributesRequest method.
-//    req, resp := client.GetAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) GetAttributesRequest(input *GetAttributesInput) (req *request.Request, output *GetAttributesOutput) {
 	op := &request.Operation{
 		Name:       opGetAttributes,
@@ -664,8 +669,9 @@ func (c *SimpleDB) GetAttributesRequest(input *GetAttributesInput) (req *request
 // If the item does not exist on the replica that was accessed for this operation,
 // an empty set is returned. The system does not return an error as it cannot
 // guarantee the item does not exist on other replicas.
-//   If GetAttributes is called without being passed any attribute names, all
-//   the attributes for the item are returned.
+//
+//	If GetAttributes is called without being passed any attribute names, all
+//	the attributes for the item are returned.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -675,15 +681,15 @@ func (c *SimpleDB) GetAttributesRequest(input *GetAttributesInput) (req *request
 // API operation GetAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeNoSuchDomain "NoSuchDomain"
-//   The specified domain does not exist.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
+//   - ErrCodeNoSuchDomain "NoSuchDomain"
+//     The specified domain does not exist.
 func (c *SimpleDB) GetAttributes(input *GetAttributesInput) (*GetAttributesOutput, error) {
 	req, out := c.GetAttributesRequest(input)
 	return out, req.Send()
@@ -721,14 +727,13 @@ const opListDomains = "ListDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsRequest method.
+//	req, resp := client.ListDomainsRequest(params)
 //
-//    // Example sending a request using the ListDomainsRequest method.
-//    req, resp := client.ListDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) ListDomainsRequest(input *ListDomainsInput) (req *request.Request, output *ListDomainsOutput) {
 	op := &request.Operation{
 		Name:       opListDomains,
@@ -768,12 +773,12 @@ func (c *SimpleDB) ListDomainsRequest(input *ListDomainsInput) (req *request.Req
 // API operation ListDomains for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The specified NextToken is not valid.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The specified NextToken is not valid.
 func (c *SimpleDB) ListDomains(input *ListDomainsInput) (*ListDomainsOutput, error) {
 	req, out := c.ListDomainsRequest(input)
 	return out, req.Send()
@@ -803,15 +808,14 @@ func (c *SimpleDB) ListDomainsWithContext(ctx aws.Context, input *ListDomainsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomains operation.
-//    pageNum := 0
-//    err := client.ListDomainsPages(params,
-//        func(page *simpledb.ListDomainsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomains operation.
+//	pageNum := 0
+//	err := client.ListDomainsPages(params,
+//	    func(page *simpledb.ListDomainsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SimpleDB) ListDomainsPages(input *ListDomainsInput, fn func(*ListDomainsOutput, bool) bool) error {
 	return c.ListDomainsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -863,14 +867,13 @@ const opPutAttributes = "PutAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAttributesRequest method.
+//	req, resp := client.PutAttributesRequest(params)
 //
-//    // Example sending a request using the PutAttributesRequest method.
-//    req, resp := client.PutAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) PutAttributesRequest(input *PutAttributesInput) (req *request.Request, output *PutAttributesOutput) {
 	op := &request.Operation{
 		Name:       opPutAttributes,
@@ -908,10 +911,12 @@ func (c *SimpleDB) PutAttributesRequest(input *PutAttributesInput) (req *request
 // using the attributes { 'b', '4' } with the Replace parameter set to true,
 // the final attributes of the item are changed to { 'a', '1' } and { 'b', '4'
 // }, which replaces the previous values of the 'b' attribute with the new value.
-//   Using
-//    PutAttributes
-//  to replace attribute values that do not exist will not result in an error
-//  response.
+//
+//	 Using
+//	  PutAttributes
+//	to replace attribute values that do not exist will not result in an error
+//	response.
+//
 // You cannot specify an empty string as an attribute name.
 //
 // Because Amazon SimpleDB makes multiple copies of client data and uses an
@@ -920,11 +925,12 @@ func (c *SimpleDB) PutAttributesRequest(input *PutAttributesInput) (req *request
 // might not return the updated data.
 //
 // The following limitations are enforced for this operation:
-//    * 256 total attribute name-value pairs per item
 //
-//    * One billion attributes per domain
+//   - 256 total attribute name-value pairs per item
 //
-//    * 10 GB of total user data storage per domain
+//   - One billion attributes per domain
+//
+//   - 10 GB of total user data storage per domain
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -934,27 +940,27 @@ func (c *SimpleDB) PutAttributesRequest(input *PutAttributesInput) (req *request
 // API operation PutAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeNoSuchDomain "NoSuchDomain"
-//   The specified domain does not exist.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
-//   * ErrCodeNumberDomainAttributesExceeded "NumberDomainAttributesExceeded"
-//   Too many attributes in this domain.
+//   - ErrCodeNoSuchDomain "NoSuchDomain"
+//     The specified domain does not exist.
 //
-//   * ErrCodeNumberDomainBytesExceeded "NumberDomainBytesExceeded"
-//   Too many bytes in this domain.
+//   - ErrCodeNumberDomainAttributesExceeded "NumberDomainAttributesExceeded"
+//     Too many attributes in this domain.
 //
-//   * ErrCodeNumberItemAttributesExceeded "NumberItemAttributesExceeded"
-//   Too many attributes in this item.
+//   - ErrCodeNumberDomainBytesExceeded "NumberDomainBytesExceeded"
+//     Too many bytes in this domain.
 //
-//   * ErrCodeAttributeDoesNotExist "AttributeDoesNotExist"
-//   The specified attribute does not exist.
+//   - ErrCodeNumberItemAttributesExceeded "NumberItemAttributesExceeded"
+//     Too many attributes in this item.
 //
+//   - ErrCodeAttributeDoesNotExist "AttributeDoesNotExist"
+//     The specified attribute does not exist.
 func (c *SimpleDB) PutAttributes(input *PutAttributesInput) (*PutAttributesOutput, error) {
 	req, out := c.PutAttributesRequest(input)
 	return out, req.Send()
@@ -992,14 +998,13 @@ const opSelect = "Select"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SelectRequest method.
+//	req, resp := client.SelectRequest(params)
 //
-//    // Example sending a request using the SelectRequest method.
-//    req, resp := client.SelectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SimpleDB) SelectRequest(input *SelectInput) (req *request.Request, output *SelectOutput) {
 	op := &request.Operation{
 		Name:       opSelect,
@@ -1044,34 +1049,34 @@ func (c *SimpleDB) SelectRequest(input *SelectInput) (req *request.Request, outp
 // API operation Select for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValue "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The specified NextToken is not valid.
+//   - ErrCodeInvalidParameterValue "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidNumberPredicates "InvalidNumberPredicates"
-//   Too many predicates exist in the query expression.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The specified NextToken is not valid.
 //
-//   * ErrCodeInvalidNumberValueTests "InvalidNumberValueTests"
-//   Too many predicates exist in the query expression.
+//   - ErrCodeInvalidNumberPredicates "InvalidNumberPredicates"
+//     Too many predicates exist in the query expression.
 //
-//   * ErrCodeInvalidQueryExpression "InvalidQueryExpression"
-//   The specified query expression syntax is not valid.
+//   - ErrCodeInvalidNumberValueTests "InvalidNumberValueTests"
+//     Too many predicates exist in the query expression.
 //
-//   * ErrCodeMissingParameter "MissingParameter"
-//   The request must contain the specified missing parameter.
+//   - ErrCodeInvalidQueryExpression "InvalidQueryExpression"
+//     The specified query expression syntax is not valid.
 //
-//   * ErrCodeNoSuchDomain "NoSuchDomain"
-//   The specified domain does not exist.
+//   - ErrCodeMissingParameter "MissingParameter"
+//     The request must contain the specified missing parameter.
 //
-//   * ErrCodeRequestTimeout "RequestTimeout"
-//   A timeout occurred when attempting to query the specified domain with specified
-//   query expression.
+//   - ErrCodeNoSuchDomain "NoSuchDomain"
+//     The specified domain does not exist.
 //
-//   * ErrCodeTooManyRequestedAttributes "TooManyRequestedAttributes"
-//   Too many attributes requested.
+//   - ErrCodeRequestTimeout "RequestTimeout"
+//     A timeout occurred when attempting to query the specified domain with specified
+//     query expression.
 //
+//   - ErrCodeTooManyRequestedAttributes "TooManyRequestedAttributes"
+//     Too many attributes requested.
 func (c *SimpleDB) Select(input *SelectInput) (*SelectOutput, error) {
 	req, out := c.SelectRequest(input)
 	return out, req.Send()
@@ -1101,15 +1106,14 @@ func (c *SimpleDB) SelectWithContext(ctx aws.Context, input *SelectInput, opts .
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a Select operation.
-//    pageNum := 0
-//    err := client.SelectPages(params,
-//        func(page *simpledb.SelectOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a Select operation.
+//	pageNum := 0
+//	err := client.SelectPages(params,
+//	    func(page *simpledb.SelectOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SimpleDB) SelectPages(input *SelectInput, fn func(*SelectOutput, bool) bool) error {
 	return c.SelectPagesWithContext(aws.BackgroundContext(), input, fn)
 }

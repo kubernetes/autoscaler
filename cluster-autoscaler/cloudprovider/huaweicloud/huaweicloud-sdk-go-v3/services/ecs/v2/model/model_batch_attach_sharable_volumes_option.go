@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type BatchAttachSharableVolumesOption struct {
 	// 共享磁盘需要挂载的弹性云服务器ID。
 

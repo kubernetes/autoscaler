@@ -29,14 +29,13 @@ const opDeleteAlarms = "DeleteAlarms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAlarmsRequest method.
+//	req, resp := client.DeleteAlarmsRequest(params)
 //
-//    // Example sending a request using the DeleteAlarmsRequest method.
-//    req, resp := client.DeleteAlarmsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteAlarms
 func (c *CloudWatch) DeleteAlarmsRequest(input *DeleteAlarmsInput) (req *request.Request, output *DeleteAlarmsOutput) {
@@ -87,8 +86,8 @@ func (c *CloudWatch) DeleteAlarmsRequest(input *DeleteAlarmsInput) (req *request
 // API operation DeleteAlarms for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFound "ResourceNotFound"
-//   The named resource does not exist.
+//   - ErrCodeResourceNotFound "ResourceNotFound"
+//     The named resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteAlarms
 func (c *CloudWatch) DeleteAlarms(input *DeleteAlarmsInput) (*DeleteAlarmsOutput, error) {
@@ -128,14 +127,13 @@ const opDeleteAnomalyDetector = "DeleteAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAnomalyDetectorRequest method.
+//	req, resp := client.DeleteAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the DeleteAnomalyDetectorRequest method.
-//    req, resp := client.DeleteAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteAnomalyDetector
 func (c *CloudWatch) DeleteAnomalyDetectorRequest(input *DeleteAnomalyDetectorInput) (req *request.Request, output *DeleteAnomalyDetectorOutput) {
@@ -167,20 +165,21 @@ func (c *CloudWatch) DeleteAnomalyDetectorRequest(input *DeleteAnomalyDetectorIn
 // API operation DeleteAnomalyDetector for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   The named resource does not exist.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     The named resource does not exist.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteAnomalyDetector
 func (c *CloudWatch) DeleteAnomalyDetector(input *DeleteAnomalyDetectorInput) (*DeleteAnomalyDetectorOutput, error) {
@@ -220,14 +219,13 @@ const opDeleteDashboards = "DeleteDashboards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDashboardsRequest method.
+//	req, resp := client.DeleteDashboardsRequest(params)
 //
-//    // Example sending a request using the DeleteDashboardsRequest method.
-//    req, resp := client.DeleteDashboardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteDashboards
 func (c *CloudWatch) DeleteDashboardsRequest(input *DeleteDashboardsInput) (req *request.Request, output *DeleteDashboardsOutput) {
@@ -260,14 +258,15 @@ func (c *CloudWatch) DeleteDashboardsRequest(input *DeleteDashboardsInput) (req 
 // API operation DeleteDashboards for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeDashboardNotFoundError "ResourceNotFound"
-//   The specified dashboard does not exist.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeDashboardNotFoundError "ResourceNotFound"
+//     The specified dashboard does not exist.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteDashboards
 func (c *CloudWatch) DeleteDashboards(input *DeleteDashboardsInput) (*DeleteDashboardsOutput, error) {
@@ -307,14 +306,13 @@ const opDeleteInsightRules = "DeleteInsightRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInsightRulesRequest method.
+//	req, resp := client.DeleteInsightRulesRequest(params)
 //
-//    // Example sending a request using the DeleteInsightRulesRequest method.
-//    req, resp := client.DeleteInsightRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteInsightRules
 func (c *CloudWatch) DeleteInsightRulesRequest(input *DeleteInsightRulesInput) (req *request.Request, output *DeleteInsightRulesOutput) {
@@ -348,11 +346,12 @@ func (c *CloudWatch) DeleteInsightRulesRequest(input *DeleteInsightRulesInput) (
 // API operation DeleteInsightRules for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteInsightRules
 func (c *CloudWatch) DeleteInsightRules(input *DeleteInsightRulesInput) (*DeleteInsightRulesOutput, error) {
@@ -392,14 +391,13 @@ const opDeleteMetricStream = "DeleteMetricStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMetricStreamRequest method.
+//	req, resp := client.DeleteMetricStreamRequest(params)
 //
-//    // Example sending a request using the DeleteMetricStreamRequest method.
-//    req, resp := client.DeleteMetricStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteMetricStream
 func (c *CloudWatch) DeleteMetricStreamRequest(input *DeleteMetricStreamInput) (req *request.Request, output *DeleteMetricStreamOutput) {
@@ -431,14 +429,15 @@ func (c *CloudWatch) DeleteMetricStreamRequest(input *DeleteMetricStreamInput) (
 // API operation DeleteMetricStream for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DeleteMetricStream
 func (c *CloudWatch) DeleteMetricStream(input *DeleteMetricStreamInput) (*DeleteMetricStreamOutput, error) {
@@ -478,14 +477,13 @@ const opDescribeAlarmHistory = "DescribeAlarmHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlarmHistoryRequest method.
+//	req, resp := client.DescribeAlarmHistoryRequest(params)
 //
-//    // Example sending a request using the DescribeAlarmHistoryRequest method.
-//    req, resp := client.DescribeAlarmHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAlarmHistory
 func (c *CloudWatch) DescribeAlarmHistoryRequest(input *DescribeAlarmHistoryInput) (req *request.Request, output *DescribeAlarmHistoryOutput) {
@@ -531,8 +529,8 @@ func (c *CloudWatch) DescribeAlarmHistoryRequest(input *DescribeAlarmHistoryInpu
 // API operation DescribeAlarmHistory for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The next token specified is invalid.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The next token specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAlarmHistory
 func (c *CloudWatch) DescribeAlarmHistory(input *DescribeAlarmHistoryInput) (*DescribeAlarmHistoryOutput, error) {
@@ -564,15 +562,14 @@ func (c *CloudWatch) DescribeAlarmHistoryWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAlarmHistory operation.
-//    pageNum := 0
-//    err := client.DescribeAlarmHistoryPages(params,
-//        func(page *cloudwatch.DescribeAlarmHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAlarmHistory operation.
+//	pageNum := 0
+//	err := client.DescribeAlarmHistoryPages(params,
+//	    func(page *cloudwatch.DescribeAlarmHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) DescribeAlarmHistoryPages(input *DescribeAlarmHistoryInput, fn func(*DescribeAlarmHistoryOutput, bool) bool) error {
 	return c.DescribeAlarmHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -624,14 +621,13 @@ const opDescribeAlarms = "DescribeAlarms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlarmsRequest method.
+//	req, resp := client.DescribeAlarmsRequest(params)
 //
-//    // Example sending a request using the DescribeAlarmsRequest method.
-//    req, resp := client.DescribeAlarmsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAlarms
 func (c *CloudWatch) DescribeAlarmsRequest(input *DescribeAlarmsInput) (req *request.Request, output *DescribeAlarmsOutput) {
@@ -674,8 +670,8 @@ func (c *CloudWatch) DescribeAlarmsRequest(input *DescribeAlarmsInput) (req *req
 // API operation DescribeAlarms for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The next token specified is invalid.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The next token specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAlarms
 func (c *CloudWatch) DescribeAlarms(input *DescribeAlarmsInput) (*DescribeAlarmsOutput, error) {
@@ -707,15 +703,14 @@ func (c *CloudWatch) DescribeAlarmsWithContext(ctx aws.Context, input *DescribeA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAlarms operation.
-//    pageNum := 0
-//    err := client.DescribeAlarmsPages(params,
-//        func(page *cloudwatch.DescribeAlarmsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAlarms operation.
+//	pageNum := 0
+//	err := client.DescribeAlarmsPages(params,
+//	    func(page *cloudwatch.DescribeAlarmsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) DescribeAlarmsPages(input *DescribeAlarmsInput, fn func(*DescribeAlarmsOutput, bool) bool) error {
 	return c.DescribeAlarmsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -767,14 +762,13 @@ const opDescribeAlarmsForMetric = "DescribeAlarmsForMetric"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlarmsForMetricRequest method.
+//	req, resp := client.DescribeAlarmsForMetricRequest(params)
 //
-//    // Example sending a request using the DescribeAlarmsForMetricRequest method.
-//    req, resp := client.DescribeAlarmsForMetricRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAlarmsForMetric
 func (c *CloudWatch) DescribeAlarmsForMetricRequest(input *DescribeAlarmsForMetricInput) (req *request.Request, output *DescribeAlarmsForMetricOutput) {
@@ -846,14 +840,13 @@ const opDescribeAnomalyDetectors = "DescribeAnomalyDetectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAnomalyDetectorsRequest method.
+//	req, resp := client.DescribeAnomalyDetectorsRequest(params)
 //
-//    // Example sending a request using the DescribeAnomalyDetectorsRequest method.
-//    req, resp := client.DescribeAnomalyDetectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAnomalyDetectors
 func (c *CloudWatch) DescribeAnomalyDetectorsRequest(input *DescribeAnomalyDetectorsInput) (req *request.Request, output *DescribeAnomalyDetectorsOutput) {
@@ -889,17 +882,18 @@ func (c *CloudWatch) DescribeAnomalyDetectorsRequest(input *DescribeAnomalyDetec
 // API operation DescribeAnomalyDetectors for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The next token specified is invalid.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The next token specified is invalid.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeAnomalyDetectors
 func (c *CloudWatch) DescribeAnomalyDetectors(input *DescribeAnomalyDetectorsInput) (*DescribeAnomalyDetectorsOutput, error) {
@@ -939,14 +933,13 @@ const opDescribeInsightRules = "DescribeInsightRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInsightRulesRequest method.
+//	req, resp := client.DescribeInsightRulesRequest(params)
 //
-//    // Example sending a request using the DescribeInsightRulesRequest method.
-//    req, resp := client.DescribeInsightRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeInsightRules
 func (c *CloudWatch) DescribeInsightRulesRequest(input *DescribeInsightRulesInput) (req *request.Request, output *DescribeInsightRulesOutput) {
@@ -986,8 +979,8 @@ func (c *CloudWatch) DescribeInsightRulesRequest(input *DescribeInsightRulesInpu
 // API operation DescribeInsightRules for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The next token specified is invalid.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The next token specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DescribeInsightRules
 func (c *CloudWatch) DescribeInsightRules(input *DescribeInsightRulesInput) (*DescribeInsightRulesOutput, error) {
@@ -1019,15 +1012,14 @@ func (c *CloudWatch) DescribeInsightRulesWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInsightRules operation.
-//    pageNum := 0
-//    err := client.DescribeInsightRulesPages(params,
-//        func(page *cloudwatch.DescribeInsightRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInsightRules operation.
+//	pageNum := 0
+//	err := client.DescribeInsightRulesPages(params,
+//	    func(page *cloudwatch.DescribeInsightRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) DescribeInsightRulesPages(input *DescribeInsightRulesInput, fn func(*DescribeInsightRulesOutput, bool) bool) error {
 	return c.DescribeInsightRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1079,14 +1071,13 @@ const opDisableAlarmActions = "DisableAlarmActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableAlarmActionsRequest method.
+//	req, resp := client.DisableAlarmActionsRequest(params)
 //
-//    // Example sending a request using the DisableAlarmActionsRequest method.
-//    req, resp := client.DisableAlarmActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DisableAlarmActions
 func (c *CloudWatch) DisableAlarmActionsRequest(input *DisableAlarmActionsInput) (req *request.Request, output *DisableAlarmActionsOutput) {
@@ -1155,14 +1146,13 @@ const opDisableInsightRules = "DisableInsightRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableInsightRulesRequest method.
+//	req, resp := client.DisableInsightRulesRequest(params)
 //
-//    // Example sending a request using the DisableInsightRulesRequest method.
-//    req, resp := client.DisableInsightRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DisableInsightRules
 func (c *CloudWatch) DisableInsightRulesRequest(input *DisableInsightRulesInput) (req *request.Request, output *DisableInsightRulesOutput) {
@@ -1194,11 +1184,12 @@ func (c *CloudWatch) DisableInsightRulesRequest(input *DisableInsightRulesInput)
 // API operation DisableInsightRules for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/DisableInsightRules
 func (c *CloudWatch) DisableInsightRules(input *DisableInsightRulesInput) (*DisableInsightRulesOutput, error) {
@@ -1238,14 +1229,13 @@ const opEnableAlarmActions = "EnableAlarmActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableAlarmActionsRequest method.
+//	req, resp := client.EnableAlarmActionsRequest(params)
 //
-//    // Example sending a request using the EnableAlarmActionsRequest method.
-//    req, resp := client.EnableAlarmActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/EnableAlarmActions
 func (c *CloudWatch) EnableAlarmActionsRequest(input *EnableAlarmActionsInput) (req *request.Request, output *EnableAlarmActionsOutput) {
@@ -1313,14 +1303,13 @@ const opEnableInsightRules = "EnableInsightRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableInsightRulesRequest method.
+//	req, resp := client.EnableInsightRulesRequest(params)
 //
-//    // Example sending a request using the EnableInsightRulesRequest method.
-//    req, resp := client.EnableInsightRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/EnableInsightRules
 func (c *CloudWatch) EnableInsightRulesRequest(input *EnableInsightRulesInput) (req *request.Request, output *EnableInsightRulesOutput) {
@@ -1352,14 +1341,15 @@ func (c *CloudWatch) EnableInsightRulesRequest(input *EnableInsightRulesInput) (
 // API operation EnableInsightRules for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeLimitExceededException "LimitExceededException"
-//   The operation exceeded one or more limits.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeLimitExceededException "LimitExceededException"
+//     The operation exceeded one or more limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/EnableInsightRules
 func (c *CloudWatch) EnableInsightRules(input *EnableInsightRulesInput) (*EnableInsightRulesOutput, error) {
@@ -1399,14 +1389,13 @@ const opGetDashboard = "GetDashboard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDashboardRequest method.
+//	req, resp := client.GetDashboardRequest(params)
 //
-//    // Example sending a request using the GetDashboardRequest method.
-//    req, resp := client.GetDashboardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetDashboard
 func (c *CloudWatch) GetDashboardRequest(input *GetDashboardInput) (req *request.Request, output *GetDashboardOutput) {
@@ -1441,14 +1430,15 @@ func (c *CloudWatch) GetDashboardRequest(input *GetDashboardInput) (req *request
 // API operation GetDashboard for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeDashboardNotFoundError "ResourceNotFound"
-//   The specified dashboard does not exist.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeDashboardNotFoundError "ResourceNotFound"
+//     The specified dashboard does not exist.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetDashboard
 func (c *CloudWatch) GetDashboard(input *GetDashboardInput) (*GetDashboardOutput, error) {
@@ -1488,14 +1478,13 @@ const opGetInsightRuleReport = "GetInsightRuleReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightRuleReportRequest method.
+//	req, resp := client.GetInsightRuleReportRequest(params)
 //
-//    // Example sending a request using the GetInsightRuleReportRequest method.
-//    req, resp := client.GetInsightRuleReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetInsightRuleReport
 func (c *CloudWatch) GetInsightRuleReportRequest(input *GetInsightRuleReportInput) (req *request.Request, output *GetInsightRuleReportOutput) {
@@ -1523,30 +1512,30 @@ func (c *CloudWatch) GetInsightRuleReportRequest(input *GetInsightRuleReportInpu
 // You can also optionally return one or more statistics about each data point
 // in the time series. These statistics can include the following:
 //
-//    * UniqueContributors -- the number of unique contributors for each data
-//    point.
+//   - UniqueContributors -- the number of unique contributors for each data
+//     point.
 //
-//    * MaxContributorValue -- the value of the top contributor for each data
-//    point. The identity of the contributor might change for each data point
-//    in the graph. If this rule aggregates by COUNT, the top contributor for
-//    each data point is the contributor with the most occurrences in that period.
-//    If the rule aggregates by SUM, the top contributor is the contributor
-//    with the highest sum in the log field specified by the rule's Value, during
-//    that period.
+//   - MaxContributorValue -- the value of the top contributor for each data
+//     point. The identity of the contributor might change for each data point
+//     in the graph. If this rule aggregates by COUNT, the top contributor for
+//     each data point is the contributor with the most occurrences in that period.
+//     If the rule aggregates by SUM, the top contributor is the contributor
+//     with the highest sum in the log field specified by the rule's Value, during
+//     that period.
 //
-//    * SampleCount -- the number of data points matched by the rule.
+//   - SampleCount -- the number of data points matched by the rule.
 //
-//    * Sum -- the sum of the values from all contributors during the time period
-//    represented by that data point.
+//   - Sum -- the sum of the values from all contributors during the time period
+//     represented by that data point.
 //
-//    * Minimum -- the minimum value from a single observation during the time
-//    period represented by that data point.
+//   - Minimum -- the minimum value from a single observation during the time
+//     period represented by that data point.
 //
-//    * Maximum -- the maximum value from a single observation during the time
-//    period represented by that data point.
+//   - Maximum -- the maximum value from a single observation during the time
+//     period represented by that data point.
 //
-//    * Average -- the average value from all contributors during the time period
-//    represented by that data point.
+//   - Average -- the average value from all contributors during the time period
+//     represented by that data point.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1556,14 +1545,15 @@ func (c *CloudWatch) GetInsightRuleReportRequest(input *GetInsightRuleReportInpu
 // API operation GetInsightRuleReport for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   The named resource does not exist.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     The named resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetInsightRuleReport
 func (c *CloudWatch) GetInsightRuleReport(input *GetInsightRuleReportInput) (*GetInsightRuleReportOutput, error) {
@@ -1603,14 +1593,13 @@ const opGetMetricData = "GetMetricData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMetricDataRequest method.
+//	req, resp := client.GetMetricDataRequest(params)
 //
-//    // Example sending a request using the GetMetricDataRequest method.
-//    req, resp := client.GetMetricDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricData
 func (c *CloudWatch) GetMetricDataRequest(input *GetMetricDataInput) (req *request.Request, output *GetMetricDataOutput) {
@@ -1663,19 +1652,19 @@ func (c *CloudWatch) GetMetricDataRequest(input *GetMetricDataInput) (req *reque
 //
 // Amazon CloudWatch retains metric data as follows:
 //
-//    * Data points with a period of less than 60 seconds are available for
-//    3 hours. These data points are high-resolution metrics and are available
-//    only for custom metrics that have been defined with a StorageResolution
-//    of 1.
+//   - Data points with a period of less than 60 seconds are available for
+//     3 hours. These data points are high-resolution metrics and are available
+//     only for custom metrics that have been defined with a StorageResolution
+//     of 1.
 //
-//    * Data points with a period of 60 seconds (1-minute) are available for
-//    15 days.
+//   - Data points with a period of 60 seconds (1-minute) are available for
+//     15 days.
 //
-//    * Data points with a period of 300 seconds (5-minute) are available for
-//    63 days.
+//   - Data points with a period of 300 seconds (5-minute) are available for
+//     63 days.
 //
-//    * Data points with a period of 3600 seconds (1 hour) are available for
-//    455 days (15 months).
+//   - Data points with a period of 3600 seconds (1 hour) are available for
+//     455 days (15 months).
 //
 // Data points that are initially published with a shorter period are aggregated
 // together for long-term storage. For example, if you collect data using a
@@ -1691,7 +1680,7 @@ func (c *CloudWatch) GetMetricDataRequest(input *GetMetricDataInput) (req *reque
 // a unit that does not match the data collected, the results of the operation
 // are null. CloudWatch does not perform unit conversions.
 //
-// Using Metrics Insights queries with metric math
+// # Using Metrics Insights queries with metric math
 //
 // You can't mix a Metric Insights query and metric math syntax in the same
 // expression, but you can reference results from a Metrics Insights query within
@@ -1710,8 +1699,8 @@ func (c *CloudWatch) GetMetricDataRequest(input *GetMetricDataInput) (req *reque
 // API operation GetMetricData for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The next token specified is invalid.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The next token specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricData
 func (c *CloudWatch) GetMetricData(input *GetMetricDataInput) (*GetMetricDataOutput, error) {
@@ -1743,15 +1732,14 @@ func (c *CloudWatch) GetMetricDataWithContext(ctx aws.Context, input *GetMetricD
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetMetricData operation.
-//    pageNum := 0
-//    err := client.GetMetricDataPages(params,
-//        func(page *cloudwatch.GetMetricDataOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetMetricData operation.
+//	pageNum := 0
+//	err := client.GetMetricDataPages(params,
+//	    func(page *cloudwatch.GetMetricDataOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) GetMetricDataPages(input *GetMetricDataInput, fn func(*GetMetricDataOutput, bool) bool) error {
 	return c.GetMetricDataPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1803,14 +1791,13 @@ const opGetMetricStatistics = "GetMetricStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMetricStatisticsRequest method.
+//	req, resp := client.GetMetricStatisticsRequest(params)
 //
-//    // Example sending a request using the GetMetricStatisticsRequest method.
-//    req, resp := client.GetMetricStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricStatistics
 func (c *CloudWatch) GetMetricStatisticsRequest(input *GetMetricStatisticsInput) (req *request.Request, output *GetMetricStatisticsOutput) {
@@ -1849,28 +1836,28 @@ func (c *CloudWatch) GetMetricStatisticsRequest(input *GetMetricStatisticsInput)
 // publish data using a statistic set instead, you can only retrieve percentile
 // statistics for this data if one of the following conditions is true:
 //
-//    * The SampleCount value of the statistic set is 1.
+//   - The SampleCount value of the statistic set is 1.
 //
-//    * The Min and the Max values of the statistic set are equal.
+//   - The Min and the Max values of the statistic set are equal.
 //
 // Percentile statistics are not available for metrics when any of the metric
 // values are negative numbers.
 //
 // Amazon CloudWatch retains metric data as follows:
 //
-//    * Data points with a period of less than 60 seconds are available for
-//    3 hours. These data points are high-resolution metrics and are available
-//    only for custom metrics that have been defined with a StorageResolution
-//    of 1.
+//   - Data points with a period of less than 60 seconds are available for
+//     3 hours. These data points are high-resolution metrics and are available
+//     only for custom metrics that have been defined with a StorageResolution
+//     of 1.
 //
-//    * Data points with a period of 60 seconds (1-minute) are available for
-//    15 days.
+//   - Data points with a period of 60 seconds (1-minute) are available for
+//     15 days.
 //
-//    * Data points with a period of 300 seconds (5-minute) are available for
-//    63 days.
+//   - Data points with a period of 300 seconds (5-minute) are available for
+//     63 days.
 //
-//    * Data points with a period of 3600 seconds (1 hour) are available for
-//    455 days (15 months).
+//   - Data points with a period of 3600 seconds (1 hour) are available for
+//     455 days (15 months).
 //
 // Data points that are initially published with a shorter period are aggregated
 // together for long-term storage. For example, if you collect data using a
@@ -1894,17 +1881,18 @@ func (c *CloudWatch) GetMetricStatisticsRequest(input *GetMetricStatisticsInput)
 // API operation GetMetricStatistics for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricStatistics
 func (c *CloudWatch) GetMetricStatistics(input *GetMetricStatisticsInput) (*GetMetricStatisticsOutput, error) {
@@ -1944,14 +1932,13 @@ const opGetMetricStream = "GetMetricStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMetricStreamRequest method.
+//	req, resp := client.GetMetricStreamRequest(params)
 //
-//    // Example sending a request using the GetMetricStreamRequest method.
-//    req, resp := client.GetMetricStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricStream
 func (c *CloudWatch) GetMetricStreamRequest(input *GetMetricStreamInput) (req *request.Request, output *GetMetricStreamOutput) {
@@ -1982,20 +1969,21 @@ func (c *CloudWatch) GetMetricStreamRequest(input *GetMetricStreamInput) (req *r
 // API operation GetMetricStream for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   The named resource does not exist.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     The named resource does not exist.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricStream
 func (c *CloudWatch) GetMetricStream(input *GetMetricStreamInput) (*GetMetricStreamOutput, error) {
@@ -2035,14 +2023,13 @@ const opGetMetricWidgetImage = "GetMetricWidgetImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMetricWidgetImageRequest method.
+//	req, resp := client.GetMetricWidgetImageRequest(params)
 //
-//    // Example sending a request using the GetMetricWidgetImageRequest method.
-//    req, resp := client.GetMetricWidgetImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/GetMetricWidgetImage
 func (c *CloudWatch) GetMetricWidgetImageRequest(input *GetMetricWidgetImageInput) (req *request.Request, output *GetMetricWidgetImageOutput) {
@@ -2075,9 +2062,9 @@ func (c *CloudWatch) GetMetricWidgetImageRequest(input *GetMetricWidgetImageInpu
 // There is a limit of 20 transactions per second for this API. Each GetMetricWidgetImage
 // action has the following limits:
 //
-//    * As many as 100 metrics in the graph.
+//   - As many as 100 metrics in the graph.
 //
-//    * Up to 100 KB uncompressed payload.
+//   - Up to 100 KB uncompressed payload.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2123,14 +2110,13 @@ const opListDashboards = "ListDashboards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDashboardsRequest method.
+//	req, resp := client.ListDashboardsRequest(params)
 //
-//    // Example sending a request using the ListDashboardsRequest method.
-//    req, resp := client.ListDashboardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListDashboards
 func (c *CloudWatch) ListDashboardsRequest(input *ListDashboardsInput) (req *request.Request, output *ListDashboardsOutput) {
@@ -2173,11 +2159,12 @@ func (c *CloudWatch) ListDashboardsRequest(input *ListDashboardsInput) (req *req
 // API operation ListDashboards for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListDashboards
 func (c *CloudWatch) ListDashboards(input *ListDashboardsInput) (*ListDashboardsOutput, error) {
@@ -2209,15 +2196,14 @@ func (c *CloudWatch) ListDashboardsWithContext(ctx aws.Context, input *ListDashb
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDashboards operation.
-//    pageNum := 0
-//    err := client.ListDashboardsPages(params,
-//        func(page *cloudwatch.ListDashboardsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDashboards operation.
+//	pageNum := 0
+//	err := client.ListDashboardsPages(params,
+//	    func(page *cloudwatch.ListDashboardsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) ListDashboardsPages(input *ListDashboardsInput, fn func(*ListDashboardsOutput, bool) bool) error {
 	return c.ListDashboardsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2269,14 +2255,13 @@ const opListMetricStreams = "ListMetricStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMetricStreamsRequest method.
+//	req, resp := client.ListMetricStreamsRequest(params)
 //
-//    // Example sending a request using the ListMetricStreamsRequest method.
-//    req, resp := client.ListMetricStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListMetricStreams
 func (c *CloudWatch) ListMetricStreamsRequest(input *ListMetricStreamsInput) (req *request.Request, output *ListMetricStreamsOutput) {
@@ -2313,17 +2298,18 @@ func (c *CloudWatch) ListMetricStreamsRequest(input *ListMetricStreamsInput) (re
 // API operation ListMetricStreams for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNextToken "InvalidNextToken"
-//   The next token specified is invalid.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The next token specified is invalid.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListMetricStreams
 func (c *CloudWatch) ListMetricStreams(input *ListMetricStreamsInput) (*ListMetricStreamsOutput, error) {
@@ -2355,15 +2341,14 @@ func (c *CloudWatch) ListMetricStreamsWithContext(ctx aws.Context, input *ListMe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMetricStreams operation.
-//    pageNum := 0
-//    err := client.ListMetricStreamsPages(params,
-//        func(page *cloudwatch.ListMetricStreamsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMetricStreams operation.
+//	pageNum := 0
+//	err := client.ListMetricStreamsPages(params,
+//	    func(page *cloudwatch.ListMetricStreamsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) ListMetricStreamsPages(input *ListMetricStreamsInput, fn func(*ListMetricStreamsOutput, bool) bool) error {
 	return c.ListMetricStreamsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2415,14 +2400,13 @@ const opListMetrics = "ListMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMetricsRequest method.
+//	req, resp := client.ListMetricsRequest(params)
 //
-//    // Example sending a request using the ListMetricsRequest method.
-//    req, resp := client.ListMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListMetrics
 func (c *CloudWatch) ListMetricsRequest(input *ListMetricsInput) (req *request.Request, output *ListMetricsOutput) {
@@ -2474,11 +2458,12 @@ func (c *CloudWatch) ListMetricsRequest(input *ListMetricsInput) (req *request.R
 // API operation ListMetrics for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListMetrics
 func (c *CloudWatch) ListMetrics(input *ListMetricsInput) (*ListMetricsOutput, error) {
@@ -2510,15 +2495,14 @@ func (c *CloudWatch) ListMetricsWithContext(ctx aws.Context, input *ListMetricsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMetrics operation.
-//    pageNum := 0
-//    err := client.ListMetricsPages(params,
-//        func(page *cloudwatch.ListMetricsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMetrics operation.
+//	pageNum := 0
+//	err := client.ListMetricsPages(params,
+//	    func(page *cloudwatch.ListMetricsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatch) ListMetricsPages(input *ListMetricsInput, fn func(*ListMetricsOutput, bool) bool) error {
 	return c.ListMetricsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2570,14 +2554,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListTagsForResource
 func (c *CloudWatch) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2609,14 +2592,15 @@ func (c *CloudWatch) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   The named resource does not exist.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     The named resource does not exist.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/ListTagsForResource
 func (c *CloudWatch) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2656,14 +2640,13 @@ const opPutAnomalyDetector = "PutAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAnomalyDetectorRequest method.
+//	req, resp := client.PutAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the PutAnomalyDetectorRequest method.
-//    req, resp := client.PutAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutAnomalyDetector
 func (c *CloudWatch) PutAnomalyDetectorRequest(input *PutAnomalyDetectorInput) (req *request.Request, output *PutAnomalyDetectorOutput) {
@@ -2698,20 +2681,21 @@ func (c *CloudWatch) PutAnomalyDetectorRequest(input *PutAnomalyDetectorInput) (
 // API operation PutAnomalyDetector for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceededException"
-//   The operation exceeded one or more limits.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeLimitExceededException "LimitExceededException"
+//     The operation exceeded one or more limits.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutAnomalyDetector
 func (c *CloudWatch) PutAnomalyDetector(input *PutAnomalyDetectorInput) (*PutAnomalyDetectorOutput, error) {
@@ -2751,14 +2735,13 @@ const opPutCompositeAlarm = "PutCompositeAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutCompositeAlarmRequest method.
+//	req, resp := client.PutCompositeAlarmRequest(params)
 //
-//    // Example sending a request using the PutCompositeAlarmRequest method.
-//    req, resp := client.PutCompositeAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutCompositeAlarm
 func (c *CloudWatch) PutCompositeAlarmRequest(input *PutCompositeAlarmInput) (req *request.Request, output *PutCompositeAlarmOutput) {
@@ -2837,8 +2820,8 @@ func (c *CloudWatch) PutCompositeAlarmRequest(input *PutCompositeAlarmInput) (re
 // API operation PutCompositeAlarm for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededFault "LimitExceeded"
-//   The quota for alarms for this customer has already been reached.
+//   - ErrCodeLimitExceededFault "LimitExceeded"
+//     The quota for alarms for this customer has already been reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutCompositeAlarm
 func (c *CloudWatch) PutCompositeAlarm(input *PutCompositeAlarmInput) (*PutCompositeAlarmOutput, error) {
@@ -2878,14 +2861,13 @@ const opPutDashboard = "PutDashboard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDashboardRequest method.
+//	req, resp := client.PutDashboardRequest(params)
 //
-//    // Example sending a request using the PutDashboardRequest method.
-//    req, resp := client.PutDashboardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutDashboard
 func (c *CloudWatch) PutDashboardRequest(input *PutDashboardInput) (req *request.Request, output *PutDashboardOutput) {
@@ -2933,11 +2915,12 @@ func (c *CloudWatch) PutDashboardRequest(input *PutDashboardInput) (req *request
 // API operation PutDashboard for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDashboardInvalidInputError "InvalidParameterInput"
-//   Some part of the dashboard data is invalid.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeDashboardInvalidInputError "InvalidParameterInput"
+//     Some part of the dashboard data is invalid.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutDashboard
 func (c *CloudWatch) PutDashboard(input *PutDashboardInput) (*PutDashboardOutput, error) {
@@ -2977,14 +2960,13 @@ const opPutInsightRule = "PutInsightRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutInsightRuleRequest method.
+//	req, resp := client.PutInsightRuleRequest(params)
 //
-//    // Example sending a request using the PutInsightRuleRequest method.
-//    req, resp := client.PutInsightRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutInsightRule
 func (c *CloudWatch) PutInsightRuleRequest(input *PutInsightRuleInput) (req *request.Request, output *PutInsightRuleOutput) {
@@ -3022,14 +3004,15 @@ func (c *CloudWatch) PutInsightRuleRequest(input *PutInsightRuleInput) (req *req
 // API operation PutInsightRule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeLimitExceededException "LimitExceededException"
-//   The operation exceeded one or more limits.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeLimitExceededException "LimitExceededException"
+//     The operation exceeded one or more limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutInsightRule
 func (c *CloudWatch) PutInsightRule(input *PutInsightRuleInput) (*PutInsightRuleOutput, error) {
@@ -3069,14 +3052,13 @@ const opPutMetricAlarm = "PutMetricAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMetricAlarmRequest method.
+//	req, resp := client.PutMetricAlarmRequest(params)
 //
-//    // Example sending a request using the PutMetricAlarmRequest method.
-//    req, resp := client.PutMetricAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutMetricAlarm
 func (c *CloudWatch) PutMetricAlarmRequest(input *PutMetricAlarmInput) (req *request.Request, output *PutMetricAlarmOutput) {
@@ -3113,10 +3095,10 @@ func (c *CloudWatch) PutMetricAlarmRequest(input *PutMetricAlarmInput) (req *req
 // If you are an IAM user, you must have Amazon EC2 permissions for some alarm
 // operations:
 //
-//    * The iam:CreateServiceLinkedRole for all alarms with EC2 actions
+//   - The iam:CreateServiceLinkedRole for all alarms with EC2 actions
 //
-//    * The iam:CreateServiceLinkedRole to create an alarm with Systems Manager
-//    OpsItem actions.
+//   - The iam:CreateServiceLinkedRole to create an alarm with Systems Manager
+//     OpsItem actions.
 //
 // The first time you create an alarm in the Amazon Web Services Management
 // Console, the CLI, or by using the PutMetricAlarm API, CloudWatch creates
@@ -3124,26 +3106,26 @@ func (c *CloudWatch) PutMetricAlarmRequest(input *PutMetricAlarmInput) (req *req
 // AWSServiceRoleForCloudWatchEvents and AWSServiceRoleForCloudWatchAlarms_ActionSSM.
 // For more information, see Amazon Web Services service-linked role (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html#iam-term-service-linked-role).
 //
-// Cross-account alarms
+// # Cross-account alarms
 //
 // You can set an alarm on metrics in the current account, or in another account.
 // To create a cross-account alarm that watches a metric in a different account,
 // you must have completed the following pre-requisites:
 //
-//    * The account where the metrics are located (the sharing account) must
-//    already have a sharing role named CloudWatch-CrossAccountSharingRole.
-//    If it does not already have this role, you must create it using the instructions
-//    in Set up a sharing account in Cross-account cross-Region CloudWatch console
-//    (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Cross-Account-Cross-Region.html#enable-cross-account-cross-Region).
-//    The policy for that role must grant access to the ID of the account where
-//    you are creating the alarm.
+//   - The account where the metrics are located (the sharing account) must
+//     already have a sharing role named CloudWatch-CrossAccountSharingRole.
+//     If it does not already have this role, you must create it using the instructions
+//     in Set up a sharing account in Cross-account cross-Region CloudWatch console
+//     (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Cross-Account-Cross-Region.html#enable-cross-account-cross-Region).
+//     The policy for that role must grant access to the ID of the account where
+//     you are creating the alarm.
 //
-//    * The account where you are creating the alarm (the monitoring account)
-//    must already have a service-linked role named AWSServiceRoleForCloudWatchCrossAccount
-//    to allow CloudWatch to assume the sharing role in the sharing account.
-//    If it does not, you must create it following the directions in Set up
-//    a monitoring account in Cross-account cross-Region CloudWatch console
-//    (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Cross-Account-Cross-Region.html#enable-cross-account-cross-Region).
+//   - The account where you are creating the alarm (the monitoring account)
+//     must already have a service-linked role named AWSServiceRoleForCloudWatchCrossAccount
+//     to allow CloudWatch to assume the sharing role in the sharing account.
+//     If it does not, you must create it following the directions in Set up
+//     a monitoring account in Cross-account cross-Region CloudWatch console
+//     (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Cross-Account-Cross-Region.html#enable-cross-account-cross-Region).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3153,8 +3135,8 @@ func (c *CloudWatch) PutMetricAlarmRequest(input *PutMetricAlarmInput) (req *req
 // API operation PutMetricAlarm for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededFault "LimitExceeded"
-//   The quota for alarms for this customer has already been reached.
+//   - ErrCodeLimitExceededFault "LimitExceeded"
+//     The quota for alarms for this customer has already been reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutMetricAlarm
 func (c *CloudWatch) PutMetricAlarm(input *PutMetricAlarmInput) (*PutMetricAlarmOutput, error) {
@@ -3194,14 +3176,13 @@ const opPutMetricData = "PutMetricData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMetricDataRequest method.
+//	req, resp := client.PutMetricDataRequest(params)
 //
-//    // Example sending a request using the PutMetricDataRequest method.
-//    req, resp := client.PutMetricDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutMetricData
 func (c *CloudWatch) PutMetricDataRequest(input *PutMetricDataInput) (req *request.Request, output *PutMetricDataOutput) {
@@ -3266,10 +3247,10 @@ func (c *CloudWatch) PutMetricDataRequest(input *PutMetricDataInput) (req *reque
 // publish data using a statistic set instead, you can only retrieve percentile
 // statistics for this data if one of the following conditions is true:
 //
-//    * The SampleCount value of the statistic set is 1 and Min, Max, and Sum
-//    are all equal.
+//   - The SampleCount value of the statistic set is 1 and Min, Max, and Sum
+//     are all equal.
 //
-//    * The Min and Max are equal, and Sum is equal to Min multiplied by SampleCount.
+//   - The Min and Max are equal, and Sum is equal to Min multiplied by SampleCount.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3279,17 +3260,18 @@ func (c *CloudWatch) PutMetricDataRequest(input *PutMetricDataInput) (req *reque
 // API operation PutMetricData for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutMetricData
 func (c *CloudWatch) PutMetricData(input *PutMetricDataInput) (*PutMetricDataOutput, error) {
@@ -3329,14 +3311,13 @@ const opPutMetricStream = "PutMetricStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMetricStreamRequest method.
+//	req, resp := client.PutMetricStreamRequest(params)
 //
-//    // Example sending a request using the PutMetricStreamRequest method.
-//    req, resp := client.PutMetricStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutMetricStream
 func (c *CloudWatch) PutMetricStreamRequest(input *PutMetricStreamInput) (req *request.Request, output *PutMetricStreamOutput) {
@@ -3369,12 +3350,12 @@ func (c *CloudWatch) PutMetricStreamRequest(input *PutMetricStreamInput) (req *r
 //
 // When you create or update a metric stream, you choose one of the following:
 //
-//    * Stream metrics from all metric namespaces in the account.
+//   - Stream metrics from all metric namespaces in the account.
 //
-//    * Stream metrics from all metric namespaces in the account, except for
-//    the namespaces that you list in ExcludeFilters.
+//   - Stream metrics from all metric namespaces in the account, except for
+//     the namespaces that you list in ExcludeFilters.
 //
-//    * Stream metrics from only the metric namespaces that you list in IncludeFilters.
+//   - Stream metrics from only the metric namespaces that you list in IncludeFilters.
 //
 // By default, a metric stream always sends the MAX, MIN, SUM, and SAMPLECOUNT
 // statistics for each metric that is streamed. You can use the StatisticsConfigurations
@@ -3394,20 +3375,21 @@ func (c *CloudWatch) PutMetricStreamRequest(input *PutMetricStreamInput) (req *r
 // API operation PutMetricStream for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModificationException "ConcurrentModificationException"
-//   More than one process tried to modify a resource at the same time.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModificationException"
+//     More than one process tried to modify a resource at the same time.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Parameters were used together that cannot be used together.
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Parameters were used together that cannot be used together.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/PutMetricStream
 func (c *CloudWatch) PutMetricStream(input *PutMetricStreamInput) (*PutMetricStreamOutput, error) {
@@ -3447,14 +3429,13 @@ const opSetAlarmState = "SetAlarmState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetAlarmStateRequest method.
+//	req, resp := client.SetAlarmStateRequest(params)
 //
-//    // Example sending a request using the SetAlarmStateRequest method.
-//    req, resp := client.SetAlarmStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/SetAlarmState
 func (c *CloudWatch) SetAlarmStateRequest(input *SetAlarmStateInput) (req *request.Request, output *SetAlarmStateOutput) {
@@ -3504,11 +3485,12 @@ func (c *CloudWatch) SetAlarmStateRequest(input *SetAlarmStateInput) (req *reque
 // API operation SetAlarmState for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFound "ResourceNotFound"
-//   The named resource does not exist.
 //
-//   * ErrCodeInvalidFormatFault "InvalidFormat"
-//   Data was not syntactically valid JSON.
+//   - ErrCodeResourceNotFound "ResourceNotFound"
+//     The named resource does not exist.
+//
+//   - ErrCodeInvalidFormatFault "InvalidFormat"
+//     Data was not syntactically valid JSON.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/SetAlarmState
 func (c *CloudWatch) SetAlarmState(input *SetAlarmStateInput) (*SetAlarmStateOutput, error) {
@@ -3548,14 +3530,13 @@ const opStartMetricStreams = "StartMetricStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMetricStreamsRequest method.
+//	req, resp := client.StartMetricStreamsRequest(params)
 //
-//    // Example sending a request using the StartMetricStreamsRequest method.
-//    req, resp := client.StartMetricStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/StartMetricStreams
 func (c *CloudWatch) StartMetricStreamsRequest(input *StartMetricStreamsInput) (req *request.Request, output *StartMetricStreamsOutput) {
@@ -3587,14 +3568,15 @@ func (c *CloudWatch) StartMetricStreamsRequest(input *StartMetricStreamsInput) (
 // API operation StartMetricStreams for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/StartMetricStreams
 func (c *CloudWatch) StartMetricStreams(input *StartMetricStreamsInput) (*StartMetricStreamsOutput, error) {
@@ -3634,14 +3616,13 @@ const opStopMetricStreams = "StopMetricStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopMetricStreamsRequest method.
+//	req, resp := client.StopMetricStreamsRequest(params)
 //
-//    // Example sending a request using the StopMetricStreamsRequest method.
-//    req, resp := client.StopMetricStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/StopMetricStreams
 func (c *CloudWatch) StopMetricStreamsRequest(input *StopMetricStreamsInput) (req *request.Request, output *StopMetricStreamsOutput) {
@@ -3673,14 +3654,15 @@ func (c *CloudWatch) StopMetricStreamsRequest(input *StopMetricStreamsInput) (re
 // API operation StopMetricStreams for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
-//   * ErrCodeMissingRequiredParameterException "MissingParameter"
-//   An input parameter that is required is missing.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
+//
+//   - ErrCodeMissingRequiredParameterException "MissingParameter"
+//     An input parameter that is required is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/StopMetricStreams
 func (c *CloudWatch) StopMetricStreams(input *StopMetricStreamsInput) (*StopMetricStreamsOutput, error) {
@@ -3720,14 +3702,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/TagResource
 func (c *CloudWatch) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3776,17 +3757,18 @@ func (c *CloudWatch) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   The named resource does not exist.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModificationException"
-//   More than one process tried to modify a resource at the same time.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     The named resource does not exist.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModificationException"
+//     More than one process tried to modify a resource at the same time.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/TagResource
 func (c *CloudWatch) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3826,14 +3808,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/UntagResource
 func (c *CloudWatch) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3865,17 +3846,18 @@ func (c *CloudWatch) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   The named resource does not exist.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value of an input parameter is bad or out-of-range.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModificationException"
-//   More than one process tried to modify a resource at the same time.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     The named resource does not exist.
 //
-//   * ErrCodeInternalServiceFault "InternalServiceError"
-//   Request processing has failed due to some unknown error, exception, or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModificationException"
+//     More than one process tried to modify a resource at the same time.
+//
+//   - ErrCodeInternalServiceFault "InternalServiceError"
+//     Request processing has failed due to some unknown error, exception, or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/monitoring-2010-08-01/UntagResource
 func (c *CloudWatch) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

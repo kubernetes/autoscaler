@@ -28,14 +28,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/CreateConnection
 func (c *CodeStarConnections) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *CreateConnectionOutput) {
@@ -69,14 +68,15 @@ func (c *CodeStarConnections) CreateConnectionRequest(input *CreateConnectionInp
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Exceeded the maximum limit for connections.
 //
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
+//   - LimitExceededException
+//     Exceeded the maximum limit for connections.
 //
-//   * ResourceUnavailableException
-//   Resource not found. Verify the ARN for the host resource and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
+//
+//   - ResourceUnavailableException
+//     Resource not found. Verify the ARN for the host resource and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/CreateConnection
 func (c *CodeStarConnections) CreateConnection(input *CreateConnectionInput) (*CreateConnectionOutput, error) {
@@ -116,14 +116,13 @@ const opCreateHost = "CreateHost"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHostRequest method.
+//	req, resp := client.CreateHostRequest(params)
 //
-//    // Example sending a request using the CreateHostRequest method.
-//    req, resp := client.CreateHostRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/CreateHost
 func (c *CodeStarConnections) CreateHostRequest(input *CreateHostInput) (req *request.Request, output *CreateHostOutput) {
@@ -160,8 +159,8 @@ func (c *CodeStarConnections) CreateHostRequest(input *CreateHostInput) (req *re
 // API operation CreateHost for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Exceeded the maximum limit for connections.
+//   - LimitExceededException
+//     Exceeded the maximum limit for connections.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/CreateHost
 func (c *CodeStarConnections) CreateHost(input *CreateHostInput) (*CreateHostOutput, error) {
@@ -201,14 +200,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/DeleteConnection
 func (c *CodeStarConnections) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *DeleteConnectionOutput) {
@@ -240,8 +238,8 @@ func (c *CodeStarConnections) DeleteConnectionRequest(input *DeleteConnectionInp
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/DeleteConnection
 func (c *CodeStarConnections) DeleteConnection(input *DeleteConnectionInput) (*DeleteConnectionOutput, error) {
@@ -281,14 +279,13 @@ const opDeleteHost = "DeleteHost"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHostRequest method.
+//	req, resp := client.DeleteHostRequest(params)
 //
-//    // Example sending a request using the DeleteHostRequest method.
-//    req, resp := client.DeleteHostRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/DeleteHost
 func (c *CodeStarConnections) DeleteHostRequest(input *DeleteHostInput) (req *request.Request, output *DeleteHostOutput) {
@@ -324,11 +321,12 @@ func (c *CodeStarConnections) DeleteHostRequest(input *DeleteHostInput) (req *re
 // API operation DeleteHost for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
 //
-//   * ResourceUnavailableException
-//   Resource not found. Verify the ARN for the host resource and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
+//
+//   - ResourceUnavailableException
+//     Resource not found. Verify the ARN for the host resource and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/DeleteHost
 func (c *CodeStarConnections) DeleteHost(input *DeleteHostInput) (*DeleteHostOutput, error) {
@@ -368,14 +366,13 @@ const opGetConnection = "GetConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectionRequest method.
+//	req, resp := client.GetConnectionRequest(params)
 //
-//    // Example sending a request using the GetConnectionRequest method.
-//    req, resp := client.GetConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/GetConnection
 func (c *CodeStarConnections) GetConnectionRequest(input *GetConnectionInput) (req *request.Request, output *GetConnectionOutput) {
@@ -407,11 +404,12 @@ func (c *CodeStarConnections) GetConnectionRequest(input *GetConnectionInput) (r
 // API operation GetConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
 //
-//   * ResourceUnavailableException
-//   Resource not found. Verify the ARN for the host resource and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
+//
+//   - ResourceUnavailableException
+//     Resource not found. Verify the ARN for the host resource and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/GetConnection
 func (c *CodeStarConnections) GetConnection(input *GetConnectionInput) (*GetConnectionOutput, error) {
@@ -451,14 +449,13 @@ const opGetHost = "GetHost"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostRequest method.
+//	req, resp := client.GetHostRequest(params)
 //
-//    // Example sending a request using the GetHostRequest method.
-//    req, resp := client.GetHostRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/GetHost
 func (c *CodeStarConnections) GetHostRequest(input *GetHostInput) (req *request.Request, output *GetHostOutput) {
@@ -490,11 +487,12 @@ func (c *CodeStarConnections) GetHostRequest(input *GetHostInput) (req *request.
 // API operation GetHost for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
 //
-//   * ResourceUnavailableException
-//   Resource not found. Verify the ARN for the host resource and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
+//
+//   - ResourceUnavailableException
+//     Resource not found. Verify the ARN for the host resource and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/GetHost
 func (c *CodeStarConnections) GetHost(input *GetHostInput) (*GetHostOutput, error) {
@@ -534,14 +532,13 @@ const opListConnections = "ListConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectionsRequest method.
+//	req, resp := client.ListConnectionsRequest(params)
 //
-//    // Example sending a request using the ListConnectionsRequest method.
-//    req, resp := client.ListConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/ListConnections
 func (c *CodeStarConnections) ListConnectionsRequest(input *ListConnectionsInput) (req *request.Request, output *ListConnectionsOutput) {
@@ -606,15 +603,14 @@ func (c *CodeStarConnections) ListConnectionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConnections operation.
-//    pageNum := 0
-//    err := client.ListConnectionsPages(params,
-//        func(page *codestarconnections.ListConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConnections operation.
+//	pageNum := 0
+//	err := client.ListConnectionsPages(params,
+//	    func(page *codestarconnections.ListConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeStarConnections) ListConnectionsPages(input *ListConnectionsInput, fn func(*ListConnectionsOutput, bool) bool) error {
 	return c.ListConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -666,14 +662,13 @@ const opListHosts = "ListHosts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHostsRequest method.
+//	req, resp := client.ListHostsRequest(params)
 //
-//    // Example sending a request using the ListHostsRequest method.
-//    req, resp := client.ListHostsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/ListHosts
 func (c *CodeStarConnections) ListHostsRequest(input *ListHostsInput) (req *request.Request, output *ListHostsOutput) {
@@ -738,15 +733,14 @@ func (c *CodeStarConnections) ListHostsWithContext(ctx aws.Context, input *ListH
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHosts operation.
-//    pageNum := 0
-//    err := client.ListHostsPages(params,
-//        func(page *codestarconnections.ListHostsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHosts operation.
+//	pageNum := 0
+//	err := client.ListHostsPages(params,
+//	    func(page *codestarconnections.ListHostsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeStarConnections) ListHostsPages(input *ListHostsInput, fn func(*ListHostsOutput, bool) bool) error {
 	return c.ListHostsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -798,14 +792,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/ListTagsForResource
 func (c *CodeStarConnections) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -836,8 +829,8 @@ func (c *CodeStarConnections) ListTagsForResourceRequest(input *ListTagsForResou
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/ListTagsForResource
 func (c *CodeStarConnections) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -877,14 +870,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/TagResource
 func (c *CodeStarConnections) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -917,11 +909,12 @@ func (c *CodeStarConnections) TagResourceRequest(input *TagResourceInput) (req *
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
 //
-//   * LimitExceededException
-//   Exceeded the maximum limit for connections.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
+//
+//   - LimitExceededException
+//     Exceeded the maximum limit for connections.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/TagResource
 func (c *CodeStarConnections) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -961,14 +954,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/UntagResource
 func (c *CodeStarConnections) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1000,8 +992,8 @@ func (c *CodeStarConnections) UntagResourceRequest(input *UntagResourceInput) (r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/UntagResource
 func (c *CodeStarConnections) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1041,14 +1033,13 @@ const opUpdateHost = "UpdateHost"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateHostRequest method.
+//	req, resp := client.UpdateHostRequest(params)
 //
-//    // Example sending a request using the UpdateHostRequest method.
-//    req, resp := client.UpdateHostRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/UpdateHost
 func (c *CodeStarConnections) UpdateHostRequest(input *UpdateHostInput) (req *request.Request, output *UpdateHostOutput) {
@@ -1080,17 +1071,18 @@ func (c *CodeStarConnections) UpdateHostRequest(input *UpdateHostInput) (req *re
 // API operation UpdateHost for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Two conflicting operations have been made on the same resource.
 //
-//   * ResourceNotFoundException
-//   Resource not found. Verify the connection resource ARN and try again.
+//   - ConflictException
+//     Two conflicting operations have been made on the same resource.
 //
-//   * ResourceUnavailableException
-//   Resource not found. Verify the ARN for the host resource and try again.
+//   - ResourceNotFoundException
+//     Resource not found. Verify the connection resource ARN and try again.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported. Check the connection status and try again.
+//   - ResourceUnavailableException
+//     Resource not found. Verify the ARN for the host resource and try again.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported. Check the connection status and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-connections-2019-12-01/UpdateHost
 func (c *CodeStarConnections) UpdateHost(input *UpdateHostInput) (*UpdateHostOutput, error) {

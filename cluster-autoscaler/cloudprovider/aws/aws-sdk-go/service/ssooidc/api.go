@@ -28,14 +28,13 @@ const opCreateToken = "CreateToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTokenRequest method.
+//	req, resp := client.CreateTokenRequest(params)
 //
-//    // Example sending a request using the CreateTokenRequest method.
-//    req, resp := client.CreateTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/CreateToken
 func (c *SSOOIDC) CreateTokenRequest(input *CreateTokenInput) (req *request.Request, output *CreateTokenOutput) {
@@ -69,47 +68,48 @@ func (c *SSOOIDC) CreateTokenRequest(input *CreateTokenInput) (req *request.Requ
 // API operation CreateToken for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a required parameter might be missing or out of range.
 //
-//   * InvalidClientException
-//   Indicates that the clientId or clientSecret in the request is invalid. For
-//   example, this can occur when a client sends an incorrect clientId or an expired
-//   clientSecret.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a required parameter might be missing or out of range.
 //
-//   * InvalidGrantException
-//   Indicates that a request contains an invalid grant. This can occur if a client
-//   makes a CreateToken request with an invalid grant type.
+//   - InvalidClientException
+//     Indicates that the clientId or clientSecret in the request is invalid. For
+//     example, this can occur when a client sends an incorrect clientId or an expired
+//     clientSecret.
 //
-//   * UnauthorizedClientException
-//   Indicates that the client is not currently authorized to make the request.
-//   This can happen when a clientId is not issued for a public client.
+//   - InvalidGrantException
+//     Indicates that a request contains an invalid grant. This can occur if a client
+//     makes a CreateToken request with an invalid grant type.
 //
-//   * UnsupportedGrantTypeException
-//   Indicates that the grant type in the request is not supported by the service.
+//   - UnauthorizedClientException
+//     Indicates that the client is not currently authorized to make the request.
+//     This can happen when a clientId is not issued for a public client.
 //
-//   * InvalidScopeException
-//   Indicates that the scope provided in the request is invalid.
+//   - UnsupportedGrantTypeException
+//     Indicates that the grant type in the request is not supported by the service.
 //
-//   * AuthorizationPendingException
-//   Indicates that a request to authorize a client with an access user session
-//   token is pending.
+//   - InvalidScopeException
+//     Indicates that the scope provided in the request is invalid.
 //
-//   * SlowDownException
-//   Indicates that the client is making the request too frequently and is more
-//   than the service can handle.
+//   - AuthorizationPendingException
+//     Indicates that a request to authorize a client with an access user session
+//     token is pending.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - SlowDownException
+//     Indicates that the client is making the request too frequently and is more
+//     than the service can handle.
 //
-//   * ExpiredTokenException
-//   Indicates that the token issued by the service is expired and is no longer
-//   valid.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   Indicates that an error from the service occurred while trying to process
-//   a request.
+//   - ExpiredTokenException
+//     Indicates that the token issued by the service is expired and is no longer
+//     valid.
+//
+//   - InternalServerException
+//     Indicates that an error from the service occurred while trying to process
+//     a request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/CreateToken
 func (c *SSOOIDC) CreateToken(input *CreateTokenInput) (*CreateTokenOutput, error) {
@@ -149,14 +149,13 @@ const opRegisterClient = "RegisterClient"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterClientRequest method.
+//	req, resp := client.RegisterClientRequest(params)
 //
-//    // Example sending a request using the RegisterClientRequest method.
-//    req, resp := client.RegisterClientRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/RegisterClient
 func (c *SSOOIDC) RegisterClientRequest(input *RegisterClientInput) (req *request.Request, output *RegisterClientOutput) {
@@ -189,20 +188,21 @@ func (c *SSOOIDC) RegisterClientRequest(input *RegisterClientInput) (req *reques
 // API operation RegisterClient for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a required parameter might be missing or out of range.
 //
-//   * InvalidScopeException
-//   Indicates that the scope provided in the request is invalid.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a required parameter might be missing or out of range.
 //
-//   * InvalidClientMetadataException
-//   Indicates that the client information sent in the request during registration
-//   is invalid.
+//   - InvalidScopeException
+//     Indicates that the scope provided in the request is invalid.
 //
-//   * InternalServerException
-//   Indicates that an error from the service occurred while trying to process
-//   a request.
+//   - InvalidClientMetadataException
+//     Indicates that the client information sent in the request during registration
+//     is invalid.
+//
+//   - InternalServerException
+//     Indicates that an error from the service occurred while trying to process
+//     a request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/RegisterClient
 func (c *SSOOIDC) RegisterClient(input *RegisterClientInput) (*RegisterClientOutput, error) {
@@ -242,14 +242,13 @@ const opStartDeviceAuthorization = "StartDeviceAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDeviceAuthorizationRequest method.
+//	req, resp := client.StartDeviceAuthorizationRequest(params)
 //
-//    // Example sending a request using the StartDeviceAuthorizationRequest method.
-//    req, resp := client.StartDeviceAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/StartDeviceAuthorization
 func (c *SSOOIDC) StartDeviceAuthorizationRequest(input *StartDeviceAuthorizationInput) (req *request.Request, output *StartDeviceAuthorizationOutput) {
@@ -282,26 +281,27 @@ func (c *SSOOIDC) StartDeviceAuthorizationRequest(input *StartDeviceAuthorizatio
 // API operation StartDeviceAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a required parameter might be missing or out of range.
 //
-//   * InvalidClientException
-//   Indicates that the clientId or clientSecret in the request is invalid. For
-//   example, this can occur when a client sends an incorrect clientId or an expired
-//   clientSecret.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a required parameter might be missing or out of range.
 //
-//   * UnauthorizedClientException
-//   Indicates that the client is not currently authorized to make the request.
-//   This can happen when a clientId is not issued for a public client.
+//   - InvalidClientException
+//     Indicates that the clientId or clientSecret in the request is invalid. For
+//     example, this can occur when a client sends an incorrect clientId or an expired
+//     clientSecret.
 //
-//   * SlowDownException
-//   Indicates that the client is making the request too frequently and is more
-//   than the service can handle.
+//   - UnauthorizedClientException
+//     Indicates that the client is not currently authorized to make the request.
+//     This can happen when a clientId is not issued for a public client.
 //
-//   * InternalServerException
-//   Indicates that an error from the service occurred while trying to process
-//   a request.
+//   - SlowDownException
+//     Indicates that the client is making the request too frequently and is more
+//     than the service can handle.
+//
+//   - InternalServerException
+//     Indicates that an error from the service occurred while trying to process
+//     a request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/StartDeviceAuthorization
 func (c *SSOOIDC) StartDeviceAuthorization(input *StartDeviceAuthorizationInput) (*StartDeviceAuthorizationOutput, error) {

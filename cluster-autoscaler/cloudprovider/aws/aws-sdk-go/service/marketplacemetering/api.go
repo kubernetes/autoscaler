@@ -28,14 +28,13 @@ const opBatchMeterUsage = "BatchMeterUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchMeterUsageRequest method.
+//	req, resp := client.BatchMeterUsageRequest(params)
 //
-//    // Example sending a request using the BatchMeterUsageRequest method.
-//    req, resp := client.BatchMeterUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/BatchMeterUsage
 func (c *MarketplaceMetering) BatchMeterUsageRequest(input *BatchMeterUsageInput) (req *request.Request, output *BatchMeterUsageOutput) {
@@ -93,40 +92,41 @@ func (c *MarketplaceMetering) BatchMeterUsageRequest(input *BatchMeterUsageInput
 // API operation BatchMeterUsage for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   An internal error has occurred. Retry your request. If the problem persists,
-//   post a message with details on the AWS forums.
 //
-//   * InvalidProductCodeException
-//   The product code passed does not match the product code used for publishing
-//   the product.
+//   - InternalServiceErrorException
+//     An internal error has occurred. Retry your request. If the problem persists,
+//     post a message with details on the AWS forums.
 //
-//   * InvalidUsageDimensionException
-//   The usage dimension does not match one of the UsageDimensions associated
-//   with products.
+//   - InvalidProductCodeException
+//     The product code passed does not match the product code used for publishing
+//     the product.
 //
-//   * InvalidTagException
-//   The tag is invalid, or the number of tags is greater than 5.
+//   - InvalidUsageDimensionException
+//     The usage dimension does not match one of the UsageDimensions associated
+//     with products.
 //
-//   * InvalidUsageAllocationsException
-//   The usage allocation objects are invalid, or the number of allocations is
-//   greater than 500 for a single usage record.
+//   - InvalidTagException
+//     The tag is invalid, or the number of tags is greater than 5.
 //
-//   * InvalidCustomerIdentifierException
-//   You have metered usage for a CustomerIdentifier that does not exist.
+//   - InvalidUsageAllocationsException
+//     The usage allocation objects are invalid, or the number of allocations is
+//     greater than 500 for a single usage record.
 //
-//   * TimestampOutOfBoundsException
-//   The timestamp value passed in the UsageRecord is out of allowed range.
+//   - InvalidCustomerIdentifierException
+//     You have metered usage for a CustomerIdentifier that does not exist.
 //
-//   For BatchMeterUsage, if any of the records are outside of the allowed range,
-//   the entire batch is not processed. You must remove invalid records and try
-//   again.
+//   - TimestampOutOfBoundsException
+//     The timestamp value passed in the UsageRecord is out of allowed range.
 //
-//   * ThrottlingException
-//   The calls to the API are throttled.
+//     For BatchMeterUsage, if any of the records are outside of the allowed range,
+//     the entire batch is not processed. You must remove invalid records and try
+//     again.
 //
-//   * DisabledApiException
-//   The API is disabled in the Region.
+//   - ThrottlingException
+//     The calls to the API are throttled.
+//
+//   - DisabledApiException
+//     The API is disabled in the Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/BatchMeterUsage
 func (c *MarketplaceMetering) BatchMeterUsage(input *BatchMeterUsageInput) (*BatchMeterUsageOutput, error) {
@@ -166,14 +166,13 @@ const opMeterUsage = "MeterUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MeterUsageRequest method.
+//	req, resp := client.MeterUsageRequest(params)
 //
-//    // Example sending a request using the MeterUsageRequest method.
-//    req, resp := client.MeterUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/MeterUsage
 func (c *MarketplaceMetering) MeterUsageRequest(input *MeterUsageInput) (req *request.Request, output *MeterUsageOutput) {
@@ -216,48 +215,49 @@ func (c *MarketplaceMetering) MeterUsageRequest(input *MeterUsageInput) (req *re
 // API operation MeterUsage for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   An internal error has occurred. Retry your request. If the problem persists,
-//   post a message with details on the AWS forums.
 //
-//   * InvalidProductCodeException
-//   The product code passed does not match the product code used for publishing
-//   the product.
+//   - InternalServiceErrorException
+//     An internal error has occurred. Retry your request. If the problem persists,
+//     post a message with details on the AWS forums.
 //
-//   * InvalidUsageDimensionException
-//   The usage dimension does not match one of the UsageDimensions associated
-//   with products.
+//   - InvalidProductCodeException
+//     The product code passed does not match the product code used for publishing
+//     the product.
 //
-//   * InvalidTagException
-//   The tag is invalid, or the number of tags is greater than 5.
+//   - InvalidUsageDimensionException
+//     The usage dimension does not match one of the UsageDimensions associated
+//     with products.
 //
-//   * InvalidUsageAllocationsException
-//   The usage allocation objects are invalid, or the number of allocations is
-//   greater than 500 for a single usage record.
+//   - InvalidTagException
+//     The tag is invalid, or the number of tags is greater than 5.
 //
-//   * InvalidEndpointRegionException
-//   The endpoint being called is in a AWS Region different from your EC2 instance,
-//   ECS task, or EKS pod. The Region of the Metering Service endpoint and the
-//   AWS Region of the resource must match.
+//   - InvalidUsageAllocationsException
+//     The usage allocation objects are invalid, or the number of allocations is
+//     greater than 500 for a single usage record.
 //
-//   * TimestampOutOfBoundsException
-//   The timestamp value passed in the UsageRecord is out of allowed range.
+//   - InvalidEndpointRegionException
+//     The endpoint being called is in a AWS Region different from your EC2 instance,
+//     ECS task, or EKS pod. The Region of the Metering Service endpoint and the
+//     AWS Region of the resource must match.
 //
-//   For BatchMeterUsage, if any of the records are outside of the allowed range,
-//   the entire batch is not processed. You must remove invalid records and try
-//   again.
+//   - TimestampOutOfBoundsException
+//     The timestamp value passed in the UsageRecord is out of allowed range.
 //
-//   * DuplicateRequestException
-//   A metering record has already been emitted by the same EC2 instance, ECS
-//   task, or EKS pod for the given {usageDimension, timestamp} with a different
-//   usageQuantity.
+//     For BatchMeterUsage, if any of the records are outside of the allowed range,
+//     the entire batch is not processed. You must remove invalid records and try
+//     again.
 //
-//   * ThrottlingException
-//   The calls to the API are throttled.
+//   - DuplicateRequestException
+//     A metering record has already been emitted by the same EC2 instance, ECS
+//     task, or EKS pod for the given {usageDimension, timestamp} with a different
+//     usageQuantity.
 //
-//   * CustomerNotEntitledException
-//   Exception thrown when the customer does not have a valid subscription for
-//   the product.
+//   - ThrottlingException
+//     The calls to the API are throttled.
+//
+//   - CustomerNotEntitledException
+//     Exception thrown when the customer does not have a valid subscription for
+//     the product.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/MeterUsage
 func (c *MarketplaceMetering) MeterUsage(input *MeterUsageInput) (*MeterUsageOutput, error) {
@@ -297,14 +297,13 @@ const opRegisterUsage = "RegisterUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterUsageRequest method.
+//	req, resp := client.RegisterUsageRequest(params)
 //
-//    // Example sending a request using the RegisterUsageRequest method.
-//    req, resp := client.RegisterUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/RegisterUsage
 func (c *MarketplaceMetering) RegisterUsageRequest(input *RegisterUsageInput) (req *request.Request, output *RegisterUsageOutput) {
@@ -333,29 +332,29 @@ func (c *MarketplaceMetering) RegisterUsageRequest(input *RegisterUsageInput) (r
 // The sections below explain the behavior of RegisterUsage. RegisterUsage performs
 // two primary functions: metering and entitlement.
 //
-//    * Entitlement: RegisterUsage allows you to verify that the customer running
-//    your paid software is subscribed to your product on AWS Marketplace, enabling
-//    you to guard against unauthorized use. Your container image that integrates
-//    with RegisterUsage is only required to guard against unauthorized use
-//    at container startup, as such a CustomerNotSubscribedException or PlatformNotSupportedException
-//    will only be thrown on the initial call to RegisterUsage. Subsequent calls
-//    from the same Amazon ECS task instance (e.g. task-id) or Amazon EKS pod
-//    will not throw a CustomerNotSubscribedException, even if the customer
-//    unsubscribes while the Amazon ECS task or Amazon EKS pod is still running.
+//   - Entitlement: RegisterUsage allows you to verify that the customer running
+//     your paid software is subscribed to your product on AWS Marketplace, enabling
+//     you to guard against unauthorized use. Your container image that integrates
+//     with RegisterUsage is only required to guard against unauthorized use
+//     at container startup, as such a CustomerNotSubscribedException or PlatformNotSupportedException
+//     will only be thrown on the initial call to RegisterUsage. Subsequent calls
+//     from the same Amazon ECS task instance (e.g. task-id) or Amazon EKS pod
+//     will not throw a CustomerNotSubscribedException, even if the customer
+//     unsubscribes while the Amazon ECS task or Amazon EKS pod is still running.
 //
-//    * Metering: RegisterUsage meters software use per ECS task, per hour,
-//    or per pod for Amazon EKS with usage prorated to the second. A minimum
-//    of 1 minute of usage applies to tasks that are short lived. For example,
-//    if a customer has a 10 node Amazon ECS or Amazon EKS cluster and a service
-//    configured as a Daemon Set, then Amazon ECS or Amazon EKS will launch
-//    a task on all 10 cluster nodes and the customer will be charged: (10 *
-//    hourly_rate). Metering for software use is automatically handled by the
-//    AWS Marketplace Metering Control Plane -- your software is not required
-//    to perform any metering specific actions, other than call RegisterUsage
-//    once for metering of software use to commence. The AWS Marketplace Metering
-//    Control Plane will also continue to bill customers for running ECS tasks
-//    and Amazon EKS pods, regardless of the customers subscription state, removing
-//    the need for your software to perform entitlement checks at runtime.
+//   - Metering: RegisterUsage meters software use per ECS task, per hour,
+//     or per pod for Amazon EKS with usage prorated to the second. A minimum
+//     of 1 minute of usage applies to tasks that are short lived. For example,
+//     if a customer has a 10 node Amazon ECS or Amazon EKS cluster and a service
+//     configured as a Daemon Set, then Amazon ECS or Amazon EKS will launch
+//     a task on all 10 cluster nodes and the customer will be charged: (10 *
+//     hourly_rate). Metering for software use is automatically handled by the
+//     AWS Marketplace Metering Control Plane -- your software is not required
+//     to perform any metering specific actions, other than call RegisterUsage
+//     once for metering of software use to commence. The AWS Marketplace Metering
+//     Control Plane will also continue to bill customers for running ECS tasks
+//     and Amazon EKS pods, regardless of the customers subscription state, removing
+//     the need for your software to perform entitlement checks at runtime.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -365,35 +364,36 @@ func (c *MarketplaceMetering) RegisterUsageRequest(input *RegisterUsageInput) (r
 // API operation RegisterUsage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidProductCodeException
-//   The product code passed does not match the product code used for publishing
-//   the product.
 //
-//   * InvalidRegionException
-//   RegisterUsage must be called in the same AWS Region the ECS task was launched
-//   in. This prevents a container from hardcoding a Region (e.g. withRegion(“us-east-1”)
-//   when calling RegisterUsage.
+//   - InvalidProductCodeException
+//     The product code passed does not match the product code used for publishing
+//     the product.
 //
-//   * InvalidPublicKeyVersionException
-//   Public Key version is invalid.
+//   - InvalidRegionException
+//     RegisterUsage must be called in the same AWS Region the ECS task was launched
+//     in. This prevents a container from hardcoding a Region (e.g. withRegion(“us-east-1”)
+//     when calling RegisterUsage.
 //
-//   * PlatformNotSupportedException
-//   AWS Marketplace does not support metering usage from the underlying platform.
-//   Currently, Amazon ECS, Amazon EKS, and AWS Fargate are supported.
+//   - InvalidPublicKeyVersionException
+//     Public Key version is invalid.
 //
-//   * CustomerNotEntitledException
-//   Exception thrown when the customer does not have a valid subscription for
-//   the product.
+//   - PlatformNotSupportedException
+//     AWS Marketplace does not support metering usage from the underlying platform.
+//     Currently, Amazon ECS, Amazon EKS, and AWS Fargate are supported.
 //
-//   * ThrottlingException
-//   The calls to the API are throttled.
+//   - CustomerNotEntitledException
+//     Exception thrown when the customer does not have a valid subscription for
+//     the product.
 //
-//   * InternalServiceErrorException
-//   An internal error has occurred. Retry your request. If the problem persists,
-//   post a message with details on the AWS forums.
+//   - ThrottlingException
+//     The calls to the API are throttled.
 //
-//   * DisabledApiException
-//   The API is disabled in the Region.
+//   - InternalServiceErrorException
+//     An internal error has occurred. Retry your request. If the problem persists,
+//     post a message with details on the AWS forums.
+//
+//   - DisabledApiException
+//     The API is disabled in the Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/RegisterUsage
 func (c *MarketplaceMetering) RegisterUsage(input *RegisterUsageInput) (*RegisterUsageOutput, error) {
@@ -433,14 +433,13 @@ const opResolveCustomer = "ResolveCustomer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResolveCustomerRequest method.
+//	req, resp := client.ResolveCustomerRequest(params)
 //
-//    // Example sending a request using the ResolveCustomerRequest method.
-//    req, resp := client.ResolveCustomerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/ResolveCustomer
 func (c *MarketplaceMetering) ResolveCustomerRequest(input *ResolveCustomerInput) (req *request.Request, output *ResolveCustomerOutput) {
@@ -482,25 +481,26 @@ func (c *MarketplaceMetering) ResolveCustomerRequest(input *ResolveCustomerInput
 // API operation ResolveCustomer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidTokenException
-//   Registration token is invalid.
 //
-//   * ExpiredTokenException
-//   The submitted registration token has expired. This can happen if the buyer's
-//   browser takes too long to redirect to your page, the buyer has resubmitted
-//   the registration token, or your application has held on to the registration
-//   token for too long. Your SaaS registration website should redeem this token
-//   as soon as it is submitted by the buyer's browser.
+//   - InvalidTokenException
+//     Registration token is invalid.
 //
-//   * ThrottlingException
-//   The calls to the API are throttled.
+//   - ExpiredTokenException
+//     The submitted registration token has expired. This can happen if the buyer's
+//     browser takes too long to redirect to your page, the buyer has resubmitted
+//     the registration token, or your application has held on to the registration
+//     token for too long. Your SaaS registration website should redeem this token
+//     as soon as it is submitted by the buyer's browser.
 //
-//   * InternalServiceErrorException
-//   An internal error has occurred. Retry your request. If the problem persists,
-//   post a message with details on the AWS forums.
+//   - ThrottlingException
+//     The calls to the API are throttled.
 //
-//   * DisabledApiException
-//   The API is disabled in the Region.
+//   - InternalServiceErrorException
+//     An internal error has occurred. Retry your request. If the problem persists,
+//     post a message with details on the AWS forums.
+//
+//   - DisabledApiException
+//     The API is disabled in the Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/meteringmarketplace-2016-01-14/ResolveCustomer
 func (c *MarketplaceMetering) ResolveCustomer(input *ResolveCustomerInput) (*ResolveCustomerOutput, error) {

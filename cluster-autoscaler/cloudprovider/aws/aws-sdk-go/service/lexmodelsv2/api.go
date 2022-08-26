@@ -29,14 +29,13 @@ const opBuildBotLocale = "BuildBotLocale"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BuildBotLocaleRequest method.
+//	req, resp := client.BuildBotLocaleRequest(params)
 //
-//    // Example sending a request using the BuildBotLocaleRequest method.
-//    req, resp := client.BuildBotLocaleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/BuildBotLocale
 func (c *LexModelsV2) BuildBotLocaleRequest(input *BuildBotLocaleInput) (req *request.Request, output *BuildBotLocaleOutput) {
@@ -69,27 +68,28 @@ func (c *LexModelsV2) BuildBotLocaleRequest(input *BuildBotLocaleInput) (req *re
 // API operation BuildBotLocale for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/BuildBotLocale
 func (c *LexModelsV2) BuildBotLocale(input *BuildBotLocaleInput) (*BuildBotLocaleOutput, error) {
@@ -129,14 +129,13 @@ const opCreateBot = "CreateBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBotRequest method.
+//	req, resp := client.CreateBotRequest(params)
 //
-//    // Example sending a request using the CreateBotRequest method.
-//    req, resp := client.CreateBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBot
 func (c *LexModelsV2) CreateBotRequest(input *CreateBotInput) (req *request.Request, output *CreateBotOutput) {
@@ -167,27 +166,28 @@ func (c *LexModelsV2) CreateBotRequest(input *CreateBotInput) (req *request.Requ
 // API operation CreateBot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBot
 func (c *LexModelsV2) CreateBot(input *CreateBotInput) (*CreateBotOutput, error) {
@@ -227,14 +227,13 @@ const opCreateBotAlias = "CreateBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBotAliasRequest method.
+//	req, resp := client.CreateBotAliasRequest(params)
 //
-//    // Example sending a request using the CreateBotAliasRequest method.
-//    req, resp := client.CreateBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBotAlias
 func (c *LexModelsV2) CreateBotAliasRequest(input *CreateBotAliasInput) (req *request.Request, output *CreateBotAliasOutput) {
@@ -270,27 +269,28 @@ func (c *LexModelsV2) CreateBotAliasRequest(input *CreateBotAliasInput) (req *re
 // API operation CreateBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBotAlias
 func (c *LexModelsV2) CreateBotAlias(input *CreateBotAliasInput) (*CreateBotAliasOutput, error) {
@@ -330,14 +330,13 @@ const opCreateBotLocale = "CreateBotLocale"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBotLocaleRequest method.
+//	req, resp := client.CreateBotLocaleRequest(params)
 //
-//    // Example sending a request using the CreateBotLocaleRequest method.
-//    req, resp := client.CreateBotLocaleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBotLocale
 func (c *LexModelsV2) CreateBotLocaleRequest(input *CreateBotLocaleInput) (req *request.Request, output *CreateBotLocaleOutput) {
@@ -371,27 +370,28 @@ func (c *LexModelsV2) CreateBotLocaleRequest(input *CreateBotLocaleInput) (req *
 // API operation CreateBotLocale for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBotLocale
 func (c *LexModelsV2) CreateBotLocale(input *CreateBotLocaleInput) (*CreateBotLocaleOutput, error) {
@@ -431,14 +431,13 @@ const opCreateBotVersion = "CreateBotVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBotVersionRequest method.
+//	req, resp := client.CreateBotVersionRequest(params)
 //
-//    // Example sending a request using the CreateBotVersionRequest method.
-//    req, resp := client.CreateBotVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBotVersion
 func (c *LexModelsV2) CreateBotVersionRequest(input *CreateBotVersionInput) (req *request.Request, output *CreateBotVersionOutput) {
@@ -474,27 +473,28 @@ func (c *LexModelsV2) CreateBotVersionRequest(input *CreateBotVersionInput) (req
 // API operation CreateBotVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateBotVersion
 func (c *LexModelsV2) CreateBotVersion(input *CreateBotVersionInput) (*CreateBotVersionOutput, error) {
@@ -534,14 +534,13 @@ const opCreateExport = "CreateExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateExportRequest method.
+//	req, resp := client.CreateExportRequest(params)
 //
-//    // Example sending a request using the CreateExportRequest method.
-//    req, resp := client.CreateExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateExport
 func (c *LexModelsV2) CreateExportRequest(input *CreateExportInput) (req *request.Request, output *CreateExportOutput) {
@@ -581,27 +580,28 @@ func (c *LexModelsV2) CreateExportRequest(input *CreateExportInput) (req *reques
 // API operation CreateExport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateExport
 func (c *LexModelsV2) CreateExport(input *CreateExportInput) (*CreateExportOutput, error) {
@@ -641,14 +641,13 @@ const opCreateIntent = "CreateIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIntentRequest method.
+//	req, resp := client.CreateIntentRequest(params)
 //
-//    // Example sending a request using the CreateIntentRequest method.
-//    req, resp := client.CreateIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateIntent
 func (c *LexModelsV2) CreateIntentRequest(input *CreateIntentInput) (req *request.Request, output *CreateIntentOutput) {
@@ -678,26 +677,26 @@ func (c *LexModelsV2) CreateIntentRequest(input *CreateIntentInput) (req *reques
 // When you create an intent, you must provide a name. You can optionally provide
 // the following:
 //
-//    * Sample utterances. For example, "I want to order a pizza" and "Can I
-//    order a pizza." You can't provide utterances for built-in intents.
+//   - Sample utterances. For example, "I want to order a pizza" and "Can I
+//     order a pizza." You can't provide utterances for built-in intents.
 //
-//    * Information to be gathered. You specify slots for the information that
-//    you bot requests from the user. You can specify standard slot types, such
-//    as date and time, or custom slot types for your application.
+//   - Information to be gathered. You specify slots for the information that
+//     you bot requests from the user. You can specify standard slot types, such
+//     as date and time, or custom slot types for your application.
 //
-//    * How the intent is fulfilled. You can provide a Lambda function or configure
-//    the intent to return the intent information to your client application.
-//    If you use a Lambda function, Amazon Lex invokes the function when all
-//    of the intent information is available.
+//   - How the intent is fulfilled. You can provide a Lambda function or configure
+//     the intent to return the intent information to your client application.
+//     If you use a Lambda function, Amazon Lex invokes the function when all
+//     of the intent information is available.
 //
-//    * A confirmation prompt to send to the user to confirm an intent. For
-//    example, "Shall I order your pizza?"
+//   - A confirmation prompt to send to the user to confirm an intent. For
+//     example, "Shall I order your pizza?"
 //
-//    * A conclusion statement to send to the user after the intent is fulfilled.
-//    For example, "I ordered your pizza."
+//   - A conclusion statement to send to the user after the intent is fulfilled.
+//     For example, "I ordered your pizza."
 //
-//    * A follow-up prompt that asks the user for additional activity. For example,
-//    "Do you want a drink with your pizza?"
+//   - A follow-up prompt that asks the user for additional activity. For example,
+//     "Do you want a drink with your pizza?"
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -707,27 +706,28 @@ func (c *LexModelsV2) CreateIntentRequest(input *CreateIntentInput) (req *reques
 // API operation CreateIntent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateIntent
 func (c *LexModelsV2) CreateIntent(input *CreateIntentInput) (*CreateIntentOutput, error) {
@@ -767,14 +767,13 @@ const opCreateResourcePolicy = "CreateResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResourcePolicyRequest method.
+//	req, resp := client.CreateResourcePolicyRequest(params)
 //
-//    // Example sending a request using the CreateResourcePolicyRequest method.
-//    req, resp := client.CreateResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateResourcePolicy
 func (c *LexModelsV2) CreateResourcePolicyRequest(input *CreateResourcePolicyInput) (req *request.Request, output *CreateResourcePolicyOutput) {
@@ -805,26 +804,27 @@ func (c *LexModelsV2) CreateResourcePolicyRequest(input *CreateResourcePolicyInp
 // API operation CreateResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateResourcePolicy
 func (c *LexModelsV2) CreateResourcePolicy(input *CreateResourcePolicyInput) (*CreateResourcePolicyOutput, error) {
@@ -864,14 +864,13 @@ const opCreateResourcePolicyStatement = "CreateResourcePolicyStatement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResourcePolicyStatementRequest method.
+//	req, resp := client.CreateResourcePolicyStatementRequest(params)
 //
-//    // Example sending a request using the CreateResourcePolicyStatementRequest method.
-//    req, resp := client.CreateResourcePolicyStatementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateResourcePolicyStatement
 func (c *LexModelsV2) CreateResourcePolicyStatementRequest(input *CreateResourcePolicyStatementInput) (req *request.Request, output *CreateResourcePolicyStatementOutput) {
@@ -906,31 +905,32 @@ func (c *LexModelsV2) CreateResourcePolicyStatementRequest(input *CreateResource
 // API operation CreateResourcePolicyStatement for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateResourcePolicyStatement
 func (c *LexModelsV2) CreateResourcePolicyStatement(input *CreateResourcePolicyStatementInput) (*CreateResourcePolicyStatementOutput, error) {
@@ -970,14 +970,13 @@ const opCreateSlot = "CreateSlot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSlotRequest method.
+//	req, resp := client.CreateSlotRequest(params)
 //
-//    // Example sending a request using the CreateSlotRequest method.
-//    req, resp := client.CreateSlotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateSlot
 func (c *LexModelsV2) CreateSlotRequest(input *CreateSlotInput) (req *request.Request, output *CreateSlotOutput) {
@@ -1011,27 +1010,28 @@ func (c *LexModelsV2) CreateSlotRequest(input *CreateSlotInput) (req *request.Re
 // API operation CreateSlot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateSlot
 func (c *LexModelsV2) CreateSlot(input *CreateSlotInput) (*CreateSlotOutput, error) {
@@ -1071,14 +1071,13 @@ const opCreateSlotType = "CreateSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSlotTypeRequest method.
+//	req, resp := client.CreateSlotTypeRequest(params)
 //
-//    // Example sending a request using the CreateSlotTypeRequest method.
-//    req, resp := client.CreateSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateSlotType
 func (c *LexModelsV2) CreateSlotTypeRequest(input *CreateSlotTypeInput) (req *request.Request, output *CreateSlotTypeOutput) {
@@ -1099,7 +1098,7 @@ func (c *LexModelsV2) CreateSlotTypeRequest(input *CreateSlotTypeInput) (req *re
 
 // CreateSlotType API operation for Amazon Lex Model Building V2.
 //
-// Creates a custom slot type
+// # Creates a custom slot type
 //
 // To create a custom slot type, specify a name for the slot type and a set
 // of enumeration values, the values that a slot of this type can assume.
@@ -1112,27 +1111,28 @@ func (c *LexModelsV2) CreateSlotTypeRequest(input *CreateSlotTypeInput) (req *re
 // API operation CreateSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateSlotType
 func (c *LexModelsV2) CreateSlotType(input *CreateSlotTypeInput) (*CreateSlotTypeOutput, error) {
@@ -1172,14 +1172,13 @@ const opCreateUploadUrl = "CreateUploadUrl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUploadUrlRequest method.
+//	req, resp := client.CreateUploadUrlRequest(params)
 //
-//    // Example sending a request using the CreateUploadUrlRequest method.
-//    req, resp := client.CreateUploadUrlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateUploadUrl
 func (c *LexModelsV2) CreateUploadUrlRequest(input *CreateUploadUrlInput) (req *request.Request, output *CreateUploadUrlOutput) {
@@ -1211,24 +1210,25 @@ func (c *LexModelsV2) CreateUploadUrlRequest(input *CreateUploadUrlInput) (req *
 // API operation CreateUploadUrl for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/CreateUploadUrl
 func (c *LexModelsV2) CreateUploadUrl(input *CreateUploadUrlInput) (*CreateUploadUrlOutput, error) {
@@ -1268,14 +1268,13 @@ const opDeleteBot = "DeleteBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotRequest method.
+//	req, resp := client.DeleteBotRequest(params)
 //
-//    // Example sending a request using the DeleteBotRequest method.
-//    req, resp := client.DeleteBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBot
 func (c *LexModelsV2) DeleteBotRequest(input *DeleteBotInput) (req *request.Request, output *DeleteBotOutput) {
@@ -1315,27 +1314,28 @@ func (c *LexModelsV2) DeleteBotRequest(input *DeleteBotInput) (req *request.Requ
 // API operation DeleteBot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBot
 func (c *LexModelsV2) DeleteBot(input *DeleteBotInput) (*DeleteBotOutput, error) {
@@ -1375,14 +1375,13 @@ const opDeleteBotAlias = "DeleteBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotAliasRequest method.
+//	req, resp := client.DeleteBotAliasRequest(params)
 //
-//    // Example sending a request using the DeleteBotAliasRequest method.
-//    req, resp := client.DeleteBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBotAlias
 func (c *LexModelsV2) DeleteBotAliasRequest(input *DeleteBotAliasInput) (req *request.Request, output *DeleteBotAliasOutput) {
@@ -1413,27 +1412,28 @@ func (c *LexModelsV2) DeleteBotAliasRequest(input *DeleteBotAliasInput) (req *re
 // API operation DeleteBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBotAlias
 func (c *LexModelsV2) DeleteBotAlias(input *DeleteBotAliasInput) (*DeleteBotAliasOutput, error) {
@@ -1473,14 +1473,13 @@ const opDeleteBotLocale = "DeleteBotLocale"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotLocaleRequest method.
+//	req, resp := client.DeleteBotLocaleRequest(params)
 //
-//    // Example sending a request using the DeleteBotLocaleRequest method.
-//    req, resp := client.DeleteBotLocaleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBotLocale
 func (c *LexModelsV2) DeleteBotLocaleRequest(input *DeleteBotLocaleInput) (req *request.Request, output *DeleteBotLocaleOutput) {
@@ -1514,27 +1513,28 @@ func (c *LexModelsV2) DeleteBotLocaleRequest(input *DeleteBotLocaleInput) (req *
 // API operation DeleteBotLocale for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBotLocale
 func (c *LexModelsV2) DeleteBotLocale(input *DeleteBotLocaleInput) (*DeleteBotLocaleOutput, error) {
@@ -1574,14 +1574,13 @@ const opDeleteBotVersion = "DeleteBotVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotVersionRequest method.
+//	req, resp := client.DeleteBotVersionRequest(params)
 //
-//    // Example sending a request using the DeleteBotVersionRequest method.
-//    req, resp := client.DeleteBotVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBotVersion
 func (c *LexModelsV2) DeleteBotVersionRequest(input *DeleteBotVersionInput) (req *request.Request, output *DeleteBotVersionOutput) {
@@ -1614,27 +1613,28 @@ func (c *LexModelsV2) DeleteBotVersionRequest(input *DeleteBotVersionInput) (req
 // API operation DeleteBotVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteBotVersion
 func (c *LexModelsV2) DeleteBotVersion(input *DeleteBotVersionInput) (*DeleteBotVersionOutput, error) {
@@ -1674,14 +1674,13 @@ const opDeleteCustomVocabulary = "DeleteCustomVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomVocabularyRequest method.
+//	req, resp := client.DeleteCustomVocabularyRequest(params)
 //
-//    // Example sending a request using the DeleteCustomVocabularyRequest method.
-//    req, resp := client.DeleteCustomVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteCustomVocabulary
 func (c *LexModelsV2) DeleteCustomVocabularyRequest(input *DeleteCustomVocabularyInput) (req *request.Request, output *DeleteCustomVocabularyOutput) {
@@ -1712,27 +1711,28 @@ func (c *LexModelsV2) DeleteCustomVocabularyRequest(input *DeleteCustomVocabular
 // API operation DeleteCustomVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteCustomVocabulary
 func (c *LexModelsV2) DeleteCustomVocabulary(input *DeleteCustomVocabularyInput) (*DeleteCustomVocabularyOutput, error) {
@@ -1772,14 +1772,13 @@ const opDeleteExport = "DeleteExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteExportRequest method.
+//	req, resp := client.DeleteExportRequest(params)
 //
-//    // Example sending a request using the DeleteExportRequest method.
-//    req, resp := client.DeleteExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteExport
 func (c *LexModelsV2) DeleteExportRequest(input *DeleteExportInput) (req *request.Request, output *DeleteExportOutput) {
@@ -1810,22 +1809,23 @@ func (c *LexModelsV2) DeleteExportRequest(input *DeleteExportInput) (req *reques
 // API operation DeleteExport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteExport
 func (c *LexModelsV2) DeleteExport(input *DeleteExportInput) (*DeleteExportOutput, error) {
@@ -1865,14 +1865,13 @@ const opDeleteImport = "DeleteImport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImportRequest method.
+//	req, resp := client.DeleteImportRequest(params)
 //
-//    // Example sending a request using the DeleteImportRequest method.
-//    req, resp := client.DeleteImportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteImport
 func (c *LexModelsV2) DeleteImportRequest(input *DeleteImportInput) (req *request.Request, output *DeleteImportOutput) {
@@ -1903,22 +1902,23 @@ func (c *LexModelsV2) DeleteImportRequest(input *DeleteImportInput) (req *reques
 // API operation DeleteImport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteImport
 func (c *LexModelsV2) DeleteImport(input *DeleteImportInput) (*DeleteImportOutput, error) {
@@ -1958,14 +1958,13 @@ const opDeleteIntent = "DeleteIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntentRequest method.
+//	req, resp := client.DeleteIntentRequest(params)
 //
-//    // Example sending a request using the DeleteIntentRequest method.
-//    req, resp := client.DeleteIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteIntent
 func (c *LexModelsV2) DeleteIntentRequest(input *DeleteIntentInput) (req *request.Request, output *DeleteIntentOutput) {
@@ -1999,27 +1998,28 @@ func (c *LexModelsV2) DeleteIntentRequest(input *DeleteIntentInput) (req *reques
 // API operation DeleteIntent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteIntent
 func (c *LexModelsV2) DeleteIntent(input *DeleteIntentInput) (*DeleteIntentOutput, error) {
@@ -2059,14 +2059,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteResourcePolicy
 func (c *LexModelsV2) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -2098,19 +2097,20 @@ func (c *LexModelsV2) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInp
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteResourcePolicy
 func (c *LexModelsV2) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -2150,14 +2150,13 @@ const opDeleteResourcePolicyStatement = "DeleteResourcePolicyStatement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyStatementRequest method.
+//	req, resp := client.DeleteResourcePolicyStatementRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyStatementRequest method.
-//    req, resp := client.DeleteResourcePolicyStatementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteResourcePolicyStatement
 func (c *LexModelsV2) DeleteResourcePolicyStatementRequest(input *DeleteResourcePolicyStatementInput) (req *request.Request, output *DeleteResourcePolicyStatementOutput) {
@@ -2191,19 +2190,20 @@ func (c *LexModelsV2) DeleteResourcePolicyStatementRequest(input *DeleteResource
 // API operation DeleteResourcePolicyStatement for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteResourcePolicyStatement
 func (c *LexModelsV2) DeleteResourcePolicyStatement(input *DeleteResourcePolicyStatementInput) (*DeleteResourcePolicyStatementOutput, error) {
@@ -2243,14 +2243,13 @@ const opDeleteSlot = "DeleteSlot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSlotRequest method.
+//	req, resp := client.DeleteSlotRequest(params)
 //
-//    // Example sending a request using the DeleteSlotRequest method.
-//    req, resp := client.DeleteSlotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteSlot
 func (c *LexModelsV2) DeleteSlotRequest(input *DeleteSlotInput) (req *request.Request, output *DeleteSlotOutput) {
@@ -2282,27 +2281,28 @@ func (c *LexModelsV2) DeleteSlotRequest(input *DeleteSlotInput) (req *request.Re
 // API operation DeleteSlot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteSlot
 func (c *LexModelsV2) DeleteSlot(input *DeleteSlotInput) (*DeleteSlotOutput, error) {
@@ -2342,14 +2342,13 @@ const opDeleteSlotType = "DeleteSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSlotTypeRequest method.
+//	req, resp := client.DeleteSlotTypeRequest(params)
 //
-//    // Example sending a request using the DeleteSlotTypeRequest method.
-//    req, resp := client.DeleteSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteSlotType
 func (c *LexModelsV2) DeleteSlotTypeRequest(input *DeleteSlotTypeInput) (req *request.Request, output *DeleteSlotTypeOutput) {
@@ -2385,27 +2384,28 @@ func (c *LexModelsV2) DeleteSlotTypeRequest(input *DeleteSlotTypeInput) (req *re
 // API operation DeleteSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteSlotType
 func (c *LexModelsV2) DeleteSlotType(input *DeleteSlotTypeInput) (*DeleteSlotTypeOutput, error) {
@@ -2445,14 +2445,13 @@ const opDeleteUtterances = "DeleteUtterances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUtterancesRequest method.
+//	req, resp := client.DeleteUtterancesRequest(params)
 //
-//    // Example sending a request using the DeleteUtterancesRequest method.
-//    req, resp := client.DeleteUtterancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteUtterances
 func (c *LexModelsV2) DeleteUtterancesRequest(input *DeleteUtterancesInput) (req *request.Request, output *DeleteUtterancesOutput) {
@@ -2495,15 +2494,16 @@ func (c *LexModelsV2) DeleteUtterancesRequest(input *DeleteUtterancesInput) (req
 // API operation DeleteUtterances for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DeleteUtterances
 func (c *LexModelsV2) DeleteUtterances(input *DeleteUtterancesInput) (*DeleteUtterancesOutput, error) {
@@ -2543,14 +2543,13 @@ const opDescribeBot = "DescribeBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBotRequest method.
+//	req, resp := client.DescribeBotRequest(params)
 //
-//    // Example sending a request using the DescribeBotRequest method.
-//    req, resp := client.DescribeBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBot
 func (c *LexModelsV2) DescribeBotRequest(input *DescribeBotInput) (req *request.Request, output *DescribeBotOutput) {
@@ -2581,22 +2580,23 @@ func (c *LexModelsV2) DescribeBotRequest(input *DescribeBotInput) (req *request.
 // API operation DescribeBot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBot
 func (c *LexModelsV2) DescribeBot(input *DescribeBotInput) (*DescribeBotOutput, error) {
@@ -2636,14 +2636,13 @@ const opDescribeBotAlias = "DescribeBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBotAliasRequest method.
+//	req, resp := client.DescribeBotAliasRequest(params)
 //
-//    // Example sending a request using the DescribeBotAliasRequest method.
-//    req, resp := client.DescribeBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotAlias
 func (c *LexModelsV2) DescribeBotAliasRequest(input *DescribeBotAliasInput) (req *request.Request, output *DescribeBotAliasOutput) {
@@ -2674,22 +2673,23 @@ func (c *LexModelsV2) DescribeBotAliasRequest(input *DescribeBotAliasInput) (req
 // API operation DescribeBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotAlias
 func (c *LexModelsV2) DescribeBotAlias(input *DescribeBotAliasInput) (*DescribeBotAliasOutput, error) {
@@ -2729,14 +2729,13 @@ const opDescribeBotLocale = "DescribeBotLocale"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBotLocaleRequest method.
+//	req, resp := client.DescribeBotLocaleRequest(params)
 //
-//    // Example sending a request using the DescribeBotLocaleRequest method.
-//    req, resp := client.DescribeBotLocaleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotLocale
 func (c *LexModelsV2) DescribeBotLocaleRequest(input *DescribeBotLocaleInput) (req *request.Request, output *DescribeBotLocaleOutput) {
@@ -2767,22 +2766,23 @@ func (c *LexModelsV2) DescribeBotLocaleRequest(input *DescribeBotLocaleInput) (r
 // API operation DescribeBotLocale for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotLocale
 func (c *LexModelsV2) DescribeBotLocale(input *DescribeBotLocaleInput) (*DescribeBotLocaleOutput, error) {
@@ -2822,14 +2822,13 @@ const opDescribeBotRecommendation = "DescribeBotRecommendation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBotRecommendationRequest method.
+//	req, resp := client.DescribeBotRecommendationRequest(params)
 //
-//    // Example sending a request using the DescribeBotRecommendationRequest method.
-//    req, resp := client.DescribeBotRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotRecommendation
 func (c *LexModelsV2) DescribeBotRecommendationRequest(input *DescribeBotRecommendationInput) (req *request.Request, output *DescribeBotRecommendationOutput) {
@@ -2863,19 +2862,20 @@ func (c *LexModelsV2) DescribeBotRecommendationRequest(input *DescribeBotRecomme
 // API operation DescribeBotRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotRecommendation
 func (c *LexModelsV2) DescribeBotRecommendation(input *DescribeBotRecommendationInput) (*DescribeBotRecommendationOutput, error) {
@@ -2915,14 +2915,13 @@ const opDescribeBotVersion = "DescribeBotVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBotVersionRequest method.
+//	req, resp := client.DescribeBotVersionRequest(params)
 //
-//    // Example sending a request using the DescribeBotVersionRequest method.
-//    req, resp := client.DescribeBotVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotVersion
 func (c *LexModelsV2) DescribeBotVersionRequest(input *DescribeBotVersionInput) (req *request.Request, output *DescribeBotVersionOutput) {
@@ -2953,22 +2952,23 @@ func (c *LexModelsV2) DescribeBotVersionRequest(input *DescribeBotVersionInput) 
 // API operation DescribeBotVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeBotVersion
 func (c *LexModelsV2) DescribeBotVersion(input *DescribeBotVersionInput) (*DescribeBotVersionOutput, error) {
@@ -3008,14 +3008,13 @@ const opDescribeCustomVocabularyMetadata = "DescribeCustomVocabularyMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomVocabularyMetadataRequest method.
+//	req, resp := client.DescribeCustomVocabularyMetadataRequest(params)
 //
-//    // Example sending a request using the DescribeCustomVocabularyMetadataRequest method.
-//    req, resp := client.DescribeCustomVocabularyMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeCustomVocabularyMetadata
 func (c *LexModelsV2) DescribeCustomVocabularyMetadataRequest(input *DescribeCustomVocabularyMetadataInput) (req *request.Request, output *DescribeCustomVocabularyMetadataOutput) {
@@ -3046,22 +3045,23 @@ func (c *LexModelsV2) DescribeCustomVocabularyMetadataRequest(input *DescribeCus
 // API operation DescribeCustomVocabularyMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeCustomVocabularyMetadata
 func (c *LexModelsV2) DescribeCustomVocabularyMetadata(input *DescribeCustomVocabularyMetadataInput) (*DescribeCustomVocabularyMetadataOutput, error) {
@@ -3101,14 +3101,13 @@ const opDescribeExport = "DescribeExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExportRequest method.
+//	req, resp := client.DescribeExportRequest(params)
 //
-//    // Example sending a request using the DescribeExportRequest method.
-//    req, resp := client.DescribeExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeExport
 func (c *LexModelsV2) DescribeExportRequest(input *DescribeExportInput) (req *request.Request, output *DescribeExportOutput) {
@@ -3139,19 +3138,20 @@ func (c *LexModelsV2) DescribeExportRequest(input *DescribeExportInput) (req *re
 // API operation DescribeExport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeExport
 func (c *LexModelsV2) DescribeExport(input *DescribeExportInput) (*DescribeExportOutput, error) {
@@ -3191,14 +3191,13 @@ const opDescribeImport = "DescribeImport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImportRequest method.
+//	req, resp := client.DescribeImportRequest(params)
 //
-//    // Example sending a request using the DescribeImportRequest method.
-//    req, resp := client.DescribeImportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeImport
 func (c *LexModelsV2) DescribeImportRequest(input *DescribeImportInput) (req *request.Request, output *DescribeImportOutput) {
@@ -3229,19 +3228,20 @@ func (c *LexModelsV2) DescribeImportRequest(input *DescribeImportInput) (req *re
 // API operation DescribeImport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeImport
 func (c *LexModelsV2) DescribeImport(input *DescribeImportInput) (*DescribeImportOutput, error) {
@@ -3281,14 +3281,13 @@ const opDescribeIntent = "DescribeIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIntentRequest method.
+//	req, resp := client.DescribeIntentRequest(params)
 //
-//    // Example sending a request using the DescribeIntentRequest method.
-//    req, resp := client.DescribeIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeIntent
 func (c *LexModelsV2) DescribeIntentRequest(input *DescribeIntentInput) (req *request.Request, output *DescribeIntentOutput) {
@@ -3319,22 +3318,23 @@ func (c *LexModelsV2) DescribeIntentRequest(input *DescribeIntentInput) (req *re
 // API operation DescribeIntent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeIntent
 func (c *LexModelsV2) DescribeIntent(input *DescribeIntentInput) (*DescribeIntentOutput, error) {
@@ -3374,14 +3374,13 @@ const opDescribeResourcePolicy = "DescribeResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResourcePolicyRequest method.
+//	req, resp := client.DescribeResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DescribeResourcePolicyRequest method.
-//    req, resp := client.DescribeResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeResourcePolicy
 func (c *LexModelsV2) DescribeResourcePolicyRequest(input *DescribeResourcePolicyInput) (req *request.Request, output *DescribeResourcePolicyOutput) {
@@ -3412,15 +3411,16 @@ func (c *LexModelsV2) DescribeResourcePolicyRequest(input *DescribeResourcePolic
 // API operation DescribeResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeResourcePolicy
 func (c *LexModelsV2) DescribeResourcePolicy(input *DescribeResourcePolicyInput) (*DescribeResourcePolicyOutput, error) {
@@ -3460,14 +3460,13 @@ const opDescribeSlot = "DescribeSlot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSlotRequest method.
+//	req, resp := client.DescribeSlotRequest(params)
 //
-//    // Example sending a request using the DescribeSlotRequest method.
-//    req, resp := client.DescribeSlotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeSlot
 func (c *LexModelsV2) DescribeSlotRequest(input *DescribeSlotInput) (req *request.Request, output *DescribeSlotOutput) {
@@ -3498,22 +3497,23 @@ func (c *LexModelsV2) DescribeSlotRequest(input *DescribeSlotInput) (req *reques
 // API operation DescribeSlot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeSlot
 func (c *LexModelsV2) DescribeSlot(input *DescribeSlotInput) (*DescribeSlotOutput, error) {
@@ -3553,14 +3553,13 @@ const opDescribeSlotType = "DescribeSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSlotTypeRequest method.
+//	req, resp := client.DescribeSlotTypeRequest(params)
 //
-//    // Example sending a request using the DescribeSlotTypeRequest method.
-//    req, resp := client.DescribeSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeSlotType
 func (c *LexModelsV2) DescribeSlotTypeRequest(input *DescribeSlotTypeInput) (req *request.Request, output *DescribeSlotTypeOutput) {
@@ -3591,22 +3590,23 @@ func (c *LexModelsV2) DescribeSlotTypeRequest(input *DescribeSlotTypeInput) (req
 // API operation DescribeSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/DescribeSlotType
 func (c *LexModelsV2) DescribeSlotType(input *DescribeSlotTypeInput) (*DescribeSlotTypeOutput, error) {
@@ -3646,14 +3646,13 @@ const opListAggregatedUtterances = "ListAggregatedUtterances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAggregatedUtterancesRequest method.
+//	req, resp := client.ListAggregatedUtterancesRequest(params)
 //
-//    // Example sending a request using the ListAggregatedUtterancesRequest method.
-//    req, resp := client.ListAggregatedUtterancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListAggregatedUtterances
 func (c *LexModelsV2) ListAggregatedUtterancesRequest(input *ListAggregatedUtterancesInput) (req *request.Request, output *ListAggregatedUtterancesOutput) {
@@ -3696,11 +3695,11 @@ func (c *LexModelsV2) ListAggregatedUtterancesRequest(input *ListAggregatedUtter
 //
 // Utterances statistics are not generated under the following conditions:
 //
-//    * The childDirected field was set to true when the bot was created.
+//   - The childDirected field was set to true when the bot was created.
 //
-//    * You are using slot obfuscation with one or more slots.
+//   - You are using slot obfuscation with one or more slots.
 //
-//    * You opted out of participating in improving Amazon Lex.
+//   - You opted out of participating in improving Amazon Lex.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3710,19 +3709,20 @@ func (c *LexModelsV2) ListAggregatedUtterancesRequest(input *ListAggregatedUtter
 // API operation ListAggregatedUtterances for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListAggregatedUtterances
 func (c *LexModelsV2) ListAggregatedUtterances(input *ListAggregatedUtterancesInput) (*ListAggregatedUtterancesOutput, error) {
@@ -3754,15 +3754,14 @@ func (c *LexModelsV2) ListAggregatedUtterancesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAggregatedUtterances operation.
-//    pageNum := 0
-//    err := client.ListAggregatedUtterancesPages(params,
-//        func(page *lexmodelsv2.ListAggregatedUtterancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAggregatedUtterances operation.
+//	pageNum := 0
+//	err := client.ListAggregatedUtterancesPages(params,
+//	    func(page *lexmodelsv2.ListAggregatedUtterancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListAggregatedUtterancesPages(input *ListAggregatedUtterancesInput, fn func(*ListAggregatedUtterancesOutput, bool) bool) error {
 	return c.ListAggregatedUtterancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3814,14 +3813,13 @@ const opListBotAliases = "ListBotAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBotAliasesRequest method.
+//	req, resp := client.ListBotAliasesRequest(params)
 //
-//    // Example sending a request using the ListBotAliasesRequest method.
-//    req, resp := client.ListBotAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotAliases
 func (c *LexModelsV2) ListBotAliasesRequest(input *ListBotAliasesInput) (req *request.Request, output *ListBotAliasesOutput) {
@@ -3858,18 +3856,19 @@ func (c *LexModelsV2) ListBotAliasesRequest(input *ListBotAliasesInput) (req *re
 // API operation ListBotAliases for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotAliases
 func (c *LexModelsV2) ListBotAliases(input *ListBotAliasesInput) (*ListBotAliasesOutput, error) {
@@ -3901,15 +3900,14 @@ func (c *LexModelsV2) ListBotAliasesWithContext(ctx aws.Context, input *ListBotA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBotAliases operation.
-//    pageNum := 0
-//    err := client.ListBotAliasesPages(params,
-//        func(page *lexmodelsv2.ListBotAliasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBotAliases operation.
+//	pageNum := 0
+//	err := client.ListBotAliasesPages(params,
+//	    func(page *lexmodelsv2.ListBotAliasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBotAliasesPages(input *ListBotAliasesInput, fn func(*ListBotAliasesOutput, bool) bool) error {
 	return c.ListBotAliasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3961,14 +3959,13 @@ const opListBotLocales = "ListBotLocales"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBotLocalesRequest method.
+//	req, resp := client.ListBotLocalesRequest(params)
 //
-//    // Example sending a request using the ListBotLocalesRequest method.
-//    req, resp := client.ListBotLocalesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotLocales
 func (c *LexModelsV2) ListBotLocalesRequest(input *ListBotLocalesInput) (req *request.Request, output *ListBotLocalesOutput) {
@@ -4005,18 +4002,19 @@ func (c *LexModelsV2) ListBotLocalesRequest(input *ListBotLocalesInput) (req *re
 // API operation ListBotLocales for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotLocales
 func (c *LexModelsV2) ListBotLocales(input *ListBotLocalesInput) (*ListBotLocalesOutput, error) {
@@ -4048,15 +4046,14 @@ func (c *LexModelsV2) ListBotLocalesWithContext(ctx aws.Context, input *ListBotL
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBotLocales operation.
-//    pageNum := 0
-//    err := client.ListBotLocalesPages(params,
-//        func(page *lexmodelsv2.ListBotLocalesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBotLocales operation.
+//	pageNum := 0
+//	err := client.ListBotLocalesPages(params,
+//	    func(page *lexmodelsv2.ListBotLocalesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBotLocalesPages(input *ListBotLocalesInput, fn func(*ListBotLocalesOutput, bool) bool) error {
 	return c.ListBotLocalesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4108,14 +4105,13 @@ const opListBotRecommendations = "ListBotRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBotRecommendationsRequest method.
+//	req, resp := client.ListBotRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListBotRecommendationsRequest method.
-//    req, resp := client.ListBotRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotRecommendations
 func (c *LexModelsV2) ListBotRecommendationsRequest(input *ListBotRecommendationsInput) (req *request.Request, output *ListBotRecommendationsOutput) {
@@ -4152,19 +4148,20 @@ func (c *LexModelsV2) ListBotRecommendationsRequest(input *ListBotRecommendation
 // API operation ListBotRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotRecommendations
 func (c *LexModelsV2) ListBotRecommendations(input *ListBotRecommendationsInput) (*ListBotRecommendationsOutput, error) {
@@ -4196,15 +4193,14 @@ func (c *LexModelsV2) ListBotRecommendationsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBotRecommendations operation.
-//    pageNum := 0
-//    err := client.ListBotRecommendationsPages(params,
-//        func(page *lexmodelsv2.ListBotRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBotRecommendations operation.
+//	pageNum := 0
+//	err := client.ListBotRecommendationsPages(params,
+//	    func(page *lexmodelsv2.ListBotRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBotRecommendationsPages(input *ListBotRecommendationsInput, fn func(*ListBotRecommendationsOutput, bool) bool) error {
 	return c.ListBotRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4256,14 +4252,13 @@ const opListBotVersions = "ListBotVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBotVersionsRequest method.
+//	req, resp := client.ListBotVersionsRequest(params)
 //
-//    // Example sending a request using the ListBotVersionsRequest method.
-//    req, resp := client.ListBotVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotVersions
 func (c *LexModelsV2) ListBotVersionsRequest(input *ListBotVersionsInput) (req *request.Request, output *ListBotVersionsOutput) {
@@ -4308,18 +4303,19 @@ func (c *LexModelsV2) ListBotVersionsRequest(input *ListBotVersionsInput) (req *
 // API operation ListBotVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBotVersions
 func (c *LexModelsV2) ListBotVersions(input *ListBotVersionsInput) (*ListBotVersionsOutput, error) {
@@ -4351,15 +4347,14 @@ func (c *LexModelsV2) ListBotVersionsWithContext(ctx aws.Context, input *ListBot
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBotVersions operation.
-//    pageNum := 0
-//    err := client.ListBotVersionsPages(params,
-//        func(page *lexmodelsv2.ListBotVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBotVersions operation.
+//	pageNum := 0
+//	err := client.ListBotVersionsPages(params,
+//	    func(page *lexmodelsv2.ListBotVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBotVersionsPages(input *ListBotVersionsInput, fn func(*ListBotVersionsOutput, bool) bool) error {
 	return c.ListBotVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4411,14 +4406,13 @@ const opListBots = "ListBots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBotsRequest method.
+//	req, resp := client.ListBotsRequest(params)
 //
-//    // Example sending a request using the ListBotsRequest method.
-//    req, resp := client.ListBotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBots
 func (c *LexModelsV2) ListBotsRequest(input *ListBotsInput) (req *request.Request, output *ListBotsOutput) {
@@ -4455,18 +4449,19 @@ func (c *LexModelsV2) ListBotsRequest(input *ListBotsInput) (req *request.Reques
 // API operation ListBots for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBots
 func (c *LexModelsV2) ListBots(input *ListBotsInput) (*ListBotsOutput, error) {
@@ -4498,15 +4493,14 @@ func (c *LexModelsV2) ListBotsWithContext(ctx aws.Context, input *ListBotsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBots operation.
-//    pageNum := 0
-//    err := client.ListBotsPages(params,
-//        func(page *lexmodelsv2.ListBotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBots operation.
+//	pageNum := 0
+//	err := client.ListBotsPages(params,
+//	    func(page *lexmodelsv2.ListBotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBotsPages(input *ListBotsInput, fn func(*ListBotsOutput, bool) bool) error {
 	return c.ListBotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4558,14 +4552,13 @@ const opListBuiltInIntents = "ListBuiltInIntents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuiltInIntentsRequest method.
+//	req, resp := client.ListBuiltInIntentsRequest(params)
 //
-//    // Example sending a request using the ListBuiltInIntentsRequest method.
-//    req, resp := client.ListBuiltInIntentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBuiltInIntents
 func (c *LexModelsV2) ListBuiltInIntentsRequest(input *ListBuiltInIntentsInput) (req *request.Request, output *ListBuiltInIntentsOutput) {
@@ -4607,18 +4600,19 @@ func (c *LexModelsV2) ListBuiltInIntentsRequest(input *ListBuiltInIntentsInput) 
 // API operation ListBuiltInIntents for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBuiltInIntents
 func (c *LexModelsV2) ListBuiltInIntents(input *ListBuiltInIntentsInput) (*ListBuiltInIntentsOutput, error) {
@@ -4650,15 +4644,14 @@ func (c *LexModelsV2) ListBuiltInIntentsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuiltInIntents operation.
-//    pageNum := 0
-//    err := client.ListBuiltInIntentsPages(params,
-//        func(page *lexmodelsv2.ListBuiltInIntentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuiltInIntents operation.
+//	pageNum := 0
+//	err := client.ListBuiltInIntentsPages(params,
+//	    func(page *lexmodelsv2.ListBuiltInIntentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBuiltInIntentsPages(input *ListBuiltInIntentsInput, fn func(*ListBuiltInIntentsOutput, bool) bool) error {
 	return c.ListBuiltInIntentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4710,14 +4703,13 @@ const opListBuiltInSlotTypes = "ListBuiltInSlotTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuiltInSlotTypesRequest method.
+//	req, resp := client.ListBuiltInSlotTypesRequest(params)
 //
-//    // Example sending a request using the ListBuiltInSlotTypesRequest method.
-//    req, resp := client.ListBuiltInSlotTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBuiltInSlotTypes
 func (c *LexModelsV2) ListBuiltInSlotTypesRequest(input *ListBuiltInSlotTypesInput) (req *request.Request, output *ListBuiltInSlotTypesOutput) {
@@ -4754,18 +4746,19 @@ func (c *LexModelsV2) ListBuiltInSlotTypesRequest(input *ListBuiltInSlotTypesInp
 // API operation ListBuiltInSlotTypes for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListBuiltInSlotTypes
 func (c *LexModelsV2) ListBuiltInSlotTypes(input *ListBuiltInSlotTypesInput) (*ListBuiltInSlotTypesOutput, error) {
@@ -4797,15 +4790,14 @@ func (c *LexModelsV2) ListBuiltInSlotTypesWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuiltInSlotTypes operation.
-//    pageNum := 0
-//    err := client.ListBuiltInSlotTypesPages(params,
-//        func(page *lexmodelsv2.ListBuiltInSlotTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuiltInSlotTypes operation.
+//	pageNum := 0
+//	err := client.ListBuiltInSlotTypesPages(params,
+//	    func(page *lexmodelsv2.ListBuiltInSlotTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListBuiltInSlotTypesPages(input *ListBuiltInSlotTypesInput, fn func(*ListBuiltInSlotTypesOutput, bool) bool) error {
 	return c.ListBuiltInSlotTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4857,14 +4849,13 @@ const opListExports = "ListExports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExportsRequest method.
+//	req, resp := client.ListExportsRequest(params)
 //
-//    // Example sending a request using the ListExportsRequest method.
-//    req, resp := client.ListExportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListExports
 func (c *LexModelsV2) ListExportsRequest(input *ListExportsInput) (req *request.Request, output *ListExportsOutput) {
@@ -4902,15 +4893,16 @@ func (c *LexModelsV2) ListExportsRequest(input *ListExportsInput) (req *request.
 // API operation ListExports for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListExports
 func (c *LexModelsV2) ListExports(input *ListExportsInput) (*ListExportsOutput, error) {
@@ -4942,15 +4934,14 @@ func (c *LexModelsV2) ListExportsWithContext(ctx aws.Context, input *ListExports
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExports operation.
-//    pageNum := 0
-//    err := client.ListExportsPages(params,
-//        func(page *lexmodelsv2.ListExportsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExports operation.
+//	pageNum := 0
+//	err := client.ListExportsPages(params,
+//	    func(page *lexmodelsv2.ListExportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListExportsPages(input *ListExportsInput, fn func(*ListExportsOutput, bool) bool) error {
 	return c.ListExportsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5002,14 +4993,13 @@ const opListImports = "ListImports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImportsRequest method.
+//	req, resp := client.ListImportsRequest(params)
 //
-//    // Example sending a request using the ListImportsRequest method.
-//    req, resp := client.ListImportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListImports
 func (c *LexModelsV2) ListImportsRequest(input *ListImportsInput) (req *request.Request, output *ListImportsOutput) {
@@ -5047,15 +5037,16 @@ func (c *LexModelsV2) ListImportsRequest(input *ListImportsInput) (req *request.
 // API operation ListImports for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListImports
 func (c *LexModelsV2) ListImports(input *ListImportsInput) (*ListImportsOutput, error) {
@@ -5087,15 +5078,14 @@ func (c *LexModelsV2) ListImportsWithContext(ctx aws.Context, input *ListImports
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImports operation.
-//    pageNum := 0
-//    err := client.ListImportsPages(params,
-//        func(page *lexmodelsv2.ListImportsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImports operation.
+//	pageNum := 0
+//	err := client.ListImportsPages(params,
+//	    func(page *lexmodelsv2.ListImportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListImportsPages(input *ListImportsInput, fn func(*ListImportsOutput, bool) bool) error {
 	return c.ListImportsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5147,14 +5137,13 @@ const opListIntents = "ListIntents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIntentsRequest method.
+//	req, resp := client.ListIntentsRequest(params)
 //
-//    // Example sending a request using the ListIntentsRequest method.
-//    req, resp := client.ListIntentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListIntents
 func (c *LexModelsV2) ListIntentsRequest(input *ListIntentsInput) (req *request.Request, output *ListIntentsOutput) {
@@ -5191,18 +5180,19 @@ func (c *LexModelsV2) ListIntentsRequest(input *ListIntentsInput) (req *request.
 // API operation ListIntents for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListIntents
 func (c *LexModelsV2) ListIntents(input *ListIntentsInput) (*ListIntentsOutput, error) {
@@ -5234,15 +5224,14 @@ func (c *LexModelsV2) ListIntentsWithContext(ctx aws.Context, input *ListIntents
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListIntents operation.
-//    pageNum := 0
-//    err := client.ListIntentsPages(params,
-//        func(page *lexmodelsv2.ListIntentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListIntents operation.
+//	pageNum := 0
+//	err := client.ListIntentsPages(params,
+//	    func(page *lexmodelsv2.ListIntentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListIntentsPages(input *ListIntentsInput, fn func(*ListIntentsOutput, bool) bool) error {
 	return c.ListIntentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5294,14 +5283,13 @@ const opListRecommendedIntents = "ListRecommendedIntents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecommendedIntentsRequest method.
+//	req, resp := client.ListRecommendedIntentsRequest(params)
 //
-//    // Example sending a request using the ListRecommendedIntentsRequest method.
-//    req, resp := client.ListRecommendedIntentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListRecommendedIntents
 func (c *LexModelsV2) ListRecommendedIntentsRequest(input *ListRecommendedIntentsInput) (req *request.Request, output *ListRecommendedIntentsOutput) {
@@ -5339,22 +5327,23 @@ func (c *LexModelsV2) ListRecommendedIntentsRequest(input *ListRecommendedIntent
 // API operation ListRecommendedIntents for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListRecommendedIntents
 func (c *LexModelsV2) ListRecommendedIntents(input *ListRecommendedIntentsInput) (*ListRecommendedIntentsOutput, error) {
@@ -5386,15 +5375,14 @@ func (c *LexModelsV2) ListRecommendedIntentsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecommendedIntents operation.
-//    pageNum := 0
-//    err := client.ListRecommendedIntentsPages(params,
-//        func(page *lexmodelsv2.ListRecommendedIntentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecommendedIntents operation.
+//	pageNum := 0
+//	err := client.ListRecommendedIntentsPages(params,
+//	    func(page *lexmodelsv2.ListRecommendedIntentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListRecommendedIntentsPages(input *ListRecommendedIntentsInput, fn func(*ListRecommendedIntentsOutput, bool) bool) error {
 	return c.ListRecommendedIntentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5446,14 +5434,13 @@ const opListSlotTypes = "ListSlotTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSlotTypesRequest method.
+//	req, resp := client.ListSlotTypesRequest(params)
 //
-//    // Example sending a request using the ListSlotTypesRequest method.
-//    req, resp := client.ListSlotTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListSlotTypes
 func (c *LexModelsV2) ListSlotTypesRequest(input *ListSlotTypesInput) (req *request.Request, output *ListSlotTypesOutput) {
@@ -5490,18 +5477,19 @@ func (c *LexModelsV2) ListSlotTypesRequest(input *ListSlotTypesInput) (req *requ
 // API operation ListSlotTypes for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListSlotTypes
 func (c *LexModelsV2) ListSlotTypes(input *ListSlotTypesInput) (*ListSlotTypesOutput, error) {
@@ -5533,15 +5521,14 @@ func (c *LexModelsV2) ListSlotTypesWithContext(ctx aws.Context, input *ListSlotT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSlotTypes operation.
-//    pageNum := 0
-//    err := client.ListSlotTypesPages(params,
-//        func(page *lexmodelsv2.ListSlotTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSlotTypes operation.
+//	pageNum := 0
+//	err := client.ListSlotTypesPages(params,
+//	    func(page *lexmodelsv2.ListSlotTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListSlotTypesPages(input *ListSlotTypesInput, fn func(*ListSlotTypesOutput, bool) bool) error {
 	return c.ListSlotTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5593,14 +5580,13 @@ const opListSlots = "ListSlots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSlotsRequest method.
+//	req, resp := client.ListSlotsRequest(params)
 //
-//    // Example sending a request using the ListSlotsRequest method.
-//    req, resp := client.ListSlotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListSlots
 func (c *LexModelsV2) ListSlotsRequest(input *ListSlotsInput) (req *request.Request, output *ListSlotsOutput) {
@@ -5637,18 +5623,19 @@ func (c *LexModelsV2) ListSlotsRequest(input *ListSlotsInput) (req *request.Requ
 // API operation ListSlots for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListSlots
 func (c *LexModelsV2) ListSlots(input *ListSlotsInput) (*ListSlotsOutput, error) {
@@ -5680,15 +5667,14 @@ func (c *LexModelsV2) ListSlotsWithContext(ctx aws.Context, input *ListSlotsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSlots operation.
-//    pageNum := 0
-//    err := client.ListSlotsPages(params,
-//        func(page *lexmodelsv2.ListSlotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSlots operation.
+//	pageNum := 0
+//	err := client.ListSlotsPages(params,
+//	    func(page *lexmodelsv2.ListSlotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelsV2) ListSlotsPages(input *ListSlotsInput, fn func(*ListSlotsOutput, bool) bool) error {
 	return c.ListSlotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5740,14 +5726,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListTagsForResource
 func (c *LexModelsV2) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -5779,19 +5764,20 @@ func (c *LexModelsV2) ListTagsForResourceRequest(input *ListTagsForResourceInput
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/ListTagsForResource
 func (c *LexModelsV2) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -5831,14 +5817,13 @@ const opSearchAssociatedTranscripts = "SearchAssociatedTranscripts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchAssociatedTranscriptsRequest method.
+//	req, resp := client.SearchAssociatedTranscriptsRequest(params)
 //
-//    // Example sending a request using the SearchAssociatedTranscriptsRequest method.
-//    req, resp := client.SearchAssociatedTranscriptsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/SearchAssociatedTranscripts
 func (c *LexModelsV2) SearchAssociatedTranscriptsRequest(input *SearchAssociatedTranscriptsInput) (req *request.Request, output *SearchAssociatedTranscriptsOutput) {
@@ -5869,22 +5854,23 @@ func (c *LexModelsV2) SearchAssociatedTranscriptsRequest(input *SearchAssociated
 // API operation SearchAssociatedTranscripts for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/SearchAssociatedTranscripts
 func (c *LexModelsV2) SearchAssociatedTranscripts(input *SearchAssociatedTranscriptsInput) (*SearchAssociatedTranscriptsOutput, error) {
@@ -5924,14 +5910,13 @@ const opStartBotRecommendation = "StartBotRecommendation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartBotRecommendationRequest method.
+//	req, resp := client.StartBotRecommendationRequest(params)
 //
-//    // Example sending a request using the StartBotRecommendationRequest method.
-//    req, resp := client.StartBotRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/StartBotRecommendation
 func (c *LexModelsV2) StartBotRecommendationRequest(input *StartBotRecommendationInput) (req *request.Request, output *StartBotRecommendationOutput) {
@@ -5963,36 +5948,37 @@ func (c *LexModelsV2) StartBotRecommendationRequest(input *StartBotRecommendatio
 // API operation StartBotRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/StartBotRecommendation
 func (c *LexModelsV2) StartBotRecommendation(input *StartBotRecommendationInput) (*StartBotRecommendationOutput, error) {
@@ -6032,14 +6018,13 @@ const opStartImport = "StartImport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartImportRequest method.
+//	req, resp := client.StartImportRequest(params)
 //
-//    // Example sending a request using the StartImportRequest method.
-//    req, resp := client.StartImportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/StartImport
 func (c *LexModelsV2) StartImportRequest(input *StartImportInput) (req *request.Request, output *StartImportOutput) {
@@ -6071,27 +6056,28 @@ func (c *LexModelsV2) StartImportRequest(input *StartImportInput) (req *request.
 // API operation StartImport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/StartImport
 func (c *LexModelsV2) StartImport(input *StartImportInput) (*StartImportOutput, error) {
@@ -6131,14 +6117,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/TagResource
 func (c *LexModelsV2) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -6171,19 +6156,20 @@ func (c *LexModelsV2) TagResourceRequest(input *TagResourceInput) (req *request.
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/TagResource
 func (c *LexModelsV2) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -6223,14 +6209,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UntagResource
 func (c *LexModelsV2) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -6262,19 +6247,20 @@ func (c *LexModelsV2) UntagResourceRequest(input *UntagResourceInput) (req *requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
+//
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UntagResource
 func (c *LexModelsV2) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -6314,14 +6300,13 @@ const opUpdateBot = "UpdateBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBotRequest method.
+//	req, resp := client.UpdateBotRequest(params)
 //
-//    // Example sending a request using the UpdateBotRequest method.
-//    req, resp := client.UpdateBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBot
 func (c *LexModelsV2) UpdateBotRequest(input *UpdateBotInput) (req *request.Request, output *UpdateBotOutput) {
@@ -6352,27 +6337,28 @@ func (c *LexModelsV2) UpdateBotRequest(input *UpdateBotInput) (req *request.Requ
 // API operation UpdateBot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBot
 func (c *LexModelsV2) UpdateBot(input *UpdateBotInput) (*UpdateBotOutput, error) {
@@ -6412,14 +6398,13 @@ const opUpdateBotAlias = "UpdateBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBotAliasRequest method.
+//	req, resp := client.UpdateBotAliasRequest(params)
 //
-//    // Example sending a request using the UpdateBotAliasRequest method.
-//    req, resp := client.UpdateBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBotAlias
 func (c *LexModelsV2) UpdateBotAliasRequest(input *UpdateBotAliasInput) (req *request.Request, output *UpdateBotAliasOutput) {
@@ -6450,27 +6435,28 @@ func (c *LexModelsV2) UpdateBotAliasRequest(input *UpdateBotAliasInput) (req *re
 // API operation UpdateBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBotAlias
 func (c *LexModelsV2) UpdateBotAlias(input *UpdateBotAliasInput) (*UpdateBotAliasOutput, error) {
@@ -6510,14 +6496,13 @@ const opUpdateBotLocale = "UpdateBotLocale"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBotLocaleRequest method.
+//	req, resp := client.UpdateBotLocaleRequest(params)
 //
-//    // Example sending a request using the UpdateBotLocaleRequest method.
-//    req, resp := client.UpdateBotLocaleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBotLocale
 func (c *LexModelsV2) UpdateBotLocaleRequest(input *UpdateBotLocaleInput) (req *request.Request, output *UpdateBotLocaleOutput) {
@@ -6548,27 +6533,28 @@ func (c *LexModelsV2) UpdateBotLocaleRequest(input *UpdateBotLocaleInput) (req *
 // API operation UpdateBotLocale for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBotLocale
 func (c *LexModelsV2) UpdateBotLocale(input *UpdateBotLocaleInput) (*UpdateBotLocaleOutput, error) {
@@ -6608,14 +6594,13 @@ const opUpdateBotRecommendation = "UpdateBotRecommendation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBotRecommendationRequest method.
+//	req, resp := client.UpdateBotRecommendationRequest(params)
 //
-//    // Example sending a request using the UpdateBotRecommendationRequest method.
-//    req, resp := client.UpdateBotRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBotRecommendation
 func (c *LexModelsV2) UpdateBotRecommendationRequest(input *UpdateBotRecommendationInput) (req *request.Request, output *UpdateBotRecommendationOutput) {
@@ -6646,36 +6631,37 @@ func (c *LexModelsV2) UpdateBotRecommendationRequest(input *UpdateBotRecommendat
 // API operation UpdateBotRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateBotRecommendation
 func (c *LexModelsV2) UpdateBotRecommendation(input *UpdateBotRecommendationInput) (*UpdateBotRecommendationOutput, error) {
@@ -6715,14 +6701,13 @@ const opUpdateExport = "UpdateExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateExportRequest method.
+//	req, resp := client.UpdateExportRequest(params)
 //
-//    // Example sending a request using the UpdateExportRequest method.
-//    req, resp := client.UpdateExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateExport
 func (c *LexModelsV2) UpdateExportRequest(input *UpdateExportInput) (req *request.Request, output *UpdateExportOutput) {
@@ -6758,27 +6743,28 @@ func (c *LexModelsV2) UpdateExportRequest(input *UpdateExportInput) (req *reques
 // API operation UpdateExport for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateExport
 func (c *LexModelsV2) UpdateExport(input *UpdateExportInput) (*UpdateExportOutput, error) {
@@ -6818,14 +6804,13 @@ const opUpdateIntent = "UpdateIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIntentRequest method.
+//	req, resp := client.UpdateIntentRequest(params)
 //
-//    // Example sending a request using the UpdateIntentRequest method.
-//    req, resp := client.UpdateIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateIntent
 func (c *LexModelsV2) UpdateIntentRequest(input *UpdateIntentInput) (req *request.Request, output *UpdateIntentOutput) {
@@ -6856,27 +6841,28 @@ func (c *LexModelsV2) UpdateIntentRequest(input *UpdateIntentInput) (req *reques
 // API operation UpdateIntent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateIntent
 func (c *LexModelsV2) UpdateIntent(input *UpdateIntentInput) (*UpdateIntentOutput, error) {
@@ -6916,14 +6902,13 @@ const opUpdateResourcePolicy = "UpdateResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResourcePolicyRequest method.
+//	req, resp := client.UpdateResourcePolicyRequest(params)
 //
-//    // Example sending a request using the UpdateResourcePolicyRequest method.
-//    req, resp := client.UpdateResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateResourcePolicy
 func (c *LexModelsV2) UpdateResourcePolicyRequest(input *UpdateResourcePolicyInput) (req *request.Request, output *UpdateResourcePolicyOutput) {
@@ -6955,26 +6940,27 @@ func (c *LexModelsV2) UpdateResourcePolicyRequest(input *UpdateResourcePolicyInp
 // API operation UpdateResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   You asked to describe a resource that doesn't exist. Check the resource that
-//   you are requesting and try again.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ResourceNotFoundException
+//     You asked to describe a resource that doesn't exist. Check the resource that
+//     you are requesting and try again.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
+//
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateResourcePolicy
 func (c *LexModelsV2) UpdateResourcePolicy(input *UpdateResourcePolicyInput) (*UpdateResourcePolicyOutput, error) {
@@ -7014,14 +7000,13 @@ const opUpdateSlot = "UpdateSlot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSlotRequest method.
+//	req, resp := client.UpdateSlotRequest(params)
 //
-//    // Example sending a request using the UpdateSlotRequest method.
-//    req, resp := client.UpdateSlotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateSlot
 func (c *LexModelsV2) UpdateSlotRequest(input *UpdateSlotInput) (req *request.Request, output *UpdateSlotOutput) {
@@ -7052,27 +7037,28 @@ func (c *LexModelsV2) UpdateSlotRequest(input *UpdateSlotInput) (req *request.Re
 // API operation UpdateSlot for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateSlot
 func (c *LexModelsV2) UpdateSlot(input *UpdateSlotInput) (*UpdateSlotOutput, error) {
@@ -7112,14 +7098,13 @@ const opUpdateSlotType = "UpdateSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSlotTypeRequest method.
+//	req, resp := client.UpdateSlotTypeRequest(params)
 //
-//    // Example sending a request using the UpdateSlotTypeRequest method.
-//    req, resp := client.UpdateSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateSlotType
 func (c *LexModelsV2) UpdateSlotTypeRequest(input *UpdateSlotTypeInput) (req *request.Request, output *UpdateSlotTypeOutput) {
@@ -7150,27 +7135,28 @@ func (c *LexModelsV2) UpdateSlotTypeRequest(input *UpdateSlotTypeInput) (req *re
 // API operation UpdateSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ServiceQuotaExceededException
-//   You have reached a quota for your bot.
+//   - ThrottlingException
+//     Your request rate is too high. Reduce the frequency of requests.
 //
-//   * ValidationException
-//   One of the input parameters in your request isn't valid. Check the parameters
-//   and try your request again.
+//   - ServiceQuotaExceededException
+//     You have reached a quota for your bot.
 //
-//   * PreconditionFailedException
-//   Your request couldn't be completed because one or more request fields aren't
-//   valid. Check the fields in your request and try again.
+//   - ValidationException
+//     One of the input parameters in your request isn't valid. Check the parameters
+//     and try your request again.
 //
-//   * ConflictException
-//   The action that you tried to perform couldn't be completed because the resource
-//   is in a conflicting state. For example, deleting a bot that is in the CREATING
-//   state. Try your request again.
+//   - PreconditionFailedException
+//     Your request couldn't be completed because one or more request fields aren't
+//     valid. Check the fields in your request and try again.
 //
-//   * InternalServerException
-//   The service encountered an unexpected condition. Try your request again.
+//   - ConflictException
+//     The action that you tried to perform couldn't be completed because the resource
+//     is in a conflicting state. For example, deleting a bot that is in the CREATING
+//     state. Try your request again.
+//
+//   - InternalServerException
+//     The service encountered an unexpected condition. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/models.lex.v2-2020-08-07/UpdateSlotType
 func (c *LexModelsV2) UpdateSlotType(input *UpdateSlotTypeInput) (*UpdateSlotTypeOutput, error) {
@@ -22382,16 +22368,16 @@ func (s *RecommendedIntentSummary) SetSampleUtterancesCount(v int64) *Recommende
 //
 // You can choose the time window that statistics should be returned for.
 //
-//    * Hours - You can request utterance statistics for 1, 3, 6, 12, or 24
-//    hour time windows. Statistics are refreshed every half hour for 1 hour
-//    time windows, and hourly for the other time windows.
+//   - Hours - You can request utterance statistics for 1, 3, 6, 12, or 24
+//     hour time windows. Statistics are refreshed every half hour for 1 hour
+//     time windows, and hourly for the other time windows.
 //
-//    * Days - You can request utterance statistics for 3 days. Statistics are
-//    refreshed every 6 hours.
+//   - Days - You can request utterance statistics for 3 days. Statistics are
+//     refreshed every 6 hours.
 //
-//    * Weeks - You can see statistics for one or two weeks. Statistics are
-//    refreshed every 12 hours for one week time windows, and once per day for
-//    two week time windows.
+//   - Weeks - You can see statistics for one or two weeks. Statistics are
+//     refreshed every 12 hours for one week time windows, and once per day for
+//     two week time windows.
 type RelativeAggregationDuration struct {
 	_ struct{} `type:"structure"`
 

@@ -16,7 +16,7 @@
 // See efs package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/efs/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Elastic File System with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

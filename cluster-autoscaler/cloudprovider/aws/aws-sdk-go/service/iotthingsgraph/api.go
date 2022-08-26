@@ -29,14 +29,13 @@ const opAssociateEntityToThing = "AssociateEntityToThing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateEntityToThingRequest method.
+//	req, resp := client.AssociateEntityToThingRequest(params)
 //
-//    // Example sending a request using the AssociateEntityToThingRequest method.
-//    req, resp := client.AssociateEntityToThingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/AssociateEntityToThing
 func (c *IoTThingsGraph) AssociateEntityToThingRequest(input *AssociateEntityToThingInput) (req *request.Request, output *AssociateEntityToThingOutput) {
@@ -71,13 +70,14 @@ func (c *IoTThingsGraph) AssociateEntityToThingRequest(input *AssociateEntityToT
 // API operation AssociateEntityToThing for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/AssociateEntityToThing
 func (c *IoTThingsGraph) AssociateEntityToThing(input *AssociateEntityToThingInput) (*AssociateEntityToThingOutput, error) {
@@ -117,14 +117,13 @@ const opCreateFlowTemplate = "CreateFlowTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFlowTemplateRequest method.
+//	req, resp := client.CreateFlowTemplateRequest(params)
 //
-//    // Example sending a request using the CreateFlowTemplateRequest method.
-//    req, resp := client.CreateFlowTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/CreateFlowTemplate
 func (c *IoTThingsGraph) CreateFlowTemplateRequest(input *CreateFlowTemplateInput) (req *request.Request, output *CreateFlowTemplateOutput) {
@@ -159,15 +158,16 @@ func (c *IoTThingsGraph) CreateFlowTemplateRequest(input *CreateFlowTemplateInpu
 // API operation CreateFlowTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceAlreadyExistsException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceAlreadyExistsException
 //
-//   * LimitExceededException
+//   - ThrottlingException
 //
-//   * InternalFailureException
+//   - LimitExceededException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/CreateFlowTemplate
 func (c *IoTThingsGraph) CreateFlowTemplate(input *CreateFlowTemplateInput) (*CreateFlowTemplateOutput, error) {
@@ -207,14 +207,13 @@ const opCreateSystemInstance = "CreateSystemInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSystemInstanceRequest method.
+//	req, resp := client.CreateSystemInstanceRequest(params)
 //
-//    // Example sending a request using the CreateSystemInstanceRequest method.
-//    req, resp := client.CreateSystemInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/CreateSystemInstance
 func (c *IoTThingsGraph) CreateSystemInstanceRequest(input *CreateSystemInstanceInput) (req *request.Request, output *CreateSystemInstanceOutput) {
@@ -263,15 +262,16 @@ func (c *IoTThingsGraph) CreateSystemInstanceRequest(input *CreateSystemInstance
 // API operation CreateSystemInstance for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceAlreadyExistsException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceAlreadyExistsException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * LimitExceededException
+//   - InternalFailureException
+//
+//   - LimitExceededException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/CreateSystemInstance
 func (c *IoTThingsGraph) CreateSystemInstance(input *CreateSystemInstanceInput) (*CreateSystemInstanceOutput, error) {
@@ -311,14 +311,13 @@ const opCreateSystemTemplate = "CreateSystemTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSystemTemplateRequest method.
+//	req, resp := client.CreateSystemTemplateRequest(params)
 //
-//    // Example sending a request using the CreateSystemTemplateRequest method.
-//    req, resp := client.CreateSystemTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/CreateSystemTemplate
 func (c *IoTThingsGraph) CreateSystemTemplateRequest(input *CreateSystemTemplateInput) (req *request.Request, output *CreateSystemTemplateOutput) {
@@ -351,13 +350,14 @@ func (c *IoTThingsGraph) CreateSystemTemplateRequest(input *CreateSystemTemplate
 // API operation CreateSystemTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceAlreadyExistsException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceAlreadyExistsException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/CreateSystemTemplate
 func (c *IoTThingsGraph) CreateSystemTemplate(input *CreateSystemTemplateInput) (*CreateSystemTemplateOutput, error) {
@@ -397,14 +397,13 @@ const opDeleteFlowTemplate = "DeleteFlowTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFlowTemplateRequest method.
+//	req, resp := client.DeleteFlowTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteFlowTemplateRequest method.
-//    req, resp := client.DeleteFlowTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteFlowTemplate
 func (c *IoTThingsGraph) DeleteFlowTemplateRequest(input *DeleteFlowTemplateInput) (req *request.Request, output *DeleteFlowTemplateOutput) {
@@ -439,13 +438,14 @@ func (c *IoTThingsGraph) DeleteFlowTemplateRequest(input *DeleteFlowTemplateInpu
 // API operation DeleteFlowTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceInUseException
+//   - InternalFailureException
+//
+//   - ResourceInUseException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteFlowTemplate
 func (c *IoTThingsGraph) DeleteFlowTemplate(input *DeleteFlowTemplateInput) (*DeleteFlowTemplateOutput, error) {
@@ -485,14 +485,13 @@ const opDeleteNamespace = "DeleteNamespace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNamespaceRequest method.
+//	req, resp := client.DeleteNamespaceRequest(params)
 //
-//    // Example sending a request using the DeleteNamespaceRequest method.
-//    req, resp := client.DeleteNamespaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteNamespace
 func (c *IoTThingsGraph) DeleteNamespaceRequest(input *DeleteNamespaceInput) (req *request.Request, output *DeleteNamespaceOutput) {
@@ -525,9 +524,10 @@ func (c *IoTThingsGraph) DeleteNamespaceRequest(input *DeleteNamespaceInput) (re
 // API operation DeleteNamespace for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteNamespace
 func (c *IoTThingsGraph) DeleteNamespace(input *DeleteNamespaceInput) (*DeleteNamespaceOutput, error) {
@@ -567,14 +567,13 @@ const opDeleteSystemInstance = "DeleteSystemInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSystemInstanceRequest method.
+//	req, resp := client.DeleteSystemInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteSystemInstanceRequest method.
-//    req, resp := client.DeleteSystemInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteSystemInstance
 func (c *IoTThingsGraph) DeleteSystemInstanceRequest(input *DeleteSystemInstanceInput) (req *request.Request, output *DeleteSystemInstanceOutput) {
@@ -610,13 +609,14 @@ func (c *IoTThingsGraph) DeleteSystemInstanceRequest(input *DeleteSystemInstance
 // API operation DeleteSystemInstance for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceInUseException
+//   - InternalFailureException
+//
+//   - ResourceInUseException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteSystemInstance
 func (c *IoTThingsGraph) DeleteSystemInstance(input *DeleteSystemInstanceInput) (*DeleteSystemInstanceOutput, error) {
@@ -656,14 +656,13 @@ const opDeleteSystemTemplate = "DeleteSystemTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSystemTemplateRequest method.
+//	req, resp := client.DeleteSystemTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteSystemTemplateRequest method.
-//    req, resp := client.DeleteSystemTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteSystemTemplate
 func (c *IoTThingsGraph) DeleteSystemTemplateRequest(input *DeleteSystemTemplateInput) (req *request.Request, output *DeleteSystemTemplateOutput) {
@@ -697,13 +696,14 @@ func (c *IoTThingsGraph) DeleteSystemTemplateRequest(input *DeleteSystemTemplate
 // API operation DeleteSystemTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceInUseException
+//   - InternalFailureException
+//
+//   - ResourceInUseException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeleteSystemTemplate
 func (c *IoTThingsGraph) DeleteSystemTemplate(input *DeleteSystemTemplateInput) (*DeleteSystemTemplateOutput, error) {
@@ -743,14 +743,13 @@ const opDeploySystemInstance = "DeploySystemInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeploySystemInstanceRequest method.
+//	req, resp := client.DeploySystemInstanceRequest(params)
 //
-//    // Example sending a request using the DeploySystemInstanceRequest method.
-//    req, resp := client.DeploySystemInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeploySystemInstance
 func (c *IoTThingsGraph) DeploySystemInstanceRequest(input *DeploySystemInstanceInput) (req *request.Request, output *DeploySystemInstanceOutput) {
@@ -771,11 +770,11 @@ func (c *IoTThingsGraph) DeploySystemInstanceRequest(input *DeploySystemInstance
 
 // DeploySystemInstance API operation for AWS IoT Things Graph.
 //
-// Greengrass and Cloud Deployments
+// # Greengrass and Cloud Deployments
 //
 // Deploys the system instance to the target specified in CreateSystemInstance.
 //
-// Greengrass Deployments
+// # Greengrass Deployments
 //
 // If the system or any workflows and entities have been updated before this
 // action is called, then the deployment will create a new Amazon Simple Storage
@@ -797,15 +796,16 @@ func (c *IoTThingsGraph) DeploySystemInstanceRequest(input *DeploySystemInstance
 // API operation DeploySystemInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InvalidRequestException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceInUseException
+//   - InternalFailureException
+//
+//   - ResourceInUseException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeploySystemInstance
 func (c *IoTThingsGraph) DeploySystemInstance(input *DeploySystemInstanceInput) (*DeploySystemInstanceOutput, error) {
@@ -845,14 +845,13 @@ const opDeprecateFlowTemplate = "DeprecateFlowTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprecateFlowTemplateRequest method.
+//	req, resp := client.DeprecateFlowTemplateRequest(params)
 //
-//    // Example sending a request using the DeprecateFlowTemplateRequest method.
-//    req, resp := client.DeprecateFlowTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeprecateFlowTemplate
 func (c *IoTThingsGraph) DeprecateFlowTemplateRequest(input *DeprecateFlowTemplateInput) (req *request.Request, output *DeprecateFlowTemplateOutput) {
@@ -886,13 +885,14 @@ func (c *IoTThingsGraph) DeprecateFlowTemplateRequest(input *DeprecateFlowTempla
 // API operation DeprecateFlowTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeprecateFlowTemplate
 func (c *IoTThingsGraph) DeprecateFlowTemplate(input *DeprecateFlowTemplateInput) (*DeprecateFlowTemplateOutput, error) {
@@ -932,14 +932,13 @@ const opDeprecateSystemTemplate = "DeprecateSystemTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprecateSystemTemplateRequest method.
+//	req, resp := client.DeprecateSystemTemplateRequest(params)
 //
-//    // Example sending a request using the DeprecateSystemTemplateRequest method.
-//    req, resp := client.DeprecateSystemTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeprecateSystemTemplate
 func (c *IoTThingsGraph) DeprecateSystemTemplateRequest(input *DeprecateSystemTemplateInput) (req *request.Request, output *DeprecateSystemTemplateOutput) {
@@ -971,13 +970,14 @@ func (c *IoTThingsGraph) DeprecateSystemTemplateRequest(input *DeprecateSystemTe
 // API operation DeprecateSystemTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DeprecateSystemTemplate
 func (c *IoTThingsGraph) DeprecateSystemTemplate(input *DeprecateSystemTemplateInput) (*DeprecateSystemTemplateOutput, error) {
@@ -1017,14 +1017,13 @@ const opDescribeNamespace = "DescribeNamespace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNamespaceRequest method.
+//	req, resp := client.DescribeNamespaceRequest(params)
 //
-//    // Example sending a request using the DescribeNamespaceRequest method.
-//    req, resp := client.DescribeNamespaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DescribeNamespace
 func (c *IoTThingsGraph) DescribeNamespaceRequest(input *DescribeNamespaceInput) (req *request.Request, output *DescribeNamespaceOutput) {
@@ -1056,13 +1055,14 @@ func (c *IoTThingsGraph) DescribeNamespaceRequest(input *DescribeNamespaceInput)
 // API operation DescribeNamespace for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InvalidRequestException
+//   - ResourceNotFoundException
 //
-//   * InternalFailureException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DescribeNamespace
 func (c *IoTThingsGraph) DescribeNamespace(input *DescribeNamespaceInput) (*DescribeNamespaceOutput, error) {
@@ -1102,14 +1102,13 @@ const opDissociateEntityFromThing = "DissociateEntityFromThing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DissociateEntityFromThingRequest method.
+//	req, resp := client.DissociateEntityFromThingRequest(params)
 //
-//    // Example sending a request using the DissociateEntityFromThingRequest method.
-//    req, resp := client.DissociateEntityFromThingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DissociateEntityFromThing
 func (c *IoTThingsGraph) DissociateEntityFromThingRequest(input *DissociateEntityFromThingInput) (req *request.Request, output *DissociateEntityFromThingOutput) {
@@ -1143,13 +1142,14 @@ func (c *IoTThingsGraph) DissociateEntityFromThingRequest(input *DissociateEntit
 // API operation DissociateEntityFromThing for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/DissociateEntityFromThing
 func (c *IoTThingsGraph) DissociateEntityFromThing(input *DissociateEntityFromThingInput) (*DissociateEntityFromThingOutput, error) {
@@ -1189,14 +1189,13 @@ const opGetEntities = "GetEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEntitiesRequest method.
+//	req, resp := client.GetEntitiesRequest(params)
 //
-//    // Example sending a request using the GetEntitiesRequest method.
-//    req, resp := client.GetEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetEntities
 func (c *IoTThingsGraph) GetEntitiesRequest(input *GetEntitiesInput) (req *request.Request, output *GetEntitiesOutput) {
@@ -1220,23 +1219,23 @@ func (c *IoTThingsGraph) GetEntitiesRequest(input *GetEntitiesInput) (req *reque
 // Gets definitions of the specified entities. Uses the latest version of the
 // user's namespace by default. This API returns the following TDM entities.
 //
-//    * Properties
+//   - Properties
 //
-//    * States
+//   - States
 //
-//    * Events
+//   - Events
 //
-//    * Actions
+//   - Actions
 //
-//    * Capabilities
+//   - Capabilities
 //
-//    * Mappings
+//   - Mappings
 //
-//    * Devices
+//   - Devices
 //
-//    * Device Models
+//   - Device Models
 //
-//    * Services
+//   - Services
 //
 // This action doesn't return definitions for systems, flows, and deployments.
 //
@@ -1248,13 +1247,14 @@ func (c *IoTThingsGraph) GetEntitiesRequest(input *GetEntitiesInput) (req *reque
 // API operation GetEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetEntities
 func (c *IoTThingsGraph) GetEntities(input *GetEntitiesInput) (*GetEntitiesOutput, error) {
@@ -1294,14 +1294,13 @@ const opGetFlowTemplate = "GetFlowTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFlowTemplateRequest method.
+//	req, resp := client.GetFlowTemplateRequest(params)
 //
-//    // Example sending a request using the GetFlowTemplateRequest method.
-//    req, resp := client.GetFlowTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetFlowTemplate
 func (c *IoTThingsGraph) GetFlowTemplateRequest(input *GetFlowTemplateInput) (req *request.Request, output *GetFlowTemplateOutput) {
@@ -1333,13 +1332,14 @@ func (c *IoTThingsGraph) GetFlowTemplateRequest(input *GetFlowTemplateInput) (re
 // API operation GetFlowTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetFlowTemplate
 func (c *IoTThingsGraph) GetFlowTemplate(input *GetFlowTemplateInput) (*GetFlowTemplateOutput, error) {
@@ -1379,14 +1379,13 @@ const opGetFlowTemplateRevisions = "GetFlowTemplateRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFlowTemplateRevisionsRequest method.
+//	req, resp := client.GetFlowTemplateRevisionsRequest(params)
 //
-//    // Example sending a request using the GetFlowTemplateRevisionsRequest method.
-//    req, resp := client.GetFlowTemplateRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetFlowTemplateRevisions
 func (c *IoTThingsGraph) GetFlowTemplateRevisionsRequest(input *GetFlowTemplateRevisionsInput) (req *request.Request, output *GetFlowTemplateRevisionsOutput) {
@@ -1426,13 +1425,14 @@ func (c *IoTThingsGraph) GetFlowTemplateRevisionsRequest(input *GetFlowTemplateR
 // API operation GetFlowTemplateRevisions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetFlowTemplateRevisions
 func (c *IoTThingsGraph) GetFlowTemplateRevisions(input *GetFlowTemplateRevisionsInput) (*GetFlowTemplateRevisionsOutput, error) {
@@ -1464,15 +1464,14 @@ func (c *IoTThingsGraph) GetFlowTemplateRevisionsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetFlowTemplateRevisions operation.
-//    pageNum := 0
-//    err := client.GetFlowTemplateRevisionsPages(params,
-//        func(page *iotthingsgraph.GetFlowTemplateRevisionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetFlowTemplateRevisions operation.
+//	pageNum := 0
+//	err := client.GetFlowTemplateRevisionsPages(params,
+//	    func(page *iotthingsgraph.GetFlowTemplateRevisionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) GetFlowTemplateRevisionsPages(input *GetFlowTemplateRevisionsInput, fn func(*GetFlowTemplateRevisionsOutput, bool) bool) error {
 	return c.GetFlowTemplateRevisionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1524,14 +1523,13 @@ const opGetNamespaceDeletionStatus = "GetNamespaceDeletionStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNamespaceDeletionStatusRequest method.
+//	req, resp := client.GetNamespaceDeletionStatusRequest(params)
 //
-//    // Example sending a request using the GetNamespaceDeletionStatusRequest method.
-//    req, resp := client.GetNamespaceDeletionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetNamespaceDeletionStatus
 func (c *IoTThingsGraph) GetNamespaceDeletionStatusRequest(input *GetNamespaceDeletionStatusInput) (req *request.Request, output *GetNamespaceDeletionStatusOutput) {
@@ -1562,11 +1560,12 @@ func (c *IoTThingsGraph) GetNamespaceDeletionStatusRequest(input *GetNamespaceDe
 // API operation GetNamespaceDeletionStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * InternalFailureException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetNamespaceDeletionStatus
 func (c *IoTThingsGraph) GetNamespaceDeletionStatus(input *GetNamespaceDeletionStatusInput) (*GetNamespaceDeletionStatusOutput, error) {
@@ -1606,14 +1605,13 @@ const opGetSystemInstance = "GetSystemInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSystemInstanceRequest method.
+//	req, resp := client.GetSystemInstanceRequest(params)
 //
-//    // Example sending a request using the GetSystemInstanceRequest method.
-//    req, resp := client.GetSystemInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetSystemInstance
 func (c *IoTThingsGraph) GetSystemInstanceRequest(input *GetSystemInstanceInput) (req *request.Request, output *GetSystemInstanceOutput) {
@@ -1644,13 +1642,14 @@ func (c *IoTThingsGraph) GetSystemInstanceRequest(input *GetSystemInstanceInput)
 // API operation GetSystemInstance for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetSystemInstance
 func (c *IoTThingsGraph) GetSystemInstance(input *GetSystemInstanceInput) (*GetSystemInstanceOutput, error) {
@@ -1690,14 +1689,13 @@ const opGetSystemTemplate = "GetSystemTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSystemTemplateRequest method.
+//	req, resp := client.GetSystemTemplateRequest(params)
 //
-//    // Example sending a request using the GetSystemTemplateRequest method.
-//    req, resp := client.GetSystemTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetSystemTemplate
 func (c *IoTThingsGraph) GetSystemTemplateRequest(input *GetSystemTemplateInput) (req *request.Request, output *GetSystemTemplateOutput) {
@@ -1728,13 +1726,14 @@ func (c *IoTThingsGraph) GetSystemTemplateRequest(input *GetSystemTemplateInput)
 // API operation GetSystemTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetSystemTemplate
 func (c *IoTThingsGraph) GetSystemTemplate(input *GetSystemTemplateInput) (*GetSystemTemplateOutput, error) {
@@ -1774,14 +1773,13 @@ const opGetSystemTemplateRevisions = "GetSystemTemplateRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSystemTemplateRevisionsRequest method.
+//	req, resp := client.GetSystemTemplateRevisionsRequest(params)
 //
-//    // Example sending a request using the GetSystemTemplateRevisionsRequest method.
-//    req, resp := client.GetSystemTemplateRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetSystemTemplateRevisions
 func (c *IoTThingsGraph) GetSystemTemplateRevisionsRequest(input *GetSystemTemplateRevisionsInput) (req *request.Request, output *GetSystemTemplateRevisionsOutput) {
@@ -1821,13 +1819,14 @@ func (c *IoTThingsGraph) GetSystemTemplateRevisionsRequest(input *GetSystemTempl
 // API operation GetSystemTemplateRevisions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetSystemTemplateRevisions
 func (c *IoTThingsGraph) GetSystemTemplateRevisions(input *GetSystemTemplateRevisionsInput) (*GetSystemTemplateRevisionsOutput, error) {
@@ -1859,15 +1858,14 @@ func (c *IoTThingsGraph) GetSystemTemplateRevisionsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSystemTemplateRevisions operation.
-//    pageNum := 0
-//    err := client.GetSystemTemplateRevisionsPages(params,
-//        func(page *iotthingsgraph.GetSystemTemplateRevisionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSystemTemplateRevisions operation.
+//	pageNum := 0
+//	err := client.GetSystemTemplateRevisionsPages(params,
+//	    func(page *iotthingsgraph.GetSystemTemplateRevisionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) GetSystemTemplateRevisionsPages(input *GetSystemTemplateRevisionsInput, fn func(*GetSystemTemplateRevisionsOutput, bool) bool) error {
 	return c.GetSystemTemplateRevisionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1919,14 +1917,13 @@ const opGetUploadStatus = "GetUploadStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUploadStatusRequest method.
+//	req, resp := client.GetUploadStatusRequest(params)
 //
-//    // Example sending a request using the GetUploadStatusRequest method.
-//    req, resp := client.GetUploadStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetUploadStatus
 func (c *IoTThingsGraph) GetUploadStatusRequest(input *GetUploadStatusInput) (req *request.Request, output *GetUploadStatusOutput) {
@@ -1957,13 +1954,14 @@ func (c *IoTThingsGraph) GetUploadStatusRequest(input *GetUploadStatusInput) (re
 // API operation GetUploadStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/GetUploadStatus
 func (c *IoTThingsGraph) GetUploadStatus(input *GetUploadStatusInput) (*GetUploadStatusOutput, error) {
@@ -2003,14 +2001,13 @@ const opListFlowExecutionMessages = "ListFlowExecutionMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFlowExecutionMessagesRequest method.
+//	req, resp := client.ListFlowExecutionMessagesRequest(params)
 //
-//    // Example sending a request using the ListFlowExecutionMessagesRequest method.
-//    req, resp := client.ListFlowExecutionMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/ListFlowExecutionMessages
 func (c *IoTThingsGraph) ListFlowExecutionMessagesRequest(input *ListFlowExecutionMessagesInput) (req *request.Request, output *ListFlowExecutionMessagesOutput) {
@@ -2048,13 +2045,14 @@ func (c *IoTThingsGraph) ListFlowExecutionMessagesRequest(input *ListFlowExecuti
 // API operation ListFlowExecutionMessages for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/ListFlowExecutionMessages
 func (c *IoTThingsGraph) ListFlowExecutionMessages(input *ListFlowExecutionMessagesInput) (*ListFlowExecutionMessagesOutput, error) {
@@ -2086,15 +2084,14 @@ func (c *IoTThingsGraph) ListFlowExecutionMessagesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFlowExecutionMessages operation.
-//    pageNum := 0
-//    err := client.ListFlowExecutionMessagesPages(params,
-//        func(page *iotthingsgraph.ListFlowExecutionMessagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFlowExecutionMessages operation.
+//	pageNum := 0
+//	err := client.ListFlowExecutionMessagesPages(params,
+//	    func(page *iotthingsgraph.ListFlowExecutionMessagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) ListFlowExecutionMessagesPages(input *ListFlowExecutionMessagesInput, fn func(*ListFlowExecutionMessagesOutput, bool) bool) error {
 	return c.ListFlowExecutionMessagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2146,14 +2143,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/ListTagsForResource
 func (c *IoTThingsGraph) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2190,13 +2186,14 @@ func (c *IoTThingsGraph) ListTagsForResourceRequest(input *ListTagsForResourceIn
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceAlreadyExistsException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceAlreadyExistsException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/ListTagsForResource
 func (c *IoTThingsGraph) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2228,15 +2225,14 @@ func (c *IoTThingsGraph) ListTagsForResourceWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *iotthingsgraph.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *iotthingsgraph.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2288,14 +2284,13 @@ const opSearchEntities = "SearchEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchEntitiesRequest method.
+//	req, resp := client.SearchEntitiesRequest(params)
 //
-//    // Example sending a request using the SearchEntitiesRequest method.
-//    req, resp := client.SearchEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchEntities
 func (c *IoTThingsGraph) SearchEntitiesRequest(input *SearchEntitiesInput) (req *request.Request, output *SearchEntitiesOutput) {
@@ -2333,11 +2328,12 @@ func (c *IoTThingsGraph) SearchEntitiesRequest(input *SearchEntitiesInput) (req 
 // API operation SearchEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * InternalFailureException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchEntities
 func (c *IoTThingsGraph) SearchEntities(input *SearchEntitiesInput) (*SearchEntitiesOutput, error) {
@@ -2369,15 +2365,14 @@ func (c *IoTThingsGraph) SearchEntitiesWithContext(ctx aws.Context, input *Searc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchEntities operation.
-//    pageNum := 0
-//    err := client.SearchEntitiesPages(params,
-//        func(page *iotthingsgraph.SearchEntitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchEntities operation.
+//	pageNum := 0
+//	err := client.SearchEntitiesPages(params,
+//	    func(page *iotthingsgraph.SearchEntitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) SearchEntitiesPages(input *SearchEntitiesInput, fn func(*SearchEntitiesOutput, bool) bool) error {
 	return c.SearchEntitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2429,14 +2424,13 @@ const opSearchFlowExecutions = "SearchFlowExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchFlowExecutionsRequest method.
+//	req, resp := client.SearchFlowExecutionsRequest(params)
 //
-//    // Example sending a request using the SearchFlowExecutionsRequest method.
-//    req, resp := client.SearchFlowExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchFlowExecutions
 func (c *IoTThingsGraph) SearchFlowExecutionsRequest(input *SearchFlowExecutionsInput) (req *request.Request, output *SearchFlowExecutionsOutput) {
@@ -2473,13 +2467,14 @@ func (c *IoTThingsGraph) SearchFlowExecutionsRequest(input *SearchFlowExecutions
 // API operation SearchFlowExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchFlowExecutions
 func (c *IoTThingsGraph) SearchFlowExecutions(input *SearchFlowExecutionsInput) (*SearchFlowExecutionsOutput, error) {
@@ -2511,15 +2506,14 @@ func (c *IoTThingsGraph) SearchFlowExecutionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchFlowExecutions operation.
-//    pageNum := 0
-//    err := client.SearchFlowExecutionsPages(params,
-//        func(page *iotthingsgraph.SearchFlowExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchFlowExecutions operation.
+//	pageNum := 0
+//	err := client.SearchFlowExecutionsPages(params,
+//	    func(page *iotthingsgraph.SearchFlowExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) SearchFlowExecutionsPages(input *SearchFlowExecutionsInput, fn func(*SearchFlowExecutionsOutput, bool) bool) error {
 	return c.SearchFlowExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2571,14 +2565,13 @@ const opSearchFlowTemplates = "SearchFlowTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchFlowTemplatesRequest method.
+//	req, resp := client.SearchFlowTemplatesRequest(params)
 //
-//    // Example sending a request using the SearchFlowTemplatesRequest method.
-//    req, resp := client.SearchFlowTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchFlowTemplates
 func (c *IoTThingsGraph) SearchFlowTemplatesRequest(input *SearchFlowTemplatesInput) (req *request.Request, output *SearchFlowTemplatesOutput) {
@@ -2615,11 +2608,12 @@ func (c *IoTThingsGraph) SearchFlowTemplatesRequest(input *SearchFlowTemplatesIn
 // API operation SearchFlowTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchFlowTemplates
 func (c *IoTThingsGraph) SearchFlowTemplates(input *SearchFlowTemplatesInput) (*SearchFlowTemplatesOutput, error) {
@@ -2651,15 +2645,14 @@ func (c *IoTThingsGraph) SearchFlowTemplatesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchFlowTemplates operation.
-//    pageNum := 0
-//    err := client.SearchFlowTemplatesPages(params,
-//        func(page *iotthingsgraph.SearchFlowTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchFlowTemplates operation.
+//	pageNum := 0
+//	err := client.SearchFlowTemplatesPages(params,
+//	    func(page *iotthingsgraph.SearchFlowTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) SearchFlowTemplatesPages(input *SearchFlowTemplatesInput, fn func(*SearchFlowTemplatesOutput, bool) bool) error {
 	return c.SearchFlowTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2711,14 +2704,13 @@ const opSearchSystemInstances = "SearchSystemInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchSystemInstancesRequest method.
+//	req, resp := client.SearchSystemInstancesRequest(params)
 //
-//    // Example sending a request using the SearchSystemInstancesRequest method.
-//    req, resp := client.SearchSystemInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchSystemInstances
 func (c *IoTThingsGraph) SearchSystemInstancesRequest(input *SearchSystemInstancesInput) (req *request.Request, output *SearchSystemInstancesOutput) {
@@ -2755,11 +2747,12 @@ func (c *IoTThingsGraph) SearchSystemInstancesRequest(input *SearchSystemInstanc
 // API operation SearchSystemInstances for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchSystemInstances
 func (c *IoTThingsGraph) SearchSystemInstances(input *SearchSystemInstancesInput) (*SearchSystemInstancesOutput, error) {
@@ -2791,15 +2784,14 @@ func (c *IoTThingsGraph) SearchSystemInstancesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchSystemInstances operation.
-//    pageNum := 0
-//    err := client.SearchSystemInstancesPages(params,
-//        func(page *iotthingsgraph.SearchSystemInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchSystemInstances operation.
+//	pageNum := 0
+//	err := client.SearchSystemInstancesPages(params,
+//	    func(page *iotthingsgraph.SearchSystemInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) SearchSystemInstancesPages(input *SearchSystemInstancesInput, fn func(*SearchSystemInstancesOutput, bool) bool) error {
 	return c.SearchSystemInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2851,14 +2843,13 @@ const opSearchSystemTemplates = "SearchSystemTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchSystemTemplatesRequest method.
+//	req, resp := client.SearchSystemTemplatesRequest(params)
 //
-//    // Example sending a request using the SearchSystemTemplatesRequest method.
-//    req, resp := client.SearchSystemTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchSystemTemplates
 func (c *IoTThingsGraph) SearchSystemTemplatesRequest(input *SearchSystemTemplatesInput) (req *request.Request, output *SearchSystemTemplatesOutput) {
@@ -2897,11 +2888,12 @@ func (c *IoTThingsGraph) SearchSystemTemplatesRequest(input *SearchSystemTemplat
 // API operation SearchSystemTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchSystemTemplates
 func (c *IoTThingsGraph) SearchSystemTemplates(input *SearchSystemTemplatesInput) (*SearchSystemTemplatesOutput, error) {
@@ -2933,15 +2925,14 @@ func (c *IoTThingsGraph) SearchSystemTemplatesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchSystemTemplates operation.
-//    pageNum := 0
-//    err := client.SearchSystemTemplatesPages(params,
-//        func(page *iotthingsgraph.SearchSystemTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchSystemTemplates operation.
+//	pageNum := 0
+//	err := client.SearchSystemTemplatesPages(params,
+//	    func(page *iotthingsgraph.SearchSystemTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) SearchSystemTemplatesPages(input *SearchSystemTemplatesInput, fn func(*SearchSystemTemplatesOutput, bool) bool) error {
 	return c.SearchSystemTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2993,14 +2984,13 @@ const opSearchThings = "SearchThings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchThingsRequest method.
+//	req, resp := client.SearchThingsRequest(params)
 //
-//    // Example sending a request using the SearchThingsRequest method.
-//    req, resp := client.SearchThingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchThings
 func (c *IoTThingsGraph) SearchThingsRequest(input *SearchThingsInput) (req *request.Request, output *SearchThingsOutput) {
@@ -3045,13 +3035,14 @@ func (c *IoTThingsGraph) SearchThingsRequest(input *SearchThingsInput) (req *req
 // API operation SearchThings for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/SearchThings
 func (c *IoTThingsGraph) SearchThings(input *SearchThingsInput) (*SearchThingsOutput, error) {
@@ -3083,15 +3074,14 @@ func (c *IoTThingsGraph) SearchThingsWithContext(ctx aws.Context, input *SearchT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchThings operation.
-//    pageNum := 0
-//    err := client.SearchThingsPages(params,
-//        func(page *iotthingsgraph.SearchThingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchThings operation.
+//	pageNum := 0
+//	err := client.SearchThingsPages(params,
+//	    func(page *iotthingsgraph.SearchThingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTThingsGraph) SearchThingsPages(input *SearchThingsInput, fn func(*SearchThingsOutput, bool) bool) error {
 	return c.SearchThingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3143,14 +3133,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/TagResource
 func (c *IoTThingsGraph) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3182,13 +3171,14 @@ func (c *IoTThingsGraph) TagResourceRequest(input *TagResourceInput) (req *reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceAlreadyExistsException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceAlreadyExistsException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/TagResource
 func (c *IoTThingsGraph) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3228,14 +3218,13 @@ const opUndeploySystemInstance = "UndeploySystemInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UndeploySystemInstanceRequest method.
+//	req, resp := client.UndeploySystemInstanceRequest(params)
 //
-//    // Example sending a request using the UndeploySystemInstanceRequest method.
-//    req, resp := client.UndeploySystemInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UndeploySystemInstance
 func (c *IoTThingsGraph) UndeploySystemInstanceRequest(input *UndeploySystemInstanceInput) (req *request.Request, output *UndeploySystemInstanceOutput) {
@@ -3266,15 +3255,16 @@ func (c *IoTThingsGraph) UndeploySystemInstanceRequest(input *UndeploySystemInst
 // API operation UndeploySystemInstance for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ThrottlingException
+//   - InvalidRequestException
 //
-//   * InternalFailureException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - InternalFailureException
 //
-//   * ResourceInUseException
+//   - ResourceNotFoundException
+//
+//   - ResourceInUseException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UndeploySystemInstance
 func (c *IoTThingsGraph) UndeploySystemInstance(input *UndeploySystemInstanceInput) (*UndeploySystemInstanceOutput, error) {
@@ -3314,14 +3304,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UntagResource
 func (c *IoTThingsGraph) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3353,13 +3342,14 @@ func (c *IoTThingsGraph) UntagResourceRequest(input *UntagResourceInput) (req *r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceAlreadyExistsException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceAlreadyExistsException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UntagResource
 func (c *IoTThingsGraph) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3399,14 +3389,13 @@ const opUpdateFlowTemplate = "UpdateFlowTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowTemplateRequest method.
+//	req, resp := client.UpdateFlowTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateFlowTemplateRequest method.
-//    req, resp := client.UpdateFlowTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UpdateFlowTemplate
 func (c *IoTThingsGraph) UpdateFlowTemplateRequest(input *UpdateFlowTemplateInput) (req *request.Request, output *UpdateFlowTemplateOutput) {
@@ -3441,13 +3430,14 @@ func (c *IoTThingsGraph) UpdateFlowTemplateRequest(input *UpdateFlowTemplateInpu
 // API operation UpdateFlowTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UpdateFlowTemplate
 func (c *IoTThingsGraph) UpdateFlowTemplate(input *UpdateFlowTemplateInput) (*UpdateFlowTemplateOutput, error) {
@@ -3487,14 +3477,13 @@ const opUpdateSystemTemplate = "UpdateSystemTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSystemTemplateRequest method.
+//	req, resp := client.UpdateSystemTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateSystemTemplateRequest method.
-//    req, resp := client.UpdateSystemTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UpdateSystemTemplate
 func (c *IoTThingsGraph) UpdateSystemTemplateRequest(input *UpdateSystemTemplateInput) (req *request.Request, output *UpdateSystemTemplateOutput) {
@@ -3527,13 +3516,14 @@ func (c *IoTThingsGraph) UpdateSystemTemplateRequest(input *UpdateSystemTemplate
 // API operation UpdateSystemTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * InternalFailureException
+//   - ThrottlingException
+//
+//   - InternalFailureException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UpdateSystemTemplate
 func (c *IoTThingsGraph) UpdateSystemTemplate(input *UpdateSystemTemplateInput) (*UpdateSystemTemplateOutput, error) {
@@ -3573,14 +3563,13 @@ const opUploadEntityDefinitions = "UploadEntityDefinitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadEntityDefinitionsRequest method.
+//	req, resp := client.UploadEntityDefinitionsRequest(params)
 //
-//    // Example sending a request using the UploadEntityDefinitionsRequest method.
-//    req, resp := client.UploadEntityDefinitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UploadEntityDefinitions
 func (c *IoTThingsGraph) UploadEntityDefinitionsRequest(input *UploadEntityDefinitionsInput) (req *request.Request, output *UploadEntityDefinitionsOutput) {
@@ -3630,11 +3619,12 @@ func (c *IoTThingsGraph) UploadEntityDefinitionsRequest(input *UploadEntityDefin
 // API operation UploadEntityDefinitions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
 //
-//   * InternalFailureException
+//   - InvalidRequestException
 //
-//   * ThrottlingException
+//   - InternalFailureException
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06/UploadEntityDefinitions
 func (c *IoTThingsGraph) UploadEntityDefinitions(input *UploadEntityDefinitionsInput) (*UploadEntityDefinitionsOutput, error) {

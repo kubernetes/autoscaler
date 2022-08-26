@@ -29,14 +29,13 @@ const opAssociateCreatedArtifact = "AssociateCreatedArtifact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateCreatedArtifactRequest method.
+//	req, resp := client.AssociateCreatedArtifactRequest(params)
 //
-//    // Example sending a request using the AssociateCreatedArtifactRequest method.
-//    req, resp := client.AssociateCreatedArtifactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/AssociateCreatedArtifact
 func (c *MigrationHub) AssociateCreatedArtifactRequest(input *AssociateCreatedArtifactInput) (req *request.Request, output *AssociateCreatedArtifactOutput) {
@@ -62,15 +61,15 @@ func (c *MigrationHub) AssociateCreatedArtifactRequest(input *AssociateCreatedAr
 // the migration, with the migration task performed by a migration tool. This
 // API has the following traits:
 //
-//    * Migration tools can call the AssociateCreatedArtifact operation to indicate
-//    which AWS artifact is associated with a migration task.
+//   - Migration tools can call the AssociateCreatedArtifact operation to indicate
+//     which AWS artifact is associated with a migration task.
 //
-//    * The created artifact name must be provided in ARN (Amazon Resource Name)
-//    format which will contain information about type and region; for example:
-//    arn:aws:ec2:us-east-1:488216288981:image/ami-6d0ba87b.
+//   - The created artifact name must be provided in ARN (Amazon Resource Name)
+//     format which will contain information about type and region; for example:
+//     arn:aws:ec2:us-east-1:488216288981:image/ami-6d0ba87b.
 //
-//    * Examples of the AWS resource behind the created artifact are, AMI's,
-//    EC2 instance, or DMS endpoint, etc.
+//   - Examples of the AWS resource behind the created artifact are, AMI's,
+//     EC2 instance, or DMS endpoint, etc.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -80,40 +79,41 @@ func (c *MigrationHub) AssociateCreatedArtifactRequest(input *AssociateCreatedAr
 // API operation AssociateCreatedArtifact for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/AssociateCreatedArtifact
 func (c *MigrationHub) AssociateCreatedArtifact(input *AssociateCreatedArtifactInput) (*AssociateCreatedArtifactOutput, error) {
@@ -153,14 +153,13 @@ const opAssociateDiscoveredResource = "AssociateDiscoveredResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDiscoveredResourceRequest method.
+//	req, resp := client.AssociateDiscoveredResourceRequest(params)
 //
-//    // Example sending a request using the AssociateDiscoveredResourceRequest method.
-//    req, resp := client.AssociateDiscoveredResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/AssociateDiscoveredResource
 func (c *MigrationHub) AssociateDiscoveredResourceRequest(input *AssociateDiscoveredResourceInput) (req *request.Request, output *AssociateDiscoveredResourceOutput) {
@@ -193,45 +192,46 @@ func (c *MigrationHub) AssociateDiscoveredResourceRequest(input *AssociateDiscov
 // API operation AssociateDiscoveredResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * PolicyErrorException
-//   Exception raised when there are problems accessing Application Discovery
-//   Service (Application Discovery Service); most likely due to a misconfigured
-//   policy or the migrationhub-discovery role is missing or not configured correctly.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - PolicyErrorException
+//     Exception raised when there are problems accessing Application Discovery
+//     Service (Application Discovery Service); most likely due to a misconfigured
+//     policy or the migrationhub-discovery role is missing or not configured correctly.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/AssociateDiscoveredResource
 func (c *MigrationHub) AssociateDiscoveredResource(input *AssociateDiscoveredResourceInput) (*AssociateDiscoveredResourceOutput, error) {
@@ -271,14 +271,13 @@ const opCreateProgressUpdateStream = "CreateProgressUpdateStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProgressUpdateStreamRequest method.
+//	req, resp := client.CreateProgressUpdateStreamRequest(params)
 //
-//    // Example sending a request using the CreateProgressUpdateStreamRequest method.
-//    req, resp := client.CreateProgressUpdateStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/CreateProgressUpdateStream
 func (c *MigrationHub) CreateProgressUpdateStreamRequest(input *CreateProgressUpdateStreamInput) (req *request.Request, output *CreateProgressUpdateStreamOutput) {
@@ -314,34 +313,35 @@ func (c *MigrationHub) CreateProgressUpdateStreamRequest(input *CreateProgressUp
 // API operation CreateProgressUpdateStream for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/CreateProgressUpdateStream
 func (c *MigrationHub) CreateProgressUpdateStream(input *CreateProgressUpdateStreamInput) (*CreateProgressUpdateStreamOutput, error) {
@@ -381,14 +381,13 @@ const opDeleteProgressUpdateStream = "DeleteProgressUpdateStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProgressUpdateStreamRequest method.
+//	req, resp := client.DeleteProgressUpdateStreamRequest(params)
 //
-//    // Example sending a request using the DeleteProgressUpdateStreamRequest method.
-//    req, resp := client.DeleteProgressUpdateStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DeleteProgressUpdateStream
 func (c *MigrationHub) DeleteProgressUpdateStreamRequest(input *DeleteProgressUpdateStreamInput) (req *request.Request, output *DeleteProgressUpdateStreamOutput) {
@@ -414,25 +413,25 @@ func (c *MigrationHub) DeleteProgressUpdateStreamRequest(input *DeleteProgressUp
 // created as an AWS resource used for access control. This API has the following
 // traits:
 //
-//    * The only parameter needed for DeleteProgressUpdateStream is the stream
-//    name (same as a CreateProgressUpdateStream call).
+//   - The only parameter needed for DeleteProgressUpdateStream is the stream
+//     name (same as a CreateProgressUpdateStream call).
 //
-//    * The call will return, and a background process will asynchronously delete
-//    the stream and all of its resources (tasks, associated resources, resource
-//    attributes, created artifacts).
+//   - The call will return, and a background process will asynchronously delete
+//     the stream and all of its resources (tasks, associated resources, resource
+//     attributes, created artifacts).
 //
-//    * If the stream takes time to be deleted, it might still show up on a
-//    ListProgressUpdateStreams call.
+//   - If the stream takes time to be deleted, it might still show up on a
+//     ListProgressUpdateStreams call.
 //
-//    * CreateProgressUpdateStream, ImportMigrationTask, NotifyMigrationTaskState,
-//    and all Associate[*] APIs related to the tasks belonging to the stream
-//    will throw "InvalidInputException" if the stream of the same name is in
-//    the process of being deleted.
+//   - CreateProgressUpdateStream, ImportMigrationTask, NotifyMigrationTaskState,
+//     and all Associate[*] APIs related to the tasks belonging to the stream
+//     will throw "InvalidInputException" if the stream of the same name is in
+//     the process of being deleted.
 //
-//    * Once the stream and all of its resources are deleted, CreateProgressUpdateStream
-//    for a stream of the same name will succeed, and that stream will be an
-//    entirely new logical resource (without any resources associated with the
-//    old stream).
+//   - Once the stream and all of its resources are deleted, CreateProgressUpdateStream
+//     for a stream of the same name will succeed, and that stream will be an
+//     entirely new logical resource (without any resources associated with the
+//     old stream).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -442,40 +441,41 @@ func (c *MigrationHub) DeleteProgressUpdateStreamRequest(input *DeleteProgressUp
 // API operation DeleteProgressUpdateStream for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DeleteProgressUpdateStream
 func (c *MigrationHub) DeleteProgressUpdateStream(input *DeleteProgressUpdateStreamInput) (*DeleteProgressUpdateStreamOutput, error) {
@@ -515,14 +515,13 @@ const opDescribeApplicationState = "DescribeApplicationState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationStateRequest method.
+//	req, resp := client.DescribeApplicationStateRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationStateRequest method.
-//    req, resp := client.DescribeApplicationStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DescribeApplicationState
 func (c *MigrationHub) DescribeApplicationStateRequest(input *DescribeApplicationStateInput) (req *request.Request, output *DescribeApplicationStateOutput) {
@@ -553,37 +552,38 @@ func (c *MigrationHub) DescribeApplicationStateRequest(input *DescribeApplicatio
 // API operation DescribeApplicationState for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * PolicyErrorException
-//   Exception raised when there are problems accessing Application Discovery
-//   Service (Application Discovery Service); most likely due to a misconfigured
-//   policy or the migrationhub-discovery role is missing or not configured correctly.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - PolicyErrorException
+//     Exception raised when there are problems accessing Application Discovery
+//     Service (Application Discovery Service); most likely due to a misconfigured
+//     policy or the migrationhub-discovery role is missing or not configured correctly.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DescribeApplicationState
 func (c *MigrationHub) DescribeApplicationState(input *DescribeApplicationStateInput) (*DescribeApplicationStateOutput, error) {
@@ -623,14 +623,13 @@ const opDescribeMigrationTask = "DescribeMigrationTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMigrationTaskRequest method.
+//	req, resp := client.DescribeMigrationTaskRequest(params)
 //
-//    // Example sending a request using the DescribeMigrationTaskRequest method.
-//    req, resp := client.DescribeMigrationTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DescribeMigrationTask
 func (c *MigrationHub) DescribeMigrationTaskRequest(input *DescribeMigrationTaskInput) (req *request.Request, output *DescribeMigrationTaskOutput) {
@@ -661,32 +660,33 @@ func (c *MigrationHub) DescribeMigrationTaskRequest(input *DescribeMigrationTask
 // API operation DescribeMigrationTask for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DescribeMigrationTask
 func (c *MigrationHub) DescribeMigrationTask(input *DescribeMigrationTaskInput) (*DescribeMigrationTaskOutput, error) {
@@ -726,14 +726,13 @@ const opDisassociateCreatedArtifact = "DisassociateCreatedArtifact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateCreatedArtifactRequest method.
+//	req, resp := client.DisassociateCreatedArtifactRequest(params)
 //
-//    // Example sending a request using the DisassociateCreatedArtifactRequest method.
-//    req, resp := client.DisassociateCreatedArtifactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DisassociateCreatedArtifact
 func (c *MigrationHub) DisassociateCreatedArtifactRequest(input *DisassociateCreatedArtifactInput) (req *request.Request, output *DisassociateCreatedArtifactOutput) {
@@ -759,15 +758,15 @@ func (c *MigrationHub) DisassociateCreatedArtifactRequest(input *DisassociateCre
 // performed by a migration tool that was previously associated. This API has
 // the following traits:
 //
-//    * A migration user can call the DisassociateCreatedArtifacts operation
-//    to disassociate a created AWS Artifact from a migration task.
+//   - A migration user can call the DisassociateCreatedArtifacts operation
+//     to disassociate a created AWS Artifact from a migration task.
 //
-//    * The created artifact name must be provided in ARN (Amazon Resource Name)
-//    format which will contain information about type and region; for example:
-//    arn:aws:ec2:us-east-1:488216288981:image/ami-6d0ba87b.
+//   - The created artifact name must be provided in ARN (Amazon Resource Name)
+//     format which will contain information about type and region; for example:
+//     arn:aws:ec2:us-east-1:488216288981:image/ami-6d0ba87b.
 //
-//    * Examples of the AWS resource behind the created artifact are, AMI's,
-//    EC2 instance, or RDS instance, etc.
+//   - Examples of the AWS resource behind the created artifact are, AMI's,
+//     EC2 instance, or RDS instance, etc.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -777,40 +776,41 @@ func (c *MigrationHub) DisassociateCreatedArtifactRequest(input *DisassociateCre
 // API operation DisassociateCreatedArtifact for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DisassociateCreatedArtifact
 func (c *MigrationHub) DisassociateCreatedArtifact(input *DisassociateCreatedArtifactInput) (*DisassociateCreatedArtifactOutput, error) {
@@ -850,14 +850,13 @@ const opDisassociateDiscoveredResource = "DisassociateDiscoveredResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateDiscoveredResourceRequest method.
+//	req, resp := client.DisassociateDiscoveredResourceRequest(params)
 //
-//    // Example sending a request using the DisassociateDiscoveredResourceRequest method.
-//    req, resp := client.DisassociateDiscoveredResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DisassociateDiscoveredResource
 func (c *MigrationHub) DisassociateDiscoveredResourceRequest(input *DisassociateDiscoveredResourceInput) (req *request.Request, output *DisassociateDiscoveredResourceOutput) {
@@ -890,40 +889,41 @@ func (c *MigrationHub) DisassociateDiscoveredResourceRequest(input *Disassociate
 // API operation DisassociateDiscoveredResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/DisassociateDiscoveredResource
 func (c *MigrationHub) DisassociateDiscoveredResource(input *DisassociateDiscoveredResourceInput) (*DisassociateDiscoveredResourceOutput, error) {
@@ -963,14 +963,13 @@ const opImportMigrationTask = "ImportMigrationTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportMigrationTaskRequest method.
+//	req, resp := client.ImportMigrationTaskRequest(params)
 //
-//    // Example sending a request using the ImportMigrationTaskRequest method.
-//    req, resp := client.ImportMigrationTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ImportMigrationTask
 func (c *MigrationHub) ImportMigrationTaskRequest(input *ImportMigrationTaskInput) (req *request.Request, output *ImportMigrationTaskOutput) {
@@ -1007,40 +1006,41 @@ func (c *MigrationHub) ImportMigrationTaskRequest(input *ImportMigrationTaskInpu
 // API operation ImportMigrationTask for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ImportMigrationTask
 func (c *MigrationHub) ImportMigrationTask(input *ImportMigrationTaskInput) (*ImportMigrationTaskOutput, error) {
@@ -1080,14 +1080,13 @@ const opListApplicationStates = "ListApplicationStates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationStatesRequest method.
+//	req, resp := client.ListApplicationStatesRequest(params)
 //
-//    // Example sending a request using the ListApplicationStatesRequest method.
-//    req, resp := client.ListApplicationStatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListApplicationStates
 func (c *MigrationHub) ListApplicationStatesRequest(input *ListApplicationStatesInput) (req *request.Request, output *ListApplicationStatesOutput) {
@@ -1126,26 +1125,27 @@ func (c *MigrationHub) ListApplicationStatesRequest(input *ListApplicationStates
 // API operation ListApplicationStates for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListApplicationStates
 func (c *MigrationHub) ListApplicationStates(input *ListApplicationStatesInput) (*ListApplicationStatesOutput, error) {
@@ -1177,15 +1177,14 @@ func (c *MigrationHub) ListApplicationStatesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplicationStates operation.
-//    pageNum := 0
-//    err := client.ListApplicationStatesPages(params,
-//        func(page *migrationhub.ListApplicationStatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplicationStates operation.
+//	pageNum := 0
+//	err := client.ListApplicationStatesPages(params,
+//	    func(page *migrationhub.ListApplicationStatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MigrationHub) ListApplicationStatesPages(input *ListApplicationStatesInput, fn func(*ListApplicationStatesOutput, bool) bool) error {
 	return c.ListApplicationStatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1237,14 +1236,13 @@ const opListCreatedArtifacts = "ListCreatedArtifacts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCreatedArtifactsRequest method.
+//	req, resp := client.ListCreatedArtifactsRequest(params)
 //
-//    // Example sending a request using the ListCreatedArtifactsRequest method.
-//    req, resp := client.ListCreatedArtifactsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListCreatedArtifacts
 func (c *MigrationHub) ListCreatedArtifactsRequest(input *ListCreatedArtifactsInput) (req *request.Request, output *ListCreatedArtifactsOutput) {
@@ -1274,12 +1272,12 @@ func (c *MigrationHub) ListCreatedArtifactsRequest(input *ListCreatedArtifactsIn
 // Lists the created artifacts attached to a given migration task in an update
 // stream. This API has the following traits:
 //
-//    * Gets the list of the created artifacts while migration is taking place.
+//   - Gets the list of the created artifacts while migration is taking place.
 //
-//    * Shows the artifacts created by the migration tool that was associated
-//    by the AssociateCreatedArtifact API.
+//   - Shows the artifacts created by the migration tool that was associated
+//     by the AssociateCreatedArtifact API.
 //
-//    * Lists created artifacts in a paginated interface.
+//   - Lists created artifacts in a paginated interface.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1289,32 +1287,33 @@ func (c *MigrationHub) ListCreatedArtifactsRequest(input *ListCreatedArtifactsIn
 // API operation ListCreatedArtifacts for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListCreatedArtifacts
 func (c *MigrationHub) ListCreatedArtifacts(input *ListCreatedArtifactsInput) (*ListCreatedArtifactsOutput, error) {
@@ -1346,15 +1345,14 @@ func (c *MigrationHub) ListCreatedArtifactsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCreatedArtifacts operation.
-//    pageNum := 0
-//    err := client.ListCreatedArtifactsPages(params,
-//        func(page *migrationhub.ListCreatedArtifactsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCreatedArtifacts operation.
+//	pageNum := 0
+//	err := client.ListCreatedArtifactsPages(params,
+//	    func(page *migrationhub.ListCreatedArtifactsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MigrationHub) ListCreatedArtifactsPages(input *ListCreatedArtifactsInput, fn func(*ListCreatedArtifactsOutput, bool) bool) error {
 	return c.ListCreatedArtifactsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1406,14 +1404,13 @@ const opListDiscoveredResources = "ListDiscoveredResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDiscoveredResourcesRequest method.
+//	req, resp := client.ListDiscoveredResourcesRequest(params)
 //
-//    // Example sending a request using the ListDiscoveredResourcesRequest method.
-//    req, resp := client.ListDiscoveredResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListDiscoveredResources
 func (c *MigrationHub) ListDiscoveredResourcesRequest(input *ListDiscoveredResourcesInput) (req *request.Request, output *ListDiscoveredResourcesOutput) {
@@ -1450,32 +1447,33 @@ func (c *MigrationHub) ListDiscoveredResourcesRequest(input *ListDiscoveredResou
 // API operation ListDiscoveredResources for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListDiscoveredResources
 func (c *MigrationHub) ListDiscoveredResources(input *ListDiscoveredResourcesInput) (*ListDiscoveredResourcesOutput, error) {
@@ -1507,15 +1505,14 @@ func (c *MigrationHub) ListDiscoveredResourcesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDiscoveredResources operation.
-//    pageNum := 0
-//    err := client.ListDiscoveredResourcesPages(params,
-//        func(page *migrationhub.ListDiscoveredResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDiscoveredResources operation.
+//	pageNum := 0
+//	err := client.ListDiscoveredResourcesPages(params,
+//	    func(page *migrationhub.ListDiscoveredResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MigrationHub) ListDiscoveredResourcesPages(input *ListDiscoveredResourcesInput, fn func(*ListDiscoveredResourcesOutput, bool) bool) error {
 	return c.ListDiscoveredResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1567,14 +1564,13 @@ const opListMigrationTasks = "ListMigrationTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMigrationTasksRequest method.
+//	req, resp := client.ListMigrationTasksRequest(params)
 //
-//    // Example sending a request using the ListMigrationTasksRequest method.
-//    req, resp := client.ListMigrationTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListMigrationTasks
 func (c *MigrationHub) ListMigrationTasksRequest(input *ListMigrationTasksInput) (req *request.Request, output *ListMigrationTasksOutput) {
@@ -1604,12 +1600,12 @@ func (c *MigrationHub) ListMigrationTasksRequest(input *ListMigrationTasksInput)
 // Lists all, or filtered by resource name, migration tasks associated with
 // the user account making this call. This API has the following traits:
 //
-//    * Can show a summary list of the most recent migration tasks.
+//   - Can show a summary list of the most recent migration tasks.
 //
-//    * Can show a summary list of migration tasks associated with a given discovered
-//    resource.
+//   - Can show a summary list of migration tasks associated with a given discovered
+//     resource.
 //
-//    * Lists migration tasks in a paginated interface.
+//   - Lists migration tasks in a paginated interface.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1619,37 +1615,38 @@ func (c *MigrationHub) ListMigrationTasksRequest(input *ListMigrationTasksInput)
 // API operation ListMigrationTasks for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * PolicyErrorException
-//   Exception raised when there are problems accessing Application Discovery
-//   Service (Application Discovery Service); most likely due to a misconfigured
-//   policy or the migrationhub-discovery role is missing or not configured correctly.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - PolicyErrorException
+//     Exception raised when there are problems accessing Application Discovery
+//     Service (Application Discovery Service); most likely due to a misconfigured
+//     policy or the migrationhub-discovery role is missing or not configured correctly.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListMigrationTasks
 func (c *MigrationHub) ListMigrationTasks(input *ListMigrationTasksInput) (*ListMigrationTasksOutput, error) {
@@ -1681,15 +1678,14 @@ func (c *MigrationHub) ListMigrationTasksWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMigrationTasks operation.
-//    pageNum := 0
-//    err := client.ListMigrationTasksPages(params,
-//        func(page *migrationhub.ListMigrationTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMigrationTasks operation.
+//	pageNum := 0
+//	err := client.ListMigrationTasksPages(params,
+//	    func(page *migrationhub.ListMigrationTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MigrationHub) ListMigrationTasksPages(input *ListMigrationTasksInput, fn func(*ListMigrationTasksOutput, bool) bool) error {
 	return c.ListMigrationTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1741,14 +1737,13 @@ const opListProgressUpdateStreams = "ListProgressUpdateStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProgressUpdateStreamsRequest method.
+//	req, resp := client.ListProgressUpdateStreamsRequest(params)
 //
-//    // Example sending a request using the ListProgressUpdateStreamsRequest method.
-//    req, resp := client.ListProgressUpdateStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListProgressUpdateStreams
 func (c *MigrationHub) ListProgressUpdateStreamsRequest(input *ListProgressUpdateStreamsInput) (req *request.Request, output *ListProgressUpdateStreamsOutput) {
@@ -1786,26 +1781,27 @@ func (c *MigrationHub) ListProgressUpdateStreamsRequest(input *ListProgressUpdat
 // API operation ListProgressUpdateStreams for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/ListProgressUpdateStreams
 func (c *MigrationHub) ListProgressUpdateStreams(input *ListProgressUpdateStreamsInput) (*ListProgressUpdateStreamsOutput, error) {
@@ -1837,15 +1833,14 @@ func (c *MigrationHub) ListProgressUpdateStreamsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProgressUpdateStreams operation.
-//    pageNum := 0
-//    err := client.ListProgressUpdateStreamsPages(params,
-//        func(page *migrationhub.ListProgressUpdateStreamsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProgressUpdateStreams operation.
+//	pageNum := 0
+//	err := client.ListProgressUpdateStreamsPages(params,
+//	    func(page *migrationhub.ListProgressUpdateStreamsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MigrationHub) ListProgressUpdateStreamsPages(input *ListProgressUpdateStreamsInput, fn func(*ListProgressUpdateStreamsOutput, bool) bool) error {
 	return c.ListProgressUpdateStreamsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1897,14 +1892,13 @@ const opNotifyApplicationState = "NotifyApplicationState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyApplicationStateRequest method.
+//	req, resp := client.NotifyApplicationStateRequest(params)
 //
-//    // Example sending a request using the NotifyApplicationStateRequest method.
-//    req, resp := client.NotifyApplicationStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/NotifyApplicationState
 func (c *MigrationHub) NotifyApplicationStateRequest(input *NotifyApplicationStateInput) (req *request.Request, output *NotifyApplicationStateOutput) {
@@ -1938,45 +1932,46 @@ func (c *MigrationHub) NotifyApplicationStateRequest(input *NotifyApplicationSta
 // API operation NotifyApplicationState for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * PolicyErrorException
-//   Exception raised when there are problems accessing Application Discovery
-//   Service (Application Discovery Service); most likely due to a misconfigured
-//   policy or the migrationhub-discovery role is missing or not configured correctly.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - PolicyErrorException
+//     Exception raised when there are problems accessing Application Discovery
+//     Service (Application Discovery Service); most likely due to a misconfigured
+//     policy or the migrationhub-discovery role is missing or not configured correctly.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/NotifyApplicationState
 func (c *MigrationHub) NotifyApplicationState(input *NotifyApplicationStateInput) (*NotifyApplicationStateOutput, error) {
@@ -2016,14 +2011,13 @@ const opNotifyMigrationTaskState = "NotifyMigrationTaskState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyMigrationTaskStateRequest method.
+//	req, resp := client.NotifyMigrationTaskStateRequest(params)
 //
-//    // Example sending a request using the NotifyMigrationTaskStateRequest method.
-//    req, resp := client.NotifyMigrationTaskStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/NotifyMigrationTaskState
 func (c *MigrationHub) NotifyMigrationTaskStateRequest(input *NotifyMigrationTaskStateInput) (req *request.Request, output *NotifyMigrationTaskStateOutput) {
@@ -2048,13 +2042,13 @@ func (c *MigrationHub) NotifyMigrationTaskStateRequest(input *NotifyMigrationTas
 // Notifies Migration Hub of the current status, progress, or other detail regarding
 // a migration task. This API has the following traits:
 //
-//    * Migration tools will call the NotifyMigrationTaskState API to share
-//    the latest progress and status.
+//   - Migration tools will call the NotifyMigrationTaskState API to share
+//     the latest progress and status.
 //
-//    * MigrationTaskName is used for addressing updates to the correct target.
+//   - MigrationTaskName is used for addressing updates to the correct target.
 //
-//    * ProgressUpdateStream is used for access control and to provide a namespace
-//    for each migration tool.
+//   - ProgressUpdateStream is used for access control and to provide a namespace
+//     for each migration tool.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2064,40 +2058,41 @@ func (c *MigrationHub) NotifyMigrationTaskStateRequest(input *NotifyMigrationTas
 // API operation NotifyMigrationTaskState for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/NotifyMigrationTaskState
 func (c *MigrationHub) NotifyMigrationTaskState(input *NotifyMigrationTaskStateInput) (*NotifyMigrationTaskStateOutput, error) {
@@ -2137,14 +2132,13 @@ const opPutResourceAttributes = "PutResourceAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourceAttributesRequest method.
+//	req, resp := client.PutResourceAttributesRequest(params)
 //
-//    // Example sending a request using the PutResourceAttributesRequest method.
-//    req, resp := client.PutResourceAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/PutResourceAttributes
 func (c *MigrationHub) PutResourceAttributesRequest(input *PutResourceAttributesInput) (req *request.Request, output *PutResourceAttributesOutput) {
@@ -2170,15 +2164,15 @@ func (c *MigrationHub) PutResourceAttributesRequest(input *PutResourceAttributes
 // be associated in the Application Discovery Service repository. This association
 // occurs asynchronously after PutResourceAttributes returns.
 //
-//    * Keep in mind that subsequent calls to PutResourceAttributes will override
-//    previously stored attributes. For example, if it is first called with
-//    a MAC address, but later, it is desired to add an IP address, it will
-//    then be required to call it with both the IP and MAC addresses to prevent
-//    overriding the MAC address.
+//   - Keep in mind that subsequent calls to PutResourceAttributes will override
+//     previously stored attributes. For example, if it is first called with
+//     a MAC address, but later, it is desired to add an IP address, it will
+//     then be required to call it with both the IP and MAC addresses to prevent
+//     overriding the MAC address.
 //
-//    * Note the instructions regarding the special use case of the ResourceAttributeList
-//    (https://docs.aws.amazon.com/migrationhub/latest/ug/API_PutResourceAttributes.html#migrationhub-PutResourceAttributes-request-ResourceAttributeList)
-//    parameter when specifying any "VM" related value.
+//   - Note the instructions regarding the special use case of the ResourceAttributeList
+//     (https://docs.aws.amazon.com/migrationhub/latest/ug/API_PutResourceAttributes.html#migrationhub-PutResourceAttributes-request-ResourceAttributeList)
+//     parameter when specifying any "VM" related value.
 //
 // Because this is an asynchronous call, it will always return 200, whether
 // an association occurs or not. To confirm if an association was found based
@@ -2192,40 +2186,41 @@ func (c *MigrationHub) PutResourceAttributesRequest(input *PutResourceAttributes
 // API operation PutResourceAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceUnavailableException
-//   Exception raised when there is an internal, configuration, or dependency
-//   error encountered.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * DryRunOperation
-//   Exception raised to indicate a successfully authorized action when the DryRun
-//   flag is set to "true".
+//   - ServiceUnavailableException
+//     Exception raised when there is an internal, configuration, or dependency
+//     error encountered.
 //
-//   * UnauthorizedOperation
-//   Exception raised to indicate a request was not authorized when the DryRun
-//   flag is set to "true".
+//   - DryRunOperation
+//     Exception raised to indicate a successfully authorized action when the DryRun
+//     flag is set to "true".
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - UnauthorizedOperation
+//     Exception raised to indicate a request was not authorized when the DryRun
+//     flag is set to "true".
 //
-//   * ResourceNotFoundException
-//   Exception raised when the request references a resource (Application Discovery
-//   Service configuration, update stream, migration task, etc.) that does not
-//   exist in Application Discovery Service (Application Discovery Service) or
-//   in Migration Hub's repository.
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
-//   * HomeRegionNotSetException
-//   The home region is not set. Set the home region to continue.
+//   - ResourceNotFoundException
+//     Exception raised when the request references a resource (Application Discovery
+//     Service configuration, update stream, migration task, etc.) that does not
+//     exist in Application Discovery Service (Application Discovery Service) or
+//     in Migration Hub's repository.
+//
+//   - HomeRegionNotSetException
+//     The home region is not set. Set the home region to continue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSMigrationHub-2017-05-31/PutResourceAttributes
 func (c *MigrationHub) PutResourceAttributes(input *PutResourceAttributesInput) (*PutResourceAttributesOutput, error) {
@@ -4896,13 +4891,13 @@ func (s PutResourceAttributesOutput) GoString() string {
 //
 // Note the corresponding format required per type listed below:
 //
-// IPV4
+// # IPV4
 //
 // x.x.x.x
 //
 // where x is an integer in the range [0,255]
 //
-// IPV6
+// # IPV6
 //
 // y : y : y : y : y : y : y : y
 //
@@ -4912,7 +4907,7 @@ func (s PutResourceAttributesOutput) GoString() string {
 //
 // ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$
 //
-// FQDN
+// # FQDN
 //
 // ^[^<>{}\\\\/?,=\\p{Cntrl}]{1,256}$
 type ResourceAttribute struct {

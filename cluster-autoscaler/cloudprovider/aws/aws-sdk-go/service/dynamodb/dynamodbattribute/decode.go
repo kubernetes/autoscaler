@@ -14,23 +14,24 @@ import (
 // An Unmarshaler is an interface to provide custom unmarshaling of
 // AttributeValues. Use this to provide custom logic determining
 // how AttributeValues should be unmarshaled.
-// 		type ExampleUnmarshaler struct {
-// 			Value int
-// 		}
 //
-// 		func (u *ExampleUnmarshaler) UnmarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
-// 			if av.N == nil {
-// 				return nil
-// 			}
+//	type ExampleUnmarshaler struct {
+//		Value int
+//	}
 //
-// 			n, err := strconv.ParseInt(*av.N, 10, 0)
-// 			if err != nil {
-// 				return err
-// 			}
+//	func (u *ExampleUnmarshaler) UnmarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
+//		if av.N == nil {
+//			return nil
+//		}
 //
-// 			u.Value = int(n)
-// 			return nil
-// 		}
+//		n, err := strconv.ParseInt(*av.N, 10, 0)
+//		if err != nil {
+//			return err
+//		}
+//
+//		u.Value = int(n)
+//		return nil
+//	}
 type Unmarshaler interface {
 	UnmarshalDynamoDBAttributeValue(*dynamodb.AttributeValue) error
 }
@@ -54,17 +55,17 @@ type Unmarshaler interface {
 // When decoding AttributeValues to interfaces Unmarshal will use the
 // following types.
 //
-//		[]byte,                 AV Binary (B)
-//		[][]byte,               AV Binary Set (BS)
-//		bool,                   AV Boolean (BOOL)
-//		[]interface{},          AV List (L)
-//		map[string]interface{}, AV Map (M)
-//		float64,                AV Number (N)
-//		Number,                 AV Number (N) with UseNumber set
-//		[]float64,              AV Number Set (NS)
-//		[]Number,               AV Number Set (NS) with UseNumber set
-//		string,                 AV String (S)
-//		[]string,               AV String Set (SS)
+//	[]byte,                 AV Binary (B)
+//	[][]byte,               AV Binary Set (BS)
+//	bool,                   AV Boolean (BOOL)
+//	[]interface{},          AV List (L)
+//	map[string]interface{}, AV Map (M)
+//	float64,                AV Number (N)
+//	Number,                 AV Number (N) with UseNumber set
+//	[]float64,              AV Number Set (NS)
+//	[]Number,               AV Number Set (NS) with UseNumber set
+//	string,                 AV String (S)
+//	[]string,               AV String Set (SS)
 //
 // If the Decoder option, UseNumber is set numbers will be unmarshaled
 // as Number values instead of float64. Use this to maintain the original

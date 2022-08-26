@@ -29,14 +29,13 @@ const opAcceptEnvironmentAccountConnection = "AcceptEnvironmentAccountConnection
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptEnvironmentAccountConnectionRequest method.
+//	req, resp := client.AcceptEnvironmentAccountConnectionRequest(params)
 //
-//    // Example sending a request using the AcceptEnvironmentAccountConnectionRequest method.
-//    req, resp := client.AcceptEnvironmentAccountConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/AcceptEnvironmentAccountConnection
 func (c *Proton) AcceptEnvironmentAccountConnectionRequest(input *AcceptEnvironmentAccountConnectionInput) (req *request.Request, output *AcceptEnvironmentAccountConnectionOutput) {
@@ -73,24 +72,25 @@ func (c *Proton) AcceptEnvironmentAccountConnectionRequest(input *AcceptEnvironm
 // API operation AcceptEnvironmentAccountConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/AcceptEnvironmentAccountConnection
 func (c *Proton) AcceptEnvironmentAccountConnection(input *AcceptEnvironmentAccountConnectionInput) (*AcceptEnvironmentAccountConnectionOutput, error) {
@@ -130,14 +130,13 @@ const opCancelEnvironmentDeployment = "CancelEnvironmentDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelEnvironmentDeploymentRequest method.
+//	req, resp := client.CancelEnvironmentDeploymentRequest(params)
 //
-//    // Example sending a request using the CancelEnvironmentDeploymentRequest method.
-//    req, resp := client.CancelEnvironmentDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CancelEnvironmentDeployment
 func (c *Proton) CancelEnvironmentDeploymentRequest(input *CancelEnvironmentDeploymentInput) (req *request.Request, output *CancelEnvironmentDeploymentOutput) {
@@ -165,15 +164,15 @@ func (c *Proton) CancelEnvironmentDeploymentRequest(input *CancelEnvironmentDepl
 //
 // The following list includes potential cancellation scenarios.
 //
-//    * If the cancellation attempt succeeds, the resulting deployment state
-//    is CANCELLED.
+//   - If the cancellation attempt succeeds, the resulting deployment state
+//     is CANCELLED.
 //
-//    * If the cancellation attempt fails, the resulting deployment state is
-//    FAILED.
+//   - If the cancellation attempt fails, the resulting deployment state is
+//     FAILED.
 //
-//    * If the current UpdateEnvironment action succeeds before the cancellation
-//    attempt starts, the resulting deployment state is SUCCEEDED and the cancellation
-//    attempt has no effect.
+//   - If the current UpdateEnvironment action succeeds before the cancellation
+//     attempt starts, the resulting deployment state is SUCCEEDED and the cancellation
+//     attempt has no effect.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -183,24 +182,25 @@ func (c *Proton) CancelEnvironmentDeploymentRequest(input *CancelEnvironmentDepl
 // API operation CancelEnvironmentDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CancelEnvironmentDeployment
 func (c *Proton) CancelEnvironmentDeployment(input *CancelEnvironmentDeploymentInput) (*CancelEnvironmentDeploymentOutput, error) {
@@ -240,14 +240,13 @@ const opCancelServiceInstanceDeployment = "CancelServiceInstanceDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelServiceInstanceDeploymentRequest method.
+//	req, resp := client.CancelServiceInstanceDeploymentRequest(params)
 //
-//    // Example sending a request using the CancelServiceInstanceDeploymentRequest method.
-//    req, resp := client.CancelServiceInstanceDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CancelServiceInstanceDeployment
 func (c *Proton) CancelServiceInstanceDeploymentRequest(input *CancelServiceInstanceDeploymentInput) (req *request.Request, output *CancelServiceInstanceDeploymentOutput) {
@@ -275,15 +274,15 @@ func (c *Proton) CancelServiceInstanceDeploymentRequest(input *CancelServiceInst
 //
 // The following list includes potential cancellation scenarios.
 //
-//    * If the cancellation attempt succeeds, the resulting deployment state
-//    is CANCELLED.
+//   - If the cancellation attempt succeeds, the resulting deployment state
+//     is CANCELLED.
 //
-//    * If the cancellation attempt fails, the resulting deployment state is
-//    FAILED.
+//   - If the cancellation attempt fails, the resulting deployment state is
+//     FAILED.
 //
-//    * If the current UpdateServiceInstance action succeeds before the cancellation
-//    attempt starts, the resulting deployment state is SUCCEEDED and the cancellation
-//    attempt has no effect.
+//   - If the current UpdateServiceInstance action succeeds before the cancellation
+//     attempt starts, the resulting deployment state is SUCCEEDED and the cancellation
+//     attempt has no effect.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -293,24 +292,25 @@ func (c *Proton) CancelServiceInstanceDeploymentRequest(input *CancelServiceInst
 // API operation CancelServiceInstanceDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CancelServiceInstanceDeployment
 func (c *Proton) CancelServiceInstanceDeployment(input *CancelServiceInstanceDeploymentInput) (*CancelServiceInstanceDeploymentOutput, error) {
@@ -350,14 +350,13 @@ const opCancelServicePipelineDeployment = "CancelServicePipelineDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelServicePipelineDeploymentRequest method.
+//	req, resp := client.CancelServicePipelineDeploymentRequest(params)
 //
-//    // Example sending a request using the CancelServicePipelineDeploymentRequest method.
-//    req, resp := client.CancelServicePipelineDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CancelServicePipelineDeployment
 func (c *Proton) CancelServicePipelineDeploymentRequest(input *CancelServicePipelineDeploymentInput) (req *request.Request, output *CancelServicePipelineDeploymentOutput) {
@@ -385,15 +384,15 @@ func (c *Proton) CancelServicePipelineDeploymentRequest(input *CancelServicePipe
 //
 // The following list includes potential cancellation scenarios.
 //
-//    * If the cancellation attempt succeeds, the resulting deployment state
-//    is CANCELLED.
+//   - If the cancellation attempt succeeds, the resulting deployment state
+//     is CANCELLED.
 //
-//    * If the cancellation attempt fails, the resulting deployment state is
-//    FAILED.
+//   - If the cancellation attempt fails, the resulting deployment state is
+//     FAILED.
 //
-//    * If the current UpdateServicePipeline action succeeds before the cancellation
-//    attempt starts, the resulting deployment state is SUCCEEDED and the cancellation
-//    attempt has no effect.
+//   - If the current UpdateServicePipeline action succeeds before the cancellation
+//     attempt starts, the resulting deployment state is SUCCEEDED and the cancellation
+//     attempt has no effect.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -403,24 +402,25 @@ func (c *Proton) CancelServicePipelineDeploymentRequest(input *CancelServicePipe
 // API operation CancelServicePipelineDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CancelServicePipelineDeployment
 func (c *Proton) CancelServicePipelineDeployment(input *CancelServicePipelineDeploymentInput) (*CancelServicePipelineDeploymentOutput, error) {
@@ -460,14 +460,13 @@ const opCreateEnvironment = "CreateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentRequest method.
+//	req, resp := client.CreateEnvironmentRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentRequest method.
-//    req, resp := client.CreateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironment
 func (c *Proton) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *request.Request, output *CreateEnvironmentOutput) {
@@ -494,12 +493,12 @@ func (c *Proton) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *r
 //
 // You can provision environments using the following methods:
 //
-//    * Amazon Web Services-managed provisioning: Proton makes direct calls
-//    to provision your resources.
+//   - Amazon Web Services-managed provisioning: Proton makes direct calls
+//     to provision your resources.
 //
-//    * Self-managed provisioning: Proton makes pull requests on your repository
-//    to provide compiled infrastructure as code (IaC) files that your IaC engine
-//    uses to provision resources.
+//   - Self-managed provisioning: Proton makes pull requests on your repository
+//     to provide compiled infrastructure as code (IaC) files that your IaC engine
+//     uses to provision resources.
 //
 // For more information, see Environments (https://docs.aws.amazon.com/proton/latest/adminguide/ag-environments.html)
 // and Provisioning methods (https://docs.aws.amazon.com/proton/latest/adminguide/ag-works-prov-methods.html)
@@ -513,28 +512,29 @@ func (c *Proton) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *r
 // API operation CreateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironment
 func (c *Proton) CreateEnvironment(input *CreateEnvironmentInput) (*CreateEnvironmentOutput, error) {
@@ -574,14 +574,13 @@ const opCreateEnvironmentAccountConnection = "CreateEnvironmentAccountConnection
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentAccountConnectionRequest method.
+//	req, resp := client.CreateEnvironmentAccountConnectionRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentAccountConnectionRequest method.
-//    req, resp := client.CreateEnvironmentAccountConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironmentAccountConnection
 func (c *Proton) CreateEnvironmentAccountConnectionRequest(input *CreateEnvironmentAccountConnectionInput) (req *request.Request, output *CreateEnvironmentAccountConnectionOutput) {
@@ -620,25 +619,26 @@ func (c *Proton) CreateEnvironmentAccountConnectionRequest(input *CreateEnvironm
 // API operation CreateEnvironmentAccountConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironmentAccountConnection
 func (c *Proton) CreateEnvironmentAccountConnection(input *CreateEnvironmentAccountConnectionInput) (*CreateEnvironmentAccountConnectionOutput, error) {
@@ -678,14 +678,13 @@ const opCreateEnvironmentTemplate = "CreateEnvironmentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentTemplateRequest method.
+//	req, resp := client.CreateEnvironmentTemplateRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentTemplateRequest method.
-//    req, resp := client.CreateEnvironmentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironmentTemplate
 func (c *Proton) CreateEnvironmentTemplateRequest(input *CreateEnvironmentTemplateInput) (req *request.Request, output *CreateEnvironmentTemplateOutput) {
@@ -712,17 +711,17 @@ func (c *Proton) CreateEnvironmentTemplateRequest(input *CreateEnvironmentTempla
 //
 // You can create an environment template in one of the two following ways:
 //
-//    * Register and publish a standard environment template that instructs
-//    Proton to deploy and manage environment infrastructure.
+//   - Register and publish a standard environment template that instructs
+//     Proton to deploy and manage environment infrastructure.
 //
-//    * Register and publish a customer managed environment template that connects
-//    Proton to your existing provisioned infrastructure that you manage. Proton
-//    doesn't manage your existing provisioned infrastructure. To create an
-//    environment template for customer provisioned and managed infrastructure,
-//    include the provisioning parameter and set the value to CUSTOMER_MANAGED.
-//    For more information, see Register and publish an environment template
-//    (https://docs.aws.amazon.com/proton/latest/adminguide/template-create.html)
-//    in the Proton Administrator Guide.
+//   - Register and publish a customer managed environment template that connects
+//     Proton to your existing provisioned infrastructure that you manage. Proton
+//     doesn't manage your existing provisioned infrastructure. To create an
+//     environment template for customer provisioned and managed infrastructure,
+//     include the provisioning parameter and set the value to CUSTOMER_MANAGED.
+//     For more information, see Register and publish an environment template
+//     (https://docs.aws.amazon.com/proton/latest/adminguide/template-create.html)
+//     in the Proton Administrator Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -732,25 +731,26 @@ func (c *Proton) CreateEnvironmentTemplateRequest(input *CreateEnvironmentTempla
 // API operation CreateEnvironmentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironmentTemplate
 func (c *Proton) CreateEnvironmentTemplate(input *CreateEnvironmentTemplateInput) (*CreateEnvironmentTemplateOutput, error) {
@@ -790,14 +790,13 @@ const opCreateEnvironmentTemplateVersion = "CreateEnvironmentTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentTemplateVersionRequest method.
+//	req, resp := client.CreateEnvironmentTemplateVersionRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentTemplateVersionRequest method.
-//    req, resp := client.CreateEnvironmentTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironmentTemplateVersion
 func (c *Proton) CreateEnvironmentTemplateVersionRequest(input *CreateEnvironmentTemplateVersionInput) (req *request.Request, output *CreateEnvironmentTemplateVersionOutput) {
@@ -831,28 +830,29 @@ func (c *Proton) CreateEnvironmentTemplateVersionRequest(input *CreateEnvironmen
 // API operation CreateEnvironmentTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateEnvironmentTemplateVersion
 func (c *Proton) CreateEnvironmentTemplateVersion(input *CreateEnvironmentTemplateVersionInput) (*CreateEnvironmentTemplateVersionOutput, error) {
@@ -892,14 +892,13 @@ const opCreateRepository = "CreateRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRepositoryRequest method.
+//	req, resp := client.CreateRepositoryRequest(params)
 //
-//    // Example sending a request using the CreateRepositoryRequest method.
-//    req, resp := client.CreateRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateRepository
 func (c *Proton) CreateRepositoryRequest(input *CreateRepositoryInput) (req *request.Request, output *CreateRepositoryOutput) {
@@ -938,25 +937,26 @@ func (c *Proton) CreateRepositoryRequest(input *CreateRepositoryInput) (req *req
 // API operation CreateRepository for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateRepository
 func (c *Proton) CreateRepository(input *CreateRepositoryInput) (*CreateRepositoryOutput, error) {
@@ -996,14 +996,13 @@ const opCreateService = "CreateService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServiceRequest method.
+//	req, resp := client.CreateServiceRequest(params)
 //
-//    // Example sending a request using the CreateServiceRequest method.
-//    req, resp := client.CreateServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateService
 func (c *Proton) CreateServiceRequest(input *CreateServiceInput) (req *request.Request, output *CreateServiceOutput) {
@@ -1038,28 +1037,29 @@ func (c *Proton) CreateServiceRequest(input *CreateServiceInput) (req *request.R
 // API operation CreateService for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateService
 func (c *Proton) CreateService(input *CreateServiceInput) (*CreateServiceOutput, error) {
@@ -1099,14 +1099,13 @@ const opCreateServiceTemplate = "CreateServiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServiceTemplateRequest method.
+//	req, resp := client.CreateServiceTemplateRequest(params)
 //
-//    // Example sending a request using the CreateServiceTemplateRequest method.
-//    req, resp := client.CreateServiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateServiceTemplate
 func (c *Proton) CreateServiceTemplateRequest(input *CreateServiceTemplateInput) (req *request.Request, output *CreateServiceTemplateOutput) {
@@ -1144,25 +1143,26 @@ func (c *Proton) CreateServiceTemplateRequest(input *CreateServiceTemplateInput)
 // API operation CreateServiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateServiceTemplate
 func (c *Proton) CreateServiceTemplate(input *CreateServiceTemplateInput) (*CreateServiceTemplateOutput, error) {
@@ -1202,14 +1202,13 @@ const opCreateServiceTemplateVersion = "CreateServiceTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServiceTemplateVersionRequest method.
+//	req, resp := client.CreateServiceTemplateVersionRequest(params)
 //
-//    // Example sending a request using the CreateServiceTemplateVersionRequest method.
-//    req, resp := client.CreateServiceTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateServiceTemplateVersion
 func (c *Proton) CreateServiceTemplateVersionRequest(input *CreateServiceTemplateVersionInput) (req *request.Request, output *CreateServiceTemplateVersionOutput) {
@@ -1243,28 +1242,29 @@ func (c *Proton) CreateServiceTemplateVersionRequest(input *CreateServiceTemplat
 // API operation CreateServiceTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateServiceTemplateVersion
 func (c *Proton) CreateServiceTemplateVersion(input *CreateServiceTemplateVersionInput) (*CreateServiceTemplateVersionOutput, error) {
@@ -1304,14 +1304,13 @@ const opCreateTemplateSyncConfig = "CreateTemplateSyncConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTemplateSyncConfigRequest method.
+//	req, resp := client.CreateTemplateSyncConfigRequest(params)
 //
-//    // Example sending a request using the CreateTemplateSyncConfigRequest method.
-//    req, resp := client.CreateTemplateSyncConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateTemplateSyncConfig
 func (c *Proton) CreateTemplateSyncConfigRequest(input *CreateTemplateSyncConfigInput) (req *request.Request, output *CreateTemplateSyncConfigOutput) {
@@ -1348,25 +1347,26 @@ func (c *Proton) CreateTemplateSyncConfigRequest(input *CreateTemplateSyncConfig
 // API operation CreateTemplateSyncConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/CreateTemplateSyncConfig
 func (c *Proton) CreateTemplateSyncConfig(input *CreateTemplateSyncConfigInput) (*CreateTemplateSyncConfigOutput, error) {
@@ -1406,14 +1406,13 @@ const opDeleteEnvironment = "DeleteEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentRequest method.
+//	req, resp := client.DeleteEnvironmentRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentRequest method.
-//    req, resp := client.DeleteEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironment
 func (c *Proton) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *request.Request, output *DeleteEnvironmentOutput) {
@@ -1444,24 +1443,25 @@ func (c *Proton) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *r
 // API operation DeleteEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironment
 func (c *Proton) DeleteEnvironment(input *DeleteEnvironmentInput) (*DeleteEnvironmentOutput, error) {
@@ -1501,14 +1501,13 @@ const opDeleteEnvironmentAccountConnection = "DeleteEnvironmentAccountConnection
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentAccountConnectionRequest method.
+//	req, resp := client.DeleteEnvironmentAccountConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentAccountConnectionRequest method.
-//    req, resp := client.DeleteEnvironmentAccountConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironmentAccountConnection
 func (c *Proton) DeleteEnvironmentAccountConnectionRequest(input *DeleteEnvironmentAccountConnectionInput) (req *request.Request, output *DeleteEnvironmentAccountConnectionOutput) {
@@ -1548,24 +1547,25 @@ func (c *Proton) DeleteEnvironmentAccountConnectionRequest(input *DeleteEnvironm
 // API operation DeleteEnvironmentAccountConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironmentAccountConnection
 func (c *Proton) DeleteEnvironmentAccountConnection(input *DeleteEnvironmentAccountConnectionInput) (*DeleteEnvironmentAccountConnectionOutput, error) {
@@ -1605,14 +1605,13 @@ const opDeleteEnvironmentTemplate = "DeleteEnvironmentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentTemplateRequest method.
+//	req, resp := client.DeleteEnvironmentTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentTemplateRequest method.
-//    req, resp := client.DeleteEnvironmentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironmentTemplate
 func (c *Proton) DeleteEnvironmentTemplateRequest(input *DeleteEnvironmentTemplateInput) (req *request.Request, output *DeleteEnvironmentTemplateOutput) {
@@ -1644,24 +1643,25 @@ func (c *Proton) DeleteEnvironmentTemplateRequest(input *DeleteEnvironmentTempla
 // API operation DeleteEnvironmentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironmentTemplate
 func (c *Proton) DeleteEnvironmentTemplate(input *DeleteEnvironmentTemplateInput) (*DeleteEnvironmentTemplateOutput, error) {
@@ -1701,14 +1701,13 @@ const opDeleteEnvironmentTemplateVersion = "DeleteEnvironmentTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentTemplateVersionRequest method.
+//	req, resp := client.DeleteEnvironmentTemplateVersionRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentTemplateVersionRequest method.
-//    req, resp := client.DeleteEnvironmentTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironmentTemplateVersion
 func (c *Proton) DeleteEnvironmentTemplateVersionRequest(input *DeleteEnvironmentTemplateVersionInput) (req *request.Request, output *DeleteEnvironmentTemplateVersionOutput) {
@@ -1748,24 +1747,25 @@ func (c *Proton) DeleteEnvironmentTemplateVersionRequest(input *DeleteEnvironmen
 // API operation DeleteEnvironmentTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteEnvironmentTemplateVersion
 func (c *Proton) DeleteEnvironmentTemplateVersion(input *DeleteEnvironmentTemplateVersionInput) (*DeleteEnvironmentTemplateVersionOutput, error) {
@@ -1805,14 +1805,13 @@ const opDeleteRepository = "DeleteRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRepositoryRequest method.
+//	req, resp := client.DeleteRepositoryRequest(params)
 //
-//    // Example sending a request using the DeleteRepositoryRequest method.
-//    req, resp := client.DeleteRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteRepository
 func (c *Proton) DeleteRepositoryRequest(input *DeleteRepositoryInput) (req *request.Request, output *DeleteRepositoryOutput) {
@@ -1843,24 +1842,25 @@ func (c *Proton) DeleteRepositoryRequest(input *DeleteRepositoryInput) (req *req
 // API operation DeleteRepository for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteRepository
 func (c *Proton) DeleteRepository(input *DeleteRepositoryInput) (*DeleteRepositoryOutput, error) {
@@ -1900,14 +1900,13 @@ const opDeleteService = "DeleteService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceRequest method.
+//	req, resp := client.DeleteServiceRequest(params)
 //
-//    // Example sending a request using the DeleteServiceRequest method.
-//    req, resp := client.DeleteServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteService
 func (c *Proton) DeleteServiceRequest(input *DeleteServiceInput) (req *request.Request, output *DeleteServiceOutput) {
@@ -1938,24 +1937,25 @@ func (c *Proton) DeleteServiceRequest(input *DeleteServiceInput) (req *request.R
 // API operation DeleteService for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteService
 func (c *Proton) DeleteService(input *DeleteServiceInput) (*DeleteServiceOutput, error) {
@@ -1995,14 +1995,13 @@ const opDeleteServiceTemplate = "DeleteServiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceTemplateRequest method.
+//	req, resp := client.DeleteServiceTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteServiceTemplateRequest method.
-//    req, resp := client.DeleteServiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteServiceTemplate
 func (c *Proton) DeleteServiceTemplateRequest(input *DeleteServiceTemplateInput) (req *request.Request, output *DeleteServiceTemplateOutput) {
@@ -2034,24 +2033,25 @@ func (c *Proton) DeleteServiceTemplateRequest(input *DeleteServiceTemplateInput)
 // API operation DeleteServiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteServiceTemplate
 func (c *Proton) DeleteServiceTemplate(input *DeleteServiceTemplateInput) (*DeleteServiceTemplateOutput, error) {
@@ -2091,14 +2091,13 @@ const opDeleteServiceTemplateVersion = "DeleteServiceTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceTemplateVersionRequest method.
+//	req, resp := client.DeleteServiceTemplateVersionRequest(params)
 //
-//    // Example sending a request using the DeleteServiceTemplateVersionRequest method.
-//    req, resp := client.DeleteServiceTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteServiceTemplateVersion
 func (c *Proton) DeleteServiceTemplateVersionRequest(input *DeleteServiceTemplateVersionInput) (req *request.Request, output *DeleteServiceTemplateVersionOutput) {
@@ -2138,24 +2137,25 @@ func (c *Proton) DeleteServiceTemplateVersionRequest(input *DeleteServiceTemplat
 // API operation DeleteServiceTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteServiceTemplateVersion
 func (c *Proton) DeleteServiceTemplateVersion(input *DeleteServiceTemplateVersionInput) (*DeleteServiceTemplateVersionOutput, error) {
@@ -2195,14 +2195,13 @@ const opDeleteTemplateSyncConfig = "DeleteTemplateSyncConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTemplateSyncConfigRequest method.
+//	req, resp := client.DeleteTemplateSyncConfigRequest(params)
 //
-//    // Example sending a request using the DeleteTemplateSyncConfigRequest method.
-//    req, resp := client.DeleteTemplateSyncConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteTemplateSyncConfig
 func (c *Proton) DeleteTemplateSyncConfigRequest(input *DeleteTemplateSyncConfigInput) (req *request.Request, output *DeleteTemplateSyncConfigOutput) {
@@ -2233,24 +2232,25 @@ func (c *Proton) DeleteTemplateSyncConfigRequest(input *DeleteTemplateSyncConfig
 // API operation DeleteTemplateSyncConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/DeleteTemplateSyncConfig
 func (c *Proton) DeleteTemplateSyncConfig(input *DeleteTemplateSyncConfigInput) (*DeleteTemplateSyncConfigOutput, error) {
@@ -2290,14 +2290,13 @@ const opGetAccountSettings = "GetAccountSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountSettingsRequest method.
+//	req, resp := client.GetAccountSettingsRequest(params)
 //
-//    // Example sending a request using the GetAccountSettingsRequest method.
-//    req, resp := client.GetAccountSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetAccountSettings
 func (c *Proton) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req *request.Request, output *GetAccountSettingsOutput) {
@@ -2328,21 +2327,22 @@ func (c *Proton) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req 
 // API operation GetAccountSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetAccountSettings
 func (c *Proton) GetAccountSettings(input *GetAccountSettingsInput) (*GetAccountSettingsOutput, error) {
@@ -2382,14 +2382,13 @@ const opGetEnvironment = "GetEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnvironmentRequest method.
+//	req, resp := client.GetEnvironmentRequest(params)
 //
-//    // Example sending a request using the GetEnvironmentRequest method.
-//    req, resp := client.GetEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironment
 func (c *Proton) GetEnvironmentRequest(input *GetEnvironmentInput) (req *request.Request, output *GetEnvironmentOutput) {
@@ -2420,21 +2419,22 @@ func (c *Proton) GetEnvironmentRequest(input *GetEnvironmentInput) (req *request
 // API operation GetEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironment
 func (c *Proton) GetEnvironment(input *GetEnvironmentInput) (*GetEnvironmentOutput, error) {
@@ -2474,14 +2474,13 @@ const opGetEnvironmentAccountConnection = "GetEnvironmentAccountConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnvironmentAccountConnectionRequest method.
+//	req, resp := client.GetEnvironmentAccountConnectionRequest(params)
 //
-//    // Example sending a request using the GetEnvironmentAccountConnectionRequest method.
-//    req, resp := client.GetEnvironmentAccountConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironmentAccountConnection
 func (c *Proton) GetEnvironmentAccountConnectionRequest(input *GetEnvironmentAccountConnectionInput) (req *request.Request, output *GetEnvironmentAccountConnectionOutput) {
@@ -2516,21 +2515,22 @@ func (c *Proton) GetEnvironmentAccountConnectionRequest(input *GetEnvironmentAcc
 // API operation GetEnvironmentAccountConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironmentAccountConnection
 func (c *Proton) GetEnvironmentAccountConnection(input *GetEnvironmentAccountConnectionInput) (*GetEnvironmentAccountConnectionOutput, error) {
@@ -2570,14 +2570,13 @@ const opGetEnvironmentTemplate = "GetEnvironmentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnvironmentTemplateRequest method.
+//	req, resp := client.GetEnvironmentTemplateRequest(params)
 //
-//    // Example sending a request using the GetEnvironmentTemplateRequest method.
-//    req, resp := client.GetEnvironmentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironmentTemplate
 func (c *Proton) GetEnvironmentTemplateRequest(input *GetEnvironmentTemplateInput) (req *request.Request, output *GetEnvironmentTemplateOutput) {
@@ -2608,21 +2607,22 @@ func (c *Proton) GetEnvironmentTemplateRequest(input *GetEnvironmentTemplateInpu
 // API operation GetEnvironmentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironmentTemplate
 func (c *Proton) GetEnvironmentTemplate(input *GetEnvironmentTemplateInput) (*GetEnvironmentTemplateOutput, error) {
@@ -2662,14 +2662,13 @@ const opGetEnvironmentTemplateVersion = "GetEnvironmentTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnvironmentTemplateVersionRequest method.
+//	req, resp := client.GetEnvironmentTemplateVersionRequest(params)
 //
-//    // Example sending a request using the GetEnvironmentTemplateVersionRequest method.
-//    req, resp := client.GetEnvironmentTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironmentTemplateVersion
 func (c *Proton) GetEnvironmentTemplateVersionRequest(input *GetEnvironmentTemplateVersionInput) (req *request.Request, output *GetEnvironmentTemplateVersionOutput) {
@@ -2700,21 +2699,22 @@ func (c *Proton) GetEnvironmentTemplateVersionRequest(input *GetEnvironmentTempl
 // API operation GetEnvironmentTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetEnvironmentTemplateVersion
 func (c *Proton) GetEnvironmentTemplateVersion(input *GetEnvironmentTemplateVersionInput) (*GetEnvironmentTemplateVersionOutput, error) {
@@ -2754,14 +2754,13 @@ const opGetRepository = "GetRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRepositoryRequest method.
+//	req, resp := client.GetRepositoryRequest(params)
 //
-//    // Example sending a request using the GetRepositoryRequest method.
-//    req, resp := client.GetRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetRepository
 func (c *Proton) GetRepositoryRequest(input *GetRepositoryInput) (req *request.Request, output *GetRepositoryOutput) {
@@ -2792,21 +2791,22 @@ func (c *Proton) GetRepositoryRequest(input *GetRepositoryInput) (req *request.R
 // API operation GetRepository for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetRepository
 func (c *Proton) GetRepository(input *GetRepositoryInput) (*GetRepositoryOutput, error) {
@@ -2846,14 +2846,13 @@ const opGetRepositorySyncStatus = "GetRepositorySyncStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRepositorySyncStatusRequest method.
+//	req, resp := client.GetRepositorySyncStatusRequest(params)
 //
-//    // Example sending a request using the GetRepositorySyncStatusRequest method.
-//    req, resp := client.GetRepositorySyncStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetRepositorySyncStatus
 func (c *Proton) GetRepositorySyncStatusRequest(input *GetRepositorySyncStatusInput) (req *request.Request, output *GetRepositorySyncStatusOutput) {
@@ -2893,21 +2892,22 @@ func (c *Proton) GetRepositorySyncStatusRequest(input *GetRepositorySyncStatusIn
 // API operation GetRepositorySyncStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetRepositorySyncStatus
 func (c *Proton) GetRepositorySyncStatus(input *GetRepositorySyncStatusInput) (*GetRepositorySyncStatusOutput, error) {
@@ -2947,14 +2947,13 @@ const opGetService = "GetService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceRequest method.
+//	req, resp := client.GetServiceRequest(params)
 //
-//    // Example sending a request using the GetServiceRequest method.
-//    req, resp := client.GetServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetService
 func (c *Proton) GetServiceRequest(input *GetServiceInput) (req *request.Request, output *GetServiceOutput) {
@@ -2985,21 +2984,22 @@ func (c *Proton) GetServiceRequest(input *GetServiceInput) (req *request.Request
 // API operation GetService for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetService
 func (c *Proton) GetService(input *GetServiceInput) (*GetServiceOutput, error) {
@@ -3039,14 +3039,13 @@ const opGetServiceInstance = "GetServiceInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceInstanceRequest method.
+//	req, resp := client.GetServiceInstanceRequest(params)
 //
-//    // Example sending a request using the GetServiceInstanceRequest method.
-//    req, resp := client.GetServiceInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetServiceInstance
 func (c *Proton) GetServiceInstanceRequest(input *GetServiceInstanceInput) (req *request.Request, output *GetServiceInstanceOutput) {
@@ -3078,21 +3077,22 @@ func (c *Proton) GetServiceInstanceRequest(input *GetServiceInstanceInput) (req 
 // API operation GetServiceInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetServiceInstance
 func (c *Proton) GetServiceInstance(input *GetServiceInstanceInput) (*GetServiceInstanceOutput, error) {
@@ -3132,14 +3132,13 @@ const opGetServiceTemplate = "GetServiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceTemplateRequest method.
+//	req, resp := client.GetServiceTemplateRequest(params)
 //
-//    // Example sending a request using the GetServiceTemplateRequest method.
-//    req, resp := client.GetServiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetServiceTemplate
 func (c *Proton) GetServiceTemplateRequest(input *GetServiceTemplateInput) (req *request.Request, output *GetServiceTemplateOutput) {
@@ -3170,21 +3169,22 @@ func (c *Proton) GetServiceTemplateRequest(input *GetServiceTemplateInput) (req 
 // API operation GetServiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetServiceTemplate
 func (c *Proton) GetServiceTemplate(input *GetServiceTemplateInput) (*GetServiceTemplateOutput, error) {
@@ -3224,14 +3224,13 @@ const opGetServiceTemplateVersion = "GetServiceTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceTemplateVersionRequest method.
+//	req, resp := client.GetServiceTemplateVersionRequest(params)
 //
-//    // Example sending a request using the GetServiceTemplateVersionRequest method.
-//    req, resp := client.GetServiceTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetServiceTemplateVersion
 func (c *Proton) GetServiceTemplateVersionRequest(input *GetServiceTemplateVersionInput) (req *request.Request, output *GetServiceTemplateVersionOutput) {
@@ -3262,21 +3261,22 @@ func (c *Proton) GetServiceTemplateVersionRequest(input *GetServiceTemplateVersi
 // API operation GetServiceTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetServiceTemplateVersion
 func (c *Proton) GetServiceTemplateVersion(input *GetServiceTemplateVersionInput) (*GetServiceTemplateVersionOutput, error) {
@@ -3316,14 +3316,13 @@ const opGetTemplateSyncConfig = "GetTemplateSyncConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTemplateSyncConfigRequest method.
+//	req, resp := client.GetTemplateSyncConfigRequest(params)
 //
-//    // Example sending a request using the GetTemplateSyncConfigRequest method.
-//    req, resp := client.GetTemplateSyncConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetTemplateSyncConfig
 func (c *Proton) GetTemplateSyncConfigRequest(input *GetTemplateSyncConfigInput) (req *request.Request, output *GetTemplateSyncConfigOutput) {
@@ -3354,21 +3353,22 @@ func (c *Proton) GetTemplateSyncConfigRequest(input *GetTemplateSyncConfigInput)
 // API operation GetTemplateSyncConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetTemplateSyncConfig
 func (c *Proton) GetTemplateSyncConfig(input *GetTemplateSyncConfigInput) (*GetTemplateSyncConfigOutput, error) {
@@ -3408,14 +3408,13 @@ const opGetTemplateSyncStatus = "GetTemplateSyncStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTemplateSyncStatusRequest method.
+//	req, resp := client.GetTemplateSyncStatusRequest(params)
 //
-//    // Example sending a request using the GetTemplateSyncStatusRequest method.
-//    req, resp := client.GetTemplateSyncStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetTemplateSyncStatus
 func (c *Proton) GetTemplateSyncStatusRequest(input *GetTemplateSyncStatusInput) (req *request.Request, output *GetTemplateSyncStatusOutput) {
@@ -3446,21 +3445,22 @@ func (c *Proton) GetTemplateSyncStatusRequest(input *GetTemplateSyncStatusInput)
 // API operation GetTemplateSyncStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/GetTemplateSyncStatus
 func (c *Proton) GetTemplateSyncStatus(input *GetTemplateSyncStatusInput) (*GetTemplateSyncStatusOutput, error) {
@@ -3500,14 +3500,13 @@ const opListEnvironmentAccountConnections = "ListEnvironmentAccountConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentAccountConnectionsRequest method.
+//	req, resp := client.ListEnvironmentAccountConnectionsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentAccountConnectionsRequest method.
-//    req, resp := client.ListEnvironmentAccountConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentAccountConnections
 func (c *Proton) ListEnvironmentAccountConnectionsRequest(input *ListEnvironmentAccountConnectionsInput) (req *request.Request, output *ListEnvironmentAccountConnectionsOutput) {
@@ -3547,18 +3546,19 @@ func (c *Proton) ListEnvironmentAccountConnectionsRequest(input *ListEnvironment
 // API operation ListEnvironmentAccountConnections for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentAccountConnections
 func (c *Proton) ListEnvironmentAccountConnections(input *ListEnvironmentAccountConnectionsInput) (*ListEnvironmentAccountConnectionsOutput, error) {
@@ -3590,15 +3590,14 @@ func (c *Proton) ListEnvironmentAccountConnectionsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironmentAccountConnections operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentAccountConnectionsPages(params,
-//        func(page *proton.ListEnvironmentAccountConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironmentAccountConnections operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentAccountConnectionsPages(params,
+//	    func(page *proton.ListEnvironmentAccountConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListEnvironmentAccountConnectionsPages(input *ListEnvironmentAccountConnectionsInput, fn func(*ListEnvironmentAccountConnectionsOutput, bool) bool) error {
 	return c.ListEnvironmentAccountConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3650,14 +3649,13 @@ const opListEnvironmentOutputs = "ListEnvironmentOutputs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentOutputsRequest method.
+//	req, resp := client.ListEnvironmentOutputsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentOutputsRequest method.
-//    req, resp := client.ListEnvironmentOutputsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentOutputs
 func (c *Proton) ListEnvironmentOutputsRequest(input *ListEnvironmentOutputsInput) (req *request.Request, output *ListEnvironmentOutputsOutput) {
@@ -3694,21 +3692,22 @@ func (c *Proton) ListEnvironmentOutputsRequest(input *ListEnvironmentOutputsInpu
 // API operation ListEnvironmentOutputs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentOutputs
 func (c *Proton) ListEnvironmentOutputs(input *ListEnvironmentOutputsInput) (*ListEnvironmentOutputsOutput, error) {
@@ -3740,15 +3739,14 @@ func (c *Proton) ListEnvironmentOutputsWithContext(ctx aws.Context, input *ListE
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironmentOutputs operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentOutputsPages(params,
-//        func(page *proton.ListEnvironmentOutputsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironmentOutputs operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentOutputsPages(params,
+//	    func(page *proton.ListEnvironmentOutputsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListEnvironmentOutputsPages(input *ListEnvironmentOutputsInput, fn func(*ListEnvironmentOutputsOutput, bool) bool) error {
 	return c.ListEnvironmentOutputsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3800,14 +3798,13 @@ const opListEnvironmentProvisionedResources = "ListEnvironmentProvisionedResourc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentProvisionedResourcesRequest method.
+//	req, resp := client.ListEnvironmentProvisionedResourcesRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentProvisionedResourcesRequest method.
-//    req, resp := client.ListEnvironmentProvisionedResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentProvisionedResources
 func (c *Proton) ListEnvironmentProvisionedResourcesRequest(input *ListEnvironmentProvisionedResourcesInput) (req *request.Request, output *ListEnvironmentProvisionedResourcesOutput) {
@@ -3844,21 +3841,22 @@ func (c *Proton) ListEnvironmentProvisionedResourcesRequest(input *ListEnvironme
 // API operation ListEnvironmentProvisionedResources for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentProvisionedResources
 func (c *Proton) ListEnvironmentProvisionedResources(input *ListEnvironmentProvisionedResourcesInput) (*ListEnvironmentProvisionedResourcesOutput, error) {
@@ -3890,15 +3888,14 @@ func (c *Proton) ListEnvironmentProvisionedResourcesWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironmentProvisionedResources operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentProvisionedResourcesPages(params,
-//        func(page *proton.ListEnvironmentProvisionedResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironmentProvisionedResources operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentProvisionedResourcesPages(params,
+//	    func(page *proton.ListEnvironmentProvisionedResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListEnvironmentProvisionedResourcesPages(input *ListEnvironmentProvisionedResourcesInput, fn func(*ListEnvironmentProvisionedResourcesOutput, bool) bool) error {
 	return c.ListEnvironmentProvisionedResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3950,14 +3947,13 @@ const opListEnvironmentTemplateVersions = "ListEnvironmentTemplateVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentTemplateVersionsRequest method.
+//	req, resp := client.ListEnvironmentTemplateVersionsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentTemplateVersionsRequest method.
-//    req, resp := client.ListEnvironmentTemplateVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentTemplateVersions
 func (c *Proton) ListEnvironmentTemplateVersionsRequest(input *ListEnvironmentTemplateVersionsInput) (req *request.Request, output *ListEnvironmentTemplateVersionsOutput) {
@@ -3994,21 +3990,22 @@ func (c *Proton) ListEnvironmentTemplateVersionsRequest(input *ListEnvironmentTe
 // API operation ListEnvironmentTemplateVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentTemplateVersions
 func (c *Proton) ListEnvironmentTemplateVersions(input *ListEnvironmentTemplateVersionsInput) (*ListEnvironmentTemplateVersionsOutput, error) {
@@ -4040,15 +4037,14 @@ func (c *Proton) ListEnvironmentTemplateVersionsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironmentTemplateVersions operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentTemplateVersionsPages(params,
-//        func(page *proton.ListEnvironmentTemplateVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironmentTemplateVersions operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentTemplateVersionsPages(params,
+//	    func(page *proton.ListEnvironmentTemplateVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListEnvironmentTemplateVersionsPages(input *ListEnvironmentTemplateVersionsInput, fn func(*ListEnvironmentTemplateVersionsOutput, bool) bool) error {
 	return c.ListEnvironmentTemplateVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4100,14 +4096,13 @@ const opListEnvironmentTemplates = "ListEnvironmentTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentTemplatesRequest method.
+//	req, resp := client.ListEnvironmentTemplatesRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentTemplatesRequest method.
-//    req, resp := client.ListEnvironmentTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentTemplates
 func (c *Proton) ListEnvironmentTemplatesRequest(input *ListEnvironmentTemplatesInput) (req *request.Request, output *ListEnvironmentTemplatesOutput) {
@@ -4144,18 +4139,19 @@ func (c *Proton) ListEnvironmentTemplatesRequest(input *ListEnvironmentTemplates
 // API operation ListEnvironmentTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironmentTemplates
 func (c *Proton) ListEnvironmentTemplates(input *ListEnvironmentTemplatesInput) (*ListEnvironmentTemplatesOutput, error) {
@@ -4187,15 +4183,14 @@ func (c *Proton) ListEnvironmentTemplatesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironmentTemplates operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentTemplatesPages(params,
-//        func(page *proton.ListEnvironmentTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironmentTemplates operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentTemplatesPages(params,
+//	    func(page *proton.ListEnvironmentTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListEnvironmentTemplatesPages(input *ListEnvironmentTemplatesInput, fn func(*ListEnvironmentTemplatesOutput, bool) bool) error {
 	return c.ListEnvironmentTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4247,14 +4242,13 @@ const opListEnvironments = "ListEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentsRequest method.
+//	req, resp := client.ListEnvironmentsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentsRequest method.
-//    req, resp := client.ListEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironments
 func (c *Proton) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *request.Request, output *ListEnvironmentsOutput) {
@@ -4291,21 +4285,22 @@ func (c *Proton) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *req
 // API operation ListEnvironments for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListEnvironments
 func (c *Proton) ListEnvironments(input *ListEnvironmentsInput) (*ListEnvironmentsOutput, error) {
@@ -4337,15 +4332,14 @@ func (c *Proton) ListEnvironmentsWithContext(ctx aws.Context, input *ListEnviron
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironments operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentsPages(params,
-//        func(page *proton.ListEnvironmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironments operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentsPages(params,
+//	    func(page *proton.ListEnvironmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListEnvironmentsPages(input *ListEnvironmentsInput, fn func(*ListEnvironmentsOutput, bool) bool) error {
 	return c.ListEnvironmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4397,14 +4391,13 @@ const opListRepositories = "ListRepositories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositoriesRequest method.
+//	req, resp := client.ListRepositoriesRequest(params)
 //
-//    // Example sending a request using the ListRepositoriesRequest method.
-//    req, resp := client.ListRepositoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListRepositories
 func (c *Proton) ListRepositoriesRequest(input *ListRepositoriesInput) (req *request.Request, output *ListRepositoriesOutput) {
@@ -4441,21 +4434,22 @@ func (c *Proton) ListRepositoriesRequest(input *ListRepositoriesInput) (req *req
 // API operation ListRepositories for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListRepositories
 func (c *Proton) ListRepositories(input *ListRepositoriesInput) (*ListRepositoriesOutput, error) {
@@ -4487,15 +4481,14 @@ func (c *Proton) ListRepositoriesWithContext(ctx aws.Context, input *ListReposit
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositories operation.
-//    pageNum := 0
-//    err := client.ListRepositoriesPages(params,
-//        func(page *proton.ListRepositoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositories operation.
+//	pageNum := 0
+//	err := client.ListRepositoriesPages(params,
+//	    func(page *proton.ListRepositoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListRepositoriesPages(input *ListRepositoriesInput, fn func(*ListRepositoriesOutput, bool) bool) error {
 	return c.ListRepositoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4547,14 +4540,13 @@ const opListRepositorySyncDefinitions = "ListRepositorySyncDefinitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositorySyncDefinitionsRequest method.
+//	req, resp := client.ListRepositorySyncDefinitionsRequest(params)
 //
-//    // Example sending a request using the ListRepositorySyncDefinitionsRequest method.
-//    req, resp := client.ListRepositorySyncDefinitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListRepositorySyncDefinitions
 func (c *Proton) ListRepositorySyncDefinitionsRequest(input *ListRepositorySyncDefinitionsInput) (req *request.Request, output *ListRepositorySyncDefinitionsOutput) {
@@ -4591,18 +4583,19 @@ func (c *Proton) ListRepositorySyncDefinitionsRequest(input *ListRepositorySyncD
 // API operation ListRepositorySyncDefinitions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListRepositorySyncDefinitions
 func (c *Proton) ListRepositorySyncDefinitions(input *ListRepositorySyncDefinitionsInput) (*ListRepositorySyncDefinitionsOutput, error) {
@@ -4634,15 +4627,14 @@ func (c *Proton) ListRepositorySyncDefinitionsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositorySyncDefinitions operation.
-//    pageNum := 0
-//    err := client.ListRepositorySyncDefinitionsPages(params,
-//        func(page *proton.ListRepositorySyncDefinitionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositorySyncDefinitions operation.
+//	pageNum := 0
+//	err := client.ListRepositorySyncDefinitionsPages(params,
+//	    func(page *proton.ListRepositorySyncDefinitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListRepositorySyncDefinitionsPages(input *ListRepositorySyncDefinitionsInput, fn func(*ListRepositorySyncDefinitionsOutput, bool) bool) error {
 	return c.ListRepositorySyncDefinitionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4694,14 +4686,13 @@ const opListServiceInstanceOutputs = "ListServiceInstanceOutputs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceInstanceOutputsRequest method.
+//	req, resp := client.ListServiceInstanceOutputsRequest(params)
 //
-//    // Example sending a request using the ListServiceInstanceOutputsRequest method.
-//    req, resp := client.ListServiceInstanceOutputsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceInstanceOutputs
 func (c *Proton) ListServiceInstanceOutputsRequest(input *ListServiceInstanceOutputsInput) (req *request.Request, output *ListServiceInstanceOutputsOutput) {
@@ -4738,21 +4729,22 @@ func (c *Proton) ListServiceInstanceOutputsRequest(input *ListServiceInstanceOut
 // API operation ListServiceInstanceOutputs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceInstanceOutputs
 func (c *Proton) ListServiceInstanceOutputs(input *ListServiceInstanceOutputsInput) (*ListServiceInstanceOutputsOutput, error) {
@@ -4784,15 +4776,14 @@ func (c *Proton) ListServiceInstanceOutputsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceInstanceOutputs operation.
-//    pageNum := 0
-//    err := client.ListServiceInstanceOutputsPages(params,
-//        func(page *proton.ListServiceInstanceOutputsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceInstanceOutputs operation.
+//	pageNum := 0
+//	err := client.ListServiceInstanceOutputsPages(params,
+//	    func(page *proton.ListServiceInstanceOutputsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServiceInstanceOutputsPages(input *ListServiceInstanceOutputsInput, fn func(*ListServiceInstanceOutputsOutput, bool) bool) error {
 	return c.ListServiceInstanceOutputsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4844,14 +4835,13 @@ const opListServiceInstanceProvisionedResources = "ListServiceInstanceProvisione
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceInstanceProvisionedResourcesRequest method.
+//	req, resp := client.ListServiceInstanceProvisionedResourcesRequest(params)
 //
-//    // Example sending a request using the ListServiceInstanceProvisionedResourcesRequest method.
-//    req, resp := client.ListServiceInstanceProvisionedResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceInstanceProvisionedResources
 func (c *Proton) ListServiceInstanceProvisionedResourcesRequest(input *ListServiceInstanceProvisionedResourcesInput) (req *request.Request, output *ListServiceInstanceProvisionedResourcesOutput) {
@@ -4888,21 +4878,22 @@ func (c *Proton) ListServiceInstanceProvisionedResourcesRequest(input *ListServi
 // API operation ListServiceInstanceProvisionedResources for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceInstanceProvisionedResources
 func (c *Proton) ListServiceInstanceProvisionedResources(input *ListServiceInstanceProvisionedResourcesInput) (*ListServiceInstanceProvisionedResourcesOutput, error) {
@@ -4934,15 +4925,14 @@ func (c *Proton) ListServiceInstanceProvisionedResourcesWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceInstanceProvisionedResources operation.
-//    pageNum := 0
-//    err := client.ListServiceInstanceProvisionedResourcesPages(params,
-//        func(page *proton.ListServiceInstanceProvisionedResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceInstanceProvisionedResources operation.
+//	pageNum := 0
+//	err := client.ListServiceInstanceProvisionedResourcesPages(params,
+//	    func(page *proton.ListServiceInstanceProvisionedResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServiceInstanceProvisionedResourcesPages(input *ListServiceInstanceProvisionedResourcesInput, fn func(*ListServiceInstanceProvisionedResourcesOutput, bool) bool) error {
 	return c.ListServiceInstanceProvisionedResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4994,14 +4984,13 @@ const opListServiceInstances = "ListServiceInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceInstancesRequest method.
+//	req, resp := client.ListServiceInstancesRequest(params)
 //
-//    // Example sending a request using the ListServiceInstancesRequest method.
-//    req, resp := client.ListServiceInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceInstances
 func (c *Proton) ListServiceInstancesRequest(input *ListServiceInstancesInput) (req *request.Request, output *ListServiceInstancesOutput) {
@@ -5038,21 +5027,22 @@ func (c *Proton) ListServiceInstancesRequest(input *ListServiceInstancesInput) (
 // API operation ListServiceInstances for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceInstances
 func (c *Proton) ListServiceInstances(input *ListServiceInstancesInput) (*ListServiceInstancesOutput, error) {
@@ -5084,15 +5074,14 @@ func (c *Proton) ListServiceInstancesWithContext(ctx aws.Context, input *ListSer
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceInstances operation.
-//    pageNum := 0
-//    err := client.ListServiceInstancesPages(params,
-//        func(page *proton.ListServiceInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceInstances operation.
+//	pageNum := 0
+//	err := client.ListServiceInstancesPages(params,
+//	    func(page *proton.ListServiceInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServiceInstancesPages(input *ListServiceInstancesInput, fn func(*ListServiceInstancesOutput, bool) bool) error {
 	return c.ListServiceInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5144,14 +5133,13 @@ const opListServicePipelineOutputs = "ListServicePipelineOutputs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServicePipelineOutputsRequest method.
+//	req, resp := client.ListServicePipelineOutputsRequest(params)
 //
-//    // Example sending a request using the ListServicePipelineOutputsRequest method.
-//    req, resp := client.ListServicePipelineOutputsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServicePipelineOutputs
 func (c *Proton) ListServicePipelineOutputsRequest(input *ListServicePipelineOutputsInput) (req *request.Request, output *ListServicePipelineOutputsOutput) {
@@ -5188,21 +5176,22 @@ func (c *Proton) ListServicePipelineOutputsRequest(input *ListServicePipelineOut
 // API operation ListServicePipelineOutputs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServicePipelineOutputs
 func (c *Proton) ListServicePipelineOutputs(input *ListServicePipelineOutputsInput) (*ListServicePipelineOutputsOutput, error) {
@@ -5234,15 +5223,14 @@ func (c *Proton) ListServicePipelineOutputsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServicePipelineOutputs operation.
-//    pageNum := 0
-//    err := client.ListServicePipelineOutputsPages(params,
-//        func(page *proton.ListServicePipelineOutputsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServicePipelineOutputs operation.
+//	pageNum := 0
+//	err := client.ListServicePipelineOutputsPages(params,
+//	    func(page *proton.ListServicePipelineOutputsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServicePipelineOutputsPages(input *ListServicePipelineOutputsInput, fn func(*ListServicePipelineOutputsOutput, bool) bool) error {
 	return c.ListServicePipelineOutputsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5294,14 +5282,13 @@ const opListServicePipelineProvisionedResources = "ListServicePipelineProvisione
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServicePipelineProvisionedResourcesRequest method.
+//	req, resp := client.ListServicePipelineProvisionedResourcesRequest(params)
 //
-//    // Example sending a request using the ListServicePipelineProvisionedResourcesRequest method.
-//    req, resp := client.ListServicePipelineProvisionedResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServicePipelineProvisionedResources
 func (c *Proton) ListServicePipelineProvisionedResourcesRequest(input *ListServicePipelineProvisionedResourcesInput) (req *request.Request, output *ListServicePipelineProvisionedResourcesOutput) {
@@ -5338,21 +5325,22 @@ func (c *Proton) ListServicePipelineProvisionedResourcesRequest(input *ListServi
 // API operation ListServicePipelineProvisionedResources for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServicePipelineProvisionedResources
 func (c *Proton) ListServicePipelineProvisionedResources(input *ListServicePipelineProvisionedResourcesInput) (*ListServicePipelineProvisionedResourcesOutput, error) {
@@ -5384,15 +5372,14 @@ func (c *Proton) ListServicePipelineProvisionedResourcesWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServicePipelineProvisionedResources operation.
-//    pageNum := 0
-//    err := client.ListServicePipelineProvisionedResourcesPages(params,
-//        func(page *proton.ListServicePipelineProvisionedResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServicePipelineProvisionedResources operation.
+//	pageNum := 0
+//	err := client.ListServicePipelineProvisionedResourcesPages(params,
+//	    func(page *proton.ListServicePipelineProvisionedResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServicePipelineProvisionedResourcesPages(input *ListServicePipelineProvisionedResourcesInput, fn func(*ListServicePipelineProvisionedResourcesOutput, bool) bool) error {
 	return c.ListServicePipelineProvisionedResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5444,14 +5431,13 @@ const opListServiceTemplateVersions = "ListServiceTemplateVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceTemplateVersionsRequest method.
+//	req, resp := client.ListServiceTemplateVersionsRequest(params)
 //
-//    // Example sending a request using the ListServiceTemplateVersionsRequest method.
-//    req, resp := client.ListServiceTemplateVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceTemplateVersions
 func (c *Proton) ListServiceTemplateVersionsRequest(input *ListServiceTemplateVersionsInput) (req *request.Request, output *ListServiceTemplateVersionsOutput) {
@@ -5488,21 +5474,22 @@ func (c *Proton) ListServiceTemplateVersionsRequest(input *ListServiceTemplateVe
 // API operation ListServiceTemplateVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceTemplateVersions
 func (c *Proton) ListServiceTemplateVersions(input *ListServiceTemplateVersionsInput) (*ListServiceTemplateVersionsOutput, error) {
@@ -5534,15 +5521,14 @@ func (c *Proton) ListServiceTemplateVersionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceTemplateVersions operation.
-//    pageNum := 0
-//    err := client.ListServiceTemplateVersionsPages(params,
-//        func(page *proton.ListServiceTemplateVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceTemplateVersions operation.
+//	pageNum := 0
+//	err := client.ListServiceTemplateVersionsPages(params,
+//	    func(page *proton.ListServiceTemplateVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServiceTemplateVersionsPages(input *ListServiceTemplateVersionsInput, fn func(*ListServiceTemplateVersionsOutput, bool) bool) error {
 	return c.ListServiceTemplateVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5594,14 +5580,13 @@ const opListServiceTemplates = "ListServiceTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceTemplatesRequest method.
+//	req, resp := client.ListServiceTemplatesRequest(params)
 //
-//    // Example sending a request using the ListServiceTemplatesRequest method.
-//    req, resp := client.ListServiceTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceTemplates
 func (c *Proton) ListServiceTemplatesRequest(input *ListServiceTemplatesInput) (req *request.Request, output *ListServiceTemplatesOutput) {
@@ -5638,18 +5623,19 @@ func (c *Proton) ListServiceTemplatesRequest(input *ListServiceTemplatesInput) (
 // API operation ListServiceTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServiceTemplates
 func (c *Proton) ListServiceTemplates(input *ListServiceTemplatesInput) (*ListServiceTemplatesOutput, error) {
@@ -5681,15 +5667,14 @@ func (c *Proton) ListServiceTemplatesWithContext(ctx aws.Context, input *ListSer
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServiceTemplates operation.
-//    pageNum := 0
-//    err := client.ListServiceTemplatesPages(params,
-//        func(page *proton.ListServiceTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServiceTemplates operation.
+//	pageNum := 0
+//	err := client.ListServiceTemplatesPages(params,
+//	    func(page *proton.ListServiceTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServiceTemplatesPages(input *ListServiceTemplatesInput, fn func(*ListServiceTemplatesOutput, bool) bool) error {
 	return c.ListServiceTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5741,14 +5726,13 @@ const opListServices = "ListServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServicesRequest method.
+//	req, resp := client.ListServicesRequest(params)
 //
-//    // Example sending a request using the ListServicesRequest method.
-//    req, resp := client.ListServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServices
 func (c *Proton) ListServicesRequest(input *ListServicesInput) (req *request.Request, output *ListServicesOutput) {
@@ -5785,18 +5769,19 @@ func (c *Proton) ListServicesRequest(input *ListServicesInput) (req *request.Req
 // API operation ListServices for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListServices
 func (c *Proton) ListServices(input *ListServicesInput) (*ListServicesOutput, error) {
@@ -5828,15 +5813,14 @@ func (c *Proton) ListServicesWithContext(ctx aws.Context, input *ListServicesInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServices operation.
-//    pageNum := 0
-//    err := client.ListServicesPages(params,
-//        func(page *proton.ListServicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServices operation.
+//	pageNum := 0
+//	err := client.ListServicesPages(params,
+//	    func(page *proton.ListServicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListServicesPages(input *ListServicesInput, fn func(*ListServicesOutput, bool) bool) error {
 	return c.ListServicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5888,14 +5872,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListTagsForResource
 func (c *Proton) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -5934,21 +5917,22 @@ func (c *Proton) ListTagsForResourceRequest(input *ListTagsForResourceInput) (re
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/ListTagsForResource
 func (c *Proton) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -5980,15 +5964,14 @@ func (c *Proton) ListTagsForResourceWithContext(ctx aws.Context, input *ListTags
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *proton.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *proton.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Proton) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6040,14 +6023,13 @@ const opNotifyResourceDeploymentStatusChange = "NotifyResourceDeploymentStatusCh
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyResourceDeploymentStatusChangeRequest method.
+//	req, resp := client.NotifyResourceDeploymentStatusChangeRequest(params)
 //
-//    // Example sending a request using the NotifyResourceDeploymentStatusChangeRequest method.
-//    req, resp := client.NotifyResourceDeploymentStatusChangeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/NotifyResourceDeploymentStatusChange
 func (c *Proton) NotifyResourceDeploymentStatusChangeRequest(input *NotifyResourceDeploymentStatusChangeInput) (req *request.Request, output *NotifyResourceDeploymentStatusChangeOutput) {
@@ -6083,28 +6065,29 @@ func (c *Proton) NotifyResourceDeploymentStatusChangeRequest(input *NotifyResour
 // API operation NotifyResourceDeploymentStatusChange for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/NotifyResourceDeploymentStatusChange
 func (c *Proton) NotifyResourceDeploymentStatusChange(input *NotifyResourceDeploymentStatusChangeInput) (*NotifyResourceDeploymentStatusChangeOutput, error) {
@@ -6144,14 +6127,13 @@ const opRejectEnvironmentAccountConnection = "RejectEnvironmentAccountConnection
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectEnvironmentAccountConnectionRequest method.
+//	req, resp := client.RejectEnvironmentAccountConnectionRequest(params)
 //
-//    // Example sending a request using the RejectEnvironmentAccountConnectionRequest method.
-//    req, resp := client.RejectEnvironmentAccountConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/RejectEnvironmentAccountConnection
 func (c *Proton) RejectEnvironmentAccountConnectionRequest(input *RejectEnvironmentAccountConnectionInput) (req *request.Request, output *RejectEnvironmentAccountConnectionOutput) {
@@ -6192,24 +6174,25 @@ func (c *Proton) RejectEnvironmentAccountConnectionRequest(input *RejectEnvironm
 // API operation RejectEnvironmentAccountConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/RejectEnvironmentAccountConnection
 func (c *Proton) RejectEnvironmentAccountConnection(input *RejectEnvironmentAccountConnectionInput) (*RejectEnvironmentAccountConnectionOutput, error) {
@@ -6249,14 +6232,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/TagResource
 func (c *Proton) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -6293,24 +6275,25 @@ func (c *Proton) TagResourceRequest(input *TagResourceInput) (req *request.Reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/TagResource
 func (c *Proton) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -6350,14 +6333,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UntagResource
 func (c *Proton) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -6394,24 +6376,25 @@ func (c *Proton) UntagResourceRequest(input *UntagResourceInput) (req *request.R
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UntagResource
 func (c *Proton) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -6451,14 +6434,13 @@ const opUpdateAccountSettings = "UpdateAccountSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAccountSettingsRequest method.
+//	req, resp := client.UpdateAccountSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateAccountSettingsRequest method.
-//    req, resp := client.UpdateAccountSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateAccountSettings
 func (c *Proton) UpdateAccountSettingsRequest(input *UpdateAccountSettingsInput) (req *request.Request, output *UpdateAccountSettingsOutput) {
@@ -6489,21 +6471,22 @@ func (c *Proton) UpdateAccountSettingsRequest(input *UpdateAccountSettingsInput)
 // API operation UpdateAccountSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateAccountSettings
 func (c *Proton) UpdateAccountSettings(input *UpdateAccountSettingsInput) (*UpdateAccountSettingsOutput, error) {
@@ -6543,14 +6526,13 @@ const opUpdateEnvironment = "UpdateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentRequest method.
+//	req, resp := client.UpdateEnvironmentRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentRequest method.
-//    req, resp := client.UpdateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironment
 func (c *Proton) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *request.Request, output *UpdateEnvironmentOutput) {
@@ -6604,7 +6586,7 @@ func (c *Proton) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *r
 // There are four modes for updating an environment. The deploymentType field
 // defines the mode.
 //
-// NONE
+// # NONE
 //
 // In this mode, a deployment doesn't occur. Only the requested metadata parameters
 // are updated.
@@ -6637,24 +6619,25 @@ func (c *Proton) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *r
 // API operation UpdateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironment
 func (c *Proton) UpdateEnvironment(input *UpdateEnvironmentInput) (*UpdateEnvironmentOutput, error) {
@@ -6694,14 +6677,13 @@ const opUpdateEnvironmentAccountConnection = "UpdateEnvironmentAccountConnection
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentAccountConnectionRequest method.
+//	req, resp := client.UpdateEnvironmentAccountConnectionRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentAccountConnectionRequest method.
-//    req, resp := client.UpdateEnvironmentAccountConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironmentAccountConnection
 func (c *Proton) UpdateEnvironmentAccountConnectionRequest(input *UpdateEnvironmentAccountConnectionInput) (req *request.Request, output *UpdateEnvironmentAccountConnectionOutput) {
@@ -6736,24 +6718,25 @@ func (c *Proton) UpdateEnvironmentAccountConnectionRequest(input *UpdateEnvironm
 // API operation UpdateEnvironmentAccountConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironmentAccountConnection
 func (c *Proton) UpdateEnvironmentAccountConnection(input *UpdateEnvironmentAccountConnectionInput) (*UpdateEnvironmentAccountConnectionOutput, error) {
@@ -6793,14 +6776,13 @@ const opUpdateEnvironmentTemplate = "UpdateEnvironmentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentTemplateRequest method.
+//	req, resp := client.UpdateEnvironmentTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentTemplateRequest method.
-//    req, resp := client.UpdateEnvironmentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironmentTemplate
 func (c *Proton) UpdateEnvironmentTemplateRequest(input *UpdateEnvironmentTemplateInput) (req *request.Request, output *UpdateEnvironmentTemplateOutput) {
@@ -6831,24 +6813,25 @@ func (c *Proton) UpdateEnvironmentTemplateRequest(input *UpdateEnvironmentTempla
 // API operation UpdateEnvironmentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironmentTemplate
 func (c *Proton) UpdateEnvironmentTemplate(input *UpdateEnvironmentTemplateInput) (*UpdateEnvironmentTemplateOutput, error) {
@@ -6888,14 +6871,13 @@ const opUpdateEnvironmentTemplateVersion = "UpdateEnvironmentTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentTemplateVersionRequest method.
+//	req, resp := client.UpdateEnvironmentTemplateVersionRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentTemplateVersionRequest method.
-//    req, resp := client.UpdateEnvironmentTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironmentTemplateVersion
 func (c *Proton) UpdateEnvironmentTemplateVersionRequest(input *UpdateEnvironmentTemplateVersionInput) (req *request.Request, output *UpdateEnvironmentTemplateVersionOutput) {
@@ -6926,24 +6908,25 @@ func (c *Proton) UpdateEnvironmentTemplateVersionRequest(input *UpdateEnvironmen
 // API operation UpdateEnvironmentTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateEnvironmentTemplateVersion
 func (c *Proton) UpdateEnvironmentTemplateVersion(input *UpdateEnvironmentTemplateVersionInput) (*UpdateEnvironmentTemplateVersionOutput, error) {
@@ -6983,14 +6966,13 @@ const opUpdateService = "UpdateService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceRequest method.
+//	req, resp := client.UpdateServiceRequest(params)
 //
-//    // Example sending a request using the UpdateServiceRequest method.
-//    req, resp := client.UpdateServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateService
 func (c *Proton) UpdateServiceRequest(input *UpdateServiceInput) (req *request.Request, output *UpdateServiceOutput) {
@@ -7028,28 +7010,29 @@ func (c *Proton) UpdateServiceRequest(input *UpdateServiceInput) (req *request.R
 // API operation UpdateService for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
-//   in the Proton Administrator Guide.
 //
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
+//   - ServiceQuotaExceededException
+//     A quota was exceeded. For more information, see Proton Quotas (https://docs.aws.amazon.com/proton/latest/adminguide/ag-limits.html)
+//     in the Proton Administrator Guide.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateService
 func (c *Proton) UpdateService(input *UpdateServiceInput) (*UpdateServiceOutput, error) {
@@ -7089,14 +7072,13 @@ const opUpdateServiceInstance = "UpdateServiceInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceInstanceRequest method.
+//	req, resp := client.UpdateServiceInstanceRequest(params)
 //
-//    // Example sending a request using the UpdateServiceInstanceRequest method.
-//    req, resp := client.UpdateServiceInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServiceInstance
 func (c *Proton) UpdateServiceInstanceRequest(input *UpdateServiceInstanceInput) (req *request.Request, output *UpdateServiceInstanceOutput) {
@@ -7122,7 +7104,7 @@ func (c *Proton) UpdateServiceInstanceRequest(input *UpdateServiceInstanceInput)
 // There are four modes for updating a service instance. The deploymentType
 // field defines the mode.
 //
-// NONE
+// # NONE
 //
 // In this mode, a deployment doesn't occur. Only the requested metadata parameters
 // are updated.
@@ -7155,24 +7137,25 @@ func (c *Proton) UpdateServiceInstanceRequest(input *UpdateServiceInstanceInput)
 // API operation UpdateServiceInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServiceInstance
 func (c *Proton) UpdateServiceInstance(input *UpdateServiceInstanceInput) (*UpdateServiceInstanceOutput, error) {
@@ -7212,14 +7195,13 @@ const opUpdateServicePipeline = "UpdateServicePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServicePipelineRequest method.
+//	req, resp := client.UpdateServicePipelineRequest(params)
 //
-//    // Example sending a request using the UpdateServicePipelineRequest method.
-//    req, resp := client.UpdateServicePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServicePipeline
 func (c *Proton) UpdateServicePipelineRequest(input *UpdateServicePipelineInput) (req *request.Request, output *UpdateServicePipelineOutput) {
@@ -7245,7 +7227,7 @@ func (c *Proton) UpdateServicePipelineRequest(input *UpdateServicePipelineInput)
 // There are four modes for updating a service pipeline. The deploymentType
 // field defines the mode.
 //
-// NONE
+// # NONE
 //
 // In this mode, a deployment doesn't occur. Only the requested metadata parameters
 // are updated.
@@ -7278,24 +7260,25 @@ func (c *Proton) UpdateServicePipelineRequest(input *UpdateServicePipelineInput)
 // API operation UpdateServicePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServicePipeline
 func (c *Proton) UpdateServicePipeline(input *UpdateServicePipelineInput) (*UpdateServicePipelineOutput, error) {
@@ -7335,14 +7318,13 @@ const opUpdateServiceTemplate = "UpdateServiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceTemplateRequest method.
+//	req, resp := client.UpdateServiceTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateServiceTemplateRequest method.
-//    req, resp := client.UpdateServiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServiceTemplate
 func (c *Proton) UpdateServiceTemplateRequest(input *UpdateServiceTemplateInput) (req *request.Request, output *UpdateServiceTemplateOutput) {
@@ -7373,24 +7355,25 @@ func (c *Proton) UpdateServiceTemplateRequest(input *UpdateServiceTemplateInput)
 // API operation UpdateServiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServiceTemplate
 func (c *Proton) UpdateServiceTemplate(input *UpdateServiceTemplateInput) (*UpdateServiceTemplateOutput, error) {
@@ -7430,14 +7413,13 @@ const opUpdateServiceTemplateVersion = "UpdateServiceTemplateVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceTemplateVersionRequest method.
+//	req, resp := client.UpdateServiceTemplateVersionRequest(params)
 //
-//    // Example sending a request using the UpdateServiceTemplateVersionRequest method.
-//    req, resp := client.UpdateServiceTemplateVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServiceTemplateVersion
 func (c *Proton) UpdateServiceTemplateVersionRequest(input *UpdateServiceTemplateVersionInput) (req *request.Request, output *UpdateServiceTemplateVersionOutput) {
@@ -7468,24 +7450,25 @@ func (c *Proton) UpdateServiceTemplateVersionRequest(input *UpdateServiceTemplat
 // API operation UpdateServiceTemplateVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateServiceTemplateVersion
 func (c *Proton) UpdateServiceTemplateVersion(input *UpdateServiceTemplateVersionInput) (*UpdateServiceTemplateVersionOutput, error) {
@@ -7525,14 +7508,13 @@ const opUpdateTemplateSyncConfig = "UpdateTemplateSyncConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTemplateSyncConfigRequest method.
+//	req, resp := client.UpdateTemplateSyncConfigRequest(params)
 //
-//    // Example sending a request using the UpdateTemplateSyncConfigRequest method.
-//    req, resp := client.UpdateTemplateSyncConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateTemplateSyncConfig
 func (c *Proton) UpdateTemplateSyncConfigRequest(input *UpdateTemplateSyncConfigInput) (req *request.Request, output *UpdateTemplateSyncConfigOutput) {
@@ -7564,24 +7546,25 @@ func (c *Proton) UpdateTemplateSyncConfigRequest(input *UpdateTemplateSyncConfig
 // API operation UpdateTemplateSyncConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input is invalid or an out-of-range value was supplied for the input
-//   parameter.
 //
-//   * AccessDeniedException
-//   There isn't sufficient access for performing this action.
+//   - ValidationException
+//     The input is invalid or an out-of-range value was supplied for the input
+//     parameter.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     There isn't sufficient access for performing this action.
 //
-//   * ConflictException
-//   The request couldn't be made due to a conflicting operation or resource.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource wasn't found.
+//   - ConflictException
+//     The request couldn't be made due to a conflicting operation or resource.
 //
-//   * InternalServerException
-//   The request failed to register with the service.
+//   - ResourceNotFoundException
+//     The requested resource wasn't found.
+//
+//   - InternalServerException
+//     The request failed to register with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20/UpdateTemplateSyncConfig
 func (c *Proton) UpdateTemplateSyncConfig(input *UpdateTemplateSyncConfigInput) (*UpdateTemplateSyncConfigOutput, error) {

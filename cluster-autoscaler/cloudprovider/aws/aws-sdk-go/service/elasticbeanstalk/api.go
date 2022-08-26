@@ -29,14 +29,13 @@ const opAbortEnvironmentUpdate = "AbortEnvironmentUpdate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AbortEnvironmentUpdateRequest method.
+//	req, resp := client.AbortEnvironmentUpdateRequest(params)
 //
-//    // Example sending a request using the AbortEnvironmentUpdateRequest method.
-//    req, resp := client.AbortEnvironmentUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/AbortEnvironmentUpdate
 func (c *ElasticBeanstalk) AbortEnvironmentUpdateRequest(input *AbortEnvironmentUpdateInput) (req *request.Request, output *AbortEnvironmentUpdateOutput) {
@@ -69,9 +68,9 @@ func (c *ElasticBeanstalk) AbortEnvironmentUpdateRequest(input *AbortEnvironment
 // API operation AbortEnvironmentUpdate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/AbortEnvironmentUpdate
 func (c *ElasticBeanstalk) AbortEnvironmentUpdate(input *AbortEnvironmentUpdateInput) (*AbortEnvironmentUpdateOutput, error) {
@@ -111,14 +110,13 @@ const opApplyEnvironmentManagedAction = "ApplyEnvironmentManagedAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ApplyEnvironmentManagedActionRequest method.
+//	req, resp := client.ApplyEnvironmentManagedActionRequest(params)
 //
-//    // Example sending a request using the ApplyEnvironmentManagedActionRequest method.
-//    req, resp := client.ApplyEnvironmentManagedActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ApplyEnvironmentManagedAction
 func (c *ElasticBeanstalk) ApplyEnvironmentManagedActionRequest(input *ApplyEnvironmentManagedActionInput) (req *request.Request, output *ApplyEnvironmentManagedActionOutput) {
@@ -151,11 +149,12 @@ func (c *ElasticBeanstalk) ApplyEnvironmentManagedActionRequest(input *ApplyEnvi
 // API operation ApplyEnvironmentManagedAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
 //
-//   * ErrCodeManagedActionInvalidStateException "ManagedActionInvalidStateException"
-//   Cannot modify the managed action in its current state.
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
+//
+//   - ErrCodeManagedActionInvalidStateException "ManagedActionInvalidStateException"
+//     Cannot modify the managed action in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ApplyEnvironmentManagedAction
 func (c *ElasticBeanstalk) ApplyEnvironmentManagedAction(input *ApplyEnvironmentManagedActionInput) (*ApplyEnvironmentManagedActionOutput, error) {
@@ -195,14 +194,13 @@ const opAssociateEnvironmentOperationsRole = "AssociateEnvironmentOperationsRole
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateEnvironmentOperationsRoleRequest method.
+//	req, resp := client.AssociateEnvironmentOperationsRoleRequest(params)
 //
-//    // Example sending a request using the AssociateEnvironmentOperationsRoleRequest method.
-//    req, resp := client.AssociateEnvironmentOperationsRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/AssociateEnvironmentOperationsRole
 func (c *ElasticBeanstalk) AssociateEnvironmentOperationsRoleRequest(input *AssociateEnvironmentOperationsRoleInput) (req *request.Request, output *AssociateEnvironmentOperationsRoleOutput) {
@@ -238,9 +236,9 @@ func (c *ElasticBeanstalk) AssociateEnvironmentOperationsRoleRequest(input *Asso
 // API operation AssociateEnvironmentOperationsRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/AssociateEnvironmentOperationsRole
 func (c *ElasticBeanstalk) AssociateEnvironmentOperationsRole(input *AssociateEnvironmentOperationsRoleInput) (*AssociateEnvironmentOperationsRoleOutput, error) {
@@ -280,14 +278,13 @@ const opCheckDNSAvailability = "CheckDNSAvailability"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CheckDNSAvailabilityRequest method.
+//	req, resp := client.CheckDNSAvailabilityRequest(params)
 //
-//    // Example sending a request using the CheckDNSAvailabilityRequest method.
-//    req, resp := client.CheckDNSAvailabilityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CheckDNSAvailability
 func (c *ElasticBeanstalk) CheckDNSAvailabilityRequest(input *CheckDNSAvailabilityInput) (req *request.Request, output *CheckDNSAvailabilityOutput) {
@@ -354,14 +351,13 @@ const opComposeEnvironments = "ComposeEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ComposeEnvironmentsRequest method.
+//	req, resp := client.ComposeEnvironmentsRequest(params)
 //
-//    // Example sending a request using the ComposeEnvironmentsRequest method.
-//    req, resp := client.ComposeEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ComposeEnvironments
 func (c *ElasticBeanstalk) ComposeEnvironmentsRequest(input *ComposeEnvironmentsInput) (req *request.Request, output *EnvironmentDescriptionsMessage) {
@@ -398,12 +394,13 @@ func (c *ElasticBeanstalk) ComposeEnvironmentsRequest(input *ComposeEnvironments
 // API operation ComposeEnvironments for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyEnvironmentsException "TooManyEnvironmentsException"
-//   The specified account has reached its limit of environments.
 //
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeTooManyEnvironmentsException "TooManyEnvironmentsException"
+//     The specified account has reached its limit of environments.
+//
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ComposeEnvironments
 func (c *ElasticBeanstalk) ComposeEnvironments(input *ComposeEnvironmentsInput) (*EnvironmentDescriptionsMessage, error) {
@@ -443,14 +440,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateApplication
 func (c *ElasticBeanstalk) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *ApplicationDescriptionMessage) {
@@ -482,8 +478,8 @@ func (c *ElasticBeanstalk) CreateApplicationRequest(input *CreateApplicationInpu
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyApplicationsException "TooManyApplicationsException"
-//   The specified account has reached its limit of applications.
+//   - ErrCodeTooManyApplicationsException "TooManyApplicationsException"
+//     The specified account has reached its limit of applications.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateApplication
 func (c *ElasticBeanstalk) CreateApplication(input *CreateApplicationInput) (*ApplicationDescriptionMessage, error) {
@@ -523,14 +519,13 @@ const opCreateApplicationVersion = "CreateApplicationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationVersionRequest method.
+//	req, resp := client.CreateApplicationVersionRequest(params)
 //
-//    // Example sending a request using the CreateApplicationVersionRequest method.
-//    req, resp := client.CreateApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateApplicationVersion
 func (c *ElasticBeanstalk) CreateApplicationVersionRequest(input *CreateApplicationVersionInput) (req *request.Request, output *ApplicationVersionDescriptionMessage) {
@@ -559,7 +554,7 @@ func (c *ElasticBeanstalk) CreateApplicationVersionRequest(input *CreateApplicat
 //
 // Specify a build in an AWS CodeBuild with SourceBuildInformation and BuildConfiguration.
 //
-// Specify a source bundle in S3 with SourceBundle
+// # Specify a source bundle in S3 with SourceBundle
 //
 // Omit both SourceBuildInformation and SourceBundle to use the default sample
 // application.
@@ -577,28 +572,29 @@ func (c *ElasticBeanstalk) CreateApplicationVersionRequest(input *CreateApplicat
 // API operation CreateApplicationVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyApplicationsException "TooManyApplicationsException"
-//   The specified account has reached its limit of applications.
 //
-//   * ErrCodeTooManyApplicationVersionsException "TooManyApplicationVersionsException"
-//   The specified account has reached its limit of application versions.
+//   - ErrCodeTooManyApplicationsException "TooManyApplicationsException"
+//     The specified account has reached its limit of applications.
 //
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeTooManyApplicationVersionsException "TooManyApplicationVersionsException"
+//     The specified account has reached its limit of application versions.
 //
-//   * ErrCodeS3LocationNotInServiceRegionException "S3LocationNotInServiceRegionException"
-//   The specified S3 bucket does not belong to the S3 region in which the service
-//   is running. The following regions are supported:
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//      * IAD/us-east-1
+//   - ErrCodeS3LocationNotInServiceRegionException "S3LocationNotInServiceRegionException"
+//     The specified S3 bucket does not belong to the S3 region in which the service
+//     is running. The following regions are supported:
 //
-//      * PDX/us-west-2
+//   - IAD/us-east-1
 //
-//      * DUB/eu-west-1
+//   - PDX/us-west-2
 //
-//   * ErrCodeCodeBuildNotInServiceRegionException "CodeBuildNotInServiceRegionException"
-//   AWS CodeBuild is not available in the specified region.
+//   - DUB/eu-west-1
+//
+//   - ErrCodeCodeBuildNotInServiceRegionException "CodeBuildNotInServiceRegionException"
+//     AWS CodeBuild is not available in the specified region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateApplicationVersion
 func (c *ElasticBeanstalk) CreateApplicationVersion(input *CreateApplicationVersionInput) (*ApplicationVersionDescriptionMessage, error) {
@@ -638,14 +634,13 @@ const opCreateConfigurationTemplate = "CreateConfigurationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationTemplateRequest method.
+//	req, resp := client.CreateConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationTemplateRequest method.
-//    req, resp := client.CreateConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateConfigurationTemplate
 func (c *ElasticBeanstalk) CreateConfigurationTemplateRequest(input *CreateConfigurationTemplateInput) (req *request.Request, output *ConfigurationSettingsDescription) {
@@ -677,11 +672,11 @@ func (c *ElasticBeanstalk) CreateConfigurationTemplateRequest(input *CreateConfi
 //
 // Related Topics
 //
-//    * DescribeConfigurationOptions
+//   - DescribeConfigurationOptions
 //
-//    * DescribeConfigurationSettings
+//   - DescribeConfigurationSettings
 //
-//    * ListAvailableSolutionStacks
+//   - ListAvailableSolutionStacks
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -691,15 +686,16 @@ func (c *ElasticBeanstalk) CreateConfigurationTemplateRequest(input *CreateConfi
 // API operation CreateConfigurationTemplate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//   * ErrCodeTooManyConfigurationTemplatesException "TooManyConfigurationTemplatesException"
-//   The specified account has reached its limit of configuration templates.
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
+//
+//   - ErrCodeTooManyConfigurationTemplatesException "TooManyConfigurationTemplatesException"
+//     The specified account has reached its limit of configuration templates.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateConfigurationTemplate
 func (c *ElasticBeanstalk) CreateConfigurationTemplate(input *CreateConfigurationTemplateInput) (*ConfigurationSettingsDescription, error) {
@@ -739,14 +735,13 @@ const opCreateEnvironment = "CreateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentRequest method.
+//	req, resp := client.CreateEnvironmentRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentRequest method.
-//    req, resp := client.CreateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateEnvironment
 func (c *ElasticBeanstalk) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *request.Request, output *EnvironmentDescription) {
@@ -778,12 +773,13 @@ func (c *ElasticBeanstalk) CreateEnvironmentRequest(input *CreateEnvironmentInpu
 // API operation CreateEnvironment for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyEnvironmentsException "TooManyEnvironmentsException"
-//   The specified account has reached its limit of environments.
 //
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeTooManyEnvironmentsException "TooManyEnvironmentsException"
+//     The specified account has reached its limit of environments.
+//
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateEnvironment
 func (c *ElasticBeanstalk) CreateEnvironment(input *CreateEnvironmentInput) (*EnvironmentDescription, error) {
@@ -823,14 +819,13 @@ const opCreatePlatformVersion = "CreatePlatformVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePlatformVersionRequest method.
+//	req, resp := client.CreatePlatformVersionRequest(params)
 //
-//    // Example sending a request using the CreatePlatformVersionRequest method.
-//    req, resp := client.CreatePlatformVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreatePlatformVersion
 func (c *ElasticBeanstalk) CreatePlatformVersionRequest(input *CreatePlatformVersionInput) (req *request.Request, output *CreatePlatformVersionOutput) {
@@ -861,16 +856,17 @@ func (c *ElasticBeanstalk) CreatePlatformVersionRequest(input *CreatePlatformVer
 // API operation CreatePlatformVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//   * ErrCodeTooManyPlatformsException "TooManyPlatformsException"
-//   You have exceeded the maximum number of allowed platforms associated with
-//   the account.
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
+//
+//   - ErrCodeTooManyPlatformsException "TooManyPlatformsException"
+//     You have exceeded the maximum number of allowed platforms associated with
+//     the account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreatePlatformVersion
 func (c *ElasticBeanstalk) CreatePlatformVersion(input *CreatePlatformVersionInput) (*CreatePlatformVersionOutput, error) {
@@ -910,14 +906,13 @@ const opCreateStorageLocation = "CreateStorageLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStorageLocationRequest method.
+//	req, resp := client.CreateStorageLocationRequest(params)
 //
-//    // Example sending a request using the CreateStorageLocationRequest method.
-//    req, resp := client.CreateStorageLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateStorageLocation
 func (c *ElasticBeanstalk) CreateStorageLocationRequest(input *CreateStorageLocationInput) (req *request.Request, output *CreateStorageLocationOutput) {
@@ -952,15 +947,16 @@ func (c *ElasticBeanstalk) CreateStorageLocationRequest(input *CreateStorageLoca
 // API operation CreateStorageLocation for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
 //
-//   * ErrCodeS3SubscriptionRequiredException "S3SubscriptionRequiredException"
-//   The specified account does not have a subscription to Amazon S3.
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
 //
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeS3SubscriptionRequiredException "S3SubscriptionRequiredException"
+//     The specified account does not have a subscription to Amazon S3.
+//
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/CreateStorageLocation
 func (c *ElasticBeanstalk) CreateStorageLocation(input *CreateStorageLocationInput) (*CreateStorageLocationOutput, error) {
@@ -1000,14 +996,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteApplication
 func (c *ElasticBeanstalk) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -1043,9 +1038,9 @@ func (c *ElasticBeanstalk) DeleteApplicationRequest(input *DeleteApplicationInpu
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeOperationInProgressException "OperationInProgressFailure"
-//   Unable to perform the specified operation because another operation that
-//   effects an element in this activity is already in progress.
+//   - ErrCodeOperationInProgressException "OperationInProgressFailure"
+//     Unable to perform the specified operation because another operation that
+//     effects an element in this activity is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteApplication
 func (c *ElasticBeanstalk) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -1085,14 +1080,13 @@ const opDeleteApplicationVersion = "DeleteApplicationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationVersionRequest method.
+//	req, resp := client.DeleteApplicationVersionRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationVersionRequest method.
-//    req, resp := client.DeleteApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteApplicationVersion
 func (c *ElasticBeanstalk) DeleteApplicationVersionRequest(input *DeleteApplicationVersionInput) (req *request.Request, output *DeleteApplicationVersionOutput) {
@@ -1127,27 +1121,28 @@ func (c *ElasticBeanstalk) DeleteApplicationVersionRequest(input *DeleteApplicat
 // API operation DeleteApplicationVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSourceBundleDeletionException "SourceBundleDeletionFailure"
-//   Unable to delete the Amazon S3 source bundle associated with the application
-//   version. The application version was deleted successfully.
 //
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeSourceBundleDeletionException "SourceBundleDeletionFailure"
+//     Unable to delete the Amazon S3 source bundle associated with the application
+//     version. The application version was deleted successfully.
 //
-//   * ErrCodeOperationInProgressException "OperationInProgressFailure"
-//   Unable to perform the specified operation because another operation that
-//   effects an element in this activity is already in progress.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//   * ErrCodeS3LocationNotInServiceRegionException "S3LocationNotInServiceRegionException"
-//   The specified S3 bucket does not belong to the S3 region in which the service
-//   is running. The following regions are supported:
+//   - ErrCodeOperationInProgressException "OperationInProgressFailure"
+//     Unable to perform the specified operation because another operation that
+//     effects an element in this activity is already in progress.
 //
-//      * IAD/us-east-1
+//   - ErrCodeS3LocationNotInServiceRegionException "S3LocationNotInServiceRegionException"
+//     The specified S3 bucket does not belong to the S3 region in which the service
+//     is running. The following regions are supported:
 //
-//      * PDX/us-west-2
+//   - IAD/us-east-1
 //
-//      * DUB/eu-west-1
+//   - PDX/us-west-2
+//
+//   - DUB/eu-west-1
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteApplicationVersion
 func (c *ElasticBeanstalk) DeleteApplicationVersion(input *DeleteApplicationVersionInput) (*DeleteApplicationVersionOutput, error) {
@@ -1187,14 +1182,13 @@ const opDeleteConfigurationTemplate = "DeleteConfigurationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationTemplateRequest method.
+//	req, resp := client.DeleteConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationTemplateRequest method.
-//    req, resp := client.DeleteConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteConfigurationTemplate
 func (c *ElasticBeanstalk) DeleteConfigurationTemplateRequest(input *DeleteConfigurationTemplateInput) (req *request.Request, output *DeleteConfigurationTemplateOutput) {
@@ -1230,9 +1224,9 @@ func (c *ElasticBeanstalk) DeleteConfigurationTemplateRequest(input *DeleteConfi
 // API operation DeleteConfigurationTemplate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeOperationInProgressException "OperationInProgressFailure"
-//   Unable to perform the specified operation because another operation that
-//   effects an element in this activity is already in progress.
+//   - ErrCodeOperationInProgressException "OperationInProgressFailure"
+//     Unable to perform the specified operation because another operation that
+//     effects an element in this activity is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteConfigurationTemplate
 func (c *ElasticBeanstalk) DeleteConfigurationTemplate(input *DeleteConfigurationTemplateInput) (*DeleteConfigurationTemplateOutput, error) {
@@ -1272,14 +1266,13 @@ const opDeleteEnvironmentConfiguration = "DeleteEnvironmentConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentConfigurationRequest method.
+//	req, resp := client.DeleteEnvironmentConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentConfigurationRequest method.
-//    req, resp := client.DeleteEnvironmentConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeleteEnvironmentConfiguration
 func (c *ElasticBeanstalk) DeleteEnvironmentConfigurationRequest(input *DeleteEnvironmentConfigurationInput) (req *request.Request, output *DeleteEnvironmentConfigurationOutput) {
@@ -1354,14 +1347,13 @@ const opDeletePlatformVersion = "DeletePlatformVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePlatformVersionRequest method.
+//	req, resp := client.DeletePlatformVersionRequest(params)
 //
-//    // Example sending a request using the DeletePlatformVersionRequest method.
-//    req, resp := client.DeletePlatformVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeletePlatformVersion
 func (c *ElasticBeanstalk) DeletePlatformVersionRequest(input *DeletePlatformVersionInput) (req *request.Request, output *DeletePlatformVersionOutput) {
@@ -1392,20 +1384,21 @@ func (c *ElasticBeanstalk) DeletePlatformVersionRequest(input *DeletePlatformVer
 // API operation DeletePlatformVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeOperationInProgressException "OperationInProgressFailure"
-//   Unable to perform the specified operation because another operation that
-//   effects an element in this activity is already in progress.
 //
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeOperationInProgressException "OperationInProgressFailure"
+//     Unable to perform the specified operation because another operation that
+//     effects an element in this activity is already in progress.
 //
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//   * ErrCodePlatformVersionStillReferencedException "PlatformVersionStillReferencedException"
-//   You cannot delete the platform version because there are still environments
-//   running on it.
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
+//
+//   - ErrCodePlatformVersionStillReferencedException "PlatformVersionStillReferencedException"
+//     You cannot delete the platform version because there are still environments
+//     running on it.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DeletePlatformVersion
 func (c *ElasticBeanstalk) DeletePlatformVersion(input *DeletePlatformVersionInput) (*DeletePlatformVersionOutput, error) {
@@ -1445,14 +1438,13 @@ const opDescribeAccountAttributes = "DescribeAccountAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAttributesRequest method.
+//	req, resp := client.DescribeAccountAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAttributesRequest method.
-//    req, resp := client.DescribeAccountAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeAccountAttributes
 func (c *ElasticBeanstalk) DescribeAccountAttributesRequest(input *DescribeAccountAttributesInput) (req *request.Request, output *DescribeAccountAttributesOutput) {
@@ -1486,9 +1478,9 @@ func (c *ElasticBeanstalk) DescribeAccountAttributesRequest(input *DescribeAccou
 // API operation DescribeAccountAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeAccountAttributes
 func (c *ElasticBeanstalk) DescribeAccountAttributes(input *DescribeAccountAttributesInput) (*DescribeAccountAttributesOutput, error) {
@@ -1528,14 +1520,13 @@ const opDescribeApplicationVersions = "DescribeApplicationVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationVersionsRequest method.
+//	req, resp := client.DescribeApplicationVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationVersionsRequest method.
-//    req, resp := client.DescribeApplicationVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeApplicationVersions
 func (c *ElasticBeanstalk) DescribeApplicationVersionsRequest(input *DescribeApplicationVersionsInput) (req *request.Request, output *DescribeApplicationVersionsOutput) {
@@ -1602,14 +1593,13 @@ const opDescribeApplications = "DescribeApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationsRequest method.
+//	req, resp := client.DescribeApplicationsRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationsRequest method.
-//    req, resp := client.DescribeApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeApplications
 func (c *ElasticBeanstalk) DescribeApplicationsRequest(input *DescribeApplicationsInput) (req *request.Request, output *DescribeApplicationsOutput) {
@@ -1676,14 +1666,13 @@ const opDescribeConfigurationOptions = "DescribeConfigurationOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationOptionsRequest method.
+//	req, resp := client.DescribeConfigurationOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationOptionsRequest method.
-//    req, resp := client.DescribeConfigurationOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeConfigurationOptions
 func (c *ElasticBeanstalk) DescribeConfigurationOptionsRequest(input *DescribeConfigurationOptionsInput) (req *request.Request, output *DescribeConfigurationOptionsOutput) {
@@ -1718,8 +1707,8 @@ func (c *ElasticBeanstalk) DescribeConfigurationOptionsRequest(input *DescribeCo
 // API operation DescribeConfigurationOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeConfigurationOptions
 func (c *ElasticBeanstalk) DescribeConfigurationOptions(input *DescribeConfigurationOptionsInput) (*DescribeConfigurationOptionsOutput, error) {
@@ -1759,14 +1748,13 @@ const opDescribeConfigurationSettings = "DescribeConfigurationSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationSettingsRequest method.
+//	req, resp := client.DescribeConfigurationSettingsRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationSettingsRequest method.
-//    req, resp := client.DescribeConfigurationSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeConfigurationSettings
 func (c *ElasticBeanstalk) DescribeConfigurationSettingsRequest(input *DescribeConfigurationSettingsInput) (req *request.Request, output *DescribeConfigurationSettingsOutput) {
@@ -1799,7 +1787,7 @@ func (c *ElasticBeanstalk) DescribeConfigurationSettingsRequest(input *DescribeC
 //
 // Related Topics
 //
-//    * DeleteEnvironmentConfiguration
+//   - DeleteEnvironmentConfiguration
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1809,8 +1797,8 @@ func (c *ElasticBeanstalk) DescribeConfigurationSettingsRequest(input *DescribeC
 // API operation DescribeConfigurationSettings for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeConfigurationSettings
 func (c *ElasticBeanstalk) DescribeConfigurationSettings(input *DescribeConfigurationSettingsInput) (*DescribeConfigurationSettingsOutput, error) {
@@ -1850,14 +1838,13 @@ const opDescribeEnvironmentHealth = "DescribeEnvironmentHealth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentHealthRequest method.
+//	req, resp := client.DescribeEnvironmentHealthRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentHealthRequest method.
-//    req, resp := client.DescribeEnvironmentHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentHealth
 func (c *ElasticBeanstalk) DescribeEnvironmentHealthRequest(input *DescribeEnvironmentHealthInput) (req *request.Request, output *DescribeEnvironmentHealthOutput) {
@@ -1890,12 +1877,13 @@ func (c *ElasticBeanstalk) DescribeEnvironmentHealthRequest(input *DescribeEnvir
 // API operation DescribeEnvironmentHealth for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidRequestException "InvalidRequestException"
-//   One or more input parameters is not valid. Please correct the input parameters
-//   and try the operation again.
 //
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeInvalidRequestException "InvalidRequestException"
+//     One or more input parameters is not valid. Please correct the input parameters
+//     and try the operation again.
+//
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentHealth
 func (c *ElasticBeanstalk) DescribeEnvironmentHealth(input *DescribeEnvironmentHealthInput) (*DescribeEnvironmentHealthOutput, error) {
@@ -1935,14 +1923,13 @@ const opDescribeEnvironmentManagedActionHistory = "DescribeEnvironmentManagedAct
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentManagedActionHistoryRequest method.
+//	req, resp := client.DescribeEnvironmentManagedActionHistoryRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentManagedActionHistoryRequest method.
-//    req, resp := client.DescribeEnvironmentManagedActionHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentManagedActionHistory
 func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionHistoryRequest(input *DescribeEnvironmentManagedActionHistoryInput) (req *request.Request, output *DescribeEnvironmentManagedActionHistoryOutput) {
@@ -1979,8 +1966,8 @@ func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionHistoryRequest(input 
 // API operation DescribeEnvironmentManagedActionHistory for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentManagedActionHistory
 func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionHistory(input *DescribeEnvironmentManagedActionHistoryInput) (*DescribeEnvironmentManagedActionHistoryOutput, error) {
@@ -2012,15 +1999,14 @@ func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionHistoryWithContext(ct
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEnvironmentManagedActionHistory operation.
-//    pageNum := 0
-//    err := client.DescribeEnvironmentManagedActionHistoryPages(params,
-//        func(page *elasticbeanstalk.DescribeEnvironmentManagedActionHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEnvironmentManagedActionHistory operation.
+//	pageNum := 0
+//	err := client.DescribeEnvironmentManagedActionHistoryPages(params,
+//	    func(page *elasticbeanstalk.DescribeEnvironmentManagedActionHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionHistoryPages(input *DescribeEnvironmentManagedActionHistoryInput, fn func(*DescribeEnvironmentManagedActionHistoryOutput, bool) bool) error {
 	return c.DescribeEnvironmentManagedActionHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2072,14 +2058,13 @@ const opDescribeEnvironmentManagedActions = "DescribeEnvironmentManagedActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentManagedActionsRequest method.
+//	req, resp := client.DescribeEnvironmentManagedActionsRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentManagedActionsRequest method.
-//    req, resp := client.DescribeEnvironmentManagedActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentManagedActions
 func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionsRequest(input *DescribeEnvironmentManagedActionsInput) (req *request.Request, output *DescribeEnvironmentManagedActionsOutput) {
@@ -2110,8 +2095,8 @@ func (c *ElasticBeanstalk) DescribeEnvironmentManagedActionsRequest(input *Descr
 // API operation DescribeEnvironmentManagedActions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentManagedActions
 func (c *ElasticBeanstalk) DescribeEnvironmentManagedActions(input *DescribeEnvironmentManagedActionsInput) (*DescribeEnvironmentManagedActionsOutput, error) {
@@ -2151,14 +2136,13 @@ const opDescribeEnvironmentResources = "DescribeEnvironmentResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentResourcesRequest method.
+//	req, resp := client.DescribeEnvironmentResourcesRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentResourcesRequest method.
-//    req, resp := client.DescribeEnvironmentResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentResources
 func (c *ElasticBeanstalk) DescribeEnvironmentResourcesRequest(input *DescribeEnvironmentResourcesInput) (req *request.Request, output *DescribeEnvironmentResourcesOutput) {
@@ -2189,9 +2173,9 @@ func (c *ElasticBeanstalk) DescribeEnvironmentResourcesRequest(input *DescribeEn
 // API operation DescribeEnvironmentResources for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironmentResources
 func (c *ElasticBeanstalk) DescribeEnvironmentResources(input *DescribeEnvironmentResourcesInput) (*DescribeEnvironmentResourcesOutput, error) {
@@ -2231,14 +2215,13 @@ const opDescribeEnvironments = "DescribeEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentsRequest method.
+//	req, resp := client.DescribeEnvironmentsRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentsRequest method.
-//    req, resp := client.DescribeEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironments
 func (c *ElasticBeanstalk) DescribeEnvironmentsRequest(input *DescribeEnvironmentsInput) (req *request.Request, output *EnvironmentDescriptionsMessage) {
@@ -2305,14 +2288,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEvents
 func (c *ElasticBeanstalk) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -2379,15 +2361,14 @@ func (c *ElasticBeanstalk) DescribeEventsWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvents operation.
-//    pageNum := 0
-//    err := client.DescribeEventsPages(params,
-//        func(page *elasticbeanstalk.DescribeEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *elasticbeanstalk.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticBeanstalk) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
 	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2439,14 +2420,13 @@ const opDescribeInstancesHealth = "DescribeInstancesHealth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstancesHealthRequest method.
+//	req, resp := client.DescribeInstancesHealthRequest(params)
 //
-//    // Example sending a request using the DescribeInstancesHealthRequest method.
-//    req, resp := client.DescribeInstancesHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeInstancesHealth
 func (c *ElasticBeanstalk) DescribeInstancesHealthRequest(input *DescribeInstancesHealthInput) (req *request.Request, output *DescribeInstancesHealthOutput) {
@@ -2478,12 +2458,13 @@ func (c *ElasticBeanstalk) DescribeInstancesHealthRequest(input *DescribeInstanc
 // API operation DescribeInstancesHealth for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidRequestException "InvalidRequestException"
-//   One or more input parameters is not valid. Please correct the input parameters
-//   and try the operation again.
 //
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeInvalidRequestException "InvalidRequestException"
+//     One or more input parameters is not valid. Please correct the input parameters
+//     and try the operation again.
+//
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeInstancesHealth
 func (c *ElasticBeanstalk) DescribeInstancesHealth(input *DescribeInstancesHealthInput) (*DescribeInstancesHealthOutput, error) {
@@ -2523,14 +2504,13 @@ const opDescribePlatformVersion = "DescribePlatformVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePlatformVersionRequest method.
+//	req, resp := client.DescribePlatformVersionRequest(params)
 //
-//    // Example sending a request using the DescribePlatformVersionRequest method.
-//    req, resp := client.DescribePlatformVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribePlatformVersion
 func (c *ElasticBeanstalk) DescribePlatformVersionRequest(input *DescribePlatformVersionInput) (req *request.Request, output *DescribePlatformVersionOutput) {
@@ -2565,12 +2545,13 @@ func (c *ElasticBeanstalk) DescribePlatformVersionRequest(input *DescribePlatfor
 // API operation DescribePlatformVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
+//
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribePlatformVersion
 func (c *ElasticBeanstalk) DescribePlatformVersion(input *DescribePlatformVersionInput) (*DescribePlatformVersionOutput, error) {
@@ -2610,14 +2591,13 @@ const opDisassociateEnvironmentOperationsRole = "DisassociateEnvironmentOperatio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateEnvironmentOperationsRoleRequest method.
+//	req, resp := client.DisassociateEnvironmentOperationsRoleRequest(params)
 //
-//    // Example sending a request using the DisassociateEnvironmentOperationsRoleRequest method.
-//    req, resp := client.DisassociateEnvironmentOperationsRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DisassociateEnvironmentOperationsRole
 func (c *ElasticBeanstalk) DisassociateEnvironmentOperationsRoleRequest(input *DisassociateEnvironmentOperationsRoleInput) (req *request.Request, output *DisassociateEnvironmentOperationsRoleOutput) {
@@ -2653,9 +2633,9 @@ func (c *ElasticBeanstalk) DisassociateEnvironmentOperationsRoleRequest(input *D
 // API operation DisassociateEnvironmentOperationsRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DisassociateEnvironmentOperationsRole
 func (c *ElasticBeanstalk) DisassociateEnvironmentOperationsRole(input *DisassociateEnvironmentOperationsRoleInput) (*DisassociateEnvironmentOperationsRoleOutput, error) {
@@ -2695,14 +2675,13 @@ const opListAvailableSolutionStacks = "ListAvailableSolutionStacks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAvailableSolutionStacksRequest method.
+//	req, resp := client.ListAvailableSolutionStacksRequest(params)
 //
-//    // Example sending a request using the ListAvailableSolutionStacksRequest method.
-//    req, resp := client.ListAvailableSolutionStacksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListAvailableSolutionStacks
 func (c *ElasticBeanstalk) ListAvailableSolutionStacksRequest(input *ListAvailableSolutionStacksInput) (req *request.Request, output *ListAvailableSolutionStacksOutput) {
@@ -2770,14 +2749,13 @@ const opListPlatformBranches = "ListPlatformBranches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPlatformBranchesRequest method.
+//	req, resp := client.ListPlatformBranchesRequest(params)
 //
-//    // Example sending a request using the ListPlatformBranchesRequest method.
-//    req, resp := client.ListPlatformBranchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListPlatformBranches
 func (c *ElasticBeanstalk) ListPlatformBranchesRequest(input *ListPlatformBranchesInput) (req *request.Request, output *ListPlatformBranchesOutput) {
@@ -2846,15 +2824,14 @@ func (c *ElasticBeanstalk) ListPlatformBranchesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPlatformBranches operation.
-//    pageNum := 0
-//    err := client.ListPlatformBranchesPages(params,
-//        func(page *elasticbeanstalk.ListPlatformBranchesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPlatformBranches operation.
+//	pageNum := 0
+//	err := client.ListPlatformBranchesPages(params,
+//	    func(page *elasticbeanstalk.ListPlatformBranchesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticBeanstalk) ListPlatformBranchesPages(input *ListPlatformBranchesInput, fn func(*ListPlatformBranchesOutput, bool) bool) error {
 	return c.ListPlatformBranchesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2906,14 +2883,13 @@ const opListPlatformVersions = "ListPlatformVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPlatformVersionsRequest method.
+//	req, resp := client.ListPlatformVersionsRequest(params)
 //
-//    // Example sending a request using the ListPlatformVersionsRequest method.
-//    req, resp := client.ListPlatformVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListPlatformVersions
 func (c *ElasticBeanstalk) ListPlatformVersionsRequest(input *ListPlatformVersionsInput) (req *request.Request, output *ListPlatformVersionsOutput) {
@@ -2955,12 +2931,13 @@ func (c *ElasticBeanstalk) ListPlatformVersionsRequest(input *ListPlatformVersio
 // API operation ListPlatformVersions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeServiceException "ElasticBeanstalkServiceException"
-//   A generic service exception has occurred.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
+//
+//   - ErrCodeServiceException "ElasticBeanstalkServiceException"
+//     A generic service exception has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListPlatformVersions
 func (c *ElasticBeanstalk) ListPlatformVersions(input *ListPlatformVersionsInput) (*ListPlatformVersionsOutput, error) {
@@ -2992,15 +2969,14 @@ func (c *ElasticBeanstalk) ListPlatformVersionsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPlatformVersions operation.
-//    pageNum := 0
-//    err := client.ListPlatformVersionsPages(params,
-//        func(page *elasticbeanstalk.ListPlatformVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPlatformVersions operation.
+//	pageNum := 0
+//	err := client.ListPlatformVersionsPages(params,
+//	    func(page *elasticbeanstalk.ListPlatformVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticBeanstalk) ListPlatformVersionsPages(input *ListPlatformVersionsInput, fn func(*ListPlatformVersionsOutput, bool) bool) error {
 	return c.ListPlatformVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3052,14 +3028,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListTagsForResource
 func (c *ElasticBeanstalk) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3094,16 +3069,17 @@ func (c *ElasticBeanstalk) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN).
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//   * ErrCodeResourceTypeNotSupportedException "ResourceTypeNotSupportedException"
-//   The type of the specified Amazon Resource Name (ARN) isn't supported for
-//   this operation.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN).
+//
+//   - ErrCodeResourceTypeNotSupportedException "ResourceTypeNotSupportedException"
+//     The type of the specified Amazon Resource Name (ARN) isn't supported for
+//     this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListTagsForResource
 func (c *ElasticBeanstalk) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3143,14 +3119,13 @@ const opRebuildEnvironment = "RebuildEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebuildEnvironmentRequest method.
+//	req, resp := client.RebuildEnvironmentRequest(params)
 //
-//    // Example sending a request using the RebuildEnvironmentRequest method.
-//    req, resp := client.RebuildEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/RebuildEnvironment
 func (c *ElasticBeanstalk) RebuildEnvironmentRequest(input *RebuildEnvironmentInput) (req *request.Request, output *RebuildEnvironmentOutput) {
@@ -3183,9 +3158,9 @@ func (c *ElasticBeanstalk) RebuildEnvironmentRequest(input *RebuildEnvironmentIn
 // API operation RebuildEnvironment for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/RebuildEnvironment
 func (c *ElasticBeanstalk) RebuildEnvironment(input *RebuildEnvironmentInput) (*RebuildEnvironmentOutput, error) {
@@ -3225,14 +3200,13 @@ const opRequestEnvironmentInfo = "RequestEnvironmentInfo"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestEnvironmentInfoRequest method.
+//	req, resp := client.RequestEnvironmentInfoRequest(params)
 //
-//    // Example sending a request using the RequestEnvironmentInfoRequest method.
-//    req, resp := client.RequestEnvironmentInfoRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/RequestEnvironmentInfo
 func (c *ElasticBeanstalk) RequestEnvironmentInfoRequest(input *RequestEnvironmentInfoInput) (req *request.Request, output *RequestEnvironmentInfoOutput) {
@@ -3268,7 +3242,7 @@ func (c *ElasticBeanstalk) RequestEnvironmentInfoRequest(input *RequestEnvironme
 //
 // Related Topics
 //
-//    * RetrieveEnvironmentInfo
+//   - RetrieveEnvironmentInfo
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3314,14 +3288,13 @@ const opRestartAppServer = "RestartAppServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestartAppServerRequest method.
+//	req, resp := client.RestartAppServerRequest(params)
 //
-//    // Example sending a request using the RestartAppServerRequest method.
-//    req, resp := client.RestartAppServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/RestartAppServer
 func (c *ElasticBeanstalk) RestartAppServerRequest(input *RestartAppServerInput) (req *request.Request, output *RestartAppServerOutput) {
@@ -3390,14 +3363,13 @@ const opRetrieveEnvironmentInfo = "RetrieveEnvironmentInfo"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RetrieveEnvironmentInfoRequest method.
+//	req, resp := client.RetrieveEnvironmentInfoRequest(params)
 //
-//    // Example sending a request using the RetrieveEnvironmentInfoRequest method.
-//    req, resp := client.RetrieveEnvironmentInfoRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/RetrieveEnvironmentInfo
 func (c *ElasticBeanstalk) RetrieveEnvironmentInfoRequest(input *RetrieveEnvironmentInfoInput) (req *request.Request, output *RetrieveEnvironmentInfoOutput) {
@@ -3422,7 +3394,7 @@ func (c *ElasticBeanstalk) RetrieveEnvironmentInfoRequest(input *RetrieveEnviron
 //
 // Related Topics
 //
-//    * RequestEnvironmentInfo
+//   - RequestEnvironmentInfo
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3468,14 +3440,13 @@ const opSwapEnvironmentCNAMEs = "SwapEnvironmentCNAMEs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SwapEnvironmentCNAMEsRequest method.
+//	req, resp := client.SwapEnvironmentCNAMEsRequest(params)
 //
-//    // Example sending a request using the SwapEnvironmentCNAMEsRequest method.
-//    req, resp := client.SwapEnvironmentCNAMEsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/SwapEnvironmentCNAMEs
 func (c *ElasticBeanstalk) SwapEnvironmentCNAMEsRequest(input *SwapEnvironmentCNAMEsInput) (req *request.Request, output *SwapEnvironmentCNAMEsOutput) {
@@ -3543,14 +3514,13 @@ const opTerminateEnvironment = "TerminateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateEnvironmentRequest method.
+//	req, resp := client.TerminateEnvironmentRequest(params)
 //
-//    // Example sending a request using the TerminateEnvironmentRequest method.
-//    req, resp := client.TerminateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/TerminateEnvironment
 func (c *ElasticBeanstalk) TerminateEnvironmentRequest(input *TerminateEnvironmentInput) (req *request.Request, output *EnvironmentDescription) {
@@ -3581,9 +3551,9 @@ func (c *ElasticBeanstalk) TerminateEnvironmentRequest(input *TerminateEnvironme
 // API operation TerminateEnvironment for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/TerminateEnvironment
 func (c *ElasticBeanstalk) TerminateEnvironment(input *TerminateEnvironmentInput) (*EnvironmentDescription, error) {
@@ -3623,14 +3593,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateApplication
 func (c *ElasticBeanstalk) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *ApplicationDescriptionMessage) {
@@ -3700,14 +3669,13 @@ const opUpdateApplicationResourceLifecycle = "UpdateApplicationResourceLifecycle
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationResourceLifecycleRequest method.
+//	req, resp := client.UpdateApplicationResourceLifecycleRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationResourceLifecycleRequest method.
-//    req, resp := client.UpdateApplicationResourceLifecycleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateApplicationResourceLifecycle
 func (c *ElasticBeanstalk) UpdateApplicationResourceLifecycleRequest(input *UpdateApplicationResourceLifecycleInput) (req *request.Request, output *UpdateApplicationResourceLifecycleOutput) {
@@ -3738,9 +3706,9 @@ func (c *ElasticBeanstalk) UpdateApplicationResourceLifecycleRequest(input *Upda
 // API operation UpdateApplicationResourceLifecycle for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateApplicationResourceLifecycle
 func (c *ElasticBeanstalk) UpdateApplicationResourceLifecycle(input *UpdateApplicationResourceLifecycleInput) (*UpdateApplicationResourceLifecycleOutput, error) {
@@ -3780,14 +3748,13 @@ const opUpdateApplicationVersion = "UpdateApplicationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationVersionRequest method.
+//	req, resp := client.UpdateApplicationVersionRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationVersionRequest method.
-//    req, resp := client.UpdateApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateApplicationVersion
 func (c *ElasticBeanstalk) UpdateApplicationVersionRequest(input *UpdateApplicationVersionInput) (req *request.Request, output *ApplicationVersionDescriptionMessage) {
@@ -3857,14 +3824,13 @@ const opUpdateConfigurationTemplate = "UpdateConfigurationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationTemplateRequest method.
+//	req, resp := client.UpdateConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationTemplateRequest method.
-//    req, resp := client.UpdateConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateConfigurationTemplate
 func (c *ElasticBeanstalk) UpdateConfigurationTemplateRequest(input *UpdateConfigurationTemplateInput) (req *request.Request, output *ConfigurationSettingsDescription) {
@@ -3893,7 +3859,7 @@ func (c *ElasticBeanstalk) UpdateConfigurationTemplateRequest(input *UpdateConfi
 //
 // Related Topics
 //
-//    * DescribeConfigurationOptions
+//   - DescribeConfigurationOptions
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3903,12 +3869,13 @@ func (c *ElasticBeanstalk) UpdateConfigurationTemplateRequest(input *UpdateConfi
 // API operation UpdateConfigurationTemplate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
+//
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateConfigurationTemplate
 func (c *ElasticBeanstalk) UpdateConfigurationTemplate(input *UpdateConfigurationTemplateInput) (*ConfigurationSettingsDescription, error) {
@@ -3948,14 +3915,13 @@ const opUpdateEnvironment = "UpdateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentRequest method.
+//	req, resp := client.UpdateEnvironmentRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentRequest method.
-//    req, resp := client.UpdateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateEnvironment
 func (c *ElasticBeanstalk) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *request.Request, output *EnvironmentDescription) {
@@ -3996,12 +3962,13 @@ func (c *ElasticBeanstalk) UpdateEnvironmentRequest(input *UpdateEnvironmentInpu
 // API operation UpdateEnvironment for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
+//
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateEnvironment
 func (c *ElasticBeanstalk) UpdateEnvironment(input *UpdateEnvironmentInput) (*EnvironmentDescription, error) {
@@ -4041,14 +4008,13 @@ const opUpdateTagsForResource = "UpdateTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTagsForResourceRequest method.
+//	req, resp := client.UpdateTagsForResourceRequest(params)
 //
-//    // Example sending a request using the UpdateTagsForResourceRequest method.
-//    req, resp := client.UpdateTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateTagsForResource
 func (c *ElasticBeanstalk) UpdateTagsForResourceRequest(input *UpdateTagsForResourceInput) (req *request.Request, output *UpdateTagsForResourceOutput) {
@@ -4101,27 +4067,28 @@ func (c *ElasticBeanstalk) UpdateTagsForResourceRequest(input *UpdateTagsForReso
 // API operation UpdateTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeOperationInProgressException "OperationInProgressFailure"
-//   Unable to perform the specified operation because another operation that
-//   effects an element in this activity is already in progress.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
 //
-//   * ErrCodeTooManyTagsException "TooManyTagsException"
-//   The number of tags in the resource would exceed the number of tags that each
-//   resource can have.
+//   - ErrCodeOperationInProgressException "OperationInProgressFailure"
+//     Unable to perform the specified operation because another operation that
+//     effects an element in this activity is already in progress.
 //
-//   To calculate this, the operation considers both the number of tags the resource
-//   already has and the tags this operation would add if it succeeded.
+//   - ErrCodeTooManyTagsException "TooManyTagsException"
+//     The number of tags in the resource would exceed the number of tags that each
+//     resource can have.
 //
-//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN).
+//     To calculate this, the operation considers both the number of tags the resource
+//     already has and the tags this operation would add if it succeeded.
 //
-//   * ErrCodeResourceTypeNotSupportedException "ResourceTypeNotSupportedException"
-//   The type of the specified Amazon Resource Name (ARN) isn't supported for
-//   this operation.
+//   - ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN).
+//
+//   - ErrCodeResourceTypeNotSupportedException "ResourceTypeNotSupportedException"
+//     The type of the specified Amazon Resource Name (ARN) isn't supported for
+//     this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/UpdateTagsForResource
 func (c *ElasticBeanstalk) UpdateTagsForResource(input *UpdateTagsForResourceInput) (*UpdateTagsForResourceOutput, error) {
@@ -4161,14 +4128,13 @@ const opValidateConfigurationSettings = "ValidateConfigurationSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ValidateConfigurationSettingsRequest method.
+//	req, resp := client.ValidateConfigurationSettingsRequest(params)
 //
-//    // Example sending a request using the ValidateConfigurationSettingsRequest method.
-//    req, resp := client.ValidateConfigurationSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ValidateConfigurationSettings
 func (c *ElasticBeanstalk) ValidateConfigurationSettingsRequest(input *ValidateConfigurationSettingsInput) (req *request.Request, output *ValidateConfigurationSettingsOutput) {
@@ -4203,12 +4169,13 @@ func (c *ElasticBeanstalk) ValidateConfigurationSettingsRequest(input *ValidateC
 // API operation ValidateConfigurationSettings for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
-//   The specified account does not have sufficient privileges for one or more
-//   AWS services.
 //
-//   * ErrCodeTooManyBucketsException "TooManyBucketsException"
-//   The specified account has reached its limit of Amazon S3 buckets.
+//   - ErrCodeInsufficientPrivilegesException "InsufficientPrivilegesException"
+//     The specified account does not have sufficient privileges for one or more
+//     AWS services.
+//
+//   - ErrCodeTooManyBucketsException "TooManyBucketsException"
+//     The specified account has reached its limit of Amazon S3 buckets.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ValidateConfigurationSettings
 func (c *ElasticBeanstalk) ValidateConfigurationSettings(input *ValidateConfigurationSettingsInput) (*ValidateConfigurationSettingsOutput, error) {

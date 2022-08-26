@@ -1918,15 +1918,15 @@ func (r ApiK8sNodepoolsNodesReplacePostRequest) Execute() (*APIResponse, error) 
 }
 
 /*
- * K8sNodepoolsNodesReplacePost Recreate Kubernetes nodes
- * Recreate the specified Kubernetes node.
+  - K8sNodepoolsNodesReplacePost Recreate Kubernetes nodes
+  - Recreate the specified Kubernetes node.
 
 A new node is created and configured by Managed Kubernetes, based on the node pool template. Once the status is  "Active", all the pods are migrated from the faulty node, which is then deleted once empty. During this operation, the node pool will have an additional billable  "Active" node.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param k8sClusterId The unique ID of the Kubernetes cluster.
- * @param nodepoolId The unique ID of the Kubernetes node pool.
- * @param nodeId The unique ID of the Kubernetes node.
- * @return ApiK8sNodepoolsNodesReplacePostRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param k8sClusterId The unique ID of the Kubernetes cluster.
+  - @param nodepoolId The unique ID of the Kubernetes node pool.
+  - @param nodeId The unique ID of the Kubernetes node.
+  - @return ApiK8sNodepoolsNodesReplacePostRequest
 */
 func (a *KubernetesApiService) K8sNodepoolsNodesReplacePost(ctx _context.Context, k8sClusterId string, nodepoolId string, nodeId string) ApiK8sNodepoolsNodesReplacePostRequest {
 	return ApiK8sNodepoolsNodesReplacePostRequest{

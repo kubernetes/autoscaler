@@ -75,7 +75,9 @@ func (l Links) String() string {
 }
 
 // Parse parses a raw Link header in the form:
-//   <url>; rel="foo", <url>; rel="bar"; wat="dis"
+//
+//	<url>; rel="foo", <url>; rel="bar"; wat="dis"
+//
 // returning a slice of Link structs
 func Parse(raw string) Links {
 	var links Links

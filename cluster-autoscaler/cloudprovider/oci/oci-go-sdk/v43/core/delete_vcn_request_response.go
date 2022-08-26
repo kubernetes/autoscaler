@@ -11,7 +11,7 @@ import (
 
 // DeleteVcnRequest wrapper for the DeleteVcn operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteVcn.go.html to see an example of how to use DeleteVcnRequest.
 type DeleteVcnRequest struct {

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Synthetics client from just a session.
-//     svc := synthetics.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Synthetics client with additional configuration
-//     svc := synthetics.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Synthetics client from just a session.
+//	svc := synthetics.New(mySession)
+//
+//	// Create a Synthetics client with additional configuration
+//	svc := synthetics.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Synthetics {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

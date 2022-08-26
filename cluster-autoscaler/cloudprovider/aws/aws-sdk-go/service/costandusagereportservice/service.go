@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CostandUsageReportService client from just a session.
-//     svc := costandusagereportservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CostandUsageReportService client with additional configuration
-//     svc := costandusagereportservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CostandUsageReportService client from just a session.
+//	svc := costandusagereportservice.New(mySession)
+//
+//	// Create a CostandUsageReportService client with additional configuration
+//	svc := costandusagereportservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CostandUsageReportService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

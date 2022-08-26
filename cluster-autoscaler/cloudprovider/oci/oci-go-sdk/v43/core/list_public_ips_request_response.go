@@ -11,7 +11,7 @@ import (
 
 // ListPublicIpsRequest wrapper for the ListPublicIps operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListPublicIps.go.html to see an example of how to use ListPublicIpsRequest.
 type ListPublicIpsRequest struct {

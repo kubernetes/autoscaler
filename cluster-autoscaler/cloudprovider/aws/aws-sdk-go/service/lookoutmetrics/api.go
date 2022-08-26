@@ -29,14 +29,13 @@ const opActivateAnomalyDetector = "ActivateAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ActivateAnomalyDetectorRequest method.
+//	req, resp := client.ActivateAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the ActivateAnomalyDetectorRequest method.
-//    req, resp := client.ActivateAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ActivateAnomalyDetector
 func (c *LookoutMetrics) ActivateAnomalyDetectorRequest(input *ActivateAnomalyDetectorInput) (req *request.Request, output *ActivateAnomalyDetectorOutput) {
@@ -68,27 +67,28 @@ func (c *LookoutMetrics) ActivateAnomalyDetectorRequest(input *ActivateAnomalyDe
 // API operation ActivateAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ActivateAnomalyDetector
 func (c *LookoutMetrics) ActivateAnomalyDetector(input *ActivateAnomalyDetectorInput) (*ActivateAnomalyDetectorOutput, error) {
@@ -128,14 +128,13 @@ const opBackTestAnomalyDetector = "BackTestAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BackTestAnomalyDetectorRequest method.
+//	req, resp := client.BackTestAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the BackTestAnomalyDetectorRequest method.
-//    req, resp := client.BackTestAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/BackTestAnomalyDetector
 func (c *LookoutMetrics) BackTestAnomalyDetectorRequest(input *BackTestAnomalyDetectorInput) (req *request.Request, output *BackTestAnomalyDetectorOutput) {
@@ -167,24 +166,25 @@ func (c *LookoutMetrics) BackTestAnomalyDetectorRequest(input *BackTestAnomalyDe
 // API operation BackTestAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/BackTestAnomalyDetector
 func (c *LookoutMetrics) BackTestAnomalyDetector(input *BackTestAnomalyDetectorInput) (*BackTestAnomalyDetectorOutput, error) {
@@ -224,14 +224,13 @@ const opCreateAlert = "CreateAlert"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAlertRequest method.
+//	req, resp := client.CreateAlertRequest(params)
 //
-//    // Example sending a request using the CreateAlertRequest method.
-//    req, resp := client.CreateAlertRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/CreateAlert
 func (c *LookoutMetrics) CreateAlertRequest(input *CreateAlertInput) (req *request.Request, output *CreateAlertOutput) {
@@ -262,31 +261,32 @@ func (c *LookoutMetrics) CreateAlertRequest(input *CreateAlertInput) (req *reque
 // API operation CreateAlert for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * ServiceQuotaExceededException
-//   The request exceeded the service's quotas. Check the service quotas and try
-//   again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ServiceQuotaExceededException
+//     The request exceeded the service's quotas. Check the service quotas and try
+//     again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/CreateAlert
 func (c *LookoutMetrics) CreateAlert(input *CreateAlertInput) (*CreateAlertOutput, error) {
@@ -326,14 +326,13 @@ const opCreateAnomalyDetector = "CreateAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAnomalyDetectorRequest method.
+//	req, resp := client.CreateAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the CreateAnomalyDetectorRequest method.
-//    req, resp := client.CreateAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/CreateAnomalyDetector
 func (c *LookoutMetrics) CreateAnomalyDetectorRequest(input *CreateAnomalyDetectorInput) (req *request.Request, output *CreateAnomalyDetectorOutput) {
@@ -364,30 +363,31 @@ func (c *LookoutMetrics) CreateAnomalyDetectorRequest(input *CreateAnomalyDetect
 // API operation CreateAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * ServiceQuotaExceededException
-//   The request exceeded the service's quotas. Check the service quotas and try
-//   again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - ServiceQuotaExceededException
+//     The request exceeded the service's quotas. Check the service quotas and try
+//     again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/CreateAnomalyDetector
 func (c *LookoutMetrics) CreateAnomalyDetector(input *CreateAnomalyDetectorInput) (*CreateAnomalyDetectorOutput, error) {
@@ -427,14 +427,13 @@ const opCreateMetricSet = "CreateMetricSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMetricSetRequest method.
+//	req, resp := client.CreateMetricSetRequest(params)
 //
-//    // Example sending a request using the CreateMetricSetRequest method.
-//    req, resp := client.CreateMetricSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/CreateMetricSet
 func (c *LookoutMetrics) CreateMetricSetRequest(input *CreateMetricSetInput) (req *request.Request, output *CreateMetricSetOutput) {
@@ -465,31 +464,32 @@ func (c *LookoutMetrics) CreateMetricSetRequest(input *CreateMetricSetInput) (re
 // API operation CreateMetricSet for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * ServiceQuotaExceededException
-//   The request exceeded the service's quotas. Check the service quotas and try
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ServiceQuotaExceededException
+//     The request exceeded the service's quotas. Check the service quotas and try
+//     again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/CreateMetricSet
 func (c *LookoutMetrics) CreateMetricSet(input *CreateMetricSetInput) (*CreateMetricSetOutput, error) {
@@ -529,14 +529,13 @@ const opDeactivateAnomalyDetector = "DeactivateAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeactivateAnomalyDetectorRequest method.
+//	req, resp := client.DeactivateAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the DeactivateAnomalyDetectorRequest method.
-//    req, resp := client.DeactivateAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DeactivateAnomalyDetector
 func (c *LookoutMetrics) DeactivateAnomalyDetectorRequest(input *DeactivateAnomalyDetectorInput) (req *request.Request, output *DeactivateAnomalyDetectorOutput) {
@@ -568,27 +567,28 @@ func (c *LookoutMetrics) DeactivateAnomalyDetectorRequest(input *DeactivateAnoma
 // API operation DeactivateAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DeactivateAnomalyDetector
 func (c *LookoutMetrics) DeactivateAnomalyDetector(input *DeactivateAnomalyDetectorInput) (*DeactivateAnomalyDetectorOutput, error) {
@@ -628,14 +628,13 @@ const opDeleteAlert = "DeleteAlert"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAlertRequest method.
+//	req, resp := client.DeleteAlertRequest(params)
 //
-//    // Example sending a request using the DeleteAlertRequest method.
-//    req, resp := client.DeleteAlertRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DeleteAlert
 func (c *LookoutMetrics) DeleteAlertRequest(input *DeleteAlertInput) (req *request.Request, output *DeleteAlertOutput) {
@@ -667,24 +666,25 @@ func (c *LookoutMetrics) DeleteAlertRequest(input *DeleteAlertInput) (req *reque
 // API operation DeleteAlert for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DeleteAlert
 func (c *LookoutMetrics) DeleteAlert(input *DeleteAlertInput) (*DeleteAlertOutput, error) {
@@ -724,14 +724,13 @@ const opDeleteAnomalyDetector = "DeleteAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAnomalyDetectorRequest method.
+//	req, resp := client.DeleteAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the DeleteAnomalyDetectorRequest method.
-//    req, resp := client.DeleteAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DeleteAnomalyDetector
 func (c *LookoutMetrics) DeleteAnomalyDetectorRequest(input *DeleteAnomalyDetectorInput) (req *request.Request, output *DeleteAnomalyDetectorOutput) {
@@ -764,27 +763,28 @@ func (c *LookoutMetrics) DeleteAnomalyDetectorRequest(input *DeleteAnomalyDetect
 // API operation DeleteAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DeleteAnomalyDetector
 func (c *LookoutMetrics) DeleteAnomalyDetector(input *DeleteAnomalyDetectorInput) (*DeleteAnomalyDetectorOutput, error) {
@@ -824,14 +824,13 @@ const opDescribeAlert = "DescribeAlert"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlertRequest method.
+//	req, resp := client.DescribeAlertRequest(params)
 //
-//    // Example sending a request using the DescribeAlertRequest method.
-//    req, resp := client.DescribeAlertRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeAlert
 func (c *LookoutMetrics) DescribeAlertRequest(input *DescribeAlertInput) (req *request.Request, output *DescribeAlertOutput) {
@@ -866,24 +865,25 @@ func (c *LookoutMetrics) DescribeAlertRequest(input *DescribeAlertInput) (req *r
 // API operation DescribeAlert for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeAlert
 func (c *LookoutMetrics) DescribeAlert(input *DescribeAlertInput) (*DescribeAlertOutput, error) {
@@ -923,14 +923,13 @@ const opDescribeAnomalyDetectionExecutions = "DescribeAnomalyDetectionExecutions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAnomalyDetectionExecutionsRequest method.
+//	req, resp := client.DescribeAnomalyDetectionExecutionsRequest(params)
 //
-//    // Example sending a request using the DescribeAnomalyDetectionExecutionsRequest method.
-//    req, resp := client.DescribeAnomalyDetectionExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeAnomalyDetectionExecutions
 func (c *LookoutMetrics) DescribeAnomalyDetectionExecutionsRequest(input *DescribeAnomalyDetectionExecutionsInput) (req *request.Request, output *DescribeAnomalyDetectionExecutionsOutput) {
@@ -967,24 +966,25 @@ func (c *LookoutMetrics) DescribeAnomalyDetectionExecutionsRequest(input *Descri
 // API operation DescribeAnomalyDetectionExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeAnomalyDetectionExecutions
 func (c *LookoutMetrics) DescribeAnomalyDetectionExecutions(input *DescribeAnomalyDetectionExecutionsInput) (*DescribeAnomalyDetectionExecutionsOutput, error) {
@@ -1016,15 +1016,14 @@ func (c *LookoutMetrics) DescribeAnomalyDetectionExecutionsWithContext(ctx aws.C
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAnomalyDetectionExecutions operation.
-//    pageNum := 0
-//    err := client.DescribeAnomalyDetectionExecutionsPages(params,
-//        func(page *lookoutmetrics.DescribeAnomalyDetectionExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAnomalyDetectionExecutions operation.
+//	pageNum := 0
+//	err := client.DescribeAnomalyDetectionExecutionsPages(params,
+//	    func(page *lookoutmetrics.DescribeAnomalyDetectionExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) DescribeAnomalyDetectionExecutionsPages(input *DescribeAnomalyDetectionExecutionsInput, fn func(*DescribeAnomalyDetectionExecutionsOutput, bool) bool) error {
 	return c.DescribeAnomalyDetectionExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1076,14 +1075,13 @@ const opDescribeAnomalyDetector = "DescribeAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAnomalyDetectorRequest method.
+//	req, resp := client.DescribeAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the DescribeAnomalyDetectorRequest method.
-//    req, resp := client.DescribeAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeAnomalyDetector
 func (c *LookoutMetrics) DescribeAnomalyDetectorRequest(input *DescribeAnomalyDetectorInput) (req *request.Request, output *DescribeAnomalyDetectorOutput) {
@@ -1118,24 +1116,25 @@ func (c *LookoutMetrics) DescribeAnomalyDetectorRequest(input *DescribeAnomalyDe
 // API operation DescribeAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeAnomalyDetector
 func (c *LookoutMetrics) DescribeAnomalyDetector(input *DescribeAnomalyDetectorInput) (*DescribeAnomalyDetectorOutput, error) {
@@ -1175,14 +1174,13 @@ const opDescribeMetricSet = "DescribeMetricSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMetricSetRequest method.
+//	req, resp := client.DescribeMetricSetRequest(params)
 //
-//    // Example sending a request using the DescribeMetricSetRequest method.
-//    req, resp := client.DescribeMetricSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeMetricSet
 func (c *LookoutMetrics) DescribeMetricSetRequest(input *DescribeMetricSetInput) (req *request.Request, output *DescribeMetricSetOutput) {
@@ -1217,24 +1215,25 @@ func (c *LookoutMetrics) DescribeMetricSetRequest(input *DescribeMetricSetInput)
 // API operation DescribeMetricSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DescribeMetricSet
 func (c *LookoutMetrics) DescribeMetricSet(input *DescribeMetricSetInput) (*DescribeMetricSetOutput, error) {
@@ -1274,14 +1273,13 @@ const opDetectMetricSetConfig = "DetectMetricSetConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectMetricSetConfigRequest method.
+//	req, resp := client.DetectMetricSetConfigRequest(params)
 //
-//    // Example sending a request using the DetectMetricSetConfigRequest method.
-//    req, resp := client.DetectMetricSetConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DetectMetricSetConfig
 func (c *LookoutMetrics) DetectMetricSetConfigRequest(input *DetectMetricSetConfigInput) (req *request.Request, output *DetectMetricSetConfigOutput) {
@@ -1312,24 +1310,25 @@ func (c *LookoutMetrics) DetectMetricSetConfigRequest(input *DetectMetricSetConf
 // API operation DetectMetricSetConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/DetectMetricSetConfig
 func (c *LookoutMetrics) DetectMetricSetConfig(input *DetectMetricSetConfigInput) (*DetectMetricSetConfigOutput, error) {
@@ -1369,14 +1368,13 @@ const opGetAnomalyGroup = "GetAnomalyGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAnomalyGroupRequest method.
+//	req, resp := client.GetAnomalyGroupRequest(params)
 //
-//    // Example sending a request using the GetAnomalyGroupRequest method.
-//    req, resp := client.GetAnomalyGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/GetAnomalyGroup
 func (c *LookoutMetrics) GetAnomalyGroupRequest(input *GetAnomalyGroupInput) (req *request.Request, output *GetAnomalyGroupOutput) {
@@ -1407,24 +1405,25 @@ func (c *LookoutMetrics) GetAnomalyGroupRequest(input *GetAnomalyGroupInput) (re
 // API operation GetAnomalyGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/GetAnomalyGroup
 func (c *LookoutMetrics) GetAnomalyGroup(input *GetAnomalyGroupInput) (*GetAnomalyGroupOutput, error) {
@@ -1464,14 +1463,13 @@ const opGetFeedback = "GetFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFeedbackRequest method.
+//	req, resp := client.GetFeedbackRequest(params)
 //
-//    // Example sending a request using the GetFeedbackRequest method.
-//    req, resp := client.GetFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/GetFeedback
 func (c *LookoutMetrics) GetFeedbackRequest(input *GetFeedbackInput) (req *request.Request, output *GetFeedbackOutput) {
@@ -1508,24 +1506,25 @@ func (c *LookoutMetrics) GetFeedbackRequest(input *GetFeedbackInput) (req *reque
 // API operation GetFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/GetFeedback
 func (c *LookoutMetrics) GetFeedback(input *GetFeedbackInput) (*GetFeedbackOutput, error) {
@@ -1557,15 +1556,14 @@ func (c *LookoutMetrics) GetFeedbackWithContext(ctx aws.Context, input *GetFeedb
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetFeedback operation.
-//    pageNum := 0
-//    err := client.GetFeedbackPages(params,
-//        func(page *lookoutmetrics.GetFeedbackOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetFeedback operation.
+//	pageNum := 0
+//	err := client.GetFeedbackPages(params,
+//	    func(page *lookoutmetrics.GetFeedbackOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) GetFeedbackPages(input *GetFeedbackInput, fn func(*GetFeedbackOutput, bool) bool) error {
 	return c.GetFeedbackPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1617,14 +1615,13 @@ const opGetSampleData = "GetSampleData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSampleDataRequest method.
+//	req, resp := client.GetSampleDataRequest(params)
 //
-//    // Example sending a request using the GetSampleDataRequest method.
-//    req, resp := client.GetSampleDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/GetSampleData
 func (c *LookoutMetrics) GetSampleDataRequest(input *GetSampleDataInput) (req *request.Request, output *GetSampleDataOutput) {
@@ -1655,24 +1652,25 @@ func (c *LookoutMetrics) GetSampleDataRequest(input *GetSampleDataInput) (req *r
 // API operation GetSampleData for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/GetSampleData
 func (c *LookoutMetrics) GetSampleData(input *GetSampleDataInput) (*GetSampleDataOutput, error) {
@@ -1712,14 +1710,13 @@ const opListAlerts = "ListAlerts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAlertsRequest method.
+//	req, resp := client.ListAlertsRequest(params)
 //
-//    // Example sending a request using the ListAlertsRequest method.
-//    req, resp := client.ListAlertsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAlerts
 func (c *LookoutMetrics) ListAlertsRequest(input *ListAlertsInput) (req *request.Request, output *ListAlertsOutput) {
@@ -1760,24 +1757,25 @@ func (c *LookoutMetrics) ListAlertsRequest(input *ListAlertsInput) (req *request
 // API operation ListAlerts for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAlerts
 func (c *LookoutMetrics) ListAlerts(input *ListAlertsInput) (*ListAlertsOutput, error) {
@@ -1809,15 +1807,14 @@ func (c *LookoutMetrics) ListAlertsWithContext(ctx aws.Context, input *ListAlert
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAlerts operation.
-//    pageNum := 0
-//    err := client.ListAlertsPages(params,
-//        func(page *lookoutmetrics.ListAlertsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAlerts operation.
+//	pageNum := 0
+//	err := client.ListAlertsPages(params,
+//	    func(page *lookoutmetrics.ListAlertsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) ListAlertsPages(input *ListAlertsInput, fn func(*ListAlertsOutput, bool) bool) error {
 	return c.ListAlertsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1869,14 +1866,13 @@ const opListAnomalyDetectors = "ListAnomalyDetectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnomalyDetectorsRequest method.
+//	req, resp := client.ListAnomalyDetectorsRequest(params)
 //
-//    // Example sending a request using the ListAnomalyDetectorsRequest method.
-//    req, resp := client.ListAnomalyDetectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyDetectors
 func (c *LookoutMetrics) ListAnomalyDetectorsRequest(input *ListAnomalyDetectorsInput) (req *request.Request, output *ListAnomalyDetectorsOutput) {
@@ -1917,24 +1913,25 @@ func (c *LookoutMetrics) ListAnomalyDetectorsRequest(input *ListAnomalyDetectors
 // API operation ListAnomalyDetectors for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyDetectors
 func (c *LookoutMetrics) ListAnomalyDetectors(input *ListAnomalyDetectorsInput) (*ListAnomalyDetectorsOutput, error) {
@@ -1966,15 +1963,14 @@ func (c *LookoutMetrics) ListAnomalyDetectorsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnomalyDetectors operation.
-//    pageNum := 0
-//    err := client.ListAnomalyDetectorsPages(params,
-//        func(page *lookoutmetrics.ListAnomalyDetectorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnomalyDetectors operation.
+//	pageNum := 0
+//	err := client.ListAnomalyDetectorsPages(params,
+//	    func(page *lookoutmetrics.ListAnomalyDetectorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) ListAnomalyDetectorsPages(input *ListAnomalyDetectorsInput, fn func(*ListAnomalyDetectorsOutput, bool) bool) error {
 	return c.ListAnomalyDetectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2026,14 +2022,13 @@ const opListAnomalyGroupRelatedMetrics = "ListAnomalyGroupRelatedMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnomalyGroupRelatedMetricsRequest method.
+//	req, resp := client.ListAnomalyGroupRelatedMetricsRequest(params)
 //
-//    // Example sending a request using the ListAnomalyGroupRelatedMetricsRequest method.
-//    req, resp := client.ListAnomalyGroupRelatedMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyGroupRelatedMetrics
 func (c *LookoutMetrics) ListAnomalyGroupRelatedMetricsRequest(input *ListAnomalyGroupRelatedMetricsInput) (req *request.Request, output *ListAnomalyGroupRelatedMetricsOutput) {
@@ -2071,24 +2066,25 @@ func (c *LookoutMetrics) ListAnomalyGroupRelatedMetricsRequest(input *ListAnomal
 // API operation ListAnomalyGroupRelatedMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyGroupRelatedMetrics
 func (c *LookoutMetrics) ListAnomalyGroupRelatedMetrics(input *ListAnomalyGroupRelatedMetricsInput) (*ListAnomalyGroupRelatedMetricsOutput, error) {
@@ -2120,15 +2116,14 @@ func (c *LookoutMetrics) ListAnomalyGroupRelatedMetricsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnomalyGroupRelatedMetrics operation.
-//    pageNum := 0
-//    err := client.ListAnomalyGroupRelatedMetricsPages(params,
-//        func(page *lookoutmetrics.ListAnomalyGroupRelatedMetricsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnomalyGroupRelatedMetrics operation.
+//	pageNum := 0
+//	err := client.ListAnomalyGroupRelatedMetricsPages(params,
+//	    func(page *lookoutmetrics.ListAnomalyGroupRelatedMetricsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) ListAnomalyGroupRelatedMetricsPages(input *ListAnomalyGroupRelatedMetricsInput, fn func(*ListAnomalyGroupRelatedMetricsOutput, bool) bool) error {
 	return c.ListAnomalyGroupRelatedMetricsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2180,14 +2175,13 @@ const opListAnomalyGroupSummaries = "ListAnomalyGroupSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnomalyGroupSummariesRequest method.
+//	req, resp := client.ListAnomalyGroupSummariesRequest(params)
 //
-//    // Example sending a request using the ListAnomalyGroupSummariesRequest method.
-//    req, resp := client.ListAnomalyGroupSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyGroupSummaries
 func (c *LookoutMetrics) ListAnomalyGroupSummariesRequest(input *ListAnomalyGroupSummariesInput) (req *request.Request, output *ListAnomalyGroupSummariesOutput) {
@@ -2224,24 +2218,25 @@ func (c *LookoutMetrics) ListAnomalyGroupSummariesRequest(input *ListAnomalyGrou
 // API operation ListAnomalyGroupSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyGroupSummaries
 func (c *LookoutMetrics) ListAnomalyGroupSummaries(input *ListAnomalyGroupSummariesInput) (*ListAnomalyGroupSummariesOutput, error) {
@@ -2273,15 +2268,14 @@ func (c *LookoutMetrics) ListAnomalyGroupSummariesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnomalyGroupSummaries operation.
-//    pageNum := 0
-//    err := client.ListAnomalyGroupSummariesPages(params,
-//        func(page *lookoutmetrics.ListAnomalyGroupSummariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnomalyGroupSummaries operation.
+//	pageNum := 0
+//	err := client.ListAnomalyGroupSummariesPages(params,
+//	    func(page *lookoutmetrics.ListAnomalyGroupSummariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) ListAnomalyGroupSummariesPages(input *ListAnomalyGroupSummariesInput, fn func(*ListAnomalyGroupSummariesOutput, bool) bool) error {
 	return c.ListAnomalyGroupSummariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2333,14 +2327,13 @@ const opListAnomalyGroupTimeSeries = "ListAnomalyGroupTimeSeries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnomalyGroupTimeSeriesRequest method.
+//	req, resp := client.ListAnomalyGroupTimeSeriesRequest(params)
 //
-//    // Example sending a request using the ListAnomalyGroupTimeSeriesRequest method.
-//    req, resp := client.ListAnomalyGroupTimeSeriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyGroupTimeSeries
 func (c *LookoutMetrics) ListAnomalyGroupTimeSeriesRequest(input *ListAnomalyGroupTimeSeriesInput) (req *request.Request, output *ListAnomalyGroupTimeSeriesOutput) {
@@ -2377,24 +2370,25 @@ func (c *LookoutMetrics) ListAnomalyGroupTimeSeriesRequest(input *ListAnomalyGro
 // API operation ListAnomalyGroupTimeSeries for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListAnomalyGroupTimeSeries
 func (c *LookoutMetrics) ListAnomalyGroupTimeSeries(input *ListAnomalyGroupTimeSeriesInput) (*ListAnomalyGroupTimeSeriesOutput, error) {
@@ -2426,15 +2420,14 @@ func (c *LookoutMetrics) ListAnomalyGroupTimeSeriesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnomalyGroupTimeSeries operation.
-//    pageNum := 0
-//    err := client.ListAnomalyGroupTimeSeriesPages(params,
-//        func(page *lookoutmetrics.ListAnomalyGroupTimeSeriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnomalyGroupTimeSeries operation.
+//	pageNum := 0
+//	err := client.ListAnomalyGroupTimeSeriesPages(params,
+//	    func(page *lookoutmetrics.ListAnomalyGroupTimeSeriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) ListAnomalyGroupTimeSeriesPages(input *ListAnomalyGroupTimeSeriesInput, fn func(*ListAnomalyGroupTimeSeriesOutput, bool) bool) error {
 	return c.ListAnomalyGroupTimeSeriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2486,14 +2479,13 @@ const opListMetricSets = "ListMetricSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMetricSetsRequest method.
+//	req, resp := client.ListMetricSetsRequest(params)
 //
-//    // Example sending a request using the ListMetricSetsRequest method.
-//    req, resp := client.ListMetricSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListMetricSets
 func (c *LookoutMetrics) ListMetricSetsRequest(input *ListMetricSetsInput) (req *request.Request, output *ListMetricSetsOutput) {
@@ -2534,24 +2526,25 @@ func (c *LookoutMetrics) ListMetricSetsRequest(input *ListMetricSetsInput) (req 
 // API operation ListMetricSets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListMetricSets
 func (c *LookoutMetrics) ListMetricSets(input *ListMetricSetsInput) (*ListMetricSetsOutput, error) {
@@ -2583,15 +2576,14 @@ func (c *LookoutMetrics) ListMetricSetsWithContext(ctx aws.Context, input *ListM
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMetricSets operation.
-//    pageNum := 0
-//    err := client.ListMetricSetsPages(params,
-//        func(page *lookoutmetrics.ListMetricSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMetricSets operation.
+//	pageNum := 0
+//	err := client.ListMetricSetsPages(params,
+//	    func(page *lookoutmetrics.ListMetricSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutMetrics) ListMetricSetsPages(input *ListMetricSetsInput, fn func(*ListMetricSetsOutput, bool) bool) error {
 	return c.ListMetricSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2643,14 +2635,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListTagsForResource
 func (c *LookoutMetrics) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2682,17 +2673,18 @@ func (c *LookoutMetrics) ListTagsForResourceRequest(input *ListTagsForResourceIn
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/ListTagsForResource
 func (c *LookoutMetrics) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2732,14 +2724,13 @@ const opPutFeedback = "PutFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutFeedbackRequest method.
+//	req, resp := client.PutFeedbackRequest(params)
 //
-//    // Example sending a request using the PutFeedbackRequest method.
-//    req, resp := client.PutFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/PutFeedback
 func (c *LookoutMetrics) PutFeedbackRequest(input *PutFeedbackInput) (req *request.Request, output *PutFeedbackOutput) {
@@ -2771,24 +2762,25 @@ func (c *LookoutMetrics) PutFeedbackRequest(input *PutFeedbackInput) (req *reque
 // API operation PutFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/PutFeedback
 func (c *LookoutMetrics) PutFeedback(input *PutFeedbackInput) (*PutFeedbackOutput, error) {
@@ -2828,14 +2820,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/TagResource
 func (c *LookoutMetrics) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2868,17 +2859,18 @@ func (c *LookoutMetrics) TagResourceRequest(input *TagResourceInput) (req *reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/TagResource
 func (c *LookoutMetrics) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2918,14 +2910,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/UntagResource
 func (c *LookoutMetrics) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2958,17 +2949,18 @@ func (c *LookoutMetrics) UntagResourceRequest(input *UntagResourceInput) (req *r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/UntagResource
 func (c *LookoutMetrics) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3008,14 +3000,13 @@ const opUpdateAnomalyDetector = "UpdateAnomalyDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAnomalyDetectorRequest method.
+//	req, resp := client.UpdateAnomalyDetectorRequest(params)
 //
-//    // Example sending a request using the UpdateAnomalyDetectorRequest method.
-//    req, resp := client.UpdateAnomalyDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/UpdateAnomalyDetector
 func (c *LookoutMetrics) UpdateAnomalyDetectorRequest(input *UpdateAnomalyDetectorInput) (req *request.Request, output *UpdateAnomalyDetectorOutput) {
@@ -3047,24 +3038,25 @@ func (c *LookoutMetrics) UpdateAnomalyDetectorRequest(input *UpdateAnomalyDetect
 // API operation UpdateAnomalyDetector for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/UpdateAnomalyDetector
 func (c *LookoutMetrics) UpdateAnomalyDetector(input *UpdateAnomalyDetectorInput) (*UpdateAnomalyDetectorOutput, error) {
@@ -3104,14 +3096,13 @@ const opUpdateMetricSet = "UpdateMetricSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMetricSetRequest method.
+//	req, resp := client.UpdateMetricSetRequest(params)
 //
-//    // Example sending a request using the UpdateMetricSetRequest method.
-//    req, resp := client.UpdateMetricSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/UpdateMetricSet
 func (c *LookoutMetrics) UpdateMetricSetRequest(input *UpdateMetricSetInput) (req *request.Request, output *UpdateMetricSetOutput) {
@@ -3142,28 +3133,29 @@ func (c *LookoutMetrics) UpdateMetricSetRequest(input *UpdateMetricSetInput) (re
 // API operation UpdateMetricSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource cannot be found. Check the ARN of the resource and
-//   try again.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
-//   Check your input values and try again.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found. Check the ARN of the resource and
+//     try again.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//     Check your input values and try again.
 //
-//   * AccessDeniedException
-//   You do not have sufficient permissions to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
-//   * TooManyRequestsException
-//   The request was denied due to too many requests being submitted at the same
-//   time.
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   The request exceeded the service's quotas. Check the service quotas and try
-//   again.
+//   - TooManyRequestsException
+//     The request was denied due to too many requests being submitted at the same
+//     time.
+//
+//   - ServiceQuotaExceededException
+//     The request exceeded the service's quotas. Check the service quotas and try
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutmetrics-2017-07-25/UpdateMetricSet
 func (c *LookoutMetrics) UpdateMetricSet(input *UpdateMetricSetInput) (*UpdateMetricSetOutput, error) {

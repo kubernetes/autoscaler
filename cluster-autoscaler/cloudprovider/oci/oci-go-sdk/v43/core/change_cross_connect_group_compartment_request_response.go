@@ -11,7 +11,7 @@ import (
 
 // ChangeCrossConnectGroupCompartmentRequest wrapper for the ChangeCrossConnectGroupCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeCrossConnectGroupCompartment.go.html to see an example of how to use ChangeCrossConnectGroupCompartmentRequest.
 type ChangeCrossConnectGroupCompartmentRequest struct {

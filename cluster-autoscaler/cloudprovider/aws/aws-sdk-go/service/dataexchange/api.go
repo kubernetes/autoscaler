@@ -29,14 +29,13 @@ const opCancelJob = "CancelJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelJobRequest method.
+//	req, resp := client.CancelJobRequest(params)
 //
-//    // Example sending a request using the CancelJobRequest method.
-//    req, resp := client.CancelJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CancelJob
 func (c *DataExchange) CancelJobRequest(input *CancelJobInput) (req *request.Request, output *CancelJobOutput) {
@@ -69,21 +68,22 @@ func (c *DataExchange) CancelJobRequest(input *CancelJobInput) (req *request.Req
 // API operation CancelJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - InternalServerException
+//     An exception occurred with the service.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CancelJob
 func (c *DataExchange) CancelJob(input *CancelJobInput) (*CancelJobOutput, error) {
@@ -123,14 +123,13 @@ const opCreateDataSet = "CreateDataSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataSetRequest method.
+//	req, resp := client.CreateDataSetRequest(params)
 //
-//    // Example sending a request using the CreateDataSetRequest method.
-//    req, resp := client.CreateDataSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateDataSet
 func (c *DataExchange) CreateDataSetRequest(input *CreateDataSetInput) (req *request.Request, output *CreateDataSetOutput) {
@@ -161,20 +160,21 @@ func (c *DataExchange) CreateDataSetRequest(input *CreateDataSetInput) (req *req
 // API operation CreateDataSet for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * ServiceLimitExceededException
-//   The request has exceeded the quotas imposed by the service.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - ServiceLimitExceededException
+//     The request has exceeded the quotas imposed by the service.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateDataSet
 func (c *DataExchange) CreateDataSet(input *CreateDataSetInput) (*CreateDataSetOutput, error) {
@@ -214,14 +214,13 @@ const opCreateEventAction = "CreateEventAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventActionRequest method.
+//	req, resp := client.CreateEventActionRequest(params)
 //
-//    // Example sending a request using the CreateEventActionRequest method.
-//    req, resp := client.CreateEventActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateEventAction
 func (c *DataExchange) CreateEventActionRequest(input *CreateEventActionInput) (req *request.Request, output *CreateEventActionOutput) {
@@ -252,20 +251,21 @@ func (c *DataExchange) CreateEventActionRequest(input *CreateEventActionInput) (
 // API operation CreateEventAction for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * ServiceLimitExceededException
-//   The request has exceeded the quotas imposed by the service.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - ServiceLimitExceededException
+//     The request has exceeded the quotas imposed by the service.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateEventAction
 func (c *DataExchange) CreateEventAction(input *CreateEventActionInput) (*CreateEventActionOutput, error) {
@@ -305,14 +305,13 @@ const opCreateJob = "CreateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateJobRequest method.
+//	req, resp := client.CreateJobRequest(params)
 //
-//    // Example sending a request using the CreateJobRequest method.
-//    req, resp := client.CreateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateJob
 func (c *DataExchange) CreateJobRequest(input *CreateJobInput) (req *request.Request, output *CreateJobOutput) {
@@ -343,24 +342,25 @@ func (c *DataExchange) CreateJobRequest(input *CreateJobInput) (req *request.Req
 // API operation CreateJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateJob
 func (c *DataExchange) CreateJob(input *CreateJobInput) (*CreateJobOutput, error) {
@@ -400,14 +400,13 @@ const opCreateRevision = "CreateRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRevisionRequest method.
+//	req, resp := client.CreateRevisionRequest(params)
 //
-//    // Example sending a request using the CreateRevisionRequest method.
-//    req, resp := client.CreateRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateRevision
 func (c *DataExchange) CreateRevisionRequest(input *CreateRevisionInput) (req *request.Request, output *CreateRevisionOutput) {
@@ -438,20 +437,21 @@ func (c *DataExchange) CreateRevisionRequest(input *CreateRevisionInput) (req *r
 // API operation CreateRevision for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateRevision
 func (c *DataExchange) CreateRevision(input *CreateRevisionInput) (*CreateRevisionOutput, error) {
@@ -491,14 +491,13 @@ const opDeleteAsset = "DeleteAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssetRequest method.
+//	req, resp := client.DeleteAssetRequest(params)
 //
-//    // Example sending a request using the DeleteAssetRequest method.
-//    req, resp := client.DeleteAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteAsset
 func (c *DataExchange) DeleteAssetRequest(input *DeleteAssetInput) (req *request.Request, output *DeleteAssetOutput) {
@@ -530,24 +529,25 @@ func (c *DataExchange) DeleteAssetRequest(input *DeleteAssetInput) (req *request
 // API operation DeleteAsset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteAsset
 func (c *DataExchange) DeleteAsset(input *DeleteAssetInput) (*DeleteAssetOutput, error) {
@@ -587,14 +587,13 @@ const opDeleteDataSet = "DeleteDataSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDataSetRequest method.
+//	req, resp := client.DeleteDataSetRequest(params)
 //
-//    // Example sending a request using the DeleteDataSetRequest method.
-//    req, resp := client.DeleteDataSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteDataSet
 func (c *DataExchange) DeleteDataSetRequest(input *DeleteDataSetInput) (req *request.Request, output *DeleteDataSetOutput) {
@@ -626,24 +625,25 @@ func (c *DataExchange) DeleteDataSetRequest(input *DeleteDataSetInput) (req *req
 // API operation DeleteDataSet for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteDataSet
 func (c *DataExchange) DeleteDataSet(input *DeleteDataSetInput) (*DeleteDataSetOutput, error) {
@@ -683,14 +683,13 @@ const opDeleteEventAction = "DeleteEventAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventActionRequest method.
+//	req, resp := client.DeleteEventActionRequest(params)
 //
-//    // Example sending a request using the DeleteEventActionRequest method.
-//    req, resp := client.DeleteEventActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteEventAction
 func (c *DataExchange) DeleteEventActionRequest(input *DeleteEventActionInput) (req *request.Request, output *DeleteEventActionOutput) {
@@ -722,17 +721,18 @@ func (c *DataExchange) DeleteEventActionRequest(input *DeleteEventActionInput) (
 // API operation DeleteEventAction for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteEventAction
 func (c *DataExchange) DeleteEventAction(input *DeleteEventActionInput) (*DeleteEventActionOutput, error) {
@@ -772,14 +772,13 @@ const opDeleteRevision = "DeleteRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRevisionRequest method.
+//	req, resp := client.DeleteRevisionRequest(params)
 //
-//    // Example sending a request using the DeleteRevisionRequest method.
-//    req, resp := client.DeleteRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteRevision
 func (c *DataExchange) DeleteRevisionRequest(input *DeleteRevisionInput) (req *request.Request, output *DeleteRevisionOutput) {
@@ -811,24 +810,25 @@ func (c *DataExchange) DeleteRevisionRequest(input *DeleteRevisionInput) (req *r
 // API operation DeleteRevision for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteRevision
 func (c *DataExchange) DeleteRevision(input *DeleteRevisionInput) (*DeleteRevisionOutput, error) {
@@ -868,14 +868,13 @@ const opGetAsset = "GetAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssetRequest method.
+//	req, resp := client.GetAssetRequest(params)
 //
-//    // Example sending a request using the GetAssetRequest method.
-//    req, resp := client.GetAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetAsset
 func (c *DataExchange) GetAssetRequest(input *GetAssetInput) (req *request.Request, output *GetAssetOutput) {
@@ -906,17 +905,18 @@ func (c *DataExchange) GetAssetRequest(input *GetAssetInput) (req *request.Reque
 // API operation GetAsset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetAsset
 func (c *DataExchange) GetAsset(input *GetAssetInput) (*GetAssetOutput, error) {
@@ -956,14 +956,13 @@ const opGetDataSet = "GetDataSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataSetRequest method.
+//	req, resp := client.GetDataSetRequest(params)
 //
-//    // Example sending a request using the GetDataSetRequest method.
-//    req, resp := client.GetDataSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetDataSet
 func (c *DataExchange) GetDataSetRequest(input *GetDataSetInput) (req *request.Request, output *GetDataSetOutput) {
@@ -994,17 +993,18 @@ func (c *DataExchange) GetDataSetRequest(input *GetDataSetInput) (req *request.R
 // API operation GetDataSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetDataSet
 func (c *DataExchange) GetDataSet(input *GetDataSetInput) (*GetDataSetOutput, error) {
@@ -1044,14 +1044,13 @@ const opGetEventAction = "GetEventAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEventActionRequest method.
+//	req, resp := client.GetEventActionRequest(params)
 //
-//    // Example sending a request using the GetEventActionRequest method.
-//    req, resp := client.GetEventActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetEventAction
 func (c *DataExchange) GetEventActionRequest(input *GetEventActionInput) (req *request.Request, output *GetEventActionOutput) {
@@ -1082,17 +1081,18 @@ func (c *DataExchange) GetEventActionRequest(input *GetEventActionInput) (req *r
 // API operation GetEventAction for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetEventAction
 func (c *DataExchange) GetEventAction(input *GetEventActionInput) (*GetEventActionOutput, error) {
@@ -1132,14 +1132,13 @@ const opGetJob = "GetJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobRequest method.
+//	req, resp := client.GetJobRequest(params)
 //
-//    // Example sending a request using the GetJobRequest method.
-//    req, resp := client.GetJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetJob
 func (c *DataExchange) GetJobRequest(input *GetJobInput) (req *request.Request, output *GetJobOutput) {
@@ -1170,17 +1169,18 @@ func (c *DataExchange) GetJobRequest(input *GetJobInput) (req *request.Request, 
 // API operation GetJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetJob
 func (c *DataExchange) GetJob(input *GetJobInput) (*GetJobOutput, error) {
@@ -1220,14 +1220,13 @@ const opGetRevision = "GetRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRevisionRequest method.
+//	req, resp := client.GetRevisionRequest(params)
 //
-//    // Example sending a request using the GetRevisionRequest method.
-//    req, resp := client.GetRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetRevision
 func (c *DataExchange) GetRevisionRequest(input *GetRevisionInput) (req *request.Request, output *GetRevisionOutput) {
@@ -1258,17 +1257,18 @@ func (c *DataExchange) GetRevisionRequest(input *GetRevisionInput) (req *request
 // API operation GetRevision for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/GetRevision
 func (c *DataExchange) GetRevision(input *GetRevisionInput) (*GetRevisionOutput, error) {
@@ -1308,14 +1308,13 @@ const opListDataSetRevisions = "ListDataSetRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataSetRevisionsRequest method.
+//	req, resp := client.ListDataSetRevisionsRequest(params)
 //
-//    // Example sending a request using the ListDataSetRevisionsRequest method.
-//    req, resp := client.ListDataSetRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListDataSetRevisions
 func (c *DataExchange) ListDataSetRevisionsRequest(input *ListDataSetRevisionsInput) (req *request.Request, output *ListDataSetRevisionsOutput) {
@@ -1353,17 +1352,18 @@ func (c *DataExchange) ListDataSetRevisionsRequest(input *ListDataSetRevisionsIn
 // API operation ListDataSetRevisions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListDataSetRevisions
 func (c *DataExchange) ListDataSetRevisions(input *ListDataSetRevisionsInput) (*ListDataSetRevisionsOutput, error) {
@@ -1395,15 +1395,14 @@ func (c *DataExchange) ListDataSetRevisionsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDataSetRevisions operation.
-//    pageNum := 0
-//    err := client.ListDataSetRevisionsPages(params,
-//        func(page *dataexchange.ListDataSetRevisionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDataSetRevisions operation.
+//	pageNum := 0
+//	err := client.ListDataSetRevisionsPages(params,
+//	    func(page *dataexchange.ListDataSetRevisionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataExchange) ListDataSetRevisionsPages(input *ListDataSetRevisionsInput, fn func(*ListDataSetRevisionsOutput, bool) bool) error {
 	return c.ListDataSetRevisionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1455,14 +1454,13 @@ const opListDataSets = "ListDataSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataSetsRequest method.
+//	req, resp := client.ListDataSetsRequest(params)
 //
-//    // Example sending a request using the ListDataSetsRequest method.
-//    req, resp := client.ListDataSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListDataSets
 func (c *DataExchange) ListDataSetsRequest(input *ListDataSetsInput) (req *request.Request, output *ListDataSetsOutput) {
@@ -1501,17 +1499,18 @@ func (c *DataExchange) ListDataSetsRequest(input *ListDataSetsInput) (req *reque
 // API operation ListDataSets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListDataSets
 func (c *DataExchange) ListDataSets(input *ListDataSetsInput) (*ListDataSetsOutput, error) {
@@ -1543,15 +1542,14 @@ func (c *DataExchange) ListDataSetsWithContext(ctx aws.Context, input *ListDataS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDataSets operation.
-//    pageNum := 0
-//    err := client.ListDataSetsPages(params,
-//        func(page *dataexchange.ListDataSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDataSets operation.
+//	pageNum := 0
+//	err := client.ListDataSetsPages(params,
+//	    func(page *dataexchange.ListDataSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataExchange) ListDataSetsPages(input *ListDataSetsInput, fn func(*ListDataSetsOutput, bool) bool) error {
 	return c.ListDataSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1603,14 +1601,13 @@ const opListEventActions = "ListEventActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventActionsRequest method.
+//	req, resp := client.ListEventActionsRequest(params)
 //
-//    // Example sending a request using the ListEventActionsRequest method.
-//    req, resp := client.ListEventActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListEventActions
 func (c *DataExchange) ListEventActionsRequest(input *ListEventActionsInput) (req *request.Request, output *ListEventActionsOutput) {
@@ -1647,17 +1644,18 @@ func (c *DataExchange) ListEventActionsRequest(input *ListEventActionsInput) (re
 // API operation ListEventActions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListEventActions
 func (c *DataExchange) ListEventActions(input *ListEventActionsInput) (*ListEventActionsOutput, error) {
@@ -1689,15 +1687,14 @@ func (c *DataExchange) ListEventActionsWithContext(ctx aws.Context, input *ListE
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEventActions operation.
-//    pageNum := 0
-//    err := client.ListEventActionsPages(params,
-//        func(page *dataexchange.ListEventActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEventActions operation.
+//	pageNum := 0
+//	err := client.ListEventActionsPages(params,
+//	    func(page *dataexchange.ListEventActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataExchange) ListEventActionsPages(input *ListEventActionsInput, fn func(*ListEventActionsOutput, bool) bool) error {
 	return c.ListEventActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1749,14 +1746,13 @@ const opListJobs = "ListJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsRequest method.
+//	req, resp := client.ListJobsRequest(params)
 //
-//    // Example sending a request using the ListJobsRequest method.
-//    req, resp := client.ListJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListJobs
 func (c *DataExchange) ListJobsRequest(input *ListJobsInput) (req *request.Request, output *ListJobsOutput) {
@@ -1793,17 +1789,18 @@ func (c *DataExchange) ListJobsRequest(input *ListJobsInput) (req *request.Reque
 // API operation ListJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListJobs
 func (c *DataExchange) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
@@ -1835,15 +1832,14 @@ func (c *DataExchange) ListJobsWithContext(ctx aws.Context, input *ListJobsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobs operation.
-//    pageNum := 0
-//    err := client.ListJobsPages(params,
-//        func(page *dataexchange.ListJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobs operation.
+//	pageNum := 0
+//	err := client.ListJobsPages(params,
+//	    func(page *dataexchange.ListJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataExchange) ListJobsPages(input *ListJobsInput, fn func(*ListJobsOutput, bool) bool) error {
 	return c.ListJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1895,14 +1891,13 @@ const opListRevisionAssets = "ListRevisionAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRevisionAssetsRequest method.
+//	req, resp := client.ListRevisionAssetsRequest(params)
 //
-//    // Example sending a request using the ListRevisionAssetsRequest method.
-//    req, resp := client.ListRevisionAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListRevisionAssets
 func (c *DataExchange) ListRevisionAssetsRequest(input *ListRevisionAssetsInput) (req *request.Request, output *ListRevisionAssetsOutput) {
@@ -1940,17 +1935,18 @@ func (c *DataExchange) ListRevisionAssetsRequest(input *ListRevisionAssetsInput)
 // API operation ListRevisionAssets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListRevisionAssets
 func (c *DataExchange) ListRevisionAssets(input *ListRevisionAssetsInput) (*ListRevisionAssetsOutput, error) {
@@ -1982,15 +1978,14 @@ func (c *DataExchange) ListRevisionAssetsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRevisionAssets operation.
-//    pageNum := 0
-//    err := client.ListRevisionAssetsPages(params,
-//        func(page *dataexchange.ListRevisionAssetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRevisionAssets operation.
+//	pageNum := 0
+//	err := client.ListRevisionAssetsPages(params,
+//	    func(page *dataexchange.ListRevisionAssetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataExchange) ListRevisionAssetsPages(input *ListRevisionAssetsInput, fn func(*ListRevisionAssetsOutput, bool) bool) error {
 	return c.ListRevisionAssetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2042,14 +2037,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/ListTagsForResource
 func (c *DataExchange) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2116,14 +2110,13 @@ const opRevokeRevision = "RevokeRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeRevisionRequest method.
+//	req, resp := client.RevokeRevisionRequest(params)
 //
-//    // Example sending a request using the RevokeRevisionRequest method.
-//    req, resp := client.RevokeRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/RevokeRevision
 func (c *DataExchange) RevokeRevisionRequest(input *RevokeRevisionInput) (req *request.Request, output *RevokeRevisionOutput) {
@@ -2154,24 +2147,25 @@ func (c *DataExchange) RevokeRevisionRequest(input *RevokeRevisionInput) (req *r
 // API operation RevokeRevision for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/RevokeRevision
 func (c *DataExchange) RevokeRevision(input *RevokeRevisionInput) (*RevokeRevisionOutput, error) {
@@ -2211,14 +2205,13 @@ const opSendApiAsset = "SendApiAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendApiAssetRequest method.
+//	req, resp := client.SendApiAssetRequest(params)
 //
-//    // Example sending a request using the SendApiAssetRequest method.
-//    req, resp := client.SendApiAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/SendApiAsset
 func (c *DataExchange) SendApiAssetRequest(input *SendApiAssetInput) (req *request.Request, output *SendApiAssetOutput) {
@@ -2252,20 +2245,21 @@ func (c *DataExchange) SendApiAssetRequest(input *SendApiAssetInput) (req *reque
 // API operation SendApiAsset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/SendApiAsset
 func (c *DataExchange) SendApiAsset(input *SendApiAssetInput) (*SendApiAssetOutput, error) {
@@ -2305,14 +2299,13 @@ const opStartJob = "StartJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartJobRequest method.
+//	req, resp := client.StartJobRequest(params)
 //
-//    // Example sending a request using the StartJobRequest method.
-//    req, resp := client.StartJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/StartJob
 func (c *DataExchange) StartJobRequest(input *StartJobInput) (req *request.Request, output *StartJobOutput) {
@@ -2344,24 +2337,25 @@ func (c *DataExchange) StartJobRequest(input *StartJobInput) (req *request.Reque
 // API operation StartJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/StartJob
 func (c *DataExchange) StartJob(input *StartJobInput) (*StartJobOutput, error) {
@@ -2401,14 +2395,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/TagResource
 func (c *DataExchange) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2476,14 +2469,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UntagResource
 func (c *DataExchange) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2551,14 +2543,13 @@ const opUpdateAsset = "UpdateAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAssetRequest method.
+//	req, resp := client.UpdateAssetRequest(params)
 //
-//    // Example sending a request using the UpdateAssetRequest method.
-//    req, resp := client.UpdateAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateAsset
 func (c *DataExchange) UpdateAssetRequest(input *UpdateAssetInput) (req *request.Request, output *UpdateAssetOutput) {
@@ -2589,24 +2580,25 @@ func (c *DataExchange) UpdateAssetRequest(input *UpdateAssetInput) (req *request
 // API operation UpdateAsset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateAsset
 func (c *DataExchange) UpdateAsset(input *UpdateAssetInput) (*UpdateAssetOutput, error) {
@@ -2646,14 +2638,13 @@ const opUpdateDataSet = "UpdateDataSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDataSetRequest method.
+//	req, resp := client.UpdateDataSetRequest(params)
 //
-//    // Example sending a request using the UpdateDataSetRequest method.
-//    req, resp := client.UpdateDataSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateDataSet
 func (c *DataExchange) UpdateDataSetRequest(input *UpdateDataSetInput) (req *request.Request, output *UpdateDataSetOutput) {
@@ -2684,20 +2675,21 @@ func (c *DataExchange) UpdateDataSetRequest(input *UpdateDataSetInput) (req *req
 // API operation UpdateDataSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateDataSet
 func (c *DataExchange) UpdateDataSet(input *UpdateDataSetInput) (*UpdateDataSetOutput, error) {
@@ -2737,14 +2729,13 @@ const opUpdateEventAction = "UpdateEventAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEventActionRequest method.
+//	req, resp := client.UpdateEventActionRequest(params)
 //
-//    // Example sending a request using the UpdateEventActionRequest method.
-//    req, resp := client.UpdateEventActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateEventAction
 func (c *DataExchange) UpdateEventActionRequest(input *UpdateEventActionInput) (req *request.Request, output *UpdateEventActionOutput) {
@@ -2775,20 +2766,21 @@ func (c *DataExchange) UpdateEventActionRequest(input *UpdateEventActionInput) (
 // API operation UpdateEventAction for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ValidationException
-//   The request was invalid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateEventAction
 func (c *DataExchange) UpdateEventAction(input *UpdateEventActionInput) (*UpdateEventActionOutput, error) {
@@ -2828,14 +2820,13 @@ const opUpdateRevision = "UpdateRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRevisionRequest method.
+//	req, resp := client.UpdateRevisionRequest(params)
 //
-//    // Example sending a request using the UpdateRevisionRequest method.
-//    req, resp := client.UpdateRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateRevision
 func (c *DataExchange) UpdateRevisionRequest(input *UpdateRevisionInput) (req *request.Request, output *UpdateRevisionOutput) {
@@ -2866,24 +2857,25 @@ func (c *DataExchange) UpdateRevisionRequest(input *UpdateRevisionInput) (req *r
 // API operation UpdateRevision for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request was invalid.
 //
-//   * InternalServerException
-//   An exception occurred with the service.
+//   - ValidationException
+//     The request was invalid.
 //
-//   * AccessDeniedException
-//   Access to the resource is denied.
+//   - InternalServerException
+//     An exception occurred with the service.
 //
-//   * ResourceNotFoundException
-//   The resource couldn't be found.
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
 //
-//   * ConflictException
-//   The request couldn't be completed because it conflicted with the current
-//   state of the resource.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateRevision
 func (c *DataExchange) UpdateRevision(input *UpdateRevisionInput) (*UpdateRevisionOutput, error) {

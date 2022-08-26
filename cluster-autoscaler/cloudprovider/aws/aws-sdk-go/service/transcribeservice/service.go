@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a TranscribeService client from just a session.
-//     svc := transcribeservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a TranscribeService client with additional configuration
-//     svc := transcribeservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a TranscribeService client from just a session.
+//	svc := transcribeservice.New(mySession)
+//
+//	// Create a TranscribeService client with additional configuration
+//	svc := transcribeservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *TranscribeService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

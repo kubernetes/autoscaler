@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Ivschat client from just a session.
-//     svc := ivschat.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Ivschat client with additional configuration
-//     svc := ivschat.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Ivschat client from just a session.
+//	svc := ivschat.New(mySession)
+//
+//	// Create a Ivschat client with additional configuration
+//	svc := ivschat.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Ivschat {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

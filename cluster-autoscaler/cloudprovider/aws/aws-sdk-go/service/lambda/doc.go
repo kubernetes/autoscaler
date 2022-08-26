@@ -3,7 +3,7 @@
 // Package lambda provides the client and types for making API
 // requests to AWS Lambda.
 //
-// Overview
+// # Overview
 //
 // Lambda is a compute service that lets you run code without provisioning or
 // managing servers. Lambda runs your code on a high-availability compute infrastructure
@@ -30,7 +30,7 @@
 // see Signature Version 4 signing process (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
 // in the Amazon Web Services General Reference..
 //
-// CA certificates
+// # CA certificates
 //
 // Because Amazon Web Services SDKs use the CA certificates from your computer,
 // changes to the certificates on the Amazon Web Services servers can cause
@@ -41,30 +41,30 @@
 // with the update process. The following list shows minimum operating system
 // and Java versions:
 //
-//    * Microsoft Windows versions that have updates from January 2005 or later
-//    installed contain at least one of the required CAs in their trust list.
+//   - Microsoft Windows versions that have updates from January 2005 or later
+//     installed contain at least one of the required CAs in their trust list.
 //
-//    * Mac OS X 10.4 with Java for Mac OS X 10.4 Release 5 (February 2007),
-//    Mac OS X 10.5 (October 2007), and later versions contain at least one
-//    of the required CAs in their trust list.
+//   - Mac OS X 10.4 with Java for Mac OS X 10.4 Release 5 (February 2007),
+//     Mac OS X 10.5 (October 2007), and later versions contain at least one
+//     of the required CAs in their trust list.
 //
-//    * Red Hat Enterprise Linux 5 (March 2007), 6, and 7 and CentOS 5, 6, and
-//    7 all contain at least one of the required CAs in their default trusted
-//    CA list.
+//   - Red Hat Enterprise Linux 5 (March 2007), 6, and 7 and CentOS 5, 6, and
+//     7 all contain at least one of the required CAs in their default trusted
+//     CA list.
 //
-//    * Java 1.4.2_12 (May 2006), 5 Update 2 (March 2005), and all later versions,
-//    including Java 6 (December 2006), 7, and 8, contain at least one of the
-//    required CAs in their default trusted CA list.
+//   - Java 1.4.2_12 (May 2006), 5 Update 2 (March 2005), and all later versions,
+//     including Java 6 (December 2006), 7, and 8, contain at least one of the
+//     required CAs in their default trusted CA list.
 //
 // When accessing the Lambda management console or Lambda API endpoints, whether
 // through browsers or programmatically, you will need to ensure your client
 // machines support any of the following CAs:
 //
-//    * Amazon Root CA 1
+//   - Amazon Root CA 1
 //
-//    * Starfield Services Root Certificate Authority - G2
+//   - Starfield Services Root Certificate Authority - G2
 //
-//    * Starfield Class 2 Certification Authority
+//   - Starfield Class 2 Certification Authority
 //
 // Root certificates from the first two authorities are available from Amazon
 // trust services (https://www.amazontrust.com/repository/), but keeping your
@@ -77,7 +77,7 @@
 // See lambda package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Lambda with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

@@ -29,14 +29,13 @@ const opBatchDeleteRecipeVersion = "BatchDeleteRecipeVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteRecipeVersionRequest method.
+//	req, resp := client.BatchDeleteRecipeVersionRequest(params)
 //
-//    // Example sending a request using the BatchDeleteRecipeVersionRequest method.
-//    req, resp := client.BatchDeleteRecipeVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/BatchDeleteRecipeVersion
 func (c *GlueDataBrew) BatchDeleteRecipeVersionRequest(input *BatchDeleteRecipeVersionInput) (req *request.Request, output *BatchDeleteRecipeVersionOutput) {
@@ -61,25 +60,25 @@ func (c *GlueDataBrew) BatchDeleteRecipeVersionRequest(input *BatchDeleteRecipeV
 //
 // The entire request will be rejected if:
 //
-//    * The recipe does not exist.
+//   - The recipe does not exist.
 //
-//    * There is an invalid version identifier in the list of versions.
+//   - There is an invalid version identifier in the list of versions.
 //
-//    * The version list is empty.
+//   - The version list is empty.
 //
-//    * The version list size exceeds 50.
+//   - The version list size exceeds 50.
 //
-//    * The version list contains duplicate entries.
+//   - The version list contains duplicate entries.
 //
 // The request will complete successfully, but with partial failures, if:
 //
-//    * A version does not exist.
+//   - A version does not exist.
 //
-//    * A version is being used by a job.
+//   - A version is being used by a job.
 //
-//    * You specify LATEST_WORKING, but it's being used by a project.
+//   - You specify LATEST_WORKING, but it's being used by a project.
 //
-//    * The version fails to be deleted.
+//   - The version fails to be deleted.
 //
 // The LATEST_WORKING version will only be deleted if the recipe has no other
 // versions. If you try to delete LATEST_WORKING while other versions exist
@@ -94,14 +93,15 @@ func (c *GlueDataBrew) BatchDeleteRecipeVersionRequest(input *BatchDeleteRecipeV
 // API operation BatchDeleteRecipeVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/BatchDeleteRecipeVersion
 func (c *GlueDataBrew) BatchDeleteRecipeVersion(input *BatchDeleteRecipeVersionInput) (*BatchDeleteRecipeVersionOutput, error) {
@@ -141,14 +141,13 @@ const opCreateDataset = "CreateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatasetRequest method.
+//	req, resp := client.CreateDatasetRequest(params)
 //
-//    // Example sending a request using the CreateDatasetRequest method.
-//    req, resp := client.CreateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateDataset
 func (c *GlueDataBrew) CreateDatasetRequest(input *CreateDatasetInput) (req *request.Request, output *CreateDatasetOutput) {
@@ -179,17 +178,18 @@ func (c *GlueDataBrew) CreateDatasetRequest(input *CreateDatasetInput) (req *req
 // API operation CreateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the specified resource was denied.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - AccessDeniedException
+//     Access to the specified resource was denied.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateDataset
 func (c *GlueDataBrew) CreateDataset(input *CreateDatasetInput) (*CreateDatasetOutput, error) {
@@ -229,14 +229,13 @@ const opCreateProfileJob = "CreateProfileJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProfileJobRequest method.
+//	req, resp := client.CreateProfileJobRequest(params)
 //
-//    // Example sending a request using the CreateProfileJobRequest method.
-//    req, resp := client.CreateProfileJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateProfileJob
 func (c *GlueDataBrew) CreateProfileJobRequest(input *CreateProfileJobInput) (req *request.Request, output *CreateProfileJobOutput) {
@@ -267,20 +266,21 @@ func (c *GlueDataBrew) CreateProfileJobRequest(input *CreateProfileJobInput) (re
 // API operation CreateProfileJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the specified resource was denied.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - AccessDeniedException
+//     Access to the specified resource was denied.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateProfileJob
 func (c *GlueDataBrew) CreateProfileJob(input *CreateProfileJobInput) (*CreateProfileJobOutput, error) {
@@ -320,14 +320,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateProject
 func (c *GlueDataBrew) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -358,17 +357,18 @@ func (c *GlueDataBrew) CreateProjectRequest(input *CreateProjectInput) (req *req
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * InternalServerException
-//   An internal service failure occurred.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - InternalServerException
+//     An internal service failure occurred.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateProject
 func (c *GlueDataBrew) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -408,14 +408,13 @@ const opCreateRecipe = "CreateRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRecipeRequest method.
+//	req, resp := client.CreateRecipeRequest(params)
 //
-//    // Example sending a request using the CreateRecipeRequest method.
-//    req, resp := client.CreateRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateRecipe
 func (c *GlueDataBrew) CreateRecipeRequest(input *CreateRecipeInput) (req *request.Request, output *CreateRecipeOutput) {
@@ -446,14 +445,15 @@ func (c *GlueDataBrew) CreateRecipeRequest(input *CreateRecipeInput) (req *reque
 // API operation CreateRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateRecipe
 func (c *GlueDataBrew) CreateRecipe(input *CreateRecipeInput) (*CreateRecipeOutput, error) {
@@ -493,14 +493,13 @@ const opCreateRecipeJob = "CreateRecipeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRecipeJobRequest method.
+//	req, resp := client.CreateRecipeJobRequest(params)
 //
-//    // Example sending a request using the CreateRecipeJobRequest method.
-//    req, resp := client.CreateRecipeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateRecipeJob
 func (c *GlueDataBrew) CreateRecipeJobRequest(input *CreateRecipeJobInput) (req *request.Request, output *CreateRecipeJobOutput) {
@@ -532,20 +531,21 @@ func (c *GlueDataBrew) CreateRecipeJobRequest(input *CreateRecipeJobInput) (req 
 // API operation CreateRecipeJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the specified resource was denied.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - AccessDeniedException
+//     Access to the specified resource was denied.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateRecipeJob
 func (c *GlueDataBrew) CreateRecipeJob(input *CreateRecipeJobInput) (*CreateRecipeJobOutput, error) {
@@ -585,14 +585,13 @@ const opCreateRuleset = "CreateRuleset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRulesetRequest method.
+//	req, resp := client.CreateRulesetRequest(params)
 //
-//    // Example sending a request using the CreateRulesetRequest method.
-//    req, resp := client.CreateRulesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateRuleset
 func (c *GlueDataBrew) CreateRulesetRequest(input *CreateRulesetInput) (req *request.Request, output *CreateRulesetOutput) {
@@ -624,14 +623,15 @@ func (c *GlueDataBrew) CreateRulesetRequest(input *CreateRulesetInput) (req *req
 // API operation CreateRuleset for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateRuleset
 func (c *GlueDataBrew) CreateRuleset(input *CreateRulesetInput) (*CreateRulesetOutput, error) {
@@ -671,14 +671,13 @@ const opCreateSchedule = "CreateSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateScheduleRequest method.
+//	req, resp := client.CreateScheduleRequest(params)
 //
-//    // Example sending a request using the CreateScheduleRequest method.
-//    req, resp := client.CreateScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateSchedule
 func (c *GlueDataBrew) CreateScheduleRequest(input *CreateScheduleInput) (req *request.Request, output *CreateScheduleOutput) {
@@ -710,14 +709,15 @@ func (c *GlueDataBrew) CreateScheduleRequest(input *CreateScheduleInput) (req *r
 // API operation CreateSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/CreateSchedule
 func (c *GlueDataBrew) CreateSchedule(input *CreateScheduleInput) (*CreateScheduleOutput, error) {
@@ -757,14 +757,13 @@ const opDeleteDataset = "DeleteDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetRequest method.
+//	req, resp := client.DeleteDatasetRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetRequest method.
-//    req, resp := client.DeleteDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteDataset
 func (c *GlueDataBrew) DeleteDatasetRequest(input *DeleteDatasetInput) (req *request.Request, output *DeleteDatasetOutput) {
@@ -795,14 +794,15 @@ func (c *GlueDataBrew) DeleteDatasetRequest(input *DeleteDatasetInput) (req *req
 // API operation DeleteDataset for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteDataset
 func (c *GlueDataBrew) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
@@ -842,14 +842,13 @@ const opDeleteJob = "DeleteJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJobRequest method.
+//	req, resp := client.DeleteJobRequest(params)
 //
-//    // Example sending a request using the DeleteJobRequest method.
-//    req, resp := client.DeleteJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteJob
 func (c *GlueDataBrew) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, output *DeleteJobOutput) {
@@ -880,14 +879,15 @@ func (c *GlueDataBrew) DeleteJobRequest(input *DeleteJobInput) (req *request.Req
 // API operation DeleteJob for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteJob
 func (c *GlueDataBrew) DeleteJob(input *DeleteJobInput) (*DeleteJobOutput, error) {
@@ -927,14 +927,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteProject
 func (c *GlueDataBrew) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -965,14 +964,15 @@ func (c *GlueDataBrew) DeleteProjectRequest(input *DeleteProjectInput) (req *req
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteProject
 func (c *GlueDataBrew) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -1012,14 +1012,13 @@ const opDeleteRecipeVersion = "DeleteRecipeVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecipeVersionRequest method.
+//	req, resp := client.DeleteRecipeVersionRequest(params)
 //
-//    // Example sending a request using the DeleteRecipeVersionRequest method.
-//    req, resp := client.DeleteRecipeVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteRecipeVersion
 func (c *GlueDataBrew) DeleteRecipeVersionRequest(input *DeleteRecipeVersionInput) (req *request.Request, output *DeleteRecipeVersionOutput) {
@@ -1050,14 +1049,15 @@ func (c *GlueDataBrew) DeleteRecipeVersionRequest(input *DeleteRecipeVersionInpu
 // API operation DeleteRecipeVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteRecipeVersion
 func (c *GlueDataBrew) DeleteRecipeVersion(input *DeleteRecipeVersionInput) (*DeleteRecipeVersionOutput, error) {
@@ -1097,14 +1097,13 @@ const opDeleteRuleset = "DeleteRuleset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRulesetRequest method.
+//	req, resp := client.DeleteRulesetRequest(params)
 //
-//    // Example sending a request using the DeleteRulesetRequest method.
-//    req, resp := client.DeleteRulesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteRuleset
 func (c *GlueDataBrew) DeleteRulesetRequest(input *DeleteRulesetInput) (req *request.Request, output *DeleteRulesetOutput) {
@@ -1135,14 +1134,15 @@ func (c *GlueDataBrew) DeleteRulesetRequest(input *DeleteRulesetInput) (req *req
 // API operation DeleteRuleset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ValidationException
+//     The input parameters for this request failed validation.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteRuleset
 func (c *GlueDataBrew) DeleteRuleset(input *DeleteRulesetInput) (*DeleteRulesetOutput, error) {
@@ -1182,14 +1182,13 @@ const opDeleteSchedule = "DeleteSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScheduleRequest method.
+//	req, resp := client.DeleteScheduleRequest(params)
 //
-//    // Example sending a request using the DeleteScheduleRequest method.
-//    req, resp := client.DeleteScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteSchedule
 func (c *GlueDataBrew) DeleteScheduleRequest(input *DeleteScheduleInput) (req *request.Request, output *DeleteScheduleOutput) {
@@ -1220,11 +1219,12 @@ func (c *GlueDataBrew) DeleteScheduleRequest(input *DeleteScheduleInput) (req *r
 // API operation DeleteSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DeleteSchedule
 func (c *GlueDataBrew) DeleteSchedule(input *DeleteScheduleInput) (*DeleteScheduleOutput, error) {
@@ -1264,14 +1264,13 @@ const opDescribeDataset = "DescribeDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDatasetRequest method.
+//	req, resp := client.DescribeDatasetRequest(params)
 //
-//    // Example sending a request using the DescribeDatasetRequest method.
-//    req, resp := client.DescribeDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeDataset
 func (c *GlueDataBrew) DescribeDatasetRequest(input *DescribeDatasetInput) (req *request.Request, output *DescribeDatasetOutput) {
@@ -1302,11 +1301,12 @@ func (c *GlueDataBrew) DescribeDatasetRequest(input *DescribeDatasetInput) (req 
 // API operation DescribeDataset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeDataset
 func (c *GlueDataBrew) DescribeDataset(input *DescribeDatasetInput) (*DescribeDatasetOutput, error) {
@@ -1346,14 +1346,13 @@ const opDescribeJob = "DescribeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobRequest method.
+//	req, resp := client.DescribeJobRequest(params)
 //
-//    // Example sending a request using the DescribeJobRequest method.
-//    req, resp := client.DescribeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeJob
 func (c *GlueDataBrew) DescribeJobRequest(input *DescribeJobInput) (req *request.Request, output *DescribeJobOutput) {
@@ -1384,11 +1383,12 @@ func (c *GlueDataBrew) DescribeJobRequest(input *DescribeJobInput) (req *request
 // API operation DescribeJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeJob
 func (c *GlueDataBrew) DescribeJob(input *DescribeJobInput) (*DescribeJobOutput, error) {
@@ -1428,14 +1428,13 @@ const opDescribeJobRun = "DescribeJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobRunRequest method.
+//	req, resp := client.DescribeJobRunRequest(params)
 //
-//    // Example sending a request using the DescribeJobRunRequest method.
-//    req, resp := client.DescribeJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeJobRun
 func (c *GlueDataBrew) DescribeJobRunRequest(input *DescribeJobRunInput) (req *request.Request, output *DescribeJobRunOutput) {
@@ -1466,11 +1465,12 @@ func (c *GlueDataBrew) DescribeJobRunRequest(input *DescribeJobRunInput) (req *r
 // API operation DescribeJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeJobRun
 func (c *GlueDataBrew) DescribeJobRun(input *DescribeJobRunInput) (*DescribeJobRunOutput, error) {
@@ -1510,14 +1510,13 @@ const opDescribeProject = "DescribeProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProjectRequest method.
+//	req, resp := client.DescribeProjectRequest(params)
 //
-//    // Example sending a request using the DescribeProjectRequest method.
-//    req, resp := client.DescribeProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeProject
 func (c *GlueDataBrew) DescribeProjectRequest(input *DescribeProjectInput) (req *request.Request, output *DescribeProjectOutput) {
@@ -1548,11 +1547,12 @@ func (c *GlueDataBrew) DescribeProjectRequest(input *DescribeProjectInput) (req 
 // API operation DescribeProject for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeProject
 func (c *GlueDataBrew) DescribeProject(input *DescribeProjectInput) (*DescribeProjectOutput, error) {
@@ -1592,14 +1592,13 @@ const opDescribeRecipe = "DescribeRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRecipeRequest method.
+//	req, resp := client.DescribeRecipeRequest(params)
 //
-//    // Example sending a request using the DescribeRecipeRequest method.
-//    req, resp := client.DescribeRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeRecipe
 func (c *GlueDataBrew) DescribeRecipeRequest(input *DescribeRecipeInput) (req *request.Request, output *DescribeRecipeOutput) {
@@ -1631,11 +1630,12 @@ func (c *GlueDataBrew) DescribeRecipeRequest(input *DescribeRecipeInput) (req *r
 // API operation DescribeRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeRecipe
 func (c *GlueDataBrew) DescribeRecipe(input *DescribeRecipeInput) (*DescribeRecipeOutput, error) {
@@ -1675,14 +1675,13 @@ const opDescribeRuleset = "DescribeRuleset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRulesetRequest method.
+//	req, resp := client.DescribeRulesetRequest(params)
 //
-//    // Example sending a request using the DescribeRulesetRequest method.
-//    req, resp := client.DescribeRulesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeRuleset
 func (c *GlueDataBrew) DescribeRulesetRequest(input *DescribeRulesetInput) (req *request.Request, output *DescribeRulesetOutput) {
@@ -1713,11 +1712,12 @@ func (c *GlueDataBrew) DescribeRulesetRequest(input *DescribeRulesetInput) (req 
 // API operation DescribeRuleset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeRuleset
 func (c *GlueDataBrew) DescribeRuleset(input *DescribeRulesetInput) (*DescribeRulesetOutput, error) {
@@ -1757,14 +1757,13 @@ const opDescribeSchedule = "DescribeSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduleRequest method.
+//	req, resp := client.DescribeScheduleRequest(params)
 //
-//    // Example sending a request using the DescribeScheduleRequest method.
-//    req, resp := client.DescribeScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeSchedule
 func (c *GlueDataBrew) DescribeScheduleRequest(input *DescribeScheduleInput) (req *request.Request, output *DescribeScheduleOutput) {
@@ -1795,11 +1794,12 @@ func (c *GlueDataBrew) DescribeScheduleRequest(input *DescribeScheduleInput) (re
 // API operation DescribeSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/DescribeSchedule
 func (c *GlueDataBrew) DescribeSchedule(input *DescribeScheduleInput) (*DescribeScheduleOutput, error) {
@@ -1839,14 +1839,13 @@ const opListDatasets = "ListDatasets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetsRequest method.
+//	req, resp := client.ListDatasetsRequest(params)
 //
-//    // Example sending a request using the ListDatasetsRequest method.
-//    req, resp := client.ListDatasetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListDatasets
 func (c *GlueDataBrew) ListDatasetsRequest(input *ListDatasetsInput) (req *request.Request, output *ListDatasetsOutput) {
@@ -1883,8 +1882,8 @@ func (c *GlueDataBrew) ListDatasetsRequest(input *ListDatasetsInput) (req *reque
 // API operation ListDatasets for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListDatasets
 func (c *GlueDataBrew) ListDatasets(input *ListDatasetsInput) (*ListDatasetsOutput, error) {
@@ -1916,15 +1915,14 @@ func (c *GlueDataBrew) ListDatasetsWithContext(ctx aws.Context, input *ListDatas
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatasets operation.
-//    pageNum := 0
-//    err := client.ListDatasetsPages(params,
-//        func(page *gluedatabrew.ListDatasetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatasets operation.
+//	pageNum := 0
+//	err := client.ListDatasetsPages(params,
+//	    func(page *gluedatabrew.ListDatasetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListDatasetsPages(input *ListDatasetsInput, fn func(*ListDatasetsOutput, bool) bool) error {
 	return c.ListDatasetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1976,14 +1974,13 @@ const opListJobRuns = "ListJobRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobRunsRequest method.
+//	req, resp := client.ListJobRunsRequest(params)
 //
-//    // Example sending a request using the ListJobRunsRequest method.
-//    req, resp := client.ListJobRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListJobRuns
 func (c *GlueDataBrew) ListJobRunsRequest(input *ListJobRunsInput) (req *request.Request, output *ListJobRunsOutput) {
@@ -2020,11 +2017,12 @@ func (c *GlueDataBrew) ListJobRunsRequest(input *ListJobRunsInput) (req *request
 // API operation ListJobRuns for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListJobRuns
 func (c *GlueDataBrew) ListJobRuns(input *ListJobRunsInput) (*ListJobRunsOutput, error) {
@@ -2056,15 +2054,14 @@ func (c *GlueDataBrew) ListJobRunsWithContext(ctx aws.Context, input *ListJobRun
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobRuns operation.
-//    pageNum := 0
-//    err := client.ListJobRunsPages(params,
-//        func(page *gluedatabrew.ListJobRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobRuns operation.
+//	pageNum := 0
+//	err := client.ListJobRunsPages(params,
+//	    func(page *gluedatabrew.ListJobRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListJobRunsPages(input *ListJobRunsInput, fn func(*ListJobRunsOutput, bool) bool) error {
 	return c.ListJobRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2116,14 +2113,13 @@ const opListJobs = "ListJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsRequest method.
+//	req, resp := client.ListJobsRequest(params)
 //
-//    // Example sending a request using the ListJobsRequest method.
-//    req, resp := client.ListJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListJobs
 func (c *GlueDataBrew) ListJobsRequest(input *ListJobsInput) (req *request.Request, output *ListJobsOutput) {
@@ -2160,8 +2156,8 @@ func (c *GlueDataBrew) ListJobsRequest(input *ListJobsInput) (req *request.Reque
 // API operation ListJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListJobs
 func (c *GlueDataBrew) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
@@ -2193,15 +2189,14 @@ func (c *GlueDataBrew) ListJobsWithContext(ctx aws.Context, input *ListJobsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobs operation.
-//    pageNum := 0
-//    err := client.ListJobsPages(params,
-//        func(page *gluedatabrew.ListJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobs operation.
+//	pageNum := 0
+//	err := client.ListJobsPages(params,
+//	    func(page *gluedatabrew.ListJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListJobsPages(input *ListJobsInput, fn func(*ListJobsOutput, bool) bool) error {
 	return c.ListJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2253,14 +2248,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListProjects
 func (c *GlueDataBrew) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -2297,8 +2291,8 @@ func (c *GlueDataBrew) ListProjectsRequest(input *ListProjectsInput) (req *reque
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListProjects
 func (c *GlueDataBrew) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -2330,15 +2324,14 @@ func (c *GlueDataBrew) ListProjectsWithContext(ctx aws.Context, input *ListProje
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjects operation.
-//    pageNum := 0
-//    err := client.ListProjectsPages(params,
-//        func(page *gluedatabrew.ListProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjects operation.
+//	pageNum := 0
+//	err := client.ListProjectsPages(params,
+//	    func(page *gluedatabrew.ListProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListProjectsPages(input *ListProjectsInput, fn func(*ListProjectsOutput, bool) bool) error {
 	return c.ListProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2390,14 +2383,13 @@ const opListRecipeVersions = "ListRecipeVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecipeVersionsRequest method.
+//	req, resp := client.ListRecipeVersionsRequest(params)
 //
-//    // Example sending a request using the ListRecipeVersionsRequest method.
-//    req, resp := client.ListRecipeVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListRecipeVersions
 func (c *GlueDataBrew) ListRecipeVersionsRequest(input *ListRecipeVersionsInput) (req *request.Request, output *ListRecipeVersionsOutput) {
@@ -2434,8 +2426,8 @@ func (c *GlueDataBrew) ListRecipeVersionsRequest(input *ListRecipeVersionsInput)
 // API operation ListRecipeVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListRecipeVersions
 func (c *GlueDataBrew) ListRecipeVersions(input *ListRecipeVersionsInput) (*ListRecipeVersionsOutput, error) {
@@ -2467,15 +2459,14 @@ func (c *GlueDataBrew) ListRecipeVersionsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecipeVersions operation.
-//    pageNum := 0
-//    err := client.ListRecipeVersionsPages(params,
-//        func(page *gluedatabrew.ListRecipeVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecipeVersions operation.
+//	pageNum := 0
+//	err := client.ListRecipeVersionsPages(params,
+//	    func(page *gluedatabrew.ListRecipeVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListRecipeVersionsPages(input *ListRecipeVersionsInput, fn func(*ListRecipeVersionsOutput, bool) bool) error {
 	return c.ListRecipeVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2527,14 +2518,13 @@ const opListRecipes = "ListRecipes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecipesRequest method.
+//	req, resp := client.ListRecipesRequest(params)
 //
-//    // Example sending a request using the ListRecipesRequest method.
-//    req, resp := client.ListRecipesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListRecipes
 func (c *GlueDataBrew) ListRecipesRequest(input *ListRecipesInput) (req *request.Request, output *ListRecipesOutput) {
@@ -2571,8 +2561,8 @@ func (c *GlueDataBrew) ListRecipesRequest(input *ListRecipesInput) (req *request
 // API operation ListRecipes for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListRecipes
 func (c *GlueDataBrew) ListRecipes(input *ListRecipesInput) (*ListRecipesOutput, error) {
@@ -2604,15 +2594,14 @@ func (c *GlueDataBrew) ListRecipesWithContext(ctx aws.Context, input *ListRecipe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecipes operation.
-//    pageNum := 0
-//    err := client.ListRecipesPages(params,
-//        func(page *gluedatabrew.ListRecipesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecipes operation.
+//	pageNum := 0
+//	err := client.ListRecipesPages(params,
+//	    func(page *gluedatabrew.ListRecipesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListRecipesPages(input *ListRecipesInput, fn func(*ListRecipesOutput, bool) bool) error {
 	return c.ListRecipesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2664,14 +2653,13 @@ const opListRulesets = "ListRulesets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRulesetsRequest method.
+//	req, resp := client.ListRulesetsRequest(params)
 //
-//    // Example sending a request using the ListRulesetsRequest method.
-//    req, resp := client.ListRulesetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListRulesets
 func (c *GlueDataBrew) ListRulesetsRequest(input *ListRulesetsInput) (req *request.Request, output *ListRulesetsOutput) {
@@ -2709,11 +2697,12 @@ func (c *GlueDataBrew) ListRulesetsRequest(input *ListRulesetsInput) (req *reque
 // API operation ListRulesets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListRulesets
 func (c *GlueDataBrew) ListRulesets(input *ListRulesetsInput) (*ListRulesetsOutput, error) {
@@ -2745,15 +2734,14 @@ func (c *GlueDataBrew) ListRulesetsWithContext(ctx aws.Context, input *ListRules
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRulesets operation.
-//    pageNum := 0
-//    err := client.ListRulesetsPages(params,
-//        func(page *gluedatabrew.ListRulesetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRulesets operation.
+//	pageNum := 0
+//	err := client.ListRulesetsPages(params,
+//	    func(page *gluedatabrew.ListRulesetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListRulesetsPages(input *ListRulesetsInput, fn func(*ListRulesetsOutput, bool) bool) error {
 	return c.ListRulesetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2805,14 +2793,13 @@ const opListSchedules = "ListSchedules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSchedulesRequest method.
+//	req, resp := client.ListSchedulesRequest(params)
 //
-//    // Example sending a request using the ListSchedulesRequest method.
-//    req, resp := client.ListSchedulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListSchedules
 func (c *GlueDataBrew) ListSchedulesRequest(input *ListSchedulesInput) (req *request.Request, output *ListSchedulesOutput) {
@@ -2849,8 +2836,8 @@ func (c *GlueDataBrew) ListSchedulesRequest(input *ListSchedulesInput) (req *req
 // API operation ListSchedules for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListSchedules
 func (c *GlueDataBrew) ListSchedules(input *ListSchedulesInput) (*ListSchedulesOutput, error) {
@@ -2882,15 +2869,14 @@ func (c *GlueDataBrew) ListSchedulesWithContext(ctx aws.Context, input *ListSche
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSchedules operation.
-//    pageNum := 0
-//    err := client.ListSchedulesPages(params,
-//        func(page *gluedatabrew.ListSchedulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSchedules operation.
+//	pageNum := 0
+//	err := client.ListSchedulesPages(params,
+//	    func(page *gluedatabrew.ListSchedulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlueDataBrew) ListSchedulesPages(input *ListSchedulesInput, fn func(*ListSchedulesOutput, bool) bool) error {
 	return c.ListSchedulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2942,14 +2928,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListTagsForResource
 func (c *GlueDataBrew) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2980,14 +2965,15 @@ func (c *GlueDataBrew) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service failure occurred.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - InternalServerException
+//     An internal service failure occurred.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/ListTagsForResource
 func (c *GlueDataBrew) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3027,14 +3013,13 @@ const opPublishRecipe = "PublishRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishRecipeRequest method.
+//	req, resp := client.PublishRecipeRequest(params)
 //
-//    // Example sending a request using the PublishRecipeRequest method.
-//    req, resp := client.PublishRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/PublishRecipe
 func (c *GlueDataBrew) PublishRecipeRequest(input *PublishRecipeInput) (req *request.Request, output *PublishRecipeOutput) {
@@ -3065,14 +3050,15 @@ func (c *GlueDataBrew) PublishRecipeRequest(input *PublishRecipeInput) (req *req
 // API operation PublishRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/PublishRecipe
 func (c *GlueDataBrew) PublishRecipe(input *PublishRecipeInput) (*PublishRecipeOutput, error) {
@@ -3112,14 +3098,13 @@ const opSendProjectSessionAction = "SendProjectSessionAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendProjectSessionActionRequest method.
+//	req, resp := client.SendProjectSessionActionRequest(params)
 //
-//    // Example sending a request using the SendProjectSessionActionRequest method.
-//    req, resp := client.SendProjectSessionActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/SendProjectSessionAction
 func (c *GlueDataBrew) SendProjectSessionActionRequest(input *SendProjectSessionActionInput) (req *request.Request, output *SendProjectSessionActionOutput) {
@@ -3151,14 +3136,15 @@ func (c *GlueDataBrew) SendProjectSessionActionRequest(input *SendProjectSession
 // API operation SendProjectSessionAction for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/SendProjectSessionAction
 func (c *GlueDataBrew) SendProjectSessionAction(input *SendProjectSessionActionInput) (*SendProjectSessionActionOutput, error) {
@@ -3198,14 +3184,13 @@ const opStartJobRun = "StartJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartJobRunRequest method.
+//	req, resp := client.StartJobRunRequest(params)
 //
-//    // Example sending a request using the StartJobRunRequest method.
-//    req, resp := client.StartJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/StartJobRun
 func (c *GlueDataBrew) StartJobRunRequest(input *StartJobRunInput) (req *request.Request, output *StartJobRunOutput) {
@@ -3236,17 +3221,18 @@ func (c *GlueDataBrew) StartJobRunRequest(input *StartJobRunInput) (req *request
 // API operation StartJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/StartJobRun
 func (c *GlueDataBrew) StartJobRun(input *StartJobRunInput) (*StartJobRunOutput, error) {
@@ -3286,14 +3272,13 @@ const opStartProjectSession = "StartProjectSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartProjectSessionRequest method.
+//	req, resp := client.StartProjectSessionRequest(params)
 //
-//    // Example sending a request using the StartProjectSessionRequest method.
-//    req, resp := client.StartProjectSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/StartProjectSession
 func (c *GlueDataBrew) StartProjectSessionRequest(input *StartProjectSessionInput) (req *request.Request, output *StartProjectSessionOutput) {
@@ -3325,17 +3310,18 @@ func (c *GlueDataBrew) StartProjectSessionRequest(input *StartProjectSessionInpu
 // API operation StartProjectSession for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/StartProjectSession
 func (c *GlueDataBrew) StartProjectSession(input *StartProjectSessionInput) (*StartProjectSessionOutput, error) {
@@ -3375,14 +3361,13 @@ const opStopJobRun = "StopJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopJobRunRequest method.
+//	req, resp := client.StopJobRunRequest(params)
 //
-//    // Example sending a request using the StopJobRunRequest method.
-//    req, resp := client.StopJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/StopJobRun
 func (c *GlueDataBrew) StopJobRunRequest(input *StopJobRunInput) (req *request.Request, output *StopJobRunOutput) {
@@ -3413,11 +3398,12 @@ func (c *GlueDataBrew) StopJobRunRequest(input *StopJobRunInput) (req *request.R
 // API operation StopJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/StopJobRun
 func (c *GlueDataBrew) StopJobRun(input *StopJobRunInput) (*StopJobRunOutput, error) {
@@ -3457,14 +3443,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/TagResource
 func (c *GlueDataBrew) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3497,14 +3482,15 @@ func (c *GlueDataBrew) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service failure occurred.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - InternalServerException
+//     An internal service failure occurred.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/TagResource
 func (c *GlueDataBrew) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3544,14 +3530,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UntagResource
 func (c *GlueDataBrew) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3583,14 +3568,15 @@ func (c *GlueDataBrew) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service failure occurred.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - InternalServerException
+//     An internal service failure occurred.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UntagResource
 func (c *GlueDataBrew) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3630,14 +3616,13 @@ const opUpdateDataset = "UpdateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDatasetRequest method.
+//	req, resp := client.UpdateDatasetRequest(params)
 //
-//    // Example sending a request using the UpdateDatasetRequest method.
-//    req, resp := client.UpdateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateDataset
 func (c *GlueDataBrew) UpdateDatasetRequest(input *UpdateDatasetInput) (req *request.Request, output *UpdateDatasetOutput) {
@@ -3668,14 +3653,15 @@ func (c *GlueDataBrew) UpdateDatasetRequest(input *UpdateDatasetInput) (req *req
 // API operation UpdateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the specified resource was denied.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     Access to the specified resource was denied.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateDataset
 func (c *GlueDataBrew) UpdateDataset(input *UpdateDatasetInput) (*UpdateDatasetOutput, error) {
@@ -3715,14 +3701,13 @@ const opUpdateProfileJob = "UpdateProfileJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProfileJobRequest method.
+//	req, resp := client.UpdateProfileJobRequest(params)
 //
-//    // Example sending a request using the UpdateProfileJobRequest method.
-//    req, resp := client.UpdateProfileJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateProfileJob
 func (c *GlueDataBrew) UpdateProfileJobRequest(input *UpdateProfileJobInput) (req *request.Request, output *UpdateProfileJobOutput) {
@@ -3753,14 +3738,15 @@ func (c *GlueDataBrew) UpdateProfileJobRequest(input *UpdateProfileJobInput) (re
 // API operation UpdateProfileJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the specified resource was denied.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     Access to the specified resource was denied.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateProfileJob
 func (c *GlueDataBrew) UpdateProfileJob(input *UpdateProfileJobInput) (*UpdateProfileJobOutput, error) {
@@ -3800,14 +3786,13 @@ const opUpdateProject = "UpdateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectRequest method.
+//	req, resp := client.UpdateProjectRequest(params)
 //
-//    // Example sending a request using the UpdateProjectRequest method.
-//    req, resp := client.UpdateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateProject
 func (c *GlueDataBrew) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
@@ -3838,11 +3823,12 @@ func (c *GlueDataBrew) UpdateProjectRequest(input *UpdateProjectInput) (req *req
 // API operation UpdateProject for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateProject
 func (c *GlueDataBrew) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {
@@ -3882,14 +3868,13 @@ const opUpdateRecipe = "UpdateRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRecipeRequest method.
+//	req, resp := client.UpdateRecipeRequest(params)
 //
-//    // Example sending a request using the UpdateRecipeRequest method.
-//    req, resp := client.UpdateRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateRecipe
 func (c *GlueDataBrew) UpdateRecipeRequest(input *UpdateRecipeInput) (req *request.Request, output *UpdateRecipeOutput) {
@@ -3920,11 +3905,12 @@ func (c *GlueDataBrew) UpdateRecipeRequest(input *UpdateRecipeInput) (req *reque
 // API operation UpdateRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input parameters for this request failed validation.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ValidationException
+//     The input parameters for this request failed validation.
+//
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateRecipe
 func (c *GlueDataBrew) UpdateRecipe(input *UpdateRecipeInput) (*UpdateRecipeOutput, error) {
@@ -3964,14 +3950,13 @@ const opUpdateRecipeJob = "UpdateRecipeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRecipeJobRequest method.
+//	req, resp := client.UpdateRecipeJobRequest(params)
 //
-//    // Example sending a request using the UpdateRecipeJobRequest method.
-//    req, resp := client.UpdateRecipeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateRecipeJob
 func (c *GlueDataBrew) UpdateRecipeJobRequest(input *UpdateRecipeJobInput) (req *request.Request, output *UpdateRecipeJobOutput) {
@@ -4002,14 +3987,15 @@ func (c *GlueDataBrew) UpdateRecipeJobRequest(input *UpdateRecipeJobInput) (req 
 // API operation UpdateRecipeJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the specified resource was denied.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     Access to the specified resource was denied.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateRecipeJob
 func (c *GlueDataBrew) UpdateRecipeJob(input *UpdateRecipeJobInput) (*UpdateRecipeJobOutput, error) {
@@ -4049,14 +4035,13 @@ const opUpdateRuleset = "UpdateRuleset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRulesetRequest method.
+//	req, resp := client.UpdateRulesetRequest(params)
 //
-//    // Example sending a request using the UpdateRulesetRequest method.
-//    req, resp := client.UpdateRulesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateRuleset
 func (c *GlueDataBrew) UpdateRulesetRequest(input *UpdateRulesetInput) (req *request.Request, output *UpdateRulesetOutput) {
@@ -4087,11 +4072,12 @@ func (c *GlueDataBrew) UpdateRulesetRequest(input *UpdateRulesetInput) (req *req
 // API operation UpdateRuleset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateRuleset
 func (c *GlueDataBrew) UpdateRuleset(input *UpdateRulesetInput) (*UpdateRulesetOutput, error) {
@@ -4131,14 +4117,13 @@ const opUpdateSchedule = "UpdateSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateScheduleRequest method.
+//	req, resp := client.UpdateScheduleRequest(params)
 //
-//    // Example sending a request using the UpdateScheduleRequest method.
-//    req, resp := client.UpdateScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateSchedule
 func (c *GlueDataBrew) UpdateScheduleRequest(input *UpdateScheduleInput) (req *request.Request, output *UpdateScheduleOutput) {
@@ -4169,14 +4154,15 @@ func (c *GlueDataBrew) UpdateScheduleRequest(input *UpdateScheduleInput) (req *r
 // API operation UpdateSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota is exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input parameters for this request failed validation.
+//   - ServiceQuotaExceededException
+//     A service quota is exceeded.
+//
+//   - ValidationException
+//     The input parameters for this request failed validation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/databrew-2017-07-25/UpdateSchedule
 func (c *GlueDataBrew) UpdateSchedule(input *UpdateScheduleInput) (*UpdateScheduleOutput, error) {

@@ -21,7 +21,7 @@
 // (IDE) Toolkits, and command line tools that you can use to access the API,
 // see Tools for Amazon Web Services (http://aws.amazon.com/tools/).
 //
-// Endpoints
+// # Endpoints
 //
 // For a list of Region-specific endpoints that App Runner supports, see App
 // Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
@@ -32,7 +32,7 @@
 // See apprunner package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/apprunner/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS App Runner with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

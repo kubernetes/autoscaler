@@ -28,14 +28,13 @@ const opBatchCreateAttendee = "BatchCreateAttendee"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchCreateAttendeeRequest method.
+//	req, resp := client.BatchCreateAttendeeRequest(params)
 //
-//    // Example sending a request using the BatchCreateAttendeeRequest method.
-//    req, resp := client.BatchCreateAttendeeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/BatchCreateAttendee
 func (c *ChimeSDKMeetings) BatchCreateAttendeeRequest(input *BatchCreateAttendeeInput) (req *request.Request, output *BatchCreateAttendeeOutput) {
@@ -68,33 +67,34 @@ func (c *ChimeSDKMeetings) BatchCreateAttendeeRequest(input *BatchCreateAttendee
 // API operation BatchCreateAttendee for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * UnprocessableEntityException
-//   The request was well-formed but was unable to be followed due to semantic
-//   errors.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * LimitExceededException
-//   The request exceeds the resource limit.
+//   - UnprocessableEntityException
+//     The request was well-formed but was unable to be followed due to semantic
+//     errors.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - LimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/BatchCreateAttendee
 func (c *ChimeSDKMeetings) BatchCreateAttendee(input *BatchCreateAttendeeInput) (*BatchCreateAttendeeOutput, error) {
@@ -134,14 +134,13 @@ const opCreateAttendee = "CreateAttendee"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAttendeeRequest method.
+//	req, resp := client.CreateAttendeeRequest(params)
 //
-//    // Example sending a request using the CreateAttendeeRequest method.
-//    req, resp := client.CreateAttendeeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/CreateAttendee
 func (c *ChimeSDKMeetings) CreateAttendeeRequest(input *CreateAttendeeInput) (req *request.Request, output *CreateAttendeeOutput) {
@@ -174,33 +173,34 @@ func (c *ChimeSDKMeetings) CreateAttendeeRequest(input *CreateAttendeeInput) (re
 // API operation CreateAttendee for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * UnprocessableEntityException
-//   The request was well-formed but was unable to be followed due to semantic
-//   errors.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * LimitExceededException
-//   The request exceeds the resource limit.
+//   - UnprocessableEntityException
+//     The request was well-formed but was unable to be followed due to semantic
+//     errors.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - LimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/CreateAttendee
 func (c *ChimeSDKMeetings) CreateAttendee(input *CreateAttendeeInput) (*CreateAttendeeOutput, error) {
@@ -240,14 +240,13 @@ const opCreateMeeting = "CreateMeeting"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMeetingRequest method.
+//	req, resp := client.CreateMeetingRequest(params)
 //
-//    // Example sending a request using the CreateMeetingRequest method.
-//    req, resp := client.CreateMeetingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/CreateMeeting
 func (c *ChimeSDKMeetings) CreateMeetingRequest(input *CreateMeetingInput) (req *request.Request, output *CreateMeetingOutput) {
@@ -283,26 +282,27 @@ func (c *ChimeSDKMeetings) CreateMeetingRequest(input *CreateMeetingInput) (req 
 // API operation CreateMeeting for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
-//   * LimitExceededException
-//   The request exceeds the resource limit.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - LimitExceededException
+//     The request exceeds the resource limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/CreateMeeting
 func (c *ChimeSDKMeetings) CreateMeeting(input *CreateMeetingInput) (*CreateMeetingOutput, error) {
@@ -342,14 +342,13 @@ const opCreateMeetingWithAttendees = "CreateMeetingWithAttendees"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMeetingWithAttendeesRequest method.
+//	req, resp := client.CreateMeetingWithAttendeesRequest(params)
 //
-//    // Example sending a request using the CreateMeetingWithAttendeesRequest method.
-//    req, resp := client.CreateMeetingWithAttendeesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/CreateMeetingWithAttendees
 func (c *ChimeSDKMeetings) CreateMeetingWithAttendeesRequest(input *CreateMeetingWithAttendeesInput) (req *request.Request, output *CreateMeetingWithAttendeesOutput) {
@@ -385,26 +384,27 @@ func (c *ChimeSDKMeetings) CreateMeetingWithAttendeesRequest(input *CreateMeetin
 // API operation CreateMeetingWithAttendees for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
-//   * LimitExceededException
-//   The request exceeds the resource limit.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - LimitExceededException
+//     The request exceeds the resource limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/CreateMeetingWithAttendees
 func (c *ChimeSDKMeetings) CreateMeetingWithAttendees(input *CreateMeetingWithAttendeesInput) (*CreateMeetingWithAttendeesOutput, error) {
@@ -444,14 +444,13 @@ const opDeleteAttendee = "DeleteAttendee"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAttendeeRequest method.
+//	req, resp := client.DeleteAttendeeRequest(params)
 //
-//    // Example sending a request using the DeleteAttendeeRequest method.
-//    req, resp := client.DeleteAttendeeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/DeleteAttendee
 func (c *ChimeSDKMeetings) DeleteAttendeeRequest(input *DeleteAttendeeInput) (req *request.Request, output *DeleteAttendeeOutput) {
@@ -487,26 +486,27 @@ func (c *ChimeSDKMeetings) DeleteAttendeeRequest(input *DeleteAttendeeInput) (re
 // API operation DeleteAttendee for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/DeleteAttendee
 func (c *ChimeSDKMeetings) DeleteAttendee(input *DeleteAttendeeInput) (*DeleteAttendeeOutput, error) {
@@ -546,14 +546,13 @@ const opDeleteMeeting = "DeleteMeeting"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMeetingRequest method.
+//	req, resp := client.DeleteMeetingRequest(params)
 //
-//    // Example sending a request using the DeleteMeetingRequest method.
-//    req, resp := client.DeleteMeetingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/DeleteMeeting
 func (c *ChimeSDKMeetings) DeleteMeetingRequest(input *DeleteMeetingInput) (req *request.Request, output *DeleteMeetingOutput) {
@@ -589,26 +588,27 @@ func (c *ChimeSDKMeetings) DeleteMeetingRequest(input *DeleteMeetingInput) (req 
 // API operation DeleteMeeting for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/DeleteMeeting
 func (c *ChimeSDKMeetings) DeleteMeeting(input *DeleteMeetingInput) (*DeleteMeetingOutput, error) {
@@ -648,14 +648,13 @@ const opGetAttendee = "GetAttendee"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAttendeeRequest method.
+//	req, resp := client.GetAttendeeRequest(params)
 //
-//    // Example sending a request using the GetAttendeeRequest method.
-//    req, resp := client.GetAttendeeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/GetAttendee
 func (c *ChimeSDKMeetings) GetAttendeeRequest(input *GetAttendeeInput) (req *request.Request, output *GetAttendeeOutput) {
@@ -689,26 +688,27 @@ func (c *ChimeSDKMeetings) GetAttendeeRequest(input *GetAttendeeInput) (req *req
 // API operation GetAttendee for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/GetAttendee
 func (c *ChimeSDKMeetings) GetAttendee(input *GetAttendeeInput) (*GetAttendeeOutput, error) {
@@ -748,14 +748,13 @@ const opGetMeeting = "GetMeeting"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMeetingRequest method.
+//	req, resp := client.GetMeetingRequest(params)
 //
-//    // Example sending a request using the GetMeetingRequest method.
-//    req, resp := client.GetMeetingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/GetMeeting
 func (c *ChimeSDKMeetings) GetMeetingRequest(input *GetMeetingInput) (req *request.Request, output *GetMeetingOutput) {
@@ -789,26 +788,27 @@ func (c *ChimeSDKMeetings) GetMeetingRequest(input *GetMeetingInput) (req *reque
 // API operation GetMeeting for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/GetMeeting
 func (c *ChimeSDKMeetings) GetMeeting(input *GetMeetingInput) (*GetMeetingOutput, error) {
@@ -848,14 +848,13 @@ const opListAttendees = "ListAttendees"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAttendeesRequest method.
+//	req, resp := client.ListAttendeesRequest(params)
 //
-//    // Example sending a request using the ListAttendeesRequest method.
-//    req, resp := client.ListAttendeesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/ListAttendees
 func (c *ChimeSDKMeetings) ListAttendeesRequest(input *ListAttendeesInput) (req *request.Request, output *ListAttendeesOutput) {
@@ -894,26 +893,27 @@ func (c *ChimeSDKMeetings) ListAttendeesRequest(input *ListAttendeesInput) (req 
 // API operation ListAttendees for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/ListAttendees
 func (c *ChimeSDKMeetings) ListAttendees(input *ListAttendeesInput) (*ListAttendeesOutput, error) {
@@ -945,15 +945,14 @@ func (c *ChimeSDKMeetings) ListAttendeesWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAttendees operation.
-//    pageNum := 0
-//    err := client.ListAttendeesPages(params,
-//        func(page *chimesdkmeetings.ListAttendeesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAttendees operation.
+//	pageNum := 0
+//	err := client.ListAttendeesPages(params,
+//	    func(page *chimesdkmeetings.ListAttendeesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMeetings) ListAttendeesPages(input *ListAttendeesInput, fn func(*ListAttendeesOutput, bool) bool) error {
 	return c.ListAttendeesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1005,14 +1004,13 @@ const opStartMeetingTranscription = "StartMeetingTranscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMeetingTranscriptionRequest method.
+//	req, resp := client.StartMeetingTranscriptionRequest(params)
 //
-//    // Example sending a request using the StartMeetingTranscriptionRequest method.
-//    req, resp := client.StartMeetingTranscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/StartMeetingTranscription
 func (c *ChimeSDKMeetings) StartMeetingTranscriptionRequest(input *StartMeetingTranscriptionInput) (req *request.Request, output *StartMeetingTranscriptionOutput) {
@@ -1044,33 +1042,34 @@ func (c *ChimeSDKMeetings) StartMeetingTranscriptionRequest(input *StartMeetingT
 // API operation StartMeetingTranscription for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * LimitExceededException
-//   The request exceeds the resource limit.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * UnprocessableEntityException
-//   The request was well-formed but was unable to be followed due to semantic
-//   errors.
+//   - LimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - UnprocessableEntityException
+//     The request was well-formed but was unable to be followed due to semantic
+//     errors.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/StartMeetingTranscription
 func (c *ChimeSDKMeetings) StartMeetingTranscription(input *StartMeetingTranscriptionInput) (*StartMeetingTranscriptionOutput, error) {
@@ -1110,14 +1109,13 @@ const opStopMeetingTranscription = "StopMeetingTranscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopMeetingTranscriptionRequest method.
+//	req, resp := client.StopMeetingTranscriptionRequest(params)
 //
-//    // Example sending a request using the StopMeetingTranscriptionRequest method.
-//    req, resp := client.StopMeetingTranscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/StopMeetingTranscription
 func (c *ChimeSDKMeetings) StopMeetingTranscriptionRequest(input *StopMeetingTranscriptionInput) (req *request.Request, output *StopMeetingTranscriptionOutput) {
@@ -1149,30 +1147,31 @@ func (c *ChimeSDKMeetings) StopMeetingTranscriptionRequest(input *StopMeetingTra
 // API operation StopMeetingTranscription for usage and error information.
 //
 // Returned Error Types:
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * UnauthorizedException
-//   The user isn't authorized to request a resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnprocessableEntityException
-//   The request was well-formed but was unable to be followed due to semantic
-//   errors.
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
 //
-//   * ThrottlingException
-//   The number of customer requests exceeds the request rate limit.
+//   - UnprocessableEntityException
+//     The request was well-formed but was unable to be followed due to semantic
+//     errors.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/StopMeetingTranscription
 func (c *ChimeSDKMeetings) StopMeetingTranscription(input *StopMeetingTranscriptionInput) (*StopMeetingTranscriptionOutput, error) {

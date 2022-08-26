@@ -29,14 +29,13 @@ const opAssociateMember = "AssociateMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateMemberRequest method.
+//	req, resp := client.AssociateMemberRequest(params)
 //
-//    // Example sending a request using the AssociateMemberRequest method.
-//    req, resp := client.AssociateMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/AssociateMember
 func (c *Inspector2) AssociateMemberRequest(input *AssociateMemberInput) (req *request.Request, output *AssociateMemberOutput) {
@@ -68,19 +67,20 @@ func (c *Inspector2) AssociateMemberRequest(input *AssociateMemberInput) (req *r
 // API operation AssociateMember for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/AssociateMember
 func (c *Inspector2) AssociateMember(input *AssociateMemberInput) (*AssociateMemberOutput, error) {
@@ -120,14 +120,13 @@ const opBatchGetAccountStatus = "BatchGetAccountStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetAccountStatusRequest method.
+//	req, resp := client.BatchGetAccountStatusRequest(params)
 //
-//    // Example sending a request using the BatchGetAccountStatusRequest method.
-//    req, resp := client.BatchGetAccountStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetAccountStatus
 func (c *Inspector2) BatchGetAccountStatusRequest(input *BatchGetAccountStatusInput) (req *request.Request, output *BatchGetAccountStatusOutput) {
@@ -159,23 +158,24 @@ func (c *Inspector2) BatchGetAccountStatusRequest(input *BatchGetAccountStatusIn
 // API operation BatchGetAccountStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetAccountStatus
 func (c *Inspector2) BatchGetAccountStatus(input *BatchGetAccountStatusInput) (*BatchGetAccountStatusOutput, error) {
@@ -215,14 +215,13 @@ const opBatchGetFreeTrialInfo = "BatchGetFreeTrialInfo"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetFreeTrialInfoRequest method.
+//	req, resp := client.BatchGetFreeTrialInfoRequest(params)
 //
-//    // Example sending a request using the BatchGetFreeTrialInfoRequest method.
-//    req, resp := client.BatchGetFreeTrialInfoRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetFreeTrialInfo
 func (c *Inspector2) BatchGetFreeTrialInfoRequest(input *BatchGetFreeTrialInfoInput) (req *request.Request, output *BatchGetFreeTrialInfoOutput) {
@@ -253,19 +252,20 @@ func (c *Inspector2) BatchGetFreeTrialInfoRequest(input *BatchGetFreeTrialInfoIn
 // API operation BatchGetFreeTrialInfo for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetFreeTrialInfo
 func (c *Inspector2) BatchGetFreeTrialInfo(input *BatchGetFreeTrialInfoInput) (*BatchGetFreeTrialInfoOutput, error) {
@@ -305,14 +305,13 @@ const opCancelFindingsReport = "CancelFindingsReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelFindingsReportRequest method.
+//	req, resp := client.CancelFindingsReportRequest(params)
 //
-//    // Example sending a request using the CancelFindingsReportRequest method.
-//    req, resp := client.CancelFindingsReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CancelFindingsReport
 func (c *Inspector2) CancelFindingsReportRequest(input *CancelFindingsReportInput) (req *request.Request, output *CancelFindingsReportOutput) {
@@ -343,23 +342,24 @@ func (c *Inspector2) CancelFindingsReportRequest(input *CancelFindingsReportInpu
 // API operation CancelFindingsReport for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CancelFindingsReport
 func (c *Inspector2) CancelFindingsReport(input *CancelFindingsReportInput) (*CancelFindingsReportOutput, error) {
@@ -399,14 +399,13 @@ const opCreateFilter = "CreateFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFilterRequest method.
+//	req, resp := client.CreateFilterRequest(params)
 //
-//    // Example sending a request using the CreateFilterRequest method.
-//    req, resp := client.CreateFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CreateFilter
 func (c *Inspector2) CreateFilterRequest(input *CreateFilterInput) (req *request.Request, output *CreateFilterOutput) {
@@ -437,27 +436,28 @@ func (c *Inspector2) CreateFilterRequest(input *CreateFilterInput) (req *request
 // API operation CreateFilter for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas to request a service
-//   quota increase.
 //
-//   * BadRequestException
-//   One or more tags submitted as part of the request is not valid.
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas to request a service
+//     quota increase.
 //
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
+//   - BadRequestException
+//     One or more tags submitted as part of the request is not valid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CreateFilter
 func (c *Inspector2) CreateFilter(input *CreateFilterInput) (*CreateFilterOutput, error) {
@@ -497,14 +497,13 @@ const opCreateFindingsReport = "CreateFindingsReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFindingsReportRequest method.
+//	req, resp := client.CreateFindingsReportRequest(params)
 //
-//    // Example sending a request using the CreateFindingsReportRequest method.
-//    req, resp := client.CreateFindingsReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CreateFindingsReport
 func (c *Inspector2) CreateFindingsReportRequest(input *CreateFindingsReportInput) (req *request.Request, output *CreateFindingsReportOutput) {
@@ -535,23 +534,24 @@ func (c *Inspector2) CreateFindingsReportRequest(input *CreateFindingsReportInpu
 // API operation CreateFindingsReport for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CreateFindingsReport
 func (c *Inspector2) CreateFindingsReport(input *CreateFindingsReportInput) (*CreateFindingsReportOutput, error) {
@@ -591,14 +591,13 @@ const opDeleteFilter = "DeleteFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFilterRequest method.
+//	req, resp := client.DeleteFilterRequest(params)
 //
-//    // Example sending a request using the DeleteFilterRequest method.
-//    req, resp := client.DeleteFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DeleteFilter
 func (c *Inspector2) DeleteFilterRequest(input *DeleteFilterInput) (req *request.Request, output *DeleteFilterOutput) {
@@ -629,23 +628,24 @@ func (c *Inspector2) DeleteFilterRequest(input *DeleteFilterInput) (req *request
 // API operation DeleteFilter for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DeleteFilter
 func (c *Inspector2) DeleteFilter(input *DeleteFilterInput) (*DeleteFilterOutput, error) {
@@ -685,14 +685,13 @@ const opDescribeOrganizationConfiguration = "DescribeOrganizationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrganizationConfigurationRequest method.
+//	req, resp := client.DescribeOrganizationConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeOrganizationConfigurationRequest method.
-//    req, resp := client.DescribeOrganizationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DescribeOrganizationConfiguration
 func (c *Inspector2) DescribeOrganizationConfigurationRequest(input *DescribeOrganizationConfigurationInput) (req *request.Request, output *DescribeOrganizationConfigurationOutput) {
@@ -724,19 +723,20 @@ func (c *Inspector2) DescribeOrganizationConfigurationRequest(input *DescribeOrg
 // API operation DescribeOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DescribeOrganizationConfiguration
 func (c *Inspector2) DescribeOrganizationConfiguration(input *DescribeOrganizationConfigurationInput) (*DescribeOrganizationConfigurationOutput, error) {
@@ -776,14 +776,13 @@ const opDisable = "Disable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableRequest method.
+//	req, resp := client.DisableRequest(params)
 //
-//    // Example sending a request using the DisableRequest method.
-//    req, resp := client.DisableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/Disable
 func (c *Inspector2) DisableRequest(input *DisableInput) (req *request.Request, output *DisableOutput) {
@@ -815,23 +814,24 @@ func (c *Inspector2) DisableRequest(input *DisableInput) (req *request.Request, 
 // API operation Disable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/Disable
 func (c *Inspector2) Disable(input *DisableInput) (*DisableOutput, error) {
@@ -871,14 +871,13 @@ const opDisableDelegatedAdminAccount = "DisableDelegatedAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableDelegatedAdminAccountRequest method.
+//	req, resp := client.DisableDelegatedAdminAccountRequest(params)
 //
-//    // Example sending a request using the DisableDelegatedAdminAccountRequest method.
-//    req, resp := client.DisableDelegatedAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DisableDelegatedAdminAccount
 func (c *Inspector2) DisableDelegatedAdminAccountRequest(input *DisableDelegatedAdminAccountInput) (req *request.Request, output *DisableDelegatedAdminAccountOutput) {
@@ -909,26 +908,27 @@ func (c *Inspector2) DisableDelegatedAdminAccountRequest(input *DisableDelegated
 // API operation DisableDelegatedAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   A conflict occurred.
 //
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DisableDelegatedAdminAccount
 func (c *Inspector2) DisableDelegatedAdminAccount(input *DisableDelegatedAdminAccountInput) (*DisableDelegatedAdminAccountOutput, error) {
@@ -968,14 +968,13 @@ const opDisassociateMember = "DisassociateMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateMemberRequest method.
+//	req, resp := client.DisassociateMemberRequest(params)
 //
-//    // Example sending a request using the DisassociateMemberRequest method.
-//    req, resp := client.DisassociateMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DisassociateMember
 func (c *Inspector2) DisassociateMemberRequest(input *DisassociateMemberInput) (req *request.Request, output *DisassociateMemberOutput) {
@@ -1006,19 +1005,20 @@ func (c *Inspector2) DisassociateMemberRequest(input *DisassociateMemberInput) (
 // API operation DisassociateMember for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/DisassociateMember
 func (c *Inspector2) DisassociateMember(input *DisassociateMemberInput) (*DisassociateMemberOutput, error) {
@@ -1058,14 +1058,13 @@ const opEnable = "Enable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableRequest method.
+//	req, resp := client.EnableRequest(params)
 //
-//    // Example sending a request using the EnableRequest method.
-//    req, resp := client.EnableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/Enable
 func (c *Inspector2) EnableRequest(input *EnableInput) (req *request.Request, output *EnableOutput) {
@@ -1096,23 +1095,24 @@ func (c *Inspector2) EnableRequest(input *EnableInput) (req *request.Request, ou
 // API operation Enable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/Enable
 func (c *Inspector2) Enable(input *EnableInput) (*EnableOutput, error) {
@@ -1152,14 +1152,13 @@ const opEnableDelegatedAdminAccount = "EnableDelegatedAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableDelegatedAdminAccountRequest method.
+//	req, resp := client.EnableDelegatedAdminAccountRequest(params)
 //
-//    // Example sending a request using the EnableDelegatedAdminAccountRequest method.
-//    req, resp := client.EnableDelegatedAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/EnableDelegatedAdminAccount
 func (c *Inspector2) EnableDelegatedAdminAccountRequest(input *EnableDelegatedAdminAccountInput) (req *request.Request, output *EnableDelegatedAdminAccountOutput) {
@@ -1191,26 +1190,27 @@ func (c *Inspector2) EnableDelegatedAdminAccountRequest(input *EnableDelegatedAd
 // API operation EnableDelegatedAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   A conflict occurred.
 //
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/EnableDelegatedAdminAccount
 func (c *Inspector2) EnableDelegatedAdminAccount(input *EnableDelegatedAdminAccountInput) (*EnableDelegatedAdminAccountOutput, error) {
@@ -1250,14 +1250,13 @@ const opGetDelegatedAdminAccount = "GetDelegatedAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDelegatedAdminAccountRequest method.
+//	req, resp := client.GetDelegatedAdminAccountRequest(params)
 //
-//    // Example sending a request using the GetDelegatedAdminAccountRequest method.
-//    req, resp := client.GetDelegatedAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetDelegatedAdminAccount
 func (c *Inspector2) GetDelegatedAdminAccountRequest(input *GetDelegatedAdminAccountInput) (req *request.Request, output *GetDelegatedAdminAccountOutput) {
@@ -1289,23 +1288,24 @@ func (c *Inspector2) GetDelegatedAdminAccountRequest(input *GetDelegatedAdminAcc
 // API operation GetDelegatedAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetDelegatedAdminAccount
 func (c *Inspector2) GetDelegatedAdminAccount(input *GetDelegatedAdminAccountInput) (*GetDelegatedAdminAccountOutput, error) {
@@ -1345,14 +1345,13 @@ const opGetFindingsReportStatus = "GetFindingsReportStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingsReportStatusRequest method.
+//	req, resp := client.GetFindingsReportStatusRequest(params)
 //
-//    // Example sending a request using the GetFindingsReportStatusRequest method.
-//    req, resp := client.GetFindingsReportStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetFindingsReportStatus
 func (c *Inspector2) GetFindingsReportStatusRequest(input *GetFindingsReportStatusInput) (req *request.Request, output *GetFindingsReportStatusOutput) {
@@ -1383,23 +1382,24 @@ func (c *Inspector2) GetFindingsReportStatusRequest(input *GetFindingsReportStat
 // API operation GetFindingsReportStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetFindingsReportStatus
 func (c *Inspector2) GetFindingsReportStatus(input *GetFindingsReportStatusInput) (*GetFindingsReportStatusOutput, error) {
@@ -1439,14 +1439,13 @@ const opGetMember = "GetMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMemberRequest method.
+//	req, resp := client.GetMemberRequest(params)
 //
-//    // Example sending a request using the GetMemberRequest method.
-//    req, resp := client.GetMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetMember
 func (c *Inspector2) GetMemberRequest(input *GetMemberInput) (req *request.Request, output *GetMemberOutput) {
@@ -1477,23 +1476,24 @@ func (c *Inspector2) GetMemberRequest(input *GetMemberInput) (req *request.Reque
 // API operation GetMember for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetMember
 func (c *Inspector2) GetMember(input *GetMemberInput) (*GetMemberOutput, error) {
@@ -1533,14 +1533,13 @@ const opListAccountPermissions = "ListAccountPermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountPermissionsRequest method.
+//	req, resp := client.ListAccountPermissionsRequest(params)
 //
-//    // Example sending a request using the ListAccountPermissionsRequest method.
-//    req, resp := client.ListAccountPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListAccountPermissions
 func (c *Inspector2) ListAccountPermissionsRequest(input *ListAccountPermissionsInput) (req *request.Request, output *ListAccountPermissionsOutput) {
@@ -1577,19 +1576,20 @@ func (c *Inspector2) ListAccountPermissionsRequest(input *ListAccountPermissions
 // API operation ListAccountPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListAccountPermissions
 func (c *Inspector2) ListAccountPermissions(input *ListAccountPermissionsInput) (*ListAccountPermissionsOutput, error) {
@@ -1621,15 +1621,14 @@ func (c *Inspector2) ListAccountPermissionsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccountPermissions operation.
-//    pageNum := 0
-//    err := client.ListAccountPermissionsPages(params,
-//        func(page *inspector2.ListAccountPermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccountPermissions operation.
+//	pageNum := 0
+//	err := client.ListAccountPermissionsPages(params,
+//	    func(page *inspector2.ListAccountPermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListAccountPermissionsPages(input *ListAccountPermissionsInput, fn func(*ListAccountPermissionsOutput, bool) bool) error {
 	return c.ListAccountPermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1681,14 +1680,13 @@ const opListCoverage = "ListCoverage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCoverageRequest method.
+//	req, resp := client.ListCoverageRequest(params)
 //
-//    // Example sending a request using the ListCoverageRequest method.
-//    req, resp := client.ListCoverageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListCoverage
 func (c *Inspector2) ListCoverageRequest(input *ListCoverageInput) (req *request.Request, output *ListCoverageOutput) {
@@ -1725,16 +1723,17 @@ func (c *Inspector2) ListCoverageRequest(input *ListCoverageInput) (req *request
 // API operation ListCoverage for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListCoverage
 func (c *Inspector2) ListCoverage(input *ListCoverageInput) (*ListCoverageOutput, error) {
@@ -1766,15 +1765,14 @@ func (c *Inspector2) ListCoverageWithContext(ctx aws.Context, input *ListCoverag
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCoverage operation.
-//    pageNum := 0
-//    err := client.ListCoveragePages(params,
-//        func(page *inspector2.ListCoverageOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCoverage operation.
+//	pageNum := 0
+//	err := client.ListCoveragePages(params,
+//	    func(page *inspector2.ListCoverageOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListCoveragePages(input *ListCoverageInput, fn func(*ListCoverageOutput, bool) bool) error {
 	return c.ListCoveragePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1826,14 +1824,13 @@ const opListCoverageStatistics = "ListCoverageStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCoverageStatisticsRequest method.
+//	req, resp := client.ListCoverageStatisticsRequest(params)
 //
-//    // Example sending a request using the ListCoverageStatisticsRequest method.
-//    req, resp := client.ListCoverageStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListCoverageStatistics
 func (c *Inspector2) ListCoverageStatisticsRequest(input *ListCoverageStatisticsInput) (req *request.Request, output *ListCoverageStatisticsOutput) {
@@ -1870,16 +1867,17 @@ func (c *Inspector2) ListCoverageStatisticsRequest(input *ListCoverageStatistics
 // API operation ListCoverageStatistics for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListCoverageStatistics
 func (c *Inspector2) ListCoverageStatistics(input *ListCoverageStatisticsInput) (*ListCoverageStatisticsOutput, error) {
@@ -1911,15 +1909,14 @@ func (c *Inspector2) ListCoverageStatisticsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCoverageStatistics operation.
-//    pageNum := 0
-//    err := client.ListCoverageStatisticsPages(params,
-//        func(page *inspector2.ListCoverageStatisticsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCoverageStatistics operation.
+//	pageNum := 0
+//	err := client.ListCoverageStatisticsPages(params,
+//	    func(page *inspector2.ListCoverageStatisticsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListCoverageStatisticsPages(input *ListCoverageStatisticsInput, fn func(*ListCoverageStatisticsOutput, bool) bool) error {
 	return c.ListCoverageStatisticsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1971,14 +1968,13 @@ const opListDelegatedAdminAccounts = "ListDelegatedAdminAccounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDelegatedAdminAccountsRequest method.
+//	req, resp := client.ListDelegatedAdminAccountsRequest(params)
 //
-//    // Example sending a request using the ListDelegatedAdminAccountsRequest method.
-//    req, resp := client.ListDelegatedAdminAccountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListDelegatedAdminAccounts
 func (c *Inspector2) ListDelegatedAdminAccountsRequest(input *ListDelegatedAdminAccountsInput) (req *request.Request, output *ListDelegatedAdminAccountsOutput) {
@@ -2016,19 +2012,20 @@ func (c *Inspector2) ListDelegatedAdminAccountsRequest(input *ListDelegatedAdmin
 // API operation ListDelegatedAdminAccounts for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListDelegatedAdminAccounts
 func (c *Inspector2) ListDelegatedAdminAccounts(input *ListDelegatedAdminAccountsInput) (*ListDelegatedAdminAccountsOutput, error) {
@@ -2060,15 +2057,14 @@ func (c *Inspector2) ListDelegatedAdminAccountsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDelegatedAdminAccounts operation.
-//    pageNum := 0
-//    err := client.ListDelegatedAdminAccountsPages(params,
-//        func(page *inspector2.ListDelegatedAdminAccountsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDelegatedAdminAccounts operation.
+//	pageNum := 0
+//	err := client.ListDelegatedAdminAccountsPages(params,
+//	    func(page *inspector2.ListDelegatedAdminAccountsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListDelegatedAdminAccountsPages(input *ListDelegatedAdminAccountsInput, fn func(*ListDelegatedAdminAccountsOutput, bool) bool) error {
 	return c.ListDelegatedAdminAccountsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2120,14 +2116,13 @@ const opListFilters = "ListFilters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFiltersRequest method.
+//	req, resp := client.ListFiltersRequest(params)
 //
-//    // Example sending a request using the ListFiltersRequest method.
-//    req, resp := client.ListFiltersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListFilters
 func (c *Inspector2) ListFiltersRequest(input *ListFiltersInput) (req *request.Request, output *ListFiltersOutput) {
@@ -2164,19 +2159,20 @@ func (c *Inspector2) ListFiltersRequest(input *ListFiltersInput) (req *request.R
 // API operation ListFilters for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListFilters
 func (c *Inspector2) ListFilters(input *ListFiltersInput) (*ListFiltersOutput, error) {
@@ -2208,15 +2204,14 @@ func (c *Inspector2) ListFiltersWithContext(ctx aws.Context, input *ListFiltersI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFilters operation.
-//    pageNum := 0
-//    err := client.ListFiltersPages(params,
-//        func(page *inspector2.ListFiltersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFilters operation.
+//	pageNum := 0
+//	err := client.ListFiltersPages(params,
+//	    func(page *inspector2.ListFiltersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListFiltersPages(input *ListFiltersInput, fn func(*ListFiltersOutput, bool) bool) error {
 	return c.ListFiltersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2268,14 +2263,13 @@ const opListFindingAggregations = "ListFindingAggregations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingAggregationsRequest method.
+//	req, resp := client.ListFindingAggregationsRequest(params)
 //
-//    // Example sending a request using the ListFindingAggregationsRequest method.
-//    req, resp := client.ListFindingAggregationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListFindingAggregations
 func (c *Inspector2) ListFindingAggregationsRequest(input *ListFindingAggregationsInput) (req *request.Request, output *ListFindingAggregationsOutput) {
@@ -2312,16 +2306,17 @@ func (c *Inspector2) ListFindingAggregationsRequest(input *ListFindingAggregatio
 // API operation ListFindingAggregations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListFindingAggregations
 func (c *Inspector2) ListFindingAggregations(input *ListFindingAggregationsInput) (*ListFindingAggregationsOutput, error) {
@@ -2353,15 +2348,14 @@ func (c *Inspector2) ListFindingAggregationsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindingAggregations operation.
-//    pageNum := 0
-//    err := client.ListFindingAggregationsPages(params,
-//        func(page *inspector2.ListFindingAggregationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindingAggregations operation.
+//	pageNum := 0
+//	err := client.ListFindingAggregationsPages(params,
+//	    func(page *inspector2.ListFindingAggregationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListFindingAggregationsPages(input *ListFindingAggregationsInput, fn func(*ListFindingAggregationsOutput, bool) bool) error {
 	return c.ListFindingAggregationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2413,14 +2407,13 @@ const opListFindings = "ListFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingsRequest method.
+//	req, resp := client.ListFindingsRequest(params)
 //
-//    // Example sending a request using the ListFindingsRequest method.
-//    req, resp := client.ListFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListFindings
 func (c *Inspector2) ListFindingsRequest(input *ListFindingsInput) (req *request.Request, output *ListFindingsOutput) {
@@ -2457,16 +2450,17 @@ func (c *Inspector2) ListFindingsRequest(input *ListFindingsInput) (req *request
 // API operation ListFindings for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListFindings
 func (c *Inspector2) ListFindings(input *ListFindingsInput) (*ListFindingsOutput, error) {
@@ -2498,15 +2492,14 @@ func (c *Inspector2) ListFindingsWithContext(ctx aws.Context, input *ListFinding
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindings operation.
-//    pageNum := 0
-//    err := client.ListFindingsPages(params,
-//        func(page *inspector2.ListFindingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindings operation.
+//	pageNum := 0
+//	err := client.ListFindingsPages(params,
+//	    func(page *inspector2.ListFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListFindingsPages(input *ListFindingsInput, fn func(*ListFindingsOutput, bool) bool) error {
 	return c.ListFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2558,14 +2551,13 @@ const opListMembers = "ListMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMembersRequest method.
+//	req, resp := client.ListMembersRequest(params)
 //
-//    // Example sending a request using the ListMembersRequest method.
-//    req, resp := client.ListMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListMembers
 func (c *Inspector2) ListMembersRequest(input *ListMembersInput) (req *request.Request, output *ListMembersOutput) {
@@ -2603,19 +2595,20 @@ func (c *Inspector2) ListMembersRequest(input *ListMembersInput) (req *request.R
 // API operation ListMembers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListMembers
 func (c *Inspector2) ListMembers(input *ListMembersInput) (*ListMembersOutput, error) {
@@ -2647,15 +2640,14 @@ func (c *Inspector2) ListMembersWithContext(ctx aws.Context, input *ListMembersI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMembers operation.
-//    pageNum := 0
-//    err := client.ListMembersPages(params,
-//        func(page *inspector2.ListMembersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMembers operation.
+//	pageNum := 0
+//	err := client.ListMembersPages(params,
+//	    func(page *inspector2.ListMembersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListMembersPages(input *ListMembersInput, fn func(*ListMembersOutput, bool) bool) error {
 	return c.ListMembersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2707,14 +2699,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListTagsForResource
 func (c *Inspector2) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2745,20 +2736,21 @@ func (c *Inspector2) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListTagsForResource
 func (c *Inspector2) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2798,14 +2790,13 @@ const opListUsageTotals = "ListUsageTotals"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUsageTotalsRequest method.
+//	req, resp := client.ListUsageTotalsRequest(params)
 //
-//    // Example sending a request using the ListUsageTotalsRequest method.
-//    req, resp := client.ListUsageTotalsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListUsageTotals
 func (c *Inspector2) ListUsageTotalsRequest(input *ListUsageTotalsInput) (req *request.Request, output *ListUsageTotalsOutput) {
@@ -2842,19 +2833,20 @@ func (c *Inspector2) ListUsageTotalsRequest(input *ListUsageTotalsInput) (req *r
 // API operation ListUsageTotals for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ListUsageTotals
 func (c *Inspector2) ListUsageTotals(input *ListUsageTotalsInput) (*ListUsageTotalsOutput, error) {
@@ -2886,15 +2878,14 @@ func (c *Inspector2) ListUsageTotalsWithContext(ctx aws.Context, input *ListUsag
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUsageTotals operation.
-//    pageNum := 0
-//    err := client.ListUsageTotalsPages(params,
-//        func(page *inspector2.ListUsageTotalsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUsageTotals operation.
+//	pageNum := 0
+//	err := client.ListUsageTotalsPages(params,
+//	    func(page *inspector2.ListUsageTotalsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector2) ListUsageTotalsPages(input *ListUsageTotalsInput, fn func(*ListUsageTotalsOutput, bool) bool) error {
 	return c.ListUsageTotalsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2946,14 +2937,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/TagResource
 func (c *Inspector2) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2985,23 +2975,24 @@ func (c *Inspector2) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   One or more tags submitted as part of the request is not valid.
 //
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
+//   - BadRequestException
+//     One or more tags submitted as part of the request is not valid.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/TagResource
 func (c *Inspector2) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3041,14 +3032,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UntagResource
 func (c *Inspector2) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3080,20 +3070,21 @@ func (c *Inspector2) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UntagResource
 func (c *Inspector2) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3133,14 +3124,13 @@ const opUpdateFilter = "UpdateFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFilterRequest method.
+//	req, resp := client.UpdateFilterRequest(params)
 //
-//    // Example sending a request using the UpdateFilterRequest method.
-//    req, resp := client.UpdateFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateFilter
 func (c *Inspector2) UpdateFilterRequest(input *UpdateFilterInput) (req *request.Request, output *UpdateFilterOutput) {
@@ -3172,23 +3162,24 @@ func (c *Inspector2) UpdateFilterRequest(input *UpdateFilterInput) (req *request
 // API operation UpdateFilter for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access an invalid resource. Make sure the resource
-//   is specified correctly.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateFilter
 func (c *Inspector2) UpdateFilter(input *UpdateFilterInput) (*UpdateFilterOutput, error) {
@@ -3228,14 +3219,13 @@ const opUpdateOrganizationConfiguration = "UpdateOrganizationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateOrganizationConfigurationRequest method.
+//	req, resp := client.UpdateOrganizationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateOrganizationConfigurationRequest method.
-//    req, resp := client.UpdateOrganizationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateOrganizationConfiguration
 func (c *Inspector2) UpdateOrganizationConfigurationRequest(input *UpdateOrganizationConfigurationInput) (req *request.Request, output *UpdateOrganizationConfigurationOutput) {
@@ -3266,19 +3256,20 @@ func (c *Inspector2) UpdateOrganizationConfigurationRequest(input *UpdateOrganiz
 // API operation UpdateOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The request has failed validation due to missing required fields or having
-//   invalid inputs.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
 //
-//   * InternalServerException
-//   The request has failed due to an internal failure of the Amazon Inspector
-//   service.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateOrganizationConfiguration
 func (c *Inspector2) UpdateOrganizationConfiguration(input *UpdateOrganizationConfigurationInput) (*UpdateOrganizationConfigurationOutput, error) {

@@ -33,17 +33,17 @@ type ImageSourceViaObjectStorageUriDetails struct {
 	SourceImageType ImageSourceDetailsSourceImageTypeEnum `mandatory:"false" json:"sourceImageType,omitempty"`
 }
 
-//GetOperatingSystem returns OperatingSystem
+// GetOperatingSystem returns OperatingSystem
 func (m ImageSourceViaObjectStorageUriDetails) GetOperatingSystem() *string {
 	return m.OperatingSystem
 }
 
-//GetOperatingSystemVersion returns OperatingSystemVersion
+// GetOperatingSystemVersion returns OperatingSystemVersion
 func (m ImageSourceViaObjectStorageUriDetails) GetOperatingSystemVersion() *string {
 	return m.OperatingSystemVersion
 }
 
-//GetSourceImageType returns SourceImageType
+// GetSourceImageType returns SourceImageType
 func (m ImageSourceViaObjectStorageUriDetails) GetSourceImageType() ImageSourceDetailsSourceImageTypeEnum {
 	return m.SourceImageType
 }

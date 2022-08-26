@@ -28,14 +28,13 @@ const opCreateAnomalyMonitor = "CreateAnomalyMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAnomalyMonitorRequest method.
+//	req, resp := client.CreateAnomalyMonitorRequest(params)
 //
-//    // Example sending a request using the CreateAnomalyMonitorRequest method.
-//    req, resp := client.CreateAnomalyMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/CreateAnomalyMonitor
 func (c *CostExplorer) CreateAnomalyMonitorRequest(input *CreateAnomalyMonitorInput) (req *request.Request, output *CreateAnomalyMonitorOutput) {
@@ -67,8 +66,8 @@ func (c *CostExplorer) CreateAnomalyMonitorRequest(input *CreateAnomalyMonitorIn
 // API operation CreateAnomalyMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/CreateAnomalyMonitor
 func (c *CostExplorer) CreateAnomalyMonitor(input *CreateAnomalyMonitorInput) (*CreateAnomalyMonitorOutput, error) {
@@ -108,14 +107,13 @@ const opCreateAnomalySubscription = "CreateAnomalySubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAnomalySubscriptionRequest method.
+//	req, resp := client.CreateAnomalySubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateAnomalySubscriptionRequest method.
-//    req, resp := client.CreateAnomalySubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/CreateAnomalySubscription
 func (c *CostExplorer) CreateAnomalySubscriptionRequest(input *CreateAnomalySubscriptionInput) (req *request.Request, output *CreateAnomalySubscriptionOutput) {
@@ -149,11 +147,12 @@ func (c *CostExplorer) CreateAnomalySubscriptionRequest(input *CreateAnomalySubs
 // API operation CreateAnomalySubscription for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownMonitorException
-//   The cost anomaly monitor does not exist for the account.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - UnknownMonitorException
+//     The cost anomaly monitor does not exist for the account.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/CreateAnomalySubscription
 func (c *CostExplorer) CreateAnomalySubscription(input *CreateAnomalySubscriptionInput) (*CreateAnomalySubscriptionOutput, error) {
@@ -193,14 +192,13 @@ const opCreateCostCategoryDefinition = "CreateCostCategoryDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCostCategoryDefinitionRequest method.
+//	req, resp := client.CreateCostCategoryDefinitionRequest(params)
 //
-//    // Example sending a request using the CreateCostCategoryDefinitionRequest method.
-//    req, resp := client.CreateCostCategoryDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/CreateCostCategoryDefinition
 func (c *CostExplorer) CreateCostCategoryDefinitionRequest(input *CreateCostCategoryDefinitionInput) (req *request.Request, output *CreateCostCategoryDefinitionOutput) {
@@ -231,12 +229,13 @@ func (c *CostExplorer) CreateCostCategoryDefinitionRequest(input *CreateCostCate
 // API operation CreateCostCategoryDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   You've reached the limit on the number of resources you can create, or exceeded
-//   the size of an individual resource.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - ServiceQuotaExceededException
+//     You've reached the limit on the number of resources you can create, or exceeded
+//     the size of an individual resource.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/CreateCostCategoryDefinition
 func (c *CostExplorer) CreateCostCategoryDefinition(input *CreateCostCategoryDefinitionInput) (*CreateCostCategoryDefinitionOutput, error) {
@@ -276,14 +275,13 @@ const opDeleteAnomalyMonitor = "DeleteAnomalyMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAnomalyMonitorRequest method.
+//	req, resp := client.DeleteAnomalyMonitorRequest(params)
 //
-//    // Example sending a request using the DeleteAnomalyMonitorRequest method.
-//    req, resp := client.DeleteAnomalyMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DeleteAnomalyMonitor
 func (c *CostExplorer) DeleteAnomalyMonitorRequest(input *DeleteAnomalyMonitorInput) (req *request.Request, output *DeleteAnomalyMonitorOutput) {
@@ -315,11 +313,12 @@ func (c *CostExplorer) DeleteAnomalyMonitorRequest(input *DeleteAnomalyMonitorIn
 // API operation DeleteAnomalyMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownMonitorException
-//   The cost anomaly monitor does not exist for the account.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - UnknownMonitorException
+//     The cost anomaly monitor does not exist for the account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DeleteAnomalyMonitor
 func (c *CostExplorer) DeleteAnomalyMonitor(input *DeleteAnomalyMonitorInput) (*DeleteAnomalyMonitorOutput, error) {
@@ -359,14 +358,13 @@ const opDeleteAnomalySubscription = "DeleteAnomalySubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAnomalySubscriptionRequest method.
+//	req, resp := client.DeleteAnomalySubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteAnomalySubscriptionRequest method.
-//    req, resp := client.DeleteAnomalySubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DeleteAnomalySubscription
 func (c *CostExplorer) DeleteAnomalySubscriptionRequest(input *DeleteAnomalySubscriptionInput) (req *request.Request, output *DeleteAnomalySubscriptionOutput) {
@@ -398,11 +396,12 @@ func (c *CostExplorer) DeleteAnomalySubscriptionRequest(input *DeleteAnomalySubs
 // API operation DeleteAnomalySubscription for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownSubscriptionException
-//   The cost anomaly subscription does not exist for the account.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - UnknownSubscriptionException
+//     The cost anomaly subscription does not exist for the account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DeleteAnomalySubscription
 func (c *CostExplorer) DeleteAnomalySubscription(input *DeleteAnomalySubscriptionInput) (*DeleteAnomalySubscriptionOutput, error) {
@@ -442,14 +441,13 @@ const opDeleteCostCategoryDefinition = "DeleteCostCategoryDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCostCategoryDefinitionRequest method.
+//	req, resp := client.DeleteCostCategoryDefinitionRequest(params)
 //
-//    // Example sending a request using the DeleteCostCategoryDefinitionRequest method.
-//    req, resp := client.DeleteCostCategoryDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DeleteCostCategoryDefinition
 func (c *CostExplorer) DeleteCostCategoryDefinitionRequest(input *DeleteCostCategoryDefinitionInput) (req *request.Request, output *DeleteCostCategoryDefinitionOutput) {
@@ -481,11 +479,12 @@ func (c *CostExplorer) DeleteCostCategoryDefinitionRequest(input *DeleteCostCate
 // API operation DeleteCostCategoryDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified ARN in the request doesn't exist.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - ResourceNotFoundException
+//     The specified ARN in the request doesn't exist.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DeleteCostCategoryDefinition
 func (c *CostExplorer) DeleteCostCategoryDefinition(input *DeleteCostCategoryDefinitionInput) (*DeleteCostCategoryDefinitionOutput, error) {
@@ -525,14 +524,13 @@ const opDescribeCostCategoryDefinition = "DescribeCostCategoryDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCostCategoryDefinitionRequest method.
+//	req, resp := client.DescribeCostCategoryDefinitionRequest(params)
 //
-//    // Example sending a request using the DescribeCostCategoryDefinitionRequest method.
-//    req, resp := client.DescribeCostCategoryDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DescribeCostCategoryDefinition
 func (c *CostExplorer) DescribeCostCategoryDefinitionRequest(input *DescribeCostCategoryDefinitionInput) (req *request.Request, output *DescribeCostCategoryDefinitionOutput) {
@@ -569,11 +567,12 @@ func (c *CostExplorer) DescribeCostCategoryDefinitionRequest(input *DescribeCost
 // API operation DescribeCostCategoryDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified ARN in the request doesn't exist.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - ResourceNotFoundException
+//     The specified ARN in the request doesn't exist.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/DescribeCostCategoryDefinition
 func (c *CostExplorer) DescribeCostCategoryDefinition(input *DescribeCostCategoryDefinitionInput) (*DescribeCostCategoryDefinitionOutput, error) {
@@ -613,14 +612,13 @@ const opGetAnomalies = "GetAnomalies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAnomaliesRequest method.
+//	req, resp := client.GetAnomaliesRequest(params)
 //
-//    // Example sending a request using the GetAnomaliesRequest method.
-//    req, resp := client.GetAnomaliesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetAnomalies
 func (c *CostExplorer) GetAnomaliesRequest(input *GetAnomaliesInput) (req *request.Request, output *GetAnomaliesOutput) {
@@ -652,11 +650,12 @@ func (c *CostExplorer) GetAnomaliesRequest(input *GetAnomaliesInput) (req *reque
 // API operation GetAnomalies for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetAnomalies
 func (c *CostExplorer) GetAnomalies(input *GetAnomaliesInput) (*GetAnomaliesOutput, error) {
@@ -696,14 +695,13 @@ const opGetAnomalyMonitors = "GetAnomalyMonitors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAnomalyMonitorsRequest method.
+//	req, resp := client.GetAnomalyMonitorsRequest(params)
 //
-//    // Example sending a request using the GetAnomalyMonitorsRequest method.
-//    req, resp := client.GetAnomalyMonitorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetAnomalyMonitors
 func (c *CostExplorer) GetAnomalyMonitorsRequest(input *GetAnomalyMonitorsInput) (req *request.Request, output *GetAnomalyMonitorsOutput) {
@@ -735,14 +733,15 @@ func (c *CostExplorer) GetAnomalyMonitorsRequest(input *GetAnomalyMonitorsInput)
 // API operation GetAnomalyMonitors for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownMonitorException
-//   The cost anomaly monitor does not exist for the account.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - UnknownMonitorException
+//     The cost anomaly monitor does not exist for the account.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetAnomalyMonitors
 func (c *CostExplorer) GetAnomalyMonitors(input *GetAnomalyMonitorsInput) (*GetAnomalyMonitorsOutput, error) {
@@ -782,14 +781,13 @@ const opGetAnomalySubscriptions = "GetAnomalySubscriptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAnomalySubscriptionsRequest method.
+//	req, resp := client.GetAnomalySubscriptionsRequest(params)
 //
-//    // Example sending a request using the GetAnomalySubscriptionsRequest method.
-//    req, resp := client.GetAnomalySubscriptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetAnomalySubscriptions
 func (c *CostExplorer) GetAnomalySubscriptionsRequest(input *GetAnomalySubscriptionsInput) (req *request.Request, output *GetAnomalySubscriptionsOutput) {
@@ -821,14 +819,15 @@ func (c *CostExplorer) GetAnomalySubscriptionsRequest(input *GetAnomalySubscript
 // API operation GetAnomalySubscriptions for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownSubscriptionException
-//   The cost anomaly subscription does not exist for the account.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - UnknownSubscriptionException
+//     The cost anomaly subscription does not exist for the account.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetAnomalySubscriptions
 func (c *CostExplorer) GetAnomalySubscriptions(input *GetAnomalySubscriptionsInput) (*GetAnomalySubscriptionsOutput, error) {
@@ -868,14 +867,13 @@ const opGetCostAndUsage = "GetCostAndUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCostAndUsageRequest method.
+//	req, resp := client.GetCostAndUsageRequest(params)
 //
-//    // Example sending a request using the GetCostAndUsageRequest method.
-//    req, resp := client.GetCostAndUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostAndUsage
 func (c *CostExplorer) GetCostAndUsageRequest(input *GetCostAndUsageInput) (req *request.Request, output *GetCostAndUsageOutput) {
@@ -916,21 +914,22 @@ func (c *CostExplorer) GetCostAndUsageRequest(input *GetCostAndUsageInput) (req 
 // API operation GetCostAndUsage for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * BillExpirationException
-//   The requested report expired. Update the date interval and try again.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - BillExpirationException
+//     The requested report expired. Update the date interval and try again.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
-//   * RequestChangedException
-//   Your request parameters changed between pages. Try again with the old parameters
-//   or without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - RequestChangedException
+//     Your request parameters changed between pages. Try again with the old parameters
+//     or without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostAndUsage
 func (c *CostExplorer) GetCostAndUsage(input *GetCostAndUsageInput) (*GetCostAndUsageOutput, error) {
@@ -970,14 +969,13 @@ const opGetCostAndUsageWithResources = "GetCostAndUsageWithResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCostAndUsageWithResourcesRequest method.
+//	req, resp := client.GetCostAndUsageWithResourcesRequest(params)
 //
-//    // Example sending a request using the GetCostAndUsageWithResourcesRequest method.
-//    req, resp := client.GetCostAndUsageWithResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostAndUsageWithResources
 func (c *CostExplorer) GetCostAndUsageWithResourcesRequest(input *GetCostAndUsageWithResourcesInput) (req *request.Request, output *GetCostAndUsageWithResourcesOutput) {
@@ -1020,21 +1018,22 @@ func (c *CostExplorer) GetCostAndUsageWithResourcesRequest(input *GetCostAndUsag
 // API operation GetCostAndUsageWithResources for usage and error information.
 //
 // Returned Error Types:
-//   * DataUnavailableException
-//   The requested data is unavailable.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
-//   * BillExpirationException
-//   The requested report expired. Update the date interval and try again.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - BillExpirationException
+//     The requested report expired. Update the date interval and try again.
 //
-//   * RequestChangedException
-//   Your request parameters changed between pages. Try again with the old parameters
-//   or without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - RequestChangedException
+//     Your request parameters changed between pages. Try again with the old parameters
+//     or without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostAndUsageWithResources
 func (c *CostExplorer) GetCostAndUsageWithResources(input *GetCostAndUsageWithResourcesInput) (*GetCostAndUsageWithResourcesOutput, error) {
@@ -1074,14 +1073,13 @@ const opGetCostCategories = "GetCostCategories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCostCategoriesRequest method.
+//	req, resp := client.GetCostCategoriesRequest(params)
 //
-//    // Example sending a request using the GetCostCategoriesRequest method.
-//    req, resp := client.GetCostCategoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostCategories
 func (c *CostExplorer) GetCostCategoriesRequest(input *GetCostCategoriesInput) (req *request.Request, output *GetCostCategoriesOutput) {
@@ -1115,21 +1113,22 @@ func (c *CostExplorer) GetCostCategoriesRequest(input *GetCostCategoriesInput) (
 // API operation GetCostCategories for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * BillExpirationException
-//   The requested report expired. Update the date interval and try again.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - BillExpirationException
+//     The requested report expired. Update the date interval and try again.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
-//   * RequestChangedException
-//   Your request parameters changed between pages. Try again with the old parameters
-//   or without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - RequestChangedException
+//     Your request parameters changed between pages. Try again with the old parameters
+//     or without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostCategories
 func (c *CostExplorer) GetCostCategories(input *GetCostCategoriesInput) (*GetCostCategoriesOutput, error) {
@@ -1169,14 +1168,13 @@ const opGetCostForecast = "GetCostForecast"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCostForecastRequest method.
+//	req, resp := client.GetCostForecastRequest(params)
 //
-//    // Example sending a request using the GetCostForecastRequest method.
-//    req, resp := client.GetCostForecastRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostForecast
 func (c *CostExplorer) GetCostForecastRequest(input *GetCostForecastInput) (req *request.Request, output *GetCostForecastOutput) {
@@ -1208,11 +1206,12 @@ func (c *CostExplorer) GetCostForecastRequest(input *GetCostForecastInput) (req 
 // API operation GetCostForecast for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetCostForecast
 func (c *CostExplorer) GetCostForecast(input *GetCostForecastInput) (*GetCostForecastOutput, error) {
@@ -1252,14 +1251,13 @@ const opGetDimensionValues = "GetDimensionValues"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDimensionValuesRequest method.
+//	req, resp := client.GetDimensionValuesRequest(params)
 //
-//    // Example sending a request using the GetDimensionValuesRequest method.
-//    req, resp := client.GetDimensionValuesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetDimensionValues
 func (c *CostExplorer) GetDimensionValuesRequest(input *GetDimensionValuesInput) (req *request.Request, output *GetDimensionValuesOutput) {
@@ -1291,21 +1289,22 @@ func (c *CostExplorer) GetDimensionValuesRequest(input *GetDimensionValuesInput)
 // API operation GetDimensionValues for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * BillExpirationException
-//   The requested report expired. Update the date interval and try again.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - BillExpirationException
+//     The requested report expired. Update the date interval and try again.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
-//   * RequestChangedException
-//   Your request parameters changed between pages. Try again with the old parameters
-//   or without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - RequestChangedException
+//     Your request parameters changed between pages. Try again with the old parameters
+//     or without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetDimensionValues
 func (c *CostExplorer) GetDimensionValues(input *GetDimensionValuesInput) (*GetDimensionValuesOutput, error) {
@@ -1345,14 +1344,13 @@ const opGetReservationCoverage = "GetReservationCoverage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReservationCoverageRequest method.
+//	req, resp := client.GetReservationCoverageRequest(params)
 //
-//    // Example sending a request using the GetReservationCoverageRequest method.
-//    req, resp := client.GetReservationCoverageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetReservationCoverage
 func (c *CostExplorer) GetReservationCoverageRequest(input *GetReservationCoverageInput) (req *request.Request, output *GetReservationCoverageOutput) {
@@ -1381,29 +1379,29 @@ func (c *CostExplorer) GetReservationCoverageRequest(input *GetReservationCovera
 // For any time period, you can filter data about reservation usage by the following
 // dimensions:
 //
-//    * AZ
+//   - AZ
 //
-//    * CACHE_ENGINE
+//   - CACHE_ENGINE
 //
-//    * DATABASE_ENGINE
+//   - DATABASE_ENGINE
 //
-//    * DEPLOYMENT_OPTION
+//   - DEPLOYMENT_OPTION
 //
-//    * INSTANCE_TYPE
+//   - INSTANCE_TYPE
 //
-//    * LINKED_ACCOUNT
+//   - LINKED_ACCOUNT
 //
-//    * OPERATING_SYSTEM
+//   - OPERATING_SYSTEM
 //
-//    * PLATFORM
+//   - PLATFORM
 //
-//    * REGION
+//   - REGION
 //
-//    * SERVICE
+//   - SERVICE
 //
-//    * TAG
+//   - TAG
 //
-//    * TENANCY
+//   - TENANCY
 //
 // To determine valid values for a dimension, use the GetDimensionValues operation.
 //
@@ -1415,14 +1413,15 @@ func (c *CostExplorer) GetReservationCoverageRequest(input *GetReservationCovera
 // API operation GetReservationCoverage for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetReservationCoverage
 func (c *CostExplorer) GetReservationCoverage(input *GetReservationCoverageInput) (*GetReservationCoverageOutput, error) {
@@ -1462,14 +1461,13 @@ const opGetReservationPurchaseRecommendation = "GetReservationPurchaseRecommenda
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReservationPurchaseRecommendationRequest method.
+//	req, resp := client.GetReservationPurchaseRecommendationRequest(params)
 //
-//    // Example sending a request using the GetReservationPurchaseRecommendationRequest method.
-//    req, resp := client.GetReservationPurchaseRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetReservationPurchaseRecommendation
 func (c *CostExplorer) GetReservationPurchaseRecommendationRequest(input *GetReservationPurchaseRecommendationInput) (req *request.Request, output *GetReservationPurchaseRecommendationOutput) {
@@ -1519,14 +1517,15 @@ func (c *CostExplorer) GetReservationPurchaseRecommendationRequest(input *GetRes
 // API operation GetReservationPurchaseRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetReservationPurchaseRecommendation
 func (c *CostExplorer) GetReservationPurchaseRecommendation(input *GetReservationPurchaseRecommendationInput) (*GetReservationPurchaseRecommendationOutput, error) {
@@ -1566,14 +1565,13 @@ const opGetReservationUtilization = "GetReservationUtilization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReservationUtilizationRequest method.
+//	req, resp := client.GetReservationUtilizationRequest(params)
 //
-//    // Example sending a request using the GetReservationUtilizationRequest method.
-//    req, resp := client.GetReservationUtilizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetReservationUtilization
 func (c *CostExplorer) GetReservationUtilizationRequest(input *GetReservationUtilizationInput) (req *request.Request, output *GetReservationUtilizationOutput) {
@@ -1607,14 +1605,15 @@ func (c *CostExplorer) GetReservationUtilizationRequest(input *GetReservationUti
 // API operation GetReservationUtilization for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetReservationUtilization
 func (c *CostExplorer) GetReservationUtilization(input *GetReservationUtilizationInput) (*GetReservationUtilizationOutput, error) {
@@ -1654,14 +1653,13 @@ const opGetRightsizingRecommendation = "GetRightsizingRecommendation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRightsizingRecommendationRequest method.
+//	req, resp := client.GetRightsizingRecommendationRequest(params)
 //
-//    // Example sending a request using the GetRightsizingRecommendationRequest method.
-//    req, resp := client.GetRightsizingRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetRightsizingRecommendation
 func (c *CostExplorer) GetRightsizingRecommendationRequest(input *GetRightsizingRecommendationInput) (req *request.Request, output *GetRightsizingRecommendationOutput) {
@@ -1698,11 +1696,12 @@ func (c *CostExplorer) GetRightsizingRecommendationRequest(input *GetRightsizing
 // API operation GetRightsizingRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetRightsizingRecommendation
 func (c *CostExplorer) GetRightsizingRecommendation(input *GetRightsizingRecommendationInput) (*GetRightsizingRecommendationOutput, error) {
@@ -1742,14 +1741,13 @@ const opGetSavingsPlansCoverage = "GetSavingsPlansCoverage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSavingsPlansCoverageRequest method.
+//	req, resp := client.GetSavingsPlansCoverageRequest(params)
 //
-//    // Example sending a request using the GetSavingsPlansCoverageRequest method.
-//    req, resp := client.GetSavingsPlansCoverageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansCoverage
 func (c *CostExplorer) GetSavingsPlansCoverageRequest(input *GetSavingsPlansCoverageInput) (req *request.Request, output *GetSavingsPlansCoverageOutput) {
@@ -1783,13 +1781,13 @@ func (c *CostExplorer) GetSavingsPlansCoverageRequest(input *GetSavingsPlansCove
 // time period, you can filter data for Savings Plans usage with the following
 // dimensions:
 //
-//    * LINKED_ACCOUNT
+//   - LINKED_ACCOUNT
 //
-//    * REGION
+//   - REGION
 //
-//    * SERVICE
+//   - SERVICE
 //
-//    * INSTANCE_FAMILY
+//   - INSTANCE_FAMILY
 //
 // To determine valid values for a dimension, use the GetDimensionValues operation.
 //
@@ -1801,14 +1799,15 @@ func (c *CostExplorer) GetSavingsPlansCoverageRequest(input *GetSavingsPlansCove
 // API operation GetSavingsPlansCoverage for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansCoverage
 func (c *CostExplorer) GetSavingsPlansCoverage(input *GetSavingsPlansCoverageInput) (*GetSavingsPlansCoverageOutput, error) {
@@ -1840,15 +1839,14 @@ func (c *CostExplorer) GetSavingsPlansCoverageWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSavingsPlansCoverage operation.
-//    pageNum := 0
-//    err := client.GetSavingsPlansCoveragePages(params,
-//        func(page *costexplorer.GetSavingsPlansCoverageOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSavingsPlansCoverage operation.
+//	pageNum := 0
+//	err := client.GetSavingsPlansCoveragePages(params,
+//	    func(page *costexplorer.GetSavingsPlansCoverageOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CostExplorer) GetSavingsPlansCoveragePages(input *GetSavingsPlansCoverageInput, fn func(*GetSavingsPlansCoverageOutput, bool) bool) error {
 	return c.GetSavingsPlansCoveragePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1900,14 +1898,13 @@ const opGetSavingsPlansPurchaseRecommendation = "GetSavingsPlansPurchaseRecommen
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSavingsPlansPurchaseRecommendationRequest method.
+//	req, resp := client.GetSavingsPlansPurchaseRecommendationRequest(params)
 //
-//    // Example sending a request using the GetSavingsPlansPurchaseRecommendationRequest method.
-//    req, resp := client.GetSavingsPlansPurchaseRecommendationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansPurchaseRecommendation
 func (c *CostExplorer) GetSavingsPlansPurchaseRecommendationRequest(input *GetSavingsPlansPurchaseRecommendationInput) (req *request.Request, output *GetSavingsPlansPurchaseRecommendationOutput) {
@@ -1939,11 +1936,12 @@ func (c *CostExplorer) GetSavingsPlansPurchaseRecommendationRequest(input *GetSa
 // API operation GetSavingsPlansPurchaseRecommendation for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansPurchaseRecommendation
 func (c *CostExplorer) GetSavingsPlansPurchaseRecommendation(input *GetSavingsPlansPurchaseRecommendationInput) (*GetSavingsPlansPurchaseRecommendationOutput, error) {
@@ -1983,14 +1981,13 @@ const opGetSavingsPlansUtilization = "GetSavingsPlansUtilization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSavingsPlansUtilizationRequest method.
+//	req, resp := client.GetSavingsPlansUtilizationRequest(params)
 //
-//    // Example sending a request using the GetSavingsPlansUtilizationRequest method.
-//    req, resp := client.GetSavingsPlansUtilizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansUtilization
 func (c *CostExplorer) GetSavingsPlansUtilizationRequest(input *GetSavingsPlansUtilizationInput) (req *request.Request, output *GetSavingsPlansUtilizationOutput) {
@@ -2026,11 +2023,12 @@ func (c *CostExplorer) GetSavingsPlansUtilizationRequest(input *GetSavingsPlansU
 // API operation GetSavingsPlansUtilization for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansUtilization
 func (c *CostExplorer) GetSavingsPlansUtilization(input *GetSavingsPlansUtilizationInput) (*GetSavingsPlansUtilizationOutput, error) {
@@ -2070,14 +2068,13 @@ const opGetSavingsPlansUtilizationDetails = "GetSavingsPlansUtilizationDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSavingsPlansUtilizationDetailsRequest method.
+//	req, resp := client.GetSavingsPlansUtilizationDetailsRequest(params)
 //
-//    // Example sending a request using the GetSavingsPlansUtilizationDetailsRequest method.
-//    req, resp := client.GetSavingsPlansUtilizationDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansUtilizationDetails
 func (c *CostExplorer) GetSavingsPlansUtilizationDetailsRequest(input *GetSavingsPlansUtilizationDetailsInput) (req *request.Request, output *GetSavingsPlansUtilizationDetailsOutput) {
@@ -2122,14 +2119,15 @@ func (c *CostExplorer) GetSavingsPlansUtilizationDetailsRequest(input *GetSaving
 // API operation GetSavingsPlansUtilizationDetails for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetSavingsPlansUtilizationDetails
 func (c *CostExplorer) GetSavingsPlansUtilizationDetails(input *GetSavingsPlansUtilizationDetailsInput) (*GetSavingsPlansUtilizationDetailsOutput, error) {
@@ -2161,15 +2159,14 @@ func (c *CostExplorer) GetSavingsPlansUtilizationDetailsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSavingsPlansUtilizationDetails operation.
-//    pageNum := 0
-//    err := client.GetSavingsPlansUtilizationDetailsPages(params,
-//        func(page *costexplorer.GetSavingsPlansUtilizationDetailsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSavingsPlansUtilizationDetails operation.
+//	pageNum := 0
+//	err := client.GetSavingsPlansUtilizationDetailsPages(params,
+//	    func(page *costexplorer.GetSavingsPlansUtilizationDetailsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CostExplorer) GetSavingsPlansUtilizationDetailsPages(input *GetSavingsPlansUtilizationDetailsInput, fn func(*GetSavingsPlansUtilizationDetailsOutput, bool) bool) error {
 	return c.GetSavingsPlansUtilizationDetailsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2221,14 +2218,13 @@ const opGetTags = "GetTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTagsRequest method.
+//	req, resp := client.GetTagsRequest(params)
 //
-//    // Example sending a request using the GetTagsRequest method.
-//    req, resp := client.GetTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetTags
 func (c *CostExplorer) GetTagsRequest(input *GetTagsInput) (req *request.Request, output *GetTagsOutput) {
@@ -2260,21 +2256,22 @@ func (c *CostExplorer) GetTagsRequest(input *GetTagsInput) (req *request.Request
 // API operation GetTags for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * BillExpirationException
-//   The requested report expired. Update the date interval and try again.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - BillExpirationException
+//     The requested report expired. Update the date interval and try again.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - DataUnavailableException
+//     The requested data is unavailable.
 //
-//   * RequestChangedException
-//   Your request parameters changed between pages. Try again with the old parameters
-//   or without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - RequestChangedException
+//     Your request parameters changed between pages. Try again with the old parameters
+//     or without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetTags
 func (c *CostExplorer) GetTags(input *GetTagsInput) (*GetTagsOutput, error) {
@@ -2314,14 +2311,13 @@ const opGetUsageForecast = "GetUsageForecast"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsageForecastRequest method.
+//	req, resp := client.GetUsageForecastRequest(params)
 //
-//    // Example sending a request using the GetUsageForecastRequest method.
-//    req, resp := client.GetUsageForecastRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetUsageForecast
 func (c *CostExplorer) GetUsageForecastRequest(input *GetUsageForecastInput) (req *request.Request, output *GetUsageForecastOutput) {
@@ -2353,15 +2349,16 @@ func (c *CostExplorer) GetUsageForecastRequest(input *GetUsageForecastInput) (re
 // API operation GetUsageForecast for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * DataUnavailableException
-//   The requested data is unavailable.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * UnresolvableUsageUnitException
-//   Cost Explorer was unable to identify the usage unit. Provide UsageType/UsageTypeGroup
-//   filter selections that contain matching units, for example: hours.
+//   - DataUnavailableException
+//     The requested data is unavailable.
+//
+//   - UnresolvableUsageUnitException
+//     Cost Explorer was unable to identify the usage unit. Provide UsageType/UsageTypeGroup
+//     filter selections that contain matching units, for example: hours.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/GetUsageForecast
 func (c *CostExplorer) GetUsageForecast(input *GetUsageForecastInput) (*GetUsageForecastOutput, error) {
@@ -2401,14 +2398,13 @@ const opListCostCategoryDefinitions = "ListCostCategoryDefinitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCostCategoryDefinitionsRequest method.
+//	req, resp := client.ListCostCategoryDefinitionsRequest(params)
 //
-//    // Example sending a request using the ListCostCategoryDefinitionsRequest method.
-//    req, resp := client.ListCostCategoryDefinitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/ListCostCategoryDefinitions
 func (c *CostExplorer) ListCostCategoryDefinitionsRequest(input *ListCostCategoryDefinitionsInput) (req *request.Request, output *ListCostCategoryDefinitionsOutput) {
@@ -2451,8 +2447,8 @@ func (c *CostExplorer) ListCostCategoryDefinitionsRequest(input *ListCostCategor
 // API operation ListCostCategoryDefinitions for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/ListCostCategoryDefinitions
 func (c *CostExplorer) ListCostCategoryDefinitions(input *ListCostCategoryDefinitionsInput) (*ListCostCategoryDefinitionsOutput, error) {
@@ -2484,15 +2480,14 @@ func (c *CostExplorer) ListCostCategoryDefinitionsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCostCategoryDefinitions operation.
-//    pageNum := 0
-//    err := client.ListCostCategoryDefinitionsPages(params,
-//        func(page *costexplorer.ListCostCategoryDefinitionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCostCategoryDefinitions operation.
+//	pageNum := 0
+//	err := client.ListCostCategoryDefinitionsPages(params,
+//	    func(page *costexplorer.ListCostCategoryDefinitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CostExplorer) ListCostCategoryDefinitionsPages(input *ListCostCategoryDefinitionsInput, fn func(*ListCostCategoryDefinitionsOutput, bool) bool) error {
 	return c.ListCostCategoryDefinitionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2544,14 +2539,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/ListTagsForResource
 func (c *CostExplorer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2583,11 +2577,12 @@ func (c *CostExplorer) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified ARN in the request doesn't exist.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - ResourceNotFoundException
+//     The specified ARN in the request doesn't exist.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/ListTagsForResource
 func (c *CostExplorer) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2627,14 +2622,13 @@ const opProvideAnomalyFeedback = "ProvideAnomalyFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvideAnomalyFeedbackRequest method.
+//	req, resp := client.ProvideAnomalyFeedbackRequest(params)
 //
-//    // Example sending a request using the ProvideAnomalyFeedbackRequest method.
-//    req, resp := client.ProvideAnomalyFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/ProvideAnomalyFeedback
 func (c *CostExplorer) ProvideAnomalyFeedbackRequest(input *ProvideAnomalyFeedbackInput) (req *request.Request, output *ProvideAnomalyFeedbackOutput) {
@@ -2665,8 +2659,8 @@ func (c *CostExplorer) ProvideAnomalyFeedbackRequest(input *ProvideAnomalyFeedba
 // API operation ProvideAnomalyFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/ProvideAnomalyFeedback
 func (c *CostExplorer) ProvideAnomalyFeedback(input *ProvideAnomalyFeedbackInput) (*ProvideAnomalyFeedbackOutput, error) {
@@ -2706,14 +2700,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/TagResource
 func (c *CostExplorer) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2754,15 +2747,16 @@ func (c *CostExplorer) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified ARN in the request doesn't exist.
 //
-//   * TooManyTagsException
-//   Can occur if you specify a number of tags for a resource greater than the
-//   maximum 50 user tags per resource.
+//   - ResourceNotFoundException
+//     The specified ARN in the request doesn't exist.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - TooManyTagsException
+//     Can occur if you specify a number of tags for a resource greater than the
+//     maximum 50 user tags per resource.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/TagResource
 func (c *CostExplorer) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2802,14 +2796,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UntagResource
 func (c *CostExplorer) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2842,11 +2835,12 @@ func (c *CostExplorer) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified ARN in the request doesn't exist.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - ResourceNotFoundException
+//     The specified ARN in the request doesn't exist.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UntagResource
 func (c *CostExplorer) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2886,14 +2880,13 @@ const opUpdateAnomalyMonitor = "UpdateAnomalyMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAnomalyMonitorRequest method.
+//	req, resp := client.UpdateAnomalyMonitorRequest(params)
 //
-//    // Example sending a request using the UpdateAnomalyMonitorRequest method.
-//    req, resp := client.UpdateAnomalyMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UpdateAnomalyMonitor
 func (c *CostExplorer) UpdateAnomalyMonitorRequest(input *UpdateAnomalyMonitorInput) (req *request.Request, output *UpdateAnomalyMonitorOutput) {
@@ -2925,11 +2918,12 @@ func (c *CostExplorer) UpdateAnomalyMonitorRequest(input *UpdateAnomalyMonitorIn
 // API operation UpdateAnomalyMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownMonitorException
-//   The cost anomaly monitor does not exist for the account.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
+//
+//   - UnknownMonitorException
+//     The cost anomaly monitor does not exist for the account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UpdateAnomalyMonitor
 func (c *CostExplorer) UpdateAnomalyMonitor(input *UpdateAnomalyMonitorInput) (*UpdateAnomalyMonitorOutput, error) {
@@ -2969,14 +2963,13 @@ const opUpdateAnomalySubscription = "UpdateAnomalySubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAnomalySubscriptionRequest method.
+//	req, resp := client.UpdateAnomalySubscriptionRequest(params)
 //
-//    // Example sending a request using the UpdateAnomalySubscriptionRequest method.
-//    req, resp := client.UpdateAnomalySubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UpdateAnomalySubscription
 func (c *CostExplorer) UpdateAnomalySubscriptionRequest(input *UpdateAnomalySubscriptionInput) (req *request.Request, output *UpdateAnomalySubscriptionOutput) {
@@ -3007,14 +3000,15 @@ func (c *CostExplorer) UpdateAnomalySubscriptionRequest(input *UpdateAnomalySubs
 // API operation UpdateAnomalySubscription for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownMonitorException
-//   The cost anomaly monitor does not exist for the account.
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
-//   * UnknownSubscriptionException
-//   The cost anomaly subscription does not exist for the account.
+//   - UnknownMonitorException
+//     The cost anomaly monitor does not exist for the account.
+//
+//   - UnknownSubscriptionException
+//     The cost anomaly subscription does not exist for the account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UpdateAnomalySubscription
 func (c *CostExplorer) UpdateAnomalySubscription(input *UpdateAnomalySubscriptionInput) (*UpdateAnomalySubscriptionOutput, error) {
@@ -3054,14 +3048,13 @@ const opUpdateCostCategoryDefinition = "UpdateCostCategoryDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCostCategoryDefinitionRequest method.
+//	req, resp := client.UpdateCostCategoryDefinitionRequest(params)
 //
-//    // Example sending a request using the UpdateCostCategoryDefinitionRequest method.
-//    req, resp := client.UpdateCostCategoryDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UpdateCostCategoryDefinition
 func (c *CostExplorer) UpdateCostCategoryDefinitionRequest(input *UpdateCostCategoryDefinitionInput) (req *request.Request, output *UpdateCostCategoryDefinitionOutput) {
@@ -3094,15 +3087,16 @@ func (c *CostExplorer) UpdateCostCategoryDefinitionRequest(input *UpdateCostCate
 // API operation UpdateCostCategoryDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified ARN in the request doesn't exist.
 //
-//   * ServiceQuotaExceededException
-//   You've reached the limit on the number of resources you can create, or exceeded
-//   the size of an individual resource.
+//   - ResourceNotFoundException
+//     The specified ARN in the request doesn't exist.
 //
-//   * LimitExceededException
-//   You made too many calls in a short period of time. Try again later.
+//   - ServiceQuotaExceededException
+//     You've reached the limit on the number of resources you can create, or exceeded
+//     the size of an individual resource.
+//
+//   - LimitExceededException
+//     You made too many calls in a short period of time. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ce-2017-10-25/UpdateCostCategoryDefinition
 func (c *CostExplorer) UpdateCostCategoryDefinition(input *UpdateCostCategoryDefinitionInput) (*UpdateCostCategoryDefinitionOutput, error) {
@@ -6341,29 +6335,29 @@ func (s *ElastiCacheInstanceDetails) SetSizeFlexEligible(v bool) *ElastiCacheIns
 
 // Use Expression to filter by cost or by usage. There are two patterns:
 //
-//    * Simple dimension values - You can set the dimension name and values
-//    for the filters that you plan to use. For example, you can filter for
-//    REGION==us-east-1 OR REGION==us-west-1. For GetRightsizingRecommendation,
-//    the Region is a full name (for example, REGION==US East (N. Virginia).
-//    The Expression example is as follows: { "Dimensions": { "Key": "REGION",
-//    "Values": [ "us-east-1", “us-west-1” ] } } The list of dimension values
-//    are OR'd together to retrieve cost or usage data. You can create Expression
-//    and DimensionValues objects using either with* methods or set* methods
-//    in multiple lines.
+//   - Simple dimension values - You can set the dimension name and values
+//     for the filters that you plan to use. For example, you can filter for
+//     REGION==us-east-1 OR REGION==us-west-1. For GetRightsizingRecommendation,
+//     the Region is a full name (for example, REGION==US East (N. Virginia).
+//     The Expression example is as follows: { "Dimensions": { "Key": "REGION",
+//     "Values": [ "us-east-1", “us-west-1” ] } } The list of dimension values
+//     are OR'd together to retrieve cost or usage data. You can create Expression
+//     and DimensionValues objects using either with* methods or set* methods
+//     in multiple lines.
 //
-//    * Compound dimension values with logical operations - You can use multiple
-//    Expression types and the logical operators AND/OR/NOT to create a list
-//    of one or more Expression objects. By doing this, you can filter on more
-//    advanced options. For example, you can filter on ((REGION == us-east-1
-//    OR REGION == us-west-1) OR (TAG.Type == Type1)) AND (USAGE_TYPE != DataTransfer).
-//    The Expression for that is as follows: { "And": [ {"Or": [ {"Dimensions":
-//    { "Key": "REGION", "Values": [ "us-east-1", "us-west-1" ] }}, {"Tags":
-//    { "Key": "TagName", "Values": ["Value1"] } } ]}, {"Not": {"Dimensions":
-//    { "Key": "USAGE_TYPE", "Values": ["DataTransfer"] }}} ] } Because each
-//    Expression can have only one operator, the service returns an error if
-//    more than one is specified. The following example shows an Expression
-//    object that creates an error. { "And": [ ... ], "DimensionValues": { "Dimension":
-//    "USAGE_TYPE", "Values": [ "DataTransfer" ] } }
+//   - Compound dimension values with logical operations - You can use multiple
+//     Expression types and the logical operators AND/OR/NOT to create a list
+//     of one or more Expression objects. By doing this, you can filter on more
+//     advanced options. For example, you can filter on ((REGION == us-east-1
+//     OR REGION == us-west-1) OR (TAG.Type == Type1)) AND (USAGE_TYPE != DataTransfer).
+//     The Expression for that is as follows: { "And": [ {"Or": [ {"Dimensions":
+//     { "Key": "REGION", "Values": [ "us-east-1", "us-west-1" ] }}, {"Tags":
+//     { "Key": "TagName", "Values": ["Value1"] } } ]}, {"Not": {"Dimensions":
+//     { "Key": "USAGE_TYPE", "Values": ["DataTransfer"] }}} ] } Because each
+//     Expression can have only one operator, the service returns an error if
+//     more than one is specified. The following example shows an Expression
+//     object that creates an error. { "And": [ ... ], "DimensionValues": { "Dimension":
+//     "USAGE_TYPE", "Values": [ "DataTransfer" ] } }
 //
 // For the GetRightsizingRecommendation action, a combination of OR and NOT
 // isn't supported. OR isn't supported between different dimensions, or dimensions

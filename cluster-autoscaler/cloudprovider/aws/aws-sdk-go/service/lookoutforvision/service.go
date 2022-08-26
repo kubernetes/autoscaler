@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a LookoutForVision client from just a session.
-//     svc := lookoutforvision.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a LookoutForVision client with additional configuration
-//     svc := lookoutforvision.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a LookoutForVision client from just a session.
+//	svc := lookoutforvision.New(mySession)
+//
+//	// Create a LookoutForVision client with additional configuration
+//	svc := lookoutforvision.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *LookoutForVision {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

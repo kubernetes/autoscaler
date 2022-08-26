@@ -29,14 +29,13 @@ const opAssociateNode = "AssociateNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateNodeRequest method.
+//	req, resp := client.AssociateNodeRequest(params)
 //
-//    // Example sending a request using the AssociateNodeRequest method.
-//    req, resp := client.AssociateNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/AssociateNode
 func (c *OpsWorksCM) AssociateNodeRequest(input *AssociateNodeInput) (req *request.Request, output *AssociateNodeOutput) {
@@ -87,15 +86,16 @@ func (c *OpsWorksCM) AssociateNodeRequest(input *AssociateNodeInput) (req *reque
 // API operation AssociateNode for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/AssociateNode
 func (c *OpsWorksCM) AssociateNode(input *AssociateNodeInput) (*AssociateNodeOutput, error) {
@@ -135,14 +135,13 @@ const opCreateBackup = "CreateBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackupRequest method.
+//	req, resp := client.CreateBackupRequest(params)
 //
-//    // Example sending a request using the CreateBackupRequest method.
-//    req, resp := client.CreateBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/CreateBackup
 func (c *OpsWorksCM) CreateBackupRequest(input *CreateBackupInput) (req *request.Request, output *CreateBackupOutput) {
@@ -186,18 +185,19 @@ func (c *OpsWorksCM) CreateBackupRequest(input *CreateBackupInput) (req *request
 // API operation CreateBackup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * LimitExceededException
-//   The limit of servers or backups has been reached.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - LimitExceededException
+//     The limit of servers or backups has been reached.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/CreateBackup
 func (c *OpsWorksCM) CreateBackup(input *CreateBackupInput) (*CreateBackupOutput, error) {
@@ -237,14 +237,13 @@ const opCreateServer = "CreateServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServerRequest method.
+//	req, resp := client.CreateServerRequest(params)
 //
-//    // Example sending a request using the CreateServerRequest method.
-//    req, resp := client.CreateServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/CreateServer
 func (c *OpsWorksCM) CreateServerRequest(input *CreateServerInput) (req *request.Request, output *CreateServerOutput) {
@@ -305,17 +304,18 @@ func (c *OpsWorksCM) CreateServerRequest(input *CreateServerInput) (req *request
 // API operation CreateServer for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The limit of servers or backups has been reached.
 //
-//   * ResourceAlreadyExistsException
-//   The requested resource cannot be created because it already exists.
+//   - LimitExceededException
+//     The limit of servers or backups has been reached.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - ResourceAlreadyExistsException
+//     The requested resource cannot be created because it already exists.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/CreateServer
 func (c *OpsWorksCM) CreateServer(input *CreateServerInput) (*CreateServerOutput, error) {
@@ -355,14 +355,13 @@ const opDeleteBackup = "DeleteBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupRequest method.
+//	req, resp := client.DeleteBackupRequest(params)
 //
-//    // Example sending a request using the DeleteBackupRequest method.
-//    req, resp := client.DeleteBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DeleteBackup
 func (c *OpsWorksCM) DeleteBackupRequest(input *DeleteBackupInput) (req *request.Request, output *DeleteBackupOutput) {
@@ -399,15 +398,16 @@ func (c *OpsWorksCM) DeleteBackupRequest(input *DeleteBackupInput) (req *request
 // API operation DeleteBackup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DeleteBackup
 func (c *OpsWorksCM) DeleteBackup(input *DeleteBackupInput) (*DeleteBackupOutput, error) {
@@ -447,14 +447,13 @@ const opDeleteServer = "DeleteServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServerRequest method.
+//	req, resp := client.DeleteServerRequest(params)
 //
-//    // Example sending a request using the DeleteServerRequest method.
-//    req, resp := client.DeleteServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DeleteServer
 func (c *OpsWorksCM) DeleteServerRequest(input *DeleteServerInput) (req *request.Request, output *DeleteServerOutput) {
@@ -496,15 +495,16 @@ func (c *OpsWorksCM) DeleteServerRequest(input *DeleteServerInput) (req *request
 // API operation DeleteServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DeleteServer
 func (c *OpsWorksCM) DeleteServer(input *DeleteServerInput) (*DeleteServerOutput, error) {
@@ -544,14 +544,13 @@ const opDescribeAccountAttributes = "DescribeAccountAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAttributesRequest method.
+//	req, resp := client.DescribeAccountAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAttributesRequest method.
-//    req, resp := client.DescribeAccountAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeAccountAttributes
 func (c *OpsWorksCM) DescribeAccountAttributesRequest(input *DescribeAccountAttributesInput) (req *request.Request, output *DescribeAccountAttributesOutput) {
@@ -620,14 +619,13 @@ const opDescribeBackups = "DescribeBackups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBackupsRequest method.
+//	req, resp := client.DescribeBackupsRequest(params)
 //
-//    // Example sending a request using the DescribeBackupsRequest method.
-//    req, resp := client.DescribeBackupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeBackups
 func (c *OpsWorksCM) DescribeBackupsRequest(input *DescribeBackupsInput) (req *request.Request, output *DescribeBackupsOutput) {
@@ -670,14 +668,15 @@ func (c *OpsWorksCM) DescribeBackupsRequest(input *DescribeBackupsInput) (req *r
 // API operation DescribeBackups for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
-//   * InvalidNextTokenException
-//   This occurs when the provided nextToken is not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - InvalidNextTokenException
+//     This occurs when the provided nextToken is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeBackups
 func (c *OpsWorksCM) DescribeBackups(input *DescribeBackupsInput) (*DescribeBackupsOutput, error) {
@@ -709,15 +708,14 @@ func (c *OpsWorksCM) DescribeBackupsWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBackups operation.
-//    pageNum := 0
-//    err := client.DescribeBackupsPages(params,
-//        func(page *opsworkscm.DescribeBackupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBackups operation.
+//	pageNum := 0
+//	err := client.DescribeBackupsPages(params,
+//	    func(page *opsworkscm.DescribeBackupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpsWorksCM) DescribeBackupsPages(input *DescribeBackupsInput, fn func(*DescribeBackupsOutput, bool) bool) error {
 	return c.DescribeBackupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -769,14 +767,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeEvents
 func (c *OpsWorksCM) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -819,14 +816,15 @@ func (c *OpsWorksCM) DescribeEventsRequest(input *DescribeEventsInput) (req *req
 // API operation DescribeEvents for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
 //
-//   * InvalidNextTokenException
-//   This occurs when the provided nextToken is not valid.
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidNextTokenException
+//     This occurs when the provided nextToken is not valid.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeEvents
 func (c *OpsWorksCM) DescribeEvents(input *DescribeEventsInput) (*DescribeEventsOutput, error) {
@@ -858,15 +856,14 @@ func (c *OpsWorksCM) DescribeEventsWithContext(ctx aws.Context, input *DescribeE
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvents operation.
-//    pageNum := 0
-//    err := client.DescribeEventsPages(params,
-//        func(page *opsworkscm.DescribeEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *opsworkscm.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpsWorksCM) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
 	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -918,14 +915,13 @@ const opDescribeNodeAssociationStatus = "DescribeNodeAssociationStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNodeAssociationStatusRequest method.
+//	req, resp := client.DescribeNodeAssociationStatusRequest(params)
 //
-//    // Example sending a request using the DescribeNodeAssociationStatusRequest method.
-//    req, resp := client.DescribeNodeAssociationStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeNodeAssociationStatus
 func (c *OpsWorksCM) DescribeNodeAssociationStatusRequest(input *DescribeNodeAssociationStatusInput) (req *request.Request, output *DescribeNodeAssociationStatusOutput) {
@@ -960,11 +956,12 @@ func (c *OpsWorksCM) DescribeNodeAssociationStatusRequest(input *DescribeNodeAss
 // API operation DescribeNodeAssociationStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeNodeAssociationStatus
 func (c *OpsWorksCM) DescribeNodeAssociationStatus(input *DescribeNodeAssociationStatusInput) (*DescribeNodeAssociationStatusOutput, error) {
@@ -1004,14 +1001,13 @@ const opDescribeServers = "DescribeServers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServersRequest method.
+//	req, resp := client.DescribeServersRequest(params)
 //
-//    // Example sending a request using the DescribeServersRequest method.
-//    req, resp := client.DescribeServersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeServers
 func (c *OpsWorksCM) DescribeServersRequest(input *DescribeServersInput) (req *request.Request, output *DescribeServersOutput) {
@@ -1055,14 +1051,15 @@ func (c *OpsWorksCM) DescribeServersRequest(input *DescribeServersInput) (req *r
 // API operation DescribeServers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
-//   * InvalidNextTokenException
-//   This occurs when the provided nextToken is not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - InvalidNextTokenException
+//     This occurs when the provided nextToken is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DescribeServers
 func (c *OpsWorksCM) DescribeServers(input *DescribeServersInput) (*DescribeServersOutput, error) {
@@ -1094,15 +1091,14 @@ func (c *OpsWorksCM) DescribeServersWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeServers operation.
-//    pageNum := 0
-//    err := client.DescribeServersPages(params,
-//        func(page *opsworkscm.DescribeServersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeServers operation.
+//	pageNum := 0
+//	err := client.DescribeServersPages(params,
+//	    func(page *opsworkscm.DescribeServersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpsWorksCM) DescribeServersPages(input *DescribeServersInput, fn func(*DescribeServersOutput, bool) bool) error {
 	return c.DescribeServersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1154,14 +1150,13 @@ const opDisassociateNode = "DisassociateNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateNodeRequest method.
+//	req, resp := client.DisassociateNodeRequest(params)
 //
-//    // Example sending a request using the DisassociateNodeRequest method.
-//    req, resp := client.DisassociateNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DisassociateNode
 func (c *OpsWorksCM) DisassociateNodeRequest(input *DisassociateNodeInput) (req *request.Request, output *DisassociateNodeOutput) {
@@ -1200,15 +1195,16 @@ func (c *OpsWorksCM) DisassociateNodeRequest(input *DisassociateNodeInput) (req 
 // API operation DisassociateNode for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/DisassociateNode
 func (c *OpsWorksCM) DisassociateNode(input *DisassociateNodeInput) (*DisassociateNodeOutput, error) {
@@ -1248,14 +1244,13 @@ const opExportServerEngineAttribute = "ExportServerEngineAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportServerEngineAttributeRequest method.
+//	req, resp := client.ExportServerEngineAttributeRequest(params)
 //
-//    // Example sending a request using the ExportServerEngineAttributeRequest method.
-//    req, resp := client.ExportServerEngineAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/ExportServerEngineAttribute
 func (c *OpsWorksCM) ExportServerEngineAttributeRequest(input *ExportServerEngineAttributeInput) (req *request.Request, output *ExportServerEngineAttributeOutput) {
@@ -1295,15 +1290,16 @@ func (c *OpsWorksCM) ExportServerEngineAttributeRequest(input *ExportServerEngin
 // API operation ExportServerEngineAttribute for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/ExportServerEngineAttribute
 func (c *OpsWorksCM) ExportServerEngineAttribute(input *ExportServerEngineAttributeInput) (*ExportServerEngineAttributeOutput, error) {
@@ -1343,14 +1339,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/ListTagsForResource
 func (c *OpsWorksCM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1388,11 +1383,12 @@ func (c *OpsWorksCM) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/ListTagsForResource
 func (c *OpsWorksCM) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1424,15 +1420,14 @@ func (c *OpsWorksCM) ListTagsForResourceWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *opsworkscm.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *opsworkscm.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpsWorksCM) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1484,14 +1479,13 @@ const opRestoreServer = "RestoreServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreServerRequest method.
+//	req, resp := client.RestoreServerRequest(params)
 //
-//    // Example sending a request using the RestoreServerRequest method.
-//    req, resp := client.RestoreServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/RestoreServer
 func (c *OpsWorksCM) RestoreServerRequest(input *RestoreServerInput) (req *request.Request, output *RestoreServerOutput) {
@@ -1538,15 +1532,16 @@ func (c *OpsWorksCM) RestoreServerRequest(input *RestoreServerInput) (req *reque
 // API operation RestoreServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/RestoreServer
 func (c *OpsWorksCM) RestoreServer(input *RestoreServerInput) (*RestoreServerOutput, error) {
@@ -1586,14 +1581,13 @@ const opStartMaintenance = "StartMaintenance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMaintenanceRequest method.
+//	req, resp := client.StartMaintenanceRequest(params)
 //
-//    // Example sending a request using the StartMaintenanceRequest method.
-//    req, resp := client.StartMaintenanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/StartMaintenance
 func (c *OpsWorksCM) StartMaintenanceRequest(input *StartMaintenanceInput) (req *request.Request, output *StartMaintenanceOutput) {
@@ -1632,15 +1626,16 @@ func (c *OpsWorksCM) StartMaintenanceRequest(input *StartMaintenanceInput) (req 
 // API operation StartMaintenance for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/StartMaintenance
 func (c *OpsWorksCM) StartMaintenance(input *StartMaintenanceInput) (*StartMaintenanceOutput, error) {
@@ -1680,14 +1675,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/TagResource
 func (c *OpsWorksCM) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1720,15 +1714,16 @@ func (c *OpsWorksCM) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
+//
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/TagResource
 func (c *OpsWorksCM) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1768,14 +1763,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/UntagResource
 func (c *OpsWorksCM) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1807,15 +1801,16 @@ func (c *OpsWorksCM) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
+//
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/UntagResource
 func (c *OpsWorksCM) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1855,14 +1850,13 @@ const opUpdateServer = "UpdateServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServerRequest method.
+//	req, resp := client.UpdateServerRequest(params)
 //
-//    // Example sending a request using the UpdateServerRequest method.
-//    req, resp := client.UpdateServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/UpdateServer
 func (c *OpsWorksCM) UpdateServerRequest(input *UpdateServerInput) (req *request.Request, output *UpdateServerOutput) {
@@ -1895,15 +1889,16 @@ func (c *OpsWorksCM) UpdateServerRequest(input *UpdateServerInput) (req *request
 // API operation UpdateServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/UpdateServer
 func (c *OpsWorksCM) UpdateServer(input *UpdateServerInput) (*UpdateServerOutput, error) {
@@ -1943,14 +1938,13 @@ const opUpdateServerEngineAttributes = "UpdateServerEngineAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServerEngineAttributesRequest method.
+//	req, resp := client.UpdateServerEngineAttributesRequest(params)
 //
-//    // Example sending a request using the UpdateServerEngineAttributesRequest method.
-//    req, resp := client.UpdateServerEngineAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/UpdateServerEngineAttributes
 func (c *OpsWorksCM) UpdateServerEngineAttributesRequest(input *UpdateServerEngineAttributesInput) (req *request.Request, output *UpdateServerEngineAttributesOutput) {
@@ -1991,15 +1985,16 @@ func (c *OpsWorksCM) UpdateServerEngineAttributesRequest(input *UpdateServerEngi
 // API operation UpdateServerEngineAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidStateException
-//   The resource is in a state that does not allow you to perform a specified
-//   action.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidStateException
+//     The resource is in a state that does not allow you to perform a specified
+//     action.
 //
-//   * ValidationException
-//   One or more of the provided request parameters are not valid.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+//   - ValidationException
+//     One or more of the provided request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworkscm-2016-11-01/UpdateServerEngineAttributes
 func (c *OpsWorksCM) UpdateServerEngineAttributes(input *UpdateServerEngineAttributesInput) (*UpdateServerEngineAttributesOutput, error) {
@@ -5590,11 +5585,11 @@ func MaintenanceStatus_Values() []string {
 //
 // Possible values:
 //
-//    * SUCCESS: The association or disassociation succeeded.
+//   - SUCCESS: The association or disassociation succeeded.
 //
-//    * FAILED: The association or disassociation failed.
+//   - FAILED: The association or disassociation failed.
 //
-//    * IN_PROGRESS: The association or disassociation is still in progress.
+//   - IN_PROGRESS: The association or disassociation is still in progress.
 const (
 	// NodeAssociationStatusSuccess is a NodeAssociationStatus enum value
 	NodeAssociationStatusSuccess = "SUCCESS"

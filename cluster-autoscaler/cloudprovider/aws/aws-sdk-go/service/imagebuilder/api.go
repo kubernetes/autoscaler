@@ -28,14 +28,13 @@ const opCancelImageCreation = "CancelImageCreation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelImageCreationRequest method.
+//	req, resp := client.CancelImageCreationRequest(params)
 //
-//    // Example sending a request using the CancelImageCreationRequest method.
-//    req, resp := client.CancelImageCreationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CancelImageCreation
 func (c *Imagebuilder) CancelImageCreationRequest(input *CancelImageCreationInput) (req *request.Request, output *CancelImageCreationOutput) {
@@ -67,33 +66,34 @@ func (c *Imagebuilder) CancelImageCreationRequest(input *CancelImageCreationInpu
 // API operation CancelImageCreation for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CancelImageCreation
 func (c *Imagebuilder) CancelImageCreation(input *CancelImageCreationInput) (*CancelImageCreationOutput, error) {
@@ -133,14 +133,13 @@ const opCreateComponent = "CreateComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateComponentRequest method.
+//	req, resp := client.CreateComponentRequest(params)
 //
-//    // Example sending a request using the CreateComponentRequest method.
-//    req, resp := client.CreateComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateComponent
 func (c *Imagebuilder) CreateComponentRequest(input *CreateComponentInput) (req *request.Request, output *CreateComponentOutput) {
@@ -165,10 +164,10 @@ func (c *Imagebuilder) CreateComponentRequest(input *CreateComponentInput) (req 
 // your image. The component is based on a YAML document that you specify using
 // exactly one of the following methods:
 //
-//    * Inline, using the data property in the request body.
+//   - Inline, using the data property in the request body.
 //
-//    * A URL that points to a YAML document file stored in Amazon S3, using
-//    the uri property in the request body.
+//   - A URL that points to a YAML document file stored in Amazon S3, using
+//     the uri property in the request body.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -178,44 +177,45 @@ func (c *Imagebuilder) CreateComponentRequest(input *CreateComponentInput) (req 
 // API operation CreateComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateComponent
 func (c *Imagebuilder) CreateComponent(input *CreateComponentInput) (*CreateComponentOutput, error) {
@@ -255,14 +255,13 @@ const opCreateContainerRecipe = "CreateContainerRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContainerRecipeRequest method.
+//	req, resp := client.CreateContainerRecipeRequest(params)
 //
-//    // Example sending a request using the CreateContainerRecipeRequest method.
-//    req, resp := client.CreateContainerRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateContainerRecipe
 func (c *Imagebuilder) CreateContainerRecipeRequest(input *CreateContainerRecipeInput) (req *request.Request, output *CreateContainerRecipeOutput) {
@@ -294,43 +293,44 @@ func (c *Imagebuilder) CreateContainerRecipeRequest(input *CreateContainerRecipe
 // API operation CreateContainerRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateContainerRecipe
 func (c *Imagebuilder) CreateContainerRecipe(input *CreateContainerRecipeInput) (*CreateContainerRecipeOutput, error) {
@@ -370,14 +370,13 @@ const opCreateDistributionConfiguration = "CreateDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDistributionConfigurationRequest method.
+//	req, resp := client.CreateDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateDistributionConfigurationRequest method.
-//    req, resp := client.CreateDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateDistributionConfiguration
 func (c *Imagebuilder) CreateDistributionConfigurationRequest(input *CreateDistributionConfigurationInput) (req *request.Request, output *CreateDistributionConfigurationOutput) {
@@ -409,44 +408,45 @@ func (c *Imagebuilder) CreateDistributionConfigurationRequest(input *CreateDistr
 // API operation CreateDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateDistributionConfiguration
 func (c *Imagebuilder) CreateDistributionConfiguration(input *CreateDistributionConfigurationInput) (*CreateDistributionConfigurationOutput, error) {
@@ -486,14 +486,13 @@ const opCreateImage = "CreateImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageRequest method.
+//	req, resp := client.CreateImageRequest(params)
 //
-//    // Example sending a request using the CreateImageRequest method.
-//    req, resp := client.CreateImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImage
 func (c *Imagebuilder) CreateImageRequest(input *CreateImageInput) (req *request.Request, output *CreateImageOutput) {
@@ -527,37 +526,38 @@ func (c *Imagebuilder) CreateImageRequest(input *CreateImageInput) (req *request
 // API operation CreateImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImage
 func (c *Imagebuilder) CreateImage(input *CreateImageInput) (*CreateImageOutput, error) {
@@ -597,14 +597,13 @@ const opCreateImagePipeline = "CreateImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImagePipelineRequest method.
+//	req, resp := client.CreateImagePipelineRequest(params)
 //
-//    // Example sending a request using the CreateImagePipelineRequest method.
-//    req, resp := client.CreateImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImagePipeline
 func (c *Imagebuilder) CreateImagePipelineRequest(input *CreateImagePipelineInput) (req *request.Request, output *CreateImagePipelineOutput) {
@@ -636,40 +635,41 @@ func (c *Imagebuilder) CreateImagePipelineRequest(input *CreateImagePipelineInpu
 // API operation CreateImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImagePipeline
 func (c *Imagebuilder) CreateImagePipeline(input *CreateImagePipelineInput) (*CreateImagePipelineOutput, error) {
@@ -709,14 +709,13 @@ const opCreateImageRecipe = "CreateImageRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageRecipeRequest method.
+//	req, resp := client.CreateImageRecipeRequest(params)
 //
-//    // Example sending a request using the CreateImageRecipeRequest method.
-//    req, resp := client.CreateImageRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImageRecipe
 func (c *Imagebuilder) CreateImageRecipeRequest(input *CreateImageRecipeInput) (req *request.Request, output *CreateImageRecipeOutput) {
@@ -748,43 +747,44 @@ func (c *Imagebuilder) CreateImageRecipeRequest(input *CreateImageRecipeInput) (
 // API operation CreateImageRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImageRecipe
 func (c *Imagebuilder) CreateImageRecipe(input *CreateImageRecipeInput) (*CreateImageRecipeOutput, error) {
@@ -824,14 +824,13 @@ const opCreateInfrastructureConfiguration = "CreateInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInfrastructureConfigurationRequest method.
+//	req, resp := client.CreateInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateInfrastructureConfigurationRequest method.
-//    req, resp := client.CreateInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateInfrastructureConfiguration
 func (c *Imagebuilder) CreateInfrastructureConfigurationRequest(input *CreateInfrastructureConfigurationInput) (req *request.Request, output *CreateInfrastructureConfigurationOutput) {
@@ -863,40 +862,41 @@ func (c *Imagebuilder) CreateInfrastructureConfigurationRequest(input *CreateInf
 // API operation CreateInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateInfrastructureConfiguration
 func (c *Imagebuilder) CreateInfrastructureConfiguration(input *CreateInfrastructureConfigurationInput) (*CreateInfrastructureConfigurationOutput, error) {
@@ -936,14 +936,13 @@ const opDeleteComponent = "DeleteComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteComponentRequest method.
+//	req, resp := client.DeleteComponentRequest(params)
 //
-//    // Example sending a request using the DeleteComponentRequest method.
-//    req, resp := client.DeleteComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteComponent
 func (c *Imagebuilder) DeleteComponentRequest(input *DeleteComponentInput) (req *request.Request, output *DeleteComponentOutput) {
@@ -974,29 +973,30 @@ func (c *Imagebuilder) DeleteComponentRequest(input *DeleteComponentInput) (req 
 // API operation DeleteComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteComponent
 func (c *Imagebuilder) DeleteComponent(input *DeleteComponentInput) (*DeleteComponentOutput, error) {
@@ -1036,14 +1036,13 @@ const opDeleteContainerRecipe = "DeleteContainerRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContainerRecipeRequest method.
+//	req, resp := client.DeleteContainerRecipeRequest(params)
 //
-//    // Example sending a request using the DeleteContainerRecipeRequest method.
-//    req, resp := client.DeleteContainerRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteContainerRecipe
 func (c *Imagebuilder) DeleteContainerRecipeRequest(input *DeleteContainerRecipeInput) (req *request.Request, output *DeleteContainerRecipeOutput) {
@@ -1074,29 +1073,30 @@ func (c *Imagebuilder) DeleteContainerRecipeRequest(input *DeleteContainerRecipe
 // API operation DeleteContainerRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteContainerRecipe
 func (c *Imagebuilder) DeleteContainerRecipe(input *DeleteContainerRecipeInput) (*DeleteContainerRecipeOutput, error) {
@@ -1136,14 +1136,13 @@ const opDeleteDistributionConfiguration = "DeleteDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDistributionConfigurationRequest method.
+//	req, resp := client.DeleteDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteDistributionConfigurationRequest method.
-//    req, resp := client.DeleteDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteDistributionConfiguration
 func (c *Imagebuilder) DeleteDistributionConfigurationRequest(input *DeleteDistributionConfigurationInput) (req *request.Request, output *DeleteDistributionConfigurationOutput) {
@@ -1174,29 +1173,30 @@ func (c *Imagebuilder) DeleteDistributionConfigurationRequest(input *DeleteDistr
 // API operation DeleteDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteDistributionConfiguration
 func (c *Imagebuilder) DeleteDistributionConfiguration(input *DeleteDistributionConfigurationInput) (*DeleteDistributionConfigurationOutput, error) {
@@ -1236,14 +1236,13 @@ const opDeleteImage = "DeleteImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImageRequest method.
+//	req, resp := client.DeleteImageRequest(params)
 //
-//    // Example sending a request using the DeleteImageRequest method.
-//    req, resp := client.DeleteImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImage
 func (c *Imagebuilder) DeleteImageRequest(input *DeleteImageInput) (req *request.Request, output *DeleteImageOutput) {
@@ -1269,14 +1268,14 @@ func (c *Imagebuilder) DeleteImageRequest(input *DeleteImageInput) (req *request
 // You must clean those up separately, using the appropriate Amazon EC2 or Amazon
 // ECR console actions, or API or CLI commands.
 //
-//    * To deregister an EC2 Linux AMI, see Deregister your Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html)
-//    in the Amazon EC2 User Guide .
+//   - To deregister an EC2 Linux AMI, see Deregister your Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html)
+//     in the Amazon EC2 User Guide .
 //
-//    * To deregister an EC2 Windows AMI, see Deregister your Windows AMI (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/deregister-ami.html)
-//    in the Amazon EC2 Windows Guide .
+//   - To deregister an EC2 Windows AMI, see Deregister your Windows AMI (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/deregister-ami.html)
+//     in the Amazon EC2 Windows Guide .
 //
-//    * To delete a container image from Amazon ECR, see Deleting an image (https://docs.aws.amazon.com/AmazonECR/latest/userguide/delete_image.html)
-//    in the Amazon ECR User Guide.
+//   - To delete a container image from Amazon ECR, see Deleting an image (https://docs.aws.amazon.com/AmazonECR/latest/userguide/delete_image.html)
+//     in the Amazon ECR User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1286,29 +1285,30 @@ func (c *Imagebuilder) DeleteImageRequest(input *DeleteImageInput) (req *request
 // API operation DeleteImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImage
 func (c *Imagebuilder) DeleteImage(input *DeleteImageInput) (*DeleteImageOutput, error) {
@@ -1348,14 +1348,13 @@ const opDeleteImagePipeline = "DeleteImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImagePipelineRequest method.
+//	req, resp := client.DeleteImagePipelineRequest(params)
 //
-//    // Example sending a request using the DeleteImagePipelineRequest method.
-//    req, resp := client.DeleteImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImagePipeline
 func (c *Imagebuilder) DeleteImagePipelineRequest(input *DeleteImagePipelineInput) (req *request.Request, output *DeleteImagePipelineOutput) {
@@ -1386,29 +1385,30 @@ func (c *Imagebuilder) DeleteImagePipelineRequest(input *DeleteImagePipelineInpu
 // API operation DeleteImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImagePipeline
 func (c *Imagebuilder) DeleteImagePipeline(input *DeleteImagePipelineInput) (*DeleteImagePipelineOutput, error) {
@@ -1448,14 +1448,13 @@ const opDeleteImageRecipe = "DeleteImageRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImageRecipeRequest method.
+//	req, resp := client.DeleteImageRecipeRequest(params)
 //
-//    // Example sending a request using the DeleteImageRecipeRequest method.
-//    req, resp := client.DeleteImageRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImageRecipe
 func (c *Imagebuilder) DeleteImageRecipeRequest(input *DeleteImageRecipeInput) (req *request.Request, output *DeleteImageRecipeOutput) {
@@ -1486,29 +1485,30 @@ func (c *Imagebuilder) DeleteImageRecipeRequest(input *DeleteImageRecipeInput) (
 // API operation DeleteImageRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImageRecipe
 func (c *Imagebuilder) DeleteImageRecipe(input *DeleteImageRecipeInput) (*DeleteImageRecipeOutput, error) {
@@ -1548,14 +1548,13 @@ const opDeleteInfrastructureConfiguration = "DeleteInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInfrastructureConfigurationRequest method.
+//	req, resp := client.DeleteInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteInfrastructureConfigurationRequest method.
-//    req, resp := client.DeleteInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteInfrastructureConfiguration
 func (c *Imagebuilder) DeleteInfrastructureConfigurationRequest(input *DeleteInfrastructureConfigurationInput) (req *request.Request, output *DeleteInfrastructureConfigurationOutput) {
@@ -1586,29 +1585,30 @@ func (c *Imagebuilder) DeleteInfrastructureConfigurationRequest(input *DeleteInf
 // API operation DeleteInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteInfrastructureConfiguration
 func (c *Imagebuilder) DeleteInfrastructureConfiguration(input *DeleteInfrastructureConfigurationInput) (*DeleteInfrastructureConfigurationOutput, error) {
@@ -1648,14 +1648,13 @@ const opGetComponent = "GetComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComponentRequest method.
+//	req, resp := client.GetComponentRequest(params)
 //
-//    // Example sending a request using the GetComponentRequest method.
-//    req, resp := client.GetComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponent
 func (c *Imagebuilder) GetComponentRequest(input *GetComponentInput) (req *request.Request, output *GetComponentOutput) {
@@ -1686,25 +1685,26 @@ func (c *Imagebuilder) GetComponentRequest(input *GetComponentInput) (req *reque
 // API operation GetComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponent
 func (c *Imagebuilder) GetComponent(input *GetComponentInput) (*GetComponentOutput, error) {
@@ -1744,14 +1744,13 @@ const opGetComponentPolicy = "GetComponentPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComponentPolicyRequest method.
+//	req, resp := client.GetComponentPolicyRequest(params)
 //
-//    // Example sending a request using the GetComponentPolicyRequest method.
-//    req, resp := client.GetComponentPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponentPolicy
 func (c *Imagebuilder) GetComponentPolicyRequest(input *GetComponentPolicyInput) (req *request.Request, output *GetComponentPolicyOutput) {
@@ -1782,23 +1781,24 @@ func (c *Imagebuilder) GetComponentPolicyRequest(input *GetComponentPolicyInput)
 // API operation GetComponentPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponentPolicy
 func (c *Imagebuilder) GetComponentPolicy(input *GetComponentPolicyInput) (*GetComponentPolicyOutput, error) {
@@ -1838,14 +1838,13 @@ const opGetContainerRecipe = "GetContainerRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContainerRecipeRequest method.
+//	req, resp := client.GetContainerRecipeRequest(params)
 //
-//    // Example sending a request using the GetContainerRecipeRequest method.
-//    req, resp := client.GetContainerRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipe
 func (c *Imagebuilder) GetContainerRecipeRequest(input *GetContainerRecipeInput) (req *request.Request, output *GetContainerRecipeOutput) {
@@ -1876,25 +1875,26 @@ func (c *Imagebuilder) GetContainerRecipeRequest(input *GetContainerRecipeInput)
 // API operation GetContainerRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipe
 func (c *Imagebuilder) GetContainerRecipe(input *GetContainerRecipeInput) (*GetContainerRecipeOutput, error) {
@@ -1934,14 +1934,13 @@ const opGetContainerRecipePolicy = "GetContainerRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContainerRecipePolicyRequest method.
+//	req, resp := client.GetContainerRecipePolicyRequest(params)
 //
-//    // Example sending a request using the GetContainerRecipePolicyRequest method.
-//    req, resp := client.GetContainerRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipePolicy
 func (c *Imagebuilder) GetContainerRecipePolicyRequest(input *GetContainerRecipePolicyInput) (req *request.Request, output *GetContainerRecipePolicyOutput) {
@@ -1972,23 +1971,24 @@ func (c *Imagebuilder) GetContainerRecipePolicyRequest(input *GetContainerRecipe
 // API operation GetContainerRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipePolicy
 func (c *Imagebuilder) GetContainerRecipePolicy(input *GetContainerRecipePolicyInput) (*GetContainerRecipePolicyOutput, error) {
@@ -2028,14 +2028,13 @@ const opGetDistributionConfiguration = "GetDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDistributionConfigurationRequest method.
+//	req, resp := client.GetDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the GetDistributionConfigurationRequest method.
-//    req, resp := client.GetDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetDistributionConfiguration
 func (c *Imagebuilder) GetDistributionConfigurationRequest(input *GetDistributionConfigurationInput) (req *request.Request, output *GetDistributionConfigurationOutput) {
@@ -2066,25 +2065,26 @@ func (c *Imagebuilder) GetDistributionConfigurationRequest(input *GetDistributio
 // API operation GetDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetDistributionConfiguration
 func (c *Imagebuilder) GetDistributionConfiguration(input *GetDistributionConfigurationInput) (*GetDistributionConfigurationOutput, error) {
@@ -2124,14 +2124,13 @@ const opGetImage = "GetImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImageRequest method.
+//	req, resp := client.GetImageRequest(params)
 //
-//    // Example sending a request using the GetImageRequest method.
-//    req, resp := client.GetImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImage
 func (c *Imagebuilder) GetImageRequest(input *GetImageInput) (req *request.Request, output *GetImageOutput) {
@@ -2162,25 +2161,26 @@ func (c *Imagebuilder) GetImageRequest(input *GetImageInput) (req *request.Reque
 // API operation GetImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImage
 func (c *Imagebuilder) GetImage(input *GetImageInput) (*GetImageOutput, error) {
@@ -2220,14 +2220,13 @@ const opGetImagePipeline = "GetImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImagePipelineRequest method.
+//	req, resp := client.GetImagePipelineRequest(params)
 //
-//    // Example sending a request using the GetImagePipelineRequest method.
-//    req, resp := client.GetImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePipeline
 func (c *Imagebuilder) GetImagePipelineRequest(input *GetImagePipelineInput) (req *request.Request, output *GetImagePipelineOutput) {
@@ -2258,25 +2257,26 @@ func (c *Imagebuilder) GetImagePipelineRequest(input *GetImagePipelineInput) (re
 // API operation GetImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePipeline
 func (c *Imagebuilder) GetImagePipeline(input *GetImagePipelineInput) (*GetImagePipelineOutput, error) {
@@ -2316,14 +2316,13 @@ const opGetImagePolicy = "GetImagePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImagePolicyRequest method.
+//	req, resp := client.GetImagePolicyRequest(params)
 //
-//    // Example sending a request using the GetImagePolicyRequest method.
-//    req, resp := client.GetImagePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePolicy
 func (c *Imagebuilder) GetImagePolicyRequest(input *GetImagePolicyInput) (req *request.Request, output *GetImagePolicyOutput) {
@@ -2354,23 +2353,24 @@ func (c *Imagebuilder) GetImagePolicyRequest(input *GetImagePolicyInput) (req *r
 // API operation GetImagePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePolicy
 func (c *Imagebuilder) GetImagePolicy(input *GetImagePolicyInput) (*GetImagePolicyOutput, error) {
@@ -2410,14 +2410,13 @@ const opGetImageRecipe = "GetImageRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImageRecipeRequest method.
+//	req, resp := client.GetImageRecipeRequest(params)
 //
-//    // Example sending a request using the GetImageRecipeRequest method.
-//    req, resp := client.GetImageRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipe
 func (c *Imagebuilder) GetImageRecipeRequest(input *GetImageRecipeInput) (req *request.Request, output *GetImageRecipeOutput) {
@@ -2448,25 +2447,26 @@ func (c *Imagebuilder) GetImageRecipeRequest(input *GetImageRecipeInput) (req *r
 // API operation GetImageRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipe
 func (c *Imagebuilder) GetImageRecipe(input *GetImageRecipeInput) (*GetImageRecipeOutput, error) {
@@ -2506,14 +2506,13 @@ const opGetImageRecipePolicy = "GetImageRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImageRecipePolicyRequest method.
+//	req, resp := client.GetImageRecipePolicyRequest(params)
 //
-//    // Example sending a request using the GetImageRecipePolicyRequest method.
-//    req, resp := client.GetImageRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipePolicy
 func (c *Imagebuilder) GetImageRecipePolicyRequest(input *GetImageRecipePolicyInput) (req *request.Request, output *GetImageRecipePolicyOutput) {
@@ -2544,23 +2543,24 @@ func (c *Imagebuilder) GetImageRecipePolicyRequest(input *GetImageRecipePolicyIn
 // API operation GetImageRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipePolicy
 func (c *Imagebuilder) GetImageRecipePolicy(input *GetImageRecipePolicyInput) (*GetImageRecipePolicyOutput, error) {
@@ -2600,14 +2600,13 @@ const opGetInfrastructureConfiguration = "GetInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInfrastructureConfigurationRequest method.
+//	req, resp := client.GetInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the GetInfrastructureConfigurationRequest method.
-//    req, resp := client.GetInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetInfrastructureConfiguration
 func (c *Imagebuilder) GetInfrastructureConfigurationRequest(input *GetInfrastructureConfigurationInput) (req *request.Request, output *GetInfrastructureConfigurationOutput) {
@@ -2638,25 +2637,26 @@ func (c *Imagebuilder) GetInfrastructureConfigurationRequest(input *GetInfrastru
 // API operation GetInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetInfrastructureConfiguration
 func (c *Imagebuilder) GetInfrastructureConfiguration(input *GetInfrastructureConfigurationInput) (*GetInfrastructureConfigurationOutput, error) {
@@ -2696,14 +2696,13 @@ const opImportComponent = "ImportComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportComponentRequest method.
+//	req, resp := client.ImportComponentRequest(params)
 //
-//    // Example sending a request using the ImportComponentRequest method.
-//    req, resp := client.ImportComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportComponent
 func (c *Imagebuilder) ImportComponentRequest(input *ImportComponentInput) (req *request.Request, output *ImportComponentOutput) {
@@ -2734,40 +2733,41 @@ func (c *Imagebuilder) ImportComponentRequest(input *ImportComponentInput) (req 
 // API operation ImportComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportComponent
 func (c *Imagebuilder) ImportComponent(input *ImportComponentInput) (*ImportComponentOutput, error) {
@@ -2807,14 +2807,13 @@ const opImportVmImage = "ImportVmImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportVmImageRequest method.
+//	req, resp := client.ImportVmImageRequest(params)
 //
-//    // Example sending a request using the ImportVmImageRequest method.
-//    req, resp := client.ImportVmImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportVmImage
 func (c *Imagebuilder) ImportVmImageRequest(input *ImportVmImageInput) (req *request.Request, output *ImportVmImageOutput) {
@@ -2853,16 +2852,17 @@ func (c *Imagebuilder) ImportVmImageRequest(input *ImportVmImageInput) (req *req
 // API operation ImportVmImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportVmImage
 func (c *Imagebuilder) ImportVmImage(input *ImportVmImageInput) (*ImportVmImageOutput, error) {
@@ -2902,14 +2902,13 @@ const opListComponentBuildVersions = "ListComponentBuildVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentBuildVersionsRequest method.
+//	req, resp := client.ListComponentBuildVersionsRequest(params)
 //
-//    // Example sending a request using the ListComponentBuildVersionsRequest method.
-//    req, resp := client.ListComponentBuildVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponentBuildVersions
 func (c *Imagebuilder) ListComponentBuildVersionsRequest(input *ListComponentBuildVersionsInput) (req *request.Request, output *ListComponentBuildVersionsOutput) {
@@ -2954,28 +2953,29 @@ func (c *Imagebuilder) ListComponentBuildVersionsRequest(input *ListComponentBui
 // API operation ListComponentBuildVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponentBuildVersions
 func (c *Imagebuilder) ListComponentBuildVersions(input *ListComponentBuildVersionsInput) (*ListComponentBuildVersionsOutput, error) {
@@ -3007,15 +3007,14 @@ func (c *Imagebuilder) ListComponentBuildVersionsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponentBuildVersions operation.
-//    pageNum := 0
-//    err := client.ListComponentBuildVersionsPages(params,
-//        func(page *imagebuilder.ListComponentBuildVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponentBuildVersions operation.
+//	pageNum := 0
+//	err := client.ListComponentBuildVersionsPages(params,
+//	    func(page *imagebuilder.ListComponentBuildVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListComponentBuildVersionsPages(input *ListComponentBuildVersionsInput, fn func(*ListComponentBuildVersionsOutput, bool) bool) error {
 	return c.ListComponentBuildVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3067,14 +3066,13 @@ const opListComponents = "ListComponents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentsRequest method.
+//	req, resp := client.ListComponentsRequest(params)
 //
-//    // Example sending a request using the ListComponentsRequest method.
-//    req, resp := client.ListComponentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponents
 func (c *Imagebuilder) ListComponentsRequest(input *ListComponentsInput) (req *request.Request, output *ListComponentsOutput) {
@@ -3119,28 +3117,29 @@ func (c *Imagebuilder) ListComponentsRequest(input *ListComponentsInput) (req *r
 // API operation ListComponents for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponents
 func (c *Imagebuilder) ListComponents(input *ListComponentsInput) (*ListComponentsOutput, error) {
@@ -3172,15 +3171,14 @@ func (c *Imagebuilder) ListComponentsWithContext(ctx aws.Context, input *ListCom
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponents operation.
-//    pageNum := 0
-//    err := client.ListComponentsPages(params,
-//        func(page *imagebuilder.ListComponentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponents operation.
+//	pageNum := 0
+//	err := client.ListComponentsPages(params,
+//	    func(page *imagebuilder.ListComponentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListComponentsPages(input *ListComponentsInput, fn func(*ListComponentsOutput, bool) bool) error {
 	return c.ListComponentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3232,14 +3230,13 @@ const opListContainerRecipes = "ListContainerRecipes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContainerRecipesRequest method.
+//	req, resp := client.ListContainerRecipesRequest(params)
 //
-//    // Example sending a request using the ListContainerRecipesRequest method.
-//    req, resp := client.ListContainerRecipesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListContainerRecipes
 func (c *Imagebuilder) ListContainerRecipesRequest(input *ListContainerRecipesInput) (req *request.Request, output *ListContainerRecipesOutput) {
@@ -3276,28 +3273,29 @@ func (c *Imagebuilder) ListContainerRecipesRequest(input *ListContainerRecipesIn
 // API operation ListContainerRecipes for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListContainerRecipes
 func (c *Imagebuilder) ListContainerRecipes(input *ListContainerRecipesInput) (*ListContainerRecipesOutput, error) {
@@ -3329,15 +3327,14 @@ func (c *Imagebuilder) ListContainerRecipesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContainerRecipes operation.
-//    pageNum := 0
-//    err := client.ListContainerRecipesPages(params,
-//        func(page *imagebuilder.ListContainerRecipesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContainerRecipes operation.
+//	pageNum := 0
+//	err := client.ListContainerRecipesPages(params,
+//	    func(page *imagebuilder.ListContainerRecipesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListContainerRecipesPages(input *ListContainerRecipesInput, fn func(*ListContainerRecipesOutput, bool) bool) error {
 	return c.ListContainerRecipesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3389,14 +3386,13 @@ const opListDistributionConfigurations = "ListDistributionConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionConfigurationsRequest method.
+//	req, resp := client.ListDistributionConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListDistributionConfigurationsRequest method.
-//    req, resp := client.ListDistributionConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListDistributionConfigurations
 func (c *Imagebuilder) ListDistributionConfigurationsRequest(input *ListDistributionConfigurationsInput) (req *request.Request, output *ListDistributionConfigurationsOutput) {
@@ -3433,28 +3429,29 @@ func (c *Imagebuilder) ListDistributionConfigurationsRequest(input *ListDistribu
 // API operation ListDistributionConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListDistributionConfigurations
 func (c *Imagebuilder) ListDistributionConfigurations(input *ListDistributionConfigurationsInput) (*ListDistributionConfigurationsOutput, error) {
@@ -3486,15 +3483,14 @@ func (c *Imagebuilder) ListDistributionConfigurationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDistributionConfigurations operation.
-//    pageNum := 0
-//    err := client.ListDistributionConfigurationsPages(params,
-//        func(page *imagebuilder.ListDistributionConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDistributionConfigurations operation.
+//	pageNum := 0
+//	err := client.ListDistributionConfigurationsPages(params,
+//	    func(page *imagebuilder.ListDistributionConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListDistributionConfigurationsPages(input *ListDistributionConfigurationsInput, fn func(*ListDistributionConfigurationsOutput, bool) bool) error {
 	return c.ListDistributionConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3546,14 +3542,13 @@ const opListImageBuildVersions = "ListImageBuildVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImageBuildVersionsRequest method.
+//	req, resp := client.ListImageBuildVersionsRequest(params)
 //
-//    // Example sending a request using the ListImageBuildVersionsRequest method.
-//    req, resp := client.ListImageBuildVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageBuildVersions
 func (c *Imagebuilder) ListImageBuildVersionsRequest(input *ListImageBuildVersionsInput) (req *request.Request, output *ListImageBuildVersionsOutput) {
@@ -3590,28 +3585,29 @@ func (c *Imagebuilder) ListImageBuildVersionsRequest(input *ListImageBuildVersio
 // API operation ListImageBuildVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageBuildVersions
 func (c *Imagebuilder) ListImageBuildVersions(input *ListImageBuildVersionsInput) (*ListImageBuildVersionsOutput, error) {
@@ -3643,15 +3639,14 @@ func (c *Imagebuilder) ListImageBuildVersionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImageBuildVersions operation.
-//    pageNum := 0
-//    err := client.ListImageBuildVersionsPages(params,
-//        func(page *imagebuilder.ListImageBuildVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImageBuildVersions operation.
+//	pageNum := 0
+//	err := client.ListImageBuildVersionsPages(params,
+//	    func(page *imagebuilder.ListImageBuildVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImageBuildVersionsPages(input *ListImageBuildVersionsInput, fn func(*ListImageBuildVersionsOutput, bool) bool) error {
 	return c.ListImageBuildVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3703,14 +3698,13 @@ const opListImagePackages = "ListImagePackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagePackagesRequest method.
+//	req, resp := client.ListImagePackagesRequest(params)
 //
-//    // Example sending a request using the ListImagePackagesRequest method.
-//    req, resp := client.ListImagePackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePackages
 func (c *Imagebuilder) ListImagePackagesRequest(input *ListImagePackagesInput) (req *request.Request, output *ListImagePackagesOutput) {
@@ -3748,31 +3742,32 @@ func (c *Imagebuilder) ListImagePackagesRequest(input *ListImagePackagesInput) (
 // API operation ListImagePackages for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePackages
 func (c *Imagebuilder) ListImagePackages(input *ListImagePackagesInput) (*ListImagePackagesOutput, error) {
@@ -3804,15 +3799,14 @@ func (c *Imagebuilder) ListImagePackagesWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagePackages operation.
-//    pageNum := 0
-//    err := client.ListImagePackagesPages(params,
-//        func(page *imagebuilder.ListImagePackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagePackages operation.
+//	pageNum := 0
+//	err := client.ListImagePackagesPages(params,
+//	    func(page *imagebuilder.ListImagePackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagePackagesPages(input *ListImagePackagesInput, fn func(*ListImagePackagesOutput, bool) bool) error {
 	return c.ListImagePackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3864,14 +3858,13 @@ const opListImagePipelineImages = "ListImagePipelineImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagePipelineImagesRequest method.
+//	req, resp := client.ListImagePipelineImagesRequest(params)
 //
-//    // Example sending a request using the ListImagePipelineImagesRequest method.
-//    req, resp := client.ListImagePipelineImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelineImages
 func (c *Imagebuilder) ListImagePipelineImagesRequest(input *ListImagePipelineImagesInput) (req *request.Request, output *ListImagePipelineImagesOutput) {
@@ -3908,31 +3901,32 @@ func (c *Imagebuilder) ListImagePipelineImagesRequest(input *ListImagePipelineIm
 // API operation ListImagePipelineImages for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelineImages
 func (c *Imagebuilder) ListImagePipelineImages(input *ListImagePipelineImagesInput) (*ListImagePipelineImagesOutput, error) {
@@ -3964,15 +3958,14 @@ func (c *Imagebuilder) ListImagePipelineImagesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagePipelineImages operation.
-//    pageNum := 0
-//    err := client.ListImagePipelineImagesPages(params,
-//        func(page *imagebuilder.ListImagePipelineImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagePipelineImages operation.
+//	pageNum := 0
+//	err := client.ListImagePipelineImagesPages(params,
+//	    func(page *imagebuilder.ListImagePipelineImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagePipelineImagesPages(input *ListImagePipelineImagesInput, fn func(*ListImagePipelineImagesOutput, bool) bool) error {
 	return c.ListImagePipelineImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4024,14 +4017,13 @@ const opListImagePipelines = "ListImagePipelines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagePipelinesRequest method.
+//	req, resp := client.ListImagePipelinesRequest(params)
 //
-//    // Example sending a request using the ListImagePipelinesRequest method.
-//    req, resp := client.ListImagePipelinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelines
 func (c *Imagebuilder) ListImagePipelinesRequest(input *ListImagePipelinesInput) (req *request.Request, output *ListImagePipelinesOutput) {
@@ -4068,28 +4060,29 @@ func (c *Imagebuilder) ListImagePipelinesRequest(input *ListImagePipelinesInput)
 // API operation ListImagePipelines for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelines
 func (c *Imagebuilder) ListImagePipelines(input *ListImagePipelinesInput) (*ListImagePipelinesOutput, error) {
@@ -4121,15 +4114,14 @@ func (c *Imagebuilder) ListImagePipelinesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagePipelines operation.
-//    pageNum := 0
-//    err := client.ListImagePipelinesPages(params,
-//        func(page *imagebuilder.ListImagePipelinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagePipelines operation.
+//	pageNum := 0
+//	err := client.ListImagePipelinesPages(params,
+//	    func(page *imagebuilder.ListImagePipelinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagePipelinesPages(input *ListImagePipelinesInput, fn func(*ListImagePipelinesOutput, bool) bool) error {
 	return c.ListImagePipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4181,14 +4173,13 @@ const opListImageRecipes = "ListImageRecipes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImageRecipesRequest method.
+//	req, resp := client.ListImageRecipesRequest(params)
 //
-//    // Example sending a request using the ListImageRecipesRequest method.
-//    req, resp := client.ListImageRecipesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageRecipes
 func (c *Imagebuilder) ListImageRecipesRequest(input *ListImageRecipesInput) (req *request.Request, output *ListImageRecipesOutput) {
@@ -4225,28 +4216,29 @@ func (c *Imagebuilder) ListImageRecipesRequest(input *ListImageRecipesInput) (re
 // API operation ListImageRecipes for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageRecipes
 func (c *Imagebuilder) ListImageRecipes(input *ListImageRecipesInput) (*ListImageRecipesOutput, error) {
@@ -4278,15 +4270,14 @@ func (c *Imagebuilder) ListImageRecipesWithContext(ctx aws.Context, input *ListI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImageRecipes operation.
-//    pageNum := 0
-//    err := client.ListImageRecipesPages(params,
-//        func(page *imagebuilder.ListImageRecipesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImageRecipes operation.
+//	pageNum := 0
+//	err := client.ListImageRecipesPages(params,
+//	    func(page *imagebuilder.ListImageRecipesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImageRecipesPages(input *ListImageRecipesInput, fn func(*ListImageRecipesOutput, bool) bool) error {
 	return c.ListImageRecipesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4338,14 +4329,13 @@ const opListImages = "ListImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagesRequest method.
+//	req, resp := client.ListImagesRequest(params)
 //
-//    // Example sending a request using the ListImagesRequest method.
-//    req, resp := client.ListImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImages
 func (c *Imagebuilder) ListImagesRequest(input *ListImagesInput) (req *request.Request, output *ListImagesOutput) {
@@ -4382,28 +4372,29 @@ func (c *Imagebuilder) ListImagesRequest(input *ListImagesInput) (req *request.R
 // API operation ListImages for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImages
 func (c *Imagebuilder) ListImages(input *ListImagesInput) (*ListImagesOutput, error) {
@@ -4435,15 +4426,14 @@ func (c *Imagebuilder) ListImagesWithContext(ctx aws.Context, input *ListImagesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImages operation.
-//    pageNum := 0
-//    err := client.ListImagesPages(params,
-//        func(page *imagebuilder.ListImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImages operation.
+//	pageNum := 0
+//	err := client.ListImagesPages(params,
+//	    func(page *imagebuilder.ListImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagesPages(input *ListImagesInput, fn func(*ListImagesOutput, bool) bool) error {
 	return c.ListImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4495,14 +4485,13 @@ const opListInfrastructureConfigurations = "ListInfrastructureConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInfrastructureConfigurationsRequest method.
+//	req, resp := client.ListInfrastructureConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListInfrastructureConfigurationsRequest method.
-//    req, resp := client.ListInfrastructureConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListInfrastructureConfigurations
 func (c *Imagebuilder) ListInfrastructureConfigurationsRequest(input *ListInfrastructureConfigurationsInput) (req *request.Request, output *ListInfrastructureConfigurationsOutput) {
@@ -4539,28 +4528,29 @@ func (c *Imagebuilder) ListInfrastructureConfigurationsRequest(input *ListInfras
 // API operation ListInfrastructureConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListInfrastructureConfigurations
 func (c *Imagebuilder) ListInfrastructureConfigurations(input *ListInfrastructureConfigurationsInput) (*ListInfrastructureConfigurationsOutput, error) {
@@ -4592,15 +4582,14 @@ func (c *Imagebuilder) ListInfrastructureConfigurationsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInfrastructureConfigurations operation.
-//    pageNum := 0
-//    err := client.ListInfrastructureConfigurationsPages(params,
-//        func(page *imagebuilder.ListInfrastructureConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInfrastructureConfigurations operation.
+//	pageNum := 0
+//	err := client.ListInfrastructureConfigurationsPages(params,
+//	    func(page *imagebuilder.ListInfrastructureConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListInfrastructureConfigurationsPages(input *ListInfrastructureConfigurationsInput, fn func(*ListInfrastructureConfigurationsOutput, bool) bool) error {
 	return c.ListInfrastructureConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4652,14 +4641,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListTagsForResource
 func (c *Imagebuilder) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4690,15 +4678,16 @@ func (c *Imagebuilder) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListTagsForResource
 func (c *Imagebuilder) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4738,14 +4727,13 @@ const opPutComponentPolicy = "PutComponentPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutComponentPolicyRequest method.
+//	req, resp := client.PutComponentPolicyRequest(params)
 //
-//    // Example sending a request using the PutComponentPolicyRequest method.
-//    req, resp := client.PutComponentPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutComponentPolicy
 func (c *Imagebuilder) PutComponentPolicyRequest(input *PutComponentPolicyInput) (req *request.Request, output *PutComponentPolicyOutput) {
@@ -4781,31 +4769,32 @@ func (c *Imagebuilder) PutComponentPolicyRequest(input *PutComponentPolicyInput)
 // API operation PutComponentPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutComponentPolicy
 func (c *Imagebuilder) PutComponentPolicy(input *PutComponentPolicyInput) (*PutComponentPolicyOutput, error) {
@@ -4845,14 +4834,13 @@ const opPutContainerRecipePolicy = "PutContainerRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutContainerRecipePolicyRequest method.
+//	req, resp := client.PutContainerRecipePolicyRequest(params)
 //
-//    // Example sending a request using the PutContainerRecipePolicyRequest method.
-//    req, resp := client.PutContainerRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutContainerRecipePolicy
 func (c *Imagebuilder) PutContainerRecipePolicyRequest(input *PutContainerRecipePolicyInput) (req *request.Request, output *PutContainerRecipePolicyOutput) {
@@ -4888,31 +4876,32 @@ func (c *Imagebuilder) PutContainerRecipePolicyRequest(input *PutContainerRecipe
 // API operation PutContainerRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutContainerRecipePolicy
 func (c *Imagebuilder) PutContainerRecipePolicy(input *PutContainerRecipePolicyInput) (*PutContainerRecipePolicyOutput, error) {
@@ -4952,14 +4941,13 @@ const opPutImagePolicy = "PutImagePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutImagePolicyRequest method.
+//	req, resp := client.PutImagePolicyRequest(params)
 //
-//    // Example sending a request using the PutImagePolicyRequest method.
-//    req, resp := client.PutImagePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImagePolicy
 func (c *Imagebuilder) PutImagePolicyRequest(input *PutImagePolicyInput) (req *request.Request, output *PutImagePolicyOutput) {
@@ -4995,31 +4983,32 @@ func (c *Imagebuilder) PutImagePolicyRequest(input *PutImagePolicyInput) (req *r
 // API operation PutImagePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImagePolicy
 func (c *Imagebuilder) PutImagePolicy(input *PutImagePolicyInput) (*PutImagePolicyOutput, error) {
@@ -5059,14 +5048,13 @@ const opPutImageRecipePolicy = "PutImageRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutImageRecipePolicyRequest method.
+//	req, resp := client.PutImageRecipePolicyRequest(params)
 //
-//    // Example sending a request using the PutImageRecipePolicyRequest method.
-//    req, resp := client.PutImageRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImageRecipePolicy
 func (c *Imagebuilder) PutImageRecipePolicyRequest(input *PutImageRecipePolicyInput) (req *request.Request, output *PutImageRecipePolicyOutput) {
@@ -5102,31 +5090,32 @@ func (c *Imagebuilder) PutImageRecipePolicyRequest(input *PutImageRecipePolicyIn
 // API operation PutImageRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImageRecipePolicy
 func (c *Imagebuilder) PutImageRecipePolicy(input *PutImageRecipePolicyInput) (*PutImageRecipePolicyOutput, error) {
@@ -5166,14 +5155,13 @@ const opStartImagePipelineExecution = "StartImagePipelineExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartImagePipelineExecutionRequest method.
+//	req, resp := client.StartImagePipelineExecutionRequest(params)
 //
-//    // Example sending a request using the StartImagePipelineExecutionRequest method.
-//    req, resp := client.StartImagePipelineExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/StartImagePipelineExecution
 func (c *Imagebuilder) StartImagePipelineExecutionRequest(input *StartImagePipelineExecutionInput) (req *request.Request, output *StartImagePipelineExecutionOutput) {
@@ -5204,36 +5192,37 @@ func (c *Imagebuilder) StartImagePipelineExecutionRequest(input *StartImagePipel
 // API operation StartImagePipelineExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/StartImagePipelineExecution
 func (c *Imagebuilder) StartImagePipelineExecution(input *StartImagePipelineExecutionInput) (*StartImagePipelineExecutionOutput, error) {
@@ -5273,14 +5262,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/TagResource
 func (c *Imagebuilder) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5312,15 +5300,16 @@ func (c *Imagebuilder) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/TagResource
 func (c *Imagebuilder) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5360,14 +5349,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UntagResource
 func (c *Imagebuilder) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5399,15 +5387,16 @@ func (c *Imagebuilder) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UntagResource
 func (c *Imagebuilder) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5447,14 +5436,13 @@ const opUpdateDistributionConfiguration = "UpdateDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDistributionConfigurationRequest method.
+//	req, resp := client.UpdateDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateDistributionConfigurationRequest method.
-//    req, resp := client.UpdateDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateDistributionConfiguration
 func (c *Imagebuilder) UpdateDistributionConfigurationRequest(input *UpdateDistributionConfigurationInput) (req *request.Request, output *UpdateDistributionConfigurationOutput) {
@@ -5486,37 +5474,38 @@ func (c *Imagebuilder) UpdateDistributionConfigurationRequest(input *UpdateDistr
 // API operation UpdateDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateDistributionConfiguration
 func (c *Imagebuilder) UpdateDistributionConfiguration(input *UpdateDistributionConfigurationInput) (*UpdateDistributionConfigurationOutput, error) {
@@ -5556,14 +5545,13 @@ const opUpdateImagePipeline = "UpdateImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateImagePipelineRequest method.
+//	req, resp := client.UpdateImagePipelineRequest(params)
 //
-//    // Example sending a request using the UpdateImagePipelineRequest method.
-//    req, resp := client.UpdateImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateImagePipeline
 func (c *Imagebuilder) UpdateImagePipelineRequest(input *UpdateImagePipelineInput) (req *request.Request, output *UpdateImagePipelineOutput) {
@@ -5599,33 +5587,34 @@ func (c *Imagebuilder) UpdateImagePipelineRequest(input *UpdateImagePipelineInpu
 // API operation UpdateImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateImagePipeline
 func (c *Imagebuilder) UpdateImagePipeline(input *UpdateImagePipelineInput) (*UpdateImagePipelineOutput, error) {
@@ -5665,14 +5654,13 @@ const opUpdateInfrastructureConfiguration = "UpdateInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInfrastructureConfigurationRequest method.
+//	req, resp := client.UpdateInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateInfrastructureConfigurationRequest method.
-//    req, resp := client.UpdateInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateInfrastructureConfiguration
 func (c *Imagebuilder) UpdateInfrastructureConfigurationRequest(input *UpdateInfrastructureConfigurationInput) (req *request.Request, output *UpdateInfrastructureConfigurationOutput) {
@@ -5704,33 +5692,34 @@ func (c *Imagebuilder) UpdateInfrastructureConfigurationRequest(input *UpdateInf
 // API operation UpdateInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have made a request for an action that is not supported by the service.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateInfrastructureConfiguration
 func (c *Imagebuilder) UpdateInfrastructureConfiguration(input *UpdateInfrastructureConfigurationInput) (*UpdateInfrastructureConfigurationOutput, error) {

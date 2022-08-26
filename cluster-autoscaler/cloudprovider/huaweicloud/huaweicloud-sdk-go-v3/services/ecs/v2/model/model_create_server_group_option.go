@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-//
 type CreateServerGroupOption struct {
 	// 弹性云服务器组名称，长度大于0小于256字节。
 

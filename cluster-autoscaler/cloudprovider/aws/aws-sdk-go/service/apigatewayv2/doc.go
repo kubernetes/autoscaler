@@ -3,14 +3,14 @@
 // Package apigatewayv2 provides the client and types for making API
 // requests to AmazonApiGatewayV2.
 //
-// Amazon API Gateway V2
+// # Amazon API Gateway V2
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29 for more information on this service.
 //
 // See apigatewayv2 package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/apigatewayv2/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AmazonApiGatewayV2 with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

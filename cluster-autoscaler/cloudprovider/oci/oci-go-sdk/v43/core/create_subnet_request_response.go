@@ -11,7 +11,7 @@ import (
 
 // CreateSubnetRequest wrapper for the CreateSubnet operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreateSubnet.go.html to see an example of how to use CreateSubnetRequest.
 type CreateSubnetRequest struct {

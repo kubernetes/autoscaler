@@ -29,14 +29,13 @@ const opAddApplicationCloudWatchLoggingOption = "AddApplicationCloudWatchLogging
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddApplicationCloudWatchLoggingOptionRequest method.
+//	req, resp := client.AddApplicationCloudWatchLoggingOptionRequest(params)
 //
-//    // Example sending a request using the AddApplicationCloudWatchLoggingOptionRequest method.
-//    req, resp := client.AddApplicationCloudWatchLoggingOptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationCloudWatchLoggingOption
 func (c *KinesisAnalyticsV2) AddApplicationCloudWatchLoggingOptionRequest(input *AddApplicationCloudWatchLoggingOptionInput) (req *request.Request, output *AddApplicationCloudWatchLoggingOptionOutput) {
@@ -68,25 +67,26 @@ func (c *KinesisAnalyticsV2) AddApplicationCloudWatchLoggingOptionRequest(input 
 // API operation AddApplicationCloudWatchLoggingOption for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
+//
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationCloudWatchLoggingOption
 func (c *KinesisAnalyticsV2) AddApplicationCloudWatchLoggingOption(input *AddApplicationCloudWatchLoggingOptionInput) (*AddApplicationCloudWatchLoggingOptionOutput, error) {
@@ -126,14 +126,13 @@ const opAddApplicationInput = "AddApplicationInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddApplicationInputRequest method.
+//	req, resp := client.AddApplicationInputRequest(params)
 //
-//    // Example sending a request using the AddApplicationInputRequest method.
-//    req, resp := client.AddApplicationInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationInput
 func (c *KinesisAnalyticsV2) AddApplicationInputRequest(input *AddApplicationInputInput) (req *request.Request, output *AddApplicationInputOutput) {
@@ -172,26 +171,27 @@ func (c *KinesisAnalyticsV2) AddApplicationInputRequest(input *AddApplicationInp
 // API operation AddApplicationInput for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * CodeValidationException
-//   The user-provided application code (query) is not valid. This can be a simple
-//   syntax error.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - CodeValidationException
+//     The user-provided application code (query) is not valid. This can be a simple
+//     syntax error.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationInput
 func (c *KinesisAnalyticsV2) AddApplicationInput(input *AddApplicationInputInput) (*AddApplicationInputOutput, error) {
@@ -231,14 +231,13 @@ const opAddApplicationInputProcessingConfiguration = "AddApplicationInputProcess
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddApplicationInputProcessingConfigurationRequest method.
+//	req, resp := client.AddApplicationInputProcessingConfigurationRequest(params)
 //
-//    // Example sending a request using the AddApplicationInputProcessingConfigurationRequest method.
-//    req, resp := client.AddApplicationInputProcessingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationInputProcessingConfiguration
 func (c *KinesisAnalyticsV2) AddApplicationInputProcessingConfigurationRequest(input *AddApplicationInputProcessingConfigurationInput) (req *request.Request, output *AddApplicationInputProcessingConfigurationOutput) {
@@ -272,22 +271,23 @@ func (c *KinesisAnalyticsV2) AddApplicationInputProcessingConfigurationRequest(i
 // API operation AddApplicationInputProcessingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationInputProcessingConfiguration
 func (c *KinesisAnalyticsV2) AddApplicationInputProcessingConfiguration(input *AddApplicationInputProcessingConfigurationInput) (*AddApplicationInputProcessingConfigurationOutput, error) {
@@ -327,14 +327,13 @@ const opAddApplicationOutput = "AddApplicationOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddApplicationOutputRequest method.
+//	req, resp := client.AddApplicationOutputRequest(params)
 //
-//    // Example sending a request using the AddApplicationOutputRequest method.
-//    req, resp := client.AddApplicationOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationOutput
 func (c *KinesisAnalyticsV2) AddApplicationOutputRequest(input *AddApplicationOutputInput) (req *request.Request, output *AddApplicationOutputOutput) {
@@ -379,22 +378,23 @@ func (c *KinesisAnalyticsV2) AddApplicationOutputRequest(input *AddApplicationOu
 // API operation AddApplicationOutput for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationOutput
 func (c *KinesisAnalyticsV2) AddApplicationOutput(input *AddApplicationOutputInput) (*AddApplicationOutputOutput, error) {
@@ -434,14 +434,13 @@ const opAddApplicationReferenceDataSource = "AddApplicationReferenceDataSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddApplicationReferenceDataSourceRequest method.
+//	req, resp := client.AddApplicationReferenceDataSourceRequest(params)
 //
-//    // Example sending a request using the AddApplicationReferenceDataSourceRequest method.
-//    req, resp := client.AddApplicationReferenceDataSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationReferenceDataSource
 func (c *KinesisAnalyticsV2) AddApplicationReferenceDataSourceRequest(input *AddApplicationReferenceDataSourceInput) (req *request.Request, output *AddApplicationReferenceDataSourceOutput) {
@@ -480,22 +479,23 @@ func (c *KinesisAnalyticsV2) AddApplicationReferenceDataSourceRequest(input *Add
 // API operation AddApplicationReferenceDataSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationReferenceDataSource
 func (c *KinesisAnalyticsV2) AddApplicationReferenceDataSource(input *AddApplicationReferenceDataSourceInput) (*AddApplicationReferenceDataSourceOutput, error) {
@@ -535,14 +535,13 @@ const opAddApplicationVpcConfiguration = "AddApplicationVpcConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddApplicationVpcConfigurationRequest method.
+//	req, resp := client.AddApplicationVpcConfigurationRequest(params)
 //
-//    // Example sending a request using the AddApplicationVpcConfigurationRequest method.
-//    req, resp := client.AddApplicationVpcConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationVpcConfiguration
 func (c *KinesisAnalyticsV2) AddApplicationVpcConfigurationRequest(input *AddApplicationVpcConfigurationInput) (req *request.Request, output *AddApplicationVpcConfigurationOutput) {
@@ -568,11 +567,11 @@ func (c *KinesisAnalyticsV2) AddApplicationVpcConfigurationRequest(input *AddApp
 //
 // Note the following about VPC configurations for Kinesis Data Analytics applications:
 //
-//    * VPC configurations are not supported for SQL applications.
+//   - VPC configurations are not supported for SQL applications.
 //
-//    * When a VPC is added to a Kinesis Data Analytics application, the application
-//    can no longer be accessed from the Internet directly. To enable Internet
-//    access to the application, add an Internet gateway to your VPC.
+//   - When a VPC is added to a Kinesis Data Analytics application, the application
+//     can no longer be accessed from the Internet directly. To enable Internet
+//     access to the application, add an Internet gateway to your VPC.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -582,22 +581,23 @@ func (c *KinesisAnalyticsV2) AddApplicationVpcConfigurationRequest(input *AddApp
 // API operation AddApplicationVpcConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/AddApplicationVpcConfiguration
 func (c *KinesisAnalyticsV2) AddApplicationVpcConfiguration(input *AddApplicationVpcConfigurationInput) (*AddApplicationVpcConfigurationOutput, error) {
@@ -637,14 +637,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/CreateApplication
 func (c *KinesisAnalyticsV2) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
@@ -676,35 +675,36 @@ func (c *KinesisAnalyticsV2) CreateApplicationRequest(input *CreateApplicationIn
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * CodeValidationException
-//   The user-provided application code (query) is not valid. This can be a simple
-//   syntax error.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - CodeValidationException
+//     The user-provided application code (query) is not valid. This can be a simple
+//     syntax error.
 //
-//   * LimitExceededException
-//   The number of allowed resources has been exceeded.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - LimitExceededException
+//     The number of allowed resources has been exceeded.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * TooManyTagsException
-//   Application created with too many tags, or too many tags added to an application.
-//   Note that the maximum number of application tags includes system tags. The
-//   maximum number of user-defined application tags is 50.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - TooManyTagsException
+//     Application created with too many tags, or too many tags added to an application.
+//     Note that the maximum number of application tags includes system tags. The
+//     maximum number of user-defined application tags is 50.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/CreateApplication
 func (c *KinesisAnalyticsV2) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
@@ -744,14 +744,13 @@ const opCreateApplicationPresignedUrl = "CreateApplicationPresignedUrl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationPresignedUrlRequest method.
+//	req, resp := client.CreateApplicationPresignedUrlRequest(params)
 //
-//    // Example sending a request using the CreateApplicationPresignedUrlRequest method.
-//    req, resp := client.CreateApplicationPresignedUrlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/CreateApplicationPresignedUrl
 func (c *KinesisAnalyticsV2) CreateApplicationPresignedUrlRequest(input *CreateApplicationPresignedUrlInput) (req *request.Request, output *CreateApplicationPresignedUrlOutput) {
@@ -796,14 +795,15 @@ func (c *KinesisAnalyticsV2) CreateApplicationPresignedUrlRequest(input *CreateA
 // API operation CreateApplicationPresignedUrl for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
+//
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/CreateApplicationPresignedUrl
 func (c *KinesisAnalyticsV2) CreateApplicationPresignedUrl(input *CreateApplicationPresignedUrlInput) (*CreateApplicationPresignedUrlOutput, error) {
@@ -843,14 +843,13 @@ const opCreateApplicationSnapshot = "CreateApplicationSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationSnapshotRequest method.
+//	req, resp := client.CreateApplicationSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateApplicationSnapshotRequest method.
-//    req, resp := client.CreateApplicationSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/CreateApplicationSnapshot
 func (c *KinesisAnalyticsV2) CreateApplicationSnapshotRequest(input *CreateApplicationSnapshotInput) (req *request.Request, output *CreateApplicationSnapshotOutput) {
@@ -882,27 +881,28 @@ func (c *KinesisAnalyticsV2) CreateApplicationSnapshotRequest(input *CreateAppli
 // API operation CreateApplicationSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The application is not available for this operation.
 //
-//   * ResourceNotFoundException
-//   Specified application can't be found.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * LimitExceededException
-//   The number of allowed resources has been exceeded.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - LimitExceededException
+//     The number of allowed resources has been exceeded.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
+//
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/CreateApplicationSnapshot
 func (c *KinesisAnalyticsV2) CreateApplicationSnapshot(input *CreateApplicationSnapshotInput) (*CreateApplicationSnapshotOutput, error) {
@@ -942,14 +942,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplication
 func (c *KinesisAnalyticsV2) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -982,25 +981,26 @@ func (c *KinesisAnalyticsV2) DeleteApplicationRequest(input *DeleteApplicationIn
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
 //
-//   * ResourceNotFoundException
-//   Specified application can't be found.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
+//
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplication
 func (c *KinesisAnalyticsV2) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -1040,14 +1040,13 @@ const opDeleteApplicationCloudWatchLoggingOption = "DeleteApplicationCloudWatchL
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationCloudWatchLoggingOptionRequest method.
+//	req, resp := client.DeleteApplicationCloudWatchLoggingOptionRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationCloudWatchLoggingOptionRequest method.
-//    req, resp := client.DeleteApplicationCloudWatchLoggingOptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationCloudWatchLoggingOption
 func (c *KinesisAnalyticsV2) DeleteApplicationCloudWatchLoggingOptionRequest(input *DeleteApplicationCloudWatchLoggingOptionInput) (req *request.Request, output *DeleteApplicationCloudWatchLoggingOptionOutput) {
@@ -1078,25 +1077,26 @@ func (c *KinesisAnalyticsV2) DeleteApplicationCloudWatchLoggingOptionRequest(inp
 // API operation DeleteApplicationCloudWatchLoggingOption for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
+//
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationCloudWatchLoggingOption
 func (c *KinesisAnalyticsV2) DeleteApplicationCloudWatchLoggingOption(input *DeleteApplicationCloudWatchLoggingOptionInput) (*DeleteApplicationCloudWatchLoggingOptionOutput, error) {
@@ -1136,14 +1136,13 @@ const opDeleteApplicationInputProcessingConfiguration = "DeleteApplicationInputP
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationInputProcessingConfigurationRequest method.
+//	req, resp := client.DeleteApplicationInputProcessingConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationInputProcessingConfigurationRequest method.
-//    req, resp := client.DeleteApplicationInputProcessingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationInputProcessingConfiguration
 func (c *KinesisAnalyticsV2) DeleteApplicationInputProcessingConfigurationRequest(input *DeleteApplicationInputProcessingConfigurationInput) (req *request.Request, output *DeleteApplicationInputProcessingConfigurationOutput) {
@@ -1174,22 +1173,23 @@ func (c *KinesisAnalyticsV2) DeleteApplicationInputProcessingConfigurationReques
 // API operation DeleteApplicationInputProcessingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationInputProcessingConfiguration
 func (c *KinesisAnalyticsV2) DeleteApplicationInputProcessingConfiguration(input *DeleteApplicationInputProcessingConfigurationInput) (*DeleteApplicationInputProcessingConfigurationOutput, error) {
@@ -1229,14 +1229,13 @@ const opDeleteApplicationOutput = "DeleteApplicationOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationOutputRequest method.
+//	req, resp := client.DeleteApplicationOutputRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationOutputRequest method.
-//    req, resp := client.DeleteApplicationOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationOutput
 func (c *KinesisAnalyticsV2) DeleteApplicationOutputRequest(input *DeleteApplicationOutputInput) (req *request.Request, output *DeleteApplicationOutputOutput) {
@@ -1270,22 +1269,23 @@ func (c *KinesisAnalyticsV2) DeleteApplicationOutputRequest(input *DeleteApplica
 // API operation DeleteApplicationOutput for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationOutput
 func (c *KinesisAnalyticsV2) DeleteApplicationOutput(input *DeleteApplicationOutputInput) (*DeleteApplicationOutputOutput, error) {
@@ -1325,14 +1325,13 @@ const opDeleteApplicationReferenceDataSource = "DeleteApplicationReferenceDataSo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationReferenceDataSourceRequest method.
+//	req, resp := client.DeleteApplicationReferenceDataSourceRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationReferenceDataSourceRequest method.
-//    req, resp := client.DeleteApplicationReferenceDataSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationReferenceDataSource
 func (c *KinesisAnalyticsV2) DeleteApplicationReferenceDataSourceRequest(input *DeleteApplicationReferenceDataSourceInput) (req *request.Request, output *DeleteApplicationReferenceDataSourceOutput) {
@@ -1368,22 +1367,23 @@ func (c *KinesisAnalyticsV2) DeleteApplicationReferenceDataSourceRequest(input *
 // API operation DeleteApplicationReferenceDataSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationReferenceDataSource
 func (c *KinesisAnalyticsV2) DeleteApplicationReferenceDataSource(input *DeleteApplicationReferenceDataSourceInput) (*DeleteApplicationReferenceDataSourceOutput, error) {
@@ -1423,14 +1423,13 @@ const opDeleteApplicationSnapshot = "DeleteApplicationSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationSnapshotRequest method.
+//	req, resp := client.DeleteApplicationSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationSnapshotRequest method.
-//    req, resp := client.DeleteApplicationSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationSnapshot
 func (c *KinesisAnalyticsV2) DeleteApplicationSnapshotRequest(input *DeleteApplicationSnapshotInput) (req *request.Request, output *DeleteApplicationSnapshotOutput) {
@@ -1462,21 +1461,22 @@ func (c *KinesisAnalyticsV2) DeleteApplicationSnapshotRequest(input *DeleteAppli
 // API operation DeleteApplicationSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The application is not available for this operation.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
-//   * ResourceNotFoundException
-//   Specified application can't be found.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
+//
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationSnapshot
 func (c *KinesisAnalyticsV2) DeleteApplicationSnapshot(input *DeleteApplicationSnapshotInput) (*DeleteApplicationSnapshotOutput, error) {
@@ -1516,14 +1516,13 @@ const opDeleteApplicationVpcConfiguration = "DeleteApplicationVpcConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationVpcConfigurationRequest method.
+//	req, resp := client.DeleteApplicationVpcConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationVpcConfigurationRequest method.
-//    req, resp := client.DeleteApplicationVpcConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationVpcConfiguration
 func (c *KinesisAnalyticsV2) DeleteApplicationVpcConfigurationRequest(input *DeleteApplicationVpcConfigurationInput) (req *request.Request, output *DeleteApplicationVpcConfigurationOutput) {
@@ -1554,22 +1553,23 @@ func (c *KinesisAnalyticsV2) DeleteApplicationVpcConfigurationRequest(input *Del
 // API operation DeleteApplicationVpcConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationVpcConfiguration
 func (c *KinesisAnalyticsV2) DeleteApplicationVpcConfiguration(input *DeleteApplicationVpcConfigurationInput) (*DeleteApplicationVpcConfigurationOutput, error) {
@@ -1609,14 +1609,13 @@ const opDescribeApplication = "DescribeApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationRequest method.
+//	req, resp := client.DescribeApplicationRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationRequest method.
-//    req, resp := client.DescribeApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DescribeApplication
 func (c *KinesisAnalyticsV2) DescribeApplicationRequest(input *DescribeApplicationInput) (req *request.Request, output *DescribeApplicationOutput) {
@@ -1650,14 +1649,15 @@ func (c *KinesisAnalyticsV2) DescribeApplicationRequest(input *DescribeApplicati
 // API operation DescribeApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DescribeApplication
 func (c *KinesisAnalyticsV2) DescribeApplication(input *DescribeApplicationInput) (*DescribeApplicationOutput, error) {
@@ -1697,14 +1697,13 @@ const opDescribeApplicationSnapshot = "DescribeApplicationSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationSnapshotRequest method.
+//	req, resp := client.DescribeApplicationSnapshotRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationSnapshotRequest method.
-//    req, resp := client.DescribeApplicationSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DescribeApplicationSnapshot
 func (c *KinesisAnalyticsV2) DescribeApplicationSnapshotRequest(input *DescribeApplicationSnapshotInput) (req *request.Request, output *DescribeApplicationSnapshotOutput) {
@@ -1735,15 +1734,16 @@ func (c *KinesisAnalyticsV2) DescribeApplicationSnapshotRequest(input *DescribeA
 // API operation DescribeApplicationSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DescribeApplicationSnapshot
 func (c *KinesisAnalyticsV2) DescribeApplicationSnapshot(input *DescribeApplicationSnapshotInput) (*DescribeApplicationSnapshotOutput, error) {
@@ -1783,14 +1783,13 @@ const opDescribeApplicationVersion = "DescribeApplicationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationVersionRequest method.
+//	req, resp := client.DescribeApplicationVersionRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationVersionRequest method.
-//    req, resp := client.DescribeApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DescribeApplicationVersion
 func (c *KinesisAnalyticsV2) DescribeApplicationVersionRequest(input *DescribeApplicationVersionInput) (req *request.Request, output *DescribeApplicationVersionOutput) {
@@ -1826,15 +1825,16 @@ func (c *KinesisAnalyticsV2) DescribeApplicationVersionRequest(input *DescribeAp
 // API operation DescribeApplicationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
 //
-//   * ResourceNotFoundException
-//   Specified application can't be found.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DescribeApplicationVersion
 func (c *KinesisAnalyticsV2) DescribeApplicationVersion(input *DescribeApplicationVersionInput) (*DescribeApplicationVersionOutput, error) {
@@ -1874,14 +1874,13 @@ const opDiscoverInputSchema = "DiscoverInputSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DiscoverInputSchemaRequest method.
+//	req, resp := client.DiscoverInputSchemaRequest(params)
 //
-//    // Example sending a request using the DiscoverInputSchemaRequest method.
-//    req, resp := client.DiscoverInputSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DiscoverInputSchema
 func (c *KinesisAnalyticsV2) DiscoverInputSchemaRequest(input *DiscoverInputSchemaInput) (req *request.Request, output *DiscoverInputSchemaOutput) {
@@ -1921,28 +1920,29 @@ func (c *KinesisAnalyticsV2) DiscoverInputSchemaRequest(input *DiscoverInputSche
 // API operation DiscoverInputSchema for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
 //
-//   * UnableToDetectSchemaException
-//   The data format is not valid. Kinesis Data Analytics cannot detect the schema
-//   for the given streaming source.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * ResourceProvisionedThroughputExceededException
-//   Discovery failed to get a record from the streaming source because of the
-//   Kinesis Streams ProvisionedThroughputExceededException. For more information,
-//   see GetRecords (http://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetRecords.html)
-//   in the Amazon Kinesis Streams API Reference.
+//   - UnableToDetectSchemaException
+//     The data format is not valid. Kinesis Data Analytics cannot detect the schema
+//     for the given streaming source.
 //
-//   * ServiceUnavailableException
-//   The service cannot complete the request.
+//   - ResourceProvisionedThroughputExceededException
+//     Discovery failed to get a record from the streaming source because of the
+//     Kinesis Streams ProvisionedThroughputExceededException. For more information,
+//     see GetRecords (http://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetRecords.html)
+//     in the Amazon Kinesis Streams API Reference.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ServiceUnavailableException
+//     The service cannot complete the request.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DiscoverInputSchema
 func (c *KinesisAnalyticsV2) DiscoverInputSchema(input *DiscoverInputSchemaInput) (*DiscoverInputSchemaOutput, error) {
@@ -1982,14 +1982,13 @@ const opListApplicationSnapshots = "ListApplicationSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationSnapshotsRequest method.
+//	req, resp := client.ListApplicationSnapshotsRequest(params)
 //
-//    // Example sending a request using the ListApplicationSnapshotsRequest method.
-//    req, resp := client.ListApplicationSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListApplicationSnapshots
 func (c *KinesisAnalyticsV2) ListApplicationSnapshotsRequest(input *ListApplicationSnapshotsInput) (req *request.Request, output *ListApplicationSnapshotsOutput) {
@@ -2020,12 +2019,13 @@ func (c *KinesisAnalyticsV2) ListApplicationSnapshotsRequest(input *ListApplicat
 // API operation ListApplicationSnapshots for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListApplicationSnapshots
 func (c *KinesisAnalyticsV2) ListApplicationSnapshots(input *ListApplicationSnapshotsInput) (*ListApplicationSnapshotsOutput, error) {
@@ -2065,14 +2065,13 @@ const opListApplicationVersions = "ListApplicationVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationVersionsRequest method.
+//	req, resp := client.ListApplicationVersionsRequest(params)
 //
-//    // Example sending a request using the ListApplicationVersionsRequest method.
-//    req, resp := client.ListApplicationVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListApplicationVersions
 func (c *KinesisAnalyticsV2) ListApplicationVersionsRequest(input *ListApplicationVersionsInput) (req *request.Request, output *ListApplicationVersionsOutput) {
@@ -2111,15 +2110,16 @@ func (c *KinesisAnalyticsV2) ListApplicationVersionsRequest(input *ListApplicati
 // API operation ListApplicationVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
 //
-//   * ResourceNotFoundException
-//   Specified application can't be found.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListApplicationVersions
 func (c *KinesisAnalyticsV2) ListApplicationVersions(input *ListApplicationVersionsInput) (*ListApplicationVersionsOutput, error) {
@@ -2159,14 +2159,13 @@ const opListApplications = "ListApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
 //
-//    // Example sending a request using the ListApplicationsRequest method.
-//    req, resp := client.ListApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListApplications
 func (c *KinesisAnalyticsV2) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
@@ -2201,8 +2200,8 @@ func (c *KinesisAnalyticsV2) ListApplicationsRequest(input *ListApplicationsInpu
 // API operation ListApplications for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListApplications
 func (c *KinesisAnalyticsV2) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
@@ -2242,14 +2241,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListTagsForResource
 func (c *KinesisAnalyticsV2) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2281,16 +2279,17 @@ func (c *KinesisAnalyticsV2) ListTagsForResourceRequest(input *ListTagsForResour
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
+//
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/ListTagsForResource
 func (c *KinesisAnalyticsV2) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2330,14 +2329,13 @@ const opRollbackApplication = "RollbackApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RollbackApplicationRequest method.
+//	req, resp := client.RollbackApplicationRequest(params)
 //
-//    // Example sending a request using the RollbackApplicationRequest method.
-//    req, resp := client.RollbackApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/RollbackApplication
 func (c *KinesisAnalyticsV2) RollbackApplicationRequest(input *RollbackApplicationInput) (req *request.Request, output *RollbackApplicationOutput) {
@@ -2378,26 +2376,27 @@ func (c *KinesisAnalyticsV2) RollbackApplicationRequest(input *RollbackApplicati
 // API operation RollbackApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/RollbackApplication
 func (c *KinesisAnalyticsV2) RollbackApplication(input *RollbackApplicationInput) (*RollbackApplicationOutput, error) {
@@ -2437,14 +2436,13 @@ const opStartApplication = "StartApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartApplicationRequest method.
+//	req, resp := client.StartApplicationRequest(params)
 //
-//    // Example sending a request using the StartApplicationRequest method.
-//    req, resp := client.StartApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/StartApplication
 func (c *KinesisAnalyticsV2) StartApplicationRequest(input *StartApplicationInput) (req *request.Request, output *StartApplicationOutput) {
@@ -2477,20 +2475,21 @@ func (c *KinesisAnalyticsV2) StartApplicationRequest(input *StartApplicationInpu
 // API operation StartApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
+//
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/StartApplication
 func (c *KinesisAnalyticsV2) StartApplication(input *StartApplicationInput) (*StartApplicationOutput, error) {
@@ -2530,14 +2529,13 @@ const opStopApplication = "StopApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopApplicationRequest method.
+//	req, resp := client.StopApplicationRequest(params)
 //
-//    // Example sending a request using the StopApplicationRequest method.
-//    req, resp := client.StopApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/StopApplication
 func (c *KinesisAnalyticsV2) StopApplicationRequest(input *StopApplicationInput) (req *request.Request, output *StopApplicationOutput) {
@@ -2575,25 +2573,26 @@ func (c *KinesisAnalyticsV2) StopApplicationRequest(input *StopApplicationInput)
 // API operation StopApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
+//
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/StopApplication
 func (c *KinesisAnalyticsV2) StopApplication(input *StopApplicationInput) (*StopApplicationOutput, error) {
@@ -2633,14 +2632,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/TagResource
 func (c *KinesisAnalyticsV2) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2675,24 +2673,25 @@ func (c *KinesisAnalyticsV2) TagResourceRequest(input *TagResourceInput) (req *r
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * TooManyTagsException
-//   Application created with too many tags, or too many tags added to an application.
-//   Note that the maximum number of application tags includes system tags. The
-//   maximum number of user-defined application tags is 50.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - TooManyTagsException
+//     Application created with too many tags, or too many tags added to an application.
+//     Note that the maximum number of application tags includes system tags. The
+//     maximum number of user-defined application tags is 50.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
+//
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/TagResource
 func (c *KinesisAnalyticsV2) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2732,14 +2731,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/UntagResource
 func (c *KinesisAnalyticsV2) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2772,24 +2770,25 @@ func (c *KinesisAnalyticsV2) UntagResourceRequest(input *UntagResourceInput) (re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * TooManyTagsException
-//   Application created with too many tags, or too many tags added to an application.
-//   Note that the maximum number of application tags includes system tags. The
-//   maximum number of user-defined application tags is 50.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - TooManyTagsException
+//     Application created with too many tags, or too many tags added to an application.
+//     Note that the maximum number of application tags includes system tags. The
+//     maximum number of user-defined application tags is 50.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
+//
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/UntagResource
 func (c *KinesisAnalyticsV2) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2829,14 +2828,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/UpdateApplication
 func (c *KinesisAnalyticsV2) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
@@ -2875,32 +2873,33 @@ func (c *KinesisAnalyticsV2) UpdateApplicationRequest(input *UpdateApplicationIn
 // API operation UpdateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * CodeValidationException
-//   The user-provided application code (query) is not valid. This can be a simple
-//   syntax error.
 //
-//   * ResourceNotFoundException
-//   Specified application can't be found.
+//   - CodeValidationException
+//     The user-provided application code (query) is not valid. This can be a simple
+//     syntax error.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * InvalidRequestException
-//   The request JSON is not valid for the operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
-//   * InvalidApplicationConfigurationException
-//   The user-provided application configuration is not valid.
+//   - InvalidRequestException
+//     The request JSON is not valid for the operation.
 //
-//   * LimitExceededException
-//   The number of allowed resources has been exceeded.
+//   - InvalidApplicationConfigurationException
+//     The user-provided application configuration is not valid.
+//
+//   - LimitExceededException
+//     The number of allowed resources has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/UpdateApplication
 func (c *KinesisAnalyticsV2) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {
@@ -2940,14 +2939,13 @@ const opUpdateApplicationMaintenanceConfiguration = "UpdateApplicationMaintenanc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationMaintenanceConfigurationRequest method.
+//	req, resp := client.UpdateApplicationMaintenanceConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationMaintenanceConfigurationRequest method.
-//    req, resp := client.UpdateApplicationMaintenanceConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/UpdateApplicationMaintenanceConfiguration
 func (c *KinesisAnalyticsV2) UpdateApplicationMaintenanceConfigurationRequest(input *UpdateApplicationMaintenanceConfigurationInput) (req *request.Request, output *UpdateApplicationMaintenanceConfigurationOutput) {
@@ -2998,23 +2996,24 @@ func (c *KinesisAnalyticsV2) UpdateApplicationMaintenanceConfigurationRequest(in
 // API operation UpdateApplicationMaintenanceConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Specified application can't be found.
 //
-//   * ResourceInUseException
-//   The application is not available for this operation.
+//   - ResourceNotFoundException
+//     Specified application can't be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter value is not valid.
+//   - ResourceInUseException
+//     The application is not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Exception thrown as a result of concurrent modifications to an application.
-//   This error can be the result of attempting to modify an application without
-//   using the current application ID.
+//   - InvalidArgumentException
+//     The specified input parameter value is not valid.
 //
-//   * UnsupportedOperationException
-//   The request was rejected because a specified parameter is not supported or
-//   a specified resource is not valid for this operation.
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
+//
+//   - UnsupportedOperationException
+//     The request was rejected because a specified parameter is not supported or
+//     a specified resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/UpdateApplicationMaintenanceConfiguration
 func (c *KinesisAnalyticsV2) UpdateApplicationMaintenanceConfiguration(input *UpdateApplicationMaintenanceConfigurationInput) (*UpdateApplicationMaintenanceConfigurationOutput, error) {

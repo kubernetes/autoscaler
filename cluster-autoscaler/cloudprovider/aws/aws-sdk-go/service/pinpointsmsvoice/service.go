@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a PinpointSMSVoice client from just a session.
-//     svc := pinpointsmsvoice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a PinpointSMSVoice client with additional configuration
-//     svc := pinpointsmsvoice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a PinpointSMSVoice client from just a session.
+//	svc := pinpointsmsvoice.New(mySession)
+//
+//	// Create a PinpointSMSVoice client with additional configuration
+//	svc := pinpointsmsvoice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *PinpointSMSVoice {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -11,7 +11,7 @@ import (
 
 // CreateDrgRequest wrapper for the CreateDrg operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreateDrg.go.html to see an example of how to use CreateDrgRequest.
 type CreateDrgRequest struct {

@@ -2646,15 +2646,15 @@ func (r ApiUmResourcesFindByTypeRequest) Execute() (Resources, *APIResponse, err
 }
 
 /*
- * UmResourcesFindByType List resources by type
- * List all resources of the specified type.
+  - UmResourcesFindByType List resources by type
+  - List all resources of the specified type.
 
 Resource types are: {datacenter, snapshot, image, ipblock, pcc, backupunit, k8s}
 
 Resource types are in the list of resources, returned by GET.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param resourceType The resource type
- * @return ApiUmResourcesFindByTypeRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param resourceType The resource type
+  - @return ApiUmResourcesFindByTypeRequest
 */
 func (a *UserManagementApiService) UmResourcesFindByType(ctx _context.Context, resourceType string) ApiUmResourcesFindByTypeRequest {
 	return ApiUmResourcesFindByTypeRequest{
@@ -2824,16 +2824,16 @@ func (r ApiUmResourcesFindByTypeAndIdRequest) Execute() (Resource, *APIResponse,
 }
 
 /*
- * UmResourcesFindByTypeAndId Retrieve resources by type
- * Retrieve a resource by the resource type and resource ID.
+  - UmResourcesFindByTypeAndId Retrieve resources by type
+  - Retrieve a resource by the resource type and resource ID.
 
 Resource types are: {datacenter, snapshot, image, ipblock, pcc, backupunit, k8s}
 
 Resource types are in the list of resources, returned by GET.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param resourceType The resource type
- * @param resourceId The resource ID
- * @return ApiUmResourcesFindByTypeAndIdRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param resourceType The resource type
+  - @param resourceId The resource ID
+  - @return ApiUmResourcesFindByTypeAndIdRequest
 */
 func (a *UserManagementApiService) UmResourcesFindByTypeAndId(ctx _context.Context, resourceType string, resourceId string) ApiUmResourcesFindByTypeAndIdRequest {
 	return ApiUmResourcesFindByTypeAndIdRequest{

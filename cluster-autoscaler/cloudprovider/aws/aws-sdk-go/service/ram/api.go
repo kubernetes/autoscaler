@@ -29,14 +29,13 @@ const opAcceptResourceShareInvitation = "AcceptResourceShareInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptResourceShareInvitationRequest method.
+//	req, resp := client.AcceptResourceShareInvitationRequest(params)
 //
-//    // Example sending a request using the AcceptResourceShareInvitationRequest method.
-//    req, resp := client.AcceptResourceShareInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AcceptResourceShareInvitation
 func (c *RAM) AcceptResourceShareInvitationRequest(input *AcceptResourceShareInvitationInput) (req *request.Request, output *AcceptResourceShareInvitationOutput) {
@@ -70,37 +69,38 @@ func (c *RAM) AcceptResourceShareInvitationRequest(input *AcceptResourceShareInv
 // API operation AcceptResourceShareInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * ResourceShareInvitationArnNotFoundException
-//   The specified Amazon Resource Name (ARN) for an invitation was not found.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ResourceShareInvitationAlreadyAcceptedException
-//   The specified invitation was already accepted.
+//   - ResourceShareInvitationArnNotFoundException
+//     The specified Amazon Resource Name (ARN) for an invitation was not found.
 //
-//   * ResourceShareInvitationAlreadyRejectedException
-//   The specified invitation was already rejected.
+//   - ResourceShareInvitationAlreadyAcceptedException
+//     The specified invitation was already accepted.
 //
-//   * ResourceShareInvitationExpiredException
-//   The specified invitation is expired.
+//   - ResourceShareInvitationAlreadyRejectedException
+//     The specified invitation was already rejected.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - ResourceShareInvitationExpiredException
+//     The specified invitation is expired.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - ServiceUnavailableException
+//     The service is not available.
 //
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
+//   - InvalidClientTokenException
+//     The client token is not valid.
+//
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AcceptResourceShareInvitation
 func (c *RAM) AcceptResourceShareInvitation(input *AcceptResourceShareInvitationInput) (*AcceptResourceShareInvitationOutput, error) {
@@ -140,14 +140,13 @@ const opAssociateResourceShare = "AssociateResourceShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateResourceShareRequest method.
+//	req, resp := client.AssociateResourceShareRequest(params)
 //
-//    // Example sending a request using the AssociateResourceShareRequest method.
-//    req, resp := client.AssociateResourceShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AssociateResourceShare
 func (c *RAM) AssociateResourceShareRequest(input *AssociateResourceShareInput) (req *request.Request, output *AssociateResourceShareOutput) {
@@ -181,47 +180,48 @@ func (c *RAM) AssociateResourceShareRequest(input *AssociateResourceShareInput) 
 // API operation AssociateResourceShare for usage and error information.
 //
 // Returned Error Types:
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
-//   * InvalidStateTransitionException
-//   The requested state transition is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * ResourceShareLimitExceededException
-//   This request would exceed the limit for resource shares for your account.
+//   - InvalidStateTransitionException
+//     The requested state transition is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - ResourceShareLimitExceededException
+//     This request would exceed the limit for resource shares for your account.
 //
-//   * InvalidStateTransitionException
-//   The requested state transition is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - InvalidStateTransitionException
+//     The requested state transition is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - ServiceUnavailableException
+//     The service is not available.
 //
-//   * ThrottlingException
-//   You exceeded the rate at which you are allowed to perform this operation.
-//   Please try again later.
+//   - UnknownResourceException
+//     A specified resource was not found.
+//
+//   - ThrottlingException
+//     You exceeded the rate at which you are allowed to perform this operation.
+//     Please try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AssociateResourceShare
 func (c *RAM) AssociateResourceShare(input *AssociateResourceShareInput) (*AssociateResourceShareOutput, error) {
@@ -261,14 +261,13 @@ const opAssociateResourceSharePermission = "AssociateResourceSharePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateResourceSharePermissionRequest method.
+//	req, resp := client.AssociateResourceSharePermissionRequest(params)
 //
-//    // Example sending a request using the AssociateResourceSharePermissionRequest method.
-//    req, resp := client.AssociateResourceSharePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AssociateResourceSharePermission
 func (c *RAM) AssociateResourceSharePermissionRequest(input *AssociateResourceSharePermissionInput) (req *request.Request, output *AssociateResourceSharePermissionOutput) {
@@ -303,26 +302,27 @@ func (c *RAM) AssociateResourceSharePermissionRequest(input *AssociateResourceSh
 // API operation AssociateResourceSharePermission for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ServiceUnavailableException
+//     The service is not available.
+//
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AssociateResourceSharePermission
 func (c *RAM) AssociateResourceSharePermission(input *AssociateResourceSharePermissionInput) (*AssociateResourceSharePermissionOutput, error) {
@@ -362,14 +362,13 @@ const opCreateResourceShare = "CreateResourceShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResourceShareRequest method.
+//	req, resp := client.CreateResourceShareRequest(params)
 //
-//    // Example sending a request using the CreateResourceShareRequest method.
-//    req, resp := client.CreateResourceShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreateResourceShare
 func (c *RAM) CreateResourceShareRequest(input *CreateResourceShareInput) (req *request.Request, output *CreateResourceShareOutput) {
@@ -408,40 +407,41 @@ func (c *RAM) CreateResourceShareRequest(input *CreateResourceShareInput) (req *
 // API operation CreateResourceShare for usage and error information.
 //
 // Returned Error Types:
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
 //
-//   * InvalidStateTransitionException
-//   The requested state transition is not valid.
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - InvalidStateTransitionException
+//     The requested state transition is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ResourceShareLimitExceededException
-//   This request would exceed the limit for resource shares for your account.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * TagPolicyViolationException
-//   The specified tag key is a reserved word and can't be used.
+//   - ResourceShareLimitExceededException
+//     This request would exceed the limit for resource shares for your account.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - TagPolicyViolationException
+//     The specified tag key is a reserved word and can't be used.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreateResourceShare
 func (c *RAM) CreateResourceShare(input *CreateResourceShareInput) (*CreateResourceShareOutput, error) {
@@ -481,14 +481,13 @@ const opDeleteResourceShare = "DeleteResourceShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourceShareRequest method.
+//	req, resp := client.DeleteResourceShareRequest(params)
 //
-//    // Example sending a request using the DeleteResourceShareRequest method.
-//    req, resp := client.DeleteResourceShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeleteResourceShare
 func (c *RAM) DeleteResourceShareRequest(input *DeleteResourceShareInput) (req *request.Request, output *DeleteResourceShareOutput) {
@@ -521,34 +520,35 @@ func (c *RAM) DeleteResourceShareRequest(input *DeleteResourceShareInput) (req *
 // API operation DeleteResourceShare for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
 //
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * InvalidStateTransitionException
-//   The requested state transition is not valid.
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - InvalidStateTransitionException
+//     The requested state transition is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeleteResourceShare
 func (c *RAM) DeleteResourceShare(input *DeleteResourceShareInput) (*DeleteResourceShareOutput, error) {
@@ -588,14 +588,13 @@ const opDisassociateResourceShare = "DisassociateResourceShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateResourceShareRequest method.
+//	req, resp := client.DisassociateResourceShareRequest(params)
 //
-//    // Example sending a request using the DisassociateResourceShareRequest method.
-//    req, resp := client.DisassociateResourceShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DisassociateResourceShare
 func (c *RAM) DisassociateResourceShareRequest(input *DisassociateResourceShareInput) (req *request.Request, output *DisassociateResourceShareOutput) {
@@ -627,37 +626,38 @@ func (c *RAM) DisassociateResourceShareRequest(input *DisassociateResourceShareI
 // API operation DisassociateResourceShare for usage and error information.
 //
 // Returned Error Types:
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
 //
-//   * ResourceShareLimitExceededException
-//   This request would exceed the limit for resource shares for your account.
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - ResourceShareLimitExceededException
+//     This request would exceed the limit for resource shares for your account.
 //
-//   * InvalidStateTransitionException
-//   The requested state transition is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - InvalidStateTransitionException
+//     The requested state transition is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - ServiceUnavailableException
+//     The service is not available.
+//
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DisassociateResourceShare
 func (c *RAM) DisassociateResourceShare(input *DisassociateResourceShareInput) (*DisassociateResourceShareOutput, error) {
@@ -697,14 +697,13 @@ const opDisassociateResourceSharePermission = "DisassociateResourceSharePermissi
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateResourceSharePermissionRequest method.
+//	req, resp := client.DisassociateResourceSharePermissionRequest(params)
 //
-//    // Example sending a request using the DisassociateResourceSharePermissionRequest method.
-//    req, resp := client.DisassociateResourceSharePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DisassociateResourceSharePermission
 func (c *RAM) DisassociateResourceSharePermissionRequest(input *DisassociateResourceSharePermissionInput) (req *request.Request, output *DisassociateResourceSharePermissionOutput) {
@@ -738,29 +737,30 @@ func (c *RAM) DisassociateResourceSharePermissionRequest(input *DisassociateReso
 // API operation DisassociateResourceSharePermission for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ServiceUnavailableException
+//     The service is not available.
 //
-//   * InvalidStateTransitionException
-//   The requested state transition is not valid.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
+//
+//   - InvalidStateTransitionException
+//     The requested state transition is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DisassociateResourceSharePermission
 func (c *RAM) DisassociateResourceSharePermission(input *DisassociateResourceSharePermissionInput) (*DisassociateResourceSharePermissionOutput, error) {
@@ -800,14 +800,13 @@ const opEnableSharingWithAwsOrganization = "EnableSharingWithAwsOrganization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableSharingWithAwsOrganizationRequest method.
+//	req, resp := client.EnableSharingWithAwsOrganizationRequest(params)
 //
-//    // Example sending a request using the EnableSharingWithAwsOrganizationRequest method.
-//    req, resp := client.EnableSharingWithAwsOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/EnableSharingWithAwsOrganization
 func (c *RAM) EnableSharingWithAwsOrganizationRequest(input *EnableSharingWithAwsOrganizationInput) (req *request.Request, output *EnableSharingWithAwsOrganizationOutput) {
@@ -847,14 +846,15 @@ func (c *RAM) EnableSharingWithAwsOrganizationRequest(input *EnableSharingWithAw
 // API operation EnableSharingWithAwsOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/EnableSharingWithAwsOrganization
 func (c *RAM) EnableSharingWithAwsOrganization(input *EnableSharingWithAwsOrganizationInput) (*EnableSharingWithAwsOrganizationOutput, error) {
@@ -894,14 +894,13 @@ const opGetPermission = "GetPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPermissionRequest method.
+//	req, resp := client.GetPermissionRequest(params)
 //
-//    // Example sending a request using the GetPermissionRequest method.
-//    req, resp := client.GetPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetPermission
 func (c *RAM) GetPermissionRequest(input *GetPermissionInput) (req *request.Request, output *GetPermissionOutput) {
@@ -932,23 +931,24 @@ func (c *RAM) GetPermissionRequest(input *GetPermissionInput) (req *request.Requ
 // API operation GetPermission for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ServiceUnavailableException
+//     The service is not available.
+//
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetPermission
 func (c *RAM) GetPermission(input *GetPermissionInput) (*GetPermissionOutput, error) {
@@ -988,14 +988,13 @@ const opGetResourcePolicies = "GetResourcePolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePoliciesRequest method.
+//	req, resp := client.GetResourcePoliciesRequest(params)
 //
-//    // Example sending a request using the GetResourcePoliciesRequest method.
-//    req, resp := client.GetResourcePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourcePolicies
 func (c *RAM) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req *request.Request, output *GetResourcePoliciesOutput) {
@@ -1033,23 +1032,24 @@ func (c *RAM) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req *
 // API operation GetResourcePolicies for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ResourceArnNotFoundException
-//   The specified Amazon Resource Name (ARN) was not found.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - ResourceArnNotFoundException
+//     The specified Amazon Resource Name (ARN) was not found.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourcePolicies
 func (c *RAM) GetResourcePolicies(input *GetResourcePoliciesInput) (*GetResourcePoliciesOutput, error) {
@@ -1081,15 +1081,14 @@ func (c *RAM) GetResourcePoliciesWithContext(ctx aws.Context, input *GetResource
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourcePolicies operation.
-//    pageNum := 0
-//    err := client.GetResourcePoliciesPages(params,
-//        func(page *ram.GetResourcePoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourcePolicies operation.
+//	pageNum := 0
+//	err := client.GetResourcePoliciesPages(params,
+//	    func(page *ram.GetResourcePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) GetResourcePoliciesPages(input *GetResourcePoliciesInput, fn func(*GetResourcePoliciesOutput, bool) bool) error {
 	return c.GetResourcePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1141,14 +1140,13 @@ const opGetResourceShareAssociations = "GetResourceShareAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceShareAssociationsRequest method.
+//	req, resp := client.GetResourceShareAssociationsRequest(params)
 //
-//    // Example sending a request using the GetResourceShareAssociationsRequest method.
-//    req, resp := client.GetResourceShareAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShareAssociations
 func (c *RAM) GetResourceShareAssociationsRequest(input *GetResourceShareAssociationsInput) (req *request.Request, output *GetResourceShareAssociationsOutput) {
@@ -1186,26 +1184,27 @@ func (c *RAM) GetResourceShareAssociationsRequest(input *GetResourceShareAssocia
 // API operation GetResourceShareAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceException
-//   A specified resource was not found.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShareAssociations
 func (c *RAM) GetResourceShareAssociations(input *GetResourceShareAssociationsInput) (*GetResourceShareAssociationsOutput, error) {
@@ -1237,15 +1236,14 @@ func (c *RAM) GetResourceShareAssociationsWithContext(ctx aws.Context, input *Ge
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourceShareAssociations operation.
-//    pageNum := 0
-//    err := client.GetResourceShareAssociationsPages(params,
-//        func(page *ram.GetResourceShareAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourceShareAssociations operation.
+//	pageNum := 0
+//	err := client.GetResourceShareAssociationsPages(params,
+//	    func(page *ram.GetResourceShareAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) GetResourceShareAssociationsPages(input *GetResourceShareAssociationsInput, fn func(*GetResourceShareAssociationsOutput, bool) bool) error {
 	return c.GetResourceShareAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1297,14 +1295,13 @@ const opGetResourceShareInvitations = "GetResourceShareInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceShareInvitationsRequest method.
+//	req, resp := client.GetResourceShareInvitationsRequest(params)
 //
-//    // Example sending a request using the GetResourceShareInvitationsRequest method.
-//    req, resp := client.GetResourceShareInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShareInvitations
 func (c *RAM) GetResourceShareInvitationsRequest(input *GetResourceShareInvitationsInput) (req *request.Request, output *GetResourceShareInvitationsOutput) {
@@ -1341,29 +1338,30 @@ func (c *RAM) GetResourceShareInvitationsRequest(input *GetResourceShareInvitati
 // API operation GetResourceShareInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceShareInvitationArnNotFoundException
-//   The specified Amazon Resource Name (ARN) for an invitation was not found.
 //
-//   * InvalidMaxResultsException
-//   The specified value for MaxResults is not valid.
+//   - ResourceShareInvitationArnNotFoundException
+//     The specified Amazon Resource Name (ARN) for an invitation was not found.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - InvalidMaxResultsException
+//     The specified value for MaxResults is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShareInvitations
 func (c *RAM) GetResourceShareInvitations(input *GetResourceShareInvitationsInput) (*GetResourceShareInvitationsOutput, error) {
@@ -1395,15 +1393,14 @@ func (c *RAM) GetResourceShareInvitationsWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourceShareInvitations operation.
-//    pageNum := 0
-//    err := client.GetResourceShareInvitationsPages(params,
-//        func(page *ram.GetResourceShareInvitationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourceShareInvitations operation.
+//	pageNum := 0
+//	err := client.GetResourceShareInvitationsPages(params,
+//	    func(page *ram.GetResourceShareInvitationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) GetResourceShareInvitationsPages(input *GetResourceShareInvitationsInput, fn func(*GetResourceShareInvitationsOutput, bool) bool) error {
 	return c.GetResourceShareInvitationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1455,14 +1452,13 @@ const opGetResourceShares = "GetResourceShares"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceSharesRequest method.
+//	req, resp := client.GetResourceSharesRequest(params)
 //
-//    // Example sending a request using the GetResourceSharesRequest method.
-//    req, resp := client.GetResourceSharesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShares
 func (c *RAM) GetResourceSharesRequest(input *GetResourceSharesInput) (req *request.Request, output *GetResourceSharesOutput) {
@@ -1500,23 +1496,24 @@ func (c *RAM) GetResourceSharesRequest(input *GetResourceSharesInput) (req *requ
 // API operation GetResourceShares for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceException
-//   A specified resource was not found.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShares
 func (c *RAM) GetResourceShares(input *GetResourceSharesInput) (*GetResourceSharesOutput, error) {
@@ -1548,15 +1545,14 @@ func (c *RAM) GetResourceSharesWithContext(ctx aws.Context, input *GetResourceSh
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourceShares operation.
-//    pageNum := 0
-//    err := client.GetResourceSharesPages(params,
-//        func(page *ram.GetResourceSharesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourceShares operation.
+//	pageNum := 0
+//	err := client.GetResourceSharesPages(params,
+//	    func(page *ram.GetResourceSharesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) GetResourceSharesPages(input *GetResourceSharesInput, fn func(*GetResourceSharesOutput, bool) bool) error {
 	return c.GetResourceSharesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1608,14 +1604,13 @@ const opListPendingInvitationResources = "ListPendingInvitationResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPendingInvitationResourcesRequest method.
+//	req, resp := client.ListPendingInvitationResourcesRequest(params)
 //
-//    // Example sending a request using the ListPendingInvitationResourcesRequest method.
-//    req, resp := client.ListPendingInvitationResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPendingInvitationResources
 func (c *RAM) ListPendingInvitationResourcesRequest(input *ListPendingInvitationResourcesInput) (req *request.Request, output *ListPendingInvitationResourcesOutput) {
@@ -1654,32 +1649,33 @@ func (c *RAM) ListPendingInvitationResourcesRequest(input *ListPendingInvitation
 // API operation ListPendingInvitationResources for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * ResourceShareInvitationArnNotFoundException
-//   The specified Amazon Resource Name (ARN) for an invitation was not found.
+//   - ServiceUnavailableException
+//     The service is not available.
 //
-//   * MissingRequiredParameterException
-//   A required input parameter is missing.
+//   - ResourceShareInvitationArnNotFoundException
+//     The specified Amazon Resource Name (ARN) for an invitation was not found.
 //
-//   * ResourceShareInvitationAlreadyRejectedException
-//   The specified invitation was already rejected.
+//   - MissingRequiredParameterException
+//     A required input parameter is missing.
 //
-//   * ResourceShareInvitationExpiredException
-//   The specified invitation is expired.
+//   - ResourceShareInvitationAlreadyRejectedException
+//     The specified invitation was already rejected.
+//
+//   - ResourceShareInvitationExpiredException
+//     The specified invitation is expired.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPendingInvitationResources
 func (c *RAM) ListPendingInvitationResources(input *ListPendingInvitationResourcesInput) (*ListPendingInvitationResourcesOutput, error) {
@@ -1711,15 +1707,14 @@ func (c *RAM) ListPendingInvitationResourcesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPendingInvitationResources operation.
-//    pageNum := 0
-//    err := client.ListPendingInvitationResourcesPages(params,
-//        func(page *ram.ListPendingInvitationResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPendingInvitationResources operation.
+//	pageNum := 0
+//	err := client.ListPendingInvitationResourcesPages(params,
+//	    func(page *ram.ListPendingInvitationResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListPendingInvitationResourcesPages(input *ListPendingInvitationResourcesInput, fn func(*ListPendingInvitationResourcesOutput, bool) bool) error {
 	return c.ListPendingInvitationResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1771,14 +1766,13 @@ const opListPermissionVersions = "ListPermissionVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionVersionsRequest method.
+//	req, resp := client.ListPermissionVersionsRequest(params)
 //
-//    // Example sending a request using the ListPermissionVersionsRequest method.
-//    req, resp := client.ListPermissionVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissionVersions
 func (c *RAM) ListPermissionVersionsRequest(input *ListPermissionVersionsInput) (req *request.Request, output *ListPermissionVersionsOutput) {
@@ -1815,26 +1809,27 @@ func (c *RAM) ListPermissionVersionsRequest(input *ListPermissionVersionsInput) 
 // API operation ListPermissionVersions for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ServiceUnavailableException
+//     The service is not available.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
+//
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissionVersions
 func (c *RAM) ListPermissionVersions(input *ListPermissionVersionsInput) (*ListPermissionVersionsOutput, error) {
@@ -1866,15 +1861,14 @@ func (c *RAM) ListPermissionVersionsWithContext(ctx aws.Context, input *ListPerm
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissionVersions operation.
-//    pageNum := 0
-//    err := client.ListPermissionVersionsPages(params,
-//        func(page *ram.ListPermissionVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissionVersions operation.
+//	pageNum := 0
+//	err := client.ListPermissionVersionsPages(params,
+//	    func(page *ram.ListPermissionVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListPermissionVersionsPages(input *ListPermissionVersionsInput, fn func(*ListPermissionVersionsOutput, bool) bool) error {
 	return c.ListPermissionVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1926,14 +1920,13 @@ const opListPermissions = "ListPermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionsRequest method.
+//	req, resp := client.ListPermissionsRequest(params)
 //
-//    // Example sending a request using the ListPermissionsRequest method.
-//    req, resp := client.ListPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissions
 func (c *RAM) ListPermissionsRequest(input *ListPermissionsInput) (req *request.Request, output *ListPermissionsOutput) {
@@ -1971,20 +1964,21 @@ func (c *RAM) ListPermissionsRequest(input *ListPermissionsInput) (req *request.
 // API operation ListPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ServiceUnavailableException
+//     The service is not available.
+//
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissions
 func (c *RAM) ListPermissions(input *ListPermissionsInput) (*ListPermissionsOutput, error) {
@@ -2016,15 +2010,14 @@ func (c *RAM) ListPermissionsWithContext(ctx aws.Context, input *ListPermissions
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissions operation.
-//    pageNum := 0
-//    err := client.ListPermissionsPages(params,
-//        func(page *ram.ListPermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissions operation.
+//	pageNum := 0
+//	err := client.ListPermissionsPages(params,
+//	    func(page *ram.ListPermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListPermissionsPages(input *ListPermissionsInput, fn func(*ListPermissionsOutput, bool) bool) error {
 	return c.ListPermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2076,14 +2069,13 @@ const opListPrincipals = "ListPrincipals"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPrincipalsRequest method.
+//	req, resp := client.ListPrincipalsRequest(params)
 //
-//    // Example sending a request using the ListPrincipalsRequest method.
-//    req, resp := client.ListPrincipalsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPrincipals
 func (c *RAM) ListPrincipalsRequest(input *ListPrincipalsInput) (req *request.Request, output *ListPrincipalsOutput) {
@@ -2121,23 +2113,24 @@ func (c *RAM) ListPrincipalsRequest(input *ListPrincipalsInput) (req *request.Re
 // API operation ListPrincipals for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPrincipals
 func (c *RAM) ListPrincipals(input *ListPrincipalsInput) (*ListPrincipalsOutput, error) {
@@ -2169,15 +2162,14 @@ func (c *RAM) ListPrincipalsWithContext(ctx aws.Context, input *ListPrincipalsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPrincipals operation.
-//    pageNum := 0
-//    err := client.ListPrincipalsPages(params,
-//        func(page *ram.ListPrincipalsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPrincipals operation.
+//	pageNum := 0
+//	err := client.ListPrincipalsPages(params,
+//	    func(page *ram.ListPrincipalsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListPrincipalsPages(input *ListPrincipalsInput, fn func(*ListPrincipalsOutput, bool) bool) error {
 	return c.ListPrincipalsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2229,14 +2221,13 @@ const opListResourceSharePermissions = "ListResourceSharePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourceSharePermissionsRequest method.
+//	req, resp := client.ListResourceSharePermissionsRequest(params)
 //
-//    // Example sending a request using the ListResourceSharePermissionsRequest method.
-//    req, resp := client.ListResourceSharePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResourceSharePermissions
 func (c *RAM) ListResourceSharePermissionsRequest(input *ListResourceSharePermissionsInput) (req *request.Request, output *ListResourceSharePermissionsOutput) {
@@ -2273,26 +2264,27 @@ func (c *RAM) ListResourceSharePermissionsRequest(input *ListResourceSharePermis
 // API operation ListResourceSharePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ServiceUnavailableException
+//     The service is not available.
+//
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResourceSharePermissions
 func (c *RAM) ListResourceSharePermissions(input *ListResourceSharePermissionsInput) (*ListResourceSharePermissionsOutput, error) {
@@ -2324,15 +2316,14 @@ func (c *RAM) ListResourceSharePermissionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResourceSharePermissions operation.
-//    pageNum := 0
-//    err := client.ListResourceSharePermissionsPages(params,
-//        func(page *ram.ListResourceSharePermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResourceSharePermissions operation.
+//	pageNum := 0
+//	err := client.ListResourceSharePermissionsPages(params,
+//	    func(page *ram.ListResourceSharePermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListResourceSharePermissionsPages(input *ListResourceSharePermissionsInput, fn func(*ListResourceSharePermissionsOutput, bool) bool) error {
 	return c.ListResourceSharePermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2384,14 +2375,13 @@ const opListResourceTypes = "ListResourceTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourceTypesRequest method.
+//	req, resp := client.ListResourceTypesRequest(params)
 //
-//    // Example sending a request using the ListResourceTypesRequest method.
-//    req, resp := client.ListResourceTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResourceTypes
 func (c *RAM) ListResourceTypesRequest(input *ListResourceTypesInput) (req *request.Request, output *ListResourceTypesOutput) {
@@ -2428,17 +2418,18 @@ func (c *RAM) ListResourceTypesRequest(input *ListResourceTypesInput) (req *requ
 // API operation ListResourceTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResourceTypes
 func (c *RAM) ListResourceTypes(input *ListResourceTypesInput) (*ListResourceTypesOutput, error) {
@@ -2470,15 +2461,14 @@ func (c *RAM) ListResourceTypesWithContext(ctx aws.Context, input *ListResourceT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResourceTypes operation.
-//    pageNum := 0
-//    err := client.ListResourceTypesPages(params,
-//        func(page *ram.ListResourceTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResourceTypes operation.
+//	pageNum := 0
+//	err := client.ListResourceTypesPages(params,
+//	    func(page *ram.ListResourceTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListResourceTypesPages(input *ListResourceTypesInput, fn func(*ListResourceTypesOutput, bool) bool) error {
 	return c.ListResourceTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2530,14 +2520,13 @@ const opListResources = "ListResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourcesRequest method.
+//	req, resp := client.ListResourcesRequest(params)
 //
-//    // Example sending a request using the ListResourcesRequest method.
-//    req, resp := client.ListResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResources
 func (c *RAM) ListResourcesRequest(input *ListResourcesInput) (req *request.Request, output *ListResourcesOutput) {
@@ -2575,26 +2564,27 @@ func (c *RAM) ListResourcesRequest(input *ListResourcesInput) (req *request.Requ
 // API operation ListResources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidResourceTypeException
-//   The specified resource type is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - InvalidResourceTypeException
+//     The specified resource type is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidNextTokenException
-//   The specified value for NextToken is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidNextTokenException
+//     The specified value for NextToken is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResources
 func (c *RAM) ListResources(input *ListResourcesInput) (*ListResourcesOutput, error) {
@@ -2626,15 +2616,14 @@ func (c *RAM) ListResourcesWithContext(ctx aws.Context, input *ListResourcesInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResources operation.
-//    pageNum := 0
-//    err := client.ListResourcesPages(params,
-//        func(page *ram.ListResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResources operation.
+//	pageNum := 0
+//	err := client.ListResourcesPages(params,
+//	    func(page *ram.ListResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RAM) ListResourcesPages(input *ListResourcesInput, fn func(*ListResourcesOutput, bool) bool) error {
 	return c.ListResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2686,14 +2675,13 @@ const opPromoteResourceShareCreatedFromPolicy = "PromoteResourceShareCreatedFrom
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PromoteResourceShareCreatedFromPolicyRequest method.
+//	req, resp := client.PromoteResourceShareCreatedFromPolicyRequest(params)
 //
-//    // Example sending a request using the PromoteResourceShareCreatedFromPolicyRequest method.
-//    req, resp := client.PromoteResourceShareCreatedFromPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/PromoteResourceShareCreatedFromPolicy
 func (c *RAM) PromoteResourceShareCreatedFromPolicyRequest(input *PromoteResourceShareCreatedFromPolicyInput) (req *request.Request, output *PromoteResourceShareCreatedFromPolicyOutput) {
@@ -2732,29 +2720,30 @@ func (c *RAM) PromoteResourceShareCreatedFromPolicyRequest(input *PromoteResourc
 // API operation PromoteResourceShareCreatedFromPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * ResourceShareLimitExceededException
-//   This request would exceed the limit for resource shares for your account.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - ResourceShareLimitExceededException
+//     This request would exceed the limit for resource shares for your account.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * MissingRequiredParameterException
-//   A required input parameter is missing.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - MissingRequiredParameterException
+//     A required input parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - ServiceUnavailableException
+//     The service is not available.
+//
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/PromoteResourceShareCreatedFromPolicy
 func (c *RAM) PromoteResourceShareCreatedFromPolicy(input *PromoteResourceShareCreatedFromPolicyInput) (*PromoteResourceShareCreatedFromPolicyOutput, error) {
@@ -2794,14 +2783,13 @@ const opRejectResourceShareInvitation = "RejectResourceShareInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectResourceShareInvitationRequest method.
+//	req, resp := client.RejectResourceShareInvitationRequest(params)
 //
-//    // Example sending a request using the RejectResourceShareInvitationRequest method.
-//    req, resp := client.RejectResourceShareInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/RejectResourceShareInvitation
 func (c *RAM) RejectResourceShareInvitationRequest(input *RejectResourceShareInvitationInput) (req *request.Request, output *RejectResourceShareInvitationOutput) {
@@ -2833,37 +2821,38 @@ func (c *RAM) RejectResourceShareInvitationRequest(input *RejectResourceShareInv
 // API operation RejectResourceShareInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * ResourceShareInvitationArnNotFoundException
-//   The specified Amazon Resource Name (ARN) for an invitation was not found.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ResourceShareInvitationAlreadyAcceptedException
-//   The specified invitation was already accepted.
+//   - ResourceShareInvitationArnNotFoundException
+//     The specified Amazon Resource Name (ARN) for an invitation was not found.
 //
-//   * ResourceShareInvitationAlreadyRejectedException
-//   The specified invitation was already rejected.
+//   - ResourceShareInvitationAlreadyAcceptedException
+//     The specified invitation was already accepted.
 //
-//   * ResourceShareInvitationExpiredException
-//   The specified invitation is expired.
+//   - ResourceShareInvitationAlreadyRejectedException
+//     The specified invitation was already rejected.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - ResourceShareInvitationExpiredException
+//     The specified invitation is expired.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - ServiceUnavailableException
+//     The service is not available.
 //
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
+//   - InvalidClientTokenException
+//     The client token is not valid.
+//
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/RejectResourceShareInvitation
 func (c *RAM) RejectResourceShareInvitation(input *RejectResourceShareInvitationInput) (*RejectResourceShareInvitationOutput, error) {
@@ -2903,14 +2892,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/TagResource
 func (c *RAM) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2944,29 +2932,30 @@ func (c *RAM) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter is not valid.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * TagLimitExceededException
-//   This request would exceed the limit for tags for your account.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * ResourceArnNotFoundException
-//   The specified Amazon Resource Name (ARN) was not found.
+//   - TagLimitExceededException
+//     This request would exceed the limit for tags for your account.
 //
-//   * TagPolicyViolationException
-//   The specified tag key is a reserved word and can't be used.
+//   - ResourceArnNotFoundException
+//     The specified Amazon Resource Name (ARN) was not found.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - TagPolicyViolationException
+//     The specified tag key is a reserved word and can't be used.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/TagResource
 func (c *RAM) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3006,14 +2995,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/UntagResource
 func (c *RAM) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3046,14 +3034,15 @@ func (c *RAM) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/UntagResource
 func (c *RAM) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3093,14 +3082,13 @@ const opUpdateResourceShare = "UpdateResourceShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResourceShareRequest method.
+//	req, resp := client.UpdateResourceShareRequest(params)
 //
-//    // Example sending a request using the UpdateResourceShareRequest method.
-//    req, resp := client.UpdateResourceShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/UpdateResourceShare
 func (c *RAM) UpdateResourceShareRequest(input *UpdateResourceShareInput) (req *request.Request, output *UpdateResourceShareOutput) {
@@ -3131,34 +3119,35 @@ func (c *RAM) UpdateResourceShareRequest(input *UpdateResourceShareInput) (req *
 // API operation UpdateResourceShare for usage and error information.
 //
 // Returned Error Types:
-//   * IdempotentParameterMismatchException
-//   The client token input parameter was matched one used with a previous call
-//   to the operation, but at least one of the other input parameters is different
-//   from the previous call.
 //
-//   * MissingRequiredParameterException
-//   A required input parameter is missing.
+//   - IdempotentParameterMismatchException
+//     The client token input parameter was matched one used with a previous call
+//     to the operation, but at least one of the other input parameters is different
+//     from the previous call.
 //
-//   * UnknownResourceException
-//   A specified resource was not found.
+//   - MissingRequiredParameterException
+//     A required input parameter is missing.
 //
-//   * MalformedArnException
-//   The format of an Amazon Resource Name (ARN) is not valid.
+//   - UnknownResourceException
+//     A specified resource was not found.
 //
-//   * InvalidClientTokenException
-//   The client token is not valid.
+//   - MalformedArnException
+//     The format of an Amazon Resource Name (ARN) is not valid.
 //
-//   * InvalidParameterException
-//   A parameter is not valid.
+//   - InvalidClientTokenException
+//     The client token is not valid.
 //
-//   * OperationNotPermittedException
-//   The requested operation is not permitted.
+//   - InvalidParameterException
+//     A parameter is not valid.
 //
-//   * ServerInternalException
-//   The service could not respond to the request due to an internal problem.
+//   - OperationNotPermittedException
+//     The requested operation is not permitted.
 //
-//   * ServiceUnavailableException
-//   The service is not available.
+//   - ServerInternalException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ServiceUnavailableException
+//     The service is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/UpdateResourceShare
 func (c *RAM) UpdateResourceShare(input *UpdateResourceShareInput) (*UpdateResourceShareOutput, error) {

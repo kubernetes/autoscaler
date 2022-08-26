@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a WorkDocs client from just a session.
-//     svc := workdocs.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a WorkDocs client with additional configuration
-//     svc := workdocs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a WorkDocs client from just a session.
+//	svc := workdocs.New(mySession)
+//
+//	// Create a WorkDocs client with additional configuration
+//	svc := workdocs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *WorkDocs {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

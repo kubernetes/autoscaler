@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon CloudDirectory.
-//    func myFunc(svc clouddirectoryiface.CloudDirectoryAPI) bool {
-//        // Make svc.AddFacetToObject request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon CloudDirectory.
+//	func myFunc(svc clouddirectoryiface.CloudDirectoryAPI) bool {
+//	    // Make svc.AddFacetToObject request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := clouddirectory.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := clouddirectory.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockCloudDirectoryClient struct {
-//        clouddirectoryiface.CloudDirectoryAPI
-//    }
-//    func (m *mockCloudDirectoryClient) AddFacetToObject(input *clouddirectory.AddFacetToObjectInput) (*clouddirectory.AddFacetToObjectOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockCloudDirectoryClient struct {
+//	    clouddirectoryiface.CloudDirectoryAPI
+//	}
+//	func (m *mockCloudDirectoryClient) AddFacetToObject(input *clouddirectory.AddFacetToObjectInput) (*clouddirectory.AddFacetToObjectOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockCloudDirectoryClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockCloudDirectoryClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

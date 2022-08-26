@@ -29,14 +29,13 @@ const opCreateDeliveryStream = "CreateDeliveryStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeliveryStreamRequest method.
+//	req, resp := client.CreateDeliveryStreamRequest(params)
 //
-//    // Example sending a request using the CreateDeliveryStreamRequest method.
-//    req, resp := client.CreateDeliveryStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/CreateDeliveryStream
 func (c *Firehose) CreateDeliveryStreamRequest(input *CreateDeliveryStreamInput) (req *request.Request, output *CreateDeliveryStreamOutput) {
@@ -102,18 +101,18 @@ func (c *Firehose) CreateDeliveryStreamRequest(input *CreateDeliveryStreamInput)
 //
 // A few notes about Amazon Redshift as a destination:
 //
-//    * An Amazon Redshift destination requires an S3 bucket as intermediate
-//    location. Kinesis Data Firehose first delivers data to Amazon S3 and then
-//    uses COPY syntax to load data into an Amazon Redshift table. This is specified
-//    in the RedshiftDestinationConfiguration.S3Configuration parameter.
+//   - An Amazon Redshift destination requires an S3 bucket as intermediate
+//     location. Kinesis Data Firehose first delivers data to Amazon S3 and then
+//     uses COPY syntax to load data into an Amazon Redshift table. This is specified
+//     in the RedshiftDestinationConfiguration.S3Configuration parameter.
 //
-//    * The compression formats SNAPPY or ZIP cannot be specified in RedshiftDestinationConfiguration.S3Configuration
-//    because the Amazon Redshift COPY operation that reads from the S3 bucket
-//    doesn't support these compression formats.
+//   - The compression formats SNAPPY or ZIP cannot be specified in RedshiftDestinationConfiguration.S3Configuration
+//     because the Amazon Redshift COPY operation that reads from the S3 bucket
+//     doesn't support these compression formats.
 //
-//    * We strongly recommend that you use the user name and password you provide
-//    exclusively with Kinesis Data Firehose, and that the permissions for the
-//    account are restricted for Amazon Redshift INSERT permissions.
+//   - We strongly recommend that you use the user name and password you provide
+//     exclusively with Kinesis Data Firehose, and that the permissions for the
+//     account are restricted for Amazon Redshift INSERT permissions.
 //
 // Kinesis Data Firehose assumes the IAM role that is configured as part of
 // the destination. The role should allow the Kinesis Data Firehose principal
@@ -130,20 +129,21 @@ func (c *Firehose) CreateDeliveryStreamRequest(input *CreateDeliveryStreamInput)
 // API operation CreateDeliveryStream for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
 //
-//   * LimitExceededException
-//   You have already reached the limit for a requested resource.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
 //
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
+//   - LimitExceededException
+//     You have already reached the limit for a requested resource.
 //
-//   * InvalidKMSResourceException
-//   Kinesis Data Firehose throws this exception when an attempt to put records
-//   or to start or stop delivery stream encryption fails. This happens when the
-//   KMS service throws one of the following exception types: AccessDeniedException,
-//   InvalidStateException, DisabledException, or NotFoundException.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
+//
+//   - InvalidKMSResourceException
+//     Kinesis Data Firehose throws this exception when an attempt to put records
+//     or to start or stop delivery stream encryption fails. This happens when the
+//     KMS service throws one of the following exception types: AccessDeniedException,
+//     InvalidStateException, DisabledException, or NotFoundException.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/CreateDeliveryStream
 func (c *Firehose) CreateDeliveryStream(input *CreateDeliveryStreamInput) (*CreateDeliveryStreamOutput, error) {
@@ -183,14 +183,13 @@ const opDeleteDeliveryStream = "DeleteDeliveryStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeliveryStreamRequest method.
+//	req, resp := client.DeleteDeliveryStreamRequest(params)
 //
-//    // Example sending a request using the DeleteDeliveryStreamRequest method.
-//    req, resp := client.DeleteDeliveryStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/DeleteDeliveryStream
 func (c *Firehose) DeleteDeliveryStreamRequest(input *DeleteDeliveryStreamInput) (req *request.Request, output *DeleteDeliveryStreamOutput) {
@@ -233,11 +232,12 @@ func (c *Firehose) DeleteDeliveryStreamRequest(input *DeleteDeliveryStreamInput)
 // API operation DeleteDeliveryStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/DeleteDeliveryStream
 func (c *Firehose) DeleteDeliveryStream(input *DeleteDeliveryStreamInput) (*DeleteDeliveryStreamOutput, error) {
@@ -277,14 +277,13 @@ const opDescribeDeliveryStream = "DescribeDeliveryStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeliveryStreamRequest method.
+//	req, resp := client.DescribeDeliveryStreamRequest(params)
 //
-//    // Example sending a request using the DescribeDeliveryStreamRequest method.
-//    req, resp := client.DescribeDeliveryStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/DescribeDeliveryStream
 func (c *Firehose) DescribeDeliveryStreamRequest(input *DescribeDeliveryStreamInput) (req *request.Request, output *DescribeDeliveryStreamOutput) {
@@ -324,8 +323,8 @@ func (c *Firehose) DescribeDeliveryStreamRequest(input *DescribeDeliveryStreamIn
 // API operation DescribeDeliveryStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/DescribeDeliveryStream
 func (c *Firehose) DescribeDeliveryStream(input *DescribeDeliveryStreamInput) (*DescribeDeliveryStreamOutput, error) {
@@ -365,14 +364,13 @@ const opListDeliveryStreams = "ListDeliveryStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeliveryStreamsRequest method.
+//	req, resp := client.ListDeliveryStreamsRequest(params)
 //
-//    // Example sending a request using the ListDeliveryStreamsRequest method.
-//    req, resp := client.ListDeliveryStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/ListDeliveryStreams
 func (c *Firehose) ListDeliveryStreamsRequest(input *ListDeliveryStreamsInput) (req *request.Request, output *ListDeliveryStreamsOutput) {
@@ -447,14 +445,13 @@ const opListTagsForDeliveryStream = "ListTagsForDeliveryStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForDeliveryStreamRequest method.
+//	req, resp := client.ListTagsForDeliveryStreamRequest(params)
 //
-//    // Example sending a request using the ListTagsForDeliveryStreamRequest method.
-//    req, resp := client.ListTagsForDeliveryStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/ListTagsForDeliveryStream
 func (c *Firehose) ListTagsForDeliveryStreamRequest(input *ListTagsForDeliveryStreamInput) (req *request.Request, output *ListTagsForDeliveryStreamOutput) {
@@ -486,14 +483,15 @@ func (c *Firehose) ListTagsForDeliveryStreamRequest(input *ListTagsForDeliverySt
 // API operation ListTagsForDeliveryStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * LimitExceededException
-//   You have already reached the limit for a requested resource.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
+//
+//   - LimitExceededException
+//     You have already reached the limit for a requested resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/ListTagsForDeliveryStream
 func (c *Firehose) ListTagsForDeliveryStream(input *ListTagsForDeliveryStreamInput) (*ListTagsForDeliveryStreamOutput, error) {
@@ -533,14 +531,13 @@ const opPutRecord = "PutRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecordRequest method.
+//	req, resp := client.PutRecordRequest(params)
 //
-//    // Example sending a request using the PutRecordRequest method.
-//    req, resp := client.PutRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/PutRecord
 func (c *Firehose) PutRecordRequest(input *PutRecordInput) (req *request.Request, output *PutRecordOutput) {
@@ -607,23 +604,24 @@ func (c *Firehose) PutRecordRequest(input *PutRecordInput) (req *request.Request
 // API operation PutRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InvalidKMSResourceException
-//   Kinesis Data Firehose throws this exception when an attempt to put records
-//   or to start or stop delivery stream encryption fails. This happens when the
-//   KMS service throws one of the following exception types: AccessDeniedException,
-//   InvalidStateException, DisabledException, or NotFoundException.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation. If you continue
-//   to see the exception, throughput limits for the delivery stream may have
-//   been exceeded. For more information about limits and how to request an increase,
-//   see Amazon Kinesis Data Firehose Limits (https://docs.aws.amazon.com/firehose/latest/dev/limits.html).
+//   - InvalidKMSResourceException
+//     Kinesis Data Firehose throws this exception when an attempt to put records
+//     or to start or stop delivery stream encryption fails. This happens when the
+//     KMS service throws one of the following exception types: AccessDeniedException,
+//     InvalidStateException, DisabledException, or NotFoundException.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation. If you continue
+//     to see the exception, throughput limits for the delivery stream may have
+//     been exceeded. For more information about limits and how to request an increase,
+//     see Amazon Kinesis Data Firehose Limits (https://docs.aws.amazon.com/firehose/latest/dev/limits.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/PutRecord
 func (c *Firehose) PutRecord(input *PutRecordInput) (*PutRecordOutput, error) {
@@ -663,14 +661,13 @@ const opPutRecordBatch = "PutRecordBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecordBatchRequest method.
+//	req, resp := client.PutRecordBatchRequest(params)
 //
-//    // Example sending a request using the PutRecordBatchRequest method.
-//    req, resp := client.PutRecordBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/PutRecordBatch
 func (c *Firehose) PutRecordBatchRequest(input *PutRecordBatchInput) (req *request.Request, output *PutRecordBatchOutput) {
@@ -760,23 +757,24 @@ func (c *Firehose) PutRecordBatchRequest(input *PutRecordBatchInput) (req *reque
 // API operation PutRecordBatch for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InvalidKMSResourceException
-//   Kinesis Data Firehose throws this exception when an attempt to put records
-//   or to start or stop delivery stream encryption fails. This happens when the
-//   KMS service throws one of the following exception types: AccessDeniedException,
-//   InvalidStateException, DisabledException, or NotFoundException.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation. If you continue
-//   to see the exception, throughput limits for the delivery stream may have
-//   been exceeded. For more information about limits and how to request an increase,
-//   see Amazon Kinesis Data Firehose Limits (https://docs.aws.amazon.com/firehose/latest/dev/limits.html).
+//   - InvalidKMSResourceException
+//     Kinesis Data Firehose throws this exception when an attempt to put records
+//     or to start or stop delivery stream encryption fails. This happens when the
+//     KMS service throws one of the following exception types: AccessDeniedException,
+//     InvalidStateException, DisabledException, or NotFoundException.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation. If you continue
+//     to see the exception, throughput limits for the delivery stream may have
+//     been exceeded. For more information about limits and how to request an increase,
+//     see Amazon Kinesis Data Firehose Limits (https://docs.aws.amazon.com/firehose/latest/dev/limits.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/PutRecordBatch
 func (c *Firehose) PutRecordBatch(input *PutRecordBatchInput) (*PutRecordBatchOutput, error) {
@@ -816,14 +814,13 @@ const opStartDeliveryStreamEncryption = "StartDeliveryStreamEncryption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDeliveryStreamEncryptionRequest method.
+//	req, resp := client.StartDeliveryStreamEncryptionRequest(params)
 //
-//    // Example sending a request using the StartDeliveryStreamEncryptionRequest method.
-//    req, resp := client.StartDeliveryStreamEncryptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/StartDeliveryStreamEncryption
 func (c *Firehose) StartDeliveryStreamEncryptionRequest(input *StartDeliveryStreamEncryptionInput) (req *request.Request, output *StartDeliveryStreamEncryptionOutput) {
@@ -896,23 +893,24 @@ func (c *Firehose) StartDeliveryStreamEncryptionRequest(input *StartDeliveryStre
 // API operation StartDeliveryStreamEncryption for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
 //
-//   * LimitExceededException
-//   You have already reached the limit for a requested resource.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
 //
-//   * InvalidKMSResourceException
-//   Kinesis Data Firehose throws this exception when an attempt to put records
-//   or to start or stop delivery stream encryption fails. This happens when the
-//   KMS service throws one of the following exception types: AccessDeniedException,
-//   InvalidStateException, DisabledException, or NotFoundException.
+//   - LimitExceededException
+//     You have already reached the limit for a requested resource.
+//
+//   - InvalidKMSResourceException
+//     Kinesis Data Firehose throws this exception when an attempt to put records
+//     or to start or stop delivery stream encryption fails. This happens when the
+//     KMS service throws one of the following exception types: AccessDeniedException,
+//     InvalidStateException, DisabledException, or NotFoundException.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/StartDeliveryStreamEncryption
 func (c *Firehose) StartDeliveryStreamEncryption(input *StartDeliveryStreamEncryptionInput) (*StartDeliveryStreamEncryptionOutput, error) {
@@ -952,14 +950,13 @@ const opStopDeliveryStreamEncryption = "StopDeliveryStreamEncryption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopDeliveryStreamEncryptionRequest method.
+//	req, resp := client.StopDeliveryStreamEncryptionRequest(params)
 //
-//    // Example sending a request using the StopDeliveryStreamEncryptionRequest method.
-//    req, resp := client.StopDeliveryStreamEncryptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/StopDeliveryStreamEncryption
 func (c *Firehose) StopDeliveryStreamEncryptionRequest(input *StopDeliveryStreamEncryptionInput) (req *request.Request, output *StopDeliveryStreamEncryptionOutput) {
@@ -1013,17 +1010,18 @@ func (c *Firehose) StopDeliveryStreamEncryptionRequest(input *StopDeliveryStream
 // API operation StopDeliveryStreamEncryption for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
 //
-//   * LimitExceededException
-//   You have already reached the limit for a requested resource.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
+//
+//   - LimitExceededException
+//     You have already reached the limit for a requested resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/StopDeliveryStreamEncryption
 func (c *Firehose) StopDeliveryStreamEncryption(input *StopDeliveryStreamEncryptionInput) (*StopDeliveryStreamEncryptionOutput, error) {
@@ -1063,14 +1061,13 @@ const opTagDeliveryStream = "TagDeliveryStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagDeliveryStreamRequest method.
+//	req, resp := client.TagDeliveryStreamRequest(params)
 //
-//    // Example sending a request using the TagDeliveryStreamRequest method.
-//    req, resp := client.TagDeliveryStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/TagDeliveryStream
 func (c *Firehose) TagDeliveryStreamRequest(input *TagDeliveryStreamInput) (req *request.Request, output *TagDeliveryStreamOutput) {
@@ -1113,17 +1110,18 @@ func (c *Firehose) TagDeliveryStreamRequest(input *TagDeliveryStreamInput) (req 
 // API operation TagDeliveryStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
 //
-//   * LimitExceededException
-//   You have already reached the limit for a requested resource.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
+//
+//   - LimitExceededException
+//     You have already reached the limit for a requested resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/TagDeliveryStream
 func (c *Firehose) TagDeliveryStream(input *TagDeliveryStreamInput) (*TagDeliveryStreamOutput, error) {
@@ -1163,14 +1161,13 @@ const opUntagDeliveryStream = "UntagDeliveryStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagDeliveryStreamRequest method.
+//	req, resp := client.UntagDeliveryStreamRequest(params)
 //
-//    // Example sending a request using the UntagDeliveryStreamRequest method.
-//    req, resp := client.UntagDeliveryStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/UntagDeliveryStream
 func (c *Firehose) UntagDeliveryStreamRequest(input *UntagDeliveryStreamInput) (req *request.Request, output *UntagDeliveryStreamOutput) {
@@ -1207,17 +1204,18 @@ func (c *Firehose) UntagDeliveryStreamRequest(input *UntagDeliveryStreamInput) (
 // API operation UntagDeliveryStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
 //
-//   * LimitExceededException
-//   You have already reached the limit for a requested resource.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
+//
+//   - LimitExceededException
+//     You have already reached the limit for a requested resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/UntagDeliveryStream
 func (c *Firehose) UntagDeliveryStream(input *UntagDeliveryStreamInput) (*UntagDeliveryStreamOutput, error) {
@@ -1257,14 +1255,13 @@ const opUpdateDestination = "UpdateDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDestinationRequest method.
+//	req, resp := client.UpdateDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateDestinationRequest method.
-//    req, resp := client.UpdateDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/UpdateDestination
 func (c *Firehose) UpdateDestinationRequest(input *UpdateDestinationInput) (req *request.Request, output *UpdateDestinationOutput) {
@@ -1325,18 +1322,19 @@ func (c *Firehose) UpdateDestinationRequest(input *UpdateDestinationInput) (req 
 // API operation UpdateDestination for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The specified input parameter has a value that is not valid.
 //
-//   * ResourceInUseException
-//   The resource is already in use and not available for this operation.
+//   - InvalidArgumentException
+//     The specified input parameter has a value that is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - ResourceInUseException
+//     The resource is already in use and not available for this operation.
 //
-//   * ConcurrentModificationException
-//   Another modification has already happened. Fetch VersionId again and use
-//   it to update the destination.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
+//
+//   - ConcurrentModificationException
+//     Another modification has already happened. Fetch VersionId again and use
+//     it to update the destination.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/firehose-2015-08-04/UpdateDestination
 func (c *Firehose) UpdateDestination(input *UpdateDestinationInput) (*UpdateDestinationOutput, error) {

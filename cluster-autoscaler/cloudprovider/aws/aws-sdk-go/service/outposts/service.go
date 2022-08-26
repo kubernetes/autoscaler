@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Outposts client from just a session.
-//     svc := outposts.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Outposts client with additional configuration
-//     svc := outposts.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Outposts client from just a session.
+//	svc := outposts.New(mySession)
+//
+//	// Create a Outposts client with additional configuration
+//	svc := outposts.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Outposts {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

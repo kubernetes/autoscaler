@@ -29,14 +29,13 @@ const opAddNotificationChannels = "AddNotificationChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddNotificationChannelsRequest method.
+//	req, resp := client.AddNotificationChannelsRequest(params)
 //
-//    // Example sending a request using the AddNotificationChannelsRequest method.
-//    req, resp := client.AddNotificationChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/AddNotificationChannels
 func (c *CodeGuruProfiler) AddNotificationChannelsRequest(input *AddNotificationChannelsInput) (req *request.Request, output *AddNotificationChannelsOutput) {
@@ -67,27 +66,28 @@ func (c *CodeGuruProfiler) AddNotificationChannelsRequest(input *AddNotification
 // API operation AddNotificationChannels for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas (https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html)
-//   to request a service quota increase.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas (https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html)
+//     to request a service quota increase.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/AddNotificationChannels
 func (c *CodeGuruProfiler) AddNotificationChannels(input *AddNotificationChannelsInput) (*AddNotificationChannelsOutput, error) {
@@ -127,14 +127,13 @@ const opBatchGetFrameMetricData = "BatchGetFrameMetricData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetFrameMetricDataRequest method.
+//	req, resp := client.BatchGetFrameMetricDataRequest(params)
 //
-//    // Example sending a request using the BatchGetFrameMetricDataRequest method.
-//    req, resp := client.BatchGetFrameMetricDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/BatchGetFrameMetricData
 func (c *CodeGuruProfiler) BatchGetFrameMetricDataRequest(input *BatchGetFrameMetricDataInput) (req *request.Request, output *BatchGetFrameMetricDataOutput) {
@@ -166,17 +165,18 @@ func (c *CodeGuruProfiler) BatchGetFrameMetricDataRequest(input *BatchGetFrameMe
 // API operation BatchGetFrameMetricData for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/BatchGetFrameMetricData
 func (c *CodeGuruProfiler) BatchGetFrameMetricData(input *BatchGetFrameMetricDataInput) (*BatchGetFrameMetricDataOutput, error) {
@@ -216,14 +216,13 @@ const opConfigureAgent = "ConfigureAgent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfigureAgentRequest method.
+//	req, resp := client.ConfigureAgentRequest(params)
 //
-//    // Example sending a request using the ConfigureAgentRequest method.
-//    req, resp := client.ConfigureAgentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ConfigureAgent
 func (c *CodeGuruProfiler) ConfigureAgentRequest(input *ConfigureAgentInput) (req *request.Request, output *ConfigureAgentOutput) {
@@ -256,17 +255,18 @@ func (c *CodeGuruProfiler) ConfigureAgentRequest(input *ConfigureAgentInput) (re
 // API operation ConfigureAgent for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ConfigureAgent
 func (c *CodeGuruProfiler) ConfigureAgent(input *ConfigureAgentInput) (*ConfigureAgentOutput, error) {
@@ -306,14 +306,13 @@ const opCreateProfilingGroup = "CreateProfilingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProfilingGroupRequest method.
+//	req, resp := client.CreateProfilingGroupRequest(params)
 //
-//    // Example sending a request using the CreateProfilingGroupRequest method.
-//    req, resp := client.CreateProfilingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/CreateProfilingGroup
 func (c *CodeGuruProfiler) CreateProfilingGroupRequest(input *CreateProfilingGroupInput) (req *request.Request, output *CreateProfilingGroupOutput) {
@@ -344,24 +343,25 @@ func (c *CodeGuruProfiler) CreateProfilingGroupRequest(input *CreateProfilingGro
 // API operation CreateProfilingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas (https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html)
-//   to request a service quota increase.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas (https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html)
+//     to request a service quota increase.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/CreateProfilingGroup
 func (c *CodeGuruProfiler) CreateProfilingGroup(input *CreateProfilingGroupInput) (*CreateProfilingGroupOutput, error) {
@@ -401,14 +401,13 @@ const opDeleteProfilingGroup = "DeleteProfilingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProfilingGroupRequest method.
+//	req, resp := client.DeleteProfilingGroupRequest(params)
 //
-//    // Example sending a request using the DeleteProfilingGroupRequest method.
-//    req, resp := client.DeleteProfilingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/DeleteProfilingGroup
 func (c *CodeGuruProfiler) DeleteProfilingGroupRequest(input *DeleteProfilingGroupInput) (req *request.Request, output *DeleteProfilingGroupOutput) {
@@ -440,22 +439,23 @@ func (c *CodeGuruProfiler) DeleteProfilingGroupRequest(input *DeleteProfilingGro
 // API operation DeleteProfilingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/DeleteProfilingGroup
 func (c *CodeGuruProfiler) DeleteProfilingGroup(input *DeleteProfilingGroupInput) (*DeleteProfilingGroupOutput, error) {
@@ -495,14 +495,13 @@ const opDescribeProfilingGroup = "DescribeProfilingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProfilingGroupRequest method.
+//	req, resp := client.DescribeProfilingGroupRequest(params)
 //
-//    // Example sending a request using the DescribeProfilingGroupRequest method.
-//    req, resp := client.DescribeProfilingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/DescribeProfilingGroup
 func (c *CodeGuruProfiler) DescribeProfilingGroupRequest(input *DescribeProfilingGroupInput) (req *request.Request, output *DescribeProfilingGroupOutput) {
@@ -534,17 +533,18 @@ func (c *CodeGuruProfiler) DescribeProfilingGroupRequest(input *DescribeProfilin
 // API operation DescribeProfilingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/DescribeProfilingGroup
 func (c *CodeGuruProfiler) DescribeProfilingGroup(input *DescribeProfilingGroupInput) (*DescribeProfilingGroupOutput, error) {
@@ -584,14 +584,13 @@ const opGetFindingsReportAccountSummary = "GetFindingsReportAccountSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingsReportAccountSummaryRequest method.
+//	req, resp := client.GetFindingsReportAccountSummaryRequest(params)
 //
-//    // Example sending a request using the GetFindingsReportAccountSummaryRequest method.
-//    req, resp := client.GetFindingsReportAccountSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetFindingsReportAccountSummary
 func (c *CodeGuruProfiler) GetFindingsReportAccountSummaryRequest(input *GetFindingsReportAccountSummaryInput) (req *request.Request, output *GetFindingsReportAccountSummaryOutput) {
@@ -630,14 +629,15 @@ func (c *CodeGuruProfiler) GetFindingsReportAccountSummaryRequest(input *GetFind
 // API operation GetFindingsReportAccountSummary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetFindingsReportAccountSummary
 func (c *CodeGuruProfiler) GetFindingsReportAccountSummary(input *GetFindingsReportAccountSummaryInput) (*GetFindingsReportAccountSummaryOutput, error) {
@@ -669,15 +669,14 @@ func (c *CodeGuruProfiler) GetFindingsReportAccountSummaryWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetFindingsReportAccountSummary operation.
-//    pageNum := 0
-//    err := client.GetFindingsReportAccountSummaryPages(params,
-//        func(page *codeguruprofiler.GetFindingsReportAccountSummaryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetFindingsReportAccountSummary operation.
+//	pageNum := 0
+//	err := client.GetFindingsReportAccountSummaryPages(params,
+//	    func(page *codeguruprofiler.GetFindingsReportAccountSummaryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruProfiler) GetFindingsReportAccountSummaryPages(input *GetFindingsReportAccountSummaryInput, fn func(*GetFindingsReportAccountSummaryOutput, bool) bool) error {
 	return c.GetFindingsReportAccountSummaryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -729,14 +728,13 @@ const opGetNotificationConfiguration = "GetNotificationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNotificationConfigurationRequest method.
+//	req, resp := client.GetNotificationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetNotificationConfigurationRequest method.
-//    req, resp := client.GetNotificationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetNotificationConfiguration
 func (c *CodeGuruProfiler) GetNotificationConfigurationRequest(input *GetNotificationConfigurationInput) (req *request.Request, output *GetNotificationConfigurationOutput) {
@@ -767,17 +765,18 @@ func (c *CodeGuruProfiler) GetNotificationConfigurationRequest(input *GetNotific
 // API operation GetNotificationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetNotificationConfiguration
 func (c *CodeGuruProfiler) GetNotificationConfiguration(input *GetNotificationConfigurationInput) (*GetNotificationConfigurationOutput, error) {
@@ -817,14 +816,13 @@ const opGetPolicy = "GetPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPolicyRequest method.
+//	req, resp := client.GetPolicyRequest(params)
 //
-//    // Example sending a request using the GetPolicyRequest method.
-//    req, resp := client.GetPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetPolicy
 func (c *CodeGuruProfiler) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
@@ -855,14 +853,15 @@ func (c *CodeGuruProfiler) GetPolicyRequest(input *GetPolicyInput) (req *request
 // API operation GetPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetPolicy
 func (c *CodeGuruProfiler) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
@@ -902,14 +901,13 @@ const opGetProfile = "GetProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProfileRequest method.
+//	req, resp := client.GetProfileRequest(params)
 //
-//    // Example sending a request using the GetProfileRequest method.
-//    req, resp := client.GetProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetProfile
 func (c *CodeGuruProfiler) GetProfileRequest(input *GetProfileInput) (req *request.Request, output *GetProfileOutput) {
@@ -934,37 +932,37 @@ func (c *CodeGuruProfiler) GetProfileRequest(input *GetProfileInput) (req *reque
 // Amazon CodeGuru Profiler collects posted agent profiles for a profiling group
 // into aggregated profiles.
 //
-//    <note> <p> Because aggregated profiles expire over time <code>GetProfile</code>
-//    is not idempotent. </p> </note> <p> Specify the time range for the requested
-//    aggregated profile using 1 or 2 of the following parameters: <code>startTime</code>,
-//    <code>endTime</code>, <code>period</code>. The maximum time range allowed
-//    is 7 days. If you specify all 3 parameters, an exception is thrown. If
-//    you specify only <code>period</code>, the latest aggregated profile is
-//    returned. </p> <p> Aggregated profiles are available with aggregation
-//    periods of 5 minutes, 1 hour, and 1 day, aligned to UTC. The aggregation
-//    period of an aggregated profile determines how long it is retained. For
-//    more information, see <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_AggregatedProfileTime.html">
-//    <code>AggregatedProfileTime</code> </a>. The aggregated profile's aggregation
-//    period determines how long it is retained by CodeGuru Profiler. </p> <ul>
-//    <li> <p> If the aggregation period is 5 minutes, the aggregated profile
-//    is retained for 15 days. </p> </li> <li> <p> If the aggregation period
-//    is 1 hour, the aggregated profile is retained for 60 days. </p> </li>
-//    <li> <p> If the aggregation period is 1 day, the aggregated profile is
-//    retained for 3 years. </p> </li> </ul> <p>There are two use cases for
-//    calling <code>GetProfile</code>.</p> <ol> <li> <p> If you want to return
-//    an aggregated profile that already exists, use <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_ListProfileTimes.html">
-//    <code>ListProfileTimes</code> </a> to view the time ranges of existing
-//    aggregated profiles. Use them in a <code>GetProfile</code> request to
-//    return a specific, existing aggregated profile. </p> </li> <li> <p> If
-//    you want to return an aggregated profile for a time range that doesn't
-//    align with an existing aggregated profile, then CodeGuru Profiler makes
-//    a best effort to combine existing aggregated profiles from the requested
-//    time range and return them as one aggregated profile. </p> <p> If aggregated
-//    profiles do not exist for the full time range requested, then aggregated
-//    profiles for a smaller time range are returned. For example, if the requested
-//    time range is from 00:00 to 00:20, and the existing aggregated profiles
-//    are from 00:15 and 00:25, then the aggregated profiles from 00:15 to 00:20
-//    are returned. </p> </li> </ol>
+//	<note> <p> Because aggregated profiles expire over time <code>GetProfile</code>
+//	is not idempotent. </p> </note> <p> Specify the time range for the requested
+//	aggregated profile using 1 or 2 of the following parameters: <code>startTime</code>,
+//	<code>endTime</code>, <code>period</code>. The maximum time range allowed
+//	is 7 days. If you specify all 3 parameters, an exception is thrown. If
+//	you specify only <code>period</code>, the latest aggregated profile is
+//	returned. </p> <p> Aggregated profiles are available with aggregation
+//	periods of 5 minutes, 1 hour, and 1 day, aligned to UTC. The aggregation
+//	period of an aggregated profile determines how long it is retained. For
+//	more information, see <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_AggregatedProfileTime.html">
+//	<code>AggregatedProfileTime</code> </a>. The aggregated profile's aggregation
+//	period determines how long it is retained by CodeGuru Profiler. </p> <ul>
+//	<li> <p> If the aggregation period is 5 minutes, the aggregated profile
+//	is retained for 15 days. </p> </li> <li> <p> If the aggregation period
+//	is 1 hour, the aggregated profile is retained for 60 days. </p> </li>
+//	<li> <p> If the aggregation period is 1 day, the aggregated profile is
+//	retained for 3 years. </p> </li> </ul> <p>There are two use cases for
+//	calling <code>GetProfile</code>.</p> <ol> <li> <p> If you want to return
+//	an aggregated profile that already exists, use <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_ListProfileTimes.html">
+//	<code>ListProfileTimes</code> </a> to view the time ranges of existing
+//	aggregated profiles. Use them in a <code>GetProfile</code> request to
+//	return a specific, existing aggregated profile. </p> </li> <li> <p> If
+//	you want to return an aggregated profile for a time range that doesn't
+//	align with an existing aggregated profile, then CodeGuru Profiler makes
+//	a best effort to combine existing aggregated profiles from the requested
+//	time range and return them as one aggregated profile. </p> <p> If aggregated
+//	profiles do not exist for the full time range requested, then aggregated
+//	profiles for a smaller time range are returned. For example, if the requested
+//	time range is from 00:00 to 00:20, and the existing aggregated profiles
+//	are from 00:15 and 00:25, then the aggregated profiles from 00:15 to 00:20
+//	are returned. </p> </li> </ol>
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -974,17 +972,18 @@ func (c *CodeGuruProfiler) GetProfileRequest(input *GetProfileInput) (req *reque
 // API operation GetProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetProfile
 func (c *CodeGuruProfiler) GetProfile(input *GetProfileInput) (*GetProfileOutput, error) {
@@ -1024,14 +1023,13 @@ const opGetRecommendations = "GetRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommendationsRequest method.
+//	req, resp := client.GetRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetRecommendationsRequest method.
-//    req, resp := client.GetRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetRecommendations
 func (c *CodeGuruProfiler) GetRecommendationsRequest(input *GetRecommendationsInput) (req *request.Request, output *GetRecommendationsOutput) {
@@ -1066,17 +1064,18 @@ func (c *CodeGuruProfiler) GetRecommendationsRequest(input *GetRecommendationsIn
 // API operation GetRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/GetRecommendations
 func (c *CodeGuruProfiler) GetRecommendations(input *GetRecommendationsInput) (*GetRecommendationsOutput, error) {
@@ -1116,14 +1115,13 @@ const opListFindingsReports = "ListFindingsReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingsReportsRequest method.
+//	req, resp := client.ListFindingsReportsRequest(params)
 //
-//    // Example sending a request using the ListFindingsReportsRequest method.
-//    req, resp := client.ListFindingsReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListFindingsReports
 func (c *CodeGuruProfiler) ListFindingsReportsRequest(input *ListFindingsReportsInput) (req *request.Request, output *ListFindingsReportsOutput) {
@@ -1160,17 +1158,18 @@ func (c *CodeGuruProfiler) ListFindingsReportsRequest(input *ListFindingsReports
 // API operation ListFindingsReports for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListFindingsReports
 func (c *CodeGuruProfiler) ListFindingsReports(input *ListFindingsReportsInput) (*ListFindingsReportsOutput, error) {
@@ -1202,15 +1201,14 @@ func (c *CodeGuruProfiler) ListFindingsReportsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindingsReports operation.
-//    pageNum := 0
-//    err := client.ListFindingsReportsPages(params,
-//        func(page *codeguruprofiler.ListFindingsReportsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindingsReports operation.
+//	pageNum := 0
+//	err := client.ListFindingsReportsPages(params,
+//	    func(page *codeguruprofiler.ListFindingsReportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruProfiler) ListFindingsReportsPages(input *ListFindingsReportsInput, fn func(*ListFindingsReportsOutput, bool) bool) error {
 	return c.ListFindingsReportsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1262,14 +1260,13 @@ const opListProfileTimes = "ListProfileTimes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProfileTimesRequest method.
+//	req, resp := client.ListProfileTimesRequest(params)
 //
-//    // Example sending a request using the ListProfileTimesRequest method.
-//    req, resp := client.ListProfileTimesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListProfileTimes
 func (c *CodeGuruProfiler) ListProfileTimesRequest(input *ListProfileTimesInput) (req *request.Request, output *ListProfileTimesOutput) {
@@ -1307,17 +1304,18 @@ func (c *CodeGuruProfiler) ListProfileTimesRequest(input *ListProfileTimesInput)
 // API operation ListProfileTimes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListProfileTimes
 func (c *CodeGuruProfiler) ListProfileTimes(input *ListProfileTimesInput) (*ListProfileTimesOutput, error) {
@@ -1349,15 +1347,14 @@ func (c *CodeGuruProfiler) ListProfileTimesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProfileTimes operation.
-//    pageNum := 0
-//    err := client.ListProfileTimesPages(params,
-//        func(page *codeguruprofiler.ListProfileTimesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProfileTimes operation.
+//	pageNum := 0
+//	err := client.ListProfileTimesPages(params,
+//	    func(page *codeguruprofiler.ListProfileTimesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruProfiler) ListProfileTimesPages(input *ListProfileTimesInput, fn func(*ListProfileTimesOutput, bool) bool) error {
 	return c.ListProfileTimesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1409,14 +1406,13 @@ const opListProfilingGroups = "ListProfilingGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProfilingGroupsRequest method.
+//	req, resp := client.ListProfilingGroupsRequest(params)
 //
-//    // Example sending a request using the ListProfilingGroupsRequest method.
-//    req, resp := client.ListProfilingGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListProfilingGroups
 func (c *CodeGuruProfiler) ListProfilingGroupsRequest(input *ListProfilingGroupsInput) (req *request.Request, output *ListProfilingGroupsOutput) {
@@ -1455,11 +1451,12 @@ func (c *CodeGuruProfiler) ListProfilingGroupsRequest(input *ListProfilingGroups
 // API operation ListProfilingGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListProfilingGroups
 func (c *CodeGuruProfiler) ListProfilingGroups(input *ListProfilingGroupsInput) (*ListProfilingGroupsOutput, error) {
@@ -1491,15 +1488,14 @@ func (c *CodeGuruProfiler) ListProfilingGroupsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProfilingGroups operation.
-//    pageNum := 0
-//    err := client.ListProfilingGroupsPages(params,
-//        func(page *codeguruprofiler.ListProfilingGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProfilingGroups operation.
+//	pageNum := 0
+//	err := client.ListProfilingGroupsPages(params,
+//	    func(page *codeguruprofiler.ListProfilingGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruProfiler) ListProfilingGroupsPages(input *ListProfilingGroupsInput, fn func(*ListProfilingGroupsOutput, bool) bool) error {
 	return c.ListProfilingGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1551,14 +1547,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListTagsForResource
 func (c *CodeGuruProfiler) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1589,14 +1584,15 @@ func (c *CodeGuruProfiler) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/ListTagsForResource
 func (c *CodeGuruProfiler) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1636,14 +1632,13 @@ const opPostAgentProfile = "PostAgentProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PostAgentProfileRequest method.
+//	req, resp := client.PostAgentProfileRequest(params)
 //
-//    // Example sending a request using the PostAgentProfileRequest method.
-//    req, resp := client.PostAgentProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/PostAgentProfile
 func (c *CodeGuruProfiler) PostAgentProfileRequest(input *PostAgentProfileInput) (req *request.Request, output *PostAgentProfileOutput) {
@@ -1677,17 +1672,18 @@ func (c *CodeGuruProfiler) PostAgentProfileRequest(input *PostAgentProfileInput)
 // API operation PostAgentProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/PostAgentProfile
 func (c *CodeGuruProfiler) PostAgentProfile(input *PostAgentProfileInput) (*PostAgentProfileOutput, error) {
@@ -1727,14 +1723,13 @@ const opPutPermission = "PutPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPermissionRequest method.
+//	req, resp := client.PutPermissionRequest(params)
 //
-//    // Example sending a request using the PutPermissionRequest method.
-//    req, resp := client.PutPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/PutPermission
 func (c *CodeGuruProfiler) PutPermissionRequest(input *PutPermissionInput) (req *request.Request, output *PutPermissionOutput) {
@@ -1760,18 +1755,18 @@ func (c *CodeGuruProfiler) PutPermissionRequest(input *PutPermissionInput) (req 
 // policy, one is created for it using the permissions in the action group and
 // the roles and users in the principals parameter.
 //
-//    <p> The one supported action group that can be added is <code>agentPermission</code>
-//    which grants <code>ConfigureAgent</code> and <code>PostAgent</code> permissions.
-//    For more information, see <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-ug/resource-based-policies.html">Resource-based
-//    policies in CodeGuru Profiler</a> in the <i>Amazon CodeGuru Profiler User
-//    Guide</i>, <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_ConfigureAgent.html">
-//    <code>ConfigureAgent</code> </a>, and <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_PostAgentProfile.html">
-//    <code>PostAgentProfile</code> </a>. </p> <p> The first time you call <code>PutPermission</code>
-//    on a profiling group, do not specify a <code>revisionId</code> because
-//    it doesn't have a resource-based policy. Subsequent calls must provide
-//    a <code>revisionId</code> to specify which revision of the resource-based
-//    policy to add the permissions to. </p> <p> The response contains the profiling
-//    group's JSON-formatted resource policy. </p>
+//	<p> The one supported action group that can be added is <code>agentPermission</code>
+//	which grants <code>ConfigureAgent</code> and <code>PostAgent</code> permissions.
+//	For more information, see <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-ug/resource-based-policies.html">Resource-based
+//	policies in CodeGuru Profiler</a> in the <i>Amazon CodeGuru Profiler User
+//	Guide</i>, <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_ConfigureAgent.html">
+//	<code>ConfigureAgent</code> </a>, and <a href="https://docs.aws.amazon.com/codeguru/latest/profiler-api/API_PostAgentProfile.html">
+//	<code>PostAgentProfile</code> </a>. </p> <p> The first time you call <code>PutPermission</code>
+//	on a profiling group, do not specify a <code>revisionId</code> because
+//	it doesn't have a resource-based policy. Subsequent calls must provide
+//	a <code>revisionId</code> to specify which revision of the resource-based
+//	policy to add the permissions to. </p> <p> The response contains the profiling
+//	group's JSON-formatted resource policy. </p>
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1781,22 +1776,23 @@ func (c *CodeGuruProfiler) PutPermissionRequest(input *PutPermissionInput) (req 
 // API operation PutPermission for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/PutPermission
 func (c *CodeGuruProfiler) PutPermission(input *PutPermissionInput) (*PutPermissionOutput, error) {
@@ -1836,14 +1832,13 @@ const opRemoveNotificationChannel = "RemoveNotificationChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveNotificationChannelRequest method.
+//	req, resp := client.RemoveNotificationChannelRequest(params)
 //
-//    // Example sending a request using the RemoveNotificationChannelRequest method.
-//    req, resp := client.RemoveNotificationChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/RemoveNotificationChannel
 func (c *CodeGuruProfiler) RemoveNotificationChannelRequest(input *RemoveNotificationChannelInput) (req *request.Request, output *RemoveNotificationChannelOutput) {
@@ -1874,17 +1869,18 @@ func (c *CodeGuruProfiler) RemoveNotificationChannelRequest(input *RemoveNotific
 // API operation RemoveNotificationChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/RemoveNotificationChannel
 func (c *CodeGuruProfiler) RemoveNotificationChannel(input *RemoveNotificationChannelInput) (*RemoveNotificationChannelOutput, error) {
@@ -1924,14 +1920,13 @@ const opRemovePermission = "RemovePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemovePermissionRequest method.
+//	req, resp := client.RemovePermissionRequest(params)
 //
-//    // Example sending a request using the RemovePermissionRequest method.
-//    req, resp := client.RemovePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/RemovePermission
 func (c *CodeGuruProfiler) RemovePermissionRequest(input *RemovePermissionInput) (req *request.Request, output *RemovePermissionOutput) {
@@ -1967,22 +1962,23 @@ func (c *CodeGuruProfiler) RemovePermissionRequest(input *RemovePermissionInput)
 // API operation RemovePermission for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/RemovePermission
 func (c *CodeGuruProfiler) RemovePermission(input *RemovePermissionInput) (*RemovePermissionOutput, error) {
@@ -2022,14 +2018,13 @@ const opSubmitFeedback = "SubmitFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SubmitFeedbackRequest method.
+//	req, resp := client.SubmitFeedbackRequest(params)
 //
-//    // Example sending a request using the SubmitFeedbackRequest method.
-//    req, resp := client.SubmitFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/SubmitFeedback
 func (c *CodeGuruProfiler) SubmitFeedbackRequest(input *SubmitFeedbackInput) (req *request.Request, output *SubmitFeedbackOutput) {
@@ -2062,17 +2057,18 @@ func (c *CodeGuruProfiler) SubmitFeedbackRequest(input *SubmitFeedbackInput) (re
 // API operation SubmitFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/SubmitFeedback
 func (c *CodeGuruProfiler) SubmitFeedback(input *SubmitFeedbackInput) (*SubmitFeedbackOutput, error) {
@@ -2112,14 +2108,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/TagResource
 func (c *CodeGuruProfiler) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2151,14 +2146,15 @@ func (c *CodeGuruProfiler) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/TagResource
 func (c *CodeGuruProfiler) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2198,14 +2194,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/UntagResource
 func (c *CodeGuruProfiler) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2237,14 +2232,15 @@ func (c *CodeGuruProfiler) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ValidationException
+//     The parameter is not valid.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/UntagResource
 func (c *CodeGuruProfiler) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2284,14 +2280,13 @@ const opUpdateProfilingGroup = "UpdateProfilingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProfilingGroupRequest method.
+//	req, resp := client.UpdateProfilingGroupRequest(params)
 //
-//    // Example sending a request using the UpdateProfilingGroupRequest method.
-//    req, resp := client.UpdateProfilingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/UpdateProfilingGroup
 func (c *CodeGuruProfiler) UpdateProfilingGroupRequest(input *UpdateProfilingGroupInput) (req *request.Request, output *UpdateProfilingGroupOutput) {
@@ -2322,22 +2317,23 @@ func (c *CodeGuruProfiler) UpdateProfilingGroupRequest(input *UpdateProfilingGro
 // API operation UpdateProfilingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The parameter is not valid.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The parameter is not valid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguruprofiler-2019-07-18/UpdateProfilingGroup
 func (c *CodeGuruProfiler) UpdateProfilingGroup(input *UpdateProfilingGroupInput) (*UpdateProfilingGroupOutput, error) {

@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Comprehend Medical.
-//    func myFunc(svc comprehendmedicaliface.ComprehendMedicalAPI) bool {
-//        // Make svc.DescribeEntitiesDetectionV2Job request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Comprehend Medical.
+//	func myFunc(svc comprehendmedicaliface.ComprehendMedicalAPI) bool {
+//	    // Make svc.DescribeEntitiesDetectionV2Job request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := comprehendmedical.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := comprehendmedical.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockComprehendMedicalClient struct {
-//        comprehendmedicaliface.ComprehendMedicalAPI
-//    }
-//    func (m *mockComprehendMedicalClient) DescribeEntitiesDetectionV2Job(input *comprehendmedical.DescribeEntitiesDetectionV2JobInput) (*comprehendmedical.DescribeEntitiesDetectionV2JobOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockComprehendMedicalClient struct {
+//	    comprehendmedicaliface.ComprehendMedicalAPI
+//	}
+//	func (m *mockComprehendMedicalClient) DescribeEntitiesDetectionV2Job(input *comprehendmedical.DescribeEntitiesDetectionV2JobInput) (*comprehendmedical.DescribeEntitiesDetectionV2JobOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockComprehendMedicalClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockComprehendMedicalClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

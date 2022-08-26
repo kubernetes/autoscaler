@@ -27,14 +27,13 @@ const opGetPersonalizedRanking = "GetPersonalizedRanking"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPersonalizedRankingRequest method.
+//	req, resp := client.GetPersonalizedRankingRequest(params)
 //
-//    // Example sending a request using the GetPersonalizedRankingRequest method.
-//    req, resp := client.GetPersonalizedRankingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-runtime-2018-05-22/GetPersonalizedRanking
 func (c *PersonalizeRuntime) GetPersonalizedRankingRequest(input *GetPersonalizedRankingInput) (req *request.Request, output *GetPersonalizedRankingOutput) {
@@ -69,11 +68,12 @@ func (c *PersonalizeRuntime) GetPersonalizedRankingRequest(input *GetPersonalize
 // API operation GetPersonalizedRanking for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   Provide a valid value for the field or parameter.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidInputException
+//     Provide a valid value for the field or parameter.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-runtime-2018-05-22/GetPersonalizedRanking
 func (c *PersonalizeRuntime) GetPersonalizedRanking(input *GetPersonalizedRankingInput) (*GetPersonalizedRankingOutput, error) {
@@ -113,14 +113,13 @@ const opGetRecommendations = "GetRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommendationsRequest method.
+//	req, resp := client.GetRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetRecommendationsRequest method.
-//    req, resp := client.GetRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-runtime-2018-05-22/GetRecommendations
 func (c *PersonalizeRuntime) GetRecommendationsRequest(input *GetRecommendationsInput) (req *request.Request, output *GetRecommendationsOutput) {
@@ -145,9 +144,9 @@ func (c *PersonalizeRuntime) GetRecommendationsRequest(input *GetRecommendations
 // Resource Name (ARN) is required and the required user and item input depends
 // on the recipe type used to create the solution backing the campaign as follows:
 //
-//    * USER_PERSONALIZATION - userId required, itemId not used
+//   - USER_PERSONALIZATION - userId required, itemId not used
 //
-//    * RELATED_ITEMS - itemId required, userId not used
+//   - RELATED_ITEMS - itemId required, userId not used
 //
 // Campaigns that are backed by a solution created using a recipe of type PERSONALIZED_RANKING
 // use the API.
@@ -165,11 +164,12 @@ func (c *PersonalizeRuntime) GetRecommendationsRequest(input *GetRecommendations
 // API operation GetRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   Provide a valid value for the field or parameter.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidInputException
+//     Provide a valid value for the field or parameter.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-runtime-2018-05-22/GetRecommendations
 func (c *PersonalizeRuntime) GetRecommendations(input *GetRecommendationsInput) (*GetRecommendationsOutput, error) {

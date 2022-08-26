@@ -29,14 +29,13 @@ const opCreateSuiteDefinition = "CreateSuiteDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSuiteDefinitionRequest method.
+//	req, resp := client.CreateSuiteDefinitionRequest(params)
 //
-//    // Example sending a request using the CreateSuiteDefinitionRequest method.
-//    req, resp := client.CreateSuiteDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/CreateSuiteDefinition
 func (c *IoTDeviceAdvisor) CreateSuiteDefinitionRequest(input *CreateSuiteDefinitionInput) (req *request.Request, output *CreateSuiteDefinitionOutput) {
@@ -70,11 +69,12 @@ func (c *IoTDeviceAdvisor) CreateSuiteDefinitionRequest(input *CreateSuiteDefini
 // API operation CreateSuiteDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/CreateSuiteDefinition
 func (c *IoTDeviceAdvisor) CreateSuiteDefinition(input *CreateSuiteDefinitionInput) (*CreateSuiteDefinitionOutput, error) {
@@ -114,14 +114,13 @@ const opDeleteSuiteDefinition = "DeleteSuiteDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSuiteDefinitionRequest method.
+//	req, resp := client.DeleteSuiteDefinitionRequest(params)
 //
-//    // Example sending a request using the DeleteSuiteDefinitionRequest method.
-//    req, resp := client.DeleteSuiteDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/DeleteSuiteDefinition
 func (c *IoTDeviceAdvisor) DeleteSuiteDefinitionRequest(input *DeleteSuiteDefinitionInput) (req *request.Request, output *DeleteSuiteDefinitionOutput) {
@@ -156,11 +155,12 @@ func (c *IoTDeviceAdvisor) DeleteSuiteDefinitionRequest(input *DeleteSuiteDefini
 // API operation DeleteSuiteDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/DeleteSuiteDefinition
 func (c *IoTDeviceAdvisor) DeleteSuiteDefinition(input *DeleteSuiteDefinitionInput) (*DeleteSuiteDefinitionOutput, error) {
@@ -200,14 +200,13 @@ const opGetEndpoint = "GetEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEndpointRequest method.
+//	req, resp := client.GetEndpointRequest(params)
 //
-//    // Example sending a request using the GetEndpointRequest method.
-//    req, resp := client.GetEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetEndpoint
 func (c *IoTDeviceAdvisor) GetEndpointRequest(input *GetEndpointInput) (req *request.Request, output *GetEndpointOutput) {
@@ -238,14 +237,15 @@ func (c *IoTDeviceAdvisor) GetEndpointRequest(input *GetEndpointInput) (req *req
 // API operation GetEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetEndpoint
 func (c *IoTDeviceAdvisor) GetEndpoint(input *GetEndpointInput) (*GetEndpointOutput, error) {
@@ -285,14 +285,13 @@ const opGetSuiteDefinition = "GetSuiteDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSuiteDefinitionRequest method.
+//	req, resp := client.GetSuiteDefinitionRequest(params)
 //
-//    // Example sending a request using the GetSuiteDefinitionRequest method.
-//    req, resp := client.GetSuiteDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetSuiteDefinition
 func (c *IoTDeviceAdvisor) GetSuiteDefinitionRequest(input *GetSuiteDefinitionInput) (req *request.Request, output *GetSuiteDefinitionOutput) {
@@ -326,14 +325,15 @@ func (c *IoTDeviceAdvisor) GetSuiteDefinitionRequest(input *GetSuiteDefinitionIn
 // API operation GetSuiteDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetSuiteDefinition
 func (c *IoTDeviceAdvisor) GetSuiteDefinition(input *GetSuiteDefinitionInput) (*GetSuiteDefinitionOutput, error) {
@@ -373,14 +373,13 @@ const opGetSuiteRun = "GetSuiteRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSuiteRunRequest method.
+//	req, resp := client.GetSuiteRunRequest(params)
 //
-//    // Example sending a request using the GetSuiteRunRequest method.
-//    req, resp := client.GetSuiteRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetSuiteRun
 func (c *IoTDeviceAdvisor) GetSuiteRunRequest(input *GetSuiteRunInput) (req *request.Request, output *GetSuiteRunOutput) {
@@ -414,14 +413,15 @@ func (c *IoTDeviceAdvisor) GetSuiteRunRequest(input *GetSuiteRunInput) (req *req
 // API operation GetSuiteRun for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetSuiteRun
 func (c *IoTDeviceAdvisor) GetSuiteRun(input *GetSuiteRunInput) (*GetSuiteRunOutput, error) {
@@ -461,14 +461,13 @@ const opGetSuiteRunReport = "GetSuiteRunReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSuiteRunReportRequest method.
+//	req, resp := client.GetSuiteRunReportRequest(params)
 //
-//    // Example sending a request using the GetSuiteRunReportRequest method.
-//    req, resp := client.GetSuiteRunReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetSuiteRunReport
 func (c *IoTDeviceAdvisor) GetSuiteRunReportRequest(input *GetSuiteRunReportInput) (req *request.Request, output *GetSuiteRunReportOutput) {
@@ -503,14 +502,15 @@ func (c *IoTDeviceAdvisor) GetSuiteRunReportRequest(input *GetSuiteRunReportInpu
 // API operation GetSuiteRunReport for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/GetSuiteRunReport
 func (c *IoTDeviceAdvisor) GetSuiteRunReport(input *GetSuiteRunReportInput) (*GetSuiteRunReportOutput, error) {
@@ -550,14 +550,13 @@ const opListSuiteDefinitions = "ListSuiteDefinitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSuiteDefinitionsRequest method.
+//	req, resp := client.ListSuiteDefinitionsRequest(params)
 //
-//    // Example sending a request using the ListSuiteDefinitionsRequest method.
-//    req, resp := client.ListSuiteDefinitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/ListSuiteDefinitions
 func (c *IoTDeviceAdvisor) ListSuiteDefinitionsRequest(input *ListSuiteDefinitionsInput) (req *request.Request, output *ListSuiteDefinitionsOutput) {
@@ -597,11 +596,12 @@ func (c *IoTDeviceAdvisor) ListSuiteDefinitionsRequest(input *ListSuiteDefinitio
 // API operation ListSuiteDefinitions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/ListSuiteDefinitions
 func (c *IoTDeviceAdvisor) ListSuiteDefinitions(input *ListSuiteDefinitionsInput) (*ListSuiteDefinitionsOutput, error) {
@@ -633,15 +633,14 @@ func (c *IoTDeviceAdvisor) ListSuiteDefinitionsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSuiteDefinitions operation.
-//    pageNum := 0
-//    err := client.ListSuiteDefinitionsPages(params,
-//        func(page *iotdeviceadvisor.ListSuiteDefinitionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSuiteDefinitions operation.
+//	pageNum := 0
+//	err := client.ListSuiteDefinitionsPages(params,
+//	    func(page *iotdeviceadvisor.ListSuiteDefinitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTDeviceAdvisor) ListSuiteDefinitionsPages(input *ListSuiteDefinitionsInput, fn func(*ListSuiteDefinitionsOutput, bool) bool) error {
 	return c.ListSuiteDefinitionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -693,14 +692,13 @@ const opListSuiteRuns = "ListSuiteRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSuiteRunsRequest method.
+//	req, resp := client.ListSuiteRunsRequest(params)
 //
-//    // Example sending a request using the ListSuiteRunsRequest method.
-//    req, resp := client.ListSuiteRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/ListSuiteRuns
 func (c *IoTDeviceAdvisor) ListSuiteRunsRequest(input *ListSuiteRunsInput) (req *request.Request, output *ListSuiteRunsOutput) {
@@ -741,11 +739,12 @@ func (c *IoTDeviceAdvisor) ListSuiteRunsRequest(input *ListSuiteRunsInput) (req 
 // API operation ListSuiteRuns for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/ListSuiteRuns
 func (c *IoTDeviceAdvisor) ListSuiteRuns(input *ListSuiteRunsInput) (*ListSuiteRunsOutput, error) {
@@ -777,15 +776,14 @@ func (c *IoTDeviceAdvisor) ListSuiteRunsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSuiteRuns operation.
-//    pageNum := 0
-//    err := client.ListSuiteRunsPages(params,
-//        func(page *iotdeviceadvisor.ListSuiteRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSuiteRuns operation.
+//	pageNum := 0
+//	err := client.ListSuiteRunsPages(params,
+//	    func(page *iotdeviceadvisor.ListSuiteRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTDeviceAdvisor) ListSuiteRunsPages(input *ListSuiteRunsInput, fn func(*ListSuiteRunsOutput, bool) bool) error {
 	return c.ListSuiteRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -837,14 +835,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/ListTagsForResource
 func (c *IoTDeviceAdvisor) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -878,14 +875,15 @@ func (c *IoTDeviceAdvisor) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   Sends an Internal Failure exception.
 //
-//   * ValidationException
-//   Sends a validation exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/ListTagsForResource
 func (c *IoTDeviceAdvisor) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -925,14 +923,13 @@ const opStartSuiteRun = "StartSuiteRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSuiteRunRequest method.
+//	req, resp := client.StartSuiteRunRequest(params)
 //
-//    // Example sending a request using the StartSuiteRunRequest method.
-//    req, resp := client.StartSuiteRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/StartSuiteRun
 func (c *IoTDeviceAdvisor) StartSuiteRunRequest(input *StartSuiteRunInput) (req *request.Request, output *StartSuiteRunOutput) {
@@ -966,14 +963,15 @@ func (c *IoTDeviceAdvisor) StartSuiteRunRequest(input *StartSuiteRunInput) (req 
 // API operation StartSuiteRun for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
 //
-//   * ConflictException
-//   Sends a Conflict Exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
+//
+//   - ConflictException
+//     Sends a Conflict Exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/StartSuiteRun
 func (c *IoTDeviceAdvisor) StartSuiteRun(input *StartSuiteRunInput) (*StartSuiteRunOutput, error) {
@@ -1013,14 +1011,13 @@ const opStopSuiteRun = "StopSuiteRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopSuiteRunRequest method.
+//	req, resp := client.StopSuiteRunRequest(params)
 //
-//    // Example sending a request using the StopSuiteRunRequest method.
-//    req, resp := client.StopSuiteRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/StopSuiteRun
 func (c *IoTDeviceAdvisor) StopSuiteRunRequest(input *StopSuiteRunInput) (req *request.Request, output *StopSuiteRunOutput) {
@@ -1055,14 +1052,15 @@ func (c *IoTDeviceAdvisor) StopSuiteRunRequest(input *StopSuiteRunInput) (req *r
 // API operation StopSuiteRun for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - ValidationException
+//     Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
+//
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/StopSuiteRun
 func (c *IoTDeviceAdvisor) StopSuiteRun(input *StopSuiteRunInput) (*StopSuiteRunOutput, error) {
@@ -1102,14 +1100,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/TagResource
 func (c *IoTDeviceAdvisor) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1144,14 +1141,15 @@ func (c *IoTDeviceAdvisor) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   Sends an Internal Failure exception.
 //
-//   * ValidationException
-//   Sends a validation exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/TagResource
 func (c *IoTDeviceAdvisor) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1191,14 +1189,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/UntagResource
 func (c *IoTDeviceAdvisor) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1233,14 +1230,15 @@ func (c *IoTDeviceAdvisor) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   Sends an Internal Failure exception.
 //
-//   * ValidationException
-//   Sends a validation exception.
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
-//   * ResourceNotFoundException
-//   Sends a Resource Not Found exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - ResourceNotFoundException
+//     Sends a Resource Not Found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/UntagResource
 func (c *IoTDeviceAdvisor) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1280,14 +1278,13 @@ const opUpdateSuiteDefinition = "UpdateSuiteDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSuiteDefinitionRequest method.
+//	req, resp := client.UpdateSuiteDefinitionRequest(params)
 //
-//    // Example sending a request using the UpdateSuiteDefinitionRequest method.
-//    req, resp := client.UpdateSuiteDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/UpdateSuiteDefinition
 func (c *IoTDeviceAdvisor) UpdateSuiteDefinitionRequest(input *UpdateSuiteDefinitionInput) (req *request.Request, output *UpdateSuiteDefinitionOutput) {
@@ -1321,11 +1318,12 @@ func (c *IoTDeviceAdvisor) UpdateSuiteDefinitionRequest(input *UpdateSuiteDefini
 // API operation UpdateSuiteDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Sends a validation exception.
 //
-//   * InternalServerException
-//   Sends an Internal Failure exception.
+//   - ValidationException
+//     Sends a validation exception.
+//
+//   - InternalServerException
+//     Sends an Internal Failure exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotdeviceadvisor-2020-09-18/UpdateSuiteDefinition
 func (c *IoTDeviceAdvisor) UpdateSuiteDefinition(input *UpdateSuiteDefinitionInput) (*UpdateSuiteDefinitionOutput, error) {

@@ -23,7 +23,7 @@ import (
 	"strings"
 )
 
-//KubernetesClusterPoolUpdateConfig is used to create a new cluster pool
+// KubernetesClusterPoolUpdateConfig is used to create a new cluster pool
 type KubernetesClusterPoolUpdateConfig struct {
 	ID     string `json:"id,omitempty"`
 	Count  int    `json:"count,omitempty"`
