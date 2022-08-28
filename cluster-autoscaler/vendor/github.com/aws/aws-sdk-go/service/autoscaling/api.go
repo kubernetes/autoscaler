@@ -155,6 +155,12 @@ func (c *AutoScaling) AttachLoadBalancerTargetGroupsRequest(input *AttachLoadBal
 
 // AttachLoadBalancerTargetGroups API operation for Auto Scaling.
 //
+// This API operation is superseded by AttachTrafficSources, which can attach
+// multiple traffic sources types. We recommend using AttachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// AttachLoadBalancerTargetGroups. You can use both the original AttachLoadBalancerTargetGroups
+// API operation and AttachTrafficSources on the same Auto Scaling group.
+//
 // Attaches one or more target groups to the specified Auto Scaling group.
 //
 // This operation is used with the following load balancer types:
@@ -260,8 +266,11 @@ func (c *AutoScaling) AttachLoadBalancersRequest(input *AttachLoadBalancersInput
 
 // AttachLoadBalancers API operation for Auto Scaling.
 //
-// To attach an Application Load Balancer, Network Load Balancer, or Gateway
-// Load Balancer, use the AttachLoadBalancerTargetGroups API operation instead.
+// This API operation is superseded by AttachTrafficSources, which can attach
+// multiple traffic sources types. We recommend using AttachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// AttachLoadBalancers. You can use both the original AttachLoadBalancers API
+// operation and AttachTrafficSources on the same Auto Scaling group.
 //
 // Attaches one or more Classic Load Balancers to the specified Auto Scaling
 // group. Amazon EC2 Auto Scaling registers the running instances with these
@@ -311,6 +320,110 @@ func (c *AutoScaling) AttachLoadBalancers(input *AttachLoadBalancersInput) (*Att
 // for more information on using Contexts.
 func (c *AutoScaling) AttachLoadBalancersWithContext(ctx aws.Context, input *AttachLoadBalancersInput, opts ...request.Option) (*AttachLoadBalancersOutput, error) {
 	req, out := c.AttachLoadBalancersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAttachTrafficSources = "AttachTrafficSources"
+
+// AttachTrafficSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the AttachTrafficSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AttachTrafficSources for more information on using the AttachTrafficSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AttachTrafficSourcesRequest method.
+//	req, resp := client.AttachTrafficSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachTrafficSources
+func (c *AutoScaling) AttachTrafficSourcesRequest(input *AttachTrafficSourcesInput) (req *request.Request, output *AttachTrafficSourcesOutput) {
+	op := &request.Operation{
+		Name:       opAttachTrafficSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AttachTrafficSourcesInput{}
+	}
+
+	output = &AttachTrafficSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// AttachTrafficSources API operation for Auto Scaling.
+//
+// Attaches one or more traffic sources to the specified Auto Scaling group.
+//
+// You can use any of the following as traffic sources for an Auto Scaling group:
+//
+//   - Application Load Balancer
+//
+//   - Classic Load Balancer
+//
+//   - Gateway Load Balancer
+//
+//   - Network Load Balancer
+//
+//   - VPC Lattice
+//
+// This operation is additive and does not detach existing traffic sources from
+// the Auto Scaling group.
+//
+// After the operation completes, use the DescribeTrafficSources API to return
+// details about the state of the attachments between traffic sources and your
+// Auto Scaling group. To detach a traffic source from the Auto Scaling group,
+// call the DetachTrafficSources API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation AttachTrafficSources for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+//   - ErrCodeServiceLinkedRoleFailure "ServiceLinkedRoleFailure"
+//     The service-linked role is not yet ready for use.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachTrafficSources
+func (c *AutoScaling) AttachTrafficSources(input *AttachTrafficSourcesInput) (*AttachTrafficSourcesOutput, error) {
+	req, out := c.AttachTrafficSourcesRequest(input)
+	return out, req.Send()
+}
+
+// AttachTrafficSourcesWithContext is the same as AttachTrafficSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AttachTrafficSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) AttachTrafficSourcesWithContext(ctx aws.Context, input *AttachTrafficSourcesInput, opts ...request.Option) (*AttachTrafficSourcesOutput, error) {
+	req, out := c.AttachTrafficSourcesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -529,13 +642,16 @@ func (c *AutoScaling) CancelInstanceRefreshRequest(input *CancelInstanceRefreshI
 
 // CancelInstanceRefresh API operation for Auto Scaling.
 //
-// Cancels an instance refresh operation in progress. Cancellation does not
-// roll back any replacements that have already been completed, but it prevents
-// new replacements from being started.
+// Cancels an instance refresh or rollback that is in progress. If an instance
+// refresh or rollback is not in progress, an ActiveInstanceRefreshNotFound
+// error occurs.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
 // Scaling group after you make configuration changes.
+//
+// When you cancel an instance refresh, this does not roll back any changes
+// that it made. Use the RollbackInstanceRefresh API to roll back instead.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -557,8 +673,8 @@ func (c *AutoScaling) CancelInstanceRefreshRequest(input *CancelInstanceRefreshI
 //     (for example, an Auto Scaling group, instance, or load balancer).
 //
 //   - ErrCodeActiveInstanceRefreshNotFoundFault "ActiveInstanceRefreshNotFound"
-//     The request failed because an active instance refresh for the specified Auto
-//     Scaling group was not found.
+//     The request failed because an active instance refresh or rollback for the
+//     specified Auto Scaling group was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CancelInstanceRefresh
 func (c *AutoScaling) CancelInstanceRefresh(input *CancelInstanceRefreshInput) (*CancelInstanceRefreshOutput, error) {
@@ -2315,28 +2431,13 @@ func (c *AutoScaling) DescribeInstanceRefreshesRequest(input *DescribeInstanceRe
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
 // Scaling group after you make configuration changes.
 //
-// To help you determine the status of an instance refresh, this operation returns
-// information about the instance refreshes you previously initiated, including
-// their status, end time, the percentage of the instance refresh that is complete,
-// and the number of instances remaining to update before the instance refresh
-// is complete.
-//
-// The following are the possible statuses:
-//
-//   - Pending - The request was created, but the operation has not started.
-//
-//   - InProgress - The operation is in progress.
-//
-//   - Successful - The operation completed successfully.
-//
-//   - Failed - The operation failed to complete. You can troubleshoot using
-//     the status reason and the scaling activities.
-//
-//   - Cancelling - An ongoing operation is being cancelled. Cancellation does
-//     not roll back any replacements that have already been completed, but it
-//     prevents new replacements from being started.
-//
-//   - Cancelled - The operation is cancelled.
+// To help you determine the status of an instance refresh, Amazon EC2 Auto
+// Scaling returns information about the instance refreshes you previously initiated,
+// including their status, start time, end time, the percentage of the instance
+// refresh that is complete, and the number of instances remaining to update
+// before the instance refresh is complete. If a rollback is initiated while
+// an instance refresh is in progress, Amazon EC2 Auto Scaling also returns
+// information about the rollback of the instance refresh.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2724,6 +2825,12 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 
 // DescribeLoadBalancerTargetGroups API operation for Auto Scaling.
 //
+// This API operation is superseded by DescribeTrafficSources, which can describe
+// multiple traffic sources types. We recommend using DetachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// DescribeLoadBalancerTargetGroups. You can use both the original DescribeLoadBalancerTargetGroups
+// API operation and DescribeTrafficSources on the same Auto Scaling group.
+//
 // Gets information about the Elastic Load Balancing target groups for the specified
 // Auto Scaling group.
 //
@@ -2749,6 +2856,10 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 // Elastic Load Balancing to distribute traffic across the instances in your
 // Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 // in the Amazon EC2 Auto Scaling User Guide.
+//
+// You can use this operation to describe target groups that were attached by
+// using AttachLoadBalancerTargetGroups, but not for target groups that were
+// attached by using AttachTrafficSources.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2831,11 +2942,17 @@ func (c *AutoScaling) DescribeLoadBalancersRequest(input *DescribeLoadBalancersI
 
 // DescribeLoadBalancers API operation for Auto Scaling.
 //
+// This API operation is superseded by DescribeTrafficSources, which can describe
+// multiple traffic sources types. We recommend using DescribeTrafficSources
+// to simplify how you manage traffic sources. However, we continue to support
+// DescribeLoadBalancers. You can use both the original DescribeLoadBalancers
+// API operation and DescribeTrafficSources on the same Auto Scaling group.
+//
 // Gets information about the load balancers for the specified Auto Scaling
 // group.
 //
 // This operation describes only Classic Load Balancers. If you have Application
-// Load Balancers, Network Load Balancers, or Gateway Load Balancer, use the
+// Load Balancers, Network Load Balancers, or Gateway Load Balancers, use the
 // DescribeLoadBalancerTargetGroups API instead.
 //
 // To determine the attachment status of the load balancer, use the State element
@@ -3873,6 +3990,153 @@ func (c *AutoScaling) DescribeTerminationPolicyTypesWithContext(ctx aws.Context,
 	return out, req.Send()
 }
 
+const opDescribeTrafficSources = "DescribeTrafficSources"
+
+// DescribeTrafficSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrafficSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrafficSources for more information on using the DescribeTrafficSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrafficSourcesRequest method.
+//	req, resp := client.DescribeTrafficSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTrafficSources
+func (c *AutoScaling) DescribeTrafficSourcesRequest(input *DescribeTrafficSourcesInput) (req *request.Request, output *DescribeTrafficSourcesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrafficSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrafficSourcesInput{}
+	}
+
+	output = &DescribeTrafficSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrafficSources API operation for Auto Scaling.
+//
+// Gets information about the traffic sources for the specified Auto Scaling
+// group.
+//
+// You can optionally provide a traffic source type. If you provide a traffic
+// source type, then the results only include that traffic source type.
+//
+// If you do not provide a traffic source type, then the results include all
+// the traffic sources for the specified Auto Scaling group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation DescribeTrafficSources for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The NextToken value is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTrafficSources
+func (c *AutoScaling) DescribeTrafficSources(input *DescribeTrafficSourcesInput) (*DescribeTrafficSourcesOutput, error) {
+	req, out := c.DescribeTrafficSourcesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrafficSourcesWithContext is the same as DescribeTrafficSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrafficSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeTrafficSourcesWithContext(ctx aws.Context, input *DescribeTrafficSourcesInput, opts ...request.Option) (*DescribeTrafficSourcesOutput, error) {
+	req, out := c.DescribeTrafficSourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrafficSourcesPages iterates over the pages of a DescribeTrafficSources operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrafficSources method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrafficSources operation.
+//	pageNum := 0
+//	err := client.DescribeTrafficSourcesPages(params,
+//	    func(page *autoscaling.DescribeTrafficSourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AutoScaling) DescribeTrafficSourcesPages(input *DescribeTrafficSourcesInput, fn func(*DescribeTrafficSourcesOutput, bool) bool) error {
+	return c.DescribeTrafficSourcesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrafficSourcesPagesWithContext same as DescribeTrafficSourcesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeTrafficSourcesPagesWithContext(ctx aws.Context, input *DescribeTrafficSourcesInput, fn func(*DescribeTrafficSourcesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrafficSourcesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrafficSourcesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrafficSourcesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeWarmPool = "DescribeWarmPool"
 
 // DescribeWarmPoolRequest generates a "aws/request.Request" representing the
@@ -4103,12 +4367,22 @@ func (c *AutoScaling) DetachLoadBalancerTargetGroupsRequest(input *DetachLoadBal
 
 // DetachLoadBalancerTargetGroups API operation for Auto Scaling.
 //
+// This API operation is superseded by DetachTrafficSources, which can detach
+// multiple traffic sources types. We recommend using DetachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// DetachLoadBalancerTargetGroups. You can use both the original DetachLoadBalancerTargetGroups
+// API operation and DetachTrafficSources on the same Auto Scaling group.
+//
 // Detaches one or more target groups from the specified Auto Scaling group.
 //
 // When you detach a target group, it enters the Removing state while deregistering
 // the instances in the group. When all instances are deregistered, then you
 // can no longer describe the target group using the DescribeLoadBalancerTargetGroups
 // API call. The instances remain running.
+//
+// You can use this operation to detach target groups that were attached by
+// using AttachLoadBalancerTargetGroups, but not for target groups that were
+// attached by using AttachTrafficSources.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4188,11 +4462,17 @@ func (c *AutoScaling) DetachLoadBalancersRequest(input *DetachLoadBalancersInput
 
 // DetachLoadBalancers API operation for Auto Scaling.
 //
+// This API operation is superseded by DetachTrafficSources, which can detach
+// multiple traffic sources types. We recommend using DetachTrafficSources to
+// simplify how you manage traffic sources. However, we continue to support
+// DetachLoadBalancers. You can use both the original DetachLoadBalancers API
+// operation and DetachTrafficSources on the same Auto Scaling group.
+//
 // Detaches one or more Classic Load Balancers from the specified Auto Scaling
 // group.
 //
 // This operation detaches only Classic Load Balancers. If you have Application
-// Load Balancers, Network Load Balancers, or Gateway Load Balancer, use the
+// Load Balancers, Network Load Balancers, or Gateway Load Balancers, use the
 // DetachLoadBalancerTargetGroups API instead.
 //
 // When you detach a load balancer, it enters the Removing state while deregistering
@@ -4229,6 +4509,91 @@ func (c *AutoScaling) DetachLoadBalancers(input *DetachLoadBalancersInput) (*Det
 // for more information on using Contexts.
 func (c *AutoScaling) DetachLoadBalancersWithContext(ctx aws.Context, input *DetachLoadBalancersInput, opts ...request.Option) (*DetachLoadBalancersOutput, error) {
 	req, out := c.DetachLoadBalancersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDetachTrafficSources = "DetachTrafficSources"
+
+// DetachTrafficSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the DetachTrafficSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DetachTrafficSources for more information on using the DetachTrafficSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DetachTrafficSourcesRequest method.
+//	req, resp := client.DetachTrafficSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachTrafficSources
+func (c *AutoScaling) DetachTrafficSourcesRequest(input *DetachTrafficSourcesInput) (req *request.Request, output *DetachTrafficSourcesOutput) {
+	op := &request.Operation{
+		Name:       opDetachTrafficSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DetachTrafficSourcesInput{}
+	}
+
+	output = &DetachTrafficSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DetachTrafficSources API operation for Auto Scaling.
+//
+// Detaches one or more traffic sources from the specified Auto Scaling group.
+//
+// When you detach a taffic, it enters the Removing state while deregistering
+// the instances in the group. When all instances are deregistered, then you
+// can no longer describe the traffic source using the DescribeTrafficSources
+// API call. The instances continue to run.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation DetachTrafficSources for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachTrafficSources
+func (c *AutoScaling) DetachTrafficSources(input *DetachTrafficSourcesInput) (*DetachTrafficSourcesOutput, error) {
+	req, out := c.DetachTrafficSourcesRequest(input)
+	return out, req.Send()
+}
+
+// DetachTrafficSourcesWithContext is the same as DetachTrafficSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DetachTrafficSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DetachTrafficSourcesWithContext(ctx aws.Context, input *DetachTrafficSourcesInput, opts ...request.Option) (*DetachTrafficSourcesOutput, error) {
+	req, out := c.DetachTrafficSourcesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5487,6 +5852,124 @@ func (c *AutoScaling) ResumeProcessesWithContext(ctx aws.Context, input *Scaling
 	return out, req.Send()
 }
 
+const opRollbackInstanceRefresh = "RollbackInstanceRefresh"
+
+// RollbackInstanceRefreshRequest generates a "aws/request.Request" representing the
+// client's request for the RollbackInstanceRefresh operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RollbackInstanceRefresh for more information on using the RollbackInstanceRefresh
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RollbackInstanceRefreshRequest method.
+//	req, resp := client.RollbackInstanceRefreshRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RollbackInstanceRefresh
+func (c *AutoScaling) RollbackInstanceRefreshRequest(input *RollbackInstanceRefreshInput) (req *request.Request, output *RollbackInstanceRefreshOutput) {
+	op := &request.Operation{
+		Name:       opRollbackInstanceRefresh,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RollbackInstanceRefreshInput{}
+	}
+
+	output = &RollbackInstanceRefreshOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RollbackInstanceRefresh API operation for Auto Scaling.
+//
+// Cancels an instance refresh that is in progress and rolls back any changes
+// that it made. Amazon EC2 Auto Scaling replaces any instances that were replaced
+// during the instance refresh. This restores your Auto Scaling group to the
+// configuration that it was using before the start of the instance refresh.
+//
+// This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
+// in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
+// Scaling group after you make configuration changes.
+//
+// A rollback is not supported in the following situations:
+//
+//   - There is no desired configuration specified for the instance refresh.
+//
+//   - The Auto Scaling group has a launch template that uses an Amazon Web
+//     Services Systems Manager parameter instead of an AMI ID for the ImageId
+//     property.
+//
+//   - The Auto Scaling group uses the launch template's $Latest or $Default
+//     version.
+//
+// When you receive a successful response from this operation, Amazon EC2 Auto
+// Scaling immediately begins replacing instances. You can check the status
+// of this operation through the DescribeInstanceRefreshes API operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation RollbackInstanceRefresh for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeLimitExceededFault "LimitExceeded"
+//     You have already reached a limit for your Amazon EC2 Auto Scaling resources
+//     (for example, Auto Scaling groups, launch configurations, or lifecycle hooks).
+//     For more information, see DescribeAccountLimits (https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAccountLimits.html)
+//     in the Amazon EC2 Auto Scaling API Reference.
+//
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+//   - ErrCodeActiveInstanceRefreshNotFoundFault "ActiveInstanceRefreshNotFound"
+//     The request failed because an active instance refresh or rollback for the
+//     specified Auto Scaling group was not found.
+//
+//   - ErrCodeIrreversibleInstanceRefreshFault "IrreversibleInstanceRefresh"
+//     The request failed because a desired configuration was not found or an incompatible
+//     launch template (uses a Systems Manager parameter instead of an AMI ID) or
+//     launch template version ($Latest or $Default) is present on the Auto Scaling
+//     group.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RollbackInstanceRefresh
+func (c *AutoScaling) RollbackInstanceRefresh(input *RollbackInstanceRefreshInput) (*RollbackInstanceRefreshOutput, error) {
+	req, out := c.RollbackInstanceRefreshRequest(input)
+	return out, req.Send()
+}
+
+// RollbackInstanceRefreshWithContext is the same as RollbackInstanceRefresh with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RollbackInstanceRefresh for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) RollbackInstanceRefreshWithContext(ctx aws.Context, input *RollbackInstanceRefreshInput, opts ...request.Option) (*RollbackInstanceRefreshOutput, error) {
+	req, out := c.RollbackInstanceRefreshRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opSetDesiredCapacity = "SetDesiredCapacity"
 
 // SetDesiredCapacityRequest generates a "aws/request.Request" representing the
@@ -5801,9 +6284,9 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 
 // StartInstanceRefresh API operation for Auto Scaling.
 //
-// Starts a new instance refresh operation. An instance refresh performs a rolling
-// replacement of all or some instances in an Auto Scaling group. Each instance
-// is terminated first and then replaced, which temporarily reduces the capacity
+// Starts an instance refresh. During an instance refresh, Amazon EC2 Auto Scaling
+// performs a rolling update of instances in an Auto Scaling group. Instances
+// are terminated first and then replaced, which temporarily reduces the capacity
 // available within your Auto Scaling group.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
@@ -5813,11 +6296,23 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 // that specifies the new AMI or user data script. Then start an instance refresh
 // to immediately begin the process of updating instances in the group.
 //
-// If the call succeeds, it creates a new instance refresh request with a unique
-// ID that you can use to track its progress. To query its status, call the
-// DescribeInstanceRefreshes API. To describe the instance refreshes that have
-// already run, call the DescribeInstanceRefreshes API. To cancel an instance
-// refresh operation in progress, use the CancelInstanceRefresh API.
+// If successful, the request's response contains a unique ID that you can use
+// to track the progress of the instance refresh. To query its status, call
+// the DescribeInstanceRefreshes API. To describe the instance refreshes that
+// have already run, call the DescribeInstanceRefreshes API. To cancel an instance
+// refresh that is in progress, use the CancelInstanceRefresh API.
+//
+// An instance refresh might fail for several reasons, such as EC2 launch failures,
+// misconfigured health checks, or not ignoring or allowing the termination
+// of instances that are in Standby state or protected from scale in. You can
+// monitor for failed EC2 launches using the scaling activities. To find the
+// scaling activities, call the DescribeScalingActivities API.
+//
+// If you enable auto rollback, your Auto Scaling group will be rolled back
+// automatically when the instance refresh fails. You can enable this feature
+// before starting an instance refresh by specifying the AutoRollback property
+// in the instance refresh preferences. Otherwise, to roll back an instance
+// refresh before it finishes, use the RollbackInstanceRefresh API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5839,8 +6334,8 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 //     (for example, an Auto Scaling group, instance, or load balancer).
 //
 //   - ErrCodeInstanceRefreshInProgressFault "InstanceRefreshInProgress"
-//     The request failed because an active instance refresh operation already exists
-//     for the specified Auto Scaling group.
+//     The request failed because an active instance refresh already exists for
+//     the specified Auto Scaling group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/StartInstanceRefresh
 func (c *AutoScaling) StartInstanceRefresh(input *StartInstanceRefreshInput) (*StartInstanceRefreshOutput, error) {
@@ -6574,7 +7069,7 @@ type AttachLoadBalancerTargetGroupsInput struct {
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 
-	// The Amazon Resource Names (ARN) of the target groups. You can specify up
+	// The Amazon Resource Names (ARNs) of the target groups. You can specify up
 	// to 10 target groups. To get the ARN of a target group, use the Elastic Load
 	// Balancing DescribeTargetGroups (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html)
 	// API operation.
@@ -6736,6 +7231,102 @@ func (s AttachLoadBalancersOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s AttachLoadBalancersOutput) GoString() string {
+	return s.String()
+}
+
+type AttachTrafficSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The unique identifiers of one or more traffic sources. You can specify up
+	// to 10 traffic sources.
+	//
+	// TrafficSources is a required field
+	TrafficSources []*TrafficSourceIdentifier `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachTrafficSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachTrafficSourcesInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+	if s.TrafficSources == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrafficSources"))
+	}
+	if s.TrafficSources != nil {
+		for i, v := range s.TrafficSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TrafficSources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *AttachTrafficSourcesInput) SetAutoScalingGroupName(v string) *AttachTrafficSourcesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *AttachTrafficSourcesInput) SetTrafficSources(v []*TrafficSourceIdentifier) *AttachTrafficSourcesInput {
+	s.TrafficSources = v
+	return s
+}
+
+type AttachTrafficSourcesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesOutput) GoString() string {
 	return s.String()
 }
 
@@ -7131,7 +7722,8 @@ func (s *CancelInstanceRefreshInput) SetAutoScalingGroupName(v string) *CancelIn
 type CancelInstanceRefreshOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The instance refresh ID.
+	// The instance refresh ID associated with the request. This is the unique ID
+	// assigned to the instance refresh when it was started.
 	InstanceRefreshId *string `min:"1" type:"string"`
 }
 
@@ -7377,23 +7969,24 @@ type CreateAutoScalingGroupInput struct {
 	// Default: 300 seconds
 	DefaultCooldown *int64 `type:"integer"`
 
-	// The amount of time, in seconds, until a newly launched instance can contribute
-	// to the Amazon CloudWatch metrics. This delay lets an instance finish initializing
-	// before Amazon EC2 Auto Scaling aggregates instance metrics, resulting in
-	// more reliable usage data. Set this value equal to the amount of time that
-	// it takes for resource consumption to become stable after an instance reaches
-	// the InService state. For more information, see Set the default instance warmup
-	// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
+	// The amount of time, in seconds, until a new instance is considered to have
+	// finished initializing and resource consumption to become stable after it
+	// enters the InService state.
+	//
+	// During an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
+	// period after it replaces an instance before it moves on to replacing the
+	// next instance. Amazon EC2 Auto Scaling also waits for the warm-up period
+	// before aggregating the metrics for new instances with existing instances
+	// in the Amazon CloudWatch metrics that are used for scaling, resulting in
+	// more reliable usage data. For more information, see Set the default instance
+	// warmup for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// To manage your warm-up settings at the group level, we recommend that you
-	// set the default instance warmup, even if its value is set to 0 seconds. This
-	// also optimizes the performance of scaling policies that scale continuously,
-	// such as target tracking and step scaling policies.
-	//
-	// If you need to remove a value that you previously set, include the property
-	// but specify -1 for the value. However, we strongly recommend keeping the
-	// default instance warmup enabled by specifying a minimum value of 0.
+	// To manage various warm-up settings at the group level, we recommend that
+	// you set the default instance warmup, even if it is set to 0 seconds. To remove
+	// a value that you previously set, include the property but specify -1 for
+	// the value. However, we strongly recommend keeping the default instance warmup
+	// enabled by specifying a value of 0 or other nominal value.
 	//
 	// Default: None
 	DefaultInstanceWarmup *int64 `type:"integer"`
@@ -7420,21 +8013,23 @@ type CreateAutoScalingGroupInput struct {
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
 	// checking the health status of an EC2 instance that has come into service
-	// and marking it unhealthy due to a failed Elastic Load Balancing or custom
-	// health check. This is useful if your instances do not immediately pass these
-	// health checks after they enter the InService state. For more information,
-	// see Set the health check grace period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
+	// and marking it unhealthy due to a failed health check. This is useful if
+	// your instances do not immediately pass their health checks after they enter
+	// the InService state. For more information, see Set the health check grace
+	// period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Default: 0 seconds
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// The service to use for the health checks. The valid values are EC2 (default)
-	// and ELB. If you configure an Auto Scaling group to use load balancer (ELB)
-	// health checks, it considers the instance unhealthy if it fails either the
-	// EC2 status checks or the load balancer health checks. For more information,
-	// see Health checks for Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// A comma-separated value string of one or more health check types.
+	//
+	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
+	// check and cannot be disabled. For more information, see Health checks for
+	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
+	//
+	// Only specify EC2 if you must clear a value that was previously set.
 	HealthCheckType *string `min:"1" type:"string"`
 
 	// The ID of the instance used to base the launch configuration on. If specified,
@@ -7472,7 +8067,7 @@ type CreateAutoScalingGroupInput struct {
 
 	// A list of Classic Load Balancers associated with this Auto Scaling group.
 	// For Application Load Balancers, Network Load Balancers, and Gateway Load
-	// Balancer, specify the TargetGroupARNs property instead.
+	// Balancers, specify the TargetGroupARNs property instead.
 	LoadBalancerNames []*string `type:"list"`
 
 	// The maximum amount of time, in seconds, that an instance can be in service.
@@ -7538,11 +8133,12 @@ type CreateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Tags []*Tag `type:"list"`
 
-	// The Amazon Resource Names (ARN) of the target groups to associate with the
-	// Auto Scaling group. Instances are registered as targets with the target groups.
-	// The target groups receive incoming traffic and route requests to one or more
-	// registered targets. For more information, see Use Elastic Load Balancing
-	// to distribute traffic across the instances in your Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
+	// The Amazon Resource Names (ARN) of the Elastic Load Balancing target groups
+	// to associate with the Auto Scaling group. Instances are registered as targets
+	// with the target groups. The target groups receive incoming traffic and route
+	// requests to one or more registered targets. For more information, see Use
+	// Elastic Load Balancing to distribute traffic across the instances in your
+	// Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	TargetGroupARNs []*string `type:"list"`
 
@@ -7555,6 +8151,12 @@ type CreateAutoScalingGroupInput struct {
 	// NewestInstance | OldestInstance | OldestLaunchConfiguration | OldestLaunchTemplate
 	// | arn:aws:lambda:region:account-id:function:my-function:my-alias
 	TerminationPolicies []*string `type:"list"`
+
+	// The list of traffic sources to attach to this Auto Scaling group. You can
+	// use any of the following as traffic sources for an Auto Scaling group: Classic
+	// Load Balancer, Application Load Balancer, Gateway Load Balancer, Network
+	// Load Balancer, and VPC Lattice.
+	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
 	// A comma-separated list of subnet IDs for a virtual private cloud (VPC) where
 	// instances in the Auto Scaling group can be created. If you specify VPCZoneIdentifier
@@ -7644,6 +8246,16 @@ func (s *CreateAutoScalingGroupInput) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.TrafficSources != nil {
+		for i, v := range s.TrafficSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TrafficSources", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -7801,6 +8413,12 @@ func (s *CreateAutoScalingGroupInput) SetTargetGroupARNs(v []*string) *CreateAut
 // SetTerminationPolicies sets the TerminationPolicies field's value.
 func (s *CreateAutoScalingGroupInput) SetTerminationPolicies(v []*string) *CreateAutoScalingGroupInput {
 	s.TerminationPolicies = v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *CreateAutoScalingGroupInput) SetTrafficSources(v []*TrafficSourceIdentifier) *CreateAutoScalingGroupInput {
+	s.TrafficSources = v
 	return s
 }
 
@@ -8321,19 +8939,17 @@ type CustomizedMetricSpecification struct {
 	// The name of the metric. To get the exact metric name, namespace, and dimensions,
 	// inspect the Metric (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Metric.html)
 	// object that is returned by a call to ListMetrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html).
-	//
-	// MetricName is a required field
-	MetricName *string `type:"string" required:"true"`
+	MetricName *string `type:"string"`
+
+	// The metrics to include in the target tracking scaling policy, as a metric
+	// data query. This can include both raw metric and metric math expressions.
+	Metrics []*TargetTrackingMetricDataQuery `type:"list"`
 
 	// The namespace of the metric.
-	//
-	// Namespace is a required field
-	Namespace *string `type:"string" required:"true"`
+	Namespace *string `type:"string"`
 
 	// The statistic of the metric.
-	//
-	// Statistic is a required field
-	Statistic *string `type:"string" required:"true" enum:"MetricStatistic"`
+	Statistic *string `type:"string" enum:"MetricStatistic"`
 
 	// The unit of the metric. For a complete list of the units that CloudWatch
 	// supports, see the MetricDatum (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
@@ -8362,15 +8978,6 @@ func (s CustomizedMetricSpecification) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CustomizedMetricSpecification) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CustomizedMetricSpecification"}
-	if s.MetricName == nil {
-		invalidParams.Add(request.NewErrParamRequired("MetricName"))
-	}
-	if s.Namespace == nil {
-		invalidParams.Add(request.NewErrParamRequired("Namespace"))
-	}
-	if s.Statistic == nil {
-		invalidParams.Add(request.NewErrParamRequired("Statistic"))
-	}
 	if s.Dimensions != nil {
 		for i, v := range s.Dimensions {
 			if v == nil {
@@ -8378,6 +8985,16 @@ func (s *CustomizedMetricSpecification) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Dimensions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Metrics != nil {
+		for i, v := range s.Metrics {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Metrics", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -8397,6 +9014,12 @@ func (s *CustomizedMetricSpecification) SetDimensions(v []*MetricDimension) *Cus
 // SetMetricName sets the MetricName field's value.
 func (s *CustomizedMetricSpecification) SetMetricName(v string) *CustomizedMetricSpecification {
 	s.MetricName = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *CustomizedMetricSpecification) SetMetrics(v []*TargetTrackingMetricDataQuery) *CustomizedMetricSpecification {
+	s.Metrics = v
 	return s
 }
 
@@ -10827,6 +11450,139 @@ func (s *DescribeTerminationPolicyTypesOutput) SetTerminationPolicyTypes(v []*st
 	return s
 }
 
+type DescribeTrafficSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The maximum number of items to return with this call. The maximum value is
+	// 50.
+	MaxRecords *int64 `type:"integer"`
+
+	// The token for the next set of items to return. (You received this token from
+	// a previous call.)
+	NextToken *string `type:"string"`
+
+	// The traffic source type that you want to describe.
+	//
+	// The following lists the valid values:
+	//
+	//    * elb if the traffic source is a Classic Load Balancer.
+	//
+	//    * elbv2 if the traffic source is a Application Load Balancer, Gateway
+	//    Load Balancer, or Network Load Balancer.
+	//
+	//    * vpc-lattice if the traffic source is VPC Lattice.
+	TrafficSourceType *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrafficSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrafficSourcesInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+	if s.TrafficSourceType != nil && len(*s.TrafficSourceType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TrafficSourceType", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeTrafficSourcesInput) SetAutoScalingGroupName(v string) *DescribeTrafficSourcesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeTrafficSourcesInput) SetMaxRecords(v int64) *DescribeTrafficSourcesInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTrafficSourcesInput) SetNextToken(v string) *DescribeTrafficSourcesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTrafficSourceType sets the TrafficSourceType field's value.
+func (s *DescribeTrafficSourcesInput) SetTrafficSourceType(v string) *DescribeTrafficSourcesInput {
+	s.TrafficSourceType = &v
+	return s
+}
+
+type DescribeTrafficSourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// This string indicates that the response contains more items than can be returned
+	// in a single response. To receive additional items, specify this string for
+	// the NextToken value when requesting the next set of items. This value is
+	// null when there are no more items to return.
+	NextToken *string `type:"string"`
+
+	// Information about the traffic sources.
+	TrafficSources []*TrafficSourceState `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTrafficSourcesOutput) SetNextToken(v string) *DescribeTrafficSourcesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *DescribeTrafficSourcesOutput) SetTrafficSources(v []*TrafficSourceState) *DescribeTrafficSourcesOutput {
+	s.TrafficSources = v
+	return s
+}
+
 type DescribeWarmPoolInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10902,8 +11658,10 @@ type DescribeWarmPoolOutput struct {
 	// The instances that are currently in the warm pool.
 	Instances []*Instance `type:"list"`
 
-	// The token for the next set of items to return. (You received this token from
-	// a previous call.)
+	// This string indicates that the response contains more items than can be returned
+	// in a single response. To receive additional items, specify this string for
+	// the NextToken value when requesting the next set of items. This value is
+	// null when there are no more items to return.
 	NextToken *string `type:"string"`
 
 	// The warm pool configuration details.
@@ -11292,6 +12050,102 @@ func (s DetachLoadBalancersOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DetachLoadBalancersOutput) GoString() string {
+	return s.String()
+}
+
+type DetachTrafficSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The unique identifiers of one or more traffic sources. You can specify up
+	// to 10 traffic sources.
+	//
+	// TrafficSources is a required field
+	TrafficSources []*TrafficSourceIdentifier `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachTrafficSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachTrafficSourcesInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+	if s.TrafficSources == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrafficSources"))
+	}
+	if s.TrafficSources != nil {
+		for i, v := range s.TrafficSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TrafficSources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DetachTrafficSourcesInput) SetAutoScalingGroupName(v string) *DetachTrafficSourcesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *DetachTrafficSourcesInput) SetTrafficSources(v []*TrafficSourceIdentifier) *DetachTrafficSourcesInput {
+	s.TrafficSources = v
+	return s
+}
+
+type DetachTrafficSourcesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesOutput) GoString() string {
 	return s.String()
 }
 
@@ -12485,10 +13339,7 @@ type Group struct {
 	// The duration of the health check grace period, in seconds.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// The service to use for the health checks. The valid values are EC2 and ELB.
-	// If you configure an Auto Scaling group to use ELB health checks, it considers
-	// the instance unhealthy if it fails either the EC2 status checks or the load
-	// balancer health checks.
+	// A comma-separated value string of one or more health check types.
 	//
 	// HealthCheckType is a required field
 	HealthCheckType *string `min:"1" type:"string" required:"true"`
@@ -12552,6 +13403,9 @@ type Group struct {
 
 	// The termination policies for the group.
 	TerminationPolicies []*string `type:"list"`
+
+	// The traffic sources associated with this Auto Scaling group.
+	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
 	// One or more subnet IDs, if applicable, separated by commas.
 	VPCZoneIdentifier *string `min:"1" type:"string"`
@@ -12761,6 +13615,12 @@ func (s *Group) SetTerminationPolicies(v []*string) *Group {
 	return s
 }
 
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *Group) SetTrafficSources(v []*TrafficSourceIdentifier) *Group {
+	s.TrafficSources = v
+	return s
+}
+
 // SetVPCZoneIdentifier sets the VPCZoneIdentifier field's value.
 func (s *Group) SetVPCZoneIdentifier(v string) *Group {
 	s.VPCZoneIdentifier = &v
@@ -12788,10 +13648,10 @@ type Instance struct {
 	// AvailabilityZone is a required field
 	AvailabilityZone *string `min:"1" type:"string" required:"true"`
 
-	// The last reported health status of the instance. "Healthy" means that the
-	// instance is healthy and should remain in service. "Unhealthy" means that
-	// the instance is unhealthy and that Amazon EC2 Auto Scaling should terminate
-	// and replace it.
+	// The last reported health status of the instance. Healthy means that the instance
+	// is healthy and should remain in service. Unhealthy means that the instance
+	// is unhealthy and that Amazon EC2 Auto Scaling should terminate and replace
+	// it.
 	//
 	// HealthStatus is a required field
 	HealthStatus *string `min:"1" type:"string" required:"true"`
@@ -12916,10 +13776,10 @@ type InstanceDetails struct {
 	// AvailabilityZone is a required field
 	AvailabilityZone *string `min:"1" type:"string" required:"true"`
 
-	// The last reported health status of this instance. "Healthy" means that the
-	// instance is healthy and should remain in service. "Unhealthy" means that
-	// the instance is unhealthy and Amazon EC2 Auto Scaling should terminate and
-	// replace it.
+	// The last reported health status of this instance. Healthy means that the
+	// instance is healthy and should remain in service. Unhealthy means that the
+	// instance is unhealthy and Amazon EC2 Auto Scaling should terminate and replace
+	// it.
 	//
 	// HealthStatus is a required field
 	HealthStatus *string `min:"1" type:"string" required:"true"`
@@ -13166,7 +14026,7 @@ type InstanceRefresh struct {
 	// The name of the Auto Scaling group.
 	AutoScalingGroupName *string `min:"1" type:"string"`
 
-	// Describes the specific update you want to deploy.
+	// Describes the desired configuration for the instance refresh.
 	DesiredConfiguration *DesiredConfiguration `type:"structure"`
 
 	// The date and time at which the instance refresh ended.
@@ -13177,6 +14037,10 @@ type InstanceRefresh struct {
 
 	// The number of instances remaining to update before the instance refresh is
 	// complete.
+	//
+	// If you roll back the instance refresh, InstancesToUpdate shows you the number
+	// of instances that were not yet updated by the instance refresh. Therefore,
+	// these instances don't need to be replaced as part of the rollback.
 	InstancesToUpdate *int64 `type:"integer"`
 
 	// The percentage of the instance refresh that is complete. For each instance
@@ -13184,36 +14048,48 @@ type InstanceRefresh struct {
 	// and warm-up time. When the instance's health status changes to healthy and
 	// the specified warm-up time passes, the instance is considered updated and
 	// is added to the percentage complete.
+	//
+	// PercentageComplete does not include instances that are replaced during a
+	// rollback. This value gradually goes back down to zero during a rollback.
 	PercentageComplete *int64 `type:"integer"`
 
-	// Describes the preferences for an instance refresh.
+	// The preferences for an instance refresh.
 	Preferences *RefreshPreferences `type:"structure"`
 
 	// Additional progress details for an Auto Scaling group that has a warm pool.
 	ProgressDetails *InstanceRefreshProgressDetails `type:"structure"`
+
+	// The rollback details.
+	RollbackDetails *RollbackDetails `type:"structure"`
 
 	// The date and time at which the instance refresh began.
 	StartTime *time.Time `type:"timestamp"`
 
 	// The current status for the instance refresh operation:
 	//
-	//    * Pending - The request was created, but the operation has not started.
+	//    * Pending - The request was created, but the instance refresh has not
+	//    started.
 	//
-	//    * InProgress - The operation is in progress.
+	//    * InProgress - An instance refresh is in progress.
 	//
-	//    * Successful - The operation completed successfully.
+	//    * Successful - An instance refresh completed successfully.
 	//
-	//    * Failed - The operation failed to complete. You can troubleshoot using
-	//    the status reason and the scaling activities.
+	//    * Failed - An instance refresh failed to complete. You can troubleshoot
+	//    using the status reason and the scaling activities.
 	//
-	//    * Cancelling - An ongoing operation is being cancelled. Cancellation does
-	//    not roll back any replacements that have already been completed, but it
-	//    prevents new replacements from being started.
+	//    * Cancelling - An ongoing instance refresh is being cancelled.
 	//
-	//    * Cancelled - The operation is cancelled.
+	//    * Cancelled - The instance refresh is cancelled.
+	//
+	//    * RollbackInProgress - An instance refresh is being rolled back.
+	//
+	//    * RollbackFailed - The rollback failed to complete. You can troubleshoot
+	//    using the status reason and the scaling activities.
+	//
+	//    * RollbackSuccessful - The rollback completed successfully.
 	Status *string `type:"string" enum:"InstanceRefreshStatus"`
 
-	// Provides more details about the current status of the instance refresh.
+	// The explanation for the specific status assigned to this operation.
 	StatusReason *string `min:"1" type:"string"`
 }
 
@@ -13283,6 +14159,12 @@ func (s *InstanceRefresh) SetProgressDetails(v *InstanceRefreshProgressDetails) 
 	return s
 }
 
+// SetRollbackDetails sets the RollbackDetails field's value.
+func (s *InstanceRefresh) SetRollbackDetails(v *RollbackDetails) *InstanceRefresh {
+	s.RollbackDetails = v
+	return s
+}
+
 // SetStartTime sets the StartTime field's value.
 func (s *InstanceRefresh) SetStartTime(v time.Time) *InstanceRefresh {
 	s.StartTime = &v
@@ -13301,8 +14183,7 @@ func (s *InstanceRefresh) SetStatusReason(v string) *InstanceRefresh {
 	return s
 }
 
-// Reports the progress of an instance refresh on instances that are in the
-// Auto Scaling group.
+// Reports progress on replacing instances that are in the Auto Scaling group.
 type InstanceRefreshLivePoolProgress struct {
 	_ struct{} `type:"structure"`
 
@@ -13347,18 +14228,16 @@ func (s *InstanceRefreshLivePoolProgress) SetPercentageComplete(v int64) *Instan
 	return s
 }
 
-// Reports the progress of an instance refresh on an Auto Scaling group that
-// has a warm pool. This includes separate details for instances in the warm
-// pool and instances in the Auto Scaling group (the live pool).
+// Reports progress on replacing instances in an Auto Scaling group that has
+// a warm pool. This includes separate details for instances in the warm pool
+// and instances in the Auto Scaling group (the live pool).
 type InstanceRefreshProgressDetails struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates the progress of an instance refresh on instances that are in the
-	// Auto Scaling group.
+	// Reports progress on replacing instances that are in the Auto Scaling group.
 	LivePoolProgress *InstanceRefreshLivePoolProgress `type:"structure"`
 
-	// Indicates the progress of an instance refresh on instances that are in the
-	// warm pool.
+	// Reports progress on replacing instances that are in the warm pool.
 	WarmPoolProgress *InstanceRefreshWarmPoolProgress `type:"structure"`
 }
 
@@ -13392,8 +14271,7 @@ func (s *InstanceRefreshProgressDetails) SetWarmPoolProgress(v *InstanceRefreshW
 	return s
 }
 
-// Reports the progress of an instance refresh on instances that are in the
-// warm pool.
+// Reports progress on replacing instances that are in the warm pool.
 type InstanceRefreshWarmPoolProgress struct {
 	_ struct{} `type:"structure"`
 
@@ -13995,11 +14873,9 @@ type InstancesDistribution struct {
 	//
 	// price-capacity-optimized (recommended)
 	//
-	// Amazon EC2 Auto Scaling identifies the pools with the highest capacity availability
-	// for the number of instances that are launching. This means that we will request
-	// Spot Instances from the pools that we believe have the lowest chance of interruption
-	// in the near term. Amazon EC2 Auto Scaling then requests Spot Instances from
-	// the lowest priced of these pools.
+	// The price and capacity optimized allocation strategy looks at both price
+	// and capacity to select the Spot Instance pools that are the least likely
+	// to be interrupted and have the lowest possible price.
 	SpotAllocationStrategy *string `type:"string"`
 
 	// The number of Spot Instance pools across which to allocate your Spot Instances.
@@ -17811,27 +18687,48 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 type RefreshPreferences struct {
 	_ struct{} `type:"structure"`
 
-	// The amount of time, in seconds, to wait after a checkpoint before continuing.
-	// This property is optional, but if you specify a value for it, you must also
-	// specify a value for CheckpointPercentages. If you specify a value for CheckpointPercentages
-	// and not for CheckpointDelay, the CheckpointDelay defaults to 3600 (1 hour).
+	// (Optional) Indicates whether to roll back the Auto Scaling group to its previous
+	// configuration if the instance refresh fails. The default is false.
+	//
+	// A rollback is not supported in the following situations:
+	//
+	//    * There is no desired configuration specified for the instance refresh.
+	//
+	//    * The Auto Scaling group has a launch template that uses an Amazon Web
+	//    Services Systems Manager parameter instead of an AMI ID for the ImageId
+	//    property.
+	//
+	//    * The Auto Scaling group uses the launch template's $Latest or $Default
+	//    version.
+	AutoRollback *bool `type:"boolean"`
+
+	// (Optional) The amount of time, in seconds, to wait after a checkpoint before
+	// continuing. This property is optional, but if you specify a value for it,
+	// you must also specify a value for CheckpointPercentages. If you specify a
+	// value for CheckpointPercentages and not for CheckpointDelay, the CheckpointDelay
+	// defaults to 3600 (1 hour).
 	CheckpointDelay *int64 `type:"integer"`
 
-	// Threshold values for each checkpoint in ascending order. Each number must
-	// be unique. To replace all instances in the Auto Scaling group, the last number
-	// in the array must be 100.
+	// (Optional) Threshold values for each checkpoint in ascending order. Each
+	// number must be unique. To replace all instances in the Auto Scaling group,
+	// the last number in the array must be 100.
 	//
 	// For usage examples, see Adding checkpoints to an instance refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-adding-checkpoints-instance-refresh.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	CheckpointPercentages []*int64 `type:"list"`
 
-	// Not needed if the default instance warmup is defined for the group.
+	// A time period, in seconds, during which an instance refresh waits before
+	// moving on to replacing the next instance after a new instance enters the
+	// InService state.
 	//
-	// The duration of the instance warmup, in seconds.
+	// This property is not required for normal usage. Instead, use the DefaultInstanceWarmup
+	// property of the Auto Scaling group. The InstanceWarmup and DefaultInstanceWarmup
+	// properties work the same way. Only specify this property if you must override
+	// the DefaultInstanceWarmup property.
 	//
-	// The default is to use the value for the default instance warmup defined for
-	// the group. If default instance warmup is null, then InstanceWarmup falls
-	// back to the value of the health check grace period.
+	// If you do not specify this property, the instance warmup by default is the
+	// value of the DefaultInstanceWarmup property, if defined (which is recommended
+	// in all cases), or the HealthCheckGracePeriod property otherwise.
 	InstanceWarmup *int64 `type:"integer"`
 
 	// The amount of capacity in the Auto Scaling group that must pass your group's
@@ -17844,12 +18741,57 @@ type RefreshPreferences struct {
 	// has the effect of replacing all instances at the same time.
 	MinHealthyPercentage *int64 `type:"integer"`
 
-	// A boolean value that indicates whether skip matching is enabled. If true,
+	// Choose the behavior that you want Amazon EC2 Auto Scaling to use if instances
+	// protected from scale in are found.
+	//
+	// The following lists the valid values:
+	//
+	// Refresh
+	//
+	// Amazon EC2 Auto Scaling replaces instances that are protected from scale
+	// in.
+	//
+	// Ignore
+	//
+	// Amazon EC2 Auto Scaling ignores instances that are protected from scale in
+	// and continues to replace instances that are not protected.
+	//
+	// Wait (default)
+	//
+	// Amazon EC2 Auto Scaling waits one hour for you to remove scale-in protection.
+	// Otherwise, the instance refresh will fail.
+	ScaleInProtectedInstances *string `type:"string" enum:"ScaleInProtectedInstances"`
+
+	// (Optional) Indicates whether skip matching is enabled. If enabled (true),
 	// then Amazon EC2 Auto Scaling skips replacing instances that match the desired
 	// configuration. If no desired configuration is specified, then it skips replacing
-	// instances that have the same configuration that is already set on the group.
-	// The default is false.
+	// instances that have the same launch template and instance types that the
+	// Auto Scaling group was using before the start of the instance refresh. The
+	// default is false.
+	//
+	// For more information, see Use an instance refresh with skip matching (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh-skip-matching.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	SkipMatching *bool `type:"boolean"`
+
+	// Choose the behavior that you want Amazon EC2 Auto Scaling to use if instances
+	// in Standby state are found.
+	//
+	// The following lists the valid values:
+	//
+	// Terminate
+	//
+	// Amazon EC2 Auto Scaling terminates instances that are in Standby.
+	//
+	// Ignore
+	//
+	// Amazon EC2 Auto Scaling ignores instances that are in Standby and continues
+	// to replace instances that are in the InService state.
+	//
+	// Wait (default)
+	//
+	// Amazon EC2 Auto Scaling waits one hour for you to return the instances to
+	// service. Otherwise, the instance refresh will fail.
+	StandbyInstances *string `type:"string" enum:"StandbyInstances"`
 }
 
 // String returns the string representation.
@@ -17868,6 +18810,12 @@ func (s RefreshPreferences) String() string {
 // value will be replaced with "sensitive".
 func (s RefreshPreferences) GoString() string {
 	return s.String()
+}
+
+// SetAutoRollback sets the AutoRollback field's value.
+func (s *RefreshPreferences) SetAutoRollback(v bool) *RefreshPreferences {
+	s.AutoRollback = &v
+	return s
 }
 
 // SetCheckpointDelay sets the CheckpointDelay field's value.
@@ -17894,9 +18842,21 @@ func (s *RefreshPreferences) SetMinHealthyPercentage(v int64) *RefreshPreference
 	return s
 }
 
+// SetScaleInProtectedInstances sets the ScaleInProtectedInstances field's value.
+func (s *RefreshPreferences) SetScaleInProtectedInstances(v string) *RefreshPreferences {
+	s.ScaleInProtectedInstances = &v
+	return s
+}
+
 // SetSkipMatching sets the SkipMatching field's value.
 func (s *RefreshPreferences) SetSkipMatching(v bool) *RefreshPreferences {
 	s.SkipMatching = &v
+	return s
+}
+
+// SetStandbyInstances sets the StandbyInstances field's value.
+func (s *RefreshPreferences) SetStandbyInstances(v string) *RefreshPreferences {
+	s.StandbyInstances = &v
 	return s
 }
 
@@ -17920,6 +18880,153 @@ func (s ResumeProcessesOutput) String() string {
 // value will be replaced with "sensitive".
 func (s ResumeProcessesOutput) GoString() string {
 	return s.String()
+}
+
+// Details about an instance refresh rollback.
+type RollbackDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates the value of InstancesToUpdate at the time the rollback started.
+	InstancesToUpdateOnRollback *int64 `type:"integer"`
+
+	// Indicates the value of PercentageComplete at the time the rollback started.
+	PercentageCompleteOnRollback *int64 `type:"integer"`
+
+	// Reports progress on replacing instances in an Auto Scaling group that has
+	// a warm pool. This includes separate details for instances in the warm pool
+	// and instances in the Auto Scaling group (the live pool).
+	ProgressDetailsOnRollback *InstanceRefreshProgressDetails `type:"structure"`
+
+	// The reason for this instance refresh rollback (for example, whether a manual
+	// or automatic rollback was initiated).
+	RollbackReason *string `min:"1" type:"string"`
+
+	// The date and time at which the rollback began.
+	RollbackStartTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackDetails) GoString() string {
+	return s.String()
+}
+
+// SetInstancesToUpdateOnRollback sets the InstancesToUpdateOnRollback field's value.
+func (s *RollbackDetails) SetInstancesToUpdateOnRollback(v int64) *RollbackDetails {
+	s.InstancesToUpdateOnRollback = &v
+	return s
+}
+
+// SetPercentageCompleteOnRollback sets the PercentageCompleteOnRollback field's value.
+func (s *RollbackDetails) SetPercentageCompleteOnRollback(v int64) *RollbackDetails {
+	s.PercentageCompleteOnRollback = &v
+	return s
+}
+
+// SetProgressDetailsOnRollback sets the ProgressDetailsOnRollback field's value.
+func (s *RollbackDetails) SetProgressDetailsOnRollback(v *InstanceRefreshProgressDetails) *RollbackDetails {
+	s.ProgressDetailsOnRollback = v
+	return s
+}
+
+// SetRollbackReason sets the RollbackReason field's value.
+func (s *RollbackDetails) SetRollbackReason(v string) *RollbackDetails {
+	s.RollbackReason = &v
+	return s
+}
+
+// SetRollbackStartTime sets the RollbackStartTime field's value.
+func (s *RollbackDetails) SetRollbackStartTime(v time.Time) *RollbackDetails {
+	s.RollbackStartTime = &v
+	return s
+}
+
+type RollbackInstanceRefreshInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	AutoScalingGroupName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RollbackInstanceRefreshInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RollbackInstanceRefreshInput"}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *RollbackInstanceRefreshInput) SetAutoScalingGroupName(v string) *RollbackInstanceRefreshInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+type RollbackInstanceRefreshOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The instance refresh ID associated with the request. This is the unique ID
+	// assigned to the instance refresh when it was started.
+	InstanceRefreshId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstanceRefreshId sets the InstanceRefreshId field's value.
+func (s *RollbackInstanceRefreshOutput) SetInstanceRefreshId(v string) *RollbackInstanceRefreshOutput {
+	s.InstanceRefreshId = &v
+	return s
 }
 
 // Describes a scaling policy.
@@ -18777,21 +19884,25 @@ type StartInstanceRefreshInput struct {
 	// When you specify a new launch template or a new version of the current launch
 	// template for your desired configuration, consider enabling the SkipMatching
 	// property in preferences. If it's enabled, Amazon EC2 Auto Scaling skips replacing
-	// instances that already use the specified launch template and version. This
-	// can help you reduce the number of replacements that are required to apply
-	// updates.
+	// instances that already use the specified launch template and instance types.
+	// This can help you reduce the number of replacements that are required to
+	// apply updates.
 	DesiredConfiguration *DesiredConfiguration `type:"structure"`
 
-	// Set of preferences associated with the instance refresh request. If not provided,
-	// the default values are used.
+	// Sets your preferences for the instance refresh so that it performs as expected
+	// when you start it. Includes the instance warmup time, the minimum healthy
+	// percentage, and the behaviors that you want Amazon EC2 Auto Scaling to use
+	// if instances that are in Standby state or protected from scale in are found.
+	// You can also choose to enable additional features, such as the following:
+	//
+	//    * Auto rollback
+	//
+	//    * Checkpoints
+	//
+	//    * Skip matching
 	Preferences *RefreshPreferences `type:"structure"`
 
 	// The strategy to use for the instance refresh. The only valid value is Rolling.
-	//
-	// A rolling update helps you update your instances gradually. A rolling update
-	// can fail due to failed health checks or if instances are on standby or are
-	// protected from scale in. If the rolling update process fails, any instances
-	// that are replaced are not rolled back to their previous configuration.
 	Strategy *string `type:"string" enum:"RefreshStrategy"`
 }
 
@@ -18861,7 +19972,7 @@ func (s *StartInstanceRefreshInput) SetStrategy(v string) *StartInstanceRefreshI
 type StartInstanceRefreshOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A unique ID for tracking the progress of the request.
+	// A unique ID for tracking the progress of the instance refresh.
 	InstanceRefreshId *string `min:"1" type:"string"`
 }
 
@@ -19319,6 +20430,215 @@ func (s *TargetTrackingConfiguration) SetTargetValue(v float64) *TargetTrackingC
 	return s
 }
 
+// The metric data to return. Also defines whether this call is returning data
+// for one metric only, or whether it is performing a math expression on the
+// values of returned metric statistics to create a new time series. A time
+// series is a series of data points, each of which is associated with a timestamp.
+type TargetTrackingMetricDataQuery struct {
+	_ struct{} `type:"structure"`
+
+	// The math expression to perform on the returned data, if this object is performing
+	// a math expression. This expression can use the Id of the other metrics to
+	// refer to those metrics, and can also use the Id of other expressions to use
+	// the result of those expressions.
+	//
+	// Conditional: Within each TargetTrackingMetricDataQuery object, you must specify
+	// either Expression or MetricStat, but not both.
+	Expression *string `min:"1" type:"string"`
+
+	// A short name that identifies the object's results in the response. This name
+	// must be unique among all TargetTrackingMetricDataQuery objects specified
+	// for a single scaling policy. If you are performing math expressions on this
+	// set of data, this name represents that data and can serve as a variable in
+	// the mathematical expression. The valid characters are letters, numbers, and
+	// underscores. The first character must be a lowercase letter.
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
+
+	// A human-readable label for this metric or expression. This is especially
+	// useful if this is a math expression, so that you know what the value represents.
+	Label *string `type:"string"`
+
+	// Information about the metric data to return.
+	//
+	// Conditional: Within each TargetTrackingMetricDataQuery object, you must specify
+	// either Expression or MetricStat, but not both.
+	MetricStat *TargetTrackingMetricStat `type:"structure"`
+
+	// Indicates whether to return the timestamps and raw data values of this metric.
+	//
+	// If you use any math expressions, specify true for this value for only the
+	// final math expression that the metric specification is based on. You must
+	// specify false for ReturnData for all the other metrics and expressions used
+	// in the metric specification.
+	//
+	// If you are only retrieving metrics and not performing any math expressions,
+	// do not specify anything for ReturnData. This sets it to its default (true).
+	ReturnData *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricDataQuery) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricDataQuery) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TargetTrackingMetricDataQuery) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TargetTrackingMetricDataQuery"}
+	if s.Expression != nil && len(*s.Expression) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Expression", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+	if s.MetricStat != nil {
+		if err := s.MetricStat.Validate(); err != nil {
+			invalidParams.AddNested("MetricStat", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExpression sets the Expression field's value.
+func (s *TargetTrackingMetricDataQuery) SetExpression(v string) *TargetTrackingMetricDataQuery {
+	s.Expression = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *TargetTrackingMetricDataQuery) SetId(v string) *TargetTrackingMetricDataQuery {
+	s.Id = &v
+	return s
+}
+
+// SetLabel sets the Label field's value.
+func (s *TargetTrackingMetricDataQuery) SetLabel(v string) *TargetTrackingMetricDataQuery {
+	s.Label = &v
+	return s
+}
+
+// SetMetricStat sets the MetricStat field's value.
+func (s *TargetTrackingMetricDataQuery) SetMetricStat(v *TargetTrackingMetricStat) *TargetTrackingMetricDataQuery {
+	s.MetricStat = v
+	return s
+}
+
+// SetReturnData sets the ReturnData field's value.
+func (s *TargetTrackingMetricDataQuery) SetReturnData(v bool) *TargetTrackingMetricDataQuery {
+	s.ReturnData = &v
+	return s
+}
+
+// This structure defines the CloudWatch metric to return, along with the statistic
+// and unit.
+//
+// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+// in the Amazon CloudWatch User Guide.
+type TargetTrackingMetricStat struct {
+	_ struct{} `type:"structure"`
+
+	// The metric to use.
+	//
+	// Metric is a required field
+	Metric *Metric `type:"structure" required:"true"`
+
+	// The statistic to return. It can include any CloudWatch statistic or extended
+	// statistic. For a list of valid values, see the table in Statistics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Statistic)
+	// in the Amazon CloudWatch User Guide.
+	//
+	// The most commonly used metric for scaling is Average.
+	//
+	// Stat is a required field
+	Stat *string `min:"1" type:"string" required:"true"`
+
+	// The unit to use for the returned data points. For a complete list of the
+	// units that CloudWatch supports, see the MetricDatum (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
+	// data type in the Amazon CloudWatch API Reference.
+	Unit *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricStat) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricStat) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TargetTrackingMetricStat) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TargetTrackingMetricStat"}
+	if s.Metric == nil {
+		invalidParams.Add(request.NewErrParamRequired("Metric"))
+	}
+	if s.Stat == nil {
+		invalidParams.Add(request.NewErrParamRequired("Stat"))
+	}
+	if s.Stat != nil && len(*s.Stat) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Stat", 1))
+	}
+	if s.Metric != nil {
+		if err := s.Metric.Validate(); err != nil {
+			invalidParams.AddNested("Metric", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMetric sets the Metric field's value.
+func (s *TargetTrackingMetricStat) SetMetric(v *Metric) *TargetTrackingMetricStat {
+	s.Metric = v
+	return s
+}
+
+// SetStat sets the Stat field's value.
+func (s *TargetTrackingMetricStat) SetStat(v string) *TargetTrackingMetricStat {
+	s.Stat = &v
+	return s
+}
+
+// SetUnit sets the Unit field's value.
+func (s *TargetTrackingMetricStat) SetUnit(v string) *TargetTrackingMetricStat {
+	s.Unit = &v
+	return s
+}
+
 type TerminateInstanceInAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -19456,6 +20776,195 @@ func (s *TotalLocalStorageGBRequest) SetMin(v float64) *TotalLocalStorageGBReque
 	return s
 }
 
+// Identifying information for a traffic source.
+type TrafficSourceIdentifier struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies the traffic source.
+	//
+	// For Application Load Balancers, Gateway Load Balancers, Network Load Balancers,
+	// and VPC Lattice, this will be the Amazon Resource Name (ARN) for a target
+	// group in this account and Region. For Classic Load Balancers, this will be
+	// the name of the Classic Load Balancer in this account and Region.
+	//
+	// For example:
+	//
+	//    * Application Load Balancer ARN: arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/1234567890123456
+	//
+	//    * Classic Load Balancer name: my-classic-load-balancer
+	//
+	//    * VPC Lattice ARN: arn:aws:vpc-lattice:us-west-2:123456789012:targetgroup/tg-1234567890123456
+	//
+	// To get the ARN of a target group for a Application Load Balancer, Gateway
+	// Load Balancer, or Network Load Balancer, or the name of a Classic Load Balancer,
+	// use the Elastic Load Balancing DescribeTargetGroups (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html)
+	// and DescribeLoadBalancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html)
+	// API operations.
+	//
+	// To get the ARN of a target group for VPC Lattice, use the VPC Lattice GetTargetGroup
+	// (https://docs.aws.amazon.com/vpc-lattice/latest/APIReference/API_GetTargetGroup.html)
+	// API operation.
+	//
+	// Identifier is a required field
+	Identifier *string `min:"1" type:"string" required:"true"`
+
+	// Provides additional context for the value of Identifier.
+	//
+	// The following lists the valid values:
+	//
+	//    * elb if Identifier is the name of a Classic Load Balancer.
+	//
+	//    * elbv2 if Identifier is the ARN of an Application Load Balancer, Gateway
+	//    Load Balancer, or Network Load Balancer target group.
+	//
+	//    * vpc-lattice if Identifier is the ARN of a VPC Lattice target group.
+	//
+	// Required if the identifier is the name of a Classic Load Balancer.
+	Type *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceIdentifier) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceIdentifier) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TrafficSourceIdentifier) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TrafficSourceIdentifier"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+	if s.Type != nil && len(*s.Type) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Type", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *TrafficSourceIdentifier) SetIdentifier(v string) *TrafficSourceIdentifier {
+	s.Identifier = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *TrafficSourceIdentifier) SetType(v string) *TrafficSourceIdentifier {
+	s.Type = &v
+	return s
+}
+
+// Describes the state of a traffic source.
+type TrafficSourceState struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the traffic source.
+	Identifier *string `min:"1" type:"string"`
+
+	// Describes the current state of a traffic source.
+	//
+	// The state values are as follows:
+	//
+	//    * Adding - The Auto Scaling instances are being registered with the load
+	//    balancer or target group.
+	//
+	//    * Added - All Auto Scaling instances are registered with the load balancer
+	//    or target group.
+	//
+	//    * InService - For an Elastic Load Balancing load balancer or target group,
+	//    at least one Auto Scaling instance passed an ELB health check. For VPC
+	//    Lattice, at least one Auto Scaling instance passed an VPC_LATTICE health
+	//    check.
+	//
+	//    * Removing - The Auto Scaling instances are being deregistered from the
+	//    load balancer or target group. If connection draining (deregistration
+	//    delay) is enabled, Elastic Load Balancing or VPC Lattice waits for in-flight
+	//    requests to complete before deregistering the instances.
+	//
+	//    * Removed - All Auto Scaling instances are deregistered from the load
+	//    balancer or target group.
+	State *string `min:"1" type:"string"`
+
+	// This is replaced by Identifier.
+	//
+	// Deprecated: TrafficSource has been replaced by Identifier
+	TrafficSource *string `min:"1" deprecated:"true" type:"string"`
+
+	// Provides additional context for the value of Identifier.
+	//
+	// The following lists the valid values:
+	//
+	//    * elb if Identifier is the name of a Classic Load Balancer.
+	//
+	//    * elbv2 if Identifier is the ARN of an Application Load Balancer, Gateway
+	//    Load Balancer, or Network Load Balancer target group.
+	//
+	//    * vpc-lattice if Identifier is the ARN of a VPC Lattice target group.
+	//
+	// Required if the identifier is the name of a Classic Load Balancer.
+	Type *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceState) GoString() string {
+	return s.String()
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *TrafficSourceState) SetIdentifier(v string) *TrafficSourceState {
+	s.Identifier = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *TrafficSourceState) SetState(v string) *TrafficSourceState {
+	s.State = &v
+	return s
+}
+
+// SetTrafficSource sets the TrafficSource field's value.
+func (s *TrafficSourceState) SetTrafficSource(v string) *TrafficSourceState {
+	s.TrafficSource = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *TrafficSourceState) SetType(v string) *TrafficSourceState {
+	s.Type = &v
+	return s
+}
+
 type UpdateAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -19483,23 +20992,24 @@ type UpdateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	DefaultCooldown *int64 `type:"integer"`
 
-	// The amount of time, in seconds, until a newly launched instance can contribute
-	// to the Amazon CloudWatch metrics. This delay lets an instance finish initializing
-	// before Amazon EC2 Auto Scaling aggregates instance metrics, resulting in
-	// more reliable usage data. Set this value equal to the amount of time that
-	// it takes for resource consumption to become stable after an instance reaches
-	// the InService state. For more information, see Set the default instance warmup
-	// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
+	// The amount of time, in seconds, until a new instance is considered to have
+	// finished initializing and resource consumption to become stable after it
+	// enters the InService state.
+	//
+	// During an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
+	// period after it replaces an instance before it moves on to replacing the
+	// next instance. Amazon EC2 Auto Scaling also waits for the warm-up period
+	// before aggregating the metrics for new instances with existing instances
+	// in the Amazon CloudWatch metrics that are used for scaling, resulting in
+	// more reliable usage data. For more information, see Set the default instance
+	// warmup for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// To manage your warm-up settings at the group level, we recommend that you
-	// set the default instance warmup, even if its value is set to 0 seconds. This
-	// also optimizes the performance of scaling policies that scale continuously,
-	// such as target tracking and step scaling policies.
-	//
-	// If you need to remove a value that you previously set, include the property
-	// but specify -1 for the value. However, we strongly recommend keeping the
-	// default instance warmup enabled by specifying a minimum value of 0.
+	// To manage various warm-up settings at the group level, we recommend that
+	// you set the default instance warmup, even if it is set to 0 seconds. To remove
+	// a value that you previously set, include the property but specify -1 for
+	// the value. However, we strongly recommend keeping the default instance warmup
+	// enabled by specifying a value of 0 or other nominal value.
 	DefaultInstanceWarmup *int64 `type:"integer"`
 
 	// The desired capacity is the initial capacity of the Auto Scaling group after
@@ -19522,17 +21032,21 @@ type UpdateAutoScalingGroupInput struct {
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
 	// checking the health status of an EC2 instance that has come into service
-	// and marking it unhealthy due to a failed Elastic Load Balancing or custom
-	// health check. This is useful if your instances do not immediately pass these
-	// health checks after they enter the InService state. For more information,
-	// see Set the health check grace period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
+	// and marking it unhealthy due to a failed health check. This is useful if
+	// your instances do not immediately pass their health checks after they enter
+	// the InService state. For more information, see Set the health check grace
+	// period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// The service to use for the health checks. The valid values are EC2 and ELB.
-	// If you configure an Auto Scaling group to use ELB health checks, it considers
-	// the instance unhealthy if it fails either the EC2 status checks or the load
-	// balancer health checks.
+	// A comma-separated value string of one or more health check types.
+	//
+	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
+	// check and cannot be disabled. For more information, see Health checks for
+	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	//
+	// Only specify EC2 if you must clear a value that was previously set.
 	HealthCheckType *string `min:"1" type:"string"`
 
 	// The name of the launch configuration. If you specify LaunchConfigurationName
@@ -20149,6 +21663,15 @@ const (
 
 	// InstanceRefreshStatusCancelled is a InstanceRefreshStatus enum value
 	InstanceRefreshStatusCancelled = "Cancelled"
+
+	// InstanceRefreshStatusRollbackInProgress is a InstanceRefreshStatus enum value
+	InstanceRefreshStatusRollbackInProgress = "RollbackInProgress"
+
+	// InstanceRefreshStatusRollbackFailed is a InstanceRefreshStatus enum value
+	InstanceRefreshStatusRollbackFailed = "RollbackFailed"
+
+	// InstanceRefreshStatusRollbackSuccessful is a InstanceRefreshStatus enum value
+	InstanceRefreshStatusRollbackSuccessful = "RollbackSuccessful"
 )
 
 // InstanceRefreshStatus_Values returns all elements of the InstanceRefreshStatus enum
@@ -20160,6 +21683,9 @@ func InstanceRefreshStatus_Values() []string {
 		InstanceRefreshStatusFailed,
 		InstanceRefreshStatusCancelling,
 		InstanceRefreshStatusCancelled,
+		InstanceRefreshStatusRollbackInProgress,
+		InstanceRefreshStatusRollbackFailed,
+		InstanceRefreshStatusRollbackSuccessful,
 	}
 }
 
@@ -20468,6 +21994,26 @@ func RefreshStrategy_Values() []string {
 }
 
 const (
+	// ScaleInProtectedInstancesRefresh is a ScaleInProtectedInstances enum value
+	ScaleInProtectedInstancesRefresh = "Refresh"
+
+	// ScaleInProtectedInstancesIgnore is a ScaleInProtectedInstances enum value
+	ScaleInProtectedInstancesIgnore = "Ignore"
+
+	// ScaleInProtectedInstancesWait is a ScaleInProtectedInstances enum value
+	ScaleInProtectedInstancesWait = "Wait"
+)
+
+// ScaleInProtectedInstances_Values returns all elements of the ScaleInProtectedInstances enum
+func ScaleInProtectedInstances_Values() []string {
+	return []string{
+		ScaleInProtectedInstancesRefresh,
+		ScaleInProtectedInstancesIgnore,
+		ScaleInProtectedInstancesWait,
+	}
+}
+
+const (
 	// ScalingActivityStatusCodePendingSpotBidPlacement is a ScalingActivityStatusCode enum value
 	ScalingActivityStatusCodePendingSpotBidPlacement = "PendingSpotBidPlacement"
 
@@ -20503,6 +22049,9 @@ const (
 
 	// ScalingActivityStatusCodeCancelled is a ScalingActivityStatusCode enum value
 	ScalingActivityStatusCodeCancelled = "Cancelled"
+
+	// ScalingActivityStatusCodeWaitingForConnectionDraining is a ScalingActivityStatusCode enum value
+	ScalingActivityStatusCodeWaitingForConnectionDraining = "WaitingForConnectionDraining"
 )
 
 // ScalingActivityStatusCode_Values returns all elements of the ScalingActivityStatusCode enum
@@ -20520,6 +22069,27 @@ func ScalingActivityStatusCode_Values() []string {
 		ScalingActivityStatusCodeSuccessful,
 		ScalingActivityStatusCodeFailed,
 		ScalingActivityStatusCodeCancelled,
+		ScalingActivityStatusCodeWaitingForConnectionDraining,
+	}
+}
+
+const (
+	// StandbyInstancesTerminate is a StandbyInstances enum value
+	StandbyInstancesTerminate = "Terminate"
+
+	// StandbyInstancesIgnore is a StandbyInstances enum value
+	StandbyInstancesIgnore = "Ignore"
+
+	// StandbyInstancesWait is a StandbyInstances enum value
+	StandbyInstancesWait = "Wait"
+)
+
+// StandbyInstances_Values returns all elements of the StandbyInstances enum
+func StandbyInstances_Values() []string {
+	return []string{
+		StandbyInstancesTerminate,
+		StandbyInstancesIgnore,
+		StandbyInstancesWait,
 	}
 }
 

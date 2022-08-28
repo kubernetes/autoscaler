@@ -429,8 +429,7 @@ func (c *EC2) AcceptVpcEndpointConnectionsRequest(input *AcceptVpcEndpointConnec
 
 // AcceptVpcEndpointConnections API operation for Amazon Elastic Compute Cloud.
 //
-// Accepts one or more interface VPC endpoint connection requests to your VPC
-// endpoint service.
+// Accepts connection requests to your VPC endpoint service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -852,9 +851,12 @@ func (c *EC2) AllocateIpamPoolCidrRequest(input *AllocateIpamPoolCidrInput) (req
 // AllocateIpamPoolCidr API operation for Amazon Elastic Compute Cloud.
 //
 // Allocate a CIDR from an IPAM pool. In IPAM, an allocation is a CIDR assignment
-// from an IPAM pool to another resource or IPAM pool. For more information,
+// from an IPAM pool to another IPAM pool or to a resource. For more information,
 // see Allocate CIDRs (https://docs.aws.amazon.com/vpc/latest/ipam/allocate-cidrs-ipam.html)
 // in the Amazon VPC IPAM User Guide.
+//
+// This action creates an allocation with strong consistency. The returned CIDR
+// will not overlap with any other allocations from the same pool.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1141,6 +1143,81 @@ func (c *EC2) AssignPrivateIpAddresses(input *AssignPrivateIpAddressesInput) (*A
 // for more information on using Contexts.
 func (c *EC2) AssignPrivateIpAddressesWithContext(ctx aws.Context, input *AssignPrivateIpAddressesInput, opts ...request.Option) (*AssignPrivateIpAddressesOutput, error) {
 	req, out := c.AssignPrivateIpAddressesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAssignPrivateNatGatewayAddress = "AssignPrivateNatGatewayAddress"
+
+// AssignPrivateNatGatewayAddressRequest generates a "aws/request.Request" representing the
+// client's request for the AssignPrivateNatGatewayAddress operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssignPrivateNatGatewayAddress for more information on using the AssignPrivateNatGatewayAddress
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssignPrivateNatGatewayAddressRequest method.
+//	req, resp := client.AssignPrivateNatGatewayAddressRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssignPrivateNatGatewayAddress
+func (c *EC2) AssignPrivateNatGatewayAddressRequest(input *AssignPrivateNatGatewayAddressInput) (req *request.Request, output *AssignPrivateNatGatewayAddressOutput) {
+	op := &request.Operation{
+		Name:       opAssignPrivateNatGatewayAddress,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AssignPrivateNatGatewayAddressInput{}
+	}
+
+	output = &AssignPrivateNatGatewayAddressOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AssignPrivateNatGatewayAddress API operation for Amazon Elastic Compute Cloud.
+//
+// Assigns one or more private IPv4 addresses to a private NAT gateway. For
+// more information, see Work with NAT gateways (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-working-with)
+// in the Amazon Virtual Private Cloud User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation AssignPrivateNatGatewayAddress for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssignPrivateNatGatewayAddress
+func (c *EC2) AssignPrivateNatGatewayAddress(input *AssignPrivateNatGatewayAddressInput) (*AssignPrivateNatGatewayAddressOutput, error) {
+	req, out := c.AssignPrivateNatGatewayAddressRequest(input)
+	return out, req.Send()
+}
+
+// AssignPrivateNatGatewayAddressWithContext is the same as AssignPrivateNatGatewayAddress with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssignPrivateNatGatewayAddress for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) AssignPrivateNatGatewayAddressWithContext(ctx aws.Context, input *AssignPrivateNatGatewayAddressInput, opts ...request.Option) (*AssignPrivateNatGatewayAddressOutput, error) {
+	req, out := c.AssignPrivateNatGatewayAddressRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1660,6 +1737,161 @@ func (c *EC2) AssociateInstanceEventWindow(input *AssociateInstanceEventWindowIn
 // for more information on using Contexts.
 func (c *EC2) AssociateInstanceEventWindowWithContext(ctx aws.Context, input *AssociateInstanceEventWindowInput, opts ...request.Option) (*AssociateInstanceEventWindowOutput, error) {
 	req, out := c.AssociateInstanceEventWindowRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAssociateIpamResourceDiscovery = "AssociateIpamResourceDiscovery"
+
+// AssociateIpamResourceDiscoveryRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateIpamResourceDiscovery operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateIpamResourceDiscovery for more information on using the AssociateIpamResourceDiscovery
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateIpamResourceDiscoveryRequest method.
+//	req, resp := client.AssociateIpamResourceDiscoveryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateIpamResourceDiscovery
+func (c *EC2) AssociateIpamResourceDiscoveryRequest(input *AssociateIpamResourceDiscoveryInput) (req *request.Request, output *AssociateIpamResourceDiscoveryOutput) {
+	op := &request.Operation{
+		Name:       opAssociateIpamResourceDiscovery,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AssociateIpamResourceDiscoveryInput{}
+	}
+
+	output = &AssociateIpamResourceDiscoveryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AssociateIpamResourceDiscovery API operation for Amazon Elastic Compute Cloud.
+//
+// Associates an IPAM resource discovery with an Amazon VPC IPAM. A resource
+// discovery is an IPAM component that enables IPAM to manage and monitor resources
+// that belong to the owning account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation AssociateIpamResourceDiscovery for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateIpamResourceDiscovery
+func (c *EC2) AssociateIpamResourceDiscovery(input *AssociateIpamResourceDiscoveryInput) (*AssociateIpamResourceDiscoveryOutput, error) {
+	req, out := c.AssociateIpamResourceDiscoveryRequest(input)
+	return out, req.Send()
+}
+
+// AssociateIpamResourceDiscoveryWithContext is the same as AssociateIpamResourceDiscovery with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateIpamResourceDiscovery for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) AssociateIpamResourceDiscoveryWithContext(ctx aws.Context, input *AssociateIpamResourceDiscoveryInput, opts ...request.Option) (*AssociateIpamResourceDiscoveryOutput, error) {
+	req, out := c.AssociateIpamResourceDiscoveryRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAssociateNatGatewayAddress = "AssociateNatGatewayAddress"
+
+// AssociateNatGatewayAddressRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateNatGatewayAddress operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateNatGatewayAddress for more information on using the AssociateNatGatewayAddress
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateNatGatewayAddressRequest method.
+//	req, resp := client.AssociateNatGatewayAddressRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateNatGatewayAddress
+func (c *EC2) AssociateNatGatewayAddressRequest(input *AssociateNatGatewayAddressInput) (req *request.Request, output *AssociateNatGatewayAddressOutput) {
+	op := &request.Operation{
+		Name:       opAssociateNatGatewayAddress,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AssociateNatGatewayAddressInput{}
+	}
+
+	output = &AssociateNatGatewayAddressOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AssociateNatGatewayAddress API operation for Amazon Elastic Compute Cloud.
+//
+// Associates Elastic IP addresses (EIPs) and private IPv4 addresses with a
+// public NAT gateway. For more information, see Work with NAT gateways (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-working-with)
+// in the Amazon Virtual Private Cloud User Guide.
+//
+// By default, you can associate up to 2 Elastic IP addresses per public NAT
+// gateway. You can increase the limit by requesting a quota adjustment. For
+// more information, see Elastic IP address quotas (https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html#vpc-limits-eips)
+// in the Amazon Virtual Private Cloud User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation AssociateNatGatewayAddress for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateNatGatewayAddress
+func (c *EC2) AssociateNatGatewayAddress(input *AssociateNatGatewayAddressInput) (*AssociateNatGatewayAddressOutput, error) {
+	req, out := c.AssociateNatGatewayAddressRequest(input)
+	return out, req.Send()
+}
+
+// AssociateNatGatewayAddressWithContext is the same as AssociateNatGatewayAddress with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateNatGatewayAddress for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) AssociateNatGatewayAddressWithContext(ctx aws.Context, input *AssociateNatGatewayAddressInput, opts ...request.Option) (*AssociateNatGatewayAddressOutput, error) {
+	req, out := c.AssociateNatGatewayAddressRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2445,6 +2677,81 @@ func (c *EC2) AttachNetworkInterface(input *AttachNetworkInterfaceInput) (*Attac
 // for more information on using Contexts.
 func (c *EC2) AttachNetworkInterfaceWithContext(ctx aws.Context, input *AttachNetworkInterfaceInput, opts ...request.Option) (*AttachNetworkInterfaceOutput, error) {
 	req, out := c.AttachNetworkInterfaceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAttachVerifiedAccessTrustProvider = "AttachVerifiedAccessTrustProvider"
+
+// AttachVerifiedAccessTrustProviderRequest generates a "aws/request.Request" representing the
+// client's request for the AttachVerifiedAccessTrustProvider operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AttachVerifiedAccessTrustProvider for more information on using the AttachVerifiedAccessTrustProvider
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AttachVerifiedAccessTrustProviderRequest method.
+//	req, resp := client.AttachVerifiedAccessTrustProviderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVerifiedAccessTrustProvider
+func (c *EC2) AttachVerifiedAccessTrustProviderRequest(input *AttachVerifiedAccessTrustProviderInput) (req *request.Request, output *AttachVerifiedAccessTrustProviderOutput) {
+	op := &request.Operation{
+		Name:       opAttachVerifiedAccessTrustProvider,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AttachVerifiedAccessTrustProviderInput{}
+	}
+
+	output = &AttachVerifiedAccessTrustProviderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AttachVerifiedAccessTrustProvider API operation for Amazon Elastic Compute Cloud.
+//
+// A trust provider is a third-party entity that creates, maintains, and manages
+// identity information for users and devices. One or more trust providers can
+// be attached to an Amazon Web Services Verified Access instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation AttachVerifiedAccessTrustProvider for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVerifiedAccessTrustProvider
+func (c *EC2) AttachVerifiedAccessTrustProvider(input *AttachVerifiedAccessTrustProviderInput) (*AttachVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.AttachVerifiedAccessTrustProviderRequest(input)
+	return out, req.Send()
+}
+
+// AttachVerifiedAccessTrustProviderWithContext is the same as AttachVerifiedAccessTrustProvider with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AttachVerifiedAccessTrustProvider for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) AttachVerifiedAccessTrustProviderWithContext(ctx aws.Context, input *AttachVerifiedAccessTrustProviderInput, opts ...request.Option) (*AttachVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.AttachVerifiedAccessTrustProviderRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3401,8 +3708,8 @@ func (c *EC2) CancelImageLaunchPermissionRequest(input *CancelImageLaunchPermiss
 //
 // Removes your Amazon Web Services account from the launch permissions for
 // the specified AMI. For more information, see Cancel having an AMI shared
-// with your Amazon Web Services account (https://docs.aws.amazon.com/) in the
-// Amazon Elastic Compute Cloud User Guide.
+// with your Amazon Web Services account (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/cancel-sharing-an-AMI.html)
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3627,9 +3934,10 @@ func (c *EC2) CancelSpotFleetRequestsRequest(input *CancelSpotFleetRequestsInput
 //
 // Cancels the specified Spot Fleet requests.
 //
-// After you cancel a Spot Fleet request, the Spot Fleet launches no new Spot
-// Instances. You must specify whether the Spot Fleet should also terminate
-// its Spot Instances. If you terminate the instances, the Spot Fleet request
+// After you cancel a Spot Fleet request, the Spot Fleet launches no new instances.
+//
+// You must also specify whether a canceled Spot Fleet request should terminate
+// its instances. If you choose to terminate the instances, the Spot Fleet request
 // enters the cancelled_terminating state. Otherwise, the Spot Fleet request
 // enters the cancelled_running state and the instances continue to run until
 // they are interrupted or you terminate them manually.
@@ -3948,11 +4256,11 @@ func (c *EC2) CopyImageRequest(input *CopyImageInput) (req *request.Request, out
 // key that you specify in the request using KmsKeyId. Outposts do not support
 // unencrypted snapshots. For more information, Amazon EBS local snapshots on
 // Outposts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshots-outposts.html#ami)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // For more information about the prerequisites and limits when copying an AMI,
 // see Copy an AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5816,6 +6124,81 @@ func (c *EC2) CreateIpamPoolWithContext(ctx aws.Context, input *CreateIpamPoolIn
 	return out, req.Send()
 }
 
+const opCreateIpamResourceDiscovery = "CreateIpamResourceDiscovery"
+
+// CreateIpamResourceDiscoveryRequest generates a "aws/request.Request" representing the
+// client's request for the CreateIpamResourceDiscovery operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateIpamResourceDiscovery for more information on using the CreateIpamResourceDiscovery
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateIpamResourceDiscoveryRequest method.
+//	req, resp := client.CreateIpamResourceDiscoveryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateIpamResourceDiscovery
+func (c *EC2) CreateIpamResourceDiscoveryRequest(input *CreateIpamResourceDiscoveryInput) (req *request.Request, output *CreateIpamResourceDiscoveryOutput) {
+	op := &request.Operation{
+		Name:       opCreateIpamResourceDiscovery,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateIpamResourceDiscoveryInput{}
+	}
+
+	output = &CreateIpamResourceDiscoveryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateIpamResourceDiscovery API operation for Amazon Elastic Compute Cloud.
+//
+// Creates an IPAM resource discovery. A resource discovery is an IPAM component
+// that enables IPAM to manage and monitor resources that belong to the owning
+// account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation CreateIpamResourceDiscovery for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateIpamResourceDiscovery
+func (c *EC2) CreateIpamResourceDiscovery(input *CreateIpamResourceDiscoveryInput) (*CreateIpamResourceDiscoveryOutput, error) {
+	req, out := c.CreateIpamResourceDiscoveryRequest(input)
+	return out, req.Send()
+}
+
+// CreateIpamResourceDiscoveryWithContext is the same as CreateIpamResourceDiscovery with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateIpamResourceDiscovery for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) CreateIpamResourceDiscoveryWithContext(ctx aws.Context, input *CreateIpamResourceDiscoveryInput, opts ...request.Option) (*CreateIpamResourceDiscoveryOutput, error) {
+	req, out := c.CreateIpamResourceDiscoveryRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateIpamScope = "CreateIpamScope"
 
 // CreateIpamScopeRequest generates a "aws/request.Request" representing the
@@ -6906,7 +7289,7 @@ func (c *EC2) CreateNetworkInsightsPathRequest(input *CreateNetworkInsightsPathI
 //
 // Reachability Analyzer enables you to analyze and debug network reachability
 // between two resources in your virtual private cloud (VPC). For more information,
-// see What is Reachability Analyzer (https://docs.aws.amazon.com/vpc/latest/reachability/).
+// see the Reachability Analyzer Guide (https://docs.aws.amazon.com/vpc/latest/reachability/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7478,10 +7861,10 @@ func (c *EC2) CreateRestoreImageTaskRequest(input *CreateRestoreImageTaskInput) 
 //
 // To use this API, you must have the required permissions. For more information,
 // see Permissions for storing and restoring AMIs using Amazon S3 (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html#ami-s3-permissions)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // For more information, see Store and restore an AMI using Amazon S3 (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7848,8 +8231,8 @@ func (c *EC2) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Re
 // snapshot. You may remount and use your volume while the snapshot status is
 // pending.
 //
-// To create a snapshot for Amazon EBS volumes that serve as root devices, you
-// should stop the instance before taking the snapshot.
+// When you create a snapshot for an EBS volume that serves as a root device,
+// we recommend that you stop the instance before taking the snapshot.
 //
 // Snapshots that are taken from encrypted volumes are automatically encrypted.
 // Volumes that are created from encrypted snapshots are also automatically
@@ -8100,10 +8483,10 @@ func (c *EC2) CreateStoreImageTaskRequest(input *CreateStoreImageTaskInput) (req
 //
 // To use this API, you must have the required permissions. For more information,
 // see Permissions for storing and restoring AMIs using Amazon S3 (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html#ami-s3-permissions)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // For more information, see Store and restore an AMI using Amazon S3 (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8176,18 +8559,23 @@ func (c *EC2) CreateSubnetRequest(input *CreateSubnetInput) (req *request.Reques
 
 // CreateSubnet API operation for Amazon Elastic Compute Cloud.
 //
-// Creates a subnet in a specified VPC.
+// Creates a subnet in the specified VPC. For an IPv4 only subnet, specify an
+// IPv4 CIDR block. If the VPC has an IPv6 CIDR block, you can create an IPv6
+// only subnet or a dual stack subnet instead. For an IPv6 only subnet, specify
+// an IPv6 CIDR block. For a dual stack subnet, specify both an IPv4 CIDR block
+// and an IPv6 CIDR block.
 //
-// You must specify an IPv4 CIDR block for the subnet. After you create a subnet,
-// you can't change its CIDR block. The allowed block size is between a /16
-// netmask (65,536 IP addresses) and /28 netmask (16 IP addresses). The CIDR
-// block must not overlap with the CIDR block of an existing subnet in the VPC.
+// A subnet CIDR block must not overlap the CIDR block of an existing subnet
+// in the VPC. After you create a subnet, you can't change its CIDR block.
 //
-// If you've associated an IPv6 CIDR block with your VPC, you can create a subnet
-// with an IPv6 CIDR block that uses a /64 prefix length.
+// The allowed size for an IPv4 subnet is between a /28 netmask (16 IP addresses)
+// and a /16 netmask (65,536 IP addresses). Amazon Web Services reserves both
+// the first four and the last IPv4 address in each subnet's CIDR block. They're
+// not available for your use.
 //
-// Amazon Web Services reserves both the first four and the last IPv4 address
-// in each subnet's CIDR block. They're not available for use.
+// If you've associated an IPv6 CIDR block with your VPC, you can associate
+// an IPv6 CIDR block with a subnet when you create it. The allowed block size
+// for an IPv6 subnet is a /64 netmask.
 //
 // If you add more than one subnet to a VPC, they're set up in a star topology
 // with a logical router in the middle.
@@ -8196,7 +8584,7 @@ func (c *EC2) CreateSubnetRequest(input *CreateSubnetInput) (req *request.Reques
 // It's therefore possible to have a subnet with no running instances (they're
 // all stopped), but no remaining IP addresses available.
 //
-// For more information about subnets, see Your VPC and subnets (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html)
+// For more information, see Subnets (https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html)
 // in the Amazon Virtual Private Cloud User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -9563,6 +9951,311 @@ func (c *EC2) CreateTransitGatewayVpcAttachmentWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opCreateVerifiedAccessEndpoint = "CreateVerifiedAccessEndpoint"
+
+// CreateVerifiedAccessEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVerifiedAccessEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVerifiedAccessEndpoint for more information on using the CreateVerifiedAccessEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVerifiedAccessEndpointRequest method.
+//	req, resp := client.CreateVerifiedAccessEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessEndpoint
+func (c *EC2) CreateVerifiedAccessEndpointRequest(input *CreateVerifiedAccessEndpointInput) (req *request.Request, output *CreateVerifiedAccessEndpointOutput) {
+	op := &request.Operation{
+		Name:       opCreateVerifiedAccessEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateVerifiedAccessEndpointInput{}
+	}
+
+	output = &CreateVerifiedAccessEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVerifiedAccessEndpoint API operation for Amazon Elastic Compute Cloud.
+//
+// An Amazon Web Services Verified Access endpoint is where you define your
+// application along with an optional endpoint-level access policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation CreateVerifiedAccessEndpoint for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessEndpoint
+func (c *EC2) CreateVerifiedAccessEndpoint(input *CreateVerifiedAccessEndpointInput) (*CreateVerifiedAccessEndpointOutput, error) {
+	req, out := c.CreateVerifiedAccessEndpointRequest(input)
+	return out, req.Send()
+}
+
+// CreateVerifiedAccessEndpointWithContext is the same as CreateVerifiedAccessEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVerifiedAccessEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) CreateVerifiedAccessEndpointWithContext(ctx aws.Context, input *CreateVerifiedAccessEndpointInput, opts ...request.Option) (*CreateVerifiedAccessEndpointOutput, error) {
+	req, out := c.CreateVerifiedAccessEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateVerifiedAccessGroup = "CreateVerifiedAccessGroup"
+
+// CreateVerifiedAccessGroupRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVerifiedAccessGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVerifiedAccessGroup for more information on using the CreateVerifiedAccessGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVerifiedAccessGroupRequest method.
+//	req, resp := client.CreateVerifiedAccessGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessGroup
+func (c *EC2) CreateVerifiedAccessGroupRequest(input *CreateVerifiedAccessGroupInput) (req *request.Request, output *CreateVerifiedAccessGroupOutput) {
+	op := &request.Operation{
+		Name:       opCreateVerifiedAccessGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateVerifiedAccessGroupInput{}
+	}
+
+	output = &CreateVerifiedAccessGroupOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVerifiedAccessGroup API operation for Amazon Elastic Compute Cloud.
+//
+// An Amazon Web Services Verified Access group is a collection of Amazon Web
+// Services Verified Access endpoints who's associated applications have similar
+// security requirements. Each instance within an Amazon Web Services Verified
+// Access group shares an Amazon Web Services Verified Access policy. For example,
+// you can group all Amazon Web Services Verified Access instances associated
+// with “sales” applications together and use one common Amazon Web Services
+// Verified Access policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation CreateVerifiedAccessGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessGroup
+func (c *EC2) CreateVerifiedAccessGroup(input *CreateVerifiedAccessGroupInput) (*CreateVerifiedAccessGroupOutput, error) {
+	req, out := c.CreateVerifiedAccessGroupRequest(input)
+	return out, req.Send()
+}
+
+// CreateVerifiedAccessGroupWithContext is the same as CreateVerifiedAccessGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVerifiedAccessGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) CreateVerifiedAccessGroupWithContext(ctx aws.Context, input *CreateVerifiedAccessGroupInput, opts ...request.Option) (*CreateVerifiedAccessGroupOutput, error) {
+	req, out := c.CreateVerifiedAccessGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateVerifiedAccessInstance = "CreateVerifiedAccessInstance"
+
+// CreateVerifiedAccessInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVerifiedAccessInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVerifiedAccessInstance for more information on using the CreateVerifiedAccessInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVerifiedAccessInstanceRequest method.
+//	req, resp := client.CreateVerifiedAccessInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessInstance
+func (c *EC2) CreateVerifiedAccessInstanceRequest(input *CreateVerifiedAccessInstanceInput) (req *request.Request, output *CreateVerifiedAccessInstanceOutput) {
+	op := &request.Operation{
+		Name:       opCreateVerifiedAccessInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateVerifiedAccessInstanceInput{}
+	}
+
+	output = &CreateVerifiedAccessInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVerifiedAccessInstance API operation for Amazon Elastic Compute Cloud.
+//
+// An Amazon Web Services Verified Access instance is a regional entity that
+// evaluates application requests and grants access only when your security
+// requirements are met.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation CreateVerifiedAccessInstance for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessInstance
+func (c *EC2) CreateVerifiedAccessInstance(input *CreateVerifiedAccessInstanceInput) (*CreateVerifiedAccessInstanceOutput, error) {
+	req, out := c.CreateVerifiedAccessInstanceRequest(input)
+	return out, req.Send()
+}
+
+// CreateVerifiedAccessInstanceWithContext is the same as CreateVerifiedAccessInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVerifiedAccessInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) CreateVerifiedAccessInstanceWithContext(ctx aws.Context, input *CreateVerifiedAccessInstanceInput, opts ...request.Option) (*CreateVerifiedAccessInstanceOutput, error) {
+	req, out := c.CreateVerifiedAccessInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateVerifiedAccessTrustProvider = "CreateVerifiedAccessTrustProvider"
+
+// CreateVerifiedAccessTrustProviderRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVerifiedAccessTrustProvider operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVerifiedAccessTrustProvider for more information on using the CreateVerifiedAccessTrustProvider
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVerifiedAccessTrustProviderRequest method.
+//	req, resp := client.CreateVerifiedAccessTrustProviderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessTrustProvider
+func (c *EC2) CreateVerifiedAccessTrustProviderRequest(input *CreateVerifiedAccessTrustProviderInput) (req *request.Request, output *CreateVerifiedAccessTrustProviderOutput) {
+	op := &request.Operation{
+		Name:       opCreateVerifiedAccessTrustProvider,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateVerifiedAccessTrustProviderInput{}
+	}
+
+	output = &CreateVerifiedAccessTrustProviderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVerifiedAccessTrustProvider API operation for Amazon Elastic Compute Cloud.
+//
+// A trust provider is a third-party entity that creates, maintains, and manages
+// identity information for users and devices. When an application request is
+// made, the identity information sent by the trust provider will be evaluated
+// by Amazon Web Services Verified Access, before allowing or denying the application
+// request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation CreateVerifiedAccessTrustProvider for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVerifiedAccessTrustProvider
+func (c *EC2) CreateVerifiedAccessTrustProvider(input *CreateVerifiedAccessTrustProviderInput) (*CreateVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.CreateVerifiedAccessTrustProviderRequest(input)
+	return out, req.Send()
+}
+
+// CreateVerifiedAccessTrustProviderWithContext is the same as CreateVerifiedAccessTrustProvider with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVerifiedAccessTrustProvider for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) CreateVerifiedAccessTrustProviderWithContext(ctx aws.Context, input *CreateVerifiedAccessTrustProviderInput, opts ...request.Option) (*CreateVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.CreateVerifiedAccessTrustProviderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateVolume = "CreateVolume"
 
 // CreateVolumeRequest generates a "aws/request.Request" representing the
@@ -9697,10 +10390,8 @@ func (c *EC2) CreateVpcRequest(input *CreateVpcInput) (req *request.Request, out
 
 // CreateVpc API operation for Amazon Elastic Compute Cloud.
 //
-// Creates a VPC with the specified IPv4 CIDR block. The smallest VPC you can
-// create uses a /28 netmask (16 IPv4 addresses), and the largest uses a /16
-// netmask (65,536 IPv4 addresses). For more information about how large to
-// make your VPC, see Your VPC and subnets (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html)
+// Creates a VPC with the specified CIDR blocks. For more information, see VPC
+// CIDR blocks (https://docs.aws.amazon.com/vpc/latest/userguide/configure-your-vpc.html#vpc-cidr-blocks)
 // in the Amazon Virtual Private Cloud User Guide.
 //
 // You can optionally request an IPv6 CIDR block for the VPC. You can request
@@ -9708,9 +10399,9 @@ func (c *EC2) CreateVpcRequest(input *CreateVpcInput) (req *request.Request, out
 // or an IPv6 CIDR block from an IPv6 address pool that you provisioned through
 // bring your own IP addresses (BYOIP (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-byoip.html)).
 //
-// By default, each instance you launch in the VPC has the default DHCP options,
-// which include only a default DNS server that we provide (AmazonProvidedDNS).
-// For more information, see DHCP options sets (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html)
+// By default, each instance that you launch in the VPC has the default DHCP
+// options, which include only a default DNS server that we provide (AmazonProvidedDNS).
+// For more information, see DHCP option sets (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html)
 // in the Amazon Virtual Private Cloud User Guide.
 //
 // You can specify the instance tenancy value for the VPC when you create it.
@@ -9946,7 +10637,7 @@ func (c *EC2) CreateVpcEndpointServiceConfigurationRequest(input *CreateVpcEndpo
 // CreateVpcEndpointServiceConfiguration API operation for Amazon Elastic Compute Cloud.
 //
 // Creates a VPC endpoint service to which service consumers (Amazon Web Services
-// accounts, IAM users, and IAM roles) can connect.
+// accounts, users, and IAM roles) can connect.
 //
 // Before you create an endpoint service, you must create one of the following
 // for your service:
@@ -10970,11 +11661,11 @@ func (c *EC2) DeleteFleetsRequest(input *DeleteFleetsInput) (req *request.Reques
 
 // DeleteFleets API operation for Amazon Elastic Compute Cloud.
 //
-// Deletes the specified EC2 Fleet.
+// Deletes the specified EC2 Fleets.
 //
 // After you delete an EC2 Fleet, it launches no new instances.
 //
-// You must specify whether a deleted EC2 Fleet should also terminate its instances.
+// You must also specify whether a deleted EC2 Fleet should terminate its instances.
 // If you choose to terminate the instances, the EC2 Fleet enters the deleted_terminating
 // state. Otherwise, the EC2 Fleet enters the deleted_running state, and the
 // instances continue to run until they are interrupted or you terminate them
@@ -11473,6 +12164,81 @@ func (c *EC2) DeleteIpamPool(input *DeleteIpamPoolInput) (*DeleteIpamPoolOutput,
 // for more information on using Contexts.
 func (c *EC2) DeleteIpamPoolWithContext(ctx aws.Context, input *DeleteIpamPoolInput, opts ...request.Option) (*DeleteIpamPoolOutput, error) {
 	req, out := c.DeleteIpamPoolRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteIpamResourceDiscovery = "DeleteIpamResourceDiscovery"
+
+// DeleteIpamResourceDiscoveryRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteIpamResourceDiscovery operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteIpamResourceDiscovery for more information on using the DeleteIpamResourceDiscovery
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteIpamResourceDiscoveryRequest method.
+//	req, resp := client.DeleteIpamResourceDiscoveryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteIpamResourceDiscovery
+func (c *EC2) DeleteIpamResourceDiscoveryRequest(input *DeleteIpamResourceDiscoveryInput) (req *request.Request, output *DeleteIpamResourceDiscoveryOutput) {
+	op := &request.Operation{
+		Name:       opDeleteIpamResourceDiscovery,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteIpamResourceDiscoveryInput{}
+	}
+
+	output = &DeleteIpamResourceDiscoveryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteIpamResourceDiscovery API operation for Amazon Elastic Compute Cloud.
+//
+// Deletes an IPAM resource discovery. A resource discovery is an IPAM component
+// that enables IPAM to manage and monitor resources that belong to the owning
+// account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteIpamResourceDiscovery for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteIpamResourceDiscovery
+func (c *EC2) DeleteIpamResourceDiscovery(input *DeleteIpamResourceDiscoveryInput) (*DeleteIpamResourceDiscoveryOutput, error) {
+	req, out := c.DeleteIpamResourceDiscoveryRequest(input)
+	return out, req.Send()
+}
+
+// DeleteIpamResourceDiscoveryWithContext is the same as DeleteIpamResourceDiscovery with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteIpamResourceDiscovery for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteIpamResourceDiscoveryWithContext(ctx aws.Context, input *DeleteIpamResourceDiscoveryInput, opts ...request.Option) (*DeleteIpamResourceDiscoveryOutput, error) {
+	req, out := c.DeleteIpamResourceDiscoveryRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -14764,6 +15530,298 @@ func (c *EC2) DeleteTransitGatewayVpcAttachmentWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opDeleteVerifiedAccessEndpoint = "DeleteVerifiedAccessEndpoint"
+
+// DeleteVerifiedAccessEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVerifiedAccessEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVerifiedAccessEndpoint for more information on using the DeleteVerifiedAccessEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVerifiedAccessEndpointRequest method.
+//	req, resp := client.DeleteVerifiedAccessEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessEndpoint
+func (c *EC2) DeleteVerifiedAccessEndpointRequest(input *DeleteVerifiedAccessEndpointInput) (req *request.Request, output *DeleteVerifiedAccessEndpointOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVerifiedAccessEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteVerifiedAccessEndpointInput{}
+	}
+
+	output = &DeleteVerifiedAccessEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVerifiedAccessEndpoint API operation for Amazon Elastic Compute Cloud.
+//
+// Delete an Amazon Web Services Verified Access endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteVerifiedAccessEndpoint for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessEndpoint
+func (c *EC2) DeleteVerifiedAccessEndpoint(input *DeleteVerifiedAccessEndpointInput) (*DeleteVerifiedAccessEndpointOutput, error) {
+	req, out := c.DeleteVerifiedAccessEndpointRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVerifiedAccessEndpointWithContext is the same as DeleteVerifiedAccessEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVerifiedAccessEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteVerifiedAccessEndpointWithContext(ctx aws.Context, input *DeleteVerifiedAccessEndpointInput, opts ...request.Option) (*DeleteVerifiedAccessEndpointOutput, error) {
+	req, out := c.DeleteVerifiedAccessEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteVerifiedAccessGroup = "DeleteVerifiedAccessGroup"
+
+// DeleteVerifiedAccessGroupRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVerifiedAccessGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVerifiedAccessGroup for more information on using the DeleteVerifiedAccessGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVerifiedAccessGroupRequest method.
+//	req, resp := client.DeleteVerifiedAccessGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessGroup
+func (c *EC2) DeleteVerifiedAccessGroupRequest(input *DeleteVerifiedAccessGroupInput) (req *request.Request, output *DeleteVerifiedAccessGroupOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVerifiedAccessGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteVerifiedAccessGroupInput{}
+	}
+
+	output = &DeleteVerifiedAccessGroupOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVerifiedAccessGroup API operation for Amazon Elastic Compute Cloud.
+//
+// Delete an Amazon Web Services Verified Access group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteVerifiedAccessGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessGroup
+func (c *EC2) DeleteVerifiedAccessGroup(input *DeleteVerifiedAccessGroupInput) (*DeleteVerifiedAccessGroupOutput, error) {
+	req, out := c.DeleteVerifiedAccessGroupRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVerifiedAccessGroupWithContext is the same as DeleteVerifiedAccessGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVerifiedAccessGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteVerifiedAccessGroupWithContext(ctx aws.Context, input *DeleteVerifiedAccessGroupInput, opts ...request.Option) (*DeleteVerifiedAccessGroupOutput, error) {
+	req, out := c.DeleteVerifiedAccessGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteVerifiedAccessInstance = "DeleteVerifiedAccessInstance"
+
+// DeleteVerifiedAccessInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVerifiedAccessInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVerifiedAccessInstance for more information on using the DeleteVerifiedAccessInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVerifiedAccessInstanceRequest method.
+//	req, resp := client.DeleteVerifiedAccessInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessInstance
+func (c *EC2) DeleteVerifiedAccessInstanceRequest(input *DeleteVerifiedAccessInstanceInput) (req *request.Request, output *DeleteVerifiedAccessInstanceOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVerifiedAccessInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteVerifiedAccessInstanceInput{}
+	}
+
+	output = &DeleteVerifiedAccessInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVerifiedAccessInstance API operation for Amazon Elastic Compute Cloud.
+//
+// Delete an Amazon Web Services Verified Access instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteVerifiedAccessInstance for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessInstance
+func (c *EC2) DeleteVerifiedAccessInstance(input *DeleteVerifiedAccessInstanceInput) (*DeleteVerifiedAccessInstanceOutput, error) {
+	req, out := c.DeleteVerifiedAccessInstanceRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVerifiedAccessInstanceWithContext is the same as DeleteVerifiedAccessInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVerifiedAccessInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteVerifiedAccessInstanceWithContext(ctx aws.Context, input *DeleteVerifiedAccessInstanceInput, opts ...request.Option) (*DeleteVerifiedAccessInstanceOutput, error) {
+	req, out := c.DeleteVerifiedAccessInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteVerifiedAccessTrustProvider = "DeleteVerifiedAccessTrustProvider"
+
+// DeleteVerifiedAccessTrustProviderRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVerifiedAccessTrustProvider operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVerifiedAccessTrustProvider for more information on using the DeleteVerifiedAccessTrustProvider
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVerifiedAccessTrustProviderRequest method.
+//	req, resp := client.DeleteVerifiedAccessTrustProviderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessTrustProvider
+func (c *EC2) DeleteVerifiedAccessTrustProviderRequest(input *DeleteVerifiedAccessTrustProviderInput) (req *request.Request, output *DeleteVerifiedAccessTrustProviderOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVerifiedAccessTrustProvider,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteVerifiedAccessTrustProviderInput{}
+	}
+
+	output = &DeleteVerifiedAccessTrustProviderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVerifiedAccessTrustProvider API operation for Amazon Elastic Compute Cloud.
+//
+// Delete an Amazon Web Services Verified Access trust provider.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteVerifiedAccessTrustProvider for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVerifiedAccessTrustProvider
+func (c *EC2) DeleteVerifiedAccessTrustProvider(input *DeleteVerifiedAccessTrustProviderInput) (*DeleteVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.DeleteVerifiedAccessTrustProviderRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVerifiedAccessTrustProviderWithContext is the same as DeleteVerifiedAccessTrustProvider with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVerifiedAccessTrustProvider for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteVerifiedAccessTrustProviderWithContext(ctx aws.Context, input *DeleteVerifiedAccessTrustProviderInput, opts ...request.Option) (*DeleteVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.DeleteVerifiedAccessTrustProviderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteVolume = "DeleteVolume"
 
 // DeleteVolumeRequest generates a "aws/request.Request" representing the
@@ -14965,7 +16023,7 @@ func (c *EC2) DeleteVpcEndpointConnectionNotificationsRequest(input *DeleteVpcEn
 
 // DeleteVpcEndpointConnectionNotifications API operation for Amazon Elastic Compute Cloud.
 //
-// Deletes one or more VPC endpoint connection notifications.
+// Deletes the specified VPC endpoint connection notifications.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15038,10 +16096,10 @@ func (c *EC2) DeleteVpcEndpointServiceConfigurationsRequest(input *DeleteVpcEndp
 
 // DeleteVpcEndpointServiceConfigurations API operation for Amazon Elastic Compute Cloud.
 //
-// Deletes one or more VPC endpoint service configurations in your account.
-// Before you delete the endpoint service configuration, you must reject any
-// Available or PendingAcceptance interface endpoint connections that are attached
-// to the service.
+// Deletes the specified VPC endpoint service configurations. Before you can
+// delete an endpoint service configuration, you must reject any Available or
+// PendingAcceptance interface endpoint connections that are attached to the
+// service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15114,26 +16172,16 @@ func (c *EC2) DeleteVpcEndpointsRequest(input *DeleteVpcEndpointsInput) (req *re
 
 // DeleteVpcEndpoints API operation for Amazon Elastic Compute Cloud.
 //
-// Deletes one or more specified VPC endpoints. You can delete any of the following
-// types of VPC endpoints.
+// Deletes the specified VPC endpoints.
 //
-//   - Gateway endpoint,
+// When you delete a gateway endpoint, we delete the endpoint routes in the
+// route tables for the endpoint.
 //
-//   - Gateway Load Balancer endpoint,
+// When you delete a Gateway Load Balancer endpoint, we delete its endpoint
+// network interfaces. You can only delete Gateway Load Balancer endpoints when
+// the routes that are associated with the endpoint are deleted.
 //
-//   - Interface endpoint
-//
-// The following rules apply when you delete a VPC endpoint:
-//
-//   - When you delete a gateway endpoint, we delete the endpoint routes in
-//     the route tables that are associated with the endpoint.
-//
-//   - When you delete a Gateway Load Balancer endpoint, we delete the endpoint
-//     network interfaces. You can only delete Gateway Load Balancer endpoints
-//     when the routes that are associated with the endpoint are deleted.
-//
-//   - When you delete an interface endpoint, we delete the endpoint network
-//     interfaces.
+// When you delete an interface endpoint, we delete its endpoint network interfaces.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15759,7 +16807,7 @@ func (c *EC2) DeregisterImageRequest(input *DeregisterImageInput) (req *request.
 // If you deregister an AMI that matches a Recycle Bin retention rule, the AMI
 // is retained in the Recycle Bin for the specified retention period. For more
 // information, see Recycle Bin (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // When you deregister an AMI, it doesn't affect any instances that you've already
 // launched from the AMI. You'll continue to incur usage costs for those instances
@@ -16677,7 +17725,7 @@ func (c *EC2) DescribeAwsNetworkPerformanceMetricSubscriptionsRequest(input *Des
 
 // DescribeAwsNetworkPerformanceMetricSubscriptions API operation for Amazon Elastic Compute Cloud.
 //
-// Describes the curent Infrastructure Performance metric subscriptions.
+// Describes the current Infrastructure Performance metric subscriptions.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20680,6 +21728,12 @@ func (c *EC2) DescribeImagesRequest(input *DescribeImagesInput) (req *request.Re
 		Name:       opDescribeImages,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -20731,6 +21785,57 @@ func (c *EC2) DescribeImagesWithContext(ctx aws.Context, input *DescribeImagesIn
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeImagesPages iterates over the pages of a DescribeImages operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeImages method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeImages operation.
+//	pageNum := 0
+//	err := client.DescribeImagesPages(params,
+//	    func(page *ec2.DescribeImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeImagesPages(input *DescribeImagesInput, fn func(*DescribeImagesOutput, bool) bool) error {
+	return c.DescribeImagesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeImagesPagesWithContext same as DescribeImagesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeImagesPagesWithContext(ctx aws.Context, input *DescribeImagesInput, fn func(*DescribeImagesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeImagesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeImagesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeImagesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeImportImageTasks = "DescribeImportImageTasks"
@@ -22254,6 +23359,270 @@ func (c *EC2) DescribeIpamPoolsPagesWithContext(ctx aws.Context, input *Describe
 
 	for p.Next() {
 		if !fn(p.Page().(*DescribeIpamPoolsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeIpamResourceDiscoveries = "DescribeIpamResourceDiscoveries"
+
+// DescribeIpamResourceDiscoveriesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeIpamResourceDiscoveries operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeIpamResourceDiscoveries for more information on using the DescribeIpamResourceDiscoveries
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeIpamResourceDiscoveriesRequest method.
+//	req, resp := client.DescribeIpamResourceDiscoveriesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpamResourceDiscoveries
+func (c *EC2) DescribeIpamResourceDiscoveriesRequest(input *DescribeIpamResourceDiscoveriesInput) (req *request.Request, output *DescribeIpamResourceDiscoveriesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeIpamResourceDiscoveries,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeIpamResourceDiscoveriesInput{}
+	}
+
+	output = &DescribeIpamResourceDiscoveriesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeIpamResourceDiscoveries API operation for Amazon Elastic Compute Cloud.
+//
+// Describes IPAM resource discoveries. A resource discovery is an IPAM component
+// that enables IPAM to manage and monitor resources that belong to the owning
+// account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeIpamResourceDiscoveries for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpamResourceDiscoveries
+func (c *EC2) DescribeIpamResourceDiscoveries(input *DescribeIpamResourceDiscoveriesInput) (*DescribeIpamResourceDiscoveriesOutput, error) {
+	req, out := c.DescribeIpamResourceDiscoveriesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeIpamResourceDiscoveriesWithContext is the same as DescribeIpamResourceDiscoveries with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeIpamResourceDiscoveries for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeIpamResourceDiscoveriesWithContext(ctx aws.Context, input *DescribeIpamResourceDiscoveriesInput, opts ...request.Option) (*DescribeIpamResourceDiscoveriesOutput, error) {
+	req, out := c.DescribeIpamResourceDiscoveriesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeIpamResourceDiscoveriesPages iterates over the pages of a DescribeIpamResourceDiscoveries operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeIpamResourceDiscoveries method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeIpamResourceDiscoveries operation.
+//	pageNum := 0
+//	err := client.DescribeIpamResourceDiscoveriesPages(params,
+//	    func(page *ec2.DescribeIpamResourceDiscoveriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeIpamResourceDiscoveriesPages(input *DescribeIpamResourceDiscoveriesInput, fn func(*DescribeIpamResourceDiscoveriesOutput, bool) bool) error {
+	return c.DescribeIpamResourceDiscoveriesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeIpamResourceDiscoveriesPagesWithContext same as DescribeIpamResourceDiscoveriesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeIpamResourceDiscoveriesPagesWithContext(ctx aws.Context, input *DescribeIpamResourceDiscoveriesInput, fn func(*DescribeIpamResourceDiscoveriesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeIpamResourceDiscoveriesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeIpamResourceDiscoveriesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeIpamResourceDiscoveriesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeIpamResourceDiscoveryAssociations = "DescribeIpamResourceDiscoveryAssociations"
+
+// DescribeIpamResourceDiscoveryAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeIpamResourceDiscoveryAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeIpamResourceDiscoveryAssociations for more information on using the DescribeIpamResourceDiscoveryAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeIpamResourceDiscoveryAssociationsRequest method.
+//	req, resp := client.DescribeIpamResourceDiscoveryAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpamResourceDiscoveryAssociations
+func (c *EC2) DescribeIpamResourceDiscoveryAssociationsRequest(input *DescribeIpamResourceDiscoveryAssociationsInput) (req *request.Request, output *DescribeIpamResourceDiscoveryAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeIpamResourceDiscoveryAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeIpamResourceDiscoveryAssociationsInput{}
+	}
+
+	output = &DescribeIpamResourceDiscoveryAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeIpamResourceDiscoveryAssociations API operation for Amazon Elastic Compute Cloud.
+//
+// Describes resource discovery association with an Amazon VPC IPAM. An associated
+// resource discovery is a resource discovery that has been associated with
+// an IPAM..
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeIpamResourceDiscoveryAssociations for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeIpamResourceDiscoveryAssociations
+func (c *EC2) DescribeIpamResourceDiscoveryAssociations(input *DescribeIpamResourceDiscoveryAssociationsInput) (*DescribeIpamResourceDiscoveryAssociationsOutput, error) {
+	req, out := c.DescribeIpamResourceDiscoveryAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeIpamResourceDiscoveryAssociationsWithContext is the same as DescribeIpamResourceDiscoveryAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeIpamResourceDiscoveryAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeIpamResourceDiscoveryAssociationsWithContext(ctx aws.Context, input *DescribeIpamResourceDiscoveryAssociationsInput, opts ...request.Option) (*DescribeIpamResourceDiscoveryAssociationsOutput, error) {
+	req, out := c.DescribeIpamResourceDiscoveryAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeIpamResourceDiscoveryAssociationsPages iterates over the pages of a DescribeIpamResourceDiscoveryAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeIpamResourceDiscoveryAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeIpamResourceDiscoveryAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeIpamResourceDiscoveryAssociationsPages(params,
+//	    func(page *ec2.DescribeIpamResourceDiscoveryAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeIpamResourceDiscoveryAssociationsPages(input *DescribeIpamResourceDiscoveryAssociationsInput, fn func(*DescribeIpamResourceDiscoveryAssociationsOutput, bool) bool) error {
+	return c.DescribeIpamResourceDiscoveryAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeIpamResourceDiscoveryAssociationsPagesWithContext same as DescribeIpamResourceDiscoveryAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeIpamResourceDiscoveryAssociationsPagesWithContext(ctx aws.Context, input *DescribeIpamResourceDiscoveryAssociationsInput, fn func(*DescribeIpamResourceDiscoveryAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeIpamResourceDiscoveryAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeIpamResourceDiscoveryAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeIpamResourceDiscoveryAssociationsOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -27349,11 +28718,8 @@ func (c *EC2) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *requ
 // own or have explicit permissions, or all for public snapshots.
 //
 // If you are describing a long list of snapshots, we recommend that you paginate
-// the output to make the list more manageable. The MaxResults parameter sets
-// the maximum number of results returned in a single page. If the list of results
-// exceeds your MaxResults value, then that number of results is returned along
-// with a NextToken value that can be passed to a subsequent DescribeSnapshots
-// request to retrieve the remaining results.
+// the output to make the list more manageable. For more information, see Pagination
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 //
 // To get the state of fast snapshot restores for a snapshot, use DescribeFastSnapshotRestores.
 //
@@ -27859,11 +29225,11 @@ func (c *EC2) DescribeSpotInstanceRequestsRequest(input *DescribeSpotInstanceReq
 // with a filter to look for instances where the instance lifecycle is spot.
 //
 // We recommend that you set MaxResults to a value between 5 and 1000 to limit
-// the number of results returned. This paginates the output, which makes the
-// list more manageable and returns the results faster. If the list of results
-// exceeds your MaxResults value, then that number of results is returned along
-// with a NextToken value that can be passed to a subsequent DescribeSpotInstanceRequests
-// request to retrieve the remaining results.
+// the number of items returned. This paginates the output, which makes the
+// list more manageable and returns the items faster. If the list of items exceeds
+// your MaxResults value, then that number of items is returned along with a
+// NextToken value that can be passed to a subsequent DescribeSpotInstanceRequests
+// request to retrieve the remaining items.
 //
 // Spot Instance requests are deleted four hours after they are canceled and
 // their instances are terminated.
@@ -28279,10 +29645,10 @@ func (c *EC2) DescribeStoreImageTasksRequest(input *DescribeStoreImageTasksInput
 //
 // To use this API, you must have the required permissions. For more information,
 // see Permissions for storing and restoring AMIs using Amazon S3 (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html#ami-s3-permissions)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // For more information, see Store and restore an AMI using Amazon S3 (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -30459,6 +31825,657 @@ func (c *EC2) DescribeTrunkInterfaceAssociationsPagesWithContext(ctx aws.Context
 	return p.Err()
 }
 
+const opDescribeVerifiedAccessEndpoints = "DescribeVerifiedAccessEndpoints"
+
+// DescribeVerifiedAccessEndpointsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVerifiedAccessEndpoints operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVerifiedAccessEndpoints for more information on using the DescribeVerifiedAccessEndpoints
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVerifiedAccessEndpointsRequest method.
+//	req, resp := client.DescribeVerifiedAccessEndpointsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessEndpoints
+func (c *EC2) DescribeVerifiedAccessEndpointsRequest(input *DescribeVerifiedAccessEndpointsInput) (req *request.Request, output *DescribeVerifiedAccessEndpointsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVerifiedAccessEndpoints,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeVerifiedAccessEndpointsInput{}
+	}
+
+	output = &DescribeVerifiedAccessEndpointsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVerifiedAccessEndpoints API operation for Amazon Elastic Compute Cloud.
+//
+// Describe Amazon Web Services Verified Access endpoints.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeVerifiedAccessEndpoints for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessEndpoints
+func (c *EC2) DescribeVerifiedAccessEndpoints(input *DescribeVerifiedAccessEndpointsInput) (*DescribeVerifiedAccessEndpointsOutput, error) {
+	req, out := c.DescribeVerifiedAccessEndpointsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessEndpointsWithContext is the same as DescribeVerifiedAccessEndpoints with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVerifiedAccessEndpoints for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessEndpointsWithContext(ctx aws.Context, input *DescribeVerifiedAccessEndpointsInput, opts ...request.Option) (*DescribeVerifiedAccessEndpointsOutput, error) {
+	req, out := c.DescribeVerifiedAccessEndpointsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessEndpointsPages iterates over the pages of a DescribeVerifiedAccessEndpoints operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeVerifiedAccessEndpoints method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeVerifiedAccessEndpoints operation.
+//	pageNum := 0
+//	err := client.DescribeVerifiedAccessEndpointsPages(params,
+//	    func(page *ec2.DescribeVerifiedAccessEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeVerifiedAccessEndpointsPages(input *DescribeVerifiedAccessEndpointsInput, fn func(*DescribeVerifiedAccessEndpointsOutput, bool) bool) error {
+	return c.DescribeVerifiedAccessEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeVerifiedAccessEndpointsPagesWithContext same as DescribeVerifiedAccessEndpointsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessEndpointsPagesWithContext(ctx aws.Context, input *DescribeVerifiedAccessEndpointsInput, fn func(*DescribeVerifiedAccessEndpointsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeVerifiedAccessEndpointsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeVerifiedAccessEndpointsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVerifiedAccessEndpointsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeVerifiedAccessGroups = "DescribeVerifiedAccessGroups"
+
+// DescribeVerifiedAccessGroupsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVerifiedAccessGroups operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVerifiedAccessGroups for more information on using the DescribeVerifiedAccessGroups
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVerifiedAccessGroupsRequest method.
+//	req, resp := client.DescribeVerifiedAccessGroupsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessGroups
+func (c *EC2) DescribeVerifiedAccessGroupsRequest(input *DescribeVerifiedAccessGroupsInput) (req *request.Request, output *DescribeVerifiedAccessGroupsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVerifiedAccessGroups,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeVerifiedAccessGroupsInput{}
+	}
+
+	output = &DescribeVerifiedAccessGroupsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVerifiedAccessGroups API operation for Amazon Elastic Compute Cloud.
+//
+// Describe details of existing Verified Access groups.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeVerifiedAccessGroups for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessGroups
+func (c *EC2) DescribeVerifiedAccessGroups(input *DescribeVerifiedAccessGroupsInput) (*DescribeVerifiedAccessGroupsOutput, error) {
+	req, out := c.DescribeVerifiedAccessGroupsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessGroupsWithContext is the same as DescribeVerifiedAccessGroups with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVerifiedAccessGroups for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessGroupsWithContext(ctx aws.Context, input *DescribeVerifiedAccessGroupsInput, opts ...request.Option) (*DescribeVerifiedAccessGroupsOutput, error) {
+	req, out := c.DescribeVerifiedAccessGroupsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessGroupsPages iterates over the pages of a DescribeVerifiedAccessGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeVerifiedAccessGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeVerifiedAccessGroups operation.
+//	pageNum := 0
+//	err := client.DescribeVerifiedAccessGroupsPages(params,
+//	    func(page *ec2.DescribeVerifiedAccessGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeVerifiedAccessGroupsPages(input *DescribeVerifiedAccessGroupsInput, fn func(*DescribeVerifiedAccessGroupsOutput, bool) bool) error {
+	return c.DescribeVerifiedAccessGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeVerifiedAccessGroupsPagesWithContext same as DescribeVerifiedAccessGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessGroupsPagesWithContext(ctx aws.Context, input *DescribeVerifiedAccessGroupsInput, fn func(*DescribeVerifiedAccessGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeVerifiedAccessGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeVerifiedAccessGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVerifiedAccessGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeVerifiedAccessInstanceLoggingConfigurations = "DescribeVerifiedAccessInstanceLoggingConfigurations"
+
+// DescribeVerifiedAccessInstanceLoggingConfigurationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVerifiedAccessInstanceLoggingConfigurations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVerifiedAccessInstanceLoggingConfigurations for more information on using the DescribeVerifiedAccessInstanceLoggingConfigurations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVerifiedAccessInstanceLoggingConfigurationsRequest method.
+//	req, resp := client.DescribeVerifiedAccessInstanceLoggingConfigurationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessInstanceLoggingConfigurations
+func (c *EC2) DescribeVerifiedAccessInstanceLoggingConfigurationsRequest(input *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) (req *request.Request, output *DescribeVerifiedAccessInstanceLoggingConfigurationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVerifiedAccessInstanceLoggingConfigurations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeVerifiedAccessInstanceLoggingConfigurationsInput{}
+	}
+
+	output = &DescribeVerifiedAccessInstanceLoggingConfigurationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVerifiedAccessInstanceLoggingConfigurations API operation for Amazon Elastic Compute Cloud.
+//
+// Describes the current logging configuration for the Amazon Web Services Verified
+// Access instances.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeVerifiedAccessInstanceLoggingConfigurations for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessInstanceLoggingConfigurations
+func (c *EC2) DescribeVerifiedAccessInstanceLoggingConfigurations(input *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) (*DescribeVerifiedAccessInstanceLoggingConfigurationsOutput, error) {
+	req, out := c.DescribeVerifiedAccessInstanceLoggingConfigurationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessInstanceLoggingConfigurationsWithContext is the same as DescribeVerifiedAccessInstanceLoggingConfigurations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVerifiedAccessInstanceLoggingConfigurations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessInstanceLoggingConfigurationsWithContext(ctx aws.Context, input *DescribeVerifiedAccessInstanceLoggingConfigurationsInput, opts ...request.Option) (*DescribeVerifiedAccessInstanceLoggingConfigurationsOutput, error) {
+	req, out := c.DescribeVerifiedAccessInstanceLoggingConfigurationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessInstanceLoggingConfigurationsPages iterates over the pages of a DescribeVerifiedAccessInstanceLoggingConfigurations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeVerifiedAccessInstanceLoggingConfigurations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeVerifiedAccessInstanceLoggingConfigurations operation.
+//	pageNum := 0
+//	err := client.DescribeVerifiedAccessInstanceLoggingConfigurationsPages(params,
+//	    func(page *ec2.DescribeVerifiedAccessInstanceLoggingConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeVerifiedAccessInstanceLoggingConfigurationsPages(input *DescribeVerifiedAccessInstanceLoggingConfigurationsInput, fn func(*DescribeVerifiedAccessInstanceLoggingConfigurationsOutput, bool) bool) error {
+	return c.DescribeVerifiedAccessInstanceLoggingConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeVerifiedAccessInstanceLoggingConfigurationsPagesWithContext same as DescribeVerifiedAccessInstanceLoggingConfigurationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessInstanceLoggingConfigurationsPagesWithContext(ctx aws.Context, input *DescribeVerifiedAccessInstanceLoggingConfigurationsInput, fn func(*DescribeVerifiedAccessInstanceLoggingConfigurationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeVerifiedAccessInstanceLoggingConfigurationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeVerifiedAccessInstanceLoggingConfigurationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVerifiedAccessInstanceLoggingConfigurationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeVerifiedAccessInstances = "DescribeVerifiedAccessInstances"
+
+// DescribeVerifiedAccessInstancesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVerifiedAccessInstances operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVerifiedAccessInstances for more information on using the DescribeVerifiedAccessInstances
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVerifiedAccessInstancesRequest method.
+//	req, resp := client.DescribeVerifiedAccessInstancesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessInstances
+func (c *EC2) DescribeVerifiedAccessInstancesRequest(input *DescribeVerifiedAccessInstancesInput) (req *request.Request, output *DescribeVerifiedAccessInstancesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVerifiedAccessInstances,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeVerifiedAccessInstancesInput{}
+	}
+
+	output = &DescribeVerifiedAccessInstancesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVerifiedAccessInstances API operation for Amazon Elastic Compute Cloud.
+//
+// Describe Verified Access instances.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeVerifiedAccessInstances for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessInstances
+func (c *EC2) DescribeVerifiedAccessInstances(input *DescribeVerifiedAccessInstancesInput) (*DescribeVerifiedAccessInstancesOutput, error) {
+	req, out := c.DescribeVerifiedAccessInstancesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessInstancesWithContext is the same as DescribeVerifiedAccessInstances with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVerifiedAccessInstances for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessInstancesWithContext(ctx aws.Context, input *DescribeVerifiedAccessInstancesInput, opts ...request.Option) (*DescribeVerifiedAccessInstancesOutput, error) {
+	req, out := c.DescribeVerifiedAccessInstancesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessInstancesPages iterates over the pages of a DescribeVerifiedAccessInstances operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeVerifiedAccessInstances method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeVerifiedAccessInstances operation.
+//	pageNum := 0
+//	err := client.DescribeVerifiedAccessInstancesPages(params,
+//	    func(page *ec2.DescribeVerifiedAccessInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeVerifiedAccessInstancesPages(input *DescribeVerifiedAccessInstancesInput, fn func(*DescribeVerifiedAccessInstancesOutput, bool) bool) error {
+	return c.DescribeVerifiedAccessInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeVerifiedAccessInstancesPagesWithContext same as DescribeVerifiedAccessInstancesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessInstancesPagesWithContext(ctx aws.Context, input *DescribeVerifiedAccessInstancesInput, fn func(*DescribeVerifiedAccessInstancesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeVerifiedAccessInstancesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeVerifiedAccessInstancesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVerifiedAccessInstancesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeVerifiedAccessTrustProviders = "DescribeVerifiedAccessTrustProviders"
+
+// DescribeVerifiedAccessTrustProvidersRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVerifiedAccessTrustProviders operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVerifiedAccessTrustProviders for more information on using the DescribeVerifiedAccessTrustProviders
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVerifiedAccessTrustProvidersRequest method.
+//	req, resp := client.DescribeVerifiedAccessTrustProvidersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessTrustProviders
+func (c *EC2) DescribeVerifiedAccessTrustProvidersRequest(input *DescribeVerifiedAccessTrustProvidersInput) (req *request.Request, output *DescribeVerifiedAccessTrustProvidersOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVerifiedAccessTrustProviders,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeVerifiedAccessTrustProvidersInput{}
+	}
+
+	output = &DescribeVerifiedAccessTrustProvidersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVerifiedAccessTrustProviders API operation for Amazon Elastic Compute Cloud.
+//
+// Describe details of existing Verified Access trust providers.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeVerifiedAccessTrustProviders for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVerifiedAccessTrustProviders
+func (c *EC2) DescribeVerifiedAccessTrustProviders(input *DescribeVerifiedAccessTrustProvidersInput) (*DescribeVerifiedAccessTrustProvidersOutput, error) {
+	req, out := c.DescribeVerifiedAccessTrustProvidersRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessTrustProvidersWithContext is the same as DescribeVerifiedAccessTrustProviders with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVerifiedAccessTrustProviders for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessTrustProvidersWithContext(ctx aws.Context, input *DescribeVerifiedAccessTrustProvidersInput, opts ...request.Option) (*DescribeVerifiedAccessTrustProvidersOutput, error) {
+	req, out := c.DescribeVerifiedAccessTrustProvidersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeVerifiedAccessTrustProvidersPages iterates over the pages of a DescribeVerifiedAccessTrustProviders operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeVerifiedAccessTrustProviders method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeVerifiedAccessTrustProviders operation.
+//	pageNum := 0
+//	err := client.DescribeVerifiedAccessTrustProvidersPages(params,
+//	    func(page *ec2.DescribeVerifiedAccessTrustProvidersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) DescribeVerifiedAccessTrustProvidersPages(input *DescribeVerifiedAccessTrustProvidersInput, fn func(*DescribeVerifiedAccessTrustProvidersOutput, bool) bool) error {
+	return c.DescribeVerifiedAccessTrustProvidersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeVerifiedAccessTrustProvidersPagesWithContext same as DescribeVerifiedAccessTrustProvidersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeVerifiedAccessTrustProvidersPagesWithContext(ctx aws.Context, input *DescribeVerifiedAccessTrustProvidersInput, fn func(*DescribeVerifiedAccessTrustProvidersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeVerifiedAccessTrustProvidersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeVerifiedAccessTrustProvidersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVerifiedAccessTrustProvidersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeVolumeAttribute = "DescribeVolumeAttribute"
 
 // DescribeVolumeAttributeRequest generates a "aws/request.Request" representing the
@@ -30753,11 +32770,8 @@ func (c *EC2) DescribeVolumesRequest(input *DescribeVolumesInput) (req *request.
 // Describes the specified EBS volumes or all of your EBS volumes.
 //
 // If you are describing a long list of volumes, we recommend that you paginate
-// the output to make the list more manageable. The MaxResults parameter sets
-// the maximum number of results returned in a single page. If the list of results
-// exceeds your MaxResults value, then that number of results is returned along
-// with a NextToken value that can be passed to a subsequent DescribeVolumes
-// request to retrieve the remaining results.
+// the output to make the list more manageable. For more information, see Pagination
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 //
 // For more information about EBS volumes, see Amazon EBS volumes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumes.html)
 // in the Amazon Elastic Compute Cloud User Guide.
@@ -31925,7 +33939,7 @@ func (c *EC2) DescribeVpcEndpointsRequest(input *DescribeVpcEndpointsInput) (req
 
 // DescribeVpcEndpoints API operation for Amazon Elastic Compute Cloud.
 //
-// Describes one or more of your VPC endpoints.
+// Describes your VPC endpoints.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -32647,6 +34661,79 @@ func (c *EC2) DetachNetworkInterfaceWithContext(ctx aws.Context, input *DetachNe
 	return out, req.Send()
 }
 
+const opDetachVerifiedAccessTrustProvider = "DetachVerifiedAccessTrustProvider"
+
+// DetachVerifiedAccessTrustProviderRequest generates a "aws/request.Request" representing the
+// client's request for the DetachVerifiedAccessTrustProvider operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DetachVerifiedAccessTrustProvider for more information on using the DetachVerifiedAccessTrustProvider
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DetachVerifiedAccessTrustProviderRequest method.
+//	req, resp := client.DetachVerifiedAccessTrustProviderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachVerifiedAccessTrustProvider
+func (c *EC2) DetachVerifiedAccessTrustProviderRequest(input *DetachVerifiedAccessTrustProviderInput) (req *request.Request, output *DetachVerifiedAccessTrustProviderOutput) {
+	op := &request.Operation{
+		Name:       opDetachVerifiedAccessTrustProvider,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DetachVerifiedAccessTrustProviderInput{}
+	}
+
+	output = &DetachVerifiedAccessTrustProviderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DetachVerifiedAccessTrustProvider API operation for Amazon Elastic Compute Cloud.
+//
+// Detach a trust provider from an Amazon Web Services Verified Access instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DetachVerifiedAccessTrustProvider for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachVerifiedAccessTrustProvider
+func (c *EC2) DetachVerifiedAccessTrustProvider(input *DetachVerifiedAccessTrustProviderInput) (*DetachVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.DetachVerifiedAccessTrustProviderRequest(input)
+	return out, req.Send()
+}
+
+// DetachVerifiedAccessTrustProviderWithContext is the same as DetachVerifiedAccessTrustProvider with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DetachVerifiedAccessTrustProvider for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DetachVerifiedAccessTrustProviderWithContext(ctx aws.Context, input *DetachVerifiedAccessTrustProviderInput, opts ...request.Option) (*DetachVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.DetachVerifiedAccessTrustProviderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDetachVolume = "DetachVolume"
 
 // DetachVolumeRequest generates a "aws/request.Request" representing the
@@ -33242,7 +35329,7 @@ func (c *EC2) DisableImageDeprecationRequest(input *DisableImageDeprecationInput
 // Cancels the deprecation of the specified AMI.
 //
 // For more information, see Deprecate an AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-deprecate.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -34127,6 +36214,167 @@ func (c *EC2) DisassociateInstanceEventWindow(input *DisassociateInstanceEventWi
 // for more information on using Contexts.
 func (c *EC2) DisassociateInstanceEventWindowWithContext(ctx aws.Context, input *DisassociateInstanceEventWindowInput, opts ...request.Option) (*DisassociateInstanceEventWindowOutput, error) {
 	req, out := c.DisassociateInstanceEventWindowRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDisassociateIpamResourceDiscovery = "DisassociateIpamResourceDiscovery"
+
+// DisassociateIpamResourceDiscoveryRequest generates a "aws/request.Request" representing the
+// client's request for the DisassociateIpamResourceDiscovery operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisassociateIpamResourceDiscovery for more information on using the DisassociateIpamResourceDiscovery
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DisassociateIpamResourceDiscoveryRequest method.
+//	req, resp := client.DisassociateIpamResourceDiscoveryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateIpamResourceDiscovery
+func (c *EC2) DisassociateIpamResourceDiscoveryRequest(input *DisassociateIpamResourceDiscoveryInput) (req *request.Request, output *DisassociateIpamResourceDiscoveryOutput) {
+	op := &request.Operation{
+		Name:       opDisassociateIpamResourceDiscovery,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DisassociateIpamResourceDiscoveryInput{}
+	}
+
+	output = &DisassociateIpamResourceDiscoveryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DisassociateIpamResourceDiscovery API operation for Amazon Elastic Compute Cloud.
+//
+// Disassociates a resource discovery from an Amazon VPC IPAM. A resource discovery
+// is an IPAM component that enables IPAM to manage and monitor resources that
+// belong to the owning account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DisassociateIpamResourceDiscovery for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateIpamResourceDiscovery
+func (c *EC2) DisassociateIpamResourceDiscovery(input *DisassociateIpamResourceDiscoveryInput) (*DisassociateIpamResourceDiscoveryOutput, error) {
+	req, out := c.DisassociateIpamResourceDiscoveryRequest(input)
+	return out, req.Send()
+}
+
+// DisassociateIpamResourceDiscoveryWithContext is the same as DisassociateIpamResourceDiscovery with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisassociateIpamResourceDiscovery for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DisassociateIpamResourceDiscoveryWithContext(ctx aws.Context, input *DisassociateIpamResourceDiscoveryInput, opts ...request.Option) (*DisassociateIpamResourceDiscoveryOutput, error) {
+	req, out := c.DisassociateIpamResourceDiscoveryRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDisassociateNatGatewayAddress = "DisassociateNatGatewayAddress"
+
+// DisassociateNatGatewayAddressRequest generates a "aws/request.Request" representing the
+// client's request for the DisassociateNatGatewayAddress operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisassociateNatGatewayAddress for more information on using the DisassociateNatGatewayAddress
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DisassociateNatGatewayAddressRequest method.
+//	req, resp := client.DisassociateNatGatewayAddressRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateNatGatewayAddress
+func (c *EC2) DisassociateNatGatewayAddressRequest(input *DisassociateNatGatewayAddressInput) (req *request.Request, output *DisassociateNatGatewayAddressOutput) {
+	op := &request.Operation{
+		Name:       opDisassociateNatGatewayAddress,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DisassociateNatGatewayAddressInput{}
+	}
+
+	output = &DisassociateNatGatewayAddressOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DisassociateNatGatewayAddress API operation for Amazon Elastic Compute Cloud.
+//
+// Disassociates secondary Elastic IP addresses (EIPs) from a public NAT gateway.
+// You cannot disassociate your primary EIP. For more information, see Edit
+// secondary IP address associations (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-edit-secondary)
+// in the Amazon Virtual Private Cloud User Guide.
+//
+// While disassociating is in progress, you cannot associate/disassociate additional
+// EIPs while the connections are being drained. You are, however, allowed to
+// delete the NAT gateway.
+//
+// An EIP will only be released at the end of MaxDrainDurationSeconds. The EIPs
+// stay associated and support the existing connections but do not support any
+// new connections (new connections are distributed across the remaining associated
+// EIPs). As the existing connections drain out, the EIPs (and the corresponding
+// private IPs mapped to them) get released.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DisassociateNatGatewayAddress for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateNatGatewayAddress
+func (c *EC2) DisassociateNatGatewayAddress(input *DisassociateNatGatewayAddressInput) (*DisassociateNatGatewayAddressOutput, error) {
+	req, out := c.DisassociateNatGatewayAddressRequest(input)
+	return out, req.Send()
+}
+
+// DisassociateNatGatewayAddressWithContext is the same as DisassociateNatGatewayAddress with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisassociateNatGatewayAddress for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DisassociateNatGatewayAddressWithContext(ctx aws.Context, input *DisassociateNatGatewayAddressInput, opts ...request.Option) (*DisassociateNatGatewayAddressOutput, error) {
+	req, out := c.DisassociateNatGatewayAddressRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -35105,7 +37353,7 @@ func (c *EC2) EnableImageDeprecationRequest(input *EnableImageDeprecationInput) 
 // Enables deprecation of the specified AMI at the specified date and time.
 //
 // For more information, see Deprecate an AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-deprecate.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -35253,6 +37501,13 @@ func (c *EC2) EnableReachabilityAnalyzerOrganizationSharingRequest(input *Enable
 }
 
 // EnableReachabilityAnalyzerOrganizationSharing API operation for Amazon Elastic Compute Cloud.
+//
+// Establishes a trust relationship between Reachability Analyzer and Organizations.
+// This operation must be performed by the management account for the organization.
+//
+// After you establish a trust relationship, a user in the management account
+// or a delegated administrator account can run a cross-account analysis using
+// resources from the member accounts.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -37596,6 +39851,273 @@ func (c *EC2) GetIpamAddressHistoryPagesWithContext(ctx aws.Context, input *GetI
 	return p.Err()
 }
 
+const opGetIpamDiscoveredAccounts = "GetIpamDiscoveredAccounts"
+
+// GetIpamDiscoveredAccountsRequest generates a "aws/request.Request" representing the
+// client's request for the GetIpamDiscoveredAccounts operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetIpamDiscoveredAccounts for more information on using the GetIpamDiscoveredAccounts
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetIpamDiscoveredAccountsRequest method.
+//	req, resp := client.GetIpamDiscoveredAccountsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamDiscoveredAccounts
+func (c *EC2) GetIpamDiscoveredAccountsRequest(input *GetIpamDiscoveredAccountsInput) (req *request.Request, output *GetIpamDiscoveredAccountsOutput) {
+	op := &request.Operation{
+		Name:       opGetIpamDiscoveredAccounts,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &GetIpamDiscoveredAccountsInput{}
+	}
+
+	output = &GetIpamDiscoveredAccountsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetIpamDiscoveredAccounts API operation for Amazon Elastic Compute Cloud.
+//
+// Gets IPAM discovered accounts. A discovered account is an Amazon Web Services
+// account that is monitored under a resource discovery. If you have integrated
+// IPAM with Amazon Web Services Organizations, all accounts in the organization
+// are discovered accounts. Only the IPAM account can get all discovered accounts
+// in the organization.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation GetIpamDiscoveredAccounts for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamDiscoveredAccounts
+func (c *EC2) GetIpamDiscoveredAccounts(input *GetIpamDiscoveredAccountsInput) (*GetIpamDiscoveredAccountsOutput, error) {
+	req, out := c.GetIpamDiscoveredAccountsRequest(input)
+	return out, req.Send()
+}
+
+// GetIpamDiscoveredAccountsWithContext is the same as GetIpamDiscoveredAccounts with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetIpamDiscoveredAccounts for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetIpamDiscoveredAccountsWithContext(ctx aws.Context, input *GetIpamDiscoveredAccountsInput, opts ...request.Option) (*GetIpamDiscoveredAccountsOutput, error) {
+	req, out := c.GetIpamDiscoveredAccountsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// GetIpamDiscoveredAccountsPages iterates over the pages of a GetIpamDiscoveredAccounts operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See GetIpamDiscoveredAccounts method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a GetIpamDiscoveredAccounts operation.
+//	pageNum := 0
+//	err := client.GetIpamDiscoveredAccountsPages(params,
+//	    func(page *ec2.GetIpamDiscoveredAccountsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) GetIpamDiscoveredAccountsPages(input *GetIpamDiscoveredAccountsInput, fn func(*GetIpamDiscoveredAccountsOutput, bool) bool) error {
+	return c.GetIpamDiscoveredAccountsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// GetIpamDiscoveredAccountsPagesWithContext same as GetIpamDiscoveredAccountsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetIpamDiscoveredAccountsPagesWithContext(ctx aws.Context, input *GetIpamDiscoveredAccountsInput, fn func(*GetIpamDiscoveredAccountsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *GetIpamDiscoveredAccountsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetIpamDiscoveredAccountsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*GetIpamDiscoveredAccountsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opGetIpamDiscoveredResourceCidrs = "GetIpamDiscoveredResourceCidrs"
+
+// GetIpamDiscoveredResourceCidrsRequest generates a "aws/request.Request" representing the
+// client's request for the GetIpamDiscoveredResourceCidrs operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetIpamDiscoveredResourceCidrs for more information on using the GetIpamDiscoveredResourceCidrs
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetIpamDiscoveredResourceCidrsRequest method.
+//	req, resp := client.GetIpamDiscoveredResourceCidrsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamDiscoveredResourceCidrs
+func (c *EC2) GetIpamDiscoveredResourceCidrsRequest(input *GetIpamDiscoveredResourceCidrsInput) (req *request.Request, output *GetIpamDiscoveredResourceCidrsOutput) {
+	op := &request.Operation{
+		Name:       opGetIpamDiscoveredResourceCidrs,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &GetIpamDiscoveredResourceCidrsInput{}
+	}
+
+	output = &GetIpamDiscoveredResourceCidrsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetIpamDiscoveredResourceCidrs API operation for Amazon Elastic Compute Cloud.
+//
+// Returns the resource CIDRs that are monitored as part of a resource discovery.
+// A discovered resource is a resource CIDR monitored under a resource discovery.
+// The following resources can be discovered: VPCs, Public IPv4 pools, VPC subnets,
+// and Elastic IP addresses.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation GetIpamDiscoveredResourceCidrs for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetIpamDiscoveredResourceCidrs
+func (c *EC2) GetIpamDiscoveredResourceCidrs(input *GetIpamDiscoveredResourceCidrsInput) (*GetIpamDiscoveredResourceCidrsOutput, error) {
+	req, out := c.GetIpamDiscoveredResourceCidrsRequest(input)
+	return out, req.Send()
+}
+
+// GetIpamDiscoveredResourceCidrsWithContext is the same as GetIpamDiscoveredResourceCidrs with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetIpamDiscoveredResourceCidrs for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetIpamDiscoveredResourceCidrsWithContext(ctx aws.Context, input *GetIpamDiscoveredResourceCidrsInput, opts ...request.Option) (*GetIpamDiscoveredResourceCidrsOutput, error) {
+	req, out := c.GetIpamDiscoveredResourceCidrsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// GetIpamDiscoveredResourceCidrsPages iterates over the pages of a GetIpamDiscoveredResourceCidrs operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See GetIpamDiscoveredResourceCidrs method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a GetIpamDiscoveredResourceCidrs operation.
+//	pageNum := 0
+//	err := client.GetIpamDiscoveredResourceCidrsPages(params,
+//	    func(page *ec2.GetIpamDiscoveredResourceCidrsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EC2) GetIpamDiscoveredResourceCidrsPages(input *GetIpamDiscoveredResourceCidrsInput, fn func(*GetIpamDiscoveredResourceCidrsOutput, bool) bool) error {
+	return c.GetIpamDiscoveredResourceCidrsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// GetIpamDiscoveredResourceCidrsPagesWithContext same as GetIpamDiscoveredResourceCidrsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetIpamDiscoveredResourceCidrsPagesWithContext(ctx aws.Context, input *GetIpamDiscoveredResourceCidrsInput, fn func(*GetIpamDiscoveredResourceCidrsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *GetIpamDiscoveredResourceCidrsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetIpamDiscoveredResourceCidrsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*GetIpamDiscoveredResourceCidrsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opGetIpamPoolAllocations = "GetIpamPoolAllocations"
 
 // GetIpamPoolAllocationsRequest generates a "aws/request.Request" representing the
@@ -37646,6 +40168,11 @@ func (c *EC2) GetIpamPoolAllocationsRequest(input *GetIpamPoolAllocationsInput) 
 // GetIpamPoolAllocations API operation for Amazon Elastic Compute Cloud.
 //
 // Get a list of all the CIDR allocations in an IPAM pool.
+//
+// If you use this action after AllocateIpamPoolCidr (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_AllocateIpamPoolCidr.html)
+// or ReleaseIpamPoolAllocation (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ReleaseIpamPoolAllocation.html),
+// note that all EC2 API actions follow an eventual consistency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/query-api-troubleshooting.html#eventual-consistency)
+// model.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -37905,7 +40432,11 @@ func (c *EC2) GetIpamResourceCidrsRequest(input *GetIpamResourceCidrsInput) (req
 
 // GetIpamResourceCidrs API operation for Amazon Elastic Compute Cloud.
 //
-// Get information about the resources in a scope.
+// Returns resource CIDRs managed by IPAM in a given scope. If an IPAM is associated
+// with more than one resource discovery, the resource CIDRs across all of the
+// resource discoveries is returned. A resource discovery is an IPAM component
+// that enables IPAM to manage and monitor resources that belong to the owning
+// account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -39785,6 +42316,152 @@ func (c *EC2) GetTransitGatewayRouteTablePropagationsPagesWithContext(ctx aws.Co
 	return p.Err()
 }
 
+const opGetVerifiedAccessEndpointPolicy = "GetVerifiedAccessEndpointPolicy"
+
+// GetVerifiedAccessEndpointPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetVerifiedAccessEndpointPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetVerifiedAccessEndpointPolicy for more information on using the GetVerifiedAccessEndpointPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetVerifiedAccessEndpointPolicyRequest method.
+//	req, resp := client.GetVerifiedAccessEndpointPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVerifiedAccessEndpointPolicy
+func (c *EC2) GetVerifiedAccessEndpointPolicyRequest(input *GetVerifiedAccessEndpointPolicyInput) (req *request.Request, output *GetVerifiedAccessEndpointPolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetVerifiedAccessEndpointPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetVerifiedAccessEndpointPolicyInput{}
+	}
+
+	output = &GetVerifiedAccessEndpointPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetVerifiedAccessEndpointPolicy API operation for Amazon Elastic Compute Cloud.
+//
+// Get the Verified Access policy associated with the endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation GetVerifiedAccessEndpointPolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVerifiedAccessEndpointPolicy
+func (c *EC2) GetVerifiedAccessEndpointPolicy(input *GetVerifiedAccessEndpointPolicyInput) (*GetVerifiedAccessEndpointPolicyOutput, error) {
+	req, out := c.GetVerifiedAccessEndpointPolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetVerifiedAccessEndpointPolicyWithContext is the same as GetVerifiedAccessEndpointPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetVerifiedAccessEndpointPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetVerifiedAccessEndpointPolicyWithContext(ctx aws.Context, input *GetVerifiedAccessEndpointPolicyInput, opts ...request.Option) (*GetVerifiedAccessEndpointPolicyOutput, error) {
+	req, out := c.GetVerifiedAccessEndpointPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetVerifiedAccessGroupPolicy = "GetVerifiedAccessGroupPolicy"
+
+// GetVerifiedAccessGroupPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetVerifiedAccessGroupPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetVerifiedAccessGroupPolicy for more information on using the GetVerifiedAccessGroupPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetVerifiedAccessGroupPolicyRequest method.
+//	req, resp := client.GetVerifiedAccessGroupPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVerifiedAccessGroupPolicy
+func (c *EC2) GetVerifiedAccessGroupPolicyRequest(input *GetVerifiedAccessGroupPolicyInput) (req *request.Request, output *GetVerifiedAccessGroupPolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetVerifiedAccessGroupPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetVerifiedAccessGroupPolicyInput{}
+	}
+
+	output = &GetVerifiedAccessGroupPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetVerifiedAccessGroupPolicy API operation for Amazon Elastic Compute Cloud.
+//
+// Shows the contents of the Verified Access policy associated with the group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation GetVerifiedAccessGroupPolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVerifiedAccessGroupPolicy
+func (c *EC2) GetVerifiedAccessGroupPolicy(input *GetVerifiedAccessGroupPolicyInput) (*GetVerifiedAccessGroupPolicyOutput, error) {
+	req, out := c.GetVerifiedAccessGroupPolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetVerifiedAccessGroupPolicyWithContext is the same as GetVerifiedAccessGroupPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetVerifiedAccessGroupPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetVerifiedAccessGroupPolicyWithContext(ctx aws.Context, input *GetVerifiedAccessGroupPolicyInput, opts ...request.Option) (*GetVerifiedAccessGroupPolicyOutput, error) {
+	req, out := c.GetVerifiedAccessGroupPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetVpnConnectionDeviceSampleConfiguration = "GetVpnConnectionDeviceSampleConfiguration"
 
 // GetVpnConnectionDeviceSampleConfigurationRequest generates a "aws/request.Request" representing the
@@ -39994,6 +42671,79 @@ func (c *EC2) GetVpnConnectionDeviceTypesPagesWithContext(ctx aws.Context, input
 	return p.Err()
 }
 
+const opGetVpnTunnelReplacementStatus = "GetVpnTunnelReplacementStatus"
+
+// GetVpnTunnelReplacementStatusRequest generates a "aws/request.Request" representing the
+// client's request for the GetVpnTunnelReplacementStatus operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetVpnTunnelReplacementStatus for more information on using the GetVpnTunnelReplacementStatus
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetVpnTunnelReplacementStatusRequest method.
+//	req, resp := client.GetVpnTunnelReplacementStatusRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVpnTunnelReplacementStatus
+func (c *EC2) GetVpnTunnelReplacementStatusRequest(input *GetVpnTunnelReplacementStatusInput) (req *request.Request, output *GetVpnTunnelReplacementStatusOutput) {
+	op := &request.Operation{
+		Name:       opGetVpnTunnelReplacementStatus,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetVpnTunnelReplacementStatusInput{}
+	}
+
+	output = &GetVpnTunnelReplacementStatusOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetVpnTunnelReplacementStatus API operation for Amazon Elastic Compute Cloud.
+//
+// Get details of available tunnel endpoint maintenance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation GetVpnTunnelReplacementStatus for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetVpnTunnelReplacementStatus
+func (c *EC2) GetVpnTunnelReplacementStatus(input *GetVpnTunnelReplacementStatusInput) (*GetVpnTunnelReplacementStatusOutput, error) {
+	req, out := c.GetVpnTunnelReplacementStatusRequest(input)
+	return out, req.Send()
+}
+
+// GetVpnTunnelReplacementStatusWithContext is the same as GetVpnTunnelReplacementStatus with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetVpnTunnelReplacementStatus for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetVpnTunnelReplacementStatusWithContext(ctx aws.Context, input *GetVpnTunnelReplacementStatusInput, opts ...request.Option) (*GetVpnTunnelReplacementStatusOutput, error) {
+	req, out := c.GetVpnTunnelReplacementStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opImportClientVpnClientCertificateRevocationList = "ImportClientVpnClientCertificateRevocationList"
 
 // ImportClientVpnClientCertificateRevocationListRequest generates a "aws/request.Request" representing the
@@ -40113,6 +42863,11 @@ func (c *EC2) ImportImageRequest(input *ImportImageInput) (req *request.Request,
 }
 
 // ImportImage API operation for Amazon Elastic Compute Cloud.
+//
+// To import your virtual machines (VMs) with a console-based experience, you
+// can use the Import virtual machine images to Amazon Web Services template
+// in the Migration Hub Orchestrator console (https://console.aws.amazon.com/migrationhub/orchestrator).
+// For more information, see the Migration Hub Orchestrator User Guide (https://docs.aws.amazon.com/migrationhub-orchestrator/latest/userguide/import-vm-images.html).
 //
 // Import single or multi-volume disk images or EBS snapshots into an Amazon
 // Machine Image (AMI).
@@ -40532,7 +43287,7 @@ func (c *EC2) ListImagesInRecycleBinRequest(input *ListImagesInRecycleBinInput) 
 //
 // Lists one or more AMIs that are currently in the Recycle Bin. For more information,
 // see Recycle Bin (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -41796,8 +44551,10 @@ func (c *EC2) ModifyImageAttributeRequest(input *ModifyImageAttributeInput) (req
 // ModifyImageAttribute API operation for Amazon Elastic Compute Cloud.
 //
 // Modifies the specified attribute of the specified AMI. You can specify only
-// one attribute at a time. You can use the Attribute parameter to specify the
-// attribute or one of the following parameters: Description or LaunchPermission.
+// one attribute at a time.
+//
+// To specify the attribute, you can use the Attribute parameter, or one of
+// the following parameters: Description, ImdsSupport, or LaunchPermission.
 //
 // Images with an Amazon Web Services Marketplace product code cannot be made
 // public.
@@ -42703,6 +45460,81 @@ func (c *EC2) ModifyIpamResourceCidr(input *ModifyIpamResourceCidrInput) (*Modif
 // for more information on using Contexts.
 func (c *EC2) ModifyIpamResourceCidrWithContext(ctx aws.Context, input *ModifyIpamResourceCidrInput, opts ...request.Option) (*ModifyIpamResourceCidrOutput, error) {
 	req, out := c.ModifyIpamResourceCidrRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyIpamResourceDiscovery = "ModifyIpamResourceDiscovery"
+
+// ModifyIpamResourceDiscoveryRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyIpamResourceDiscovery operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyIpamResourceDiscovery for more information on using the ModifyIpamResourceDiscovery
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyIpamResourceDiscoveryRequest method.
+//	req, resp := client.ModifyIpamResourceDiscoveryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIpamResourceDiscovery
+func (c *EC2) ModifyIpamResourceDiscoveryRequest(input *ModifyIpamResourceDiscoveryInput) (req *request.Request, output *ModifyIpamResourceDiscoveryOutput) {
+	op := &request.Operation{
+		Name:       opModifyIpamResourceDiscovery,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyIpamResourceDiscoveryInput{}
+	}
+
+	output = &ModifyIpamResourceDiscoveryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyIpamResourceDiscovery API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies a resource discovery. A resource discovery is an IPAM component
+// that enables IPAM to manage and monitor resources that belong to the owning
+// account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyIpamResourceDiscovery for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyIpamResourceDiscovery
+func (c *EC2) ModifyIpamResourceDiscovery(input *ModifyIpamResourceDiscoveryInput) (*ModifyIpamResourceDiscoveryOutput, error) {
+	req, out := c.ModifyIpamResourceDiscoveryRequest(input)
+	return out, req.Send()
+}
+
+// ModifyIpamResourceDiscoveryWithContext is the same as ModifyIpamResourceDiscovery with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyIpamResourceDiscovery for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyIpamResourceDiscoveryWithContext(ctx aws.Context, input *ModifyIpamResourceDiscoveryInput, opts ...request.Option) (*ModifyIpamResourceDiscoveryOutput, error) {
+	req, out := c.ModifyIpamResourceDiscoveryRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -44119,6 +46951,519 @@ func (c *EC2) ModifyTransitGatewayVpcAttachmentWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opModifyVerifiedAccessEndpoint = "ModifyVerifiedAccessEndpoint"
+
+// ModifyVerifiedAccessEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessEndpoint for more information on using the ModifyVerifiedAccessEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessEndpointRequest method.
+//	req, resp := client.ModifyVerifiedAccessEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessEndpoint
+func (c *EC2) ModifyVerifiedAccessEndpointRequest(input *ModifyVerifiedAccessEndpointInput) (req *request.Request, output *ModifyVerifiedAccessEndpointOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessEndpointInput{}
+	}
+
+	output = &ModifyVerifiedAccessEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessEndpoint API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the configuration of an Amazon Web Services Verified Access endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessEndpoint for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessEndpoint
+func (c *EC2) ModifyVerifiedAccessEndpoint(input *ModifyVerifiedAccessEndpointInput) (*ModifyVerifiedAccessEndpointOutput, error) {
+	req, out := c.ModifyVerifiedAccessEndpointRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessEndpointWithContext is the same as ModifyVerifiedAccessEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessEndpointWithContext(ctx aws.Context, input *ModifyVerifiedAccessEndpointInput, opts ...request.Option) (*ModifyVerifiedAccessEndpointOutput, error) {
+	req, out := c.ModifyVerifiedAccessEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVerifiedAccessEndpointPolicy = "ModifyVerifiedAccessEndpointPolicy"
+
+// ModifyVerifiedAccessEndpointPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessEndpointPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessEndpointPolicy for more information on using the ModifyVerifiedAccessEndpointPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessEndpointPolicyRequest method.
+//	req, resp := client.ModifyVerifiedAccessEndpointPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessEndpointPolicy
+func (c *EC2) ModifyVerifiedAccessEndpointPolicyRequest(input *ModifyVerifiedAccessEndpointPolicyInput) (req *request.Request, output *ModifyVerifiedAccessEndpointPolicyOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessEndpointPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessEndpointPolicyInput{}
+	}
+
+	output = &ModifyVerifiedAccessEndpointPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessEndpointPolicy API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the specified Verified Access endpoint policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessEndpointPolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessEndpointPolicy
+func (c *EC2) ModifyVerifiedAccessEndpointPolicy(input *ModifyVerifiedAccessEndpointPolicyInput) (*ModifyVerifiedAccessEndpointPolicyOutput, error) {
+	req, out := c.ModifyVerifiedAccessEndpointPolicyRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessEndpointPolicyWithContext is the same as ModifyVerifiedAccessEndpointPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessEndpointPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessEndpointPolicyWithContext(ctx aws.Context, input *ModifyVerifiedAccessEndpointPolicyInput, opts ...request.Option) (*ModifyVerifiedAccessEndpointPolicyOutput, error) {
+	req, out := c.ModifyVerifiedAccessEndpointPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVerifiedAccessGroup = "ModifyVerifiedAccessGroup"
+
+// ModifyVerifiedAccessGroupRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessGroup for more information on using the ModifyVerifiedAccessGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessGroupRequest method.
+//	req, resp := client.ModifyVerifiedAccessGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessGroup
+func (c *EC2) ModifyVerifiedAccessGroupRequest(input *ModifyVerifiedAccessGroupInput) (req *request.Request, output *ModifyVerifiedAccessGroupOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessGroupInput{}
+	}
+
+	output = &ModifyVerifiedAccessGroupOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessGroup API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the specified Verified Access group configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessGroup
+func (c *EC2) ModifyVerifiedAccessGroup(input *ModifyVerifiedAccessGroupInput) (*ModifyVerifiedAccessGroupOutput, error) {
+	req, out := c.ModifyVerifiedAccessGroupRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessGroupWithContext is the same as ModifyVerifiedAccessGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessGroupWithContext(ctx aws.Context, input *ModifyVerifiedAccessGroupInput, opts ...request.Option) (*ModifyVerifiedAccessGroupOutput, error) {
+	req, out := c.ModifyVerifiedAccessGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVerifiedAccessGroupPolicy = "ModifyVerifiedAccessGroupPolicy"
+
+// ModifyVerifiedAccessGroupPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessGroupPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessGroupPolicy for more information on using the ModifyVerifiedAccessGroupPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessGroupPolicyRequest method.
+//	req, resp := client.ModifyVerifiedAccessGroupPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessGroupPolicy
+func (c *EC2) ModifyVerifiedAccessGroupPolicyRequest(input *ModifyVerifiedAccessGroupPolicyInput) (req *request.Request, output *ModifyVerifiedAccessGroupPolicyOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessGroupPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessGroupPolicyInput{}
+	}
+
+	output = &ModifyVerifiedAccessGroupPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessGroupPolicy API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the specified Verified Access group policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessGroupPolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessGroupPolicy
+func (c *EC2) ModifyVerifiedAccessGroupPolicy(input *ModifyVerifiedAccessGroupPolicyInput) (*ModifyVerifiedAccessGroupPolicyOutput, error) {
+	req, out := c.ModifyVerifiedAccessGroupPolicyRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessGroupPolicyWithContext is the same as ModifyVerifiedAccessGroupPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessGroupPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessGroupPolicyWithContext(ctx aws.Context, input *ModifyVerifiedAccessGroupPolicyInput, opts ...request.Option) (*ModifyVerifiedAccessGroupPolicyOutput, error) {
+	req, out := c.ModifyVerifiedAccessGroupPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVerifiedAccessInstance = "ModifyVerifiedAccessInstance"
+
+// ModifyVerifiedAccessInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessInstance for more information on using the ModifyVerifiedAccessInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessInstanceRequest method.
+//	req, resp := client.ModifyVerifiedAccessInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessInstance
+func (c *EC2) ModifyVerifiedAccessInstanceRequest(input *ModifyVerifiedAccessInstanceInput) (req *request.Request, output *ModifyVerifiedAccessInstanceOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessInstanceInput{}
+	}
+
+	output = &ModifyVerifiedAccessInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessInstance API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the configuration of the specified Verified Access instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessInstance for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessInstance
+func (c *EC2) ModifyVerifiedAccessInstance(input *ModifyVerifiedAccessInstanceInput) (*ModifyVerifiedAccessInstanceOutput, error) {
+	req, out := c.ModifyVerifiedAccessInstanceRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessInstanceWithContext is the same as ModifyVerifiedAccessInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessInstanceWithContext(ctx aws.Context, input *ModifyVerifiedAccessInstanceInput, opts ...request.Option) (*ModifyVerifiedAccessInstanceOutput, error) {
+	req, out := c.ModifyVerifiedAccessInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVerifiedAccessInstanceLoggingConfiguration = "ModifyVerifiedAccessInstanceLoggingConfiguration"
+
+// ModifyVerifiedAccessInstanceLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessInstanceLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessInstanceLoggingConfiguration for more information on using the ModifyVerifiedAccessInstanceLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessInstanceLoggingConfigurationRequest method.
+//	req, resp := client.ModifyVerifiedAccessInstanceLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessInstanceLoggingConfiguration
+func (c *EC2) ModifyVerifiedAccessInstanceLoggingConfigurationRequest(input *ModifyVerifiedAccessInstanceLoggingConfigurationInput) (req *request.Request, output *ModifyVerifiedAccessInstanceLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessInstanceLoggingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessInstanceLoggingConfigurationInput{}
+	}
+
+	output = &ModifyVerifiedAccessInstanceLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessInstanceLoggingConfiguration API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the logging configuration for the specified Amazon Web Services
+// Verified Access instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessInstanceLoggingConfiguration for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessInstanceLoggingConfiguration
+func (c *EC2) ModifyVerifiedAccessInstanceLoggingConfiguration(input *ModifyVerifiedAccessInstanceLoggingConfigurationInput) (*ModifyVerifiedAccessInstanceLoggingConfigurationOutput, error) {
+	req, out := c.ModifyVerifiedAccessInstanceLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessInstanceLoggingConfigurationWithContext is the same as ModifyVerifiedAccessInstanceLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessInstanceLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessInstanceLoggingConfigurationWithContext(ctx aws.Context, input *ModifyVerifiedAccessInstanceLoggingConfigurationInput, opts ...request.Option) (*ModifyVerifiedAccessInstanceLoggingConfigurationOutput, error) {
+	req, out := c.ModifyVerifiedAccessInstanceLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVerifiedAccessTrustProvider = "ModifyVerifiedAccessTrustProvider"
+
+// ModifyVerifiedAccessTrustProviderRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVerifiedAccessTrustProvider operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVerifiedAccessTrustProvider for more information on using the ModifyVerifiedAccessTrustProvider
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyVerifiedAccessTrustProviderRequest method.
+//	req, resp := client.ModifyVerifiedAccessTrustProviderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessTrustProvider
+func (c *EC2) ModifyVerifiedAccessTrustProviderRequest(input *ModifyVerifiedAccessTrustProviderInput) (req *request.Request, output *ModifyVerifiedAccessTrustProviderOutput) {
+	op := &request.Operation{
+		Name:       opModifyVerifiedAccessTrustProvider,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVerifiedAccessTrustProviderInput{}
+	}
+
+	output = &ModifyVerifiedAccessTrustProviderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVerifiedAccessTrustProvider API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the configuration of the specified Amazon Web Services Verified
+// Access trust provider.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVerifiedAccessTrustProvider for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVerifiedAccessTrustProvider
+func (c *EC2) ModifyVerifiedAccessTrustProvider(input *ModifyVerifiedAccessTrustProviderInput) (*ModifyVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.ModifyVerifiedAccessTrustProviderRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVerifiedAccessTrustProviderWithContext is the same as ModifyVerifiedAccessTrustProvider with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVerifiedAccessTrustProvider for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVerifiedAccessTrustProviderWithContext(ctx aws.Context, input *ModifyVerifiedAccessTrustProviderInput, opts ...request.Option) (*ModifyVerifiedAccessTrustProviderOutput, error) {
+	req, out := c.ModifyVerifiedAccessTrustProviderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyVolume = "ModifyVolume"
 
 // ModifyVolumeRequest generates a "aws/request.Request" representing the
@@ -44721,8 +48066,8 @@ func (c *EC2) ModifyVpcEndpointServicePermissionsRequest(input *ModifyVpcEndpoin
 // ModifyVpcEndpointServicePermissions API operation for Amazon Elastic Compute Cloud.
 //
 // Modifies the permissions for your VPC endpoint service. You can add or remove
-// permissions for service consumers (IAM users, IAM roles, and Amazon Web Services
-// accounts) to connect to your endpoint service.
+// permissions for service consumers (Amazon Web Services accounts, users, and
+// IAM roles) to connect to your endpoint service.
 //
 // If you grant permissions to all principals, the service is public. Any users
 // who know the name of a public service can send a request to attach an endpoint.
@@ -44820,14 +48165,14 @@ func (c *EC2) ModifyVpcPeeringConnectionOptionsRequest(input *ModifyVpcPeeringCo
 // If the peered VPCs are in the same Amazon Web Services account, you can enable
 // DNS resolution for queries from the local VPC. This ensures that queries
 // from the local VPC resolve to private IP addresses in the peer VPC. This
-// option is not available if the peered VPCs are in different different Amazon
-// Web Services accounts or different Regions. For peered VPCs in different
-// Amazon Web Services accounts, each Amazon Web Services account owner must
-// initiate a separate request to modify the peering connection options. For
-// inter-region peering connections, you must use the Region for the requester
-// VPC to modify the requester VPC peering options and the Region for the accepter
-// VPC to modify the accepter VPC peering options. To verify which VPCs are
-// the accepter and the requester for a VPC peering connection, use the DescribeVpcPeeringConnections
+// option is not available if the peered VPCs are in different Amazon Web Services
+// accounts or different Regions. For peered VPCs in different Amazon Web Services
+// accounts, each Amazon Web Services account owner must initiate a separate
+// request to modify the peering connection options. For inter-region peering
+// connections, you must use the Region for the requester VPC to modify the
+// requester VPC peering options and the Region for the accepter VPC to modify
+// the accepter VPC peering options. To verify which VPCs are the accepter and
+// the requester for a VPC peering connection, use the DescribeVpcPeeringConnections
 // command.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -45486,13 +48831,12 @@ func (c *EC2) MoveByoipCidrToIpamRequest(input *MoveByoipCidrToIpamInput) (req *
 
 // MoveByoipCidrToIpam API operation for Amazon Elastic Compute Cloud.
 //
-// Move an BYOIP IPv4 CIDR to IPAM from a public IPv4 pool.
+// Move a BYOIPv4 CIDR to IPAM from a public IPv4 pool.
 //
-// If you already have an IPv4 BYOIP CIDR with Amazon Web Services, you can
-// move the CIDR to IPAM from a public IPv4 pool. You cannot move an IPv6 CIDR
-// to IPAM. If you are bringing a new IP address to Amazon Web Services for
-// the first time, complete the steps in Tutorial: BYOIP address CIDRs to IPAM
-// (https://docs.aws.amazon.com/vpc/latest/ipam/tutorials-byoip-ipam.html).
+// If you already have a BYOIPv4 CIDR with Amazon Web Services, you can move
+// the CIDR to IPAM from a public IPv4 pool. You cannot move an IPv6 CIDR to
+// IPAM. If you are bringing a new IP address to Amazon Web Services for the
+// first time, complete the steps in Tutorial: BYOIP address CIDRs to IPAM (https://docs.aws.amazon.com/vpc/latest/ipam/tutorials-byoip-ipam.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -46194,7 +49538,7 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 // Instance will not be applied to the On-Demand Instance. For information about
 // how to obtain the platform details and billing information of an AMI, see
 // Understand AMI billing information (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-billing-info.html)
-// in the Amazon Elastic Compute Cloud User Guide.
+// in the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -46729,8 +50073,7 @@ func (c *EC2) RejectVpcEndpointConnectionsRequest(input *RejectVpcEndpointConnec
 
 // RejectVpcEndpointConnections API operation for Amazon Elastic Compute Cloud.
 //
-// Rejects one or more VPC endpoint connection requests to your VPC endpoint
-// service.
+// Rejects VPC endpoint connection requests to your VPC endpoint service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -47067,6 +50410,9 @@ func (c *EC2) ReleaseIpamPoolAllocationRequest(input *ReleaseIpamPoolAllocationI
 // (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyIpamResourceCidr.html).
 // For more information, see Release an allocation (https://docs.aws.amazon.com/vpc/latest/ipam/release-pool-alloc-ipam.html)
 // in the Amazon VPC IPAM User Guide.
+//
+// All EC2 API actions follow an eventual consistency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/query-api-troubleshooting.html#eventual-consistency)
+// model.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -47558,6 +50904,79 @@ func (c *EC2) ReplaceTransitGatewayRoute(input *ReplaceTransitGatewayRouteInput)
 // for more information on using Contexts.
 func (c *EC2) ReplaceTransitGatewayRouteWithContext(ctx aws.Context, input *ReplaceTransitGatewayRouteInput, opts ...request.Option) (*ReplaceTransitGatewayRouteOutput, error) {
 	req, out := c.ReplaceTransitGatewayRouteRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opReplaceVpnTunnel = "ReplaceVpnTunnel"
+
+// ReplaceVpnTunnelRequest generates a "aws/request.Request" representing the
+// client's request for the ReplaceVpnTunnel operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ReplaceVpnTunnel for more information on using the ReplaceVpnTunnel
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ReplaceVpnTunnelRequest method.
+//	req, resp := client.ReplaceVpnTunnelRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceVpnTunnel
+func (c *EC2) ReplaceVpnTunnelRequest(input *ReplaceVpnTunnelInput) (req *request.Request, output *ReplaceVpnTunnelOutput) {
+	op := &request.Operation{
+		Name:       opReplaceVpnTunnel,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ReplaceVpnTunnelInput{}
+	}
+
+	output = &ReplaceVpnTunnelOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ReplaceVpnTunnel API operation for Amazon Elastic Compute Cloud.
+//
+// Trigger replacement of specified VPN tunnel.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ReplaceVpnTunnel for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceVpnTunnel
+func (c *EC2) ReplaceVpnTunnel(input *ReplaceVpnTunnelInput) (*ReplaceVpnTunnelOutput, error) {
+	req, out := c.ReplaceVpnTunnelRequest(input)
+	return out, req.Send()
+}
+
+// ReplaceVpnTunnelWithContext is the same as ReplaceVpnTunnel with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ReplaceVpnTunnel for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ReplaceVpnTunnelWithContext(ctx aws.Context, input *ReplaceVpnTunnelInput, opts ...request.Option) (*ReplaceVpnTunnelOutput, error) {
+	req, out := c.ReplaceVpnTunnelRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -48492,7 +51911,7 @@ func (c *EC2) RestoreImageFromRecycleBinRequest(input *RestoreImageFromRecycleBi
 //
 // Restores an AMI from the Recycle Bin. For more information, see Recycle Bin
 // (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html) in
-// the Amazon Elastic Compute Cloud User Guide.
+// the Amazon EC2 User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -50439,6 +53858,92 @@ func (c *EC2) UnassignPrivateIpAddressesWithContext(ctx aws.Context, input *Unas
 	return out, req.Send()
 }
 
+const opUnassignPrivateNatGatewayAddress = "UnassignPrivateNatGatewayAddress"
+
+// UnassignPrivateNatGatewayAddressRequest generates a "aws/request.Request" representing the
+// client's request for the UnassignPrivateNatGatewayAddress operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UnassignPrivateNatGatewayAddress for more information on using the UnassignPrivateNatGatewayAddress
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UnassignPrivateNatGatewayAddressRequest method.
+//	req, resp := client.UnassignPrivateNatGatewayAddressRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignPrivateNatGatewayAddress
+func (c *EC2) UnassignPrivateNatGatewayAddressRequest(input *UnassignPrivateNatGatewayAddressInput) (req *request.Request, output *UnassignPrivateNatGatewayAddressOutput) {
+	op := &request.Operation{
+		Name:       opUnassignPrivateNatGatewayAddress,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UnassignPrivateNatGatewayAddressInput{}
+	}
+
+	output = &UnassignPrivateNatGatewayAddressOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UnassignPrivateNatGatewayAddress API operation for Amazon Elastic Compute Cloud.
+//
+// Unassigns secondary private IPv4 addresses from a private NAT gateway. You
+// cannot unassign your primary private IP. For more information, see Edit secondary
+// IP address associations (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-edit-secondary)
+// in the Amazon Virtual Private Cloud User Guide.
+//
+// While unassigning is in progress, you cannot assign/unassign additional IP
+// addresses while the connections are being drained. You are, however, allowed
+// to delete the NAT gateway.
+//
+// A private IP address will only be released at the end of MaxDrainDurationSeconds.
+// The private IP addresses stay associated and support the existing connections
+// but do not support any new connections (new connections are distributed across
+// the remaining assigned private IP address). After the existing connections
+// drain out, the private IP addresses get released.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation UnassignPrivateNatGatewayAddress for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignPrivateNatGatewayAddress
+func (c *EC2) UnassignPrivateNatGatewayAddress(input *UnassignPrivateNatGatewayAddressInput) (*UnassignPrivateNatGatewayAddressOutput, error) {
+	req, out := c.UnassignPrivateNatGatewayAddressRequest(input)
+	return out, req.Send()
+}
+
+// UnassignPrivateNatGatewayAddressWithContext is the same as UnassignPrivateNatGatewayAddress with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UnassignPrivateNatGatewayAddress for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) UnassignPrivateNatGatewayAddressWithContext(ctx aws.Context, input *UnassignPrivateNatGatewayAddressInput, opts ...request.Option) (*UnassignPrivateNatGatewayAddressOutput, error) {
+	req, out := c.UnassignPrivateNatGatewayAddressRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUnmonitorInstances = "UnmonitorInstances"
 
 // UnmonitorInstancesRequest generates a "aws/request.Request" representing the
@@ -51418,7 +54923,7 @@ type AcceptVpcEndpointConnectionsInput struct {
 	// ServiceId is a required field
 	ServiceId *string `type:"string" required:"true"`
 
-	// The IDs of one or more interface VPC endpoints.
+	// The IDs of the interface VPC endpoints.
 	//
 	// VpcEndpointIds is a required field
 	VpcEndpointIds []*string `locationName:"VpcEndpointId" locationNameList:"item" type:"list" required:"true"`
@@ -51518,7 +55023,9 @@ type AcceptVpcPeeringConnectionInput struct {
 
 	// The ID of the VPC peering connection. You must specify this parameter in
 	// the request.
-	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+	//
+	// VpcPeeringConnectionId is a required field
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -51537,6 +55044,19 @@ func (s AcceptVpcPeeringConnectionInput) String() string {
 // value will be replaced with "sensitive".
 func (s AcceptVpcPeeringConnectionInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AcceptVpcPeeringConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AcceptVpcPeeringConnectionInput"}
+	if s.VpcPeeringConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcPeeringConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -52030,15 +55550,34 @@ func (s *AddedPrincipal) SetServicePermissionId(v string) *AddedPrincipal {
 	return s
 }
 
-// Describes an additional detail for a path analysis.
+// Describes an additional detail for a path analysis. For more information,
+// see Reachability Analyzer additional detail codes (https://docs.aws.amazon.com/vpc/latest/reachability/additional-detail-codes.html).
 type AdditionalDetail struct {
 	_ struct{} `type:"structure"`
 
-	// The information type.
+	// The additional detail code.
 	AdditionalDetailType *string `locationName:"additionalDetailType" type:"string"`
 
 	// The path component.
 	Component *AnalysisComponent `locationName:"component" type:"structure"`
+
+	// The load balancers.
+	LoadBalancers []*AnalysisComponent `locationName:"loadBalancerSet" locationNameList:"item" type:"list"`
+
+	// The rule options.
+	RuleGroupRuleOptionsPairs []*RuleGroupRuleOptionsPair `locationName:"ruleGroupRuleOptionsPairSet" locationNameList:"item" type:"list"`
+
+	// The rule group type.
+	RuleGroupTypePairs []*RuleGroupTypePair `locationName:"ruleGroupTypePairSet" locationNameList:"item" type:"list"`
+
+	// The rule options.
+	RuleOptions []*RuleOption `locationName:"ruleOptionSet" locationNameList:"item" type:"list"`
+
+	// The name of the VPC endpoint service.
+	ServiceName *string `locationName:"serviceName" type:"string"`
+
+	// The VPC endpoint service.
+	VpcEndpointService *AnalysisComponent `locationName:"vpcEndpointService" type:"structure"`
 }
 
 // String returns the string representation.
@@ -52068,6 +55607,42 @@ func (s *AdditionalDetail) SetAdditionalDetailType(v string) *AdditionalDetail {
 // SetComponent sets the Component field's value.
 func (s *AdditionalDetail) SetComponent(v *AnalysisComponent) *AdditionalDetail {
 	s.Component = v
+	return s
+}
+
+// SetLoadBalancers sets the LoadBalancers field's value.
+func (s *AdditionalDetail) SetLoadBalancers(v []*AnalysisComponent) *AdditionalDetail {
+	s.LoadBalancers = v
+	return s
+}
+
+// SetRuleGroupRuleOptionsPairs sets the RuleGroupRuleOptionsPairs field's value.
+func (s *AdditionalDetail) SetRuleGroupRuleOptionsPairs(v []*RuleGroupRuleOptionsPair) *AdditionalDetail {
+	s.RuleGroupRuleOptionsPairs = v
+	return s
+}
+
+// SetRuleGroupTypePairs sets the RuleGroupTypePairs field's value.
+func (s *AdditionalDetail) SetRuleGroupTypePairs(v []*RuleGroupTypePair) *AdditionalDetail {
+	s.RuleGroupTypePairs = v
+	return s
+}
+
+// SetRuleOptions sets the RuleOptions field's value.
+func (s *AdditionalDetail) SetRuleOptions(v []*RuleOption) *AdditionalDetail {
+	s.RuleOptions = v
+	return s
+}
+
+// SetServiceName sets the ServiceName field's value.
+func (s *AdditionalDetail) SetServiceName(v string) *AdditionalDetail {
+	s.ServiceName = &v
+	return s
+}
+
+// SetVpcEndpointService sets the VpcEndpointService field's value.
+func (s *AdditionalDetail) SetVpcEndpointService(v *AnalysisComponent) *AdditionalDetail {
+	s.VpcEndpointService = v
 	return s
 }
 
@@ -52681,6 +56256,11 @@ type AllocateHostsInput struct {
 	// of the request. For more information, see Ensuring Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
+	// Indicates whether to enable or disable host maintenance for the Dedicated
+	// Host. For more information, see Host maintenance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-maintenance.html)
+	// in the Amazon EC2 User Guide.
+	HostMaintenance *string `type:"string" enum:"HostMaintenance"`
+
 	// Indicates whether to enable or disable host recovery for the Dedicated Host.
 	// Host recovery is disabled by default. For more information, see Host recovery
 	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-recovery.html)
@@ -52769,6 +56349,12 @@ func (s *AllocateHostsInput) SetAvailabilityZone(v string) *AllocateHostsInput {
 // SetClientToken sets the ClientToken field's value.
 func (s *AllocateHostsInput) SetClientToken(v string) *AllocateHostsInput {
 	s.ClientToken = &v
+	return s
+}
+
+// SetHostMaintenance sets the HostMaintenance field's value.
+func (s *AllocateHostsInput) SetHostMaintenance(v string) *AllocateHostsInput {
+	s.HostMaintenance = &v
 	return s
 }
 
@@ -53416,6 +57002,12 @@ func (s *AnalysisPacketHeader) SetSourcePortRanges(v []*PortRange) *AnalysisPack
 type AnalysisRouteTableRoute struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of a carrier gateway.
+	CarrierGatewayId *string `locationName:"carrierGatewayId" type:"string"`
+
+	// The Amazon Resource Name (ARN) of a core network.
+	CoreNetworkArn *string `locationName:"coreNetworkArn" min:"1" type:"string"`
+
 	// The destination IPv4 address, in CIDR notation.
 	DestinationCidr *string `locationName:"destinationCidr" type:"string"`
 
@@ -53430,6 +57022,9 @@ type AnalysisRouteTableRoute struct {
 
 	// The ID of the instance, such as a NAT instance.
 	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The ID of a local gateway.
+	LocalGatewayId *string `locationName:"localGatewayId" type:"string"`
 
 	// The ID of a NAT gateway.
 	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
@@ -53479,6 +57074,18 @@ func (s AnalysisRouteTableRoute) GoString() string {
 	return s.String()
 }
 
+// SetCarrierGatewayId sets the CarrierGatewayId field's value.
+func (s *AnalysisRouteTableRoute) SetCarrierGatewayId(v string) *AnalysisRouteTableRoute {
+	s.CarrierGatewayId = &v
+	return s
+}
+
+// SetCoreNetworkArn sets the CoreNetworkArn field's value.
+func (s *AnalysisRouteTableRoute) SetCoreNetworkArn(v string) *AnalysisRouteTableRoute {
+	s.CoreNetworkArn = &v
+	return s
+}
+
 // SetDestinationCidr sets the DestinationCidr field's value.
 func (s *AnalysisRouteTableRoute) SetDestinationCidr(v string) *AnalysisRouteTableRoute {
 	s.DestinationCidr = &v
@@ -53506,6 +57113,12 @@ func (s *AnalysisRouteTableRoute) SetGatewayId(v string) *AnalysisRouteTableRout
 // SetInstanceId sets the InstanceId field's value.
 func (s *AnalysisRouteTableRoute) SetInstanceId(v string) *AnalysisRouteTableRoute {
 	s.InstanceId = &v
+	return s
+}
+
+// SetLocalGatewayId sets the LocalGatewayId field's value.
+func (s *AnalysisRouteTableRoute) SetLocalGatewayId(v string) *AnalysisRouteTableRoute {
+	s.LocalGatewayId = &v
 	return s
 }
 
@@ -54035,6 +57648,126 @@ func (s *AssignPrivateIpAddressesOutput) SetNetworkInterfaceId(v string) *Assign
 	return s
 }
 
+type AssignPrivateNatGatewayAddressInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The NAT gateway ID.
+	//
+	// NatGatewayId is a required field
+	NatGatewayId *string `type:"string" required:"true"`
+
+	// The number of private IP addresses to assign to the NAT gateway. You can't
+	// specify this parameter when also specifying private IP addresses.
+	PrivateIpAddressCount *int64 `min:"1" type:"integer"`
+
+	// The private IPv4 addresses you want to assign to the private NAT gateway.
+	PrivateIpAddresses []*string `locationName:"PrivateIpAddress" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssignPrivateNatGatewayAddressInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssignPrivateNatGatewayAddressInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssignPrivateNatGatewayAddressInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssignPrivateNatGatewayAddressInput"}
+	if s.NatGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NatGatewayId"))
+	}
+	if s.PrivateIpAddressCount != nil && *s.PrivateIpAddressCount < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PrivateIpAddressCount", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssignPrivateNatGatewayAddressInput) SetDryRun(v bool) *AssignPrivateNatGatewayAddressInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *AssignPrivateNatGatewayAddressInput) SetNatGatewayId(v string) *AssignPrivateNatGatewayAddressInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetPrivateIpAddressCount sets the PrivateIpAddressCount field's value.
+func (s *AssignPrivateNatGatewayAddressInput) SetPrivateIpAddressCount(v int64) *AssignPrivateNatGatewayAddressInput {
+	s.PrivateIpAddressCount = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *AssignPrivateNatGatewayAddressInput) SetPrivateIpAddresses(v []*string) *AssignPrivateNatGatewayAddressInput {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+type AssignPrivateNatGatewayAddressOutput struct {
+	_ struct{} `type:"structure"`
+
+	// NAT gateway IP addresses.
+	NatGatewayAddresses []*NatGatewayAddress `locationName:"natGatewayAddressSet" locationNameList:"item" type:"list"`
+
+	// The NAT gateway ID.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssignPrivateNatGatewayAddressOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssignPrivateNatGatewayAddressOutput) GoString() string {
+	return s.String()
+}
+
+// SetNatGatewayAddresses sets the NatGatewayAddresses field's value.
+func (s *AssignPrivateNatGatewayAddressOutput) SetNatGatewayAddresses(v []*NatGatewayAddress) *AssignPrivateNatGatewayAddressOutput {
+	s.NatGatewayAddresses = v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *AssignPrivateNatGatewayAddressOutput) SetNatGatewayId(v string) *AssignPrivateNatGatewayAddressOutput {
+	s.NatGatewayId = &v
+	return s
+}
+
 // Describes the private IP addresses assigned to a network interface.
 type AssignedPrivateIpAddress struct {
 	_ struct{} `type:"structure"`
@@ -54423,7 +58156,9 @@ type AssociateEnclaveCertificateIamRoleInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the ACM certificate with which to associate the IAM role.
-	CertificateArn *string `min:"1" type:"string"`
+	//
+	// CertificateArn is a required field
+	CertificateArn *string `type:"string" required:"true"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -54433,7 +58168,9 @@ type AssociateEnclaveCertificateIamRoleInput struct {
 
 	// The ARN of the IAM role to associate with the ACM certificate. You can associate
 	// up to 16 IAM roles with an ACM certificate.
-	RoleArn *string `min:"1" type:"string"`
+	//
+	// RoleArn is a required field
+	RoleArn *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -54457,11 +58194,11 @@ func (s AssociateEnclaveCertificateIamRoleInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *AssociateEnclaveCertificateIamRoleInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "AssociateEnclaveCertificateIamRoleInput"}
-	if s.CertificateArn != nil && len(*s.CertificateArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("CertificateArn", 1))
+	if s.CertificateArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CertificateArn"))
 	}
-	if s.RoleArn != nil && len(*s.RoleArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 1))
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -54732,6 +58469,249 @@ func (s *AssociateInstanceEventWindowOutput) SetInstanceEventWindow(v *InstanceE
 	return s
 }
 
+type AssociateIpamResourceDiscoveryInput struct {
+	_ struct{} `type:"structure"`
+
+	// A client token.
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// An IPAM ID.
+	//
+	// IpamId is a required field
+	IpamId *string `type:"string" required:"true"`
+
+	// A resource discovery ID.
+	//
+	// IpamResourceDiscoveryId is a required field
+	IpamResourceDiscoveryId *string `type:"string" required:"true"`
+
+	// Tag specifications.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpamResourceDiscoveryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpamResourceDiscoveryInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateIpamResourceDiscoveryInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateIpamResourceDiscoveryInput"}
+	if s.IpamId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamId"))
+	}
+	if s.IpamResourceDiscoveryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamResourceDiscoveryId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *AssociateIpamResourceDiscoveryInput) SetClientToken(v string) *AssociateIpamResourceDiscoveryInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateIpamResourceDiscoveryInput) SetDryRun(v bool) *AssociateIpamResourceDiscoveryInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetIpamId sets the IpamId field's value.
+func (s *AssociateIpamResourceDiscoveryInput) SetIpamId(v string) *AssociateIpamResourceDiscoveryInput {
+	s.IpamId = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *AssociateIpamResourceDiscoveryInput) SetIpamResourceDiscoveryId(v string) *AssociateIpamResourceDiscoveryInput {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *AssociateIpamResourceDiscoveryInput) SetTagSpecifications(v []*TagSpecification) *AssociateIpamResourceDiscoveryInput {
+	s.TagSpecifications = v
+	return s
+}
+
+type AssociateIpamResourceDiscoveryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A resource discovery association. An associated resource discovery is a resource
+	// discovery that has been associated with an IPAM.
+	IpamResourceDiscoveryAssociation *IpamResourceDiscoveryAssociation `locationName:"ipamResourceDiscoveryAssociation" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpamResourceDiscoveryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpamResourceDiscoveryOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscoveryAssociation sets the IpamResourceDiscoveryAssociation field's value.
+func (s *AssociateIpamResourceDiscoveryOutput) SetIpamResourceDiscoveryAssociation(v *IpamResourceDiscoveryAssociation) *AssociateIpamResourceDiscoveryOutput {
+	s.IpamResourceDiscoveryAssociation = v
+	return s
+}
+
+type AssociateNatGatewayAddressInput struct {
+	_ struct{} `type:"structure"`
+
+	// The allocation IDs of EIPs that you want to associate with your NAT gateway.
+	//
+	// AllocationIds is a required field
+	AllocationIds []*string `locationName:"AllocationId" locationNameList:"AllocationId" type:"list" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The NAT gateway ID.
+	//
+	// NatGatewayId is a required field
+	NatGatewayId *string `type:"string" required:"true"`
+
+	// The private IPv4 addresses that you want to assign to the NAT gateway.
+	PrivateIpAddresses []*string `locationName:"PrivateIpAddress" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateNatGatewayAddressInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateNatGatewayAddressInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateNatGatewayAddressInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateNatGatewayAddressInput"}
+	if s.AllocationIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("AllocationIds"))
+	}
+	if s.NatGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NatGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllocationIds sets the AllocationIds field's value.
+func (s *AssociateNatGatewayAddressInput) SetAllocationIds(v []*string) *AssociateNatGatewayAddressInput {
+	s.AllocationIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateNatGatewayAddressInput) SetDryRun(v bool) *AssociateNatGatewayAddressInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *AssociateNatGatewayAddressInput) SetNatGatewayId(v string) *AssociateNatGatewayAddressInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *AssociateNatGatewayAddressInput) SetPrivateIpAddresses(v []*string) *AssociateNatGatewayAddressInput {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+type AssociateNatGatewayAddressOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IP addresses.
+	NatGatewayAddresses []*NatGatewayAddress `locationName:"natGatewayAddressSet" locationNameList:"item" type:"list"`
+
+	// The NAT gateway ID.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateNatGatewayAddressOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateNatGatewayAddressOutput) GoString() string {
+	return s.String()
+}
+
+// SetNatGatewayAddresses sets the NatGatewayAddresses field's value.
+func (s *AssociateNatGatewayAddressOutput) SetNatGatewayAddresses(v []*NatGatewayAddress) *AssociateNatGatewayAddressOutput {
+	s.NatGatewayAddresses = v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *AssociateNatGatewayAddressOutput) SetNatGatewayId(v string) *AssociateNatGatewayAddressOutput {
+	s.NatGatewayId = &v
+	return s
+}
+
 type AssociateRouteTableInput struct {
 	_ struct{} `type:"structure"`
 
@@ -54959,14 +58939,20 @@ type AssociateTransitGatewayMulticastDomainInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// The IDs of the subnets to associate with the transit gateway multicast domain.
-	SubnetIds []*string `locationNameList:"item" type:"list"`
+	//
+	// SubnetIds is a required field
+	SubnetIds []*string `locationNameList:"item" type:"list" required:"true"`
 
 	// The ID of the transit gateway attachment to associate with the transit gateway
 	// multicast domain.
-	TransitGatewayAttachmentId *string `type:"string"`
+	//
+	// TransitGatewayAttachmentId is a required field
+	TransitGatewayAttachmentId *string `type:"string" required:"true"`
 
 	// The ID of the transit gateway multicast domain.
-	TransitGatewayMulticastDomainId *string `type:"string"`
+	//
+	// TransitGatewayMulticastDomainId is a required field
+	TransitGatewayMulticastDomainId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -54985,6 +58971,25 @@ func (s AssociateTransitGatewayMulticastDomainInput) String() string {
 // value will be replaced with "sensitive".
 func (s AssociateTransitGatewayMulticastDomainInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateTransitGatewayMulticastDomainInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateTransitGatewayMulticastDomainInput"}
+	if s.SubnetIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetIds"))
+	}
+	if s.TransitGatewayAttachmentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayAttachmentId"))
+	}
+	if s.TransitGatewayMulticastDomainId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayMulticastDomainId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -56172,6 +60177,129 @@ func (s *AttachNetworkInterfaceOutput) SetNetworkCardIndex(v int64) *AttachNetwo
 	return s
 }
 
+type AttachVerifiedAccessTrustProviderInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	//
+	// VerifiedAccessInstanceId is a required field
+	VerifiedAccessInstanceId *string `type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	//
+	// VerifiedAccessTrustProviderId is a required field
+	VerifiedAccessTrustProviderId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachVerifiedAccessTrustProviderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachVerifiedAccessTrustProviderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachVerifiedAccessTrustProviderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachVerifiedAccessTrustProviderInput"}
+	if s.VerifiedAccessInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessInstanceId"))
+	}
+	if s.VerifiedAccessTrustProviderId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessTrustProviderId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *AttachVerifiedAccessTrustProviderInput) SetClientToken(v string) *AttachVerifiedAccessTrustProviderInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AttachVerifiedAccessTrustProviderInput) SetDryRun(v bool) *AttachVerifiedAccessTrustProviderInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *AttachVerifiedAccessTrustProviderInput) SetVerifiedAccessInstanceId(v string) *AttachVerifiedAccessTrustProviderInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderId sets the VerifiedAccessTrustProviderId field's value.
+func (s *AttachVerifiedAccessTrustProviderInput) SetVerifiedAccessTrustProviderId(v string) *AttachVerifiedAccessTrustProviderInput {
+	s.VerifiedAccessTrustProviderId = &v
+	return s
+}
+
+type AttachVerifiedAccessTrustProviderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstance *VerifiedAccessInstance `locationName:"verifiedAccessInstance" type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	VerifiedAccessTrustProvider *VerifiedAccessTrustProvider `locationName:"verifiedAccessTrustProvider" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachVerifiedAccessTrustProviderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachVerifiedAccessTrustProviderOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessInstance sets the VerifiedAccessInstance field's value.
+func (s *AttachVerifiedAccessTrustProviderOutput) SetVerifiedAccessInstance(v *VerifiedAccessInstance) *AttachVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessInstance = v
+	return s
+}
+
+// SetVerifiedAccessTrustProvider sets the VerifiedAccessTrustProvider field's value.
+func (s *AttachVerifiedAccessTrustProviderOutput) SetVerifiedAccessTrustProvider(v *VerifiedAccessTrustProvider) *AttachVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessTrustProvider = v
+	return s
+}
+
 type AttachVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -56920,9 +61048,9 @@ type AuthorizeSecurityGroupIngressInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The start of port range for the TCP and UDP protocols, or an ICMP type number.
-	// For the ICMP type number, use -1 to specify all types. If you specify all
-	// ICMP types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the start of the port range. If the
+	// protocol is ICMP, this is the type number. A value of -1 indicates all ICMP
+	// types. If you specify all ICMP types, you must specify all ICMP codes.
 	//
 	// Alternatively, use a set of IP permissions to specify multiple rules and
 	// a description for the rule.
@@ -56974,9 +61102,9 @@ type AuthorizeSecurityGroupIngressInput struct {
 	// [VPC Only] The tags applied to the security group rule.
 	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 
-	// The end of port range for the TCP and UDP protocols, or an ICMP code number.
-	// For the ICMP code number, use -1 to specify all codes. If you specify all
-	// ICMP types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the end of the port range. If the
+	// protocol is ICMP, this is the code. A value of -1 indicates all ICMP codes.
+	// If you specify all ICMP types, you must specify all ICMP codes.
 	//
 	// Alternatively, use a set of IP permissions to specify multiple rules and
 	// a description for the rule.
@@ -58668,8 +62796,11 @@ type CancelSpotFleetRequestsInput struct {
 	// SpotFleetRequestIds is a required field
 	SpotFleetRequestIds []*string `locationName:"spotFleetRequestId" locationNameList:"item" type:"list" required:"true"`
 
-	// Indicates whether to terminate instances for a Spot Fleet request if it is
-	// canceled successfully.
+	// Indicates whether to terminate the associated instances when the Spot Fleet
+	// request is canceled. The default is to terminate the instances.
+	//
+	// To let the instances continue to run after the Spot Fleet request is canceled,
+	// specify no-terminate-instances.
 	//
 	// TerminateInstances is a required field
 	TerminateInstances *bool `locationName:"terminateInstances" type:"boolean" required:"true"`
@@ -62231,7 +66362,7 @@ type CopyImageInput struct {
 	//
 	// For more information, see Copy AMIs from an Amazon Web Services Region to
 	// an Outpost (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshots-outposts.html#copy-amis)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	DestinationOutpostArn *string `type:"string"`
 
 	// Checks whether you have the required permissions for the action, without
@@ -62246,7 +66377,7 @@ type CopyImageInput struct {
 	// for Amazon EBS is used unless you specify a non-default Key Management Service
 	// (KMS) KMS key using KmsKeyId. For more information, see Amazon EBS encryption
 	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	Encrypted *bool `locationName:"encrypted" type:"boolean"`
 
 	// The identifier of the symmetric Key Management Service (KMS) KMS key to use
@@ -62492,7 +66623,11 @@ type CopySnapshotInput struct {
 	// in the Amazon Simple Storage Service API Reference. An invalid or improperly
 	// signed PresignedUrl will cause the copy operation to fail asynchronously,
 	// and the snapshot will move to an error state.
-	PresignedUrl *string `locationName:"presignedUrl" type:"string"`
+	//
+	// PresignedUrl is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CopySnapshotInput's
+	// String and GoString methods.
+	PresignedUrl *string `locationName:"presignedUrl" type:"string" sensitive:"true"`
 
 	// The ID of the Region that contains the snapshot to be copied.
 	//
@@ -63417,7 +67552,8 @@ type CreateClientVpnEndpointInput struct {
 	// addresses. The address range cannot overlap with the local CIDR of the VPC
 	// in which the associated subnet is located, or the routes that you add manually.
 	// The address range cannot be changed after the Client VPN endpoint has been
-	// created. The CIDR block should be /22 or greater.
+	// created. Client CIDR range must have a size of at least /22 and must not
+	// be greater than /12.
 	//
 	// ClientCidrBlock is a required field
 	ClientCidrBlock *string `type:"string" required:"true"`
@@ -64068,9 +68204,7 @@ type CreateCustomerGatewayInput struct {
 	// For devices that support BGP, the customer gateway's BGP ASN.
 	//
 	// Default: 65000
-	//
-	// BgpAsn is a required field
-	BgpAsn *int64 `type:"integer" required:"true"`
+	BgpAsn *int64 `type:"integer"`
 
 	// The Amazon Resource Name (ARN) for the customer gateway certificate.
 	CertificateArn *string `type:"string"`
@@ -64124,9 +68258,6 @@ func (s CreateCustomerGatewayInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateCustomerGatewayInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateCustomerGatewayInput"}
-	if s.BgpAsn == nil {
-		invalidParams.Add(request.NewErrParamRequired("BgpAsn"))
-	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
 	}
@@ -64681,6 +68812,8 @@ type CreateFleetInput struct {
 	// Indicates whether running instances should be terminated if the total target
 	// capacity of the EC2 Fleet is decreased below the current size of the EC2
 	// Fleet.
+	//
+	// Supported only for fleets of type maintain.
 	ExcessCapacityTerminationPolicy *string `type:"string" enum:"FleetExcessCapacityTerminationPolicy"`
 
 	// The configuration for the EC2 Fleet.
@@ -66097,6 +70230,15 @@ type CreateIpamPoolInput struct {
 	// Possible values: Any Amazon Web Services Region, such as us-east-1.
 	Locale *string `type:"string"`
 
+	// The IP address source for pools in the public scope. Only used for provisioning
+	// IP address CIDRs to pools in the public scope. Default is byoip. For more
+	// information, see Create IPv6 pools (https://docs.aws.amazon.com/vpc/latest/ipam/intro-create-ipv6-pools.html)
+	// in the Amazon VPC IPAM User Guide. By default, you can add only one Amazon-provided
+	// IPv6 CIDR block to a top-level IPv6 pool if PublicIpSource is amazon. For
+	// information on increasing the default limit, see Quotas for your IPAM (https://docs.aws.amazon.com/vpc/latest/ipam/quotas-ipam.html)
+	// in the Amazon VPC IPAM User Guide.
+	PublicIpSource *string `type:"string" enum:"IpamPoolPublicIpSource"`
+
 	// Determines if the pool is publicly advertisable. This option is not available
 	// for pools with AddressFamily set to ipv4.
 	PubliclyAdvertisable *bool `type:"boolean"`
@@ -66219,6 +70361,12 @@ func (s *CreateIpamPoolInput) SetLocale(v string) *CreateIpamPoolInput {
 	return s
 }
 
+// SetPublicIpSource sets the PublicIpSource field's value.
+func (s *CreateIpamPoolInput) SetPublicIpSource(v string) *CreateIpamPoolInput {
+	s.PublicIpSource = &v
+	return s
+}
+
 // SetPubliclyAdvertisable sets the PubliclyAdvertisable field's value.
 func (s *CreateIpamPoolInput) SetPubliclyAdvertisable(v bool) *CreateIpamPoolInput {
 	s.PubliclyAdvertisable = &v
@@ -66265,6 +70413,110 @@ func (s CreateIpamPoolOutput) GoString() string {
 // SetIpamPool sets the IpamPool field's value.
 func (s *CreateIpamPoolOutput) SetIpamPool(v *IpamPool) *CreateIpamPoolOutput {
 	s.IpamPool = v
+	return s
+}
+
+type CreateIpamResourceDiscoveryInput struct {
+	_ struct{} `type:"structure"`
+
+	// A client token for the IPAM resource discovery.
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the IPAM resource discovery.
+	Description *string `type:"string"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// Operating Regions for the IPAM resource discovery. Operating Regions are
+	// Amazon Web Services Regions where the IPAM is allowed to manage IP address
+	// CIDRs. IPAM only discovers and monitors resources in the Amazon Web Services
+	// Regions you select as operating Regions.
+	OperatingRegions []*AddIpamOperatingRegion `locationName:"OperatingRegion" type:"list"`
+
+	// Tag specifications for the IPAM resource discovery.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpamResourceDiscoveryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpamResourceDiscoveryInput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateIpamResourceDiscoveryInput) SetClientToken(v string) *CreateIpamResourceDiscoveryInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateIpamResourceDiscoveryInput) SetDescription(v string) *CreateIpamResourceDiscoveryInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateIpamResourceDiscoveryInput) SetDryRun(v bool) *CreateIpamResourceDiscoveryInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetOperatingRegions sets the OperatingRegions field's value.
+func (s *CreateIpamResourceDiscoveryInput) SetOperatingRegions(v []*AddIpamOperatingRegion) *CreateIpamResourceDiscoveryInput {
+	s.OperatingRegions = v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateIpamResourceDiscoveryInput) SetTagSpecifications(v []*TagSpecification) *CreateIpamResourceDiscoveryInput {
+	s.TagSpecifications = v
+	return s
+}
+
+type CreateIpamResourceDiscoveryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An IPAM resource discovery.
+	IpamResourceDiscovery *IpamResourceDiscovery `locationName:"ipamResourceDiscovery" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpamResourceDiscoveryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpamResourceDiscoveryOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscovery sets the IpamResourceDiscovery field's value.
+func (s *CreateIpamResourceDiscoveryOutput) SetIpamResourceDiscovery(v *IpamResourceDiscovery) *CreateIpamResourceDiscoveryOutput {
+	s.IpamResourceDiscovery = v
 	return s
 }
 
@@ -66754,6 +71006,14 @@ type CreateLaunchTemplateVersionInput struct {
 	// both.
 	LaunchTemplateName *string `min:"3" type:"string"`
 
+	// If true, and if a Systems Manager parameter is specified for ImageId, the
+	// AMI ID is displayed in the response for imageID. For more information, see
+	// Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// Default: false
+	ResolveAlias *bool `type:"boolean"`
+
 	// The version number of the launch template version on which to base the new
 	// version. The new version inherits the same launch parameters as the source
 	// version, except for parameters that you specify in LaunchTemplateData. Snapshots
@@ -66834,6 +71094,12 @@ func (s *CreateLaunchTemplateVersionInput) SetLaunchTemplateName(v string) *Crea
 	return s
 }
 
+// SetResolveAlias sets the ResolveAlias field's value.
+func (s *CreateLaunchTemplateVersionInput) SetResolveAlias(v bool) *CreateLaunchTemplateVersionInput {
+	s.ResolveAlias = &v
+	return s
+}
+
 // SetSourceVersion sets the SourceVersion field's value.
 func (s *CreateLaunchTemplateVersionInput) SetSourceVersion(v string) *CreateLaunchTemplateVersionInput {
 	s.SourceVersion = &v
@@ -66893,9 +71159,12 @@ type CreateLocalGatewayRouteInput struct {
 
 	// The CIDR range used for destination matches. Routing decisions are based
 	// on the most specific match.
-	//
-	// DestinationCidrBlock is a required field
-	DestinationCidrBlock *string `type:"string" required:"true"`
+	DestinationCidrBlock *string `type:"string"`
+
+	// The ID of the prefix list. Use a prefix list in place of DestinationCidrBlock.
+	// You cannot use DestinationPrefixListId and DestinationCidrBlock in the same
+	// request.
+	DestinationPrefixListId *string `type:"string"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -66936,9 +71205,6 @@ func (s CreateLocalGatewayRouteInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateLocalGatewayRouteInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateLocalGatewayRouteInput"}
-	if s.DestinationCidrBlock == nil {
-		invalidParams.Add(request.NewErrParamRequired("DestinationCidrBlock"))
-	}
 	if s.LocalGatewayRouteTableId == nil {
 		invalidParams.Add(request.NewErrParamRequired("LocalGatewayRouteTableId"))
 	}
@@ -66952,6 +71218,12 @@ func (s *CreateLocalGatewayRouteInput) Validate() error {
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
 func (s *CreateLocalGatewayRouteInput) SetDestinationCidrBlock(v string) *CreateLocalGatewayRouteInput {
 	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationPrefixListId sets the DestinationPrefixListId field's value.
+func (s *CreateLocalGatewayRouteInput) SetDestinationPrefixListId(v string) *CreateLocalGatewayRouteInput {
+	s.DestinationPrefixListId = &v
 	return s
 }
 
@@ -67532,7 +71804,23 @@ type CreateNatGatewayInput struct {
 	// an address, a private IPv4 address will be automatically assigned.
 	PrivateIpAddress *string `type:"string"`
 
-	// The subnet in which to create the NAT gateway.
+	// Secondary EIP allocation IDs. For more information about secondary addresses,
+	// see Create a NAT gateway (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-creating)
+	// in the Amazon Virtual Private Cloud User Guide.
+	SecondaryAllocationIds []*string `locationName:"SecondaryAllocationId" locationNameList:"AllocationId" type:"list"`
+
+	// [Private NAT gateway only] The number of secondary private IPv4 addresses
+	// you want to assign to the NAT gateway. For more information about secondary
+	// addresses, see Create a NAT gateway (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-creating)
+	// in the Amazon Virtual Private Cloud User Guide.
+	SecondaryPrivateIpAddressCount *int64 `min:"1" type:"integer"`
+
+	// Secondary private IPv4 addresses. For more information about secondary addresses,
+	// see Create a NAT gateway (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html#nat-gateway-creating)
+	// in the Amazon Virtual Private Cloud User Guide.
+	SecondaryPrivateIpAddresses []*string `locationName:"SecondaryPrivateIpAddress" locationNameList:"item" type:"list"`
+
+	// The ID of the subnet in which to create the NAT gateway.
 	//
 	// SubnetId is a required field
 	SubnetId *string `type:"string" required:"true"`
@@ -67562,6 +71850,9 @@ func (s CreateNatGatewayInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateNatGatewayInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateNatGatewayInput"}
+	if s.SecondaryPrivateIpAddressCount != nil && *s.SecondaryPrivateIpAddressCount < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("SecondaryPrivateIpAddressCount", 1))
+	}
 	if s.SubnetId == nil {
 		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
 	}
@@ -67599,6 +71890,24 @@ func (s *CreateNatGatewayInput) SetDryRun(v bool) *CreateNatGatewayInput {
 // SetPrivateIpAddress sets the PrivateIpAddress field's value.
 func (s *CreateNatGatewayInput) SetPrivateIpAddress(v string) *CreateNatGatewayInput {
 	s.PrivateIpAddress = &v
+	return s
+}
+
+// SetSecondaryAllocationIds sets the SecondaryAllocationIds field's value.
+func (s *CreateNatGatewayInput) SetSecondaryAllocationIds(v []*string) *CreateNatGatewayInput {
+	s.SecondaryAllocationIds = v
+	return s
+}
+
+// SetSecondaryPrivateIpAddressCount sets the SecondaryPrivateIpAddressCount field's value.
+func (s *CreateNatGatewayInput) SetSecondaryPrivateIpAddressCount(v int64) *CreateNatGatewayInput {
+	s.SecondaryPrivateIpAddressCount = &v
+	return s
+}
+
+// SetSecondaryPrivateIpAddresses sets the SecondaryPrivateIpAddresses field's value.
+func (s *CreateNatGatewayInput) SetSecondaryPrivateIpAddresses(v []*string) *CreateNatGatewayInput {
+	s.SecondaryPrivateIpAddresses = v
 	return s
 }
 
@@ -68058,13 +72367,11 @@ type CreateNetworkInsightsPathInput struct {
 	// of the request. For more information, see How to ensure idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
 	ClientToken *string `type:"string" idempotencyToken:"true"`
 
-	// The Amazon Web Services resource that is the destination of the path.
-	//
-	// Destination is a required field
-	Destination *string `type:"string" required:"true"`
+	// The ID or ARN of the destination. If the resource is in another account,
+	// you must specify an ARN.
+	Destination *string `type:"string"`
 
-	// The IP address of the Amazon Web Services resource that is the destination
-	// of the path.
+	// The IP address of the destination.
 	DestinationIp *string `type:"string"`
 
 	// The destination port.
@@ -68076,18 +72383,28 @@ type CreateNetworkInsightsPathInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
+	// Scopes the analysis to network paths that match specific filters at the destination.
+	// If you specify this parameter, you can't specify the parameter for the destination
+	// IP address.
+	FilterAtDestination *PathRequestFilter `type:"structure"`
+
+	// Scopes the analysis to network paths that match specific filters at the source.
+	// If you specify this parameter, you can't specify the parameters for the source
+	// IP address or the destination port.
+	FilterAtSource *PathRequestFilter `type:"structure"`
+
 	// The protocol.
 	//
 	// Protocol is a required field
 	Protocol *string `type:"string" required:"true" enum:"Protocol"`
 
-	// The Amazon Web Services resource that is the source of the path.
+	// The ID or ARN of the source. If the resource is in another account, you must
+	// specify an ARN.
 	//
 	// Source is a required field
 	Source *string `type:"string" required:"true"`
 
-	// The IP address of the Amazon Web Services resource that is the source of
-	// the path.
+	// The IP address of the source.
 	SourceIp *string `type:"string"`
 
 	// The tags to add to the path.
@@ -68115,9 +72432,6 @@ func (s CreateNetworkInsightsPathInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateNetworkInsightsPathInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateNetworkInsightsPathInput"}
-	if s.Destination == nil {
-		invalidParams.Add(request.NewErrParamRequired("Destination"))
-	}
 	if s.Protocol == nil {
 		invalidParams.Add(request.NewErrParamRequired("Protocol"))
 	}
@@ -68158,6 +72472,18 @@ func (s *CreateNetworkInsightsPathInput) SetDestinationPort(v int64) *CreateNetw
 // SetDryRun sets the DryRun field's value.
 func (s *CreateNetworkInsightsPathInput) SetDryRun(v bool) *CreateNetworkInsightsPathInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetFilterAtDestination sets the FilterAtDestination field's value.
+func (s *CreateNetworkInsightsPathInput) SetFilterAtDestination(v *PathRequestFilter) *CreateNetworkInsightsPathInput {
+	s.FilterAtDestination = v
+	return s
+}
+
+// SetFilterAtSource sets the FilterAtSource field's value.
+func (s *CreateNetworkInsightsPathInput) SetFilterAtSource(v *PathRequestFilter) *CreateNetworkInsightsPathInput {
+	s.FilterAtSource = v
 	return s
 }
 
@@ -69537,7 +73863,7 @@ func (s *CreateRouteTableOutput) SetRouteTable(v *RouteTable) *CreateRouteTableO
 type CreateSecurityGroupInput struct {
 	_ struct{} `type:"structure"`
 
-	// A description for the security group. This is informational only.
+	// A description for the security group.
 	//
 	// Constraints: Up to 255 characters in length
 	//
@@ -69843,6 +74169,11 @@ func (s *CreateSnapshotsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateSnapshotsInput"}
 	if s.InstanceSpecification == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceSpecification"))
+	}
+	if s.InstanceSpecification != nil {
+		if err := s.InstanceSpecification.Validate(); err != nil {
+			invalidParams.AddNested("InstanceSpecification", err.(request.ErrInvalidParams))
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -72701,6 +77032,891 @@ func (s *CreateTransitGatewayVpcAttachmentRequestOptions) SetIpv6Support(v strin
 	return s
 }
 
+// Options for a network interface-type endpoint.
+type CreateVerifiedAccessEndpointEniOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `type:"string"`
+
+	// The IP port number.
+	Port *int64 `min:"1" type:"integer"`
+
+	// The IP protocol.
+	Protocol *string `type:"string" enum:"VerifiedAccessEndpointProtocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointEniOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointEniOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVerifiedAccessEndpointEniOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVerifiedAccessEndpointEniOptions"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *CreateVerifiedAccessEndpointEniOptions) SetNetworkInterfaceId(v string) *CreateVerifiedAccessEndpointEniOptions {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *CreateVerifiedAccessEndpointEniOptions) SetPort(v int64) *CreateVerifiedAccessEndpointEniOptions {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *CreateVerifiedAccessEndpointEniOptions) SetProtocol(v string) *CreateVerifiedAccessEndpointEniOptions {
+	s.Protocol = &v
+	return s
+}
+
+type CreateVerifiedAccessEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// The DNS name for users to reach your application.
+	//
+	// ApplicationDomain is a required field
+	ApplicationDomain *string `type:"string" required:"true"`
+
+	// The Amazon Web Services network component Verified Access attaches to.
+	//
+	// AttachmentType is a required field
+	AttachmentType *string `type:"string" required:"true" enum:"VerifiedAccessEndpointAttachmentType"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access endpoint.
+	Description *string `type:"string"`
+
+	// The ARN of the public TLS/SSL certificate in Amazon Web Services Certificate
+	// Manager to associate with the endpoint. The CN in the certificate must match
+	// the DNS name your end users will use to reach your application.
+	//
+	// DomainCertificateArn is a required field
+	DomainCertificateArn *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// A custom identifier that gets prepended to a DNS name that is generated for
+	// the endpoint.
+	//
+	// EndpointDomainPrefix is a required field
+	EndpointDomainPrefix *string `type:"string" required:"true"`
+
+	// The type of Amazon Web Services Verified Access endpoint to create.
+	//
+	// EndpointType is a required field
+	EndpointType *string `type:"string" required:"true" enum:"VerifiedAccessEndpointType"`
+
+	// The load balancer details if creating the Amazon Web Services Verified Access
+	// endpoint as load-balancertype.
+	LoadBalancerOptions *CreateVerifiedAccessEndpointLoadBalancerOptions `type:"structure"`
+
+	// The network interface details if creating the Amazon Web Services Verified
+	// Access endpoint as network-interfacetype.
+	NetworkInterfaceOptions *CreateVerifiedAccessEndpointEniOptions `type:"structure"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `type:"string"`
+
+	// The Amazon EC2 security groups to associate with the Amazon Web Services
+	// Verified Access endpoint.
+	SecurityGroupIds []*string `locationName:"SecurityGroupId" locationNameList:"item" type:"list"`
+
+	// The tags to assign to the Amazon Web Services Verified Access endpoint.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
+	// The ID of the Verified Access group to associate the endpoint with.
+	//
+	// VerifiedAccessGroupId is a required field
+	VerifiedAccessGroupId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVerifiedAccessEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVerifiedAccessEndpointInput"}
+	if s.ApplicationDomain == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationDomain"))
+	}
+	if s.AttachmentType == nil {
+		invalidParams.Add(request.NewErrParamRequired("AttachmentType"))
+	}
+	if s.DomainCertificateArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainCertificateArn"))
+	}
+	if s.EndpointDomainPrefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndpointDomainPrefix"))
+	}
+	if s.EndpointType == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndpointType"))
+	}
+	if s.VerifiedAccessGroupId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessGroupId"))
+	}
+	if s.LoadBalancerOptions != nil {
+		if err := s.LoadBalancerOptions.Validate(); err != nil {
+			invalidParams.AddNested("LoadBalancerOptions", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.NetworkInterfaceOptions != nil {
+		if err := s.NetworkInterfaceOptions.Validate(); err != nil {
+			invalidParams.AddNested("NetworkInterfaceOptions", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationDomain sets the ApplicationDomain field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetApplicationDomain(v string) *CreateVerifiedAccessEndpointInput {
+	s.ApplicationDomain = &v
+	return s
+}
+
+// SetAttachmentType sets the AttachmentType field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetAttachmentType(v string) *CreateVerifiedAccessEndpointInput {
+	s.AttachmentType = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetClientToken(v string) *CreateVerifiedAccessEndpointInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetDescription(v string) *CreateVerifiedAccessEndpointInput {
+	s.Description = &v
+	return s
+}
+
+// SetDomainCertificateArn sets the DomainCertificateArn field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetDomainCertificateArn(v string) *CreateVerifiedAccessEndpointInput {
+	s.DomainCertificateArn = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetDryRun(v bool) *CreateVerifiedAccessEndpointInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetEndpointDomainPrefix sets the EndpointDomainPrefix field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetEndpointDomainPrefix(v string) *CreateVerifiedAccessEndpointInput {
+	s.EndpointDomainPrefix = &v
+	return s
+}
+
+// SetEndpointType sets the EndpointType field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetEndpointType(v string) *CreateVerifiedAccessEndpointInput {
+	s.EndpointType = &v
+	return s
+}
+
+// SetLoadBalancerOptions sets the LoadBalancerOptions field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetLoadBalancerOptions(v *CreateVerifiedAccessEndpointLoadBalancerOptions) *CreateVerifiedAccessEndpointInput {
+	s.LoadBalancerOptions = v
+	return s
+}
+
+// SetNetworkInterfaceOptions sets the NetworkInterfaceOptions field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetNetworkInterfaceOptions(v *CreateVerifiedAccessEndpointEniOptions) *CreateVerifiedAccessEndpointInput {
+	s.NetworkInterfaceOptions = v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetPolicyDocument(v string) *CreateVerifiedAccessEndpointInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetSecurityGroupIds(v []*string) *CreateVerifiedAccessEndpointInput {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetTagSpecifications(v []*TagSpecification) *CreateVerifiedAccessEndpointInput {
+	s.TagSpecifications = v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *CreateVerifiedAccessEndpointInput) SetVerifiedAccessGroupId(v string) *CreateVerifiedAccessEndpointInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+// Describes a load balancer when creating an Amazon Web Services Verified Access
+// endpoint using the load-balancer type.
+type CreateVerifiedAccessEndpointLoadBalancerOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the load balancer.
+	LoadBalancerArn *string `type:"string"`
+
+	// The IP port number.
+	Port *int64 `min:"1" type:"integer"`
+
+	// The IP protocol.
+	Protocol *string `type:"string" enum:"VerifiedAccessEndpointProtocol"`
+
+	// The IDs of the subnets.
+	SubnetIds []*string `locationName:"SubnetId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointLoadBalancerOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointLoadBalancerOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVerifiedAccessEndpointLoadBalancerOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVerifiedAccessEndpointLoadBalancerOptions"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLoadBalancerArn sets the LoadBalancerArn field's value.
+func (s *CreateVerifiedAccessEndpointLoadBalancerOptions) SetLoadBalancerArn(v string) *CreateVerifiedAccessEndpointLoadBalancerOptions {
+	s.LoadBalancerArn = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *CreateVerifiedAccessEndpointLoadBalancerOptions) SetPort(v int64) *CreateVerifiedAccessEndpointLoadBalancerOptions {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *CreateVerifiedAccessEndpointLoadBalancerOptions) SetProtocol(v string) *CreateVerifiedAccessEndpointLoadBalancerOptions {
+	s.Protocol = &v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *CreateVerifiedAccessEndpointLoadBalancerOptions) SetSubnetIds(v []*string) *CreateVerifiedAccessEndpointLoadBalancerOptions {
+	s.SubnetIds = v
+	return s
+}
+
+type CreateVerifiedAccessEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	VerifiedAccessEndpoint *VerifiedAccessEndpoint `locationName:"verifiedAccessEndpoint" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessEndpoint sets the VerifiedAccessEndpoint field's value.
+func (s *CreateVerifiedAccessEndpointOutput) SetVerifiedAccessEndpoint(v *VerifiedAccessEndpoint) *CreateVerifiedAccessEndpointOutput {
+	s.VerifiedAccessEndpoint = v
+	return s
+}
+
+type CreateVerifiedAccessGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access group.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `type:"string"`
+
+	// The tags to assign to the Amazon Web Services Verified Access group.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	//
+	// VerifiedAccessInstanceId is a required field
+	VerifiedAccessInstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVerifiedAccessGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVerifiedAccessGroupInput"}
+	if s.VerifiedAccessInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessInstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateVerifiedAccessGroupInput) SetClientToken(v string) *CreateVerifiedAccessGroupInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateVerifiedAccessGroupInput) SetDescription(v string) *CreateVerifiedAccessGroupInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVerifiedAccessGroupInput) SetDryRun(v bool) *CreateVerifiedAccessGroupInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *CreateVerifiedAccessGroupInput) SetPolicyDocument(v string) *CreateVerifiedAccessGroupInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVerifiedAccessGroupInput) SetTagSpecifications(v []*TagSpecification) *CreateVerifiedAccessGroupInput {
+	s.TagSpecifications = v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *CreateVerifiedAccessGroupInput) SetVerifiedAccessInstanceId(v string) *CreateVerifiedAccessGroupInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type CreateVerifiedAccessGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Verified Access group.
+	VerifiedAccessGroup *VerifiedAccessGroup `locationName:"verifiedAccessGroup" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessGroup sets the VerifiedAccessGroup field's value.
+func (s *CreateVerifiedAccessGroupOutput) SetVerifiedAccessGroup(v *VerifiedAccessGroup) *CreateVerifiedAccessGroupOutput {
+	s.VerifiedAccessGroup = v
+	return s
+}
+
+type CreateVerifiedAccessInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access instance.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The tags to assign to the Amazon Web Services Verified Access instance.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessInstanceInput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateVerifiedAccessInstanceInput) SetClientToken(v string) *CreateVerifiedAccessInstanceInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateVerifiedAccessInstanceInput) SetDescription(v string) *CreateVerifiedAccessInstanceInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVerifiedAccessInstanceInput) SetDryRun(v bool) *CreateVerifiedAccessInstanceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVerifiedAccessInstanceInput) SetTagSpecifications(v []*TagSpecification) *CreateVerifiedAccessInstanceInput {
+	s.TagSpecifications = v
+	return s
+}
+
+type CreateVerifiedAccessInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstance *VerifiedAccessInstance `locationName:"verifiedAccessInstance" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessInstance sets the VerifiedAccessInstance field's value.
+func (s *CreateVerifiedAccessInstanceOutput) SetVerifiedAccessInstance(v *VerifiedAccessInstance) *CreateVerifiedAccessInstanceOutput {
+	s.VerifiedAccessInstance = v
+	return s
+}
+
+// Options for a device-identity type trust provider.
+type CreateVerifiedAccessTrustProviderDeviceOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the tenant application with the device-identity provider.
+	TenantId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderDeviceOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderDeviceOptions) GoString() string {
+	return s.String()
+}
+
+// SetTenantId sets the TenantId field's value.
+func (s *CreateVerifiedAccessTrustProviderDeviceOptions) SetTenantId(v string) *CreateVerifiedAccessTrustProviderDeviceOptions {
+	s.TenantId = &v
+	return s
+}
+
+type CreateVerifiedAccessTrustProviderInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access trust provider.
+	Description *string `type:"string"`
+
+	// The options for device identity based trust providers.
+	DeviceOptions *CreateVerifiedAccessTrustProviderDeviceOptions `type:"structure"`
+
+	// The type of device-based trust provider.
+	DeviceTrustProviderType *string `type:"string" enum:"DeviceTrustProviderType"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The OpenID Connect details for an oidc-type, user-identity based trust provider.
+	OidcOptions *CreateVerifiedAccessTrustProviderOidcOptions `type:"structure"`
+
+	// The identifier to be used when working with policy rules.
+	//
+	// PolicyReferenceName is a required field
+	PolicyReferenceName *string `type:"string" required:"true"`
+
+	// The tags to assign to the Amazon Web Services Verified Access trust provider.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
+	// The type of trust provider can be either user or device-based.
+	//
+	// TrustProviderType is a required field
+	TrustProviderType *string `type:"string" required:"true" enum:"TrustProviderType"`
+
+	// The type of user-based trust provider.
+	UserTrustProviderType *string `type:"string" enum:"UserTrustProviderType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVerifiedAccessTrustProviderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVerifiedAccessTrustProviderInput"}
+	if s.PolicyReferenceName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyReferenceName"))
+	}
+	if s.TrustProviderType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustProviderType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetClientToken(v string) *CreateVerifiedAccessTrustProviderInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetDescription(v string) *CreateVerifiedAccessTrustProviderInput {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceOptions sets the DeviceOptions field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetDeviceOptions(v *CreateVerifiedAccessTrustProviderDeviceOptions) *CreateVerifiedAccessTrustProviderInput {
+	s.DeviceOptions = v
+	return s
+}
+
+// SetDeviceTrustProviderType sets the DeviceTrustProviderType field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetDeviceTrustProviderType(v string) *CreateVerifiedAccessTrustProviderInput {
+	s.DeviceTrustProviderType = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetDryRun(v bool) *CreateVerifiedAccessTrustProviderInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetOidcOptions sets the OidcOptions field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetOidcOptions(v *CreateVerifiedAccessTrustProviderOidcOptions) *CreateVerifiedAccessTrustProviderInput {
+	s.OidcOptions = v
+	return s
+}
+
+// SetPolicyReferenceName sets the PolicyReferenceName field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetPolicyReferenceName(v string) *CreateVerifiedAccessTrustProviderInput {
+	s.PolicyReferenceName = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetTagSpecifications(v []*TagSpecification) *CreateVerifiedAccessTrustProviderInput {
+	s.TagSpecifications = v
+	return s
+}
+
+// SetTrustProviderType sets the TrustProviderType field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetTrustProviderType(v string) *CreateVerifiedAccessTrustProviderInput {
+	s.TrustProviderType = &v
+	return s
+}
+
+// SetUserTrustProviderType sets the UserTrustProviderType field's value.
+func (s *CreateVerifiedAccessTrustProviderInput) SetUserTrustProviderType(v string) *CreateVerifiedAccessTrustProviderInput {
+	s.UserTrustProviderType = &v
+	return s
+}
+
+// Options for an OIDC-based, user-identity type trust provider.
+type CreateVerifiedAccessTrustProviderOidcOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The OIDC authorization endpoint.
+	AuthorizationEndpoint *string `type:"string"`
+
+	// The client identifier.
+	ClientId *string `type:"string"`
+
+	// The client secret.
+	ClientSecret *string `type:"string"`
+
+	// The OIDC issuer.
+	Issuer *string `type:"string"`
+
+	// OpenID Connect (OIDC) scopes are used by an application during authentication
+	// to authorize access to a user's details. Each scope returns a specific set
+	// of user attributes.
+	Scope *string `type:"string"`
+
+	// The OIDC token endpoint.
+	TokenEndpoint *string `type:"string"`
+
+	// The OIDC user info endpoint.
+	UserInfoEndpoint *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderOidcOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderOidcOptions) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizationEndpoint sets the AuthorizationEndpoint field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetAuthorizationEndpoint(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.AuthorizationEndpoint = &v
+	return s
+}
+
+// SetClientId sets the ClientId field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetClientId(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.ClientId = &v
+	return s
+}
+
+// SetClientSecret sets the ClientSecret field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetClientSecret(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.ClientSecret = &v
+	return s
+}
+
+// SetIssuer sets the Issuer field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetIssuer(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.Issuer = &v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetScope(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.Scope = &v
+	return s
+}
+
+// SetTokenEndpoint sets the TokenEndpoint field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetTokenEndpoint(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.TokenEndpoint = &v
+	return s
+}
+
+// SetUserInfoEndpoint sets the UserInfoEndpoint field's value.
+func (s *CreateVerifiedAccessTrustProviderOidcOptions) SetUserInfoEndpoint(v string) *CreateVerifiedAccessTrustProviderOidcOptions {
+	s.UserInfoEndpoint = &v
+	return s
+}
+
+type CreateVerifiedAccessTrustProviderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	VerifiedAccessTrustProvider *VerifiedAccessTrustProvider `locationName:"verifiedAccessTrustProvider" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVerifiedAccessTrustProviderOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessTrustProvider sets the VerifiedAccessTrustProvider field's value.
+func (s *CreateVerifiedAccessTrustProviderOutput) SetVerifiedAccessTrustProvider(v *VerifiedAccessTrustProvider) *CreateVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessTrustProvider = v
+	return s
+}
+
 type CreateVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -72822,6 +78038,9 @@ type CreateVolumeInput struct {
 	//    * Cold HDD: sc1
 	//
 	//    * Magnetic: standard
+	//
+	// Throughput Optimized HDD (st1) and Cold HDD (sc1) volumes can't be used as
+	// boot volumes.
 	//
 	// For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
@@ -73029,8 +78248,8 @@ type CreateVpcEndpointConnectionNotificationInput struct {
 	// of the request. For more information, see How to ensure idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
 	ClientToken *string `type:"string"`
 
-	// One or more endpoint events for which to receive notifications. Valid values
-	// are Accept, Connect, Delete, and Reject.
+	// The endpoint events for which to receive notifications. Valid values are
+	// Accept, Connect, Delete, and Reject.
 	//
 	// ConnectionEvents is a required field
 	ConnectionEvents []*string `locationNameList:"item" type:"list" required:"true"`
@@ -73164,7 +78383,6 @@ func (s *CreateVpcEndpointConnectionNotificationOutput) SetConnectionNotificatio
 	return s
 }
 
-// Contains the parameters for CreateVpcEndpoint.
 type CreateVpcEndpointInput struct {
 	_ struct{} `type:"structure"`
 
@@ -73205,22 +78423,22 @@ type CreateVpcEndpointInput struct {
 	// Default: true
 	PrivateDnsEnabled *bool `type:"boolean"`
 
-	// (Gateway endpoint) One or more route table IDs.
+	// (Gateway endpoint) The route table IDs.
 	RouteTableIds []*string `locationName:"RouteTableId" locationNameList:"item" type:"list"`
 
-	// (Interface endpoint) The ID of one or more security groups to associate with
-	// the endpoint network interface.
+	// (Interface endpoint) The IDs of the security groups to associate with the
+	// endpoint network interface. If this parameter is not specified, we use the
+	// default security group for the VPC.
 	SecurityGroupIds []*string `locationName:"SecurityGroupId" locationNameList:"item" type:"list"`
 
-	// The service name. To get a list of available services, use the DescribeVpcEndpointServices
-	// request, or get the name from the service provider.
+	// The service name.
 	//
 	// ServiceName is a required field
 	ServiceName *string `type:"string" required:"true"`
 
-	// (Interface and Gateway Load Balancer endpoints) The ID of one or more subnets
-	// in which to create an endpoint network interface. For a Gateway Load Balancer
-	// endpoint, you can specify one subnet only.
+	// (Interface and Gateway Load Balancer endpoints) The IDs of the subnets in
+	// which to create an endpoint network interface. For a Gateway Load Balancer
+	// endpoint, you can specify only one subnet.
 	SubnetIds []*string `locationName:"SubnetId" locationNameList:"item" type:"list"`
 
 	// The tags to associate with the endpoint.
@@ -73231,7 +78449,7 @@ type CreateVpcEndpointInput struct {
 	// Default: Gateway
 	VpcEndpointType *string `type:"string" enum:"VpcEndpointType"`
 
-	// The ID of the VPC in which the endpoint will be used.
+	// The ID of the VPC for the endpoint.
 	//
 	// VpcId is a required field
 	VpcId *string `type:"string" required:"true"`
@@ -73349,7 +78567,6 @@ func (s *CreateVpcEndpointInput) SetVpcId(v string) *CreateVpcEndpointInput {
 	return s
 }
 
-// Contains the output of CreateVpcEndpoint.
 type CreateVpcEndpointOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -73408,11 +78625,10 @@ type CreateVpcEndpointServiceConfigurationInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// The Amazon Resource Names (ARNs) of one or more Gateway Load Balancers.
+	// The Amazon Resource Names (ARNs) of the Gateway Load Balancers.
 	GatewayLoadBalancerArns []*string `locationName:"GatewayLoadBalancerArn" locationNameList:"item" type:"list"`
 
-	// The Amazon Resource Names (ARNs) of one or more Network Load Balancers for
-	// your service.
+	// The Amazon Resource Names (ARNs) of the Network Load Balancers.
 	NetworkLoadBalancerArns []*string `locationName:"NetworkLoadBalancerArn" locationNameList:"item" type:"list"`
 
 	// (Interface endpoint configuration) The private DNS name to assign to the
@@ -73758,7 +78974,9 @@ type CreateVpcPeeringConnectionInput struct {
 	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 
 	// The ID of the requester VPC. You must specify this parameter in the request.
-	VpcId *string `locationName:"vpcId" type:"string"`
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -73777,6 +78995,19 @@ func (s CreateVpcPeeringConnectionInput) String() string {
 // value will be replaced with "sensitive".
 func (s CreateVpcPeeringConnectionInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpcPeeringConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpcPeeringConnectionInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -74387,8 +79618,8 @@ type DataQuery struct {
 	// query, the dataResponse identifies the query as MyQuery01.
 	Id *string `type:"string"`
 
-	// The aggregation metric used for the data query. Currently only aggregation-latency
-	// is supported, indicating network latency.
+	// The metric, aggregation-latency, indicating that network latency is aggregated
+	// for the query. This is the only supported metric.
 	Metric *string `type:"string" enum:"MetricType"`
 
 	// The aggregation period used for the data query.
@@ -74398,12 +79629,10 @@ type DataQuery struct {
 	// example, us-east-1.
 	Source *string `type:"string"`
 
-	// Metric data aggregations over specified periods of time. The following are
-	// the supported Infrastructure Performance statistics:
-	//
-	//    * p50 - The median value of the metric aggregated over a specified start
-	//    and end time. For example, a metric of five_minutes is the median of all
-	//    the data points gathered within those five minutes.
+	// The metric data aggregation period, p50, between the specified startDate
+	// and endDate. For example, a metric of five_minutes is the median of all the
+	// data points gathered within those five minutes. p50 is the only supported
+	// metric.
 	Statistic *string `type:"string" enum:"StatisticType"`
 }
 
@@ -74472,8 +79701,8 @@ type DataResponse struct {
 	// The ID passed in the DataQuery.
 	Id *string `locationName:"id" type:"string"`
 
-	// The metric used for the network performance request. Currently only aggregate-latency
-	// is supported, showing network latency during a specified period.
+	// The metric used for the network performance request. Only aggregate-latency
+	// is supported, which shows network latency during a specified period.
 	Metric *string `locationName:"metric" type:"string" enum:"MetricType"`
 
 	// A list of MetricPoint objects.
@@ -75428,11 +80657,11 @@ type DeleteFleetsInput struct {
 	// FleetIds is a required field
 	FleetIds []*string `locationName:"FleetId" type:"list" required:"true"`
 
-	// Indicates whether to terminate the instances when the EC2 Fleet is deleted.
-	// The default is to terminate the instances.
+	// Indicates whether to terminate the associated instances when the EC2 Fleet
+	// is deleted. The default is to terminate the instances.
 	//
 	// To let the instances continue to run after the EC2 Fleet is deleted, specify
-	// NoTerminateInstances. Supported only for fleets of type maintain and request.
+	// no-terminate-instances. Supported only for fleets of type maintain and request.
 	//
 	// For instant fleets, you cannot specify NoTerminateInstances. A deleted instant
 	// fleet with running instances is not supported.
@@ -76095,6 +81324,95 @@ func (s *DeleteIpamPoolOutput) SetIpamPool(v *IpamPool) *DeleteIpamPoolOutput {
 	return s
 }
 
+type DeleteIpamResourceDiscoveryInput struct {
+	_ struct{} `type:"structure"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The IPAM resource discovery ID.
+	//
+	// IpamResourceDiscoveryId is a required field
+	IpamResourceDiscoveryId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpamResourceDiscoveryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpamResourceDiscoveryInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteIpamResourceDiscoveryInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteIpamResourceDiscoveryInput"}
+	if s.IpamResourceDiscoveryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamResourceDiscoveryId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteIpamResourceDiscoveryInput) SetDryRun(v bool) *DeleteIpamResourceDiscoveryInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *DeleteIpamResourceDiscoveryInput) SetIpamResourceDiscoveryId(v string) *DeleteIpamResourceDiscoveryInput {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+type DeleteIpamResourceDiscoveryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IPAM resource discovery.
+	IpamResourceDiscovery *IpamResourceDiscovery `locationName:"ipamResourceDiscovery" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpamResourceDiscoveryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpamResourceDiscoveryOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscovery sets the IpamResourceDiscovery field's value.
+func (s *DeleteIpamResourceDiscoveryOutput) SetIpamResourceDiscovery(v *IpamResourceDiscovery) *DeleteIpamResourceDiscoveryOutput {
+	s.IpamResourceDiscovery = v
+	return s
+}
+
 type DeleteIpamScopeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -76598,9 +81916,11 @@ type DeleteLocalGatewayRouteInput struct {
 	_ struct{} `type:"structure"`
 
 	// The CIDR range for the route. This must match the CIDR for the route exactly.
-	//
-	// DestinationCidrBlock is a required field
-	DestinationCidrBlock *string `type:"string" required:"true"`
+	DestinationCidrBlock *string `type:"string"`
+
+	// Use a prefix list in place of DestinationCidrBlock. You cannot use DestinationPrefixListId
+	// and DestinationCidrBlock in the same request.
+	DestinationPrefixListId *string `type:"string"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -76635,9 +81955,6 @@ func (s DeleteLocalGatewayRouteInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *DeleteLocalGatewayRouteInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DeleteLocalGatewayRouteInput"}
-	if s.DestinationCidrBlock == nil {
-		invalidParams.Add(request.NewErrParamRequired("DestinationCidrBlock"))
-	}
 	if s.LocalGatewayRouteTableId == nil {
 		invalidParams.Add(request.NewErrParamRequired("LocalGatewayRouteTableId"))
 	}
@@ -76651,6 +81968,12 @@ func (s *DeleteLocalGatewayRouteInput) Validate() error {
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
 func (s *DeleteLocalGatewayRouteInput) SetDestinationCidrBlock(v string) *DeleteLocalGatewayRouteInput {
 	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationPrefixListId sets the DestinationPrefixListId field's value.
+func (s *DeleteLocalGatewayRouteInput) SetDestinationPrefixListId(v string) *DeleteLocalGatewayRouteInput {
+	s.DestinationPrefixListId = &v
 	return s
 }
 
@@ -80216,6 +85539,406 @@ func (s *DeleteTransitGatewayVpcAttachmentOutput) SetTransitGatewayVpcAttachment
 	return s
 }
 
+type DeleteVerifiedAccessEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	//
+	// VerifiedAccessEndpointId is a required field
+	VerifiedAccessEndpointId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVerifiedAccessEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVerifiedAccessEndpointInput"}
+	if s.VerifiedAccessEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessEndpointId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeleteVerifiedAccessEndpointInput) SetClientToken(v string) *DeleteVerifiedAccessEndpointInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVerifiedAccessEndpointInput) SetDryRun(v bool) *DeleteVerifiedAccessEndpointInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessEndpointId sets the VerifiedAccessEndpointId field's value.
+func (s *DeleteVerifiedAccessEndpointInput) SetVerifiedAccessEndpointId(v string) *DeleteVerifiedAccessEndpointInput {
+	s.VerifiedAccessEndpointId = &v
+	return s
+}
+
+type DeleteVerifiedAccessEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	VerifiedAccessEndpoint *VerifiedAccessEndpoint `locationName:"verifiedAccessEndpoint" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessEndpoint sets the VerifiedAccessEndpoint field's value.
+func (s *DeleteVerifiedAccessEndpointOutput) SetVerifiedAccessEndpoint(v *VerifiedAccessEndpoint) *DeleteVerifiedAccessEndpointOutput {
+	s.VerifiedAccessEndpoint = v
+	return s
+}
+
+type DeleteVerifiedAccessGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	//
+	// VerifiedAccessGroupId is a required field
+	VerifiedAccessGroupId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVerifiedAccessGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVerifiedAccessGroupInput"}
+	if s.VerifiedAccessGroupId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessGroupId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeleteVerifiedAccessGroupInput) SetClientToken(v string) *DeleteVerifiedAccessGroupInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVerifiedAccessGroupInput) SetDryRun(v bool) *DeleteVerifiedAccessGroupInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *DeleteVerifiedAccessGroupInput) SetVerifiedAccessGroupId(v string) *DeleteVerifiedAccessGroupInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+type DeleteVerifiedAccessGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	VerifiedAccessGroup *VerifiedAccessGroup `locationName:"verifiedAccessGroup" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessGroup sets the VerifiedAccessGroup field's value.
+func (s *DeleteVerifiedAccessGroupOutput) SetVerifiedAccessGroup(v *VerifiedAccessGroup) *DeleteVerifiedAccessGroupOutput {
+	s.VerifiedAccessGroup = v
+	return s
+}
+
+type DeleteVerifiedAccessInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	//
+	// VerifiedAccessInstanceId is a required field
+	VerifiedAccessInstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVerifiedAccessInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVerifiedAccessInstanceInput"}
+	if s.VerifiedAccessInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessInstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeleteVerifiedAccessInstanceInput) SetClientToken(v string) *DeleteVerifiedAccessInstanceInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVerifiedAccessInstanceInput) SetDryRun(v bool) *DeleteVerifiedAccessInstanceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *DeleteVerifiedAccessInstanceInput) SetVerifiedAccessInstanceId(v string) *DeleteVerifiedAccessInstanceInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type DeleteVerifiedAccessInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstance *VerifiedAccessInstance `locationName:"verifiedAccessInstance" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessInstance sets the VerifiedAccessInstance field's value.
+func (s *DeleteVerifiedAccessInstanceOutput) SetVerifiedAccessInstance(v *VerifiedAccessInstance) *DeleteVerifiedAccessInstanceOutput {
+	s.VerifiedAccessInstance = v
+	return s
+}
+
+type DeleteVerifiedAccessTrustProviderInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	//
+	// VerifiedAccessTrustProviderId is a required field
+	VerifiedAccessTrustProviderId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessTrustProviderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessTrustProviderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVerifiedAccessTrustProviderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVerifiedAccessTrustProviderInput"}
+	if s.VerifiedAccessTrustProviderId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessTrustProviderId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeleteVerifiedAccessTrustProviderInput) SetClientToken(v string) *DeleteVerifiedAccessTrustProviderInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVerifiedAccessTrustProviderInput) SetDryRun(v bool) *DeleteVerifiedAccessTrustProviderInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderId sets the VerifiedAccessTrustProviderId field's value.
+func (s *DeleteVerifiedAccessTrustProviderInput) SetVerifiedAccessTrustProviderId(v string) *DeleteVerifiedAccessTrustProviderInput {
+	s.VerifiedAccessTrustProviderId = &v
+	return s
+}
+
+type DeleteVerifiedAccessTrustProviderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	VerifiedAccessTrustProvider *VerifiedAccessTrustProvider `locationName:"verifiedAccessTrustProvider" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessTrustProviderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVerifiedAccessTrustProviderOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessTrustProvider sets the VerifiedAccessTrustProvider field's value.
+func (s *DeleteVerifiedAccessTrustProviderOutput) SetVerifiedAccessTrustProvider(v *VerifiedAccessTrustProvider) *DeleteVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessTrustProvider = v
+	return s
+}
+
 type DeleteVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -80299,7 +86022,7 @@ func (s DeleteVolumeOutput) GoString() string {
 type DeleteVpcEndpointConnectionNotificationsInput struct {
 	_ struct{} `type:"structure"`
 
-	// One or more notification IDs.
+	// The IDs of the notifications.
 	//
 	// ConnectionNotificationIds is a required field
 	ConnectionNotificationIds []*string `locationName:"ConnectionNotificationId" locationNameList:"item" type:"list" required:"true"`
@@ -80394,7 +86117,7 @@ type DeleteVpcEndpointServiceConfigurationsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// The IDs of one or more services.
+	// The IDs of the services.
 	//
 	// ServiceIds is a required field
 	ServiceIds []*string `locationName:"ServiceId" locationNameList:"item" type:"list" required:"true"`
@@ -80474,7 +86197,6 @@ func (s *DeleteVpcEndpointServiceConfigurationsOutput) SetUnsuccessful(v []*Unsu
 	return s
 }
 
-// Contains the parameters for DeleteVpcEndpoints.
 type DeleteVpcEndpointsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -80484,7 +86206,7 @@ type DeleteVpcEndpointsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more VPC endpoint IDs.
+	// The IDs of the VPC endpoints.
 	//
 	// VpcEndpointIds is a required field
 	VpcEndpointIds []*string `locationName:"VpcEndpointId" locationNameList:"item" type:"list" required:"true"`
@@ -80533,7 +86255,6 @@ func (s *DeleteVpcEndpointsInput) SetVpcEndpointIds(v []*string) *DeleteVpcEndpo
 	return s
 }
 
-// Contains the output of DeleteVpcEndpoints.
 type DeleteVpcEndpointsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -81170,7 +86891,10 @@ func (s *DeprovisionIpamPoolCidrOutput) SetIpamPoolCidr(v *IpamPoolCidr) *Deprov
 type DeprovisionPublicIpv4PoolCidrInput struct {
 	_ struct{} `type:"structure"`
 
-	// The CIDR you want to deprovision from the pool.
+	// The CIDR you want to deprovision from the pool. Enter the CIDR you want to
+	// deprovision with a netmask of /32. You must rerun this command for each IP
+	// address in the CIDR range. If your CIDR is a /24, you will have to run this
+	// command to deprovision each of the 256 IP addresses in the /24 CIDR.
 	//
 	// Cidr is a required field
 	Cidr *string `type:"string" required:"true"`
@@ -82207,7 +87931,7 @@ type DescribeAvailabilityZonesInput struct {
 	//
 	//    * message - The Zone message.
 	//
-	//    * opt-in-status - The opt-in status (opted-in, and not-opted-in | opt-in-not-required).
+	//    * opt-in-status - The opt-in status (opted-in | not-opted-in | opt-in-not-required).
 	//
 	//    * parent-zoneID - The ID of the zone that handles some of the Local Zone
 	//    and Wavelength Zone control plane operations, such as API calls.
@@ -82224,13 +87948,11 @@ type DescribeAvailabilityZonesInput struct {
 	//    Local Zone (for example, usw2-lax1-az1), or the Wavelength Zone (for example,
 	//    us-east-1-wl1-bos-wlz-1).
 	//
-	//    * zone-type - The type of zone, for example, local-zone.
-	//
 	//    * zone-name - The name of the Availability Zone (for example, us-east-1a),
 	//    the Local Zone (for example, us-west-2-lax-1a), or the Wavelength Zone
 	//    (for example, us-east-1-wl1-bos-wlz-1).
 	//
-	//    * zone-type - The type of zone, for example, local-zone.
+	//    * zone-type - The type of zone (availability-zone | local-zone | wavelength-zone).
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// The IDs of the Availability Zones, Local Zones, and Wavelength Zones.
@@ -83144,13 +88866,15 @@ type DescribeClassicLinkInstancesInput struct {
 	// One or more instance IDs. Must be instances linked to a VPC through ClassicLink.
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	//
 	// Constraint: If the value is greater than 1000, we return only 1000 items.
 	MaxResults *int64 `locationName:"maxResults" min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -83221,8 +88945,8 @@ type DescribeClassicLinkInstancesOutput struct {
 	// Information about one or more linked EC2-Classic instances.
 	Instances []*ClassicLinkInstance `locationName:"instancesSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -84296,11 +90020,13 @@ type DescribeDhcpOptionsInput struct {
 	//    the tag value.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -84371,8 +90097,8 @@ type DescribeDhcpOptionsOutput struct {
 	// Information about one or more DHCP options sets.
 	DhcpOptions []*DhcpOptions `locationName:"dhcpOptionsSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -84431,11 +90157,13 @@ type DescribeEgressOnlyInternetGatewaysInput struct {
 	//    the tag value.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -84506,8 +90234,8 @@ type DescribeEgressOnlyInternetGatewaysOutput struct {
 	// Information about the egress-only internet gateways.
 	EgressOnlyInternetGateways []*EgressOnlyInternetGateway `locationName:"egressOnlyInternetGatewaySet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -84912,12 +90640,13 @@ type DescribeFastLaunchImagesInput struct {
 	// Details for one or more Windows AMI image IDs.
 	ImageIds []*string `locationName:"ImageId" locationNameList:"ImageId" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another request with the returned NextToken value.
-	// If this parameter is not specified, then all results are returned.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -84976,8 +90705,8 @@ type DescribeFastLaunchImagesOutput struct {
 	// meet the requested criteria.
 	FastLaunchImages []*DescribeFastLaunchImagesSuccessItem `locationName:"fastLaunchImageSet" locationNameList:"item" type:"list"`
 
-	// The token to use for the next set of results. This value is null when there
-	// are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -85024,7 +90753,8 @@ type DescribeFastLaunchImagesSuccessItem struct {
 	// launches Windows instances from pre-provisioned snapshots.
 	LaunchTemplate *FastLaunchLaunchTemplateSpecificationResponse `locationName:"launchTemplate" type:"structure"`
 
-	// The maximum number of parallel instances that are launched for creating resources.
+	// The maximum number of instances that Amazon EC2 can launch at the same time
+	// to create pre-provisioned snapshots for Windows faster launching.
 	MaxParallelLaunches *int64 `locationName:"maxParallelLaunches" type:"integer"`
 
 	// The owner ID for the fast-launch enabled Windows AMI.
@@ -85274,11 +91004,13 @@ type DescribeFastSnapshotRestoresInput struct {
 	//    | optimizing | enabled | disabling | disabled).
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -85330,8 +91062,8 @@ type DescribeFastSnapshotRestoresOutput struct {
 	// Information about the state of fast snapshot restores.
 	FastSnapshotRestores []*DescribeFastSnapshotRestoreSuccessItem `locationName:"fastSnapshotRestoreSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -85446,12 +91178,13 @@ type DescribeFleetHistoryInput struct {
 	// FleetId is a required field
 	FleetId *string `type:"string" required:"true"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The start date and time for the events, in UTC format (for example, YYYY-MM-DDTHH:MM:SSZ).
@@ -85542,10 +91275,11 @@ type DescribeFleetHistoryOutput struct {
 	// The last date and time for the events, in UTC format (for example, YYYY-MM-DDTHH:MM:SSZ).
 	// All records up to this time were retrieved.
 	//
-	// If nextToken indicates that there are more results, this value is not present.
+	// If nextToken indicates that there are more items, this value is not present.
 	LastEvaluatedTime *time.Time `locationName:"lastEvaluatedTime" type:"timestamp"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The start date and time for the events, in UTC format (for example, YYYY-MM-DDTHH:MM:SSZ).
@@ -85619,12 +91353,13 @@ type DescribeFleetInstancesInput struct {
 	// FleetId is a required field
 	FleetId *string `type:"string" required:"true"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -85699,7 +91434,8 @@ type DescribeFleetInstancesOutput struct {
 	// The ID of the EC2 Fleet.
 	FleetId *string `locationName:"fleetId" type:"string"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -85772,12 +91508,13 @@ type DescribeFleetsInput struct {
 	// does not appear in the response.
 	FleetIds []*string `locationName:"FleetId" type:"list"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -85906,7 +91643,8 @@ type DescribeFleetsOutput struct {
 	// Information about the EC2 Fleets.
 	Fleets []*FleetData `locationName:"fleetSet" locationNameList:"item" type:"list"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -85980,11 +91718,13 @@ type DescribeFlowLogsInput struct {
 	// Constraint: Maximum of 1000 flow log IDs.
 	FlowLogIds []*string `locationName:"FlowLogId" locationNameList:"item" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next page of results.
+	// The token to request the next page of items. Pagination continues from the
+	// end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -86042,8 +91782,8 @@ type DescribeFlowLogsOutput struct {
 	// Information about the flow logs.
 	FlowLogs []*FlowLog `locationName:"flowLogSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to request the next page of items. This value is null when there
+	// are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -86747,11 +92487,13 @@ type DescribeIamInstanceProfileAssociationsInput struct {
 	//    * state - The state of the association (associating | associated | disassociating).
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token to request the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -86816,8 +92558,8 @@ type DescribeIamInstanceProfileAssociationsOutput struct {
 	// Information about the IAM instance profile associations.
 	IamInstanceProfileAssociations []*IamInstanceProfileAssociation `locationName:"iamInstanceProfileAssociationSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -87110,7 +92852,7 @@ type DescribeImageAttributeOutput struct {
 	// by default, the instance requires that IMDSv2 is used when requesting instance
 	// metadata. In addition, HttpPutResponseHopLimit is set to 2. For more information,
 	// see Configure the AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	ImdsSupport *AttributeValue `locationName:"imdsSupport" type:"structure"`
 
 	// The kernel ID.
@@ -87144,7 +92886,7 @@ type DescribeImageAttributeOutput struct {
 	// command. You can inspect and modify the UEFI data by using the python-uefivars
 	// tool (https://github.com/awslabs/python-uefivars) on GitHub. For more information,
 	// see UEFI Secure Boot (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	UefiData *AttributeValue `locationName:"uefiData" type:"structure"`
 }
 
@@ -87371,6 +93113,15 @@ type DescribeImagesInput struct {
 	// of what you specify for this parameter.
 	IncludeDeprecated *bool `type:"boolean"`
 
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
+	MaxResults *int64 `type:"integer"`
+
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
+	NextToken *string `type:"string"`
+
 	// Scopes the results to images with the specified owners. You can specify a
 	// combination of Amazon Web Services account IDs, self, amazon, and aws-marketplace.
 	// If you omit this parameter, the results include all images for which you
@@ -87426,6 +93177,18 @@ func (s *DescribeImagesInput) SetIncludeDeprecated(v bool) *DescribeImagesInput 
 	return s
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeImagesInput) SetMaxResults(v int64) *DescribeImagesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeImagesInput) SetNextToken(v string) *DescribeImagesInput {
+	s.NextToken = &v
+	return s
+}
+
 // SetOwners sets the Owners field's value.
 func (s *DescribeImagesInput) SetOwners(v []*string) *DescribeImagesInput {
 	s.Owners = v
@@ -87437,6 +93200,10 @@ type DescribeImagesOutput struct {
 
 	// Information about the images.
 	Images []*Image `locationName:"imagesSet" locationNameList:"item" type:"list"`
+
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
 // String returns the string representation.
@@ -87460,6 +93227,12 @@ func (s DescribeImagesOutput) GoString() string {
 // SetImages sets the Images field's value.
 func (s *DescribeImagesOutput) SetImages(v []*Image) *DescribeImagesOutput {
 	s.Images = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeImagesOutput) SetNextToken(v string) *DescribeImagesOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -87970,13 +93743,16 @@ type DescribeInstanceCreditSpecificationsInput struct {
 	// Constraints: Maximum 1000 explicitly specified instance IDs.
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value. This
-	// value can be between 5 and 1000. You cannot specify this parameter and the
-	// instance IDs parameter in the same call.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
+	//
+	// You cannot specify this parameter and the instance IDs parameter in the same
+	// call.
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -88047,8 +93823,8 @@ type DescribeInstanceCreditSpecificationsOutput struct {
 	// Information about the credit option for CPU usage of an instance.
 	InstanceCreditSpecifications []*InstanceCreditSpecification `locationName:"instanceCreditSpecificationSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -88372,13 +94148,16 @@ type DescribeInstanceStatusInput struct {
 	// Constraints: Maximum 100 explicitly specified instance IDs.
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value. This
-	// value can be between 5 and 1000. You cannot specify this parameter and the
-	// instance IDs parameter in the same call.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
+	//
+	// You cannot specify this parameter and the instance IDs parameter in the same
+	// request.
 	MaxResults *int64 `type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -88442,8 +94221,8 @@ type DescribeInstanceStatusOutput struct {
 	// Information about the status of the instances.
 	InstanceStatuses []*InstanceStatus `locationName:"instanceStatusSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -88498,12 +94277,13 @@ type DescribeInstanceTypeOfferingsInput struct {
 	// The location type.
 	LocationType *string `type:"string" enum:"LocationType"`
 
-	// The maximum number of results to return for the request in a single page.
-	// The remaining results can be seen by sending another request with the next
-	// token value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -88574,8 +94354,8 @@ type DescribeInstanceTypeOfferingsOutput struct {
 	// The instance types offered.
 	InstanceTypeOfferings []*InstanceTypeOffering `locationName:"instanceTypeOfferingSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -88757,12 +94537,13 @@ type DescribeInstanceTypesInput struct {
 	// in the Amazon EC2 User Guide.
 	InstanceTypes []*string `locationName:"InstanceType" type:"list" enum:"InstanceType"`
 
-	// The maximum number of results to return for the request in a single page.
-	// The remaining results can be seen by sending another request with the next
-	// token value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -88834,8 +94615,8 @@ type DescribeInstanceTypesOutput struct {
 	// in the Amazon EC2 User Guide.
 	InstanceTypes []*InstanceTypeInfo `locationName:"instanceTypeSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -88967,11 +94748,14 @@ type DescribeInstancesInput struct {
 	//    * metadata-options.http-tokens - The metadata request authorization state
 	//    (optional | required)
 	//
-	//    * metadata-options.http-put-response-hop-limit - The http metadata request
+	//    * metadata-options.http-put-response-hop-limit - The HTTP metadata request
 	//    put response hop limit (integer, possible values 1 to 64)
 	//
-	//    * metadata-options.http-endpoint - Enable or disable metadata access on
-	//    http endpoint (enabled | disabled)
+	//    * metadata-options.http-endpoint - The status of access to the HTTP metadata
+	//    endpoint on your instance (enabled | disabled)
+	//
+	//    * metadata-options.instance-metadata-tags - The status of access to instance
+	//    tags from the instance metadata (enabled | disabled)
 	//
 	//    * monitoring-state - Indicates whether detailed monitoring is enabled
 	//    (disabled | enabled).
@@ -89141,13 +94925,16 @@ type DescribeInstancesInput struct {
 	// Default: Describes all your instances.
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value. This
-	// value can be between 5 and 1000. You cannot specify this parameter and the
-	// instance IDs parameter in the same call.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
+	//
+	// You cannot specify this parameter and the instance IDs parameter in the same
+	// request.
 	MaxResults *int64 `locationName:"maxResults" type:"integer"`
 
-	// The token to request the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -89202,8 +94989,8 @@ func (s *DescribeInstancesInput) SetNextToken(v string) *DescribeInstancesInput 
 type DescribeInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the reservations.
@@ -89277,11 +95064,13 @@ type DescribeInternetGatewaysInput struct {
 	// Default: Describes all your internet gateways.
 	InternetGatewayIds []*string `locationName:"internetGatewayId" locationNameList:"item" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -89352,8 +95141,8 @@ type DescribeInternetGatewaysOutput struct {
 	// Information about one or more internet gateways.
 	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -89508,6 +95297,257 @@ func (s *DescribeIpamPoolsOutput) SetIpamPools(v []*IpamPool) *DescribeIpamPools
 
 // SetNextToken sets the NextToken field's value.
 func (s *DescribeIpamPoolsOutput) SetNextToken(v string) *DescribeIpamPoolsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeIpamResourceDiscoveriesInput struct {
+	_ struct{} `type:"structure"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The resource discovery filters.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The IPAM resource discovery IDs.
+	IpamResourceDiscoveryIds []*string `locationName:"IpamResourceDiscoveryId" locationNameList:"item" type:"list"`
+
+	// The maximum number of resource discoveries to return in one page of results.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveriesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveriesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeIpamResourceDiscoveriesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeIpamResourceDiscoveriesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeIpamResourceDiscoveriesInput) SetDryRun(v bool) *DescribeIpamResourceDiscoveriesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeIpamResourceDiscoveriesInput) SetFilters(v []*Filter) *DescribeIpamResourceDiscoveriesInput {
+	s.Filters = v
+	return s
+}
+
+// SetIpamResourceDiscoveryIds sets the IpamResourceDiscoveryIds field's value.
+func (s *DescribeIpamResourceDiscoveriesInput) SetIpamResourceDiscoveryIds(v []*string) *DescribeIpamResourceDiscoveriesInput {
+	s.IpamResourceDiscoveryIds = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeIpamResourceDiscoveriesInput) SetMaxResults(v int64) *DescribeIpamResourceDiscoveriesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeIpamResourceDiscoveriesInput) SetNextToken(v string) *DescribeIpamResourceDiscoveriesInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeIpamResourceDiscoveriesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource discoveries.
+	IpamResourceDiscoveries []*IpamResourceDiscovery `locationName:"ipamResourceDiscoverySet" locationNameList:"item" type:"list"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveriesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveriesOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscoveries sets the IpamResourceDiscoveries field's value.
+func (s *DescribeIpamResourceDiscoveriesOutput) SetIpamResourceDiscoveries(v []*IpamResourceDiscovery) *DescribeIpamResourceDiscoveriesOutput {
+	s.IpamResourceDiscoveries = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeIpamResourceDiscoveriesOutput) SetNextToken(v string) *DescribeIpamResourceDiscoveriesOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeIpamResourceDiscoveryAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The resource discovery association filters.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The resource discovery association IDs.
+	IpamResourceDiscoveryAssociationIds []*string `locationName:"IpamResourceDiscoveryAssociationId" locationNameList:"item" type:"list"`
+
+	// The maximum number of resource discovery associations to return in one page
+	// of results.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveryAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveryAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeIpamResourceDiscoveryAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeIpamResourceDiscoveryAssociationsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsInput) SetDryRun(v bool) *DescribeIpamResourceDiscoveryAssociationsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsInput) SetFilters(v []*Filter) *DescribeIpamResourceDiscoveryAssociationsInput {
+	s.Filters = v
+	return s
+}
+
+// SetIpamResourceDiscoveryAssociationIds sets the IpamResourceDiscoveryAssociationIds field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsInput) SetIpamResourceDiscoveryAssociationIds(v []*string) *DescribeIpamResourceDiscoveryAssociationsInput {
+	s.IpamResourceDiscoveryAssociationIds = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsInput) SetMaxResults(v int64) *DescribeIpamResourceDiscoveryAssociationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsInput) SetNextToken(v string) *DescribeIpamResourceDiscoveryAssociationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeIpamResourceDiscoveryAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource discovery associations.
+	IpamResourceDiscoveryAssociations []*IpamResourceDiscoveryAssociation `locationName:"ipamResourceDiscoveryAssociationSet" locationNameList:"item" type:"list"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveryAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeIpamResourceDiscoveryAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscoveryAssociations sets the IpamResourceDiscoveryAssociations field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsOutput) SetIpamResourceDiscoveryAssociations(v []*IpamResourceDiscoveryAssociation) *DescribeIpamResourceDiscoveryAssociationsOutput {
+	s.IpamResourceDiscoveryAssociations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeIpamResourceDiscoveryAssociationsOutput) SetNextToken(v string) *DescribeIpamResourceDiscoveryAssociationsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -90096,6 +96136,19 @@ type DescribeLaunchTemplateVersionsInput struct {
 	// The token to request the next page of results.
 	NextToken *string `type:"string"`
 
+	// If true, and if a Systems Manager parameter is specified for ImageId, the
+	// AMI ID is displayed in the response for imageId.
+	//
+	// If false, and if a Systems Manager parameter is specified for ImageId, the
+	// parameter is displayed in the response for imageId.
+	//
+	// For more information, see Use a Systems Manager parameter instead of an AMI
+	// ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// Default: false
+	ResolveAlias *bool `type:"boolean"`
+
 	// One or more versions of the launch template. Valid values depend on whether
 	// you are describing a specified launch template (by ID or name) or all launch
 	// templates in your account.
@@ -90187,6 +96240,12 @@ func (s *DescribeLaunchTemplateVersionsInput) SetMinVersion(v string) *DescribeL
 // SetNextToken sets the NextToken field's value.
 func (s *DescribeLaunchTemplateVersionsInput) SetNextToken(v string) *DescribeLaunchTemplateVersionsInput {
 	s.NextToken = &v
+	return s
+}
+
+// SetResolveAlias sets the ResolveAlias field's value.
+func (s *DescribeLaunchTemplateVersionsInput) SetResolveAlias(v bool) *DescribeLaunchTemplateVersionsInput {
+	s.ResolveAlias = &v
 	return s
 }
 
@@ -91515,14 +97574,16 @@ type DescribeNatGatewaysInput struct {
 	//    * vpc-id - The ID of the VPC in which the NAT gateway resides.
 	Filter []*Filter `locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
 	// One or more NAT gateway IDs.
 	NatGatewayIds []*string `locationName:"NatGatewayId" locationNameList:"item" type:"list"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -91593,8 +97654,8 @@ type DescribeNatGatewaysOutput struct {
 	// Information about the NAT gateways.
 	NatGateways []*NatGateway `locationName:"natGatewaySet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -91691,8 +97752,9 @@ type DescribeNetworkAclsInput struct {
 	//    * vpc-id - The ID of the VPC for the network ACL.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
 	// One or more network ACL IDs.
@@ -91700,7 +97762,8 @@ type DescribeNetworkAclsInput struct {
 	// Default: Describes all your network ACLs.
 	NetworkAclIds []*string `locationName:"NetworkAclId" locationNameList:"item" type:"list"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -91771,8 +97834,8 @@ type DescribeNetworkAclsOutput struct {
 	// Information about one or more network ACLs.
 	NetworkAcls []*NetworkAcl `locationName:"networkAclSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -92256,7 +98319,27 @@ type DescribeNetworkInsightsPathsInput struct {
 	//
 	//    * destination - The ID of the resource.
 	//
-	//    * destination-port - The destination port.
+	//    * filter-at-source.source-address - The source IPv4 address at the source.
+	//
+	//    * filter-at-source.source-port-range - The source port range at the source.
+	//
+	//    * filter-at-source.destination-address - The destination IPv4 address
+	//    at the source.
+	//
+	//    * filter-at-source.destination-port-range - The destination port range
+	//    at the source.
+	//
+	//    * filter-at-destination.source-address - The source IPv4 address at the
+	//    destination.
+	//
+	//    * filter-at-destination.source-port-range - The source port range at the
+	//    destination.
+	//
+	//    * filter-at-destination.destination-address - The destination IPv4 address
+	//    at the destination.
+	//
+	//    * filter-at-destination.destination-port-range - The destination port
+	//    range at the destination.
 	//
 	//    * protocol - The protocol.
 	//
@@ -92533,15 +98616,17 @@ type DescribeNetworkInterfacePermissionsInput struct {
 	//    | EIP-ASSOCIATE).
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value. If
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. If
 	// this parameter is not specified, up to 50 results are returned by default.
+	// For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
 	// The network interface permission IDs.
 	NetworkInterfacePermissionIds []*string `locationName:"NetworkInterfacePermissionId" type:"list"`
 
-	// The token to request the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -92607,7 +98692,8 @@ type DescribeNetworkInterfacePermissionsOutput struct {
 	// The network interface permissions.
 	NetworkInterfacePermissions []*NetworkInterfacePermission `locationName:"networkInterfacePermissions" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -92762,10 +98848,10 @@ type DescribeNetworkInterfacesInput struct {
 	//    * vpc-id - The ID of the VPC for the network interface.
 	Filters []*Filter `locationName:"filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of items to return for this request. The request returns
-	// a token that you can specify in a subsequent call to get the next set of
-	// results. You cannot specify this parameter and the network interface IDs
-	// parameter in the same request.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. You
+	// cannot specify this parameter and the network interface IDs parameter in
+	// the same request. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
 	// The network interface IDs.
@@ -92773,7 +98859,8 @@ type DescribeNetworkInterfacesInput struct {
 	// Default: Describes all your network interfaces.
 	NetworkInterfaceIds []*string `locationName:"NetworkInterfaceId" locationNameList:"item" type:"list"`
 
-	// The token to retrieve the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -92838,15 +98925,14 @@ func (s *DescribeNetworkInterfacesInput) SetNextToken(v string) *DescribeNetwork
 	return s
 }
 
-// Contains the output of DescribeNetworkInterfaces.
 type DescribeNetworkInterfacesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Information about one or more network interfaces.
 	NetworkInterfaces []*NetworkInterface `locationName:"networkInterfaceSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -93472,11 +99558,13 @@ type DescribeReplaceRootVolumeTasksInput struct {
 	//    task was created.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The ID of the root volume replacement task to view.
@@ -93547,8 +99635,8 @@ func (s *DescribeReplaceRootVolumeTasksInput) SetReplaceRootVolumeTaskIds(v []*s
 type DescribeReplaceRootVolumeTasksOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the root volume replacement task.
@@ -94290,11 +100378,13 @@ type DescribeRouteTablesInput struct {
 	//    * vpc-id - The ID of the VPC for the route table.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// One or more route table IDs.
@@ -94368,8 +100458,8 @@ func (s *DescribeRouteTablesInput) SetRouteTableIds(v []*string) *DescribeRouteT
 type DescribeRouteTablesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about one or more route tables.
@@ -94831,13 +100921,14 @@ type DescribeSecurityGroupRulesInput struct {
 	//    the filter value.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another request with the returned NextToken value.
-	// This value can be between 5 and 1000. If this parameter is not specified,
-	// then all results are returned.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. This
+	// value can be between 5 and 1000. If this parameter is not specified, then
+	// all items are returned. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The IDs of the security group rules.
@@ -94908,8 +100999,8 @@ func (s *DescribeSecurityGroupRulesInput) SetSecurityGroupRuleIds(v []*string) *
 type DescribeSecurityGroupRulesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about security group rules.
@@ -95049,13 +101140,14 @@ type DescribeSecurityGroupsInput struct {
 	// Default: Describes all of your security groups.
 	GroupNames []*string `locationName:"GroupName" locationNameList:"GroupName" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another request with the returned NextToken value.
-	// This value can be between 5 and 1000. If this parameter is not specified,
-	// then all results are returned.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. This
+	// value can be between 5 and 1000. If this parameter is not specified, then
+	// all items are returned. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token to request the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -95129,8 +101221,8 @@ func (s *DescribeSecurityGroupsInput) SetNextToken(v string) *DescribeSecurityGr
 type DescribeSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the security groups.
@@ -95310,11 +101402,13 @@ type DescribeSnapshotTierStatusInput struct {
 	//    | temporary-restore-completed | temporary-restore-failed)
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -95363,8 +101457,8 @@ func (s *DescribeSnapshotTierStatusInput) SetNextToken(v string) *DescribeSnapsh
 type DescribeSnapshotTierStatusOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the snapshot's storage tier.
@@ -95450,22 +101544,15 @@ type DescribeSnapshotsInput struct {
 	//    * volume-size - The size of the volume, in GiB.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of snapshot results returned by DescribeSnapshots in paginated
-	// output. When this parameter is used, DescribeSnapshots only returns MaxResults
-	// results in a single page along with a NextToken response element. The remaining
-	// results of the initial request can be seen by sending another DescribeSnapshots
-	// request with the returned NextToken value. This value can be between 5 and
-	// 1,000; if MaxResults is given a value larger than 1,000, only 1,000 results
-	// are returned. If this parameter is not used, then DescribeSnapshots returns
-	// all results. You cannot specify this parameter and the snapshot IDs parameter
-	// in the same request.
+	// The maximum number of snapshots to return for this request. This value can
+	// be between 5 and 1,000; if this value is larger than 1,000, only 1,000 results
+	// are returned. If this parameter is not used, then the request returns all
+	// snapshots. You cannot specify this parameter and the snapshot IDs parameter
+	// in the same request. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The NextToken value returned from a previous paginated DescribeSnapshots
-	// request where MaxResults was used and the results exceeded the value of that
-	// parameter. Pagination continues from the end of the previous results that
-	// returned the NextToken value. This value is null when there are no more results
-	// to return.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// Scopes the results to snapshots with the specified owners. You can specify
@@ -95545,10 +101632,8 @@ func (s *DescribeSnapshotsInput) SetSnapshotIds(v []*string) *DescribeSnapshotsI
 type DescribeSnapshotsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The NextToken value to include in a future DescribeSnapshots request. When
-	// the results of a DescribeSnapshots request exceed MaxResults, this value
-	// can be used to retrieve the next page of results. This value is null when
-	// there are no more results to return.
+	// The token to include in another request to return the next page of snapshots.
+	// This value is null when there are no more snapshots to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the snapshots.
@@ -95662,12 +101747,13 @@ type DescribeSpotFleetInstancesInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The ID of the Spot Fleet request.
@@ -95742,8 +101828,8 @@ type DescribeSpotFleetInstancesOutput struct {
 	// of date.
 	ActiveInstances []*ActiveInstance `locationName:"activeInstanceSet" locationNameList:"item" type:"list"`
 
-	// The token required to retrieve the next set of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The ID of the Spot Fleet request.
@@ -95799,12 +101885,13 @@ type DescribeSpotFleetRequestHistoryInput struct {
 	// The type of events to describe. By default, all events are described.
 	EventType *string `locationName:"eventType" type:"string" enum:"EventType"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The ID of the Spot Fleet request.
@@ -95901,11 +101988,11 @@ type DescribeSpotFleetRequestHistoryOutput struct {
 	// The last date and time for the events, in UTC format (for example, YYYY-MM-DDTHH:MM:SSZ).
 	// All records up to this time were retrieved.
 	//
-	// If nextToken indicates that there are more results, this value is not present.
+	// If nextToken indicates that there are more items, this value is not present.
 	LastEvaluatedTime *time.Time `locationName:"lastEvaluatedTime" type:"timestamp"`
 
-	// The token required to retrieve the next set of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The ID of the Spot Fleet request.
@@ -95973,12 +102060,13 @@ type DescribeSpotFleetRequestsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" type:"integer"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The IDs of the Spot Fleet requests.
@@ -96031,8 +102119,8 @@ func (s *DescribeSpotFleetRequestsInput) SetSpotFleetRequestIds(v []*string) *De
 type DescribeSpotFleetRequestsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token required to retrieve the next set of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the configuration of your Spot Fleet.
@@ -96187,13 +102275,13 @@ type DescribeSpotInstanceRequestsInput struct {
 	//    * valid-until - The end date of the request.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 5 and 1000. To retrieve the remaining results, make another call
-	// with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token to request the next set of results. This value is null when there
-	// are no more results to return.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// One or more Spot Instance request IDs.
@@ -96252,8 +102340,8 @@ func (s *DescribeSpotInstanceRequestsInput) SetSpotInstanceRequestIds(v []*strin
 type DescribeSpotInstanceRequestsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next set of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// One or more Spot Instance requests.
@@ -96330,12 +102418,13 @@ type DescribeSpotPriceHistoryInput struct {
 	// Filters the results by the specified instance types.
 	InstanceTypes []*string `locationName:"InstanceType" type:"list" enum:"InstanceType"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Filters the results by the specified basic product descriptions.
@@ -96422,8 +102511,8 @@ func (s *DescribeSpotPriceHistoryInput) SetStartTime(v time.Time) *DescribeSpotP
 type DescribeSpotPriceHistoryOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token required to retrieve the next set of results. This value is null
-	// or an empty string when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The historical Spot prices.
@@ -96469,13 +102558,13 @@ type DescribeStaleSecurityGroupsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// The maximum number of items to return for this request. The request returns
-	// a token that you can specify in a subsequent call to get the next set of
-	// results.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next set of items to return. (You received this token from
-	// a prior call.)
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `min:"1" type:"string"`
 
 	// The ID of the VPC.
@@ -96548,8 +102637,8 @@ func (s *DescribeStaleSecurityGroupsInput) SetVpcId(v string) *DescribeStaleSecu
 type DescribeStaleSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use when requesting the next set of items. If there are no additional
-	// items to return, the string is empty.
+	// The token to include in another request to get the next page of items. If
+	// there are no additional items to return, the string is empty.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the stale security groups.
@@ -96608,13 +102697,16 @@ type DescribeStoreImageTasksInput struct {
 	// in a request.
 	ImageIds []*string `locationName:"ImageId" locationNameList:"item" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value. This
-	// value can be between 1 and 200. You cannot specify this parameter and the
-	// ImageIDs parameter in the same call.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
+	//
+	// You cannot specify this parameter and the ImageIDs parameter in the same
+	// call.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -96682,8 +102774,8 @@ func (s *DescribeStoreImageTasksInput) SetNextToken(v string) *DescribeStoreImag
 type DescribeStoreImageTasksOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The information about the AMI store tasks.
@@ -96815,11 +102907,13 @@ type DescribeSubnetsInput struct {
 	//    * vpc-id - The ID of the VPC for the subnet.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// One or more subnet IDs.
@@ -96892,8 +102986,8 @@ func (s *DescribeSubnetsInput) SetSubnetIds(v []*string) *DescribeSubnetsInput {
 type DescribeSubnetsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about one or more subnets.
@@ -96960,12 +103054,13 @@ type DescribeTagsInput struct {
 	//    * value - The tag value.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return in a single call. This value can
-	// be between 5 and 1000. To retrieve the remaining results, make another call
-	// with the returned NextToken value.
+	// The maximum number of items to return for this request. This value can be
+	// between 5 and 1000. To get the next page of items, make another request with
+	// the token returned in the output. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -97014,8 +103109,8 @@ func (s *DescribeTagsInput) SetNextToken(v string) *DescribeTagsInput {
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The tags.
@@ -98973,6 +105068,659 @@ func (s *DescribeTrunkInterfaceAssociationsOutput) SetNextToken(v string) *Descr
 	return s
 }
 
+type DescribeVerifiedAccessEndpointsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters. Filter names and values are case-sensitive.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	VerifiedAccessEndpointIds []*string `locationName:"VerifiedAccessEndpointId" locationNameList:"item" type:"list"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	VerifiedAccessGroupId *string `type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessEndpointsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessEndpointsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVerifiedAccessEndpointsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVerifiedAccessEndpointsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetDryRun(v bool) *DescribeVerifiedAccessEndpointsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetFilters(v []*Filter) *DescribeVerifiedAccessEndpointsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetMaxResults(v int64) *DescribeVerifiedAccessEndpointsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetNextToken(v string) *DescribeVerifiedAccessEndpointsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessEndpointIds sets the VerifiedAccessEndpointIds field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetVerifiedAccessEndpointIds(v []*string) *DescribeVerifiedAccessEndpointsInput {
+	s.VerifiedAccessEndpointIds = v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetVerifiedAccessGroupId(v string) *DescribeVerifiedAccessEndpointsInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *DescribeVerifiedAccessEndpointsInput) SetVerifiedAccessInstanceId(v string) *DescribeVerifiedAccessEndpointsInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type DescribeVerifiedAccessEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	VerifiedAccessEndpoints []*VerifiedAccessEndpoint `locationName:"verifiedAccessEndpointSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessEndpointsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessEndpointsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessEndpointsOutput) SetNextToken(v string) *DescribeVerifiedAccessEndpointsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessEndpoints sets the VerifiedAccessEndpoints field's value.
+func (s *DescribeVerifiedAccessEndpointsOutput) SetVerifiedAccessEndpoints(v []*VerifiedAccessEndpoint) *DescribeVerifiedAccessEndpointsOutput {
+	s.VerifiedAccessEndpoints = v
+	return s
+}
+
+type DescribeVerifiedAccessGroupsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters. Filter names and values are case-sensitive.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access groups.
+	VerifiedAccessGroupIds []*string `locationName:"VerifiedAccessGroupId" locationNameList:"item" type:"list"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessGroupsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessGroupsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVerifiedAccessGroupsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVerifiedAccessGroupsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVerifiedAccessGroupsInput) SetDryRun(v bool) *DescribeVerifiedAccessGroupsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVerifiedAccessGroupsInput) SetFilters(v []*Filter) *DescribeVerifiedAccessGroupsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeVerifiedAccessGroupsInput) SetMaxResults(v int64) *DescribeVerifiedAccessGroupsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessGroupsInput) SetNextToken(v string) *DescribeVerifiedAccessGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessGroupIds sets the VerifiedAccessGroupIds field's value.
+func (s *DescribeVerifiedAccessGroupsInput) SetVerifiedAccessGroupIds(v []*string) *DescribeVerifiedAccessGroupsInput {
+	s.VerifiedAccessGroupIds = v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *DescribeVerifiedAccessGroupsInput) SetVerifiedAccessInstanceId(v string) *DescribeVerifiedAccessGroupsInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type DescribeVerifiedAccessGroupsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The ID of the Verified Access group.
+	VerifiedAccessGroups []*VerifiedAccessGroup `locationName:"verifiedAccessGroupSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessGroupsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessGroupsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessGroupsOutput) SetNextToken(v string) *DescribeVerifiedAccessGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessGroups sets the VerifiedAccessGroups field's value.
+func (s *DescribeVerifiedAccessGroupsOutput) SetVerifiedAccessGroups(v []*VerifiedAccessGroup) *DescribeVerifiedAccessGroupsOutput {
+	s.VerifiedAccessGroups = v
+	return s
+}
+
+type DescribeVerifiedAccessInstanceLoggingConfigurationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters. Filter names and values are case-sensitive.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `type:"string"`
+
+	// The IDs of the Amazon Web Services Verified Access instances.
+	VerifiedAccessInstanceIds []*string `locationName:"VerifiedAccessInstanceId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstanceLoggingConfigurationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstanceLoggingConfigurationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVerifiedAccessInstanceLoggingConfigurationsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) SetDryRun(v bool) *DescribeVerifiedAccessInstanceLoggingConfigurationsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) SetFilters(v []*Filter) *DescribeVerifiedAccessInstanceLoggingConfigurationsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) SetMaxResults(v int64) *DescribeVerifiedAccessInstanceLoggingConfigurationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) SetNextToken(v string) *DescribeVerifiedAccessInstanceLoggingConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceIds sets the VerifiedAccessInstanceIds field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsInput) SetVerifiedAccessInstanceIds(v []*string) *DescribeVerifiedAccessInstanceLoggingConfigurationsInput {
+	s.VerifiedAccessInstanceIds = v
+	return s
+}
+
+type DescribeVerifiedAccessInstanceLoggingConfigurationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The current logging configuration for the Amazon Web Services Verified Access
+	// instances.
+	LoggingConfigurations []*VerifiedAccessInstanceLoggingConfiguration `locationName:"loggingConfigurationSet" locationNameList:"item" type:"list"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstanceLoggingConfigurationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstanceLoggingConfigurationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetLoggingConfigurations sets the LoggingConfigurations field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsOutput) SetLoggingConfigurations(v []*VerifiedAccessInstanceLoggingConfiguration) *DescribeVerifiedAccessInstanceLoggingConfigurationsOutput {
+	s.LoggingConfigurations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessInstanceLoggingConfigurationsOutput) SetNextToken(v string) *DescribeVerifiedAccessInstanceLoggingConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeVerifiedAccessInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters. Filter names and values are case-sensitive.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `type:"string"`
+
+	// The IDs of the Amazon Web Services Verified Access instances.
+	VerifiedAccessInstanceIds []*string `locationName:"VerifiedAccessInstanceId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVerifiedAccessInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVerifiedAccessInstancesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVerifiedAccessInstancesInput) SetDryRun(v bool) *DescribeVerifiedAccessInstancesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVerifiedAccessInstancesInput) SetFilters(v []*Filter) *DescribeVerifiedAccessInstancesInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeVerifiedAccessInstancesInput) SetMaxResults(v int64) *DescribeVerifiedAccessInstancesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessInstancesInput) SetNextToken(v string) *DescribeVerifiedAccessInstancesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceIds sets the VerifiedAccessInstanceIds field's value.
+func (s *DescribeVerifiedAccessInstancesInput) SetVerifiedAccessInstanceIds(v []*string) *DescribeVerifiedAccessInstancesInput {
+	s.VerifiedAccessInstanceIds = v
+	return s
+}
+
+type DescribeVerifiedAccessInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The IDs of the Amazon Web Services Verified Access instances.
+	VerifiedAccessInstances []*VerifiedAccessInstance `locationName:"verifiedAccessInstanceSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessInstancesOutput) SetNextToken(v string) *DescribeVerifiedAccessInstancesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessInstances sets the VerifiedAccessInstances field's value.
+func (s *DescribeVerifiedAccessInstancesOutput) SetVerifiedAccessInstances(v []*VerifiedAccessInstance) *DescribeVerifiedAccessInstancesOutput {
+	s.VerifiedAccessInstances = v
+	return s
+}
+
+type DescribeVerifiedAccessTrustProvidersInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters. Filter names and values are case-sensitive.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `type:"string"`
+
+	// The IDs of the Amazon Web Services Verified Access trust providers.
+	VerifiedAccessTrustProviderIds []*string `locationName:"VerifiedAccessTrustProviderId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessTrustProvidersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessTrustProvidersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVerifiedAccessTrustProvidersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVerifiedAccessTrustProvidersInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVerifiedAccessTrustProvidersInput) SetDryRun(v bool) *DescribeVerifiedAccessTrustProvidersInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVerifiedAccessTrustProvidersInput) SetFilters(v []*Filter) *DescribeVerifiedAccessTrustProvidersInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeVerifiedAccessTrustProvidersInput) SetMaxResults(v int64) *DescribeVerifiedAccessTrustProvidersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessTrustProvidersInput) SetNextToken(v string) *DescribeVerifiedAccessTrustProvidersInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderIds sets the VerifiedAccessTrustProviderIds field's value.
+func (s *DescribeVerifiedAccessTrustProvidersInput) SetVerifiedAccessTrustProviderIds(v []*string) *DescribeVerifiedAccessTrustProvidersInput {
+	s.VerifiedAccessTrustProviderIds = v
+	return s
+}
+
+type DescribeVerifiedAccessTrustProvidersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The IDs of the Amazon Web Services Verified Access trust providers.
+	VerifiedAccessTrustProviders []*VerifiedAccessTrustProvider `locationName:"verifiedAccessTrustProviderSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessTrustProvidersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVerifiedAccessTrustProvidersOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVerifiedAccessTrustProvidersOutput) SetNextToken(v string) *DescribeVerifiedAccessTrustProvidersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviders sets the VerifiedAccessTrustProviders field's value.
+func (s *DescribeVerifiedAccessTrustProvidersOutput) SetVerifiedAccessTrustProviders(v []*VerifiedAccessTrustProvider) *DescribeVerifiedAccessTrustProvidersOutput {
+	s.VerifiedAccessTrustProviders = v
+	return s
+}
+
 type DescribeVolumeAttributeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -99136,20 +105884,16 @@ type DescribeVolumeStatusInput struct {
 	//    | insufficient-data).
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of volume results returned by DescribeVolumeStatus in
-	// paginated output. When this parameter is used, the request only returns MaxResults
-	// results in a single page along with a NextToken response element. The remaining
-	// results of the initial request can be seen by sending another request with
-	// the returned NextToken value. This value can be between 5 and 1,000; if MaxResults
-	// is given a value larger than 1,000, only 1,000 results are returned. If this
-	// parameter is not used, then DescribeVolumeStatus returns all results. You
-	// cannot specify this parameter and the volume IDs parameter in the same request.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. This
+	// value can be between 5 and 1,000; if the value is larger than 1,000, only
+	// 1,000 results are returned. If this parameter is not used, then all items
+	// are returned. You cannot specify this parameter and the volume IDs parameter
+	// in the same request. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The NextToken value to include in a future DescribeVolumeStatus request.
-	// When the results of the request exceed MaxResults, this value can be used
-	// to retrieve the next page of results. This value is null when there are no
-	// more results to return.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The IDs of the volumes.
@@ -99209,8 +105953,8 @@ func (s *DescribeVolumeStatusInput) SetVolumeIds(v []*string) *DescribeVolumeSta
 type DescribeVolumeStatusOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the status of the volumes.
@@ -99306,21 +106050,15 @@ type DescribeVolumesInput struct {
 	//    | sc1| standard)
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of volume results returned by DescribeVolumes in paginated
-	// output. When this parameter is used, DescribeVolumes only returns MaxResults
-	// results in a single page along with a NextToken response element. The remaining
-	// results of the initial request can be seen by sending another DescribeVolumes
-	// request with the returned NextToken value. This value can be between 5 and
-	// 500; if MaxResults is given a value larger than 500, only 500 results are
-	// returned. If this parameter is not used, then DescribeVolumes returns all
-	// results. You cannot specify this parameter and the volume IDs parameter in
-	// the same request.
+	// The maximum number of volumes to return for this request. This value can
+	// be between 5 and 500; if you specify a value larger than 500, only 500 items
+	// are returned. If this parameter is not used, then all items are returned.
+	// You cannot specify this parameter and the volume IDs parameter in the same
+	// request. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" type:"integer"`
 
-	// The NextToken value returned from a previous paginated DescribeVolumes request
-	// where MaxResults was used and the results exceeded the value of that parameter.
-	// Pagination continues from the end of the previous results that returned the
-	// NextToken value. This value is null when there are no more results to return.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned from the previous request.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The volume IDs.
@@ -99415,10 +106153,11 @@ type DescribeVolumesModificationsInput struct {
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// The maximum number of results (up to a limit of 500) to be returned in a
-	// paginated request.
+	// paginated request. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The nextToken value returned by a previous paginated request.
+	// The token returned by a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The IDs of the volumes.
@@ -99476,7 +106215,8 @@ func (s *DescribeVolumesModificationsInput) SetVolumeIds(v []*string) *DescribeV
 type DescribeVolumesModificationsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Token for pagination, null if there are no more results
+	// The token to include in another request to get the next page of items. This
+	// value is null if there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the volume modifications.
@@ -99516,10 +106256,8 @@ func (s *DescribeVolumesModificationsOutput) SetVolumesModifications(v []*Volume
 type DescribeVolumesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The NextToken value to include in a future DescribeVolumes request. When
-	// the results of a DescribeVolumes request exceed MaxResults, this value can
-	// be used to retrieve the next page of results. This value is null when there
-	// are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the volumes.
@@ -99693,11 +106431,13 @@ func (s *DescribeVpcAttributeOutput) SetVpcId(v string) *DescribeVpcAttributeOut
 type DescribeVpcClassicLinkDnsSupportInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `locationName:"maxResults" min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
 	// One or more VPC IDs.
@@ -99759,8 +106499,8 @@ func (s *DescribeVpcClassicLinkDnsSupportInput) SetVpcIds(v []*string) *Describe
 type DescribeVpcClassicLinkDnsSupportOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
 	// Information about the ClassicLink DNS support status of the VPCs.
@@ -99905,7 +106645,7 @@ type DescribeVpcEndpointConnectionNotificationsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more filters.
+	// The filters.
 	//
 	//    * connection-notification-arn - The ARN of the SNS topic for the notification.
 	//
@@ -99980,7 +106720,7 @@ func (s *DescribeVpcEndpointConnectionNotificationsInput) SetNextToken(v string)
 type DescribeVpcEndpointConnectionNotificationsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// One or more notifications.
+	// The notifications.
 	ConnectionNotificationSet []*ConnectionNotification `locationName:"connectionNotificationSet" locationNameList:"item" type:"list"`
 
 	// The token to use to retrieve the next page of results. This value is null
@@ -100027,7 +106767,7 @@ type DescribeVpcEndpointConnectionsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more filters.
+	// The filters.
 	//
 	//    * ip-address-type - The IP address type (ipv4 | ipv6).
 	//
@@ -100102,7 +106842,7 @@ type DescribeVpcEndpointConnectionsOutput struct {
 	// when there are no more results to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	// Information about one or more VPC endpoint connections.
+	// Information about the VPC endpoint connections.
 	VpcEndpointConnections []*VpcEndpointConnection `locationName:"vpcEndpointConnectionSet" locationNameList:"item" type:"list"`
 }
 
@@ -100145,7 +106885,7 @@ type DescribeVpcEndpointServiceConfigurationsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more filters.
+	// The filters.
 	//
 	//    * service-name - The name of the service.
 	//
@@ -100177,7 +106917,7 @@ type DescribeVpcEndpointServiceConfigurationsInput struct {
 	// The token to retrieve the next page of results.
 	NextToken *string `type:"string"`
 
-	// The IDs of one or more services.
+	// The IDs of the endpoint services.
 	ServiceIds []*string `locationName:"ServiceId" locationNameList:"item" type:"list"`
 }
 
@@ -100236,7 +106976,7 @@ type DescribeVpcEndpointServiceConfigurationsOutput struct {
 	// when there are no more results to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	// Information about one or more services.
+	// Information about the services.
 	ServiceConfigurations []*ServiceConfiguration `locationName:"serviceConfigurationSet" locationNameList:"item" type:"list"`
 }
 
@@ -100279,7 +107019,7 @@ type DescribeVpcEndpointServicePermissionsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more filters.
+	// The filters.
 	//
 	//    * principal - The ARN of the principal.
 	//
@@ -100367,7 +107107,7 @@ func (s *DescribeVpcEndpointServicePermissionsInput) SetServiceId(v string) *Des
 type DescribeVpcEndpointServicePermissionsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Information about one or more allowed principals.
+	// Information about the allowed principals.
 	AllowedPrincipals []*AllowedPrincipal `locationName:"allowedPrincipals" locationNameList:"item" type:"list"`
 
 	// The token to use to retrieve the next page of results. This value is null
@@ -100405,7 +107145,6 @@ func (s *DescribeVpcEndpointServicePermissionsOutput) SetNextToken(v string) *De
 	return s
 }
 
-// Contains the parameters for DescribeVpcEndpointServices.
 type DescribeVpcEndpointServicesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -100415,7 +107154,7 @@ type DescribeVpcEndpointServicesInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more filters.
+	// The filters.
 	//
 	//    * owner - The ID or alias of the Amazon Web Services account that owns
 	//    the service.
@@ -100448,7 +107187,7 @@ type DescribeVpcEndpointServicesInput struct {
 	// a prior call.)
 	NextToken *string `type:"string"`
 
-	// One or more service names.
+	// The service names.
 	ServiceNames []*string `locationName:"ServiceName" locationNameList:"item" type:"list"`
 }
 
@@ -100500,7 +107239,6 @@ func (s *DescribeVpcEndpointServicesInput) SetServiceNames(v []*string) *Describ
 	return s
 }
 
-// Contains the output of DescribeVpcEndpointServices.
 type DescribeVpcEndpointServicesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -100511,7 +107249,7 @@ type DescribeVpcEndpointServicesOutput struct {
 	// Information about the service.
 	ServiceDetails []*ServiceDetail `locationName:"serviceDetailSet" locationNameList:"item" type:"list"`
 
-	// A list of supported services.
+	// The supported services.
 	ServiceNames []*string `locationName:"serviceNameSet" locationNameList:"item" type:"list"`
 }
 
@@ -100551,7 +107289,6 @@ func (s *DescribeVpcEndpointServicesOutput) SetServiceNames(v []*string) *Descri
 	return s
 }
 
-// Contains the parameters for DescribeVpcEndpoints.
 type DescribeVpcEndpointsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -100561,7 +107298,7 @@ type DescribeVpcEndpointsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// One or more filters.
+	// The filters.
 	//
 	//    * ip-address-type - The IP address type (ipv4 | ipv6).
 	//
@@ -100599,7 +107336,7 @@ type DescribeVpcEndpointsInput struct {
 	// a prior call.)
 	NextToken *string `type:"string"`
 
-	// One or more endpoint IDs.
+	// The IDs of the VPC endpoints.
 	VpcEndpointIds []*string `locationName:"VpcEndpointId" locationNameList:"item" type:"list"`
 }
 
@@ -100651,7 +107388,6 @@ func (s *DescribeVpcEndpointsInput) SetVpcEndpointIds(v []*string) *DescribeVpcE
 	return s
 }
 
-// Contains the output of DescribeVpcEndpoints.
 type DescribeVpcEndpointsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -100740,11 +107476,13 @@ type DescribeVpcPeeringConnectionsInput struct {
 	//    * vpc-peering-connection-id - The ID of the VPC peering connection.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// One or more VPC peering connection IDs.
@@ -100817,8 +107555,8 @@ func (s *DescribeVpcPeeringConnectionsInput) SetVpcPeeringConnectionIds(v []*str
 type DescribeVpcPeeringConnectionsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the VPC peering connections.
@@ -100913,11 +107651,13 @@ type DescribeVpcsInput struct {
 	//    * vpc-id - The ID of the VPC.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// One or more VPC IDs.
@@ -100990,8 +107730,8 @@ func (s *DescribeVpcsInput) SetVpcIds(v []*string) *DescribeVpcsInput {
 type DescribeVpcsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about one or more VPCs.
@@ -101674,6 +108414,129 @@ func (s DetachNetworkInterfaceOutput) GoString() string {
 	return s.String()
 }
 
+type DetachVerifiedAccessTrustProviderInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	//
+	// VerifiedAccessInstanceId is a required field
+	VerifiedAccessInstanceId *string `type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	//
+	// VerifiedAccessTrustProviderId is a required field
+	VerifiedAccessTrustProviderId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachVerifiedAccessTrustProviderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachVerifiedAccessTrustProviderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachVerifiedAccessTrustProviderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachVerifiedAccessTrustProviderInput"}
+	if s.VerifiedAccessInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessInstanceId"))
+	}
+	if s.VerifiedAccessTrustProviderId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessTrustProviderId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DetachVerifiedAccessTrustProviderInput) SetClientToken(v string) *DetachVerifiedAccessTrustProviderInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DetachVerifiedAccessTrustProviderInput) SetDryRun(v bool) *DetachVerifiedAccessTrustProviderInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *DetachVerifiedAccessTrustProviderInput) SetVerifiedAccessInstanceId(v string) *DetachVerifiedAccessTrustProviderInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderId sets the VerifiedAccessTrustProviderId field's value.
+func (s *DetachVerifiedAccessTrustProviderInput) SetVerifiedAccessTrustProviderId(v string) *DetachVerifiedAccessTrustProviderInput {
+	s.VerifiedAccessTrustProviderId = &v
+	return s
+}
+
+type DetachVerifiedAccessTrustProviderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstance *VerifiedAccessInstance `locationName:"verifiedAccessInstance" type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	VerifiedAccessTrustProvider *VerifiedAccessTrustProvider `locationName:"verifiedAccessTrustProvider" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachVerifiedAccessTrustProviderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachVerifiedAccessTrustProviderOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessInstance sets the VerifiedAccessInstance field's value.
+func (s *DetachVerifiedAccessTrustProviderOutput) SetVerifiedAccessInstance(v *VerifiedAccessInstance) *DetachVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessInstance = v
+	return s
+}
+
+// SetVerifiedAccessTrustProvider sets the VerifiedAccessTrustProvider field's value.
+func (s *DetachVerifiedAccessTrustProviderOutput) SetVerifiedAccessTrustProvider(v *VerifiedAccessTrustProvider) *DetachVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessTrustProvider = v
+	return s
+}
+
 type DetachVolumeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -101859,6 +108722,39 @@ func (s DetachVpnGatewayOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DetachVpnGatewayOutput) GoString() string {
 	return s.String()
+}
+
+// Options for an Amazon Web Services Verified Access device-identity based
+// trust provider.
+type DeviceOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the tenant application with the device-identity provider.
+	TenantId *string `locationName:"tenantId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeviceOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeviceOptions) GoString() string {
+	return s.String()
+}
+
+// SetTenantId sets the TenantId field's value.
+func (s *DeviceOptions) SetTenantId(v string) *DeviceOptions {
+	s.TenantId = &v
+	return s
 }
 
 // Describes a DHCP configuration option.
@@ -102362,7 +109258,8 @@ type DisableFastLaunchOutput struct {
 	// snapshots.
 	LaunchTemplate *FastLaunchLaunchTemplateSpecificationResponse `locationName:"launchTemplate" type:"structure"`
 
-	// The maximum number of parallel instances to launch for creating resources.
+	// The maximum number of instances that Amazon EC2 can launch at the same time
+	// to create pre-provisioned snapshots for Windows faster launching.
 	MaxParallelLaunches *int64 `locationName:"maxParallelLaunches" type:"integer"`
 
 	// The owner of the Windows AMI for which faster launching was turned off.
@@ -103615,7 +110512,9 @@ type DisassociateEnclaveCertificateIamRoleInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the ACM certificate from which to disassociate the IAM role.
-	CertificateArn *string `min:"1" type:"string"`
+	//
+	// CertificateArn is a required field
+	CertificateArn *string `type:"string" required:"true"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -103624,7 +110523,9 @@ type DisassociateEnclaveCertificateIamRoleInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// The ARN of the IAM role to disassociate.
-	RoleArn *string `min:"1" type:"string"`
+	//
+	// RoleArn is a required field
+	RoleArn *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -103648,11 +110549,11 @@ func (s DisassociateEnclaveCertificateIamRoleInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *DisassociateEnclaveCertificateIamRoleInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DisassociateEnclaveCertificateIamRoleInput"}
-	if s.CertificateArn != nil && len(*s.CertificateArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("CertificateArn", 1))
+	if s.CertificateArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CertificateArn"))
 	}
-	if s.RoleArn != nil && len(*s.RoleArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 1))
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -103890,6 +110791,221 @@ func (s *DisassociateInstanceEventWindowOutput) SetInstanceEventWindow(v *Instan
 	return s
 }
 
+type DisassociateIpamResourceDiscoveryInput struct {
+	_ struct{} `type:"structure"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// A resource discovery association ID.
+	//
+	// IpamResourceDiscoveryAssociationId is a required field
+	IpamResourceDiscoveryAssociationId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpamResourceDiscoveryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpamResourceDiscoveryInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateIpamResourceDiscoveryInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateIpamResourceDiscoveryInput"}
+	if s.IpamResourceDiscoveryAssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamResourceDiscoveryAssociationId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DisassociateIpamResourceDiscoveryInput) SetDryRun(v bool) *DisassociateIpamResourceDiscoveryInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryAssociationId sets the IpamResourceDiscoveryAssociationId field's value.
+func (s *DisassociateIpamResourceDiscoveryInput) SetIpamResourceDiscoveryAssociationId(v string) *DisassociateIpamResourceDiscoveryInput {
+	s.IpamResourceDiscoveryAssociationId = &v
+	return s
+}
+
+type DisassociateIpamResourceDiscoveryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A resource discovery association.
+	IpamResourceDiscoveryAssociation *IpamResourceDiscoveryAssociation `locationName:"ipamResourceDiscoveryAssociation" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpamResourceDiscoveryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpamResourceDiscoveryOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscoveryAssociation sets the IpamResourceDiscoveryAssociation field's value.
+func (s *DisassociateIpamResourceDiscoveryOutput) SetIpamResourceDiscoveryAssociation(v *IpamResourceDiscoveryAssociation) *DisassociateIpamResourceDiscoveryOutput {
+	s.IpamResourceDiscoveryAssociation = v
+	return s
+}
+
+type DisassociateNatGatewayAddressInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association IDs of EIPs that have been associated with the NAT gateway.
+	//
+	// AssociationIds is a required field
+	AssociationIds []*string `locationName:"AssociationId" locationNameList:"item" type:"list" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The maximum amount of time to wait (in seconds) before forcibly releasing
+	// the IP addresses if connections are still in progress. Default value is 350
+	// seconds.
+	MaxDrainDurationSeconds *int64 `min:"1" type:"integer"`
+
+	// The NAT gateway ID.
+	//
+	// NatGatewayId is a required field
+	NatGatewayId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateNatGatewayAddressInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateNatGatewayAddressInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateNatGatewayAddressInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateNatGatewayAddressInput"}
+	if s.AssociationIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationIds"))
+	}
+	if s.MaxDrainDurationSeconds != nil && *s.MaxDrainDurationSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxDrainDurationSeconds", 1))
+	}
+	if s.NatGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NatGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationIds sets the AssociationIds field's value.
+func (s *DisassociateNatGatewayAddressInput) SetAssociationIds(v []*string) *DisassociateNatGatewayAddressInput {
+	s.AssociationIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DisassociateNatGatewayAddressInput) SetDryRun(v bool) *DisassociateNatGatewayAddressInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetMaxDrainDurationSeconds sets the MaxDrainDurationSeconds field's value.
+func (s *DisassociateNatGatewayAddressInput) SetMaxDrainDurationSeconds(v int64) *DisassociateNatGatewayAddressInput {
+	s.MaxDrainDurationSeconds = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *DisassociateNatGatewayAddressInput) SetNatGatewayId(v string) *DisassociateNatGatewayAddressInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+type DisassociateNatGatewayAddressOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the NAT gateway IP addresses.
+	NatGatewayAddresses []*NatGatewayAddress `locationName:"natGatewayAddressSet" locationNameList:"item" type:"list"`
+
+	// The NAT gateway ID.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateNatGatewayAddressOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateNatGatewayAddressOutput) GoString() string {
+	return s.String()
+}
+
+// SetNatGatewayAddresses sets the NatGatewayAddresses field's value.
+func (s *DisassociateNatGatewayAddressOutput) SetNatGatewayAddresses(v []*NatGatewayAddress) *DisassociateNatGatewayAddressOutput {
+	s.NatGatewayAddresses = v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *DisassociateNatGatewayAddressOutput) SetNatGatewayId(v string) *DisassociateNatGatewayAddressOutput {
+	s.NatGatewayId = &v
+	return s
+}
+
 type DisassociateRouteTableInput struct {
 	_ struct{} `type:"structure"`
 
@@ -104067,13 +111183,19 @@ type DisassociateTransitGatewayMulticastDomainInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// The IDs of the subnets;
-	SubnetIds []*string `locationNameList:"item" type:"list"`
+	//
+	// SubnetIds is a required field
+	SubnetIds []*string `locationNameList:"item" type:"list" required:"true"`
 
 	// The ID of the attachment.
-	TransitGatewayAttachmentId *string `type:"string"`
+	//
+	// TransitGatewayAttachmentId is a required field
+	TransitGatewayAttachmentId *string `type:"string" required:"true"`
 
 	// The ID of the transit gateway multicast domain.
-	TransitGatewayMulticastDomainId *string `type:"string"`
+	//
+	// TransitGatewayMulticastDomainId is a required field
+	TransitGatewayMulticastDomainId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -104092,6 +111214,25 @@ func (s DisassociateTransitGatewayMulticastDomainInput) String() string {
 // value will be replaced with "sensitive".
 func (s DisassociateTransitGatewayMulticastDomainInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateTransitGatewayMulticastDomainInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateTransitGatewayMulticastDomainInput"}
+	if s.SubnetIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetIds"))
+	}
+	if s.TransitGatewayAttachmentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayAttachmentId"))
+	}
+	if s.TransitGatewayMulticastDomainId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayMulticastDomainId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -104719,8 +111860,12 @@ type DiskImageDetail struct {
 	// For information about the import manifest referenced by this API action,
 	// see VM Import Manifest (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/manifest.html).
 	//
+	// ImportManifestUrl is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by DiskImageDetail's
+	// String and GoString methods.
+	//
 	// ImportManifestUrl is a required field
-	ImportManifestUrl *string `locationName:"importManifestUrl" type:"string" required:"true"`
+	ImportManifestUrl *string `locationName:"importManifestUrl" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -104916,6 +112061,9 @@ type DnsOptions struct {
 
 	// The DNS records created for the endpoint.
 	DnsRecordIpType *string `locationName:"dnsRecordIpType" type:"string" enum:"DnsRecordIpType"`
+
+	// Indicates whether to enable private DNS only for inbound endpoints.
+	PrivateDnsOnlyForInboundResolverEndpoint *bool `locationName:"privateDnsOnlyForInboundResolverEndpoint" type:"boolean"`
 }
 
 // String returns the string representation.
@@ -104942,12 +112090,24 @@ func (s *DnsOptions) SetDnsRecordIpType(v string) *DnsOptions {
 	return s
 }
 
+// SetPrivateDnsOnlyForInboundResolverEndpoint sets the PrivateDnsOnlyForInboundResolverEndpoint field's value.
+func (s *DnsOptions) SetPrivateDnsOnlyForInboundResolverEndpoint(v bool) *DnsOptions {
+	s.PrivateDnsOnlyForInboundResolverEndpoint = &v
+	return s
+}
+
 // Describes the DNS options for an endpoint.
 type DnsOptionsSpecification struct {
 	_ struct{} `type:"structure"`
 
 	// The DNS records created for the endpoint.
 	DnsRecordIpType *string `type:"string" enum:"DnsRecordIpType"`
+
+	// Indicates whether to enable private DNS only for inbound endpoints. This
+	// option is available only for services that support both gateway and interface
+	// endpoints. It routes traffic that originates from the VPC to the gateway
+	// endpoint and traffic that originates from on-premises to the interface endpoint.
+	PrivateDnsOnlyForInboundResolverEndpoint *bool `type:"boolean"`
 }
 
 // String returns the string representation.
@@ -104971,6 +112131,12 @@ func (s DnsOptionsSpecification) GoString() string {
 // SetDnsRecordIpType sets the DnsRecordIpType field's value.
 func (s *DnsOptionsSpecification) SetDnsRecordIpType(v string) *DnsOptionsSpecification {
 	s.DnsRecordIpType = &v
+	return s
+}
+
+// SetPrivateDnsOnlyForInboundResolverEndpoint sets the PrivateDnsOnlyForInboundResolverEndpoint field's value.
+func (s *DnsOptionsSpecification) SetPrivateDnsOnlyForInboundResolverEndpoint(v bool) *DnsOptionsSpecification {
+	s.PrivateDnsOnlyForInboundResolverEndpoint = &v
 	return s
 }
 
@@ -105040,7 +112206,32 @@ type EbsBlockDevice struct {
 	// Encrypted volumes can only be attached to instances that support Amazon EBS
 	// encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
 	//
-	// This parameter is not returned by DescribeImageAttribute (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImageAttribute.html).
+	// This parameter is not returned by DescribeImageAttribute.
+	//
+	// For CreateImage and RegisterImage, whether you can include this parameter,
+	// and the allowed values differ depending on the type of block device mapping
+	// you are creating.
+	//
+	//    * If you are creating a block device mapping for a new (empty) volume,
+	//    you can include this parameter, and specify either true for an encrypted
+	//    volume, or false for an unencrypted volume. If you omit this parameter,
+	//    it defaults to false (unencrypted).
+	//
+	//    * If you are creating a block device mapping from an existing encrypted
+	//    or unencrypted snapshot, you must omit this parameter. If you include
+	//    this parameter, the request will fail, regardless of the value that you
+	//    specify.
+	//
+	//    * If you are creating a block device mapping from an existing unencrypted
+	//    volume, you can include this parameter, but you must specify false. If
+	//    you specify true, the request will fail. In this case, we recommend that
+	//    you omit the parameter.
+	//
+	//    * If you are creating a block device mapping from an existing encrypted
+	//    volume, you can include this parameter, and specify either true or false.
+	//    However, if you specify false, the parameter is ignored and the block
+	//    device mapping is always encrypted. In this case, we recommend that you
+	//    omit the parameter.
 	Encrypted *bool `locationName:"encrypted" type:"boolean"`
 
 	// The number of I/O operations per second (IOPS). For gp3, io1, and io2 volumes,
@@ -106273,8 +113464,9 @@ type EnableFastLaunchInput struct {
 	// the launch template, but not both.
 	LaunchTemplate *FastLaunchLaunchTemplateSpecificationRequest `type:"structure"`
 
-	// The maximum number of parallel instances to launch for creating resources.
-	// Value must be 6 or greater.
+	// The maximum number of instances that Amazon EC2 can launch at the same time
+	// to create pre-provisioned snapshots for Windows faster launching. Value must
+	// be 6 or greater.
 	MaxParallelLaunches *int64 `type:"integer"`
 
 	// The type of resource to use for pre-provisioning the Windows AMI for faster
@@ -106370,7 +113562,8 @@ type EnableFastLaunchOutput struct {
 	// snapshots.
 	LaunchTemplate *FastLaunchLaunchTemplateSpecificationResponse `locationName:"launchTemplate" type:"structure"`
 
-	// The maximum number of parallel instances to launch for creating resources.
+	// The maximum number of instances that Amazon EC2 can launch at the same time
+	// to create pre-provisioned snapshots for Windows faster launching.
 	MaxParallelLaunches *int64 `locationName:"maxParallelLaunches" type:"integer"`
 
 	// The owner ID for the Windows AMI for which faster launching was enabled.
@@ -106380,9 +113573,9 @@ type EnableFastLaunchOutput struct {
 	// for faster launching.
 	ResourceType *string `locationName:"resourceType" type:"string" enum:"FastLaunchResourceType"`
 
-	// The configuration settings that were defined for creating and managing the
-	// pre-provisioned snapshots for faster launching of the Windows AMI. This property
-	// is returned when the associated resourceType is snapshot.
+	// Settings to create and manage the pre-provisioned snapshots that Amazon EC2
+	// uses for faster launches from the Windows AMI. This property is returned
+	// when the associated resourceType is snapshot.
 	SnapshotConfiguration *FastLaunchSnapshotConfigurationResponse `locationName:"snapshotConfiguration" type:"structure"`
 
 	// The current state of faster launching for the specified Windows AMI.
@@ -107039,6 +114232,10 @@ func (s *EnableIpamOrganizationAdminAccountOutput) SetSuccess(v bool) *EnableIpa
 type EnableReachabilityAnalyzerOrganizationSharingInput struct {
 	_ struct{} `type:"structure"`
 
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 }
 
@@ -107069,6 +114266,7 @@ func (s *EnableReachabilityAnalyzerOrganizationSharingInput) SetDryRun(v bool) *
 type EnableReachabilityAnalyzerOrganizationSharingOutput struct {
 	_ struct{} `type:"structure"`
 
+	// Returns true if the request succeeds; otherwise, returns an error.
 	ReturnValue *bool `locationName:"returnValue" type:"boolean"`
 }
 
@@ -107859,6 +115057,12 @@ type Explanation struct {
 	// The explanation code.
 	ExplanationCode *string `locationName:"explanationCode" type:"string"`
 
+	// The Network Firewall stateful rule.
+	FirewallStatefulRule *FirewallStatefulRule `locationName:"firewallStatefulRule" type:"structure"`
+
+	// The Network Firewall stateless rule.
+	FirewallStatelessRule *FirewallStatelessRule `locationName:"firewallStatelessRule" type:"structure"`
+
 	// The route table.
 	IngressRouteTable *AnalysisComponent `locationName:"ingressRouteTable" type:"structure"`
 
@@ -108079,6 +115283,18 @@ func (s *Explanation) SetElasticLoadBalancerListener(v *AnalysisComponent) *Expl
 // SetExplanationCode sets the ExplanationCode field's value.
 func (s *Explanation) SetExplanationCode(v string) *Explanation {
 	s.ExplanationCode = &v
+	return s
+}
+
+// SetFirewallStatefulRule sets the FirewallStatefulRule field's value.
+func (s *Explanation) SetFirewallStatefulRule(v *FirewallStatefulRule) *Explanation {
+	s.FirewallStatefulRule = v
+	return s
+}
+
+// SetFirewallStatelessRule sets the FirewallStatelessRule field's value.
+func (s *Explanation) SetFirewallStatelessRule(v *FirewallStatelessRule) *Explanation {
+	s.FirewallStatelessRule = v
 	return s
 }
 
@@ -109667,6 +116883,237 @@ func (s *Filter) SetValues(v []*string) *Filter {
 	return s
 }
 
+// Describes a port range.
+type FilterPortRange struct {
+	_ struct{} `type:"structure"`
+
+	// The first port in the range.
+	FromPort *int64 `locationName:"fromPort" type:"integer"`
+
+	// The last port in the range.
+	ToPort *int64 `locationName:"toPort" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FilterPortRange) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FilterPortRange) GoString() string {
+	return s.String()
+}
+
+// SetFromPort sets the FromPort field's value.
+func (s *FilterPortRange) SetFromPort(v int64) *FilterPortRange {
+	s.FromPort = &v
+	return s
+}
+
+// SetToPort sets the ToPort field's value.
+func (s *FilterPortRange) SetToPort(v int64) *FilterPortRange {
+	s.ToPort = &v
+	return s
+}
+
+// Describes a stateful rule.
+type FirewallStatefulRule struct {
+	_ struct{} `type:"structure"`
+
+	// The destination ports.
+	DestinationPorts []*PortRange `locationName:"destinationPortSet" locationNameList:"item" type:"list"`
+
+	// The destination IP addresses, in CIDR notation.
+	Destinations []*string `locationName:"destinationSet" locationNameList:"item" type:"list"`
+
+	// The direction. The possible values are FORWARD and ANY.
+	Direction *string `locationName:"direction" type:"string"`
+
+	// The protocol.
+	Protocol *string `locationName:"protocol" type:"string"`
+
+	// The rule action. The possible values are pass, drop, and alert.
+	RuleAction *string `locationName:"ruleAction" type:"string"`
+
+	// The ARN of the stateful rule group.
+	RuleGroupArn *string `locationName:"ruleGroupArn" min:"1" type:"string"`
+
+	// The source ports.
+	SourcePorts []*PortRange `locationName:"sourcePortSet" locationNameList:"item" type:"list"`
+
+	// The source IP addresses, in CIDR notation.
+	Sources []*string `locationName:"sourceSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FirewallStatefulRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FirewallStatefulRule) GoString() string {
+	return s.String()
+}
+
+// SetDestinationPorts sets the DestinationPorts field's value.
+func (s *FirewallStatefulRule) SetDestinationPorts(v []*PortRange) *FirewallStatefulRule {
+	s.DestinationPorts = v
+	return s
+}
+
+// SetDestinations sets the Destinations field's value.
+func (s *FirewallStatefulRule) SetDestinations(v []*string) *FirewallStatefulRule {
+	s.Destinations = v
+	return s
+}
+
+// SetDirection sets the Direction field's value.
+func (s *FirewallStatefulRule) SetDirection(v string) *FirewallStatefulRule {
+	s.Direction = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *FirewallStatefulRule) SetProtocol(v string) *FirewallStatefulRule {
+	s.Protocol = &v
+	return s
+}
+
+// SetRuleAction sets the RuleAction field's value.
+func (s *FirewallStatefulRule) SetRuleAction(v string) *FirewallStatefulRule {
+	s.RuleAction = &v
+	return s
+}
+
+// SetRuleGroupArn sets the RuleGroupArn field's value.
+func (s *FirewallStatefulRule) SetRuleGroupArn(v string) *FirewallStatefulRule {
+	s.RuleGroupArn = &v
+	return s
+}
+
+// SetSourcePorts sets the SourcePorts field's value.
+func (s *FirewallStatefulRule) SetSourcePorts(v []*PortRange) *FirewallStatefulRule {
+	s.SourcePorts = v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *FirewallStatefulRule) SetSources(v []*string) *FirewallStatefulRule {
+	s.Sources = v
+	return s
+}
+
+// Describes a stateless rule.
+type FirewallStatelessRule struct {
+	_ struct{} `type:"structure"`
+
+	// The destination ports.
+	DestinationPorts []*PortRange `locationName:"destinationPortSet" locationNameList:"item" type:"list"`
+
+	// The destination IP addresses, in CIDR notation.
+	Destinations []*string `locationName:"destinationSet" locationNameList:"item" type:"list"`
+
+	// The rule priority.
+	Priority *int64 `locationName:"priority" type:"integer"`
+
+	// The protocols.
+	Protocols []*int64 `locationName:"protocolSet" locationNameList:"item" type:"list"`
+
+	// The rule action. The possible values are pass, drop, and forward_to_site.
+	RuleAction *string `locationName:"ruleAction" type:"string"`
+
+	// The ARN of the stateless rule group.
+	RuleGroupArn *string `locationName:"ruleGroupArn" min:"1" type:"string"`
+
+	// The source ports.
+	SourcePorts []*PortRange `locationName:"sourcePortSet" locationNameList:"item" type:"list"`
+
+	// The source IP addresses, in CIDR notation.
+	Sources []*string `locationName:"sourceSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FirewallStatelessRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FirewallStatelessRule) GoString() string {
+	return s.String()
+}
+
+// SetDestinationPorts sets the DestinationPorts field's value.
+func (s *FirewallStatelessRule) SetDestinationPorts(v []*PortRange) *FirewallStatelessRule {
+	s.DestinationPorts = v
+	return s
+}
+
+// SetDestinations sets the Destinations field's value.
+func (s *FirewallStatelessRule) SetDestinations(v []*string) *FirewallStatelessRule {
+	s.Destinations = v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *FirewallStatelessRule) SetPriority(v int64) *FirewallStatelessRule {
+	s.Priority = &v
+	return s
+}
+
+// SetProtocols sets the Protocols field's value.
+func (s *FirewallStatelessRule) SetProtocols(v []*int64) *FirewallStatelessRule {
+	s.Protocols = v
+	return s
+}
+
+// SetRuleAction sets the RuleAction field's value.
+func (s *FirewallStatelessRule) SetRuleAction(v string) *FirewallStatelessRule {
+	s.RuleAction = &v
+	return s
+}
+
+// SetRuleGroupArn sets the RuleGroupArn field's value.
+func (s *FirewallStatelessRule) SetRuleGroupArn(v string) *FirewallStatelessRule {
+	s.RuleGroupArn = &v
+	return s
+}
+
+// SetSourcePorts sets the SourcePorts field's value.
+func (s *FirewallStatelessRule) SetSourcePorts(v []*PortRange) *FirewallStatelessRule {
+	s.SourcePorts = v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *FirewallStatelessRule) SetSources(v []*string) *FirewallStatelessRule {
+	s.Sources = v
+	return s
+}
+
 // Information about a Capacity Reservation in a Capacity Reservation Fleet.
 type FleetCapacityReservation struct {
 	_ struct{} `type:"structure"`
@@ -109828,6 +117275,8 @@ type FleetData struct {
 
 	// Indicates whether running instances should be terminated if the target capacity
 	// of the EC2 Fleet is decreased below the current size of the EC2 Fleet.
+	//
+	// Supported only for fleets of type maintain.
 	ExcessCapacityTerminationPolicy *string `locationName:"excessCapacityTerminationPolicy" type:"string" enum:"FleetExcessCapacityTerminationPolicy"`
 
 	// The ID of the EC2 Fleet.
@@ -110173,6 +117622,8 @@ type FleetLaunchTemplateOverrides struct {
 
 	// The instance type.
 	//
+	// mac1.metal is not supported as a launch template override.
+	//
 	// If you specify InstanceType, you can't specify InstanceRequirements.
 	InstanceType *string `locationName:"instanceType" type:"string" enum:"InstanceType"`
 
@@ -110302,6 +117753,8 @@ type FleetLaunchTemplateOverridesRequest struct {
 	InstanceRequirements *InstanceRequirementsRequest `type:"structure"`
 
 	// The instance type.
+	//
+	// mac1.metal is not supported as a launch template override.
 	//
 	// If you specify InstanceType, you can't specify InstanceRequirements.
 	InstanceType *string `type:"string" enum:"InstanceType"`
@@ -111076,6 +118529,9 @@ type FpgaImage struct {
 	// The FPGA image identifier (AFI ID).
 	FpgaImageId *string `locationName:"fpgaImageId" type:"string"`
 
+	// The instance types supported by the AFI.
+	InstanceTypes []*string `locationName:"instanceTypes" locationNameList:"item" type:"list"`
+
 	// The name of the AFI.
 	Name *string `locationName:"name" type:"string"`
 
@@ -111153,6 +118609,12 @@ func (s *FpgaImage) SetFpgaImageGlobalId(v string) *FpgaImage {
 // SetFpgaImageId sets the FpgaImageId field's value.
 func (s *FpgaImage) SetFpgaImageId(v string) *FpgaImage {
 	s.FpgaImageId = &v
+	return s
+}
+
+// SetInstanceTypes sets the InstanceTypes field's value.
+func (s *FpgaImage) SetInstanceTypes(v []*string) *FpgaImage {
+	s.InstanceTypes = v
 	return s
 }
 
@@ -111380,7 +118842,9 @@ type GetAssociatedEnclaveCertificateIamRolesInput struct {
 
 	// The ARN of the ACM certificate for which to view the associated IAM roles,
 	// encryption keys, and Amazon S3 object information.
-	CertificateArn *string `min:"1" type:"string"`
+	//
+	// CertificateArn is a required field
+	CertificateArn *string `type:"string" required:"true"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -111410,8 +118874,8 @@ func (s GetAssociatedEnclaveCertificateIamRolesInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *GetAssociatedEnclaveCertificateIamRolesInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetAssociatedEnclaveCertificateIamRolesInput"}
-	if s.CertificateArn != nil && len(*s.CertificateArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("CertificateArn", 1))
+	if s.CertificateArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CertificateArn"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -112616,7 +120080,9 @@ func (s *GetFlowLogsIntegrationTemplateOutput) SetResult(v string) *GetFlowLogsI
 type GetGroupsForCapacityReservationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the Capacity Reservation.
+	// The ID of the Capacity Reservation. If you specify a Capacity Reservation
+	// that is shared with you, the operation returns only Capacity Reservation
+	// groups that you own.
 	//
 	// CapacityReservationId is a required field
 	CapacityReservationId *string `type:"string" required:"true"`
@@ -112876,12 +120342,13 @@ type GetInstanceTypesFromInstanceRequirementsInput struct {
 	// InstanceRequirements is a required field
 	InstanceRequirements *InstanceRequirementsRequest `type:"structure" required:"true"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The virtualization type.
@@ -112974,7 +120441,8 @@ type GetInstanceTypesFromInstanceRequirementsOutput struct {
 	// The instance types with the specified instance attributes.
 	InstanceTypes []*InstanceTypeInfoFromInstanceRequirements `locationName:"instanceTypeSet" locationNameList:"item" type:"list"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -113270,6 +120738,295 @@ func (s *GetIpamAddressHistoryOutput) SetHistoryRecords(v []*IpamAddressHistoryR
 
 // SetNextToken sets the NextToken field's value.
 func (s *GetIpamAddressHistoryOutput) SetNextToken(v string) *GetIpamAddressHistoryOutput {
+	s.NextToken = &v
+	return s
+}
+
+type GetIpamDiscoveredAccountsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services Region that the account information is returned from.
+	//
+	// DiscoveryRegion is a required field
+	DiscoveryRegion *string `type:"string" required:"true"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// Discovered account filters.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// A resource discovery ID.
+	//
+	// IpamResourceDiscoveryId is a required field
+	IpamResourceDiscoveryId *string `type:"string" required:"true"`
+
+	// The maximum number of discovered accounts to return in one page of results.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredAccountsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredAccountsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetIpamDiscoveredAccountsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetIpamDiscoveredAccountsInput"}
+	if s.DiscoveryRegion == nil {
+		invalidParams.Add(request.NewErrParamRequired("DiscoveryRegion"))
+	}
+	if s.IpamResourceDiscoveryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamResourceDiscoveryId"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDiscoveryRegion sets the DiscoveryRegion field's value.
+func (s *GetIpamDiscoveredAccountsInput) SetDiscoveryRegion(v string) *GetIpamDiscoveredAccountsInput {
+	s.DiscoveryRegion = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GetIpamDiscoveredAccountsInput) SetDryRun(v bool) *GetIpamDiscoveredAccountsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *GetIpamDiscoveredAccountsInput) SetFilters(v []*Filter) *GetIpamDiscoveredAccountsInput {
+	s.Filters = v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *GetIpamDiscoveredAccountsInput) SetIpamResourceDiscoveryId(v string) *GetIpamDiscoveredAccountsInput {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetIpamDiscoveredAccountsInput) SetMaxResults(v int64) *GetIpamDiscoveredAccountsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetIpamDiscoveredAccountsInput) SetNextToken(v string) *GetIpamDiscoveredAccountsInput {
+	s.NextToken = &v
+	return s
+}
+
+type GetIpamDiscoveredAccountsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Discovered accounts.
+	IpamDiscoveredAccounts []*IpamDiscoveredAccount `locationName:"ipamDiscoveredAccountSet" locationNameList:"item" type:"list"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredAccountsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredAccountsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamDiscoveredAccounts sets the IpamDiscoveredAccounts field's value.
+func (s *GetIpamDiscoveredAccountsOutput) SetIpamDiscoveredAccounts(v []*IpamDiscoveredAccount) *GetIpamDiscoveredAccountsOutput {
+	s.IpamDiscoveredAccounts = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetIpamDiscoveredAccountsOutput) SetNextToken(v string) *GetIpamDiscoveredAccountsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type GetIpamDiscoveredResourceCidrsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// Filters.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// A resource discovery ID.
+	//
+	// IpamResourceDiscoveryId is a required field
+	IpamResourceDiscoveryId *string `type:"string" required:"true"`
+
+	// The maximum number of discovered resource CIDRs to return in one page of
+	// results.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `type:"string"`
+
+	// A resource Region.
+	//
+	// ResourceRegion is a required field
+	ResourceRegion *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredResourceCidrsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredResourceCidrsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetIpamDiscoveredResourceCidrsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetIpamDiscoveredResourceCidrsInput"}
+	if s.IpamResourceDiscoveryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamResourceDiscoveryId"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+	if s.ResourceRegion == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceRegion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GetIpamDiscoveredResourceCidrsInput) SetDryRun(v bool) *GetIpamDiscoveredResourceCidrsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *GetIpamDiscoveredResourceCidrsInput) SetFilters(v []*Filter) *GetIpamDiscoveredResourceCidrsInput {
+	s.Filters = v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *GetIpamDiscoveredResourceCidrsInput) SetIpamResourceDiscoveryId(v string) *GetIpamDiscoveredResourceCidrsInput {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetIpamDiscoveredResourceCidrsInput) SetMaxResults(v int64) *GetIpamDiscoveredResourceCidrsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetIpamDiscoveredResourceCidrsInput) SetNextToken(v string) *GetIpamDiscoveredResourceCidrsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceRegion sets the ResourceRegion field's value.
+func (s *GetIpamDiscoveredResourceCidrsInput) SetResourceRegion(v string) *GetIpamDiscoveredResourceCidrsInput {
+	s.ResourceRegion = &v
+	return s
+}
+
+type GetIpamDiscoveredResourceCidrsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Discovered resource CIDRs.
+	IpamDiscoveredResourceCidrs []*IpamDiscoveredResourceCidr `locationName:"ipamDiscoveredResourceCidrSet" locationNameList:"item" type:"list"`
+
+	// Specify the pagination token from a previous request to retrieve the next
+	// page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredResourceCidrsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpamDiscoveredResourceCidrsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamDiscoveredResourceCidrs sets the IpamDiscoveredResourceCidrs field's value.
+func (s *GetIpamDiscoveredResourceCidrsOutput) SetIpamDiscoveredResourceCidrs(v []*IpamDiscoveredResourceCidr) *GetIpamDiscoveredResourceCidrsOutput {
+	s.IpamDiscoveredResourceCidrs = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetIpamDiscoveredResourceCidrsOutput) SetNextToken(v string) *GetIpamDiscoveredResourceCidrsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -114668,12 +122425,13 @@ type GetSpotPlacementScoresInput struct {
 	// If you specify InstanceTypes, you can't specify InstanceRequirementsWithMetadata.
 	InstanceTypes []*string `locationName:"InstanceType" type:"list"`
 
-	// The maximum number of results to return in a single call. Specify a value
-	// between 1 and 1000. The default value is 1000. To retrieve the remaining
-	// results, make another call with the returned NextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"10" type:"integer"`
 
-	// The token for the next set of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The Regions used to narrow down the list of Regions to be scored. Enter the
@@ -114797,7 +122555,8 @@ func (s *GetSpotPlacementScoresInput) SetTargetCapacityUnitType(v string) *GetSp
 type GetSpotPlacementScoresOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token for the next set of results.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The Spot placement score for the top 10 Regions or Availability Zones, scored
@@ -115168,7 +122927,9 @@ type GetTransitGatewayMulticastDomainAssociationsInput struct {
 	NextToken *string `type:"string"`
 
 	// The ID of the transit gateway multicast domain.
-	TransitGatewayMulticastDomainId *string `type:"string"`
+	//
+	// TransitGatewayMulticastDomainId is a required field
+	TransitGatewayMulticastDomainId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -115194,6 +122955,9 @@ func (s *GetTransitGatewayMulticastDomainAssociationsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetTransitGatewayMulticastDomainAssociationsInput"}
 	if s.MaxResults != nil && *s.MaxResults < 5 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+	if s.TransitGatewayMulticastDomainId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayMulticastDomainId"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -115943,6 +123707,202 @@ func (s *GetTransitGatewayRouteTablePropagationsOutput) SetTransitGatewayRouteTa
 	return s
 }
 
+type GetVerifiedAccessEndpointPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	//
+	// VerifiedAccessEndpointId is a required field
+	VerifiedAccessEndpointId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessEndpointPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessEndpointPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetVerifiedAccessEndpointPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetVerifiedAccessEndpointPolicyInput"}
+	if s.VerifiedAccessEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessEndpointId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GetVerifiedAccessEndpointPolicyInput) SetDryRun(v bool) *GetVerifiedAccessEndpointPolicyInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessEndpointId sets the VerifiedAccessEndpointId field's value.
+func (s *GetVerifiedAccessEndpointPolicyInput) SetVerifiedAccessEndpointId(v string) *GetVerifiedAccessEndpointPolicyInput {
+	s.VerifiedAccessEndpointId = &v
+	return s
+}
+
+type GetVerifiedAccessEndpointPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `locationName:"policyDocument" type:"string"`
+
+	// The status of the Verified Access policy.
+	PolicyEnabled *bool `locationName:"policyEnabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessEndpointPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessEndpointPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *GetVerifiedAccessEndpointPolicyOutput) SetPolicyDocument(v string) *GetVerifiedAccessEndpointPolicyOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyEnabled sets the PolicyEnabled field's value.
+func (s *GetVerifiedAccessEndpointPolicyOutput) SetPolicyEnabled(v bool) *GetVerifiedAccessEndpointPolicyOutput {
+	s.PolicyEnabled = &v
+	return s
+}
+
+type GetVerifiedAccessGroupPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	//
+	// VerifiedAccessGroupId is a required field
+	VerifiedAccessGroupId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessGroupPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessGroupPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetVerifiedAccessGroupPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetVerifiedAccessGroupPolicyInput"}
+	if s.VerifiedAccessGroupId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessGroupId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GetVerifiedAccessGroupPolicyInput) SetDryRun(v bool) *GetVerifiedAccessGroupPolicyInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *GetVerifiedAccessGroupPolicyInput) SetVerifiedAccessGroupId(v string) *GetVerifiedAccessGroupPolicyInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+type GetVerifiedAccessGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `locationName:"policyDocument" type:"string"`
+
+	// The status of the Verified Access policy.
+	PolicyEnabled *bool `locationName:"policyEnabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessGroupPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVerifiedAccessGroupPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *GetVerifiedAccessGroupPolicyOutput) SetPolicyDocument(v string) *GetVerifiedAccessGroupPolicyOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyEnabled sets the PolicyEnabled field's value.
+func (s *GetVerifiedAccessGroupPolicyOutput) SetPolicyEnabled(v bool) *GetVerifiedAccessGroupPolicyOutput {
+	s.PolicyEnabled = &v
+	return s
+}
+
 type GetVpnConnectionDeviceSampleConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -116177,6 +124137,154 @@ func (s *GetVpnConnectionDeviceTypesOutput) SetNextToken(v string) *GetVpnConnec
 // SetVpnConnectionDeviceTypes sets the VpnConnectionDeviceTypes field's value.
 func (s *GetVpnConnectionDeviceTypesOutput) SetVpnConnectionDeviceTypes(v []*VpnConnectionDeviceType) *GetVpnConnectionDeviceTypesOutput {
 	s.VpnConnectionDeviceTypes = v
+	return s
+}
+
+type GetVpnTunnelReplacementStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Site-to-Site VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+
+	// The external IP address of the VPN tunnel.
+	//
+	// VpnTunnelOutsideIpAddress is a required field
+	VpnTunnelOutsideIpAddress *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVpnTunnelReplacementStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVpnTunnelReplacementStatusInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetVpnTunnelReplacementStatusInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetVpnTunnelReplacementStatusInput"}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+	if s.VpnTunnelOutsideIpAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnTunnelOutsideIpAddress"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GetVpnTunnelReplacementStatusInput) SetDryRun(v bool) *GetVpnTunnelReplacementStatusInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *GetVpnTunnelReplacementStatusInput) SetVpnConnectionId(v string) *GetVpnTunnelReplacementStatusInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// SetVpnTunnelOutsideIpAddress sets the VpnTunnelOutsideIpAddress field's value.
+func (s *GetVpnTunnelReplacementStatusInput) SetVpnTunnelOutsideIpAddress(v string) *GetVpnTunnelReplacementStatusInput {
+	s.VpnTunnelOutsideIpAddress = &v
+	return s
+}
+
+type GetVpnTunnelReplacementStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the customer gateway.
+	CustomerGatewayId *string `locationName:"customerGatewayId" type:"string"`
+
+	// Get details of pending tunnel endpoint maintenance.
+	MaintenanceDetails *MaintenanceDetails `locationName:"maintenanceDetails" type:"structure"`
+
+	// The ID of the transit gateway associated with the VPN connection.
+	TransitGatewayId *string `locationName:"transitGatewayId" type:"string"`
+
+	// The ID of the Site-to-Site VPN connection.
+	VpnConnectionId *string `locationName:"vpnConnectionId" type:"string"`
+
+	// The ID of the virtual private gateway.
+	VpnGatewayId *string `locationName:"vpnGatewayId" type:"string"`
+
+	// The external IP address of the VPN tunnel.
+	VpnTunnelOutsideIpAddress *string `locationName:"vpnTunnelOutsideIpAddress" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVpnTunnelReplacementStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetVpnTunnelReplacementStatusOutput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *GetVpnTunnelReplacementStatusOutput) SetCustomerGatewayId(v string) *GetVpnTunnelReplacementStatusOutput {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetMaintenanceDetails sets the MaintenanceDetails field's value.
+func (s *GetVpnTunnelReplacementStatusOutput) SetMaintenanceDetails(v *MaintenanceDetails) *GetVpnTunnelReplacementStatusOutput {
+	s.MaintenanceDetails = v
+	return s
+}
+
+// SetTransitGatewayId sets the TransitGatewayId field's value.
+func (s *GetVpnTunnelReplacementStatusOutput) SetTransitGatewayId(v string) *GetVpnTunnelReplacementStatusOutput {
+	s.TransitGatewayId = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *GetVpnTunnelReplacementStatusOutput) SetVpnConnectionId(v string) *GetVpnTunnelReplacementStatusOutput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// SetVpnGatewayId sets the VpnGatewayId field's value.
+func (s *GetVpnTunnelReplacementStatusOutput) SetVpnGatewayId(v string) *GetVpnTunnelReplacementStatusOutput {
+	s.VpnGatewayId = &v
+	return s
+}
+
+// SetVpnTunnelOutsideIpAddress sets the VpnTunnelOutsideIpAddress field's value.
+func (s *GetVpnTunnelReplacementStatusOutput) SetVpnTunnelOutsideIpAddress(v string) *GetVpnTunnelReplacementStatusOutput {
+	s.VpnTunnelOutsideIpAddress = &v
 	return s
 }
 
@@ -116568,6 +124676,10 @@ type Host struct {
 	// The ID of the Dedicated Host.
 	HostId *string `locationName:"hostId" type:"string"`
 
+	// Indicates whether host maintenance is enabled or disabled for the Dedicated
+	// Host.
+	HostMaintenance *string `locationName:"hostMaintenance" type:"string" enum:"HostMaintenance"`
+
 	// The hardware specifications of the Dedicated Host.
 	HostProperties *HostProperties `locationName:"hostProperties" type:"structure"`
 
@@ -116666,6 +124778,12 @@ func (s *Host) SetClientToken(v string) *Host {
 // SetHostId sets the HostId field's value.
 func (s *Host) SetHostId(v string) *Host {
 	s.HostId = &v
+	return s
+}
+
+// SetHostMaintenance sets the HostMaintenance field's value.
+func (s *Host) SetHostMaintenance(v string) *Host {
+	s.HostMaintenance = &v
 	return s
 }
 
@@ -117406,7 +125524,7 @@ type Image struct {
 	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
 
 	// The boot mode of the image. For more information, see Boot modes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	BootMode *string `locationName:"bootMode" type:"string" enum:"BootModeValues"`
 
 	// The date and time the image was created.
@@ -117444,7 +125562,7 @@ type Image struct {
 	// by default, the instance requires that IMDSv2 is used when requesting instance
 	// metadata. In addition, HttpPutResponseHopLimit is set to 2. For more information,
 	// see Configure the AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	ImdsSupport *string `locationName:"imdsSupport" type:"string" enum:"ImdsSupportValues"`
 
 	// The kernel associated with the image, if any. Only applicable for machine
@@ -117462,7 +125580,7 @@ type Image struct {
 
 	// The platform details associated with the billing code of the AMI. For more
 	// information, see Understand AMI billing information (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-billing-info.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	PlatformDetails *string `locationName:"platformDetails" type:"string"`
 
 	// Any product codes associated with the AMI.
@@ -117500,7 +125618,7 @@ type Image struct {
 
 	// If the image is configured for NitroTPM support, the value is v2.0. For more
 	// information, see NitroTPM (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	TpmSupport *string `locationName:"tpmSupport" type:"string" enum:"TpmSupportValues"`
 
 	// The operation of the Amazon EC2 instance and the billing code that is associated
@@ -119701,7 +127819,14 @@ type Instance struct {
 	// Any block device mapping entries for the instance.
 	BlockDeviceMappings []*InstanceBlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
 
-	// The boot mode of the instance. For more information, see Boot modes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html)
+	// The boot mode that was specified by the AMI. If the value is uefi-preferred,
+	// the AMI supports both UEFI and Legacy BIOS. The currentInstanceBootMode parameter
+	// is the boot mode that is used to boot the instance at launch or start.
+	//
+	// The operating system contained in the AMI must be configured to support the
+	// specified boot mode.
+	//
+	// For more information, see Boot modes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html)
 	// in the Amazon EC2 User Guide.
 	BootMode *string `locationName:"bootMode" type:"string" enum:"BootModeValues"`
 
@@ -119716,6 +127841,11 @@ type Instance struct {
 
 	// The CPU options for the instance.
 	CpuOptions *CpuOptions `locationName:"cpuOptions" type:"structure"`
+
+	// The boot mode that is used to boot the instance at launch or start. For more
+	// information, see Boot modes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html)
+	// in the Amazon EC2 User Guide.
+	CurrentInstanceBootMode *string `locationName:"currentInstanceBootMode" type:"string" enum:"InstanceBootModeValues"`
 
 	// Indicates whether the instance is optimized for Amazon EBS I/O. This optimization
 	// provides dedicated throughput to Amazon EBS and an optimized configuration
@@ -119952,6 +128082,12 @@ func (s *Instance) SetClientToken(v string) *Instance {
 // SetCpuOptions sets the CpuOptions field's value.
 func (s *Instance) SetCpuOptions(v *CpuOptions) *Instance {
 	s.CpuOptions = v
+	return s
+}
+
+// SetCurrentInstanceBootMode sets the CurrentInstanceBootMode field's value.
+func (s *Instance) SetCurrentInstanceBootMode(v string) *Instance {
+	s.CurrentInstanceBootMode = &v
 	return s
 }
 
@@ -120494,7 +128630,9 @@ type InstanceCreditSpecificationRequest struct {
 	CpuCredits *string `type:"string"`
 
 	// The ID of the instance.
-	InstanceId *string `type:"string"`
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -120513,6 +128651,19 @@ func (s InstanceCreditSpecificationRequest) String() string {
 // value will be replaced with "sensitive".
 func (s InstanceCreditSpecificationRequest) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstanceCreditSpecificationRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstanceCreditSpecificationRequest"}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetCpuCredits sets the CpuCredits field's value.
@@ -121269,18 +129420,20 @@ type InstanceMetadataOptionsRequest struct {
 	// Possible values: Integers from 1 to 64
 	HttpPutResponseHopLimit *int64 `type:"integer"`
 
-	// The state of token usage for your instance metadata requests.
+	// IMDSv2 uses token-backed sessions. Set the use of HTTP tokens to optional
+	// (in other words, set the use of IMDSv2 to optional) or required (in other
+	// words, set the use of IMDSv2 to required).
 	//
-	// If the state is optional, you can choose to retrieve instance metadata with
-	// or without a session token on your request. If you retrieve the IAM role
-	// credentials without a token, the version 1.0 role credentials are returned.
-	// If you retrieve the IAM role credentials using a valid session token, the
-	// version 2.0 role credentials are returned.
+	//    * optional - When IMDSv2 is optional, you can choose to retrieve instance
+	//    metadata with or without a session token in your request. If you retrieve
+	//    the IAM role credentials without a token, the IMDSv1 role credentials
+	//    are returned. If you retrieve the IAM role credentials using a valid session
+	//    token, the IMDSv2 role credentials are returned.
 	//
-	// If the state is required, you must send a session token with any instance
-	// metadata retrieval requests. In this state, retrieving the IAM role credentials
-	// always returns the version 2.0 credentials; the version 1.0 credentials are
-	// not available.
+	//    * required - When IMDSv2 is required, you must send a session token with
+	//    any instance metadata retrieval requests. In this state, retrieving the
+	//    IAM role credentials always returns IMDSv2 credentials; IMDSv1 credentials
+	//    are not available.
 	//
 	// Default: optional
 	HttpTokens *string `type:"string" enum:"HttpTokensState"`
@@ -121364,18 +129517,20 @@ type InstanceMetadataOptionsResponse struct {
 	// Possible values: Integers from 1 to 64
 	HttpPutResponseHopLimit *int64 `locationName:"httpPutResponseHopLimit" type:"integer"`
 
-	// The state of token usage for your instance metadata requests.
+	// IMDSv2 uses token-backed sessions. Indicates whether the use of HTTP tokens
+	// is optional (in other words, indicates whether the use of IMDSv2 is optional)
+	// or required (in other words, indicates whether the use of IMDSv2 is required).
 	//
-	// If the state is optional, you can choose to retrieve instance metadata with
-	// or without a session token on your request. If you retrieve the IAM role
-	// credentials without a token, the version 1.0 role credentials are returned.
-	// If you retrieve the IAM role credentials using a valid session token, the
-	// version 2.0 role credentials are returned.
+	//    * optional - When IMDSv2 is optional, you can choose to retrieve instance
+	//    metadata with or without a session token in your request. If you retrieve
+	//    the IAM role credentials without a token, the IMDSv1 role credentials
+	//    are returned. If you retrieve the IAM role credentials using a valid session
+	//    token, the IMDSv2 role credentials are returned.
 	//
-	// If the state is required, you must send a session token with any instance
-	// metadata retrieval requests. In this state, retrieving the IAM role credentials
-	// always returns the version 2.0 credentials; the version 1.0 credentials are
-	// not available.
+	//    * required - When IMDSv2 is required, you must send a session token with
+	//    any instance metadata retrieval requests. In this state, retrieving the
+	//    IAM role credentials always returns IMDSv2 credentials; IMDSv1 credentials
+	//    are not available.
 	//
 	// Default: optional
 	HttpTokens *string `locationName:"httpTokens" type:"string" enum:"HttpTokensState"`
@@ -123113,7 +131268,9 @@ type InstanceSpecification struct {
 	ExcludeDataVolumeIds []*string `locationName:"ExcludeDataVolumeId" locationNameList:"VolumeId" type:"list"`
 
 	// The instance to specify which volumes should be snapshotted.
-	InstanceId *string `type:"string"`
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -123132,6 +131289,19 @@ func (s InstanceSpecification) String() string {
 // value will be replaced with "sensitive".
 func (s InstanceSpecification) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstanceSpecification) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstanceSpecification"}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetExcludeBootVolume sets the ExcludeBootVolume field's value.
@@ -124164,9 +132334,10 @@ func (s *InternetGatewayAttachment) SetVpcId(v string) *InternetGatewayAttachmen
 type IpPermission struct {
 	_ struct{} `type:"structure"`
 
-	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
-	// type number. A value of -1 indicates all ICMP/ICMPv6 types. If you specify
-	// all ICMP/ICMPv6 types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the start of the port range. If the
+	// protocol is ICMP or ICMPv6, this is the type number. A value of -1 indicates
+	// all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types, you must specify
+	// all ICMP/ICMPv6 codes.
 	FromPort *int64 `locationName:"fromPort" type:"integer"`
 
 	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
@@ -124189,9 +132360,10 @@ type IpPermission struct {
 	// [VPC only] The prefix list IDs.
 	PrefixListIds []*PrefixListId `locationName:"prefixListIds" locationNameList:"item" type:"list"`
 
-	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code.
-	// A value of -1 indicates all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6
-	// types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the end of the port range. If the
+	// protocol is ICMP or ICMPv6, this is the code. A value of -1 indicates all
+	// ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6 types, you must specify
+	// all ICMP/ICMPv6 codes.
 	ToPort *int64 `locationName:"toPort" type:"integer"`
 
 	// The security group and Amazon Web Services account ID pairs.
@@ -124313,10 +132485,16 @@ func (s *IpRange) SetDescription(v string) *IpRange {
 type Ipam struct {
 	_ struct{} `type:"structure"`
 
+	// The IPAM's default resource discovery association ID.
+	DefaultResourceDiscoveryAssociationId *string `locationName:"defaultResourceDiscoveryAssociationId" type:"string"`
+
+	// The IPAM's default resource discovery ID.
+	DefaultResourceDiscoveryId *string `locationName:"defaultResourceDiscoveryId" type:"string"`
+
 	// The description for the IPAM.
 	Description *string `locationName:"description" type:"string"`
 
-	// The ARN of the IPAM.
+	// The Amazon Resource Name (ARN) of the IPAM.
 	IpamArn *string `locationName:"ipamArn" min:"1" type:"string"`
 
 	// The ID of the IPAM.
@@ -124342,6 +132520,9 @@ type Ipam struct {
 
 	// The ID of the IPAM's default public scope.
 	PublicDefaultScopeId *string `locationName:"publicDefaultScopeId" type:"string"`
+
+	// The IPAM's resource discovery association count.
+	ResourceDiscoveryAssociationCount *int64 `locationName:"resourceDiscoveryAssociationCount" type:"integer"`
 
 	// The number of scopes in the IPAM. The scope quota is 5. For more information
 	// on quotas, see Quotas in IPAM (https://docs.aws.amazon.com/vpc/latest/ipam/quotas-ipam.html)
@@ -124374,6 +132555,18 @@ func (s Ipam) String() string {
 // value will be replaced with "sensitive".
 func (s Ipam) GoString() string {
 	return s.String()
+}
+
+// SetDefaultResourceDiscoveryAssociationId sets the DefaultResourceDiscoveryAssociationId field's value.
+func (s *Ipam) SetDefaultResourceDiscoveryAssociationId(v string) *Ipam {
+	s.DefaultResourceDiscoveryAssociationId = &v
+	return s
+}
+
+// SetDefaultResourceDiscoveryId sets the DefaultResourceDiscoveryId field's value.
+func (s *Ipam) SetDefaultResourceDiscoveryId(v string) *Ipam {
+	s.DefaultResourceDiscoveryId = &v
+	return s
 }
 
 // SetDescription sets the Description field's value.
@@ -124421,6 +132614,12 @@ func (s *Ipam) SetPrivateDefaultScopeId(v string) *Ipam {
 // SetPublicDefaultScopeId sets the PublicDefaultScopeId field's value.
 func (s *Ipam) SetPublicDefaultScopeId(v string) *Ipam {
 	s.PublicDefaultScopeId = &v
+	return s
+}
+
+// SetResourceDiscoveryAssociationCount sets the ResourceDiscoveryAssociationCount field's value.
+func (s *Ipam) SetResourceDiscoveryAssociationCount(v int64) *Ipam {
+	s.ResourceDiscoveryAssociationCount = &v
 	return s
 }
 
@@ -124617,6 +132816,265 @@ func (s *IpamCidrAuthorizationContext) SetSignature(v string) *IpamCidrAuthoriza
 	return s
 }
 
+// An IPAM discovered account. A discovered account is an Amazon Web Services
+// account that is monitored under a resource discovery. If you have integrated
+// IPAM with Amazon Web Services Organizations, all accounts in the organization
+// are discovered accounts.
+type IpamDiscoveredAccount struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID.
+	AccountId *string `locationName:"accountId" type:"string"`
+
+	// The Amazon Web Services Region that the account information is returned from.
+	// An account can be discovered in multiple regions and will have a separate
+	// discovered account for each Region.
+	DiscoveryRegion *string `locationName:"discoveryRegion" type:"string"`
+
+	// The resource discovery failure reason.
+	FailureReason *IpamDiscoveryFailureReason `locationName:"failureReason" type:"structure"`
+
+	// The last attempted resource discovery time.
+	LastAttemptedDiscoveryTime *time.Time `locationName:"lastAttemptedDiscoveryTime" type:"timestamp"`
+
+	// The last successful resource discovery time.
+	LastSuccessfulDiscoveryTime *time.Time `locationName:"lastSuccessfulDiscoveryTime" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamDiscoveredAccount) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamDiscoveredAccount) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *IpamDiscoveredAccount) SetAccountId(v string) *IpamDiscoveredAccount {
+	s.AccountId = &v
+	return s
+}
+
+// SetDiscoveryRegion sets the DiscoveryRegion field's value.
+func (s *IpamDiscoveredAccount) SetDiscoveryRegion(v string) *IpamDiscoveredAccount {
+	s.DiscoveryRegion = &v
+	return s
+}
+
+// SetFailureReason sets the FailureReason field's value.
+func (s *IpamDiscoveredAccount) SetFailureReason(v *IpamDiscoveryFailureReason) *IpamDiscoveredAccount {
+	s.FailureReason = v
+	return s
+}
+
+// SetLastAttemptedDiscoveryTime sets the LastAttemptedDiscoveryTime field's value.
+func (s *IpamDiscoveredAccount) SetLastAttemptedDiscoveryTime(v time.Time) *IpamDiscoveredAccount {
+	s.LastAttemptedDiscoveryTime = &v
+	return s
+}
+
+// SetLastSuccessfulDiscoveryTime sets the LastSuccessfulDiscoveryTime field's value.
+func (s *IpamDiscoveredAccount) SetLastSuccessfulDiscoveryTime(v time.Time) *IpamDiscoveredAccount {
+	s.LastSuccessfulDiscoveryTime = &v
+	return s
+}
+
+// An IPAM discovered resource CIDR. A discovered resource is a resource CIDR
+// monitored under a resource discovery. The following resources can be discovered:
+// VPCs, Public IPv4 pools, VPC subnets, and Elastic IP addresses. The discovered
+// resource CIDR is the IP address range in CIDR notation that is associated
+// with the resource.
+type IpamDiscoveredResourceCidr struct {
+	_ struct{} `type:"structure"`
+
+	// The percentage of IP address space in use. To convert the decimal to a percentage,
+	// multiply the decimal by 100. Note the following:
+	//
+	//    * For resources that are VPCs, this is the percentage of IP address space
+	//    in the VPC that's taken up by subnet CIDRs.
+	//
+	//    * For resources that are subnets, if the subnet has an IPv4 CIDR provisioned
+	//    to it, this is the percentage of IPv4 address space in the subnet that's
+	//    in use. If the subnet has an IPv6 CIDR provisioned to it, the percentage
+	//    of IPv6 address space in use is not represented. The percentage of IPv6
+	//    address space in use cannot currently be calculated.
+	//
+	//    * For resources that are public IPv4 pools, this is the percentage of
+	//    IP address space in the pool that's been allocated to Elastic IP addresses
+	//    (EIPs).
+	IpUsage *float64 `locationName:"ipUsage" type:"double"`
+
+	// The resource discovery ID.
+	IpamResourceDiscoveryId *string `locationName:"ipamResourceDiscoveryId" type:"string"`
+
+	// The resource CIDR.
+	ResourceCidr *string `locationName:"resourceCidr" type:"string"`
+
+	// The resource ID.
+	ResourceId *string `locationName:"resourceId" type:"string"`
+
+	// The resource owner ID.
+	ResourceOwnerId *string `locationName:"resourceOwnerId" type:"string"`
+
+	// The resource Region.
+	ResourceRegion *string `locationName:"resourceRegion" type:"string"`
+
+	// The resource tags.
+	ResourceTags []*IpamResourceTag `locationName:"resourceTagSet" locationNameList:"item" type:"list"`
+
+	// The resource type.
+	ResourceType *string `locationName:"resourceType" type:"string" enum:"IpamResourceType"`
+
+	// The last successful resource discovery time.
+	SampleTime *time.Time `locationName:"sampleTime" type:"timestamp"`
+
+	// The VPC ID.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamDiscoveredResourceCidr) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamDiscoveredResourceCidr) GoString() string {
+	return s.String()
+}
+
+// SetIpUsage sets the IpUsage field's value.
+func (s *IpamDiscoveredResourceCidr) SetIpUsage(v float64) *IpamDiscoveredResourceCidr {
+	s.IpUsage = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *IpamDiscoveredResourceCidr) SetIpamResourceDiscoveryId(v string) *IpamDiscoveredResourceCidr {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetResourceCidr sets the ResourceCidr field's value.
+func (s *IpamDiscoveredResourceCidr) SetResourceCidr(v string) *IpamDiscoveredResourceCidr {
+	s.ResourceCidr = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *IpamDiscoveredResourceCidr) SetResourceId(v string) *IpamDiscoveredResourceCidr {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceOwnerId sets the ResourceOwnerId field's value.
+func (s *IpamDiscoveredResourceCidr) SetResourceOwnerId(v string) *IpamDiscoveredResourceCidr {
+	s.ResourceOwnerId = &v
+	return s
+}
+
+// SetResourceRegion sets the ResourceRegion field's value.
+func (s *IpamDiscoveredResourceCidr) SetResourceRegion(v string) *IpamDiscoveredResourceCidr {
+	s.ResourceRegion = &v
+	return s
+}
+
+// SetResourceTags sets the ResourceTags field's value.
+func (s *IpamDiscoveredResourceCidr) SetResourceTags(v []*IpamResourceTag) *IpamDiscoveredResourceCidr {
+	s.ResourceTags = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *IpamDiscoveredResourceCidr) SetResourceType(v string) *IpamDiscoveredResourceCidr {
+	s.ResourceType = &v
+	return s
+}
+
+// SetSampleTime sets the SampleTime field's value.
+func (s *IpamDiscoveredResourceCidr) SetSampleTime(v time.Time) *IpamDiscoveredResourceCidr {
+	s.SampleTime = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *IpamDiscoveredResourceCidr) SetVpcId(v string) *IpamDiscoveredResourceCidr {
+	s.VpcId = &v
+	return s
+}
+
+// The discovery failure reason.
+type IpamDiscoveryFailureReason struct {
+	_ struct{} `type:"structure"`
+
+	// The discovery failure code.
+	//
+	//    * assume-role-failure - IPAM could not assume the Amazon Web Services
+	//    IAM service-linked role. This could be because of any of the following:
+	//    SLR has not been created yet and IPAM is still creating it. You have opted-out
+	//    of the IPAM home Region. Account you are using as your IPAM account has
+	//    been suspended.
+	//
+	//    * throttling-failure - IPAM account is already using the allotted transactions
+	//    per second and IPAM is receiving a throttling error when assuming the
+	//    Amazon Web Services IAM SLR.
+	//
+	//    * unauthorized-failure - Amazon Web Services account making the request
+	//    is not authorized. For more information, see AuthFailure (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html)
+	//    in the Amazon Elastic Compute Cloud API Reference.
+	Code *string `locationName:"code" type:"string" enum:"IpamDiscoveryFailureCode"`
+
+	// The discovery failure message.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamDiscoveryFailureReason) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamDiscoveryFailureReason) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *IpamDiscoveryFailureReason) SetCode(v string) *IpamDiscoveryFailureReason {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *IpamDiscoveryFailureReason) SetMessage(v string) *IpamDiscoveryFailureReason {
+	s.Message = &v
+	return s
+}
+
 // The operating Regions for an IPAM. Operating Regions are Amazon Web Services
 // Regions where the IPAM is allowed to manage IP address CIDRs. IPAM only discovers
 // and monitors resources in the Amazon Web Services Regions you select as operating
@@ -124713,7 +133171,7 @@ type IpamPool struct {
 	// The ARN of the IPAM.
 	IpamArn *string `locationName:"ipamArn" min:"1" type:"string"`
 
-	// The ARN of the IPAM pool.
+	// The Amazon Resource Name (ARN) of the IPAM pool.
 	IpamPoolArn *string `locationName:"ipamPoolArn" min:"1" type:"string"`
 
 	// The ID of the IPAM pool.
@@ -124750,6 +133208,15 @@ type IpamPool struct {
 	// information, see Quotas in IPAM (https://docs.aws.amazon.com/vpc/latest/ipam/quotas-ipam.html)
 	// in the Amazon VPC IPAM User Guide.
 	PoolDepth *int64 `locationName:"poolDepth" type:"integer"`
+
+	// The IP address source for pools in the public scope. Only used for provisioning
+	// IP address CIDRs to pools in the public scope. Default is BYOIP. For more
+	// information, see Create IPv6 pools (https://docs.aws.amazon.com/vpc/latest/ipam/intro-create-ipv6-pools.html)
+	// in the Amazon VPC IPAM User Guide. By default, you can add only one Amazon-provided
+	// IPv6 CIDR block to a top-level IPv6 pool. For information on increasing the
+	// default limit, see Quotas for your IPAM (https://docs.aws.amazon.com/vpc/latest/ipam/quotas-ipam.html)
+	// in the Amazon VPC IPAM User Guide.
+	PublicIpSource *string `locationName:"publicIpSource" type:"string" enum:"IpamPoolPublicIpSource"`
 
 	// Determines if a pool is publicly advertisable. This option is not available
 	// for pools with AddressFamily set to ipv4.
@@ -124892,6 +133359,12 @@ func (s *IpamPool) SetPoolDepth(v int64) *IpamPool {
 	return s
 }
 
+// SetPublicIpSource sets the PublicIpSource field's value.
+func (s *IpamPool) SetPublicIpSource(v string) *IpamPool {
+	s.PublicIpSource = &v
+	return s
+}
+
 // SetPubliclyAdvertisable sets the PubliclyAdvertisable field's value.
 func (s *IpamPool) SetPubliclyAdvertisable(v bool) *IpamPool {
 	s.PubliclyAdvertisable = &v
@@ -124923,7 +133396,7 @@ func (s *IpamPool) SetTags(v []*Tag) *IpamPool {
 }
 
 // In IPAM, an allocation is a CIDR assignment from an IPAM pool to another
-// resource or IPAM pool.
+// IPAM pool or to a resource.
 type IpamPoolAllocation struct {
 	_ struct{} `type:"structure"`
 
@@ -125025,6 +133498,15 @@ type IpamPoolCidr struct {
 	// Details related to why an IPAM pool CIDR failed to be provisioned.
 	FailureReason *IpamPoolCidrFailureReason `locationName:"failureReason" type:"structure"`
 
+	// The IPAM pool CIDR ID.
+	IpamPoolCidrId *string `locationName:"ipamPoolCidrId" type:"string"`
+
+	// The netmask length of the CIDR you'd like to provision to a pool. Can be
+	// used for provisioning Amazon-provided IPv6 CIDRs to top-level pools and for
+	// provisioning CIDRs to pools with source pools. Cannot be used to provision
+	// BYOIP CIDRs to top-level pools. "NetmaskLength" or "Cidr" is required.
+	NetmaskLength *int64 `locationName:"netmaskLength" type:"integer"`
+
 	// The state of the CIDR.
 	State *string `locationName:"state" type:"string" enum:"IpamPoolCidrState"`
 }
@@ -125056,6 +133538,18 @@ func (s *IpamPoolCidr) SetCidr(v string) *IpamPoolCidr {
 // SetFailureReason sets the FailureReason field's value.
 func (s *IpamPoolCidr) SetFailureReason(v *IpamPoolCidrFailureReason) *IpamPoolCidr {
 	s.FailureReason = v
+	return s
+}
+
+// SetIpamPoolCidrId sets the IpamPoolCidrId field's value.
+func (s *IpamPoolCidr) SetIpamPoolCidrId(v string) *IpamPoolCidr {
+	s.IpamPoolCidrId = &v
+	return s
+}
+
+// SetNetmaskLength sets the NetmaskLength field's value.
+func (s *IpamPoolCidr) SetNetmaskLength(v int64) *IpamPoolCidr {
+	s.NetmaskLength = &v
 	return s
 }
 
@@ -125118,8 +133612,8 @@ type IpamResourceCidr struct {
 	// The percentage of IP address space in use. To convert the decimal to a percentage,
 	// multiply the decimal by 100. Note the following:
 	//
-	//    * For a resources that are VPCs, this is the percentage of IP address
-	//    space in the VPC that's taken up by subnet CIDRs.
+	//    * For resources that are VPCs, this is the percentage of IP address space
+	//    in the VPC that's taken up by subnet CIDRs.
 	//
 	//    * For resources that are subnets, if the subnet has an IPv4 CIDR provisioned
 	//    to it, this is the percentage of IPv4 address space in the subnet that's
@@ -125285,6 +133779,301 @@ func (s *IpamResourceCidr) SetVpcId(v string) *IpamResourceCidr {
 	return s
 }
 
+// A resource discovery is an IPAM component that enables IPAM to manage and
+// monitor resources that belong to the owning account.
+type IpamResourceDiscovery struct {
+	_ struct{} `type:"structure"`
+
+	// The resource discovery description.
+	Description *string `locationName:"description" type:"string"`
+
+	// The resource discovery Amazon Resource Name (ARN).
+	IpamResourceDiscoveryArn *string `locationName:"ipamResourceDiscoveryArn" type:"string"`
+
+	// The resource discovery ID.
+	IpamResourceDiscoveryId *string `locationName:"ipamResourceDiscoveryId" type:"string"`
+
+	// The resource discovery Region.
+	IpamResourceDiscoveryRegion *string `locationName:"ipamResourceDiscoveryRegion" type:"string"`
+
+	// Defines if the resource discovery is the default. The default resource discovery
+	// is the resource discovery automatically created when you create an IPAM.
+	IsDefault *bool `locationName:"isDefault" type:"boolean"`
+
+	// The operating Regions for the resource discovery. Operating Regions are Amazon
+	// Web Services Regions where the IPAM is allowed to manage IP address CIDRs.
+	// IPAM only discovers and monitors resources in the Amazon Web Services Regions
+	// you select as operating Regions.
+	OperatingRegions []*IpamOperatingRegion `locationName:"operatingRegionSet" locationNameList:"item" type:"list"`
+
+	// The ID of the owner.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The lifecycle state of the resource discovery.
+	//
+	//    * create-in-progress - Resource discovery is being created.
+	//
+	//    * create-complete - Resource discovery creation is complete.
+	//
+	//    * create-failed - Resource discovery creation has failed.
+	//
+	//    * modify-in-progress - Resource discovery is being modified.
+	//
+	//    * modify-complete - Resource discovery modification is complete.
+	//
+	//    * modify-failed - Resource discovery modification has failed.
+	//
+	//    * delete-in-progress - Resource discovery is being deleted.
+	//
+	//    * delete-complete - Resource discovery deletion is complete.
+	//
+	//    * delete-failed - Resource discovery deletion has failed.
+	//
+	//    * isolate-in-progress - Amazon Web Services account that created the resource
+	//    discovery has been removed and the resource discovery is being isolated.
+	//
+	//    * isolate-complete - Resource discovery isolation is complete.
+	//
+	//    * restore-in-progress - Amazon Web Services account that created the resource
+	//    discovery and was isolated has been restored.
+	State *string `locationName:"state" type:"string" enum:"IpamResourceDiscoveryState"`
+
+	// A tag is a label that you assign to an Amazon Web Services resource. Each
+	// tag consists of a key and an optional value. You can use tags to search and
+	// filter your resources or track your Amazon Web Services costs.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamResourceDiscovery) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamResourceDiscovery) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *IpamResourceDiscovery) SetDescription(v string) *IpamResourceDiscovery {
+	s.Description = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryArn sets the IpamResourceDiscoveryArn field's value.
+func (s *IpamResourceDiscovery) SetIpamResourceDiscoveryArn(v string) *IpamResourceDiscovery {
+	s.IpamResourceDiscoveryArn = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *IpamResourceDiscovery) SetIpamResourceDiscoveryId(v string) *IpamResourceDiscovery {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryRegion sets the IpamResourceDiscoveryRegion field's value.
+func (s *IpamResourceDiscovery) SetIpamResourceDiscoveryRegion(v string) *IpamResourceDiscovery {
+	s.IpamResourceDiscoveryRegion = &v
+	return s
+}
+
+// SetIsDefault sets the IsDefault field's value.
+func (s *IpamResourceDiscovery) SetIsDefault(v bool) *IpamResourceDiscovery {
+	s.IsDefault = &v
+	return s
+}
+
+// SetOperatingRegions sets the OperatingRegions field's value.
+func (s *IpamResourceDiscovery) SetOperatingRegions(v []*IpamOperatingRegion) *IpamResourceDiscovery {
+	s.OperatingRegions = v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *IpamResourceDiscovery) SetOwnerId(v string) *IpamResourceDiscovery {
+	s.OwnerId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *IpamResourceDiscovery) SetState(v string) *IpamResourceDiscovery {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *IpamResourceDiscovery) SetTags(v []*Tag) *IpamResourceDiscovery {
+	s.Tags = v
+	return s
+}
+
+// An IPAM resource discovery association. An associated resource discovery
+// is a resource discovery that has been associated with an IPAM. IPAM aggregates
+// the resource CIDRs discovered by the associated resource discovery.
+type IpamResourceDiscoveryAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The IPAM ARN.
+	IpamArn *string `locationName:"ipamArn" min:"1" type:"string"`
+
+	// The IPAM ID.
+	IpamId *string `locationName:"ipamId" type:"string"`
+
+	// The IPAM home Region.
+	IpamRegion *string `locationName:"ipamRegion" type:"string"`
+
+	// The resource discovery association Amazon Resource Name (ARN).
+	IpamResourceDiscoveryAssociationArn *string `locationName:"ipamResourceDiscoveryAssociationArn" type:"string"`
+
+	// The resource discovery association ID.
+	IpamResourceDiscoveryAssociationId *string `locationName:"ipamResourceDiscoveryAssociationId" type:"string"`
+
+	// The resource discovery ID.
+	IpamResourceDiscoveryId *string `locationName:"ipamResourceDiscoveryId" type:"string"`
+
+	// Defines if the resource discovery is the default. When you create an IPAM,
+	// a default resource discovery is created for your IPAM and it's associated
+	// with your IPAM.
+	IsDefault *bool `locationName:"isDefault" type:"boolean"`
+
+	// The Amazon Web Services account ID of the resource discovery owner.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The resource discovery status.
+	//
+	//    * active - Connection or permissions required to read the results of the
+	//    resource discovery are intact.
+	//
+	//    * not-found - Connection or permissions required to read the results of
+	//    the resource discovery are broken. This may happen if the owner of the
+	//    resource discovery stopped sharing it or deleted the resource discovery.
+	//    Verify the resource discovery still exists and the Amazon Web Services
+	//    RAM resource share is still intact.
+	ResourceDiscoveryStatus *string `locationName:"resourceDiscoveryStatus" type:"string" enum:"IpamAssociatedResourceDiscoveryStatus"`
+
+	// The lifecycle state of the association when you associate or disassociate
+	// a resource discovery.
+	//
+	//    * associate-in-progress - Resource discovery is being associated.
+	//
+	//    * associate-complete - Resource discovery association is complete.
+	//
+	//    * associate-failed - Resource discovery association has failed.
+	//
+	//    * disassociate-in-progress - Resource discovery is being disassociated.
+	//
+	//    * disassociate-complete - Resource discovery disassociation is complete.
+	//
+	//    * disassociate-failed - Resource discovery disassociation has failed.
+	//
+	//    * isolate-in-progress - Amazon Web Services account that created the resource
+	//    discovery association has been removed and the resource discovery associatation
+	//    is being isolated.
+	//
+	//    * isolate-complete - Resource discovery isolation is complete..
+	//
+	//    * restore-in-progress - Resource discovery is being restored.
+	State *string `locationName:"state" type:"string" enum:"IpamResourceDiscoveryAssociationState"`
+
+	// A tag is a label that you assign to an Amazon Web Services resource. Each
+	// tag consists of a key and an optional value. You can use tags to search and
+	// filter your resources or track your Amazon Web Services costs.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamResourceDiscoveryAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpamResourceDiscoveryAssociation) GoString() string {
+	return s.String()
+}
+
+// SetIpamArn sets the IpamArn field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIpamArn(v string) *IpamResourceDiscoveryAssociation {
+	s.IpamArn = &v
+	return s
+}
+
+// SetIpamId sets the IpamId field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIpamId(v string) *IpamResourceDiscoveryAssociation {
+	s.IpamId = &v
+	return s
+}
+
+// SetIpamRegion sets the IpamRegion field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIpamRegion(v string) *IpamResourceDiscoveryAssociation {
+	s.IpamRegion = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryAssociationArn sets the IpamResourceDiscoveryAssociationArn field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIpamResourceDiscoveryAssociationArn(v string) *IpamResourceDiscoveryAssociation {
+	s.IpamResourceDiscoveryAssociationArn = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryAssociationId sets the IpamResourceDiscoveryAssociationId field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIpamResourceDiscoveryAssociationId(v string) *IpamResourceDiscoveryAssociation {
+	s.IpamResourceDiscoveryAssociationId = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIpamResourceDiscoveryId(v string) *IpamResourceDiscoveryAssociation {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetIsDefault sets the IsDefault field's value.
+func (s *IpamResourceDiscoveryAssociation) SetIsDefault(v bool) *IpamResourceDiscoveryAssociation {
+	s.IsDefault = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *IpamResourceDiscoveryAssociation) SetOwnerId(v string) *IpamResourceDiscoveryAssociation {
+	s.OwnerId = &v
+	return s
+}
+
+// SetResourceDiscoveryStatus sets the ResourceDiscoveryStatus field's value.
+func (s *IpamResourceDiscoveryAssociation) SetResourceDiscoveryStatus(v string) *IpamResourceDiscoveryAssociation {
+	s.ResourceDiscoveryStatus = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *IpamResourceDiscoveryAssociation) SetState(v string) *IpamResourceDiscoveryAssociation {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *IpamResourceDiscoveryAssociation) SetTags(v []*Tag) *IpamResourceDiscoveryAssociation {
+	s.Tags = v
+	return s
+}
+
 // The key/value combination of a tag assigned to the resource. Use the tag
 // key in the filter name and the tag value as the filter value. For example,
 // to find all resources that have a tag with the key Owner and the value TeamA,
@@ -125351,7 +134140,7 @@ type IpamScope struct {
 	// The Amazon Web Services Region of the IPAM scope.
 	IpamRegion *string `locationName:"ipamRegion" type:"string"`
 
-	// The ARN of the scope.
+	// The Amazon Resource Name (ARN) of the scope.
 	IpamScopeArn *string `locationName:"ipamScopeArn" min:"1" type:"string"`
 
 	// The ID of the scope.
@@ -126143,8 +134932,13 @@ type LaunchSpecification struct {
 	// The ID of the subnet in which to launch the instance.
 	SubnetId *string `locationName:"subnetId" type:"string"`
 
-	// The Base64-encoded user data for the instance.
-	UserData *string `locationName:"userData" type:"string"`
+	// The base64-encoded user data that instances use when starting up. User data
+	// is limited to 16 KB.
+	//
+	// UserData is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by LaunchSpecification's
+	// String and GoString methods.
+	UserData *string `locationName:"userData" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -127471,19 +136265,20 @@ type LaunchTemplateInstanceMetadataOptions struct {
 	// Possible values: Integers from 1 to 64
 	HttpPutResponseHopLimit *int64 `locationName:"httpPutResponseHopLimit" type:"integer"`
 
-	// The state of token usage for your instance metadata requests. If the parameter
-	// is not specified in the request, the default state is optional.
+	// Indicates whether IMDSv2 is optional or required.
 	//
-	// If the state is optional, you can choose to retrieve instance metadata with
-	// or without a signed token header on your request. If you retrieve the IAM
-	// role credentials without a token, the version 1.0 role credentials are returned.
-	// If you retrieve the IAM role credentials using a valid signed token, the
-	// version 2.0 role credentials are returned.
+	// optional - When IMDSv2 is optional, you can choose to retrieve instance metadata
+	// with or without a session token in your request. If you retrieve the IAM
+	// role credentials without a token, the IMDSv1 role credentials are returned.
+	// If you retrieve the IAM role credentials using a valid session token, the
+	// IMDSv2 role credentials are returned.
 	//
-	// If the state is required, you must send a signed token header with any instance
-	// metadata retrieval requests. In this state, retrieving the IAM role credentials
-	// always returns the version 2.0 credentials; the version 1.0 credentials are
-	// not available.
+	// required - When IMDSv2 is required, you must send a session token with any
+	// instance metadata retrieval requests. In this state, retrieving the IAM role
+	// credentials always returns IMDSv2 credentials; IMDSv1 credentials are not
+	// available.
+	//
+	// Default: optional
 	HttpTokens *string `locationName:"httpTokens" type:"string" enum:"LaunchTemplateHttpTokensState"`
 
 	// Set to enabled to allow access to instance tags from the instance metadata.
@@ -127583,19 +136378,22 @@ type LaunchTemplateInstanceMetadataOptionsRequest struct {
 	// Possible values: Integers from 1 to 64
 	HttpPutResponseHopLimit *int64 `type:"integer"`
 
-	// The state of token usage for your instance metadata requests. If the parameter
-	// is not specified in the request, the default state is optional.
+	// IMDSv2 uses token-backed sessions. Set the use of HTTP tokens to optional
+	// (in other words, set the use of IMDSv2 to optional) or required (in other
+	// words, set the use of IMDSv2 to required).
 	//
-	// If the state is optional, you can choose to retrieve instance metadata with
-	// or without a signed token header on your request. If you retrieve the IAM
-	// role credentials without a token, the version 1.0 role credentials are returned.
-	// If you retrieve the IAM role credentials using a valid signed token, the
-	// version 2.0 role credentials are returned.
+	//    * optional - When IMDSv2 is optional, you can choose to retrieve instance
+	//    metadata with or without a session token in your request. If you retrieve
+	//    the IAM role credentials without a token, the IMDSv1 role credentials
+	//    are returned. If you retrieve the IAM role credentials using a valid session
+	//    token, the IMDSv2 role credentials are returned.
 	//
-	// If the state is required, you must send a signed token header with any instance
-	// metadata retrieval requests. In this state, retrieving the IAM role credentials
-	// always returns the version 2.0 credentials; the version 1.0 credentials are
-	// not available.
+	//    * required - When IMDSv2 is required, you must send a session token with
+	//    any instance metadata retrieval requests. In this state, retrieving the
+	//    IAM role credentials always returns IMDSv2 credentials; IMDSv1 credentials
+	//    are not available.
+	//
+	// Default: optional
 	HttpTokens *string `type:"string" enum:"LaunchTemplateHttpTokensState"`
 
 	// Set to enabled to allow access to instance tags from the instance metadata.
@@ -129124,14 +137922,13 @@ type ListImagesInRecycleBinInput struct {
 	// that are in the Recycle Bin. You can specify up to 20 IDs in a single request.
 	ImageIds []*string `locationName:"ImageId" locationNameList:"ImageId" type:"list"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
-	//
-	// If you do not specify a value for MaxResults, the request returns 1,000 items
-	// per page by default. For more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 }
 
@@ -129196,8 +137993,8 @@ type ListImagesInRecycleBinOutput struct {
 	// Information about the AMIs.
 	Images []*ImageRecycleBinInfo `locationName:"imageSet" locationNameList:"item" type:"list"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -129240,11 +138037,13 @@ type ListSnapshotsInRecycleBinInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, make another call with the returned nextToken value.
+	// The maximum number of items to return for this request. To get the next page
+	// of items, make another request with the token returned in the output. For
+	// more information, see Pagination (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination).
 	MaxResults *int64 `min:"5" type:"integer"`
 
-	// The token for the next page of results.
+	// The token returned from a previous paginated request. Pagination continues
+	// from the end of the items returned by the previous request.
 	NextToken *string `type:"string"`
 
 	// The IDs of the snapshots to list. Omit this parameter to list all of the
@@ -129310,8 +138109,8 @@ func (s *ListSnapshotsInRecycleBinInput) SetSnapshotIds(v []*string) *ListSnapsh
 type ListSnapshotsInRecycleBinOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// The token to include in another request to get the next page of items. This
+	// value is null when there are no more items to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Information about the snapshots.
@@ -129611,6 +138410,9 @@ type LocalGatewayRoute struct {
 	// The CIDR block used for destination matches.
 	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
 
+	// The ID of the prefix list.
+	DestinationPrefixListId *string `locationName:"destinationPrefixListId" type:"string"`
+
 	// The Amazon Resource Name (ARN) of the local gateway route table.
 	LocalGatewayRouteTableArn *string `locationName:"localGatewayRouteTableArn" min:"1" type:"string"`
 
@@ -129663,6 +138465,12 @@ func (s *LocalGatewayRoute) SetCoipPoolId(v string) *LocalGatewayRoute {
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
 func (s *LocalGatewayRoute) SetDestinationCidrBlock(v string) *LocalGatewayRoute {
 	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationPrefixListId sets the DestinationPrefixListId field's value.
+func (s *LocalGatewayRoute) SetDestinationPrefixListId(v string) *LocalGatewayRoute {
+	s.DestinationPrefixListId = &v
 	return s
 }
 
@@ -130188,6 +138996,56 @@ func (s *LocalGatewayVirtualInterfaceGroup) SetTags(v []*Tag) *LocalGatewayVirtu
 	return s
 }
 
+// Details for Site-to-Site VPN tunnel endpoint maintenance events.
+type MaintenanceDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Timestamp of last applied maintenance.
+	LastMaintenanceApplied *time.Time `locationName:"lastMaintenanceApplied" type:"timestamp"`
+
+	// The timestamp after which Amazon Web Services will automatically apply maintenance.
+	MaintenanceAutoAppliedAfter *time.Time `locationName:"maintenanceAutoAppliedAfter" type:"timestamp"`
+
+	// Verify existence of a pending maintenance.
+	PendingMaintenance *string `locationName:"pendingMaintenance" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MaintenanceDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MaintenanceDetails) GoString() string {
+	return s.String()
+}
+
+// SetLastMaintenanceApplied sets the LastMaintenanceApplied field's value.
+func (s *MaintenanceDetails) SetLastMaintenanceApplied(v time.Time) *MaintenanceDetails {
+	s.LastMaintenanceApplied = &v
+	return s
+}
+
+// SetMaintenanceAutoAppliedAfter sets the MaintenanceAutoAppliedAfter field's value.
+func (s *MaintenanceDetails) SetMaintenanceAutoAppliedAfter(v time.Time) *MaintenanceDetails {
+	s.MaintenanceAutoAppliedAfter = &v
+	return s
+}
+
+// SetPendingMaintenance sets the PendingMaintenance field's value.
+func (s *MaintenanceDetails) SetPendingMaintenance(v string) *MaintenanceDetails {
+	s.PendingMaintenance = &v
+	return s
+}
+
 // Describes a managed prefix list.
 type ManagedPrefixList struct {
 	_ struct{} `type:"structure"`
@@ -130520,7 +139378,7 @@ func (s *MemoryMiBRequest) SetMin(v int64) *MemoryMiBRequest {
 	return s
 }
 
-// Indicates whether the network was healthy or unhealthy at a particular point.
+// Indicates whether the network was healthy or degraded at a particular point.
 // The value is aggregated from the startDate to the endDate. Currently only
 // five_minutes is supported.
 type MetricPoint struct {
@@ -131525,6 +140383,8 @@ type ModifyFleetInput struct {
 	// Indicates whether running instances should be terminated if the total target
 	// capacity of the EC2 Fleet is decreased below the current size of the EC2
 	// Fleet.
+	//
+	// Supported only for fleets of type maintain.
 	ExcessCapacityTerminationPolicy *string `type:"string" enum:"FleetExcessCapacityTerminationPolicy"`
 
 	// The ID of the EC2 Fleet.
@@ -131828,6 +140688,11 @@ type ModifyHostsInput struct {
 	// HostIds is a required field
 	HostIds []*string `locationName:"hostId" locationNameList:"item" type:"list" required:"true"`
 
+	// Indicates whether to enable or disable host maintenance for the Dedicated
+	// Host. For more information, see Host maintenance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-maintenance.html)
+	// in the Amazon EC2 User Guide.
+	HostMaintenance *string `type:"string" enum:"HostMaintenance"`
+
 	// Indicates whether to enable or disable host recovery for the Dedicated Host.
 	// For more information, see Host recovery (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-recovery.html)
 	// in the Amazon EC2 User Guide.
@@ -131892,6 +140757,12 @@ func (s *ModifyHostsInput) SetAutoPlacement(v string) *ModifyHostsInput {
 // SetHostIds sets the HostIds field's value.
 func (s *ModifyHostsInput) SetHostIds(v []*string) *ModifyHostsInput {
 	s.HostIds = v
+	return s
+}
+
+// SetHostMaintenance sets the HostMaintenance field's value.
+func (s *ModifyHostsInput) SetHostMaintenance(v string) *ModifyHostsInput {
+	s.HostMaintenance = &v
 	return s
 }
 
@@ -132158,7 +141029,7 @@ type ModifyImageAttributeInput struct {
 
 	// The name of the attribute to modify.
 	//
-	// Valid values: description | launchPermission
+	// Valid values: description | imdsSupport | launchPermission
 	Attribute *string `type:"string"`
 
 	// A new description for the AMI.
@@ -132174,6 +141045,18 @@ type ModifyImageAttributeInput struct {
 	//
 	// ImageId is a required field
 	ImageId *string `type:"string" required:"true"`
+
+	// Set to v2.0 to indicate that IMDSv2 is specified in the AMI. Instances launched
+	// from this AMI will have HttpTokens automatically set to required so that,
+	// by default, the instance requires that IMDSv2 is used when requesting instance
+	// metadata. In addition, HttpPutResponseHopLimit is set to 2. For more information,
+	// see Configure the AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration)
+	// in the Amazon EC2 User Guide.
+	//
+	// Do not use this parameter unless your AMI software supports IMDSv2. After
+	// you set the value to v2.0, you can't undo it. The only way to “reset”
+	// your AMI is to create a new AMI from the underlying snapshot.
+	ImdsSupport *AttributeValue `type:"structure"`
 
 	// A new launch permission for the AMI.
 	LaunchPermission *LaunchPermissionModifications `type:"structure"`
@@ -132202,7 +141085,7 @@ type ModifyImageAttributeInput struct {
 	UserIds []*string `locationName:"UserId" locationNameList:"UserId" type:"list"`
 
 	// The value of the attribute being modified. This parameter can be used only
-	// when the Attribute parameter is description.
+	// when the Attribute parameter is description or imdsSupport.
 	Value *string `type:"string"`
 }
 
@@ -132258,6 +141141,12 @@ func (s *ModifyImageAttributeInput) SetDryRun(v bool) *ModifyImageAttributeInput
 // SetImageId sets the ImageId field's value.
 func (s *ModifyImageAttributeInput) SetImageId(v string) *ModifyImageAttributeInput {
 	s.ImageId = &v
+	return s
+}
+
+// SetImdsSupport sets the ImdsSupport field's value.
+func (s *ModifyImageAttributeInput) SetImdsSupport(v *AttributeValue) *ModifyImageAttributeInput {
+	s.ImdsSupport = v
 	return s
 }
 
@@ -132743,6 +141632,16 @@ func (s *ModifyInstanceCreditSpecificationInput) Validate() error {
 	if s.InstanceCreditSpecifications == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceCreditSpecifications"))
 	}
+	if s.InstanceCreditSpecifications != nil {
+		for i, v := range s.InstanceCreditSpecifications {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "InstanceCreditSpecifications", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -133196,19 +142095,22 @@ type ModifyInstanceMetadataOptionsInput struct {
 	// Possible values: Integers from 1 to 64
 	HttpPutResponseHopLimit *int64 `type:"integer"`
 
-	// The state of token usage for your instance metadata requests. If the parameter
-	// is not specified in the request, the default state is optional.
+	// IMDSv2 uses token-backed sessions. Set the use of HTTP tokens to optional
+	// (in other words, set the use of IMDSv2 to optional) or required (in other
+	// words, set the use of IMDSv2 to required).
 	//
-	// If the state is optional, you can choose to retrieve instance metadata with
-	// or without a session token on your request. If you retrieve the IAM role
-	// credentials without a token, the version 1.0 role credentials are returned.
-	// If you retrieve the IAM role credentials using a valid session token, the
-	// version 2.0 role credentials are returned.
+	//    * optional - When IMDSv2 is optional, you can choose to retrieve instance
+	//    metadata with or without a session token in your request. If you retrieve
+	//    the IAM role credentials without a token, the IMDSv1 role credentials
+	//    are returned. If you retrieve the IAM role credentials using a valid session
+	//    token, the IMDSv2 role credentials are returned.
 	//
-	// If the state is required, you must send a session token with any instance
-	// metadata retrieval requests. In this state, retrieving the IAM role credentials
-	// always returns the version 2.0 credentials; the version 1.0 credentials are
-	// not available.
+	//    * required - When IMDSv2 is required, you must send a session token with
+	//    any instance metadata retrieval requests. In this state, retrieving the
+	//    IAM role credentials always returns IMDSv2 credentials; IMDSv1 credentials
+	//    are not available.
+	//
+	// Default: optional
 	HttpTokens *string `type:"string" enum:"HttpTokensState"`
 
 	// The ID of the instance.
@@ -133948,6 +142850,125 @@ func (s *ModifyIpamResourceCidrOutput) SetIpamResourceCidr(v *IpamResourceCidr) 
 	return s
 }
 
+type ModifyIpamResourceDiscoveryInput struct {
+	_ struct{} `type:"structure"`
+
+	// Add operating Regions to the resource discovery. Operating Regions are Amazon
+	// Web Services Regions where the IPAM is allowed to manage IP address CIDRs.
+	// IPAM only discovers and monitors resources in the Amazon Web Services Regions
+	// you select as operating Regions.
+	AddOperatingRegions []*AddIpamOperatingRegion `locationName:"AddOperatingRegion" type:"list"`
+
+	// A resource discovery description.
+	Description *string `type:"string"`
+
+	// A check for whether you have the required permissions for the action without
+	// actually making the request and provides an error response. If you have the
+	// required permissions, the error response is DryRunOperation. Otherwise, it
+	// is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// A resource discovery ID.
+	//
+	// IpamResourceDiscoveryId is a required field
+	IpamResourceDiscoveryId *string `type:"string" required:"true"`
+
+	// Remove operating Regions.
+	RemoveOperatingRegions []*RemoveIpamOperatingRegion `locationName:"RemoveOperatingRegion" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyIpamResourceDiscoveryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyIpamResourceDiscoveryInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyIpamResourceDiscoveryInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyIpamResourceDiscoveryInput"}
+	if s.IpamResourceDiscoveryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpamResourceDiscoveryId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAddOperatingRegions sets the AddOperatingRegions field's value.
+func (s *ModifyIpamResourceDiscoveryInput) SetAddOperatingRegions(v []*AddIpamOperatingRegion) *ModifyIpamResourceDiscoveryInput {
+	s.AddOperatingRegions = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ModifyIpamResourceDiscoveryInput) SetDescription(v string) *ModifyIpamResourceDiscoveryInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyIpamResourceDiscoveryInput) SetDryRun(v bool) *ModifyIpamResourceDiscoveryInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetIpamResourceDiscoveryId sets the IpamResourceDiscoveryId field's value.
+func (s *ModifyIpamResourceDiscoveryInput) SetIpamResourceDiscoveryId(v string) *ModifyIpamResourceDiscoveryInput {
+	s.IpamResourceDiscoveryId = &v
+	return s
+}
+
+// SetRemoveOperatingRegions sets the RemoveOperatingRegions field's value.
+func (s *ModifyIpamResourceDiscoveryInput) SetRemoveOperatingRegions(v []*RemoveIpamOperatingRegion) *ModifyIpamResourceDiscoveryInput {
+	s.RemoveOperatingRegions = v
+	return s
+}
+
+type ModifyIpamResourceDiscoveryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A resource discovery.
+	IpamResourceDiscovery *IpamResourceDiscovery `locationName:"ipamResourceDiscovery" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyIpamResourceDiscoveryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyIpamResourceDiscoveryOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpamResourceDiscovery sets the IpamResourceDiscovery field's value.
+func (s *ModifyIpamResourceDiscoveryOutput) SetIpamResourceDiscovery(v *IpamResourceDiscovery) *ModifyIpamResourceDiscoveryOutput {
+	s.IpamResourceDiscovery = v
+	return s
+}
+
 type ModifyIpamScopeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -134174,9 +143195,12 @@ type ModifyLocalGatewayRouteInput struct {
 
 	// The CIDR block used for destination matches. The value that you provide must
 	// match the CIDR of an existing route in the table.
-	//
-	// DestinationCidrBlock is a required field
-	DestinationCidrBlock *string `type:"string" required:"true"`
+	DestinationCidrBlock *string `type:"string"`
+
+	// The ID of the prefix list. Use a prefix list in place of DestinationCidrBlock.
+	// You cannot use DestinationPrefixListId and DestinationCidrBlock in the same
+	// request.
+	DestinationPrefixListId *string `type:"string"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -134217,9 +143241,6 @@ func (s ModifyLocalGatewayRouteInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ModifyLocalGatewayRouteInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ModifyLocalGatewayRouteInput"}
-	if s.DestinationCidrBlock == nil {
-		invalidParams.Add(request.NewErrParamRequired("DestinationCidrBlock"))
-	}
 	if s.LocalGatewayRouteTableId == nil {
 		invalidParams.Add(request.NewErrParamRequired("LocalGatewayRouteTableId"))
 	}
@@ -134233,6 +143254,12 @@ func (s *ModifyLocalGatewayRouteInput) Validate() error {
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
 func (s *ModifyLocalGatewayRouteInput) SetDestinationCidrBlock(v string) *ModifyLocalGatewayRouteInput {
 	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationPrefixListId sets the DestinationPrefixListId field's value.
+func (s *ModifyLocalGatewayRouteInput) SetDestinationPrefixListId(v string) *ModifyLocalGatewayRouteInput {
+	s.DestinationPrefixListId = &v
 	return s
 }
 
@@ -134605,7 +143632,9 @@ type ModifyPrivateDnsNameOptionsInput struct {
 	EnableResourceNameDnsARecord *bool `type:"boolean"`
 
 	// The ID of the instance.
-	InstanceId *string `type:"string"`
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
 
 	// The type of hostname for EC2 instances. For IPv4 only subnets, an instance
 	// DNS name must be based on the instance IPv4 address. For IPv6 only subnets,
@@ -134631,6 +143660,19 @@ func (s ModifyPrivateDnsNameOptionsInput) String() string {
 // value will be replaced with "sensitive".
 func (s ModifyPrivateDnsNameOptionsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyPrivateDnsNameOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyPrivateDnsNameOptionsInput"}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -134843,6 +143885,16 @@ func (s *ModifySecurityGroupRulesInput) Validate() error {
 	}
 	if s.SecurityGroupRules == nil {
 		invalidParams.Add(request.NewErrParamRequired("SecurityGroupRules"))
+	}
+	if s.SecurityGroupRules != nil {
+		for i, v := range s.SecurityGroupRules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "SecurityGroupRules", i), err.(request.ErrInvalidParams))
+			}
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -135140,9 +144192,11 @@ type ModifySpotFleetRequestInput struct {
 	// Reserved.
 	Context *string `type:"string"`
 
-	// Indicates whether running Spot Instances should be terminated if the target
-	// capacity of the Spot Fleet request is decreased below the current size of
-	// the Spot Fleet.
+	// Indicates whether running instances should be terminated if the target capacity
+	// of the Spot Fleet request is decreased below the current size of the Spot
+	// Fleet.
+	//
+	// Supported only for fleets of type maintain.
 	ExcessCapacityTerminationPolicy *string `locationName:"excessCapacityTerminationPolicy" type:"string" enum:"ExcessCapacityTerminationPolicy"`
 
 	// The launch template and overrides. You can only use this parameter if you
@@ -136430,6 +145484,1033 @@ func (s *ModifyTransitGatewayVpcAttachmentRequestOptions) SetIpv6Support(v strin
 	return s
 }
 
+// Options for a network-interface type Verified Access endpoint.
+type ModifyVerifiedAccessEndpointEniOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The IP port number.
+	Port *int64 `min:"1" type:"integer"`
+
+	// The IP protocol.
+	Protocol *string `type:"string" enum:"VerifiedAccessEndpointProtocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointEniOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointEniOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessEndpointEniOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessEndpointEniOptions"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *ModifyVerifiedAccessEndpointEniOptions) SetPort(v int64) *ModifyVerifiedAccessEndpointEniOptions {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *ModifyVerifiedAccessEndpointEniOptions) SetProtocol(v string) *ModifyVerifiedAccessEndpointEniOptions {
+	s.Protocol = &v
+	return s
+}
+
+type ModifyVerifiedAccessEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access endpoint.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The load balancer details if creating the Amazon Web Services Verified Access
+	// endpoint as load-balancertype.
+	LoadBalancerOptions *ModifyVerifiedAccessEndpointLoadBalancerOptions `type:"structure"`
+
+	// The network interface options.
+	NetworkInterfaceOptions *ModifyVerifiedAccessEndpointEniOptions `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	//
+	// VerifiedAccessEndpointId is a required field
+	VerifiedAccessEndpointId *string `type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	VerifiedAccessGroupId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessEndpointInput"}
+	if s.VerifiedAccessEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessEndpointId"))
+	}
+	if s.LoadBalancerOptions != nil {
+		if err := s.LoadBalancerOptions.Validate(); err != nil {
+			invalidParams.AddNested("LoadBalancerOptions", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.NetworkInterfaceOptions != nil {
+		if err := s.NetworkInterfaceOptions.Validate(); err != nil {
+			invalidParams.AddNested("NetworkInterfaceOptions", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetClientToken(v string) *ModifyVerifiedAccessEndpointInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetDescription(v string) *ModifyVerifiedAccessEndpointInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetDryRun(v bool) *ModifyVerifiedAccessEndpointInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetLoadBalancerOptions sets the LoadBalancerOptions field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetLoadBalancerOptions(v *ModifyVerifiedAccessEndpointLoadBalancerOptions) *ModifyVerifiedAccessEndpointInput {
+	s.LoadBalancerOptions = v
+	return s
+}
+
+// SetNetworkInterfaceOptions sets the NetworkInterfaceOptions field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetNetworkInterfaceOptions(v *ModifyVerifiedAccessEndpointEniOptions) *ModifyVerifiedAccessEndpointInput {
+	s.NetworkInterfaceOptions = v
+	return s
+}
+
+// SetVerifiedAccessEndpointId sets the VerifiedAccessEndpointId field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetVerifiedAccessEndpointId(v string) *ModifyVerifiedAccessEndpointInput {
+	s.VerifiedAccessEndpointId = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *ModifyVerifiedAccessEndpointInput) SetVerifiedAccessGroupId(v string) *ModifyVerifiedAccessEndpointInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+// Describes a load balancer when creating an Amazon Web Services Verified Access
+// endpoint using the load-balancer type.
+type ModifyVerifiedAccessEndpointLoadBalancerOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The IP port number.
+	Port *int64 `min:"1" type:"integer"`
+
+	// The IP protocol.
+	Protocol *string `type:"string" enum:"VerifiedAccessEndpointProtocol"`
+
+	// The IDs of the subnets.
+	SubnetIds []*string `locationName:"SubnetId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointLoadBalancerOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointLoadBalancerOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessEndpointLoadBalancerOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessEndpointLoadBalancerOptions"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *ModifyVerifiedAccessEndpointLoadBalancerOptions) SetPort(v int64) *ModifyVerifiedAccessEndpointLoadBalancerOptions {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *ModifyVerifiedAccessEndpointLoadBalancerOptions) SetProtocol(v string) *ModifyVerifiedAccessEndpointLoadBalancerOptions {
+	s.Protocol = &v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *ModifyVerifiedAccessEndpointLoadBalancerOptions) SetSubnetIds(v []*string) *ModifyVerifiedAccessEndpointLoadBalancerOptions {
+	s.SubnetIds = v
+	return s
+}
+
+type ModifyVerifiedAccessEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services Verified Access endpoint details.
+	VerifiedAccessEndpoint *VerifiedAccessEndpoint `locationName:"verifiedAccessEndpoint" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessEndpoint sets the VerifiedAccessEndpoint field's value.
+func (s *ModifyVerifiedAccessEndpointOutput) SetVerifiedAccessEndpoint(v *VerifiedAccessEndpoint) *ModifyVerifiedAccessEndpointOutput {
+	s.VerifiedAccessEndpoint = v
+	return s
+}
+
+type ModifyVerifiedAccessEndpointPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `type:"string"`
+
+	// The status of the Verified Access policy.
+	//
+	// PolicyEnabled is a required field
+	PolicyEnabled *bool `type:"boolean" required:"true"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	//
+	// VerifiedAccessEndpointId is a required field
+	VerifiedAccessEndpointId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessEndpointPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessEndpointPolicyInput"}
+	if s.PolicyEnabled == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyEnabled"))
+	}
+	if s.VerifiedAccessEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessEndpointId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyInput) SetClientToken(v string) *ModifyVerifiedAccessEndpointPolicyInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyInput) SetDryRun(v bool) *ModifyVerifiedAccessEndpointPolicyInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyInput) SetPolicyDocument(v string) *ModifyVerifiedAccessEndpointPolicyInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyEnabled sets the PolicyEnabled field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyInput) SetPolicyEnabled(v bool) *ModifyVerifiedAccessEndpointPolicyInput {
+	s.PolicyEnabled = &v
+	return s
+}
+
+// SetVerifiedAccessEndpointId sets the VerifiedAccessEndpointId field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyInput) SetVerifiedAccessEndpointId(v string) *ModifyVerifiedAccessEndpointPolicyInput {
+	s.VerifiedAccessEndpointId = &v
+	return s
+}
+
+type ModifyVerifiedAccessEndpointPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `locationName:"policyDocument" type:"string"`
+
+	// The status of the Verified Access policy.
+	PolicyEnabled *bool `locationName:"policyEnabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessEndpointPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyOutput) SetPolicyDocument(v string) *ModifyVerifiedAccessEndpointPolicyOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyEnabled sets the PolicyEnabled field's value.
+func (s *ModifyVerifiedAccessEndpointPolicyOutput) SetPolicyEnabled(v bool) *ModifyVerifiedAccessEndpointPolicyOutput {
+	s.PolicyEnabled = &v
+	return s
+}
+
+type ModifyVerifiedAccessGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access group.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	//
+	// VerifiedAccessGroupId is a required field
+	VerifiedAccessGroupId *string `type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessGroupInput"}
+	if s.VerifiedAccessGroupId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessGroupId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessGroupInput) SetClientToken(v string) *ModifyVerifiedAccessGroupInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ModifyVerifiedAccessGroupInput) SetDescription(v string) *ModifyVerifiedAccessGroupInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessGroupInput) SetDryRun(v bool) *ModifyVerifiedAccessGroupInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *ModifyVerifiedAccessGroupInput) SetVerifiedAccessGroupId(v string) *ModifyVerifiedAccessGroupInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *ModifyVerifiedAccessGroupInput) SetVerifiedAccessInstanceId(v string) *ModifyVerifiedAccessGroupInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type ModifyVerifiedAccessGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Details of Amazon Web Services Verified Access group.
+	VerifiedAccessGroup *VerifiedAccessGroup `locationName:"verifiedAccessGroup" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessGroup sets the VerifiedAccessGroup field's value.
+func (s *ModifyVerifiedAccessGroupOutput) SetVerifiedAccessGroup(v *VerifiedAccessGroup) *ModifyVerifiedAccessGroupOutput {
+	s.VerifiedAccessGroup = v
+	return s
+}
+
+type ModifyVerifiedAccessGroupPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `type:"string"`
+
+	// The status of the Verified Access policy.
+	//
+	// PolicyEnabled is a required field
+	PolicyEnabled *bool `type:"boolean" required:"true"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	//
+	// VerifiedAccessGroupId is a required field
+	VerifiedAccessGroupId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessGroupPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessGroupPolicyInput"}
+	if s.PolicyEnabled == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyEnabled"))
+	}
+	if s.VerifiedAccessGroupId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessGroupId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessGroupPolicyInput) SetClientToken(v string) *ModifyVerifiedAccessGroupPolicyInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessGroupPolicyInput) SetDryRun(v bool) *ModifyVerifiedAccessGroupPolicyInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *ModifyVerifiedAccessGroupPolicyInput) SetPolicyDocument(v string) *ModifyVerifiedAccessGroupPolicyInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyEnabled sets the PolicyEnabled field's value.
+func (s *ModifyVerifiedAccessGroupPolicyInput) SetPolicyEnabled(v bool) *ModifyVerifiedAccessGroupPolicyInput {
+	s.PolicyEnabled = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *ModifyVerifiedAccessGroupPolicyInput) SetVerifiedAccessGroupId(v string) *ModifyVerifiedAccessGroupPolicyInput {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+type ModifyVerifiedAccessGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services Verified Access policy document.
+	PolicyDocument *string `locationName:"policyDocument" type:"string"`
+
+	// The status of the Verified Access policy.
+	PolicyEnabled *bool `locationName:"policyEnabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessGroupPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *ModifyVerifiedAccessGroupPolicyOutput) SetPolicyDocument(v string) *ModifyVerifiedAccessGroupPolicyOutput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyEnabled sets the PolicyEnabled field's value.
+func (s *ModifyVerifiedAccessGroupPolicyOutput) SetPolicyEnabled(v bool) *ModifyVerifiedAccessGroupPolicyOutput {
+	s.PolicyEnabled = &v
+	return s
+}
+
+type ModifyVerifiedAccessInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access instance.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	//
+	// VerifiedAccessInstanceId is a required field
+	VerifiedAccessInstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessInstanceInput"}
+	if s.VerifiedAccessInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessInstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessInstanceInput) SetClientToken(v string) *ModifyVerifiedAccessInstanceInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ModifyVerifiedAccessInstanceInput) SetDescription(v string) *ModifyVerifiedAccessInstanceInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessInstanceInput) SetDryRun(v bool) *ModifyVerifiedAccessInstanceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *ModifyVerifiedAccessInstanceInput) SetVerifiedAccessInstanceId(v string) *ModifyVerifiedAccessInstanceInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type ModifyVerifiedAccessInstanceLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration options for Amazon Web Services Verified Access instances.
+	//
+	// AccessLogs is a required field
+	AccessLogs *VerifiedAccessLogOptions `type:"structure" required:"true"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	//
+	// VerifiedAccessInstanceId is a required field
+	VerifiedAccessInstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessInstanceLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessInstanceLoggingConfigurationInput"}
+	if s.AccessLogs == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessLogs"))
+	}
+	if s.VerifiedAccessInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessInstanceId"))
+	}
+	if s.AccessLogs != nil {
+		if err := s.AccessLogs.Validate(); err != nil {
+			invalidParams.AddNested("AccessLogs", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessLogs sets the AccessLogs field's value.
+func (s *ModifyVerifiedAccessInstanceLoggingConfigurationInput) SetAccessLogs(v *VerifiedAccessLogOptions) *ModifyVerifiedAccessInstanceLoggingConfigurationInput {
+	s.AccessLogs = v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessInstanceLoggingConfigurationInput) SetClientToken(v string) *ModifyVerifiedAccessInstanceLoggingConfigurationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessInstanceLoggingConfigurationInput) SetDryRun(v bool) *ModifyVerifiedAccessInstanceLoggingConfigurationInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *ModifyVerifiedAccessInstanceLoggingConfigurationInput) SetVerifiedAccessInstanceId(v string) *ModifyVerifiedAccessInstanceLoggingConfigurationInput {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+type ModifyVerifiedAccessInstanceLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The logging configuration for Amazon Web Services Verified Access instance.
+	LoggingConfiguration *VerifiedAccessInstanceLoggingConfiguration `locationName:"loggingConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetLoggingConfiguration sets the LoggingConfiguration field's value.
+func (s *ModifyVerifiedAccessInstanceLoggingConfigurationOutput) SetLoggingConfiguration(v *VerifiedAccessInstanceLoggingConfiguration) *ModifyVerifiedAccessInstanceLoggingConfigurationOutput {
+	s.LoggingConfiguration = v
+	return s
+}
+
+type ModifyVerifiedAccessInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstance *VerifiedAccessInstance `locationName:"verifiedAccessInstance" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessInstance sets the VerifiedAccessInstance field's value.
+func (s *ModifyVerifiedAccessInstanceOutput) SetVerifiedAccessInstance(v *VerifiedAccessInstance) *ModifyVerifiedAccessInstanceOutput {
+	s.VerifiedAccessInstance = v
+	return s
+}
+
+type ModifyVerifiedAccessTrustProviderInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive token that you provide to ensure idempotency of
+	// your modification request. For more information, see Ensuring Idempotency
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description for the Amazon Web Services Verified Access trust provider.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The OpenID Connect details for an oidc-type, user-identity based trust provider.
+	OidcOptions *ModifyVerifiedAccessTrustProviderOidcOptions `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	//
+	// VerifiedAccessTrustProviderId is a required field
+	VerifiedAccessTrustProviderId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessTrustProviderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessTrustProviderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVerifiedAccessTrustProviderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVerifiedAccessTrustProviderInput"}
+	if s.VerifiedAccessTrustProviderId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VerifiedAccessTrustProviderId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ModifyVerifiedAccessTrustProviderInput) SetClientToken(v string) *ModifyVerifiedAccessTrustProviderInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ModifyVerifiedAccessTrustProviderInput) SetDescription(v string) *ModifyVerifiedAccessTrustProviderInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVerifiedAccessTrustProviderInput) SetDryRun(v bool) *ModifyVerifiedAccessTrustProviderInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetOidcOptions sets the OidcOptions field's value.
+func (s *ModifyVerifiedAccessTrustProviderInput) SetOidcOptions(v *ModifyVerifiedAccessTrustProviderOidcOptions) *ModifyVerifiedAccessTrustProviderInput {
+	s.OidcOptions = v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderId sets the VerifiedAccessTrustProviderId field's value.
+func (s *ModifyVerifiedAccessTrustProviderInput) SetVerifiedAccessTrustProviderId(v string) *ModifyVerifiedAccessTrustProviderInput {
+	s.VerifiedAccessTrustProviderId = &v
+	return s
+}
+
+// OpenID Connect options for an oidc-type, user-identity based trust provider.
+type ModifyVerifiedAccessTrustProviderOidcOptions struct {
+	_ struct{} `type:"structure"`
+
+	// OpenID Connect (OIDC) scopes are used by an application during authentication
+	// to authorize access to a user's details. Each scope returns a specific set
+	// of user attributes.
+	Scope *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessTrustProviderOidcOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessTrustProviderOidcOptions) GoString() string {
+	return s.String()
+}
+
+// SetScope sets the Scope field's value.
+func (s *ModifyVerifiedAccessTrustProviderOidcOptions) SetScope(v string) *ModifyVerifiedAccessTrustProviderOidcOptions {
+	s.Scope = &v
+	return s
+}
+
+type ModifyVerifiedAccessTrustProviderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	VerifiedAccessTrustProvider *VerifiedAccessTrustProvider `locationName:"verifiedAccessTrustProvider" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessTrustProviderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyVerifiedAccessTrustProviderOutput) GoString() string {
+	return s.String()
+}
+
+// SetVerifiedAccessTrustProvider sets the VerifiedAccessTrustProvider field's value.
+func (s *ModifyVerifiedAccessTrustProviderOutput) SetVerifiedAccessTrustProvider(v *VerifiedAccessTrustProvider) *ModifyVerifiedAccessTrustProviderOutput {
+	s.VerifiedAccessTrustProvider = v
+	return s
+}
+
 type ModifyVolumeAttributeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -136802,8 +146883,8 @@ func (s ModifyVpcAttributeOutput) GoString() string {
 type ModifyVpcEndpointConnectionNotificationInput struct {
 	_ struct{} `type:"structure"`
 
-	// One or more events for the endpoint. Valid values are Accept, Connect, Delete,
-	// and Reject.
+	// The events for the endpoint. Valid values are Accept, Connect, Delete, and
+	// Reject.
 	ConnectionEvents []*string `locationNameList:"item" type:"list"`
 
 	// The ARN for the SNS topic for the notification.
@@ -136907,18 +146988,17 @@ func (s *ModifyVpcEndpointConnectionNotificationOutput) SetReturnValue(v bool) *
 	return s
 }
 
-// Contains the parameters for ModifyVpcEndpoint.
 type ModifyVpcEndpointInput struct {
 	_ struct{} `type:"structure"`
 
-	// (Gateway endpoint) One or more route tables IDs to associate with the endpoint.
+	// (Gateway endpoint) The IDs of the route tables to associate with the endpoint.
 	AddRouteTableIds []*string `locationName:"AddRouteTableId" locationNameList:"item" type:"list"`
 
-	// (Interface endpoint) One or more security group IDs to associate with the
+	// (Interface endpoint) The IDs of the security groups to associate with the
 	// network interface.
 	AddSecurityGroupIds []*string `locationName:"AddSecurityGroupId" locationNameList:"item" type:"list"`
 
-	// (Interface and Gateway Load Balancer endpoints) One or more subnet IDs in
+	// (Interface and Gateway Load Balancer endpoints) The IDs of the subnets in
 	// which to serve the endpoint. For a Gateway Load Balancer endpoint, you can
 	// specify only one subnet.
 	AddSubnetIds []*string `locationName:"AddSubnetId" locationNameList:"item" type:"list"`
@@ -136943,14 +147023,14 @@ type ModifyVpcEndpointInput struct {
 	// with the VPC.
 	PrivateDnsEnabled *bool `type:"boolean"`
 
-	// (Gateway endpoint) One or more route table IDs to disassociate from the endpoint.
+	// (Gateway endpoint) The IDs of the route tables to disassociate from the endpoint.
 	RemoveRouteTableIds []*string `locationName:"RemoveRouteTableId" locationNameList:"item" type:"list"`
 
-	// (Interface endpoint) One or more security group IDs to disassociate from
+	// (Interface endpoint) The IDs of the security groups to disassociate from
 	// the network interface.
 	RemoveSecurityGroupIds []*string `locationName:"RemoveSecurityGroupId" locationNameList:"item" type:"list"`
 
-	// (Interface endpoint) One or more subnets IDs in which to remove the endpoint.
+	// (Interface endpoint) The IDs of the subnets from which to remove the endpoint.
 	RemoveSubnetIds []*string `locationName:"RemoveSubnetId" locationNameList:"item" type:"list"`
 
 	// (Gateway endpoint) Specify true to reset the policy document to the default
@@ -137388,9 +147468,9 @@ func (s *ModifyVpcEndpointServicePayerResponsibilityOutput) SetReturnValue(v boo
 type ModifyVpcEndpointServicePermissionsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Names (ARN) of one or more principals. Permissions are
-	// granted to the principals in this list. To grant permissions to all principals,
-	// specify an asterisk (*).
+	// The Amazon Resource Names (ARN) of the principals. Permissions are granted
+	// to the principals in this list. To grant permissions to all principals, specify
+	// an asterisk (*).
 	AddAllowedPrincipals []*string `locationNameList:"item" type:"list"`
 
 	// Checks whether you have the required permissions for the action, without
@@ -137399,8 +147479,8 @@ type ModifyVpcEndpointServicePermissionsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// The Amazon Resource Names (ARN) of one or more principals. Permissions are
-	// revoked for principals in this list.
+	// The Amazon Resource Names (ARN) of the principals. Permissions are revoked
+	// for principals in this list.
 	RemoveAllowedPrincipals []*string `locationNameList:"item" type:"list"`
 
 	// The ID of the service.
@@ -138085,6 +148165,11 @@ type ModifyVpnTunnelOptionsInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
+	// Choose whether or not to trigger immediate tunnel replacement.
+	//
+	// Valid values: True | False
+	SkipTunnelReplacement *bool `type:"boolean"`
+
 	// The tunnel options to modify.
 	//
 	// TunnelOptions is a required field
@@ -138141,6 +148226,12 @@ func (s *ModifyVpnTunnelOptionsInput) Validate() error {
 // SetDryRun sets the DryRun field's value.
 func (s *ModifyVpnTunnelOptionsInput) SetDryRun(v bool) *ModifyVpnTunnelOptionsInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetSkipTunnelReplacement sets the SkipTunnelReplacement field's value.
+func (s *ModifyVpnTunnelOptionsInput) SetSkipTunnelReplacement(v bool) *ModifyVpnTunnelOptionsInput {
+	s.SkipTunnelReplacement = &v
 	return s
 }
 
@@ -138211,6 +148302,9 @@ type ModifyVpnTunnelOptionsSpecification struct {
 	//
 	// Default: 30
 	DPDTimeoutSeconds *int64 `type:"integer"`
+
+	// Turn on or off tunnel endpoint lifecycle control feature.
+	EnableTunnelLifecycleControl *bool `type:"boolean"`
 
 	// The IKE versions that are permitted for the VPN tunnel.
 	//
@@ -138370,6 +148464,12 @@ func (s *ModifyVpnTunnelOptionsSpecification) SetDPDTimeoutAction(v string) *Mod
 // SetDPDTimeoutSeconds sets the DPDTimeoutSeconds field's value.
 func (s *ModifyVpnTunnelOptionsSpecification) SetDPDTimeoutSeconds(v int64) *ModifyVpnTunnelOptionsSpecification {
 	s.DPDTimeoutSeconds = &v
+	return s
+}
+
+// SetEnableTunnelLifecycleControl sets the EnableTunnelLifecycleControl field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetEnableTunnelLifecycleControl(v bool) *ModifyVpnTunnelOptionsSpecification {
+	s.EnableTunnelLifecycleControl = &v
 	return s
 }
 
@@ -139037,6 +149137,16 @@ type NatGatewayAddress struct {
 	// associated with the NAT gateway.
 	AllocationId *string `locationName:"allocationId" type:"string"`
 
+	// [Public NAT gateway only] The association ID of the Elastic IP address that's
+	// associated with the NAT gateway.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The address failure message.
+	FailureMessage *string `locationName:"failureMessage" type:"string"`
+
+	// Defines if the IP address is the primary address.
+	IsPrimary *bool `locationName:"isPrimary" type:"boolean"`
+
 	// The ID of the network interface associated with the NAT gateway.
 	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
 
@@ -139046,6 +149156,9 @@ type NatGatewayAddress struct {
 	// [Public NAT gateway only] The Elastic IP address associated with the NAT
 	// gateway.
 	PublicIp *string `locationName:"publicIp" type:"string"`
+
+	// The address status.
+	Status *string `locationName:"status" type:"string" enum:"NatGatewayAddressStatus"`
 }
 
 // String returns the string representation.
@@ -139072,6 +149185,24 @@ func (s *NatGatewayAddress) SetAllocationId(v string) *NatGatewayAddress {
 	return s
 }
 
+// SetAssociationId sets the AssociationId field's value.
+func (s *NatGatewayAddress) SetAssociationId(v string) *NatGatewayAddress {
+	s.AssociationId = &v
+	return s
+}
+
+// SetFailureMessage sets the FailureMessage field's value.
+func (s *NatGatewayAddress) SetFailureMessage(v string) *NatGatewayAddress {
+	s.FailureMessage = &v
+	return s
+}
+
+// SetIsPrimary sets the IsPrimary field's value.
+func (s *NatGatewayAddress) SetIsPrimary(v bool) *NatGatewayAddress {
+	s.IsPrimary = &v
+	return s
+}
+
 // SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
 func (s *NatGatewayAddress) SetNetworkInterfaceId(v string) *NatGatewayAddress {
 	s.NetworkInterfaceId = &v
@@ -139087,6 +149218,12 @@ func (s *NatGatewayAddress) SetPrivateIp(v string) *NatGatewayAddress {
 // SetPublicIp sets the PublicIp field's value.
 func (s *NatGatewayAddress) SetPublicIp(v string) *NatGatewayAddress {
 	s.PublicIp = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *NatGatewayAddress) SetStatus(v string) *NatGatewayAddress {
+	s.Status = &v
 	return s
 }
 
@@ -139864,6 +150001,7 @@ func (s *NetworkInsightsAccessScopeContent) SetNetworkInsightsAccessScopeId(v st
 type NetworkInsightsAnalysis struct {
 	_ struct{} `type:"structure"`
 
+	// The member accounts that contain resources that the path can traverse.
 	AdditionalAccounts []*string `locationName:"additionalAccountSet" locationNameList:"item" type:"list"`
 
 	// Potential intermediate components.
@@ -139873,8 +150011,7 @@ type NetworkInsightsAnalysis struct {
 	// codes (https://docs.aws.amazon.com/vpc/latest/reachability/explanation-codes.html).
 	Explanations []*Explanation `locationName:"explanationSet" locationNameList:"item" type:"list"`
 
-	// The Amazon Resource Names (ARN) of the Amazon Web Services resources that
-	// the path must traverse.
+	// The Amazon Resource Names (ARN) of the resources that the path must traverse.
 	FilterInArns []*string `locationName:"filterInArnSet" locationNameList:"item" type:"list"`
 
 	// The components in the path from source to destination.
@@ -139904,6 +150041,7 @@ type NetworkInsightsAnalysis struct {
 	// The status message, if the status is failed.
 	StatusMessage *string `locationName:"statusMessage" type:"string"`
 
+	// Potential intermediate accounts.
 	SuggestedAccounts []*string `locationName:"suggestedAccountSet" locationNameList:"item" type:"list"`
 
 	// The tags.
@@ -140034,17 +150172,23 @@ type NetworkInsightsPath struct {
 	// The time stamp when the path was created.
 	CreatedDate *time.Time `locationName:"createdDate" type:"timestamp"`
 
-	// The Amazon Web Services resource that is the destination of the path.
+	// The ID of the destination.
 	Destination *string `locationName:"destination" type:"string"`
 
+	// The Amazon Resource Name (ARN) of the destination.
 	DestinationArn *string `locationName:"destinationArn" min:"1" type:"string"`
 
-	// The IP address of the Amazon Web Services resource that is the destination
-	// of the path.
+	// The IP address of the destination.
 	DestinationIp *string `locationName:"destinationIp" type:"string"`
 
 	// The destination port.
 	DestinationPort *int64 `locationName:"destinationPort" type:"integer"`
+
+	// Scopes the analysis to network paths that match specific filters at the destination.
+	FilterAtDestination *PathFilter `locationName:"filterAtDestination" type:"structure"`
+
+	// Scopes the analysis to network paths that match specific filters at the source.
+	FilterAtSource *PathFilter `locationName:"filterAtSource" type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the path.
 	NetworkInsightsPathArn *string `locationName:"networkInsightsPathArn" min:"1" type:"string"`
@@ -140055,13 +150199,13 @@ type NetworkInsightsPath struct {
 	// The protocol.
 	Protocol *string `locationName:"protocol" type:"string" enum:"Protocol"`
 
-	// The Amazon Web Services resource that is the source of the path.
+	// The ID of the source.
 	Source *string `locationName:"source" type:"string"`
 
+	// The Amazon Resource Name (ARN) of the source.
 	SourceArn *string `locationName:"sourceArn" min:"1" type:"string"`
 
-	// The IP address of the Amazon Web Services resource that is the source of
-	// the path.
+	// The IP address of the source.
 	SourceIp *string `locationName:"sourceIp" type:"string"`
 
 	// The tags associated with the path.
@@ -140113,6 +150257,18 @@ func (s *NetworkInsightsPath) SetDestinationIp(v string) *NetworkInsightsPath {
 // SetDestinationPort sets the DestinationPort field's value.
 func (s *NetworkInsightsPath) SetDestinationPort(v int64) *NetworkInsightsPath {
 	s.DestinationPort = &v
+	return s
+}
+
+// SetFilterAtDestination sets the FilterAtDestination field's value.
+func (s *NetworkInsightsPath) SetFilterAtDestination(v *PathFilter) *NetworkInsightsPath {
+	s.FilterAtDestination = v
+	return s
+}
+
+// SetFilterAtSource sets the FilterAtSource field's value.
+func (s *NetworkInsightsPath) SetFilterAtSource(v *PathFilter) *NetworkInsightsPath {
+	s.FilterAtSource = v
 	return s
 }
 
@@ -140993,6 +151149,92 @@ func (s *NewDhcpConfiguration) SetValues(v []*string) *NewDhcpConfiguration {
 	return s
 }
 
+// Options for OIDC-based, user-identity type trust provider.
+type OidcOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The OIDC authorization endpoint.
+	AuthorizationEndpoint *string `locationName:"authorizationEndpoint" type:"string"`
+
+	// The client identifier.
+	ClientId *string `locationName:"clientId" type:"string"`
+
+	// The client secret.
+	ClientSecret *string `locationName:"clientSecret" type:"string"`
+
+	// The OIDC issuer.
+	Issuer *string `locationName:"issuer" type:"string"`
+
+	// The OpenID Connect (OIDC) scope specified.
+	Scope *string `locationName:"scope" type:"string"`
+
+	// The OIDC token endpoint.
+	TokenEndpoint *string `locationName:"tokenEndpoint" type:"string"`
+
+	// The OIDC user info endpoint.
+	UserInfoEndpoint *string `locationName:"userInfoEndpoint" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OidcOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OidcOptions) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizationEndpoint sets the AuthorizationEndpoint field's value.
+func (s *OidcOptions) SetAuthorizationEndpoint(v string) *OidcOptions {
+	s.AuthorizationEndpoint = &v
+	return s
+}
+
+// SetClientId sets the ClientId field's value.
+func (s *OidcOptions) SetClientId(v string) *OidcOptions {
+	s.ClientId = &v
+	return s
+}
+
+// SetClientSecret sets the ClientSecret field's value.
+func (s *OidcOptions) SetClientSecret(v string) *OidcOptions {
+	s.ClientSecret = &v
+	return s
+}
+
+// SetIssuer sets the Issuer field's value.
+func (s *OidcOptions) SetIssuer(v string) *OidcOptions {
+	s.Issuer = &v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *OidcOptions) SetScope(v string) *OidcOptions {
+	s.Scope = &v
+	return s
+}
+
+// SetTokenEndpoint sets the TokenEndpoint field's value.
+func (s *OidcOptions) SetTokenEndpoint(v string) *OidcOptions {
+	s.TokenEndpoint = &v
+	return s
+}
+
+// SetUserInfoEndpoint sets the UserInfoEndpoint field's value.
+func (s *OidcOptions) SetUserInfoEndpoint(v string) *OidcOptions {
+	s.UserInfoEndpoint = &v
+	return s
+}
+
 // Describes the configuration of On-Demand Instances in an EC2 Fleet.
 type OnDemandOptions struct {
 	_ struct{} `type:"structure"`
@@ -141394,6 +151636,12 @@ type PathComponent struct {
 	// The explanation codes.
 	Explanations []*Explanation `locationName:"explanationSet" locationNameList:"item" type:"list"`
 
+	// The Network Firewall stateful rule.
+	FirewallStatefulRule *FirewallStatefulRule `locationName:"firewallStatefulRule" type:"structure"`
+
+	// The Network Firewall stateless rule.
+	FirewallStatelessRule *FirewallStatelessRule `locationName:"firewallStatelessRule" type:"structure"`
+
 	// The inbound header.
 	InboundHeader *AnalysisPacketHeader `locationName:"inboundHeader" type:"structure"`
 
@@ -141408,6 +151656,9 @@ type PathComponent struct {
 
 	// The sequence number.
 	SequenceNumber *int64 `locationName:"sequenceNumber" type:"integer"`
+
+	// The name of the VPC endpoint service.
+	ServiceName *string `locationName:"serviceName" type:"string"`
 
 	// The source VPC.
 	SourceVpc *AnalysisComponent `locationName:"sourceVpc" type:"structure"`
@@ -141485,6 +151736,18 @@ func (s *PathComponent) SetExplanations(v []*Explanation) *PathComponent {
 	return s
 }
 
+// SetFirewallStatefulRule sets the FirewallStatefulRule field's value.
+func (s *PathComponent) SetFirewallStatefulRule(v *FirewallStatefulRule) *PathComponent {
+	s.FirewallStatefulRule = v
+	return s
+}
+
+// SetFirewallStatelessRule sets the FirewallStatelessRule field's value.
+func (s *PathComponent) SetFirewallStatelessRule(v *FirewallStatelessRule) *PathComponent {
+	s.FirewallStatelessRule = v
+	return s
+}
+
 // SetInboundHeader sets the InboundHeader field's value.
 func (s *PathComponent) SetInboundHeader(v *AnalysisPacketHeader) *PathComponent {
 	s.InboundHeader = v
@@ -141515,6 +151778,12 @@ func (s *PathComponent) SetSequenceNumber(v int64) *PathComponent {
 	return s
 }
 
+// SetServiceName sets the ServiceName field's value.
+func (s *PathComponent) SetServiceName(v string) *PathComponent {
+	s.ServiceName = &v
+	return s
+}
+
 // SetSourceVpc sets the SourceVpc field's value.
 func (s *PathComponent) SetSourceVpc(v *AnalysisComponent) *PathComponent {
 	s.SourceVpc = v
@@ -141542,6 +151811,126 @@ func (s *PathComponent) SetTransitGatewayRouteTableRoute(v *TransitGatewayRouteT
 // SetVpc sets the Vpc field's value.
 func (s *PathComponent) SetVpc(v *AnalysisComponent) *PathComponent {
 	s.Vpc = v
+	return s
+}
+
+// Describes a set of filters for a path analysis. Use path filters to scope
+// the analysis when there can be multiple resulting paths.
+type PathFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The destination IPv4 address.
+	DestinationAddress *string `locationName:"destinationAddress" type:"string"`
+
+	// The destination port range.
+	DestinationPortRange *FilterPortRange `locationName:"destinationPortRange" type:"structure"`
+
+	// The source IPv4 address.
+	SourceAddress *string `locationName:"sourceAddress" type:"string"`
+
+	// The source port range.
+	SourcePortRange *FilterPortRange `locationName:"sourcePortRange" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PathFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PathFilter) GoString() string {
+	return s.String()
+}
+
+// SetDestinationAddress sets the DestinationAddress field's value.
+func (s *PathFilter) SetDestinationAddress(v string) *PathFilter {
+	s.DestinationAddress = &v
+	return s
+}
+
+// SetDestinationPortRange sets the DestinationPortRange field's value.
+func (s *PathFilter) SetDestinationPortRange(v *FilterPortRange) *PathFilter {
+	s.DestinationPortRange = v
+	return s
+}
+
+// SetSourceAddress sets the SourceAddress field's value.
+func (s *PathFilter) SetSourceAddress(v string) *PathFilter {
+	s.SourceAddress = &v
+	return s
+}
+
+// SetSourcePortRange sets the SourcePortRange field's value.
+func (s *PathFilter) SetSourcePortRange(v *FilterPortRange) *PathFilter {
+	s.SourcePortRange = v
+	return s
+}
+
+// Describes a set of filters for a path analysis. Use path filters to scope
+// the analysis when there can be multiple resulting paths.
+type PathRequestFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The destination IPv4 address.
+	DestinationAddress *string `type:"string"`
+
+	// The destination port range.
+	DestinationPortRange *RequestFilterPortRange `type:"structure"`
+
+	// The source IPv4 address.
+	SourceAddress *string `type:"string"`
+
+	// The source port range.
+	SourcePortRange *RequestFilterPortRange `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PathRequestFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PathRequestFilter) GoString() string {
+	return s.String()
+}
+
+// SetDestinationAddress sets the DestinationAddress field's value.
+func (s *PathRequestFilter) SetDestinationAddress(v string) *PathRequestFilter {
+	s.DestinationAddress = &v
+	return s
+}
+
+// SetDestinationPortRange sets the DestinationPortRange field's value.
+func (s *PathRequestFilter) SetDestinationPortRange(v *RequestFilterPortRange) *PathRequestFilter {
+	s.DestinationPortRange = v
+	return s
+}
+
+// SetSourceAddress sets the SourceAddress field's value.
+func (s *PathRequestFilter) SetSourceAddress(v string) *PathRequestFilter {
+	s.SourceAddress = &v
+	return s
+}
+
+// SetSourcePortRange sets the SourcePortRange field's value.
+func (s *PathRequestFilter) SetSourcePortRange(v *RequestFilterPortRange) *PathRequestFilter {
+	s.SourcePortRange = v
 	return s
 }
 
@@ -143596,13 +153985,19 @@ func (s *ProvisionByoipCidrOutput) SetByoipCidr(v *ByoipCidr) *ProvisionByoipCid
 type ProvisionIpamPoolCidrInput struct {
 	_ struct{} `type:"structure"`
 
-	// The CIDR you want to assign to the IPAM pool.
+	// The CIDR you want to assign to the IPAM pool. Either "NetmaskLength" or "Cidr"
+	// is required. This value will be null if you specify "NetmaskLength" and will
+	// be filled in during the provisioning process.
 	Cidr *string `type:"string"`
 
 	// A signed document that proves that you are authorized to bring a specified
 	// IP address range to Amazon using BYOIP. This option applies to public pools
 	// only.
 	CidrAuthorizationContext *IpamCidrAuthorizationContext `type:"structure"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. For more information, see Ensuring Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
 
 	// A check for whether you have the required permissions for the action without
 	// actually making the request and provides an error response. If you have the
@@ -143614,6 +154009,12 @@ type ProvisionIpamPoolCidrInput struct {
 	//
 	// IpamPoolId is a required field
 	IpamPoolId *string `type:"string" required:"true"`
+
+	// The netmask length of the CIDR you'd like to provision to a pool. Can be
+	// used for provisioning Amazon-provided IPv6 CIDRs to top-level pools and for
+	// provisioning CIDRs to pools with source pools. Cannot be used to provision
+	// BYOIP CIDRs to top-level pools. Either "NetmaskLength" or "Cidr" is required.
+	NetmaskLength *int64 `type:"integer"`
 }
 
 // String returns the string representation.
@@ -143659,6 +154060,12 @@ func (s *ProvisionIpamPoolCidrInput) SetCidrAuthorizationContext(v *IpamCidrAuth
 	return s
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *ProvisionIpamPoolCidrInput) SetClientToken(v string) *ProvisionIpamPoolCidrInput {
+	s.ClientToken = &v
+	return s
+}
+
 // SetDryRun sets the DryRun field's value.
 func (s *ProvisionIpamPoolCidrInput) SetDryRun(v bool) *ProvisionIpamPoolCidrInput {
 	s.DryRun = &v
@@ -143668,6 +154075,12 @@ func (s *ProvisionIpamPoolCidrInput) SetDryRun(v bool) *ProvisionIpamPoolCidrInp
 // SetIpamPoolId sets the IpamPoolId field's value.
 func (s *ProvisionIpamPoolCidrInput) SetIpamPoolId(v string) *ProvisionIpamPoolCidrInput {
 	s.IpamPoolId = &v
+	return s
+}
+
+// SetNetmaskLength sets the NetmaskLength field's value.
+func (s *ProvisionIpamPoolCidrInput) SetNetmaskLength(v int64) *ProvisionIpamPoolCidrInput {
+	s.NetmaskLength = &v
 	return s
 }
 
@@ -144930,8 +155343,15 @@ type RegisterImageInput struct {
 	Architecture *string `locationName:"architecture" type:"string" enum:"ArchitectureValues"`
 
 	// The billing product codes. Your account must be authorized to specify billing
-	// product codes. Otherwise, you can use the Amazon Web Services Marketplace
-	// to bill for the use of an AMI.
+	// product codes.
+	//
+	// If your account is not authorized to specify billing product codes, you can
+	// publish AMIs that include billable software and list them on the Amazon Web
+	// Services Marketplace. You must first register as a seller on the Amazon Web
+	// Services Marketplace. For more information, see Getting started as a seller
+	// (https://docs.aws.amazon.com/marketplace/latest/userguide/user-guide-for-sellers.html)
+	// and AMI-based products (https://docs.aws.amazon.com/marketplace/latest/userguide/ami-products.html)
+	// in the Amazon Web Services Marketplace Seller Guide.
 	BillingProducts []*string `locationName:"BillingProduct" locationNameList:"item" type:"list"`
 
 	// The block device mapping entries.
@@ -144943,11 +155363,17 @@ type RegisterImageInput struct {
 	// the same Outpost or in the Region of that Outpost. AMIs on an Outpost that
 	// include local snapshots can be used to launch instances on the same Outpost
 	// only. For more information, Amazon EBS local snapshots on Outposts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshots-outposts.html#ami)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	BlockDeviceMappings []*BlockDeviceMapping `locationName:"BlockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
 
-	// The boot mode of the AMI. For more information, see Boot modes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// The boot mode of the AMI. A value of uefi-preferred indicates that the AMI
+	// supports both UEFI and Legacy BIOS.
+	//
+	// The operating system contained in the AMI must be configured to support the
+	// specified boot mode.
+	//
+	// For more information, see Boot modes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-boot.html)
+	// in the Amazon EC2 User Guide.
 	BootMode *string `type:"string" enum:"BootModeValues"`
 
 	// A description for your AMI.
@@ -144977,7 +155403,7 @@ type RegisterImageInput struct {
 	// by default, the instance requires that IMDSv2 is used when requesting instance
 	// metadata. In addition, HttpPutResponseHopLimit is set to 2. For more information,
 	// see Configure the AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-IMDS-new-instances.html#configure-IMDS-new-instances-ami-configuration)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	//
 	// If you set the value to v2.0, make sure that your AMI software can support
 	// IMDSv2.
@@ -145013,7 +155439,7 @@ type RegisterImageInput struct {
 
 	// Set to v2.0 to enable Trusted Platform Module (TPM) support. For more information,
 	// see NitroTPM (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitrotpm.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	TpmSupport *string `type:"string" enum:"TpmSupportValues"`
 
 	// Base64 representation of the non-volatile UEFI variable store. To retrieve
@@ -145021,7 +155447,7 @@ type RegisterImageInput struct {
 	// command. You can inspect and modify the UEFI data by using the python-uefivars
 	// tool (https://github.com/awslabs/python-uefivars) on GitHub. For more information,
 	// see UEFI Secure Boot (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/uefi-secure-boot.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	UefiData *string `type:"string"`
 
 	// The type of virtualization (hvm | paravirtual).
@@ -145328,10 +155754,14 @@ type RegisterTransitGatewayMulticastGroupMembersInput struct {
 
 	// The group members' network interface IDs to register with the transit gateway
 	// multicast group.
-	NetworkInterfaceIds []*string `locationNameList:"item" type:"list"`
+	//
+	// NetworkInterfaceIds is a required field
+	NetworkInterfaceIds []*string `locationNameList:"item" type:"list" required:"true"`
 
 	// The ID of the transit gateway multicast domain.
-	TransitGatewayMulticastDomainId *string `type:"string"`
+	//
+	// TransitGatewayMulticastDomainId is a required field
+	TransitGatewayMulticastDomainId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -145350,6 +155780,22 @@ func (s RegisterTransitGatewayMulticastGroupMembersInput) String() string {
 // value will be replaced with "sensitive".
 func (s RegisterTransitGatewayMulticastGroupMembersInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RegisterTransitGatewayMulticastGroupMembersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RegisterTransitGatewayMulticastGroupMembersInput"}
+	if s.NetworkInterfaceIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceIds"))
+	}
+	if s.TransitGatewayMulticastDomainId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayMulticastDomainId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -145421,10 +155867,14 @@ type RegisterTransitGatewayMulticastGroupSourcesInput struct {
 
 	// The group sources' network interface IDs to register with the transit gateway
 	// multicast group.
-	NetworkInterfaceIds []*string `locationNameList:"item" type:"list"`
+	//
+	// NetworkInterfaceIds is a required field
+	NetworkInterfaceIds []*string `locationNameList:"item" type:"list" required:"true"`
 
 	// The ID of the transit gateway multicast domain.
-	TransitGatewayMulticastDomainId *string `type:"string"`
+	//
+	// TransitGatewayMulticastDomainId is a required field
+	TransitGatewayMulticastDomainId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -145443,6 +155893,22 @@ func (s RegisterTransitGatewayMulticastGroupSourcesInput) String() string {
 // value will be replaced with "sensitive".
 func (s RegisterTransitGatewayMulticastGroupSourcesInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RegisterTransitGatewayMulticastGroupSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RegisterTransitGatewayMulticastGroupSourcesInput"}
+	if s.NetworkInterfaceIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceIds"))
+	}
+	if s.TransitGatewayMulticastDomainId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayMulticastDomainId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -145784,7 +156250,7 @@ type RejectVpcEndpointConnectionsInput struct {
 	// ServiceId is a required field
 	ServiceId *string `type:"string" required:"true"`
 
-	// The IDs of one or more VPC endpoints.
+	// The IDs of the VPC endpoints.
 	//
 	// VpcEndpointIds is a required field
 	VpcEndpointIds []*string `locationName:"VpcEndpointId" locationNameList:"item" type:"list" required:"true"`
@@ -147293,6 +157759,118 @@ func (s *ReplaceTransitGatewayRouteOutput) SetRoute(v *TransitGatewayRoute) *Rep
 	return s
 }
 
+type ReplaceVpnTunnelInput struct {
+	_ struct{} `type:"structure"`
+
+	// Trigger pending tunnel endpoint maintenance.
+	ApplyPendingMaintenance *bool `type:"boolean"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the Site-to-Site VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+
+	// The external IP address of the VPN tunnel.
+	//
+	// VpnTunnelOutsideIpAddress is a required field
+	VpnTunnelOutsideIpAddress *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplaceVpnTunnelInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplaceVpnTunnelInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplaceVpnTunnelInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplaceVpnTunnelInput"}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+	if s.VpnTunnelOutsideIpAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnTunnelOutsideIpAddress"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplyPendingMaintenance sets the ApplyPendingMaintenance field's value.
+func (s *ReplaceVpnTunnelInput) SetApplyPendingMaintenance(v bool) *ReplaceVpnTunnelInput {
+	s.ApplyPendingMaintenance = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ReplaceVpnTunnelInput) SetDryRun(v bool) *ReplaceVpnTunnelInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *ReplaceVpnTunnelInput) SetVpnConnectionId(v string) *ReplaceVpnTunnelInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// SetVpnTunnelOutsideIpAddress sets the VpnTunnelOutsideIpAddress field's value.
+func (s *ReplaceVpnTunnelInput) SetVpnTunnelOutsideIpAddress(v string) *ReplaceVpnTunnelInput {
+	s.VpnTunnelOutsideIpAddress = &v
+	return s
+}
+
+type ReplaceVpnTunnelOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Confirmation of replace tunnel operation.
+	Return *bool `locationName:"return" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplaceVpnTunnelOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplaceVpnTunnelOutput) GoString() string {
+	return s.String()
+}
+
+// SetReturn sets the Return field's value.
+func (s *ReplaceVpnTunnelOutput) SetReturn(v bool) *ReplaceVpnTunnelOutput {
+	s.Return = &v
+	return s
+}
+
 type ReportInstanceStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -147449,6 +158027,47 @@ func (s ReportInstanceStatusOutput) GoString() string {
 	return s.String()
 }
 
+// Describes a port range.
+type RequestFilterPortRange struct {
+	_ struct{} `type:"structure"`
+
+	// The first port in the range.
+	FromPort *int64 `type:"integer"`
+
+	// The last port in the range.
+	ToPort *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RequestFilterPortRange) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RequestFilterPortRange) GoString() string {
+	return s.String()
+}
+
+// SetFromPort sets the FromPort field's value.
+func (s *RequestFilterPortRange) SetFromPort(v int64) *RequestFilterPortRange {
+	s.FromPort = &v
+	return s
+}
+
+// SetToPort sets the ToPort field's value.
+func (s *RequestFilterPortRange) SetToPort(v int64) *RequestFilterPortRange {
+	s.ToPort = &v
+	return s
+}
+
 // A tag on an IPAM resource.
 type RequestIpamResourceTag struct {
 	_ struct{} `type:"structure"`
@@ -147515,7 +158134,8 @@ type RequestLaunchTemplateData struct {
 	CreditSpecification *CreditSpecificationRequest `type:"structure"`
 
 	// Indicates whether to enable the instance for stop protection. For more information,
-	// see Stop Protection (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html#Using_StopProtection).
+	// see Stop protection (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html#Using_StopProtection)
+	// in the Amazon Elastic Compute Cloud User Guide.
 	DisableApiStop *bool `type:"boolean"`
 
 	// If you set this parameter to true, you can't terminate the instance using
@@ -147555,7 +158175,22 @@ type RequestLaunchTemplateData struct {
 	// The name or Amazon Resource Name (ARN) of an IAM instance profile.
 	IamInstanceProfile *LaunchTemplateIamInstanceProfileSpecificationRequest `type:"structure"`
 
-	// The ID of the AMI.
+	// The ID of the AMI. Alternatively, you can specify a Systems Manager parameter,
+	// which will resolve to an AMI ID on launch.
+	//
+	// Valid formats:
+	//
+	//    * ami-17characters00000
+	//
+	//    * resolve:ssm:parameter-name
+	//
+	//    * resolve:ssm:parameter-name:version-number
+	//
+	//    * resolve:ssm:parameter-name:label
+	//
+	// For more information, see Use a Systems Manager parameter to find an AMI
+	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html#using-systems-manager-parameter-to-find-AMI)
+	// in the Amazon Elastic Compute Cloud User Guide.
 	ImageId *string `type:"string"`
 
 	// Indicates whether an instance stops or terminates when you initiate shutdown
@@ -148315,9 +158950,13 @@ type RequestSpotLaunchSpecification struct {
 	// The ID of the subnet in which to launch the instance.
 	SubnetId *string `locationName:"subnetId" type:"string"`
 
-	// The Base64-encoded user data for the instance. User data is limited to 16
-	// KB.
-	UserData *string `locationName:"userData" type:"string"`
+	// The base64-encoded user data that instances use when starting up. User data
+	// is limited to 16 KB.
+	//
+	// UserData is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RequestSpotLaunchSpecification's
+	// String and GoString methods.
+	UserData *string `locationName:"userData" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -150281,7 +160920,8 @@ type ResponseLaunchTemplateData struct {
 	CreditSpecification *CreditSpecification `locationName:"creditSpecification" type:"structure"`
 
 	// Indicates whether the instance is enabled for stop protection. For more information,
-	// see Stop Protection (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html#Using_StopProtection).
+	// see Stop protection (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html#Using_StopProtection)
+	// in the Amazon Elastic Compute Cloud User Guide.
 	DisableApiStop *bool `locationName:"disableApiStop" type:"boolean"`
 
 	// If set to true, indicates that the instance cannot be terminated using the
@@ -150308,7 +160948,24 @@ type ResponseLaunchTemplateData struct {
 	// The IAM instance profile.
 	IamInstanceProfile *LaunchTemplateIamInstanceProfileSpecification `locationName:"iamInstanceProfile" type:"structure"`
 
-	// The ID of the AMI that was used to launch the instance.
+	// The ID of the AMI or a Systems Manager parameter. The Systems Manager parameter
+	// will resolve to the ID of the AMI at instance launch.
+	//
+	// The value depends on what you specified in the request. The possible values
+	// are:
+	//
+	//    * If an AMI ID was specified in the request, then this is the AMI ID.
+	//
+	//    * If a Systems Manager parameter was specified in the request, and ResolveAlias
+	//    was configured as true, then this is the AMI ID that the parameter is
+	//    mapped to in the Parameter Store.
+	//
+	//    * If a Systems Manager parameter was specified in the request, and ResolveAlias
+	//    was configured as false, then this is the parameter value.
+	//
+	// For more information, see Use a Systems Manager parameter instead of an AMI
+	// ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
+	// in the Amazon Elastic Compute Cloud User Guide.
 	ImageId *string `locationName:"imageId" type:"string"`
 
 	// Indicates whether an instance stops or terminates when you initiate shutdown
@@ -150370,7 +161027,11 @@ type ResponseLaunchTemplateData struct {
 	TagSpecifications []*LaunchTemplateTagSpecification `locationName:"tagSpecificationSet" locationNameList:"item" type:"list"`
 
 	// The user data for the instance.
-	UserData *string `locationName:"userData" type:"string"`
+	//
+	// UserData is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ResponseLaunchTemplateData's
+	// String and GoString methods.
+	UserData *string `locationName:"userData" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -151506,8 +162167,9 @@ type RevokeSecurityGroupIngressInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The start of port range for the TCP and UDP protocols, or an ICMP type number.
-	// For the ICMP type number, use -1 to specify all ICMP types.
+	// If the protocol is TCP or UDP, this is the start of the port range. If the
+	// protocol is ICMP, this is the type number. A value of -1 indicates all ICMP
+	// types.
 	FromPort *int64 `type:"integer"`
 
 	// The ID of the security group. You must specify either the security group
@@ -151548,8 +162210,8 @@ type RevokeSecurityGroupIngressInput struct {
 	// range, use a set of IP permissions instead.
 	SourceSecurityGroupOwnerId *string `type:"string"`
 
-	// The end of port range for the TCP and UDP protocols, or an ICMP code number.
-	// For the ICMP code number, use -1 to specify all ICMP codes for the ICMP type.
+	// If the protocol is TCP or UDP, this is the end of the port range. If the
+	// protocol is ICMP, this is the code. A value of -1 indicates all ICMP codes.
 	ToPort *int64 `type:"integer"`
 }
 
@@ -152059,6 +162721,129 @@ func (s *RouteTableAssociationState) SetStatusMessage(v string) *RouteTableAssoc
 	return s
 }
 
+// Describes the rule options for a stateful rule group.
+type RuleGroupRuleOptionsPair struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the rule group.
+	RuleGroupArn *string `locationName:"ruleGroupArn" min:"1" type:"string"`
+
+	// The rule options.
+	RuleOptions []*RuleOption `locationName:"ruleOptionSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuleGroupRuleOptionsPair) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuleGroupRuleOptionsPair) GoString() string {
+	return s.String()
+}
+
+// SetRuleGroupArn sets the RuleGroupArn field's value.
+func (s *RuleGroupRuleOptionsPair) SetRuleGroupArn(v string) *RuleGroupRuleOptionsPair {
+	s.RuleGroupArn = &v
+	return s
+}
+
+// SetRuleOptions sets the RuleOptions field's value.
+func (s *RuleGroupRuleOptionsPair) SetRuleOptions(v []*RuleOption) *RuleGroupRuleOptionsPair {
+	s.RuleOptions = v
+	return s
+}
+
+// Describes the type of a stateful rule group.
+type RuleGroupTypePair struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the rule group.
+	RuleGroupArn *string `locationName:"ruleGroupArn" min:"1" type:"string"`
+
+	// The rule group type. The possible values are Domain List and Suricata.
+	RuleGroupType *string `locationName:"ruleGroupType" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuleGroupTypePair) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuleGroupTypePair) GoString() string {
+	return s.String()
+}
+
+// SetRuleGroupArn sets the RuleGroupArn field's value.
+func (s *RuleGroupTypePair) SetRuleGroupArn(v string) *RuleGroupTypePair {
+	s.RuleGroupArn = &v
+	return s
+}
+
+// SetRuleGroupType sets the RuleGroupType field's value.
+func (s *RuleGroupTypePair) SetRuleGroupType(v string) *RuleGroupTypePair {
+	s.RuleGroupType = &v
+	return s
+}
+
+// Describes additional settings for a stateful rule.
+type RuleOption struct {
+	_ struct{} `type:"structure"`
+
+	// The Suricata keyword.
+	Keyword *string `locationName:"keyword" type:"string"`
+
+	// The settings for the keyword.
+	Settings []*string `locationName:"settingSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuleOption) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuleOption) GoString() string {
+	return s.String()
+}
+
+// SetKeyword sets the Keyword field's value.
+func (s *RuleOption) SetKeyword(v string) *RuleOption {
+	s.Keyword = &v
+	return s
+}
+
+// SetSettings sets the Settings field's value.
+func (s *RuleOption) SetSettings(v []*string) *RuleOption {
+	s.Settings = v
+	return s
+}
+
 type RunInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -152141,6 +162926,14 @@ type RunInstancesInput struct {
 	// to accelerate your Deep Learning (DL) inference workloads.
 	//
 	// You cannot specify accelerators from different generations in the same request.
+	//
+	// Starting April 15, 2023, Amazon Web Services will not onboard new customers
+	// to Amazon Elastic Inference (EI), and will help current customers migrate
+	// their workloads to options that offer better price and performance. After
+	// April 15, 2023, new customers will not be able to launch instances with Amazon
+	// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+	// customers who have used Amazon EI at least once during the past 30-day period
+	// are considered current customers and will be able to continue using the service.
 	ElasticInferenceAccelerators []*ElasticInferenceAccelerator `locationName:"ElasticInferenceAccelerator" locationNameList:"item" type:"list"`
 
 	// Indicates whether the instance is enabled for Amazon Web Services Nitro Enclaves.
@@ -152300,8 +163093,7 @@ type RunInstancesInput struct {
 	// as part of the network interface.
 	SecurityGroupIds []*string `locationName:"SecurityGroupId" locationNameList:"SecurityGroupId" type:"list"`
 
-	// [EC2-Classic, default VPC] The names of the security groups. For a nondefault
-	// VPC, you must use security group IDs instead.
+	// [EC2-Classic, default VPC] The names of the security groups.
 	//
 	// If you specify a network interface, you must specify any security groups
 	// as part of the network interface.
@@ -152719,8 +163511,12 @@ type RunScheduledInstancesInput struct {
 	// The launch specification. You must match the instance type, Availability
 	// Zone, network, and platform of the schedule that you purchased.
 	//
+	// LaunchSpecification is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RunScheduledInstancesInput's
+	// String and GoString methods.
+	//
 	// LaunchSpecification is a required field
-	LaunchSpecification *ScheduledInstancesLaunchSpecification `type:"structure" required:"true"`
+	LaunchSpecification *ScheduledInstancesLaunchSpecification `type:"structure" required:"true" sensitive:"true"`
 
 	// The Scheduled Instance ID.
 	//
@@ -152884,8 +163680,9 @@ type S3Storage struct {
 	_ struct{} `type:"structure"`
 
 	// The access key ID of the owner of the bucket. Before you specify a value
-	// for your access key ID, review and follow the guidance in Best practices
-	// for managing Amazon Web Services access keys (https://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html).
+	// for your access key ID, review and follow the guidance in Best Practices
+	// for Amazon Web Services accounts (https://docs.aws.amazon.com/accounts/latest/reference/best-practices.html)
+	// in the Account ManagementReference Guide.
 	AWSAccessKeyId *string `type:"string"`
 
 	// The bucket in which to store the AMI. You can specify a bucket that you already
@@ -153641,7 +164438,7 @@ func (s *ScheduledInstancesIpv6Address) SetIpv6Address(v string) *ScheduledInsta
 // the ID of the subnet. You can specify the subnet using either SubnetId or
 // NetworkInterface.
 type ScheduledInstancesLaunchSpecification struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
 	// The block device mapping entries.
 	BlockDeviceMappings []*ScheduledInstancesBlockDeviceMapping `locationName:"BlockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
@@ -154071,6 +164868,8 @@ type SearchLocalGatewayRoutesInput struct {
 
 	// One or more filters.
 	//
+	//    * prefix-list-id - The ID of the prefix list.
+	//
 	//    * route-search.exact-match - The exact match of the specified filter.
 	//
 	//    * route-search.longest-prefix-match - The longest prefix that matches
@@ -154245,7 +165044,9 @@ type SearchTransitGatewayMulticastGroupsInput struct {
 	NextToken *string `type:"string"`
 
 	// The ID of the transit gateway multicast domain.
-	TransitGatewayMulticastDomainId *string `type:"string"`
+	//
+	// TransitGatewayMulticastDomainId is a required field
+	TransitGatewayMulticastDomainId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -154271,6 +165072,9 @@ func (s *SearchTransitGatewayMulticastGroupsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "SearchTransitGatewayMulticastGroupsInput"}
 	if s.MaxResults != nil && *s.MaxResults < 5 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+	if s.TransitGatewayMulticastDomainId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TransitGatewayMulticastDomainId"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -154700,9 +165504,10 @@ type SecurityGroupRule struct {
 	// The security group rule description.
 	Description *string `locationName:"description" type:"string"`
 
-	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
-	// type. A value of -1 indicates all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
-	// types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the start of the port range. If the
+	// protocol is ICMP or ICMPv6, this is the type number. A value of -1 indicates
+	// all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types, you must specify
+	// all ICMP/ICMPv6 codes.
 	FromPort *int64 `locationName:"fromPort" type:"integer"`
 
 	// The ID of the security group.
@@ -154732,9 +165537,10 @@ type SecurityGroupRule struct {
 	// The tags applied to the security group rule.
 	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 
-	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code.
-	// A value of -1 indicates all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6
-	// types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the end of the port range. If the
+	// protocol is ICMP or ICMPv6, this is the type number. A value of -1 indicates
+	// all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6 types, you must specify
+	// all ICMP/ICMPv6 codes.
 	ToPort *int64 `locationName:"toPort" type:"integer"`
 }
 
@@ -154908,9 +165714,10 @@ type SecurityGroupRuleRequest struct {
 	// The description of the security group rule.
 	Description *string `type:"string"`
 
-	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
-	// type. A value of -1 indicates all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
-	// types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the start of the port range. If the
+	// protocol is ICMP or ICMPv6, this is the type number. A value of -1 indicates
+	// all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types, you must specify
+	// all ICMP/ICMPv6 codes.
 	FromPort *int64 `type:"integer"`
 
 	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
@@ -154925,9 +165732,10 @@ type SecurityGroupRuleRequest struct {
 	// The ID of the security group that is referenced in the security group rule.
 	ReferencedGroupId *string `type:"string"`
 
-	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code.
-	// A value of -1 indicates all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6
-	// types, you must specify all codes.
+	// If the protocol is TCP or UDP, this is the end of the port range. If the
+	// protocol is ICMP or ICMPv6, this is the code. A value of -1 indicates all
+	// ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6 types, you must specify
+	// all ICMP/ICMPv6 codes.
 	ToPort *int64 `type:"integer"`
 }
 
@@ -155005,7 +165813,9 @@ type SecurityGroupRuleUpdate struct {
 	SecurityGroupRule *SecurityGroupRuleRequest `type:"structure"`
 
 	// The ID of the security group rule.
-	SecurityGroupRuleId *string `type:"string"`
+	//
+	// SecurityGroupRuleId is a required field
+	SecurityGroupRuleId *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -155024,6 +165834,19 @@ func (s SecurityGroupRuleUpdate) String() string {
 // value will be replaced with "sensitive".
 func (s SecurityGroupRuleUpdate) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SecurityGroupRuleUpdate) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SecurityGroupRuleUpdate"}
+	if s.SecurityGroupRuleId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SecurityGroupRuleId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetSecurityGroupRule sets the SecurityGroupRule field's value.
@@ -155166,7 +165989,7 @@ type ServiceConfiguration struct {
 	// The supported IP address types.
 	SupportedIpAddressTypes []*string `locationName:"supportedIpAddressTypeSet" locationNameList:"item" type:"list" enum:"ServiceConnectivityType"`
 
-	// Any tags assigned to the service.
+	// The tags assigned to the service.
 	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
@@ -155326,7 +166149,7 @@ type ServiceDetail struct {
 	// The supported IP address types.
 	SupportedIpAddressTypes []*string `locationName:"supportedIpAddressTypeSet" locationNameList:"item" type:"list" enum:"ServiceConnectivityType"`
 
-	// Any tags assigned to the service.
+	// The tags assigned to the service.
 	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 
 	// Indicates whether the service supports endpoint policies.
@@ -156622,8 +167445,13 @@ type SpotFleetLaunchSpecification struct {
 	// The tags to apply during creation.
 	TagSpecifications []*SpotFleetTagSpecification `locationName:"tagSpecificationSet" locationNameList:"item" type:"list"`
 
-	// The Base64-encoded user data that instances use when starting up.
-	UserData *string `locationName:"userData" type:"string"`
+	// The base64-encoded user data that instances use when starting up. User data
+	// is limited to 16 KB.
+	//
+	// UserData is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by SpotFleetLaunchSpecification's
+	// String and GoString methods.
+	UserData *string `locationName:"userData" type:"string" sensitive:"true"`
 
 	// The number of units provided by the specified instance type. These are the
 	// same units that you chose to set the target capacity in terms of instances,
@@ -156941,9 +167769,11 @@ type SpotFleetRequestConfigData struct {
 	// Reserved.
 	Context *string `locationName:"context" type:"string"`
 
-	// Indicates whether running Spot Instances should be terminated if you decrease
+	// Indicates whether running instances should be terminated if you decrease
 	// the target capacity of the Spot Fleet request below the current size of the
 	// Spot Fleet.
+	//
+	// Supported only for fleets of type maintain.
 	ExcessCapacityTerminationPolicy *string `locationName:"excessCapacityTerminationPolicy" type:"string" enum:"ExcessCapacityTerminationPolicy"`
 
 	// The number of units fulfilled by this request compared to the set target
@@ -157073,7 +167903,8 @@ type SpotFleetRequestConfigData struct {
 	// TargetCapacity is a required field
 	TargetCapacity *int64 `locationName:"targetCapacity" type:"integer" required:"true"`
 
-	// The unit for the target capacity.
+	// The unit for the target capacity. TargetCapacityUnitType can only be specified
+	// when InstanceRequirements is specified.
 	//
 	// Default: units (translates to number of instances)
 	TargetCapacityUnitType *string `locationName:"targetCapacityUnitType" type:"string" enum:"TargetCapacityUnitType"`
@@ -158684,6 +169515,7 @@ func (s *StartNetworkInsightsAccessScopeAnalysisOutput) SetNetworkInsightsAccess
 type StartNetworkInsightsAnalysisInput struct {
 	_ struct{} `type:"structure"`
 
+	// The member accounts that contain resources that the path can traverse.
 	AdditionalAccounts []*string `locationName:"AdditionalAccount" locationNameList:"item" type:"list"`
 
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
@@ -159931,7 +170763,9 @@ func (s *TagDescription) SetValue(v string) *TagDescription {
 	return s
 }
 
-// The tags to apply to a resource when the resource is being created.
+// The tags to apply to a resource when the resource is being created. When
+// you specify a tag, you must specify the resource type to tag, otherwise the
+// request will fail.
 //
 // The Valid Values lists all the resource types that can be tagged. However,
 // the action you're using might not support tagging all of these resource types.
@@ -160006,7 +170840,8 @@ type TargetCapacitySpecification struct {
 	// for On-Demand units, you cannot specify a target capacity for Spot units.
 	SpotTargetCapacity *int64 `locationName:"spotTargetCapacity" type:"integer"`
 
-	// The unit for the target capacity.
+	// The unit for the target capacity. TargetCapacityUnitType can only be specified
+	// when InstanceRequirements is specified.
 	//
 	// Default: units (translates to number of instances)
 	TargetCapacityUnitType *string `locationName:"targetCapacityUnitType" type:"string" enum:"TargetCapacityUnitType"`
@@ -160090,7 +170925,8 @@ type TargetCapacitySpecificationRequest struct {
 	// The number of Spot units to request.
 	SpotTargetCapacity *int64 `type:"integer"`
 
-	// The unit for the target capacity.
+	// The unit for the target capacity. TargetCapacityUnitType can only be specified
+	// when InstanceRequirements is specified.
 	//
 	// Default: units (translates to number of instances)
 	TargetCapacityUnitType *string `type:"string" enum:"TargetCapacityUnitType"`
@@ -164399,6 +175235,9 @@ type TunnelOption struct {
 	// The number of seconds after which a DPD timeout occurs.
 	DpdTimeoutSeconds *int64 `locationName:"dpdTimeoutSeconds" type:"integer"`
 
+	// Status of tunnel endpoint lifecycle control feature.
+	EnableTunnelLifecycleControl *bool `locationName:"enableTunnelLifecycleControl" type:"boolean"`
+
 	// The IKE versions that are permitted for the VPN tunnel.
 	IkeVersions []*IKEVersionsListValue `locationName:"ikeVersionSet" locationNameList:"item" type:"list"`
 
@@ -164487,6 +175326,12 @@ func (s *TunnelOption) SetDpdTimeoutAction(v string) *TunnelOption {
 // SetDpdTimeoutSeconds sets the DpdTimeoutSeconds field's value.
 func (s *TunnelOption) SetDpdTimeoutSeconds(v int64) *TunnelOption {
 	s.DpdTimeoutSeconds = &v
+	return s
+}
+
+// SetEnableTunnelLifecycleControl sets the EnableTunnelLifecycleControl field's value.
+func (s *TunnelOption) SetEnableTunnelLifecycleControl(v bool) *TunnelOption {
+	s.EnableTunnelLifecycleControl = &v
 	return s
 }
 
@@ -164797,6 +175642,132 @@ func (s UnassignPrivateIpAddressesOutput) String() string {
 // value will be replaced with "sensitive".
 func (s UnassignPrivateIpAddressesOutput) GoString() string {
 	return s.String()
+}
+
+type UnassignPrivateNatGatewayAddressInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The maximum amount of time to wait (in seconds) before forcibly releasing
+	// the IP addresses if connections are still in progress. Default value is 350
+	// seconds.
+	MaxDrainDurationSeconds *int64 `min:"1" type:"integer"`
+
+	// The NAT gateway ID.
+	//
+	// NatGatewayId is a required field
+	NatGatewayId *string `type:"string" required:"true"`
+
+	// The private IPv4 addresses you want to unassign.
+	//
+	// PrivateIpAddresses is a required field
+	PrivateIpAddresses []*string `locationName:"PrivateIpAddress" locationNameList:"item" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnassignPrivateNatGatewayAddressInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnassignPrivateNatGatewayAddressInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UnassignPrivateNatGatewayAddressInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UnassignPrivateNatGatewayAddressInput"}
+	if s.MaxDrainDurationSeconds != nil && *s.MaxDrainDurationSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxDrainDurationSeconds", 1))
+	}
+	if s.NatGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NatGatewayId"))
+	}
+	if s.PrivateIpAddresses == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrivateIpAddresses"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *UnassignPrivateNatGatewayAddressInput) SetDryRun(v bool) *UnassignPrivateNatGatewayAddressInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetMaxDrainDurationSeconds sets the MaxDrainDurationSeconds field's value.
+func (s *UnassignPrivateNatGatewayAddressInput) SetMaxDrainDurationSeconds(v int64) *UnassignPrivateNatGatewayAddressInput {
+	s.MaxDrainDurationSeconds = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *UnassignPrivateNatGatewayAddressInput) SetNatGatewayId(v string) *UnassignPrivateNatGatewayAddressInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *UnassignPrivateNatGatewayAddressInput) SetPrivateIpAddresses(v []*string) *UnassignPrivateNatGatewayAddressInput {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+type UnassignPrivateNatGatewayAddressOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the NAT gateway IP addresses.
+	NatGatewayAddresses []*NatGatewayAddress `locationName:"natGatewayAddressSet" locationNameList:"item" type:"list"`
+
+	// The NAT gateway ID.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnassignPrivateNatGatewayAddressOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnassignPrivateNatGatewayAddressOutput) GoString() string {
+	return s.String()
+}
+
+// SetNatGatewayAddresses sets the NatGatewayAddresses field's value.
+func (s *UnassignPrivateNatGatewayAddressOutput) SetNatGatewayAddresses(v []*NatGatewayAddress) *UnassignPrivateNatGatewayAddressOutput {
+	s.NatGatewayAddresses = v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *UnassignPrivateNatGatewayAddressOutput) SetNatGatewayId(v string) *UnassignPrivateNatGatewayAddressOutput {
+	s.NatGatewayId = &v
+	return s
 }
 
 type UnmonitorInstancesInput struct {
@@ -165736,6 +176707,1282 @@ func (s ValidationWarning) GoString() string {
 // SetErrors sets the Errors field's value.
 func (s *ValidationWarning) SetErrors(v []*ValidationError) *ValidationWarning {
 	s.Errors = v
+	return s
+}
+
+// An Amazon Web Services Verified Access endpoint specifies the application
+// that Amazon Web Services Verified Access provides access to. It must be attached
+// to an Amazon Web Services Verified Access group. An Amazon Web Services Verified
+// Access endpoint must also have an attached access policy before you attached
+// it to a group.
+type VerifiedAccessEndpoint struct {
+	_ struct{} `type:"structure"`
+
+	// The DNS name for users to reach your application.
+	ApplicationDomain *string `locationName:"applicationDomain" type:"string"`
+
+	// The type of attachment used to provide connectivity between the Amazon Web
+	// Services Verified Access endpoint and the application.
+	AttachmentType *string `locationName:"attachmentType" type:"string" enum:"VerifiedAccessEndpointAttachmentType"`
+
+	// The creation time.
+	CreationTime *string `locationName:"creationTime" type:"string"`
+
+	// The deletion time.
+	DeletionTime *string `locationName:"deletionTime" type:"string"`
+
+	// A description for the Amazon Web Services Verified Access endpoint.
+	Description *string `locationName:"description" type:"string"`
+
+	// Returned if endpoint has a device trust provider attached.
+	DeviceValidationDomain *string `locationName:"deviceValidationDomain" type:"string"`
+
+	// The ARN of a public TLS/SSL certificate imported into or created with ACM.
+	DomainCertificateArn *string `locationName:"domainCertificateArn" type:"string"`
+
+	// A DNS name that is generated for the endpoint.
+	EndpointDomain *string `locationName:"endpointDomain" type:"string"`
+
+	// The type of Amazon Web Services Verified Access endpoint. Incoming application
+	// requests will be sent to an IP address, load balancer or a network interface
+	// depending on the endpoint type specified.
+	EndpointType *string `locationName:"endpointType" type:"string" enum:"VerifiedAccessEndpointType"`
+
+	// The last updated time.
+	LastUpdatedTime *string `locationName:"lastUpdatedTime" type:"string"`
+
+	// The load balancer details if creating the Amazon Web Services Verified Access
+	// endpoint as load-balancertype.
+	LoadBalancerOptions *VerifiedAccessEndpointLoadBalancerOptions `locationName:"loadBalancerOptions" type:"structure"`
+
+	// The options for network-interface type endpoint.
+	NetworkInterfaceOptions *VerifiedAccessEndpointEniOptions `locationName:"networkInterfaceOptions" type:"structure"`
+
+	// The IDs of the security groups for the endpoint.
+	SecurityGroupIds []*string `locationName:"securityGroupIdSet" locationNameList:"item" type:"list"`
+
+	// The endpoint status.
+	Status *VerifiedAccessEndpointStatus `locationName:"status" type:"structure"`
+
+	// The tags.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the Amazon Web Services Verified Access endpoint.
+	VerifiedAccessEndpointId *string `locationName:"verifiedAccessEndpointId" type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access group.
+	VerifiedAccessGroupId *string `locationName:"verifiedAccessGroupId" type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `locationName:"verifiedAccessInstanceId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpoint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpoint) GoString() string {
+	return s.String()
+}
+
+// SetApplicationDomain sets the ApplicationDomain field's value.
+func (s *VerifiedAccessEndpoint) SetApplicationDomain(v string) *VerifiedAccessEndpoint {
+	s.ApplicationDomain = &v
+	return s
+}
+
+// SetAttachmentType sets the AttachmentType field's value.
+func (s *VerifiedAccessEndpoint) SetAttachmentType(v string) *VerifiedAccessEndpoint {
+	s.AttachmentType = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VerifiedAccessEndpoint) SetCreationTime(v string) *VerifiedAccessEndpoint {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDeletionTime sets the DeletionTime field's value.
+func (s *VerifiedAccessEndpoint) SetDeletionTime(v string) *VerifiedAccessEndpoint {
+	s.DeletionTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *VerifiedAccessEndpoint) SetDescription(v string) *VerifiedAccessEndpoint {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceValidationDomain sets the DeviceValidationDomain field's value.
+func (s *VerifiedAccessEndpoint) SetDeviceValidationDomain(v string) *VerifiedAccessEndpoint {
+	s.DeviceValidationDomain = &v
+	return s
+}
+
+// SetDomainCertificateArn sets the DomainCertificateArn field's value.
+func (s *VerifiedAccessEndpoint) SetDomainCertificateArn(v string) *VerifiedAccessEndpoint {
+	s.DomainCertificateArn = &v
+	return s
+}
+
+// SetEndpointDomain sets the EndpointDomain field's value.
+func (s *VerifiedAccessEndpoint) SetEndpointDomain(v string) *VerifiedAccessEndpoint {
+	s.EndpointDomain = &v
+	return s
+}
+
+// SetEndpointType sets the EndpointType field's value.
+func (s *VerifiedAccessEndpoint) SetEndpointType(v string) *VerifiedAccessEndpoint {
+	s.EndpointType = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *VerifiedAccessEndpoint) SetLastUpdatedTime(v string) *VerifiedAccessEndpoint {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetLoadBalancerOptions sets the LoadBalancerOptions field's value.
+func (s *VerifiedAccessEndpoint) SetLoadBalancerOptions(v *VerifiedAccessEndpointLoadBalancerOptions) *VerifiedAccessEndpoint {
+	s.LoadBalancerOptions = v
+	return s
+}
+
+// SetNetworkInterfaceOptions sets the NetworkInterfaceOptions field's value.
+func (s *VerifiedAccessEndpoint) SetNetworkInterfaceOptions(v *VerifiedAccessEndpointEniOptions) *VerifiedAccessEndpoint {
+	s.NetworkInterfaceOptions = v
+	return s
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *VerifiedAccessEndpoint) SetSecurityGroupIds(v []*string) *VerifiedAccessEndpoint {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VerifiedAccessEndpoint) SetStatus(v *VerifiedAccessEndpointStatus) *VerifiedAccessEndpoint {
+	s.Status = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *VerifiedAccessEndpoint) SetTags(v []*Tag) *VerifiedAccessEndpoint {
+	s.Tags = v
+	return s
+}
+
+// SetVerifiedAccessEndpointId sets the VerifiedAccessEndpointId field's value.
+func (s *VerifiedAccessEndpoint) SetVerifiedAccessEndpointId(v string) *VerifiedAccessEndpoint {
+	s.VerifiedAccessEndpointId = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *VerifiedAccessEndpoint) SetVerifiedAccessGroupId(v string) *VerifiedAccessEndpoint {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *VerifiedAccessEndpoint) SetVerifiedAccessInstanceId(v string) *VerifiedAccessEndpoint {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+// Options for a network-interface type endpoint.
+type VerifiedAccessEndpointEniOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The IP port number.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
+	// The IP protocol.
+	Protocol *string `locationName:"protocol" type:"string" enum:"VerifiedAccessEndpointProtocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpointEniOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpointEniOptions) GoString() string {
+	return s.String()
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *VerifiedAccessEndpointEniOptions) SetNetworkInterfaceId(v string) *VerifiedAccessEndpointEniOptions {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *VerifiedAccessEndpointEniOptions) SetPort(v int64) *VerifiedAccessEndpointEniOptions {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *VerifiedAccessEndpointEniOptions) SetProtocol(v string) *VerifiedAccessEndpointEniOptions {
+	s.Protocol = &v
+	return s
+}
+
+// Describes a load balancer when creating an Amazon Web Services Verified Access
+// endpoint using the load-balancer type.
+type VerifiedAccessEndpointLoadBalancerOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the load balancer.
+	LoadBalancerArn *string `locationName:"loadBalancerArn" type:"string"`
+
+	// The IP port number.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
+	// The IP protocol.
+	Protocol *string `locationName:"protocol" type:"string" enum:"VerifiedAccessEndpointProtocol"`
+
+	// The IDs of the subnets.
+	SubnetIds []*string `locationName:"subnetIdSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpointLoadBalancerOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpointLoadBalancerOptions) GoString() string {
+	return s.String()
+}
+
+// SetLoadBalancerArn sets the LoadBalancerArn field's value.
+func (s *VerifiedAccessEndpointLoadBalancerOptions) SetLoadBalancerArn(v string) *VerifiedAccessEndpointLoadBalancerOptions {
+	s.LoadBalancerArn = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *VerifiedAccessEndpointLoadBalancerOptions) SetPort(v int64) *VerifiedAccessEndpointLoadBalancerOptions {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *VerifiedAccessEndpointLoadBalancerOptions) SetProtocol(v string) *VerifiedAccessEndpointLoadBalancerOptions {
+	s.Protocol = &v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *VerifiedAccessEndpointLoadBalancerOptions) SetSubnetIds(v []*string) *VerifiedAccessEndpointLoadBalancerOptions {
+	s.SubnetIds = v
+	return s
+}
+
+// Describes the status of a Verified Access endpoint.
+type VerifiedAccessEndpointStatus struct {
+	_ struct{} `type:"structure"`
+
+	// The status code of the Verified Access endpoint.
+	Code *string `locationName:"code" type:"string" enum:"VerifiedAccessEndpointStatusCode"`
+
+	// The status message of the Verified Access endpoint.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpointStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessEndpointStatus) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *VerifiedAccessEndpointStatus) SetCode(v string) *VerifiedAccessEndpointStatus {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *VerifiedAccessEndpointStatus) SetMessage(v string) *VerifiedAccessEndpointStatus {
+	s.Message = &v
+	return s
+}
+
+// Describes a Verified Access group.
+type VerifiedAccessGroup struct {
+	_ struct{} `type:"structure"`
+
+	// The creation time.
+	CreationTime *string `locationName:"creationTime" type:"string"`
+
+	// The deletion time.
+	DeletionTime *string `locationName:"deletionTime" type:"string"`
+
+	// A description for the Amazon Web Services Verified Access group.
+	Description *string `locationName:"description" type:"string"`
+
+	// The last updated time.
+	LastUpdatedTime *string `locationName:"lastUpdatedTime" type:"string"`
+
+	// The Amazon Web Services account number that owns the group.
+	Owner *string `locationName:"owner" type:"string"`
+
+	// The tags.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ARN of the Verified Access group.
+	VerifiedAccessGroupArn *string `locationName:"verifiedAccessGroupArn" type:"string"`
+
+	// The ID of the Verified Access group.
+	VerifiedAccessGroupId *string `locationName:"verifiedAccessGroupId" type:"string"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `locationName:"verifiedAccessInstanceId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessGroup) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessGroup) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VerifiedAccessGroup) SetCreationTime(v string) *VerifiedAccessGroup {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDeletionTime sets the DeletionTime field's value.
+func (s *VerifiedAccessGroup) SetDeletionTime(v string) *VerifiedAccessGroup {
+	s.DeletionTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *VerifiedAccessGroup) SetDescription(v string) *VerifiedAccessGroup {
+	s.Description = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *VerifiedAccessGroup) SetLastUpdatedTime(v string) *VerifiedAccessGroup {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *VerifiedAccessGroup) SetOwner(v string) *VerifiedAccessGroup {
+	s.Owner = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *VerifiedAccessGroup) SetTags(v []*Tag) *VerifiedAccessGroup {
+	s.Tags = v
+	return s
+}
+
+// SetVerifiedAccessGroupArn sets the VerifiedAccessGroupArn field's value.
+func (s *VerifiedAccessGroup) SetVerifiedAccessGroupArn(v string) *VerifiedAccessGroup {
+	s.VerifiedAccessGroupArn = &v
+	return s
+}
+
+// SetVerifiedAccessGroupId sets the VerifiedAccessGroupId field's value.
+func (s *VerifiedAccessGroup) SetVerifiedAccessGroupId(v string) *VerifiedAccessGroup {
+	s.VerifiedAccessGroupId = &v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *VerifiedAccessGroup) SetVerifiedAccessInstanceId(v string) *VerifiedAccessGroup {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+// Describes a Verified Access instance.
+type VerifiedAccessInstance struct {
+	_ struct{} `type:"structure"`
+
+	// The creation time.
+	CreationTime *string `locationName:"creationTime" type:"string"`
+
+	// A description for the Amazon Web Services Verified Access instance.
+	Description *string `locationName:"description" type:"string"`
+
+	// The last updated time.
+	LastUpdatedTime *string `locationName:"lastUpdatedTime" type:"string"`
+
+	// The tags.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `locationName:"verifiedAccessInstanceId" type:"string"`
+
+	// The IDs of the Amazon Web Services Verified Access trust providers.
+	VerifiedAccessTrustProviders []*VerifiedAccessTrustProviderCondensed `locationName:"verifiedAccessTrustProviderSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessInstance) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessInstance) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VerifiedAccessInstance) SetCreationTime(v string) *VerifiedAccessInstance {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *VerifiedAccessInstance) SetDescription(v string) *VerifiedAccessInstance {
+	s.Description = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *VerifiedAccessInstance) SetLastUpdatedTime(v string) *VerifiedAccessInstance {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *VerifiedAccessInstance) SetTags(v []*Tag) *VerifiedAccessInstance {
+	s.Tags = v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *VerifiedAccessInstance) SetVerifiedAccessInstanceId(v string) *VerifiedAccessInstance {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviders sets the VerifiedAccessTrustProviders field's value.
+func (s *VerifiedAccessInstance) SetVerifiedAccessTrustProviders(v []*VerifiedAccessTrustProviderCondensed) *VerifiedAccessInstance {
+	s.VerifiedAccessTrustProviders = v
+	return s
+}
+
+// Describes logging options for an Amazon Web Services Verified Access instance.
+type VerifiedAccessInstanceLoggingConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the logging options.
+	AccessLogs *VerifiedAccessLogs `locationName:"accessLogs" type:"structure"`
+
+	// The ID of the Amazon Web Services Verified Access instance.
+	VerifiedAccessInstanceId *string `locationName:"verifiedAccessInstanceId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessInstanceLoggingConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessInstanceLoggingConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetAccessLogs sets the AccessLogs field's value.
+func (s *VerifiedAccessInstanceLoggingConfiguration) SetAccessLogs(v *VerifiedAccessLogs) *VerifiedAccessInstanceLoggingConfiguration {
+	s.AccessLogs = v
+	return s
+}
+
+// SetVerifiedAccessInstanceId sets the VerifiedAccessInstanceId field's value.
+func (s *VerifiedAccessInstanceLoggingConfiguration) SetVerifiedAccessInstanceId(v string) *VerifiedAccessInstanceLoggingConfiguration {
+	s.VerifiedAccessInstanceId = &v
+	return s
+}
+
+// Options for CloudWatch Logs as a logging destination.
+type VerifiedAccessLogCloudWatchLogsDestination struct {
+	_ struct{} `type:"structure"`
+
+	// The delivery status for access logs.
+	DeliveryStatus *VerifiedAccessLogDeliveryStatus `locationName:"deliveryStatus" type:"structure"`
+
+	// Indicates whether logging is enabled.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+
+	// The ID of the CloudWatch Logs log group.
+	LogGroup *string `locationName:"logGroup" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogCloudWatchLogsDestination) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogCloudWatchLogsDestination) GoString() string {
+	return s.String()
+}
+
+// SetDeliveryStatus sets the DeliveryStatus field's value.
+func (s *VerifiedAccessLogCloudWatchLogsDestination) SetDeliveryStatus(v *VerifiedAccessLogDeliveryStatus) *VerifiedAccessLogCloudWatchLogsDestination {
+	s.DeliveryStatus = v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VerifiedAccessLogCloudWatchLogsDestination) SetEnabled(v bool) *VerifiedAccessLogCloudWatchLogsDestination {
+	s.Enabled = &v
+	return s
+}
+
+// SetLogGroup sets the LogGroup field's value.
+func (s *VerifiedAccessLogCloudWatchLogsDestination) SetLogGroup(v string) *VerifiedAccessLogCloudWatchLogsDestination {
+	s.LogGroup = &v
+	return s
+}
+
+// Options for CloudWatch Logs as a logging destination.
+type VerifiedAccessLogCloudWatchLogsDestinationOptions struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether logging is enabled.
+	//
+	// Enabled is a required field
+	Enabled *bool `type:"boolean" required:"true"`
+
+	// The ID of the CloudWatch Logs log group.
+	LogGroup *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogCloudWatchLogsDestinationOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogCloudWatchLogsDestinationOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *VerifiedAccessLogCloudWatchLogsDestinationOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "VerifiedAccessLogCloudWatchLogsDestinationOptions"}
+	if s.Enabled == nil {
+		invalidParams.Add(request.NewErrParamRequired("Enabled"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VerifiedAccessLogCloudWatchLogsDestinationOptions) SetEnabled(v bool) *VerifiedAccessLogCloudWatchLogsDestinationOptions {
+	s.Enabled = &v
+	return s
+}
+
+// SetLogGroup sets the LogGroup field's value.
+func (s *VerifiedAccessLogCloudWatchLogsDestinationOptions) SetLogGroup(v string) *VerifiedAccessLogCloudWatchLogsDestinationOptions {
+	s.LogGroup = &v
+	return s
+}
+
+// Describes a log delivery status.
+type VerifiedAccessLogDeliveryStatus struct {
+	_ struct{} `type:"structure"`
+
+	// The status code.
+	Code *string `locationName:"code" type:"string" enum:"VerifiedAccessLogDeliveryStatusCode"`
+
+	// The status message.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogDeliveryStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogDeliveryStatus) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *VerifiedAccessLogDeliveryStatus) SetCode(v string) *VerifiedAccessLogDeliveryStatus {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *VerifiedAccessLogDeliveryStatus) SetMessage(v string) *VerifiedAccessLogDeliveryStatus {
+	s.Message = &v
+	return s
+}
+
+// Options for Kinesis as a logging destination.
+type VerifiedAccessLogKinesisDataFirehoseDestination struct {
+	_ struct{} `type:"structure"`
+
+	// The delivery status.
+	DeliveryStatus *VerifiedAccessLogDeliveryStatus `locationName:"deliveryStatus" type:"structure"`
+
+	// The ID of the delivery stream.
+	DeliveryStream *string `locationName:"deliveryStream" type:"string"`
+
+	// Indicates whether logging is enabled.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogKinesisDataFirehoseDestination) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogKinesisDataFirehoseDestination) GoString() string {
+	return s.String()
+}
+
+// SetDeliveryStatus sets the DeliveryStatus field's value.
+func (s *VerifiedAccessLogKinesisDataFirehoseDestination) SetDeliveryStatus(v *VerifiedAccessLogDeliveryStatus) *VerifiedAccessLogKinesisDataFirehoseDestination {
+	s.DeliveryStatus = v
+	return s
+}
+
+// SetDeliveryStream sets the DeliveryStream field's value.
+func (s *VerifiedAccessLogKinesisDataFirehoseDestination) SetDeliveryStream(v string) *VerifiedAccessLogKinesisDataFirehoseDestination {
+	s.DeliveryStream = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VerifiedAccessLogKinesisDataFirehoseDestination) SetEnabled(v bool) *VerifiedAccessLogKinesisDataFirehoseDestination {
+	s.Enabled = &v
+	return s
+}
+
+// Describes Amazon Kinesis Data Firehose logging options.
+type VerifiedAccessLogKinesisDataFirehoseDestinationOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the delivery stream.
+	DeliveryStream *string `type:"string"`
+
+	// Indicates whether logging is enabled.
+	//
+	// Enabled is a required field
+	Enabled *bool `type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogKinesisDataFirehoseDestinationOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogKinesisDataFirehoseDestinationOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *VerifiedAccessLogKinesisDataFirehoseDestinationOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "VerifiedAccessLogKinesisDataFirehoseDestinationOptions"}
+	if s.Enabled == nil {
+		invalidParams.Add(request.NewErrParamRequired("Enabled"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeliveryStream sets the DeliveryStream field's value.
+func (s *VerifiedAccessLogKinesisDataFirehoseDestinationOptions) SetDeliveryStream(v string) *VerifiedAccessLogKinesisDataFirehoseDestinationOptions {
+	s.DeliveryStream = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VerifiedAccessLogKinesisDataFirehoseDestinationOptions) SetEnabled(v bool) *VerifiedAccessLogKinesisDataFirehoseDestinationOptions {
+	s.Enabled = &v
+	return s
+}
+
+// Describes the destinations for Verified Access logs.
+type VerifiedAccessLogOptions struct {
+	_ struct{} `type:"structure"`
+
+	// Sends Verified Access logs to CloudWatch Logs.
+	CloudWatchLogs *VerifiedAccessLogCloudWatchLogsDestinationOptions `type:"structure"`
+
+	// Sends Verified Access logs to Kinesis.
+	KinesisDataFirehose *VerifiedAccessLogKinesisDataFirehoseDestinationOptions `type:"structure"`
+
+	// Sends Verified Access logs to Amazon S3.
+	S3 *VerifiedAccessLogS3DestinationOptions `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *VerifiedAccessLogOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "VerifiedAccessLogOptions"}
+	if s.CloudWatchLogs != nil {
+		if err := s.CloudWatchLogs.Validate(); err != nil {
+			invalidParams.AddNested("CloudWatchLogs", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.KinesisDataFirehose != nil {
+		if err := s.KinesisDataFirehose.Validate(); err != nil {
+			invalidParams.AddNested("KinesisDataFirehose", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.S3 != nil {
+		if err := s.S3.Validate(); err != nil {
+			invalidParams.AddNested("S3", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCloudWatchLogs sets the CloudWatchLogs field's value.
+func (s *VerifiedAccessLogOptions) SetCloudWatchLogs(v *VerifiedAccessLogCloudWatchLogsDestinationOptions) *VerifiedAccessLogOptions {
+	s.CloudWatchLogs = v
+	return s
+}
+
+// SetKinesisDataFirehose sets the KinesisDataFirehose field's value.
+func (s *VerifiedAccessLogOptions) SetKinesisDataFirehose(v *VerifiedAccessLogKinesisDataFirehoseDestinationOptions) *VerifiedAccessLogOptions {
+	s.KinesisDataFirehose = v
+	return s
+}
+
+// SetS3 sets the S3 field's value.
+func (s *VerifiedAccessLogOptions) SetS3(v *VerifiedAccessLogS3DestinationOptions) *VerifiedAccessLogOptions {
+	s.S3 = v
+	return s
+}
+
+// Options for Amazon S3 as a logging destination.
+type VerifiedAccessLogS3Destination struct {
+	_ struct{} `type:"structure"`
+
+	// The bucket name.
+	BucketName *string `locationName:"bucketName" type:"string"`
+
+	// The Amazon Web Services account number that owns the bucket.
+	BucketOwner *string `locationName:"bucketOwner" type:"string"`
+
+	// The delivery status.
+	DeliveryStatus *VerifiedAccessLogDeliveryStatus `locationName:"deliveryStatus" type:"structure"`
+
+	// Indicates whether logging is enabled.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+
+	// The bucket prefix.
+	Prefix *string `locationName:"prefix" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogS3Destination) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogS3Destination) GoString() string {
+	return s.String()
+}
+
+// SetBucketName sets the BucketName field's value.
+func (s *VerifiedAccessLogS3Destination) SetBucketName(v string) *VerifiedAccessLogS3Destination {
+	s.BucketName = &v
+	return s
+}
+
+// SetBucketOwner sets the BucketOwner field's value.
+func (s *VerifiedAccessLogS3Destination) SetBucketOwner(v string) *VerifiedAccessLogS3Destination {
+	s.BucketOwner = &v
+	return s
+}
+
+// SetDeliveryStatus sets the DeliveryStatus field's value.
+func (s *VerifiedAccessLogS3Destination) SetDeliveryStatus(v *VerifiedAccessLogDeliveryStatus) *VerifiedAccessLogS3Destination {
+	s.DeliveryStatus = v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VerifiedAccessLogS3Destination) SetEnabled(v bool) *VerifiedAccessLogS3Destination {
+	s.Enabled = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *VerifiedAccessLogS3Destination) SetPrefix(v string) *VerifiedAccessLogS3Destination {
+	s.Prefix = &v
+	return s
+}
+
+// Options for Amazon S3 as a logging destination.
+type VerifiedAccessLogS3DestinationOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The bucket name.
+	BucketName *string `type:"string"`
+
+	// The ID of the Amazon Web Services account that owns the Amazon S3 bucket.
+	BucketOwner *string `type:"string"`
+
+	// Indicates whether logging is enabled.
+	//
+	// Enabled is a required field
+	Enabled *bool `type:"boolean" required:"true"`
+
+	// The bucket prefix.
+	Prefix *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogS3DestinationOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogS3DestinationOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *VerifiedAccessLogS3DestinationOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "VerifiedAccessLogS3DestinationOptions"}
+	if s.Enabled == nil {
+		invalidParams.Add(request.NewErrParamRequired("Enabled"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBucketName sets the BucketName field's value.
+func (s *VerifiedAccessLogS3DestinationOptions) SetBucketName(v string) *VerifiedAccessLogS3DestinationOptions {
+	s.BucketName = &v
+	return s
+}
+
+// SetBucketOwner sets the BucketOwner field's value.
+func (s *VerifiedAccessLogS3DestinationOptions) SetBucketOwner(v string) *VerifiedAccessLogS3DestinationOptions {
+	s.BucketOwner = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VerifiedAccessLogS3DestinationOptions) SetEnabled(v bool) *VerifiedAccessLogS3DestinationOptions {
+	s.Enabled = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *VerifiedAccessLogS3DestinationOptions) SetPrefix(v string) *VerifiedAccessLogS3DestinationOptions {
+	s.Prefix = &v
+	return s
+}
+
+// Describes the destinations for Verified Access logs.
+type VerifiedAccessLogs struct {
+	_ struct{} `type:"structure"`
+
+	// CloudWatch Logs logging destination.
+	CloudWatchLogs *VerifiedAccessLogCloudWatchLogsDestination `locationName:"cloudWatchLogs" type:"structure"`
+
+	// Kinesis logging destination.
+	KinesisDataFirehose *VerifiedAccessLogKinesisDataFirehoseDestination `locationName:"kinesisDataFirehose" type:"structure"`
+
+	// Amazon S3 logging options.
+	S3 *VerifiedAccessLogS3Destination `locationName:"s3" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogs) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessLogs) GoString() string {
+	return s.String()
+}
+
+// SetCloudWatchLogs sets the CloudWatchLogs field's value.
+func (s *VerifiedAccessLogs) SetCloudWatchLogs(v *VerifiedAccessLogCloudWatchLogsDestination) *VerifiedAccessLogs {
+	s.CloudWatchLogs = v
+	return s
+}
+
+// SetKinesisDataFirehose sets the KinesisDataFirehose field's value.
+func (s *VerifiedAccessLogs) SetKinesisDataFirehose(v *VerifiedAccessLogKinesisDataFirehoseDestination) *VerifiedAccessLogs {
+	s.KinesisDataFirehose = v
+	return s
+}
+
+// SetS3 sets the S3 field's value.
+func (s *VerifiedAccessLogs) SetS3(v *VerifiedAccessLogS3Destination) *VerifiedAccessLogs {
+	s.S3 = v
+	return s
+}
+
+// Describes a Verified Access trust provider.
+type VerifiedAccessTrustProvider struct {
+	_ struct{} `type:"structure"`
+
+	// The creation time.
+	CreationTime *string `locationName:"creationTime" type:"string"`
+
+	// A description for the Amazon Web Services Verified Access trust provider.
+	Description *string `locationName:"description" type:"string"`
+
+	// The options for device-identity type trust provider.
+	DeviceOptions *DeviceOptions `locationName:"deviceOptions" type:"structure"`
+
+	// The type of device-based trust provider.
+	DeviceTrustProviderType *string `locationName:"deviceTrustProviderType" type:"string" enum:"DeviceTrustProviderType"`
+
+	// The last updated time.
+	LastUpdatedTime *string `locationName:"lastUpdatedTime" type:"string"`
+
+	// The OpenID Connect details for an oidc-type, user-identity based trust provider.
+	OidcOptions *OidcOptions `locationName:"oidcOptions" type:"structure"`
+
+	// The identifier to be used when working with policy rules.
+	PolicyReferenceName *string `locationName:"policyReferenceName" type:"string"`
+
+	// The tags.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The type of Verified Access trust provider.
+	TrustProviderType *string `locationName:"trustProviderType" type:"string" enum:"TrustProviderType"`
+
+	// The type of user-based trust provider.
+	UserTrustProviderType *string `locationName:"userTrustProviderType" type:"string" enum:"UserTrustProviderType"`
+
+	// The ID of the Amazon Web Services Verified Access trust provider.
+	VerifiedAccessTrustProviderId *string `locationName:"verifiedAccessTrustProviderId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessTrustProvider) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessTrustProvider) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VerifiedAccessTrustProvider) SetCreationTime(v string) *VerifiedAccessTrustProvider {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *VerifiedAccessTrustProvider) SetDescription(v string) *VerifiedAccessTrustProvider {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceOptions sets the DeviceOptions field's value.
+func (s *VerifiedAccessTrustProvider) SetDeviceOptions(v *DeviceOptions) *VerifiedAccessTrustProvider {
+	s.DeviceOptions = v
+	return s
+}
+
+// SetDeviceTrustProviderType sets the DeviceTrustProviderType field's value.
+func (s *VerifiedAccessTrustProvider) SetDeviceTrustProviderType(v string) *VerifiedAccessTrustProvider {
+	s.DeviceTrustProviderType = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *VerifiedAccessTrustProvider) SetLastUpdatedTime(v string) *VerifiedAccessTrustProvider {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetOidcOptions sets the OidcOptions field's value.
+func (s *VerifiedAccessTrustProvider) SetOidcOptions(v *OidcOptions) *VerifiedAccessTrustProvider {
+	s.OidcOptions = v
+	return s
+}
+
+// SetPolicyReferenceName sets the PolicyReferenceName field's value.
+func (s *VerifiedAccessTrustProvider) SetPolicyReferenceName(v string) *VerifiedAccessTrustProvider {
+	s.PolicyReferenceName = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *VerifiedAccessTrustProvider) SetTags(v []*Tag) *VerifiedAccessTrustProvider {
+	s.Tags = v
+	return s
+}
+
+// SetTrustProviderType sets the TrustProviderType field's value.
+func (s *VerifiedAccessTrustProvider) SetTrustProviderType(v string) *VerifiedAccessTrustProvider {
+	s.TrustProviderType = &v
+	return s
+}
+
+// SetUserTrustProviderType sets the UserTrustProviderType field's value.
+func (s *VerifiedAccessTrustProvider) SetUserTrustProviderType(v string) *VerifiedAccessTrustProvider {
+	s.UserTrustProviderType = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderId sets the VerifiedAccessTrustProviderId field's value.
+func (s *VerifiedAccessTrustProvider) SetVerifiedAccessTrustProviderId(v string) *VerifiedAccessTrustProvider {
+	s.VerifiedAccessTrustProviderId = &v
+	return s
+}
+
+// Condensed information about a trust provider.
+type VerifiedAccessTrustProviderCondensed struct {
+	_ struct{} `type:"structure"`
+
+	// The description of trust provider.
+	Description *string `locationName:"description" type:"string"`
+
+	// The type of device-based trust provider.
+	DeviceTrustProviderType *string `locationName:"deviceTrustProviderType" type:"string" enum:"DeviceTrustProviderType"`
+
+	// The type of trust provider (user- or device-based).
+	TrustProviderType *string `locationName:"trustProviderType" type:"string" enum:"TrustProviderType"`
+
+	// The type of user-based trust provider.
+	UserTrustProviderType *string `locationName:"userTrustProviderType" type:"string" enum:"UserTrustProviderType"`
+
+	// The ID of the trust provider.
+	VerifiedAccessTrustProviderId *string `locationName:"verifiedAccessTrustProviderId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessTrustProviderCondensed) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VerifiedAccessTrustProviderCondensed) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *VerifiedAccessTrustProviderCondensed) SetDescription(v string) *VerifiedAccessTrustProviderCondensed {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceTrustProviderType sets the DeviceTrustProviderType field's value.
+func (s *VerifiedAccessTrustProviderCondensed) SetDeviceTrustProviderType(v string) *VerifiedAccessTrustProviderCondensed {
+	s.DeviceTrustProviderType = &v
+	return s
+}
+
+// SetTrustProviderType sets the TrustProviderType field's value.
+func (s *VerifiedAccessTrustProviderCondensed) SetTrustProviderType(v string) *VerifiedAccessTrustProviderCondensed {
+	s.TrustProviderType = &v
+	return s
+}
+
+// SetUserTrustProviderType sets the UserTrustProviderType field's value.
+func (s *VerifiedAccessTrustProviderCondensed) SetUserTrustProviderType(v string) *VerifiedAccessTrustProviderCondensed {
+	s.UserTrustProviderType = &v
+	return s
+}
+
+// SetVerifiedAccessTrustProviderId sets the VerifiedAccessTrustProviderId field's value.
+func (s *VerifiedAccessTrustProviderCondensed) SetVerifiedAccessTrustProviderId(v string) *VerifiedAccessTrustProviderCondensed {
+	s.VerifiedAccessTrustProviderId = &v
 	return s
 }
 
@@ -166949,7 +179196,7 @@ type VpcEndpoint struct {
 	// The last error that occurred for endpoint.
 	LastError *LastError `locationName:"lastError" type:"structure"`
 
-	// (Interface endpoint) One or more network interfaces for the endpoint.
+	// (Interface endpoint) The network interfaces for the endpoint.
 	NetworkInterfaceIds []*string `locationName:"networkInterfaceIdSet" locationNameList:"item" type:"list"`
 
 	// The ID of the Amazon Web Services account that owns the endpoint.
@@ -166965,7 +179212,7 @@ type VpcEndpoint struct {
 	// Indicates whether the endpoint is being managed by its service.
 	RequesterManaged *bool `locationName:"requesterManaged" type:"boolean"`
 
-	// (Gateway endpoint) One or more route tables associated with the endpoint.
+	// (Gateway endpoint) The IDs of the route tables associated with the endpoint.
 	RouteTableIds []*string `locationName:"routeTableIdSet" locationNameList:"item" type:"list"`
 
 	// The name of the service to which the endpoint is associated.
@@ -166977,7 +179224,7 @@ type VpcEndpoint struct {
 	// (Interface endpoint) The subnets for the endpoint.
 	SubnetIds []*string `locationName:"subnetIdSet" locationNameList:"item" type:"list"`
 
-	// Any tags assigned to the endpoint.
+	// The tags assigned to the endpoint.
 	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 
 	// The ID of the endpoint.
@@ -168279,6 +180526,9 @@ type VpnTunnelOptionsSpecification struct {
 	// Default: 30
 	DPDTimeoutSeconds *int64 `type:"integer"`
 
+	// Turn on or off tunnel endpoint lifecycle control feature.
+	EnableTunnelLifecycleControl *bool `type:"boolean"`
+
 	// The IKE versions that are permitted for the VPN tunnel.
 	//
 	// Valid values: ikev1 | ikev2
@@ -168437,6 +180687,12 @@ func (s *VpnTunnelOptionsSpecification) SetDPDTimeoutAction(v string) *VpnTunnel
 // SetDPDTimeoutSeconds sets the DPDTimeoutSeconds field's value.
 func (s *VpnTunnelOptionsSpecification) SetDPDTimeoutSeconds(v int64) *VpnTunnelOptionsSpecification {
 	s.DPDTimeoutSeconds = &v
+	return s
+}
+
+// SetEnableTunnelLifecycleControl sets the EnableTunnelLifecycleControl field's value.
+func (s *VpnTunnelOptionsSpecification) SetEnableTunnelLifecycleControl(v bool) *VpnTunnelOptionsSpecification {
+	s.EnableTunnelLifecycleControl = &v
 	return s
 }
 
@@ -169253,6 +181509,9 @@ const (
 
 	// BootModeValuesUefi is a BootModeValues enum value
 	BootModeValuesUefi = "uefi"
+
+	// BootModeValuesUefiPreferred is a BootModeValues enum value
+	BootModeValuesUefiPreferred = "uefi-preferred"
 )
 
 // BootModeValues_Values returns all elements of the BootModeValues enum
@@ -169260,6 +181519,7 @@ func BootModeValues_Values() []string {
 	return []string{
 		BootModeValuesLegacyBios,
 		BootModeValuesUefi,
+		BootModeValuesUefiPreferred,
 	}
 }
 
@@ -170008,6 +182268,22 @@ func DestinationFileFormat_Values() []string {
 	return []string{
 		DestinationFileFormatPlainText,
 		DestinationFileFormatParquet,
+	}
+}
+
+const (
+	// DeviceTrustProviderTypeJamf is a DeviceTrustProviderType enum value
+	DeviceTrustProviderTypeJamf = "jamf"
+
+	// DeviceTrustProviderTypeCrowdstrike is a DeviceTrustProviderType enum value
+	DeviceTrustProviderTypeCrowdstrike = "crowdstrike"
+)
+
+// DeviceTrustProviderType_Values returns all elements of the DeviceTrustProviderType enum
+func DeviceTrustProviderType_Values() []string {
+	return []string{
+		DeviceTrustProviderTypeJamf,
+		DeviceTrustProviderTypeCrowdstrike,
 	}
 }
 
@@ -170796,6 +183072,22 @@ func GatewayType_Values() []string {
 }
 
 const (
+	// HostMaintenanceOn is a HostMaintenance enum value
+	HostMaintenanceOn = "on"
+
+	// HostMaintenanceOff is a HostMaintenance enum value
+	HostMaintenanceOff = "off"
+)
+
+// HostMaintenance_Values returns all elements of the HostMaintenance enum
+func HostMaintenance_Values() []string {
+	return []string{
+		HostMaintenanceOn,
+		HostMaintenanceOff,
+	}
+}
+
+const (
 	// HostRecoveryOn is a HostRecovery enum value
 	HostRecoveryOn = "on"
 
@@ -171124,6 +183416,22 @@ func InstanceAutoRecoveryState_Values() []string {
 	return []string{
 		InstanceAutoRecoveryStateDisabled,
 		InstanceAutoRecoveryStateDefault,
+	}
+}
+
+const (
+	// InstanceBootModeValuesLegacyBios is a InstanceBootModeValues enum value
+	InstanceBootModeValuesLegacyBios = "legacy-bios"
+
+	// InstanceBootModeValuesUefi is a InstanceBootModeValues enum value
+	InstanceBootModeValuesUefi = "uefi"
+)
+
+// InstanceBootModeValues_Values returns all elements of the InstanceBootModeValues enum
+func InstanceBootModeValues_Values() []string {
+	return []string{
+		InstanceBootModeValuesLegacyBios,
+		InstanceBootModeValuesUefi,
 	}
 }
 
@@ -173082,6 +185390,216 @@ const (
 
 	// InstanceTypeTrn132xlarge is a InstanceType enum value
 	InstanceTypeTrn132xlarge = "trn1.32xlarge"
+
+	// InstanceTypeHpc6id32xlarge is a InstanceType enum value
+	InstanceTypeHpc6id32xlarge = "hpc6id.32xlarge"
+
+	// InstanceTypeC6inLarge is a InstanceType enum value
+	InstanceTypeC6inLarge = "c6in.large"
+
+	// InstanceTypeC6inXlarge is a InstanceType enum value
+	InstanceTypeC6inXlarge = "c6in.xlarge"
+
+	// InstanceTypeC6in2xlarge is a InstanceType enum value
+	InstanceTypeC6in2xlarge = "c6in.2xlarge"
+
+	// InstanceTypeC6in4xlarge is a InstanceType enum value
+	InstanceTypeC6in4xlarge = "c6in.4xlarge"
+
+	// InstanceTypeC6in8xlarge is a InstanceType enum value
+	InstanceTypeC6in8xlarge = "c6in.8xlarge"
+
+	// InstanceTypeC6in12xlarge is a InstanceType enum value
+	InstanceTypeC6in12xlarge = "c6in.12xlarge"
+
+	// InstanceTypeC6in16xlarge is a InstanceType enum value
+	InstanceTypeC6in16xlarge = "c6in.16xlarge"
+
+	// InstanceTypeC6in24xlarge is a InstanceType enum value
+	InstanceTypeC6in24xlarge = "c6in.24xlarge"
+
+	// InstanceTypeC6in32xlarge is a InstanceType enum value
+	InstanceTypeC6in32xlarge = "c6in.32xlarge"
+
+	// InstanceTypeM6inLarge is a InstanceType enum value
+	InstanceTypeM6inLarge = "m6in.large"
+
+	// InstanceTypeM6inXlarge is a InstanceType enum value
+	InstanceTypeM6inXlarge = "m6in.xlarge"
+
+	// InstanceTypeM6in2xlarge is a InstanceType enum value
+	InstanceTypeM6in2xlarge = "m6in.2xlarge"
+
+	// InstanceTypeM6in4xlarge is a InstanceType enum value
+	InstanceTypeM6in4xlarge = "m6in.4xlarge"
+
+	// InstanceTypeM6in8xlarge is a InstanceType enum value
+	InstanceTypeM6in8xlarge = "m6in.8xlarge"
+
+	// InstanceTypeM6in12xlarge is a InstanceType enum value
+	InstanceTypeM6in12xlarge = "m6in.12xlarge"
+
+	// InstanceTypeM6in16xlarge is a InstanceType enum value
+	InstanceTypeM6in16xlarge = "m6in.16xlarge"
+
+	// InstanceTypeM6in24xlarge is a InstanceType enum value
+	InstanceTypeM6in24xlarge = "m6in.24xlarge"
+
+	// InstanceTypeM6in32xlarge is a InstanceType enum value
+	InstanceTypeM6in32xlarge = "m6in.32xlarge"
+
+	// InstanceTypeM6idnLarge is a InstanceType enum value
+	InstanceTypeM6idnLarge = "m6idn.large"
+
+	// InstanceTypeM6idnXlarge is a InstanceType enum value
+	InstanceTypeM6idnXlarge = "m6idn.xlarge"
+
+	// InstanceTypeM6idn2xlarge is a InstanceType enum value
+	InstanceTypeM6idn2xlarge = "m6idn.2xlarge"
+
+	// InstanceTypeM6idn4xlarge is a InstanceType enum value
+	InstanceTypeM6idn4xlarge = "m6idn.4xlarge"
+
+	// InstanceTypeM6idn8xlarge is a InstanceType enum value
+	InstanceTypeM6idn8xlarge = "m6idn.8xlarge"
+
+	// InstanceTypeM6idn12xlarge is a InstanceType enum value
+	InstanceTypeM6idn12xlarge = "m6idn.12xlarge"
+
+	// InstanceTypeM6idn16xlarge is a InstanceType enum value
+	InstanceTypeM6idn16xlarge = "m6idn.16xlarge"
+
+	// InstanceTypeM6idn24xlarge is a InstanceType enum value
+	InstanceTypeM6idn24xlarge = "m6idn.24xlarge"
+
+	// InstanceTypeM6idn32xlarge is a InstanceType enum value
+	InstanceTypeM6idn32xlarge = "m6idn.32xlarge"
+
+	// InstanceTypeR6inLarge is a InstanceType enum value
+	InstanceTypeR6inLarge = "r6in.large"
+
+	// InstanceTypeR6inXlarge is a InstanceType enum value
+	InstanceTypeR6inXlarge = "r6in.xlarge"
+
+	// InstanceTypeR6in2xlarge is a InstanceType enum value
+	InstanceTypeR6in2xlarge = "r6in.2xlarge"
+
+	// InstanceTypeR6in4xlarge is a InstanceType enum value
+	InstanceTypeR6in4xlarge = "r6in.4xlarge"
+
+	// InstanceTypeR6in8xlarge is a InstanceType enum value
+	InstanceTypeR6in8xlarge = "r6in.8xlarge"
+
+	// InstanceTypeR6in12xlarge is a InstanceType enum value
+	InstanceTypeR6in12xlarge = "r6in.12xlarge"
+
+	// InstanceTypeR6in16xlarge is a InstanceType enum value
+	InstanceTypeR6in16xlarge = "r6in.16xlarge"
+
+	// InstanceTypeR6in24xlarge is a InstanceType enum value
+	InstanceTypeR6in24xlarge = "r6in.24xlarge"
+
+	// InstanceTypeR6in32xlarge is a InstanceType enum value
+	InstanceTypeR6in32xlarge = "r6in.32xlarge"
+
+	// InstanceTypeR6idnLarge is a InstanceType enum value
+	InstanceTypeR6idnLarge = "r6idn.large"
+
+	// InstanceTypeR6idnXlarge is a InstanceType enum value
+	InstanceTypeR6idnXlarge = "r6idn.xlarge"
+
+	// InstanceTypeR6idn2xlarge is a InstanceType enum value
+	InstanceTypeR6idn2xlarge = "r6idn.2xlarge"
+
+	// InstanceTypeR6idn4xlarge is a InstanceType enum value
+	InstanceTypeR6idn4xlarge = "r6idn.4xlarge"
+
+	// InstanceTypeR6idn8xlarge is a InstanceType enum value
+	InstanceTypeR6idn8xlarge = "r6idn.8xlarge"
+
+	// InstanceTypeR6idn12xlarge is a InstanceType enum value
+	InstanceTypeR6idn12xlarge = "r6idn.12xlarge"
+
+	// InstanceTypeR6idn16xlarge is a InstanceType enum value
+	InstanceTypeR6idn16xlarge = "r6idn.16xlarge"
+
+	// InstanceTypeR6idn24xlarge is a InstanceType enum value
+	InstanceTypeR6idn24xlarge = "r6idn.24xlarge"
+
+	// InstanceTypeR6idn32xlarge is a InstanceType enum value
+	InstanceTypeR6idn32xlarge = "r6idn.32xlarge"
+
+	// InstanceTypeC7gMetal is a InstanceType enum value
+	InstanceTypeC7gMetal = "c7g.metal"
+
+	// InstanceTypeM7gMedium is a InstanceType enum value
+	InstanceTypeM7gMedium = "m7g.medium"
+
+	// InstanceTypeM7gLarge is a InstanceType enum value
+	InstanceTypeM7gLarge = "m7g.large"
+
+	// InstanceTypeM7gXlarge is a InstanceType enum value
+	InstanceTypeM7gXlarge = "m7g.xlarge"
+
+	// InstanceTypeM7g2xlarge is a InstanceType enum value
+	InstanceTypeM7g2xlarge = "m7g.2xlarge"
+
+	// InstanceTypeM7g4xlarge is a InstanceType enum value
+	InstanceTypeM7g4xlarge = "m7g.4xlarge"
+
+	// InstanceTypeM7g8xlarge is a InstanceType enum value
+	InstanceTypeM7g8xlarge = "m7g.8xlarge"
+
+	// InstanceTypeM7g12xlarge is a InstanceType enum value
+	InstanceTypeM7g12xlarge = "m7g.12xlarge"
+
+	// InstanceTypeM7g16xlarge is a InstanceType enum value
+	InstanceTypeM7g16xlarge = "m7g.16xlarge"
+
+	// InstanceTypeM7gMetal is a InstanceType enum value
+	InstanceTypeM7gMetal = "m7g.metal"
+
+	// InstanceTypeR7gMedium is a InstanceType enum value
+	InstanceTypeR7gMedium = "r7g.medium"
+
+	// InstanceTypeR7gLarge is a InstanceType enum value
+	InstanceTypeR7gLarge = "r7g.large"
+
+	// InstanceTypeR7gXlarge is a InstanceType enum value
+	InstanceTypeR7gXlarge = "r7g.xlarge"
+
+	// InstanceTypeR7g2xlarge is a InstanceType enum value
+	InstanceTypeR7g2xlarge = "r7g.2xlarge"
+
+	// InstanceTypeR7g4xlarge is a InstanceType enum value
+	InstanceTypeR7g4xlarge = "r7g.4xlarge"
+
+	// InstanceTypeR7g8xlarge is a InstanceType enum value
+	InstanceTypeR7g8xlarge = "r7g.8xlarge"
+
+	// InstanceTypeR7g12xlarge is a InstanceType enum value
+	InstanceTypeR7g12xlarge = "r7g.12xlarge"
+
+	// InstanceTypeR7g16xlarge is a InstanceType enum value
+	InstanceTypeR7g16xlarge = "r7g.16xlarge"
+
+	// InstanceTypeR7gMetal is a InstanceType enum value
+	InstanceTypeR7gMetal = "r7g.metal"
+
+	// InstanceTypeC6inMetal is a InstanceType enum value
+	InstanceTypeC6inMetal = "c6in.metal"
+
+	// InstanceTypeM6inMetal is a InstanceType enum value
+	InstanceTypeM6inMetal = "m6in.metal"
+
+	// InstanceTypeM6idnMetal is a InstanceType enum value
+	InstanceTypeM6idnMetal = "m6idn.metal"
+
+	// InstanceTypeR6inMetal is a InstanceType enum value
+	InstanceTypeR6inMetal = "r6in.metal"
+
+	// InstanceTypeR6idnMetal is a InstanceType enum value
+	InstanceTypeR6idnMetal = "r6idn.metal"
 )
 
 // InstanceType_Values returns all elements of the InstanceType enum
@@ -173660,6 +186178,76 @@ func InstanceType_Values() []string {
 		InstanceTypeU24tb1112xlarge,
 		InstanceTypeTrn12xlarge,
 		InstanceTypeTrn132xlarge,
+		InstanceTypeHpc6id32xlarge,
+		InstanceTypeC6inLarge,
+		InstanceTypeC6inXlarge,
+		InstanceTypeC6in2xlarge,
+		InstanceTypeC6in4xlarge,
+		InstanceTypeC6in8xlarge,
+		InstanceTypeC6in12xlarge,
+		InstanceTypeC6in16xlarge,
+		InstanceTypeC6in24xlarge,
+		InstanceTypeC6in32xlarge,
+		InstanceTypeM6inLarge,
+		InstanceTypeM6inXlarge,
+		InstanceTypeM6in2xlarge,
+		InstanceTypeM6in4xlarge,
+		InstanceTypeM6in8xlarge,
+		InstanceTypeM6in12xlarge,
+		InstanceTypeM6in16xlarge,
+		InstanceTypeM6in24xlarge,
+		InstanceTypeM6in32xlarge,
+		InstanceTypeM6idnLarge,
+		InstanceTypeM6idnXlarge,
+		InstanceTypeM6idn2xlarge,
+		InstanceTypeM6idn4xlarge,
+		InstanceTypeM6idn8xlarge,
+		InstanceTypeM6idn12xlarge,
+		InstanceTypeM6idn16xlarge,
+		InstanceTypeM6idn24xlarge,
+		InstanceTypeM6idn32xlarge,
+		InstanceTypeR6inLarge,
+		InstanceTypeR6inXlarge,
+		InstanceTypeR6in2xlarge,
+		InstanceTypeR6in4xlarge,
+		InstanceTypeR6in8xlarge,
+		InstanceTypeR6in12xlarge,
+		InstanceTypeR6in16xlarge,
+		InstanceTypeR6in24xlarge,
+		InstanceTypeR6in32xlarge,
+		InstanceTypeR6idnLarge,
+		InstanceTypeR6idnXlarge,
+		InstanceTypeR6idn2xlarge,
+		InstanceTypeR6idn4xlarge,
+		InstanceTypeR6idn8xlarge,
+		InstanceTypeR6idn12xlarge,
+		InstanceTypeR6idn16xlarge,
+		InstanceTypeR6idn24xlarge,
+		InstanceTypeR6idn32xlarge,
+		InstanceTypeC7gMetal,
+		InstanceTypeM7gMedium,
+		InstanceTypeM7gLarge,
+		InstanceTypeM7gXlarge,
+		InstanceTypeM7g2xlarge,
+		InstanceTypeM7g4xlarge,
+		InstanceTypeM7g8xlarge,
+		InstanceTypeM7g12xlarge,
+		InstanceTypeM7g16xlarge,
+		InstanceTypeM7gMetal,
+		InstanceTypeR7gMedium,
+		InstanceTypeR7gLarge,
+		InstanceTypeR7gXlarge,
+		InstanceTypeR7g2xlarge,
+		InstanceTypeR7g4xlarge,
+		InstanceTypeR7g8xlarge,
+		InstanceTypeR7g12xlarge,
+		InstanceTypeR7g16xlarge,
+		InstanceTypeR7gMetal,
+		InstanceTypeC6inMetal,
+		InstanceTypeM6inMetal,
+		InstanceTypeM6idnMetal,
+		InstanceTypeR6inMetal,
+		InstanceTypeR6idnMetal,
 	}
 }
 
@@ -173760,6 +186348,22 @@ func IpamAddressHistoryResourceType_Values() []string {
 }
 
 const (
+	// IpamAssociatedResourceDiscoveryStatusActive is a IpamAssociatedResourceDiscoveryStatus enum value
+	IpamAssociatedResourceDiscoveryStatusActive = "active"
+
+	// IpamAssociatedResourceDiscoveryStatusNotFound is a IpamAssociatedResourceDiscoveryStatus enum value
+	IpamAssociatedResourceDiscoveryStatusNotFound = "not-found"
+)
+
+// IpamAssociatedResourceDiscoveryStatus_Values returns all elements of the IpamAssociatedResourceDiscoveryStatus enum
+func IpamAssociatedResourceDiscoveryStatus_Values() []string {
+	return []string{
+		IpamAssociatedResourceDiscoveryStatusActive,
+		IpamAssociatedResourceDiscoveryStatusNotFound,
+	}
+}
+
+const (
 	// IpamComplianceStatusCompliant is a IpamComplianceStatus enum value
 	IpamComplianceStatusCompliant = "compliant"
 
@@ -173780,6 +186384,26 @@ func IpamComplianceStatus_Values() []string {
 		IpamComplianceStatusNoncompliant,
 		IpamComplianceStatusUnmanaged,
 		IpamComplianceStatusIgnored,
+	}
+}
+
+const (
+	// IpamDiscoveryFailureCodeAssumeRoleFailure is a IpamDiscoveryFailureCode enum value
+	IpamDiscoveryFailureCodeAssumeRoleFailure = "assume-role-failure"
+
+	// IpamDiscoveryFailureCodeThrottlingFailure is a IpamDiscoveryFailureCode enum value
+	IpamDiscoveryFailureCodeThrottlingFailure = "throttling-failure"
+
+	// IpamDiscoveryFailureCodeUnauthorizedFailure is a IpamDiscoveryFailureCode enum value
+	IpamDiscoveryFailureCodeUnauthorizedFailure = "unauthorized-failure"
+)
+
+// IpamDiscoveryFailureCode_Values returns all elements of the IpamDiscoveryFailureCode enum
+func IpamDiscoveryFailureCode_Values() []string {
+	return []string{
+		IpamDiscoveryFailureCodeAssumeRoleFailure,
+		IpamDiscoveryFailureCodeThrottlingFailure,
+		IpamDiscoveryFailureCodeUnauthorizedFailure,
 	}
 }
 
@@ -173862,12 +186486,16 @@ func IpamPoolAwsService_Values() []string {
 const (
 	// IpamPoolCidrFailureCodeCidrNotAvailable is a IpamPoolCidrFailureCode enum value
 	IpamPoolCidrFailureCodeCidrNotAvailable = "cidr-not-available"
+
+	// IpamPoolCidrFailureCodeLimitExceeded is a IpamPoolCidrFailureCode enum value
+	IpamPoolCidrFailureCodeLimitExceeded = "limit-exceeded"
 )
 
 // IpamPoolCidrFailureCode_Values returns all elements of the IpamPoolCidrFailureCode enum
 func IpamPoolCidrFailureCode_Values() []string {
 	return []string{
 		IpamPoolCidrFailureCodeCidrNotAvailable,
+		IpamPoolCidrFailureCodeLimitExceeded,
 	}
 }
 
@@ -173908,6 +186536,22 @@ func IpamPoolCidrState_Values() []string {
 		IpamPoolCidrStateFailedDeprovision,
 		IpamPoolCidrStatePendingImport,
 		IpamPoolCidrStateFailedImport,
+	}
+}
+
+const (
+	// IpamPoolPublicIpSourceAmazon is a IpamPoolPublicIpSource enum value
+	IpamPoolPublicIpSourceAmazon = "amazon"
+
+	// IpamPoolPublicIpSourceByoip is a IpamPoolPublicIpSource enum value
+	IpamPoolPublicIpSourceByoip = "byoip"
+)
+
+// IpamPoolPublicIpSource_Values returns all elements of the IpamPoolPublicIpSource enum
+func IpamPoolPublicIpSource_Values() []string {
+	return []string{
+		IpamPoolPublicIpSourceAmazon,
+		IpamPoolPublicIpSourceByoip,
 	}
 }
 
@@ -173964,6 +186608,106 @@ func IpamPoolState_Values() []string {
 		IpamPoolStateIsolateInProgress,
 		IpamPoolStateIsolateComplete,
 		IpamPoolStateRestoreInProgress,
+	}
+}
+
+const (
+	// IpamResourceDiscoveryAssociationStateAssociateInProgress is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateAssociateInProgress = "associate-in-progress"
+
+	// IpamResourceDiscoveryAssociationStateAssociateComplete is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateAssociateComplete = "associate-complete"
+
+	// IpamResourceDiscoveryAssociationStateAssociateFailed is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateAssociateFailed = "associate-failed"
+
+	// IpamResourceDiscoveryAssociationStateDisassociateInProgress is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateDisassociateInProgress = "disassociate-in-progress"
+
+	// IpamResourceDiscoveryAssociationStateDisassociateComplete is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateDisassociateComplete = "disassociate-complete"
+
+	// IpamResourceDiscoveryAssociationStateDisassociateFailed is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateDisassociateFailed = "disassociate-failed"
+
+	// IpamResourceDiscoveryAssociationStateIsolateInProgress is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateIsolateInProgress = "isolate-in-progress"
+
+	// IpamResourceDiscoveryAssociationStateIsolateComplete is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateIsolateComplete = "isolate-complete"
+
+	// IpamResourceDiscoveryAssociationStateRestoreInProgress is a IpamResourceDiscoveryAssociationState enum value
+	IpamResourceDiscoveryAssociationStateRestoreInProgress = "restore-in-progress"
+)
+
+// IpamResourceDiscoveryAssociationState_Values returns all elements of the IpamResourceDiscoveryAssociationState enum
+func IpamResourceDiscoveryAssociationState_Values() []string {
+	return []string{
+		IpamResourceDiscoveryAssociationStateAssociateInProgress,
+		IpamResourceDiscoveryAssociationStateAssociateComplete,
+		IpamResourceDiscoveryAssociationStateAssociateFailed,
+		IpamResourceDiscoveryAssociationStateDisassociateInProgress,
+		IpamResourceDiscoveryAssociationStateDisassociateComplete,
+		IpamResourceDiscoveryAssociationStateDisassociateFailed,
+		IpamResourceDiscoveryAssociationStateIsolateInProgress,
+		IpamResourceDiscoveryAssociationStateIsolateComplete,
+		IpamResourceDiscoveryAssociationStateRestoreInProgress,
+	}
+}
+
+const (
+	// IpamResourceDiscoveryStateCreateInProgress is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateCreateInProgress = "create-in-progress"
+
+	// IpamResourceDiscoveryStateCreateComplete is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateCreateComplete = "create-complete"
+
+	// IpamResourceDiscoveryStateCreateFailed is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateCreateFailed = "create-failed"
+
+	// IpamResourceDiscoveryStateModifyInProgress is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateModifyInProgress = "modify-in-progress"
+
+	// IpamResourceDiscoveryStateModifyComplete is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateModifyComplete = "modify-complete"
+
+	// IpamResourceDiscoveryStateModifyFailed is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateModifyFailed = "modify-failed"
+
+	// IpamResourceDiscoveryStateDeleteInProgress is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateDeleteInProgress = "delete-in-progress"
+
+	// IpamResourceDiscoveryStateDeleteComplete is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateDeleteComplete = "delete-complete"
+
+	// IpamResourceDiscoveryStateDeleteFailed is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateDeleteFailed = "delete-failed"
+
+	// IpamResourceDiscoveryStateIsolateInProgress is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateIsolateInProgress = "isolate-in-progress"
+
+	// IpamResourceDiscoveryStateIsolateComplete is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateIsolateComplete = "isolate-complete"
+
+	// IpamResourceDiscoveryStateRestoreInProgress is a IpamResourceDiscoveryState enum value
+	IpamResourceDiscoveryStateRestoreInProgress = "restore-in-progress"
+)
+
+// IpamResourceDiscoveryState_Values returns all elements of the IpamResourceDiscoveryState enum
+func IpamResourceDiscoveryState_Values() []string {
+	return []string{
+		IpamResourceDiscoveryStateCreateInProgress,
+		IpamResourceDiscoveryStateCreateComplete,
+		IpamResourceDiscoveryStateCreateFailed,
+		IpamResourceDiscoveryStateModifyInProgress,
+		IpamResourceDiscoveryStateModifyComplete,
+		IpamResourceDiscoveryStateModifyFailed,
+		IpamResourceDiscoveryStateDeleteInProgress,
+		IpamResourceDiscoveryStateDeleteComplete,
+		IpamResourceDiscoveryStateDeleteFailed,
+		IpamResourceDiscoveryStateIsolateInProgress,
+		IpamResourceDiscoveryStateIsolateComplete,
+		IpamResourceDiscoveryStateRestoreInProgress,
 	}
 }
 
@@ -174592,6 +187336,38 @@ func MulticastSupportValue_Values() []string {
 	return []string{
 		MulticastSupportValueEnable,
 		MulticastSupportValueDisable,
+	}
+}
+
+const (
+	// NatGatewayAddressStatusAssigning is a NatGatewayAddressStatus enum value
+	NatGatewayAddressStatusAssigning = "assigning"
+
+	// NatGatewayAddressStatusUnassigning is a NatGatewayAddressStatus enum value
+	NatGatewayAddressStatusUnassigning = "unassigning"
+
+	// NatGatewayAddressStatusAssociating is a NatGatewayAddressStatus enum value
+	NatGatewayAddressStatusAssociating = "associating"
+
+	// NatGatewayAddressStatusDisassociating is a NatGatewayAddressStatus enum value
+	NatGatewayAddressStatusDisassociating = "disassociating"
+
+	// NatGatewayAddressStatusSucceeded is a NatGatewayAddressStatus enum value
+	NatGatewayAddressStatusSucceeded = "succeeded"
+
+	// NatGatewayAddressStatusFailed is a NatGatewayAddressStatus enum value
+	NatGatewayAddressStatusFailed = "failed"
+)
+
+// NatGatewayAddressStatus_Values returns all elements of the NatGatewayAddressStatus enum
+func NatGatewayAddressStatus_Values() []string {
+	return []string{
+		NatGatewayAddressStatusAssigning,
+		NatGatewayAddressStatusUnassigning,
+		NatGatewayAddressStatusAssociating,
+		NatGatewayAddressStatusDisassociating,
+		NatGatewayAddressStatusSucceeded,
+		NatGatewayAddressStatusFailed,
 	}
 }
 
@@ -175636,8 +188412,32 @@ const (
 	// ResourceTypeVpcEndpointConnectionDeviceType is a ResourceType enum value
 	ResourceTypeVpcEndpointConnectionDeviceType = "vpc-endpoint-connection-device-type"
 
+	// ResourceTypeVerifiedAccessInstance is a ResourceType enum value
+	ResourceTypeVerifiedAccessInstance = "verified-access-instance"
+
+	// ResourceTypeVerifiedAccessGroup is a ResourceType enum value
+	ResourceTypeVerifiedAccessGroup = "verified-access-group"
+
+	// ResourceTypeVerifiedAccessEndpoint is a ResourceType enum value
+	ResourceTypeVerifiedAccessEndpoint = "verified-access-endpoint"
+
+	// ResourceTypeVerifiedAccessPolicy is a ResourceType enum value
+	ResourceTypeVerifiedAccessPolicy = "verified-access-policy"
+
+	// ResourceTypeVerifiedAccessTrustProvider is a ResourceType enum value
+	ResourceTypeVerifiedAccessTrustProvider = "verified-access-trust-provider"
+
 	// ResourceTypeVpnConnectionDeviceType is a ResourceType enum value
 	ResourceTypeVpnConnectionDeviceType = "vpn-connection-device-type"
+
+	// ResourceTypeVpcBlockPublicAccessExclusion is a ResourceType enum value
+	ResourceTypeVpcBlockPublicAccessExclusion = "vpc-block-public-access-exclusion"
+
+	// ResourceTypeIpamResourceDiscovery is a ResourceType enum value
+	ResourceTypeIpamResourceDiscovery = "ipam-resource-discovery"
+
+	// ResourceTypeIpamResourceDiscoveryAssociation is a ResourceType enum value
+	ResourceTypeIpamResourceDiscoveryAssociation = "ipam-resource-discovery-association"
 )
 
 // ResourceType_Values returns all elements of the ResourceType enum
@@ -175719,7 +188519,15 @@ func ResourceType_Values() []string {
 		ResourceTypeCapacityReservationFleet,
 		ResourceTypeTrafficMirrorFilterRule,
 		ResourceTypeVpcEndpointConnectionDeviceType,
+		ResourceTypeVerifiedAccessInstance,
+		ResourceTypeVerifiedAccessGroup,
+		ResourceTypeVerifiedAccessEndpoint,
+		ResourceTypeVerifiedAccessPolicy,
+		ResourceTypeVerifiedAccessTrustProvider,
 		ResourceTypeVpnConnectionDeviceType,
+		ResourceTypeVpcBlockPublicAccessExclusion,
+		ResourceTypeIpamResourceDiscovery,
+		ResourceTypeIpamResourceDiscoveryAssociation,
 	}
 }
 
@@ -177000,6 +189808,22 @@ func TransportProtocol_Values() []string {
 }
 
 const (
+	// TrustProviderTypeUser is a TrustProviderType enum value
+	TrustProviderTypeUser = "user"
+
+	// TrustProviderTypeDevice is a TrustProviderType enum value
+	TrustProviderTypeDevice = "device"
+)
+
+// TrustProviderType_Values returns all elements of the TrustProviderType enum
+func TrustProviderType_Values() []string {
+	return []string{
+		TrustProviderTypeUser,
+		TrustProviderTypeDevice,
+	}
+}
+
+const (
 	// TunnelInsideIpVersionIpv4 is a TunnelInsideIpVersion enum value
 	TunnelInsideIpVersionIpv4 = "ipv4"
 
@@ -177076,6 +189900,110 @@ func UsageClassType_Values() []string {
 	return []string{
 		UsageClassTypeSpot,
 		UsageClassTypeOnDemand,
+	}
+}
+
+const (
+	// UserTrustProviderTypeIamIdentityCenter is a UserTrustProviderType enum value
+	UserTrustProviderTypeIamIdentityCenter = "iam-identity-center"
+
+	// UserTrustProviderTypeOidc is a UserTrustProviderType enum value
+	UserTrustProviderTypeOidc = "oidc"
+)
+
+// UserTrustProviderType_Values returns all elements of the UserTrustProviderType enum
+func UserTrustProviderType_Values() []string {
+	return []string{
+		UserTrustProviderTypeIamIdentityCenter,
+		UserTrustProviderTypeOidc,
+	}
+}
+
+const (
+	// VerifiedAccessEndpointAttachmentTypeVpc is a VerifiedAccessEndpointAttachmentType enum value
+	VerifiedAccessEndpointAttachmentTypeVpc = "vpc"
+)
+
+// VerifiedAccessEndpointAttachmentType_Values returns all elements of the VerifiedAccessEndpointAttachmentType enum
+func VerifiedAccessEndpointAttachmentType_Values() []string {
+	return []string{
+		VerifiedAccessEndpointAttachmentTypeVpc,
+	}
+}
+
+const (
+	// VerifiedAccessEndpointProtocolHttp is a VerifiedAccessEndpointProtocol enum value
+	VerifiedAccessEndpointProtocolHttp = "http"
+
+	// VerifiedAccessEndpointProtocolHttps is a VerifiedAccessEndpointProtocol enum value
+	VerifiedAccessEndpointProtocolHttps = "https"
+)
+
+// VerifiedAccessEndpointProtocol_Values returns all elements of the VerifiedAccessEndpointProtocol enum
+func VerifiedAccessEndpointProtocol_Values() []string {
+	return []string{
+		VerifiedAccessEndpointProtocolHttp,
+		VerifiedAccessEndpointProtocolHttps,
+	}
+}
+
+const (
+	// VerifiedAccessEndpointStatusCodePending is a VerifiedAccessEndpointStatusCode enum value
+	VerifiedAccessEndpointStatusCodePending = "pending"
+
+	// VerifiedAccessEndpointStatusCodeActive is a VerifiedAccessEndpointStatusCode enum value
+	VerifiedAccessEndpointStatusCodeActive = "active"
+
+	// VerifiedAccessEndpointStatusCodeUpdating is a VerifiedAccessEndpointStatusCode enum value
+	VerifiedAccessEndpointStatusCodeUpdating = "updating"
+
+	// VerifiedAccessEndpointStatusCodeDeleting is a VerifiedAccessEndpointStatusCode enum value
+	VerifiedAccessEndpointStatusCodeDeleting = "deleting"
+
+	// VerifiedAccessEndpointStatusCodeDeleted is a VerifiedAccessEndpointStatusCode enum value
+	VerifiedAccessEndpointStatusCodeDeleted = "deleted"
+)
+
+// VerifiedAccessEndpointStatusCode_Values returns all elements of the VerifiedAccessEndpointStatusCode enum
+func VerifiedAccessEndpointStatusCode_Values() []string {
+	return []string{
+		VerifiedAccessEndpointStatusCodePending,
+		VerifiedAccessEndpointStatusCodeActive,
+		VerifiedAccessEndpointStatusCodeUpdating,
+		VerifiedAccessEndpointStatusCodeDeleting,
+		VerifiedAccessEndpointStatusCodeDeleted,
+	}
+}
+
+const (
+	// VerifiedAccessEndpointTypeLoadBalancer is a VerifiedAccessEndpointType enum value
+	VerifiedAccessEndpointTypeLoadBalancer = "load-balancer"
+
+	// VerifiedAccessEndpointTypeNetworkInterface is a VerifiedAccessEndpointType enum value
+	VerifiedAccessEndpointTypeNetworkInterface = "network-interface"
+)
+
+// VerifiedAccessEndpointType_Values returns all elements of the VerifiedAccessEndpointType enum
+func VerifiedAccessEndpointType_Values() []string {
+	return []string{
+		VerifiedAccessEndpointTypeLoadBalancer,
+		VerifiedAccessEndpointTypeNetworkInterface,
+	}
+}
+
+const (
+	// VerifiedAccessLogDeliveryStatusCodeSuccess is a VerifiedAccessLogDeliveryStatusCode enum value
+	VerifiedAccessLogDeliveryStatusCodeSuccess = "success"
+
+	// VerifiedAccessLogDeliveryStatusCodeFailed is a VerifiedAccessLogDeliveryStatusCode enum value
+	VerifiedAccessLogDeliveryStatusCodeFailed = "failed"
+)
+
+// VerifiedAccessLogDeliveryStatusCode_Values returns all elements of the VerifiedAccessLogDeliveryStatusCode enum
+func VerifiedAccessLogDeliveryStatusCode_Values() []string {
+	return []string{
+		VerifiedAccessLogDeliveryStatusCodeSuccess,
+		VerifiedAccessLogDeliveryStatusCodeFailed,
 	}
 }
 

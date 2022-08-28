@@ -23,7 +23,7 @@ import (
 	"io"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
-	provider_aws "k8s.io/legacy-cloud-providers/aws"
+	provider_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
 	"net/http"
 	"net/http/httptest"
 	"os"

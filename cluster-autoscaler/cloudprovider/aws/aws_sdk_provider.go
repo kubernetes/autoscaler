@@ -18,17 +18,18 @@ package aws
 
 import (
 	"fmt"
-	"gopkg.in/gcfg.v1"
 	"io"
+	"os"
+	"strconv"
+	"strings"
+
+	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
+	provider_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
 	"k8s.io/klog/v2"
-	provider_aws "k8s.io/legacy-cloud-providers/aws"
-	"os"
-	"strconv"
-	"strings"
 )
 
 // createAWSSDKProvider
