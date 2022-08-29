@@ -49,6 +49,9 @@ spec:
           command:
             - ./cluster-autoscaler
             - --cloud-provider={{ .Values.cloudProvider }}
+            {{- if index .Values.cloudConfigPath .Values.cloudProvider }}
+            - --cloud-config={{ index .Values.cloudConfigPath .Values.cloudProvider }}
+            {{- end }}
           {{- if and (eq .Values.cloudProvider "clusterapi") (eq .Values.clusterAPIMode "kubeconfig-incluster") }}
             - --namespace={{ .Values.clusterAPIConfigMapsNamespace | default "kube-system" }}
           {{- else }}
@@ -62,9 +65,6 @@ spec:
           {{- if eq .Values.cloudProvider "aws" }}
             {{- if .Values.autoDiscovery.clusterName }}
             - --node-group-auto-discovery=asg:tag={{ tpl (join "," .Values.autoDiscovery.tags) . }}
-            {{- end }}
-            {{- if .Values.cloudConfigPath }}
-            - --cloud-config={{ .Values.cloudConfigPath }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "gce" }}
           {{- if .Values.autoscalingGroupsnamePrefix }}
@@ -98,9 +98,6 @@ spec:
             {{- if .Values.autoDiscovery.clusterName }}
             - --node-group-auto-discovery=label:cluster-autoscaler-enabled=true,cluster-autoscaler-name={{ .Values.autoDiscovery.clusterName }}
             {{- end }}
-          {{- end }}
-          {{- if eq .Values.cloudProvider "magnum" }}
-            - --cloud-config={{ .Values.cloudConfigPath }}
           {{- end }}
           {{- range $key, $value := .Values.extraArgs }}
             {{- if not (kindIs "invalid" $value) }}
@@ -219,7 +216,7 @@ spec:
           volumeMounts:
           {{- if eq .Values.cloudProvider "magnum" }}
             - name: cloudconfig
-              mountPath: {{ .Values.cloudConfigPath }}
+              mountPath: {{ index .Values.cloudConfigPath "magnum" }}
               readOnly: true
           {{- end }}
           {{- if and (eq .Values.cloudProvider "magnum") (.Values.magnumCABundlePath) }}

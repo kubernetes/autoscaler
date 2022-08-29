@@ -65,7 +65,8 @@ autoscalingGroups:
   maxSize: 5
   minSize: 1
 
-cloudConfigPath: "/etc/kubernetes/cloud-config"
+cloudConfigPath:
+  magnum: "/etc/kubernetes/cloud-config"
 ```
 
 For running on the control plane (previously referred to as master) node and other suggested settings, see

@@ -199,7 +199,7 @@ The following parameters are required:
 - `magnumClusterName=<cluster name or ID>` and `autoscalingGroups` with the names of node groups and min/max node counts
 - or `autoDiscovery.clusterName=<cluster name or ID>` with one or more `autoDiscovery.roles`.
 
-Additionally, `cloudConfigPath: "/etc/kubernetes/cloud-config"` must be set as this should be the location
+Additionally, `cloudConfigPath.<cloudProvider>: "/etc/kubernetes/cloud-config"` must be set as this should be the location
 of the cloud-config file on the host.
 
 Example values files can be found [here](../../cluster-autoscaler/cloudprovider/magnum/examples).

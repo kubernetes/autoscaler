@@ -23,7 +23,8 @@ tolerations:
 - key: node-role.kubernetes.io/master
   effect: NoSchedule
 
-cloudConfigPath: /etc/kubernetes/cloud-config
+cloudConfigPath:
+  magnum: /etc/kubernetes/cloud-config
 
 extraArgs:
   v: 2

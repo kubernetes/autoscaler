@@ -21,7 +21,7 @@ spec:
     - 'downwardAPI'
 {{- if eq .Values.cloudProvider "gce" }}
   allowedHostPaths:
-    - pathPrefix: {{ .Values.cloudConfigPath }}
+    - pathPrefix: {{ index .Values.cloudConfigPath "gce" }}
 {{- end }}
   hostNetwork: false
   hostIPC: false

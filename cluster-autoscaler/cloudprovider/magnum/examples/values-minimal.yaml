@@ -7,4 +7,5 @@ autoscalingGroups:
   maxSize: 5
   minSize: 1
 
-cloudConfigPath: "/etc/kubernetes/cloud-config"
+cloudConfigPath:
+  magnum: "/etc/kubernetes/cloud-config"

@@ -9,7 +9,8 @@ awsRegion: eu-west-1
 awsAccessKeyID: "******"
 awsSecretAccessKey: "******"
 
-cloudConfigPath: config/cloud.conf
+cloudConfigPath:
+  aws: config/cloud.conf
 
 extraVolumes:
   - name: cloud-config
@@ -19,4 +20,3 @@ extraVolumes:
 extraVolumeMounts:
   - name: cloud-config
     mountPath: config
-
