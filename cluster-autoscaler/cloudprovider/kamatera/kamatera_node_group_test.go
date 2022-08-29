@@ -21,6 +21,7 @@ import (
 	"fmt"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -282,10 +283,12 @@ func TestNodeGroup_Others(t *testing.T) {
 	assert.Equal(t, 3, ts)
 	assert.Equal(t, "ng1", ng.Id())
 	assert.Equal(t, "node group ID: ng1 (min:1 max:7)", ng.Debug())
-	assert.Equal(t, fmt.Sprintf(`node group ID: ng1 (min:1 max:7)
-instance ID: %s state: Running powerOn: false
-instance ID: %s state: Running powerOn: false
-instance ID: %s state: Running powerOn: false`, serverName1, serverName2, serverName3), ng.extendedDebug())
+	extendedDebug := strings.Split(ng.extendedDebug(), "\n")
+	assert.Equal(t, 4, len(extendedDebug))
+	assert.Contains(t, extendedDebug, "node group ID: ng1 (min:1 max:7)")
+	for _, serverName := range []string{serverName1, serverName2, serverName3} {
+		assert.Contains(t, extendedDebug, fmt.Sprintf("instance ID: %s state: Running powerOn: false", serverName))
+	}
 	assert.Equal(t, true, ng.Exist())
 	assert.Equal(t, false, ng.Autoprovisioned())
 	_, err = ng.Create()
