@@ -38,7 +38,7 @@ import (
 	e2eservice "k8s.io/kubernetes/test/e2e/framework/service"
 	testutils "k8s.io/kubernetes/test/utils"
 
-	"github.com/onsi/ginkgo"
+	ginkgo "github.com/onsi/ginkgo/v2"
 
 	scaleclient "k8s.io/client-go/scale"
 	imageutils "k8s.io/kubernetes/test/utils/image"
