@@ -46,7 +46,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-	klog "k8s.io/klog/v2"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -151,13 +150,10 @@ func TestFindUnneededNodes(t *testing.T) {
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 3, len(sd.unneededNodes))
-	_, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-	_, found = sd.unneededNodes["n7"]
-	assert.True(t, found)
-	addTime, found := sd.unneededNodes["n8"]
-	assert.True(t, found)
+	assert.Equal(t, 3, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
+	assert.True(t, sd.unneededNodes.Contains("n7"))
+	assert.True(t, sd.unneededNodes.Contains("n8"))
 	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	for _, n := range []string{"n1", "n2", "n3", "n4", "n7", "n8"} {
 		_, found := sd.nodeUtilizationMap[n]
@@ -169,16 +165,14 @@ func TestFindUnneededNodes(t *testing.T) {
 	}
 
 	sd.unremovableNodes = unremovable.NewNodes()
-	sd.unneededNodes["n1"] = time.Now()
+	sd.unneededNodes.Update([]simulator.NodeToBeRemoved{{Node: n1}, {Node: n2}, {Node: n3}, {Node: n4}}, time.Now())
 	allNodes = []*apiv1.Node{n1, n2, n3, n4}
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 1, len(sd.unneededNodes))
-	addTime2, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-	assert.Equal(t, addTime, addTime2)
+	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
 	for _, n := range []string{"n1", "n2", "n3", "n4"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -194,7 +188,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 0, len(sd.unneededNodes))
+	assert.Equal(t, 0, len(sd.unneededNodes.AsList()))
 
 	// Node n1 is unneeded, but should be skipped because it has just recently been found to be unremovable
 	allNodes = []*apiv1.Node{n1}
@@ -202,7 +196,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 0, len(sd.unneededNodes))
+	assert.Equal(t, 0, len(sd.unneededNodes.AsList()))
 	// Verify that no other nodes are in unremovable map.
 	assert.Equal(t, 1, len(sd.unremovableNodes.AsList()))
 
@@ -211,7 +205,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now().Add(context.UnremovableNodeRecheckTimeout+time.Second), nil)
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 1, len(sd.unneededNodes))
+	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
 	// Verify that nodes that are no longer unremovable are removed.
 	assert.Equal(t, 0, len(sd.unremovableNodes.AsList()))
 }
@@ -285,9 +279,8 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
-	assert.Equal(t, 1, len(sd.unneededNodes))
-	_, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
+	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
 
 	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	for _, n := range []string{"n1", "n2", "n3"} {
@@ -403,11 +396,9 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 
 			autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
 			assert.NoError(t, autoscalererr)
-			klog.Infof("[%s] Unneeded nodes %v", tn, sd.unneededNodes)
-			assert.Equal(t, len(tc.wantUnneeded), len(sd.unneededNodes))
+			assert.Equal(t, len(tc.wantUnneeded), len(sd.unneededNodes.AsList()))
 			for _, node := range tc.wantUnneeded {
-				_, found := sd.unneededNodes[node]
-				assert.True(t, found)
+				assert.True(t, sd.unneededNodes.Contains(node))
 			}
 		})
 	}
@@ -481,12 +472,9 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
-	assert.Equal(t, 2, len(sd.unneededNodes))
-	klog.Warningf("Unneeded nodes %v", sd.unneededNodes)
-	_, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-	_, found = sd.unneededNodes["n3"]
-	assert.True(t, found)
+	assert.Equal(t, 2, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
+	assert.True(t, sd.unneededNodes.Contains("n3"))
 	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	assert.Contains(t, sd.podLocationHints, p3.Namespace+"/"+p3.Name)
 	for _, n := range []string{"n1", "n2", "n3", "n4"} {
@@ -546,9 +534,9 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
-	assert.Equal(t, numCandidates, len(sd.unneededNodes))
+	assert.Equal(t, numCandidates, len(sd.unneededNodes.AsList()))
 	// Simulate one of the unneeded nodes got deleted
-	deleted := sd.unneededNodesList[len(sd.unneededNodesList)-1]
+	deleted := sd.unneededNodes.AsList()[len(sd.unneededNodes.AsList())-1]
 	for i, node := range nodes {
 		if node.Name == deleted.Name {
 			// Move pod away from the node
@@ -570,8 +558,8 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	// Check that the deleted node was replaced
-	assert.Equal(t, numCandidates, len(sd.unneededNodes))
-	assert.NotContains(t, sd.unneededNodes, deleted)
+	assert.Equal(t, numCandidates, len(sd.unneededNodes.AsList()))
+	assert.False(t, sd.unneededNodes.Contains(deleted.Name))
 }
 
 func TestFindUnneededEmptyNodes(t *testing.T) {
@@ -627,10 +615,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
-	for _, node := range sd.unneededNodesList {
-		t.Log(node.Name)
-	}
-	assert.Equal(t, numEmpty+numCandidates, len(sd.unneededNodes))
+	assert.Equal(t, numEmpty+numCandidates, len(sd.unneededNodes.AsList()))
 }
 
 func TestFindUnneededNodePool(t *testing.T) {
