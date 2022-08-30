@@ -125,7 +125,7 @@ clusterAPICloudConfigPath: /etc/kubernetes/mgmt-kubeconfig
 clusterAPIConfigMapsNamespace: ""
 
 # cloudConfigPath -- Configuration file for cloud provider.
-cloudConfigPath: /etc/gce.conf
+cloudConfigPath: ""
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
 # Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported.
