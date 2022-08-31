@@ -81,7 +81,7 @@ func NewUpdater(
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
-	DeleteOomingOnEvictionError bool,
+	deleteOomingOnEvictionError bool,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -104,7 +104,7 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		deleteOomingOnEvictionError: DeleteOomingOnEvictionError,
+		deleteOomingOnEvictionError: deleteOomingOnEvictionError,
 	}, nil
 }
 

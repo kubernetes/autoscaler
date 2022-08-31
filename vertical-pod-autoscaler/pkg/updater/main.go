@@ -66,7 +66,7 @@ var (
 	namespace          = os.Getenv("NAMESPACE")
 	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 
-	deleteOnEvictionError = flag.Bool("delete-on-eviction-error", false, "If true, updater will try to delete pods when the eviction fails.")
+	deleteOomingOnEvictionError = flag.Bool("delete-ooming-on-eviction-error", false, "If true, updater will try to delete ooming pods when the eviction fails.")
 )
 
 const defaultResyncPeriod time.Duration = 10 * time.Minute
@@ -110,7 +110,7 @@ func main() {
 		targetSelectorFetcher,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
-		*deleteOnEvictionError,
+		*deleteOomingOnEvictionError,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
