@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
@@ -68,6 +69,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 	skipped := 0
 	utilizationMap := make(map[string]utilization.Info)
 	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
+	utilLogsQuota := klogx.NewLoggingQuota(20)
 
 	for _, node := range scaleDownCandidates {
 		nodeInfo, err := context.ClusterSnapshot.NodeInfos().Get(node.Name)
@@ -84,7 +86,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 			continue
 		}
 
-		reason, utilInfo := c.unremovableReasonAndNodeUtilization(context, timestamp, nodeInfo)
+		reason, utilInfo := c.unremovableReasonAndNodeUtilization(context, timestamp, nodeInfo, utilLogsQuota)
 		if utilInfo != nil {
 			utilizationMap[node.Name] = *utilInfo
 		}
@@ -96,13 +98,14 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
 	}
 
+	klogx.V(4).Over(utilLogsQuota).Infof("Skipped logging utilization for %d other nodes", -utilLogsQuota.Left())
 	if skipped > 0 {
 		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 	return currentlyUnneededNodeNames, utilizationMap
 }
 
-func (c *Checker) unremovableReasonAndNodeUtilization(context *context.AutoscalingContext, timestamp time.Time, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *utilization.Info) {
+func (c *Checker) unremovableReasonAndNodeUtilization(context *context.AutoscalingContext, timestamp time.Time, nodeInfo *schedulerframework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
 	node := nodeInfo.Node()
 
 	// Skip nodes marked to be deleted, if they were marked recently.
@@ -146,7 +149,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		return simulator.NotUnderutilized, &utilInfo
 	}
 
-	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+	klogx.V(4).UpTo(utilLogsQuota).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 
 	return simulator.NoReason, &utilInfo
 }
