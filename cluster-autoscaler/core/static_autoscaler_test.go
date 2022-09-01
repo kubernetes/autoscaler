@@ -1507,7 +1507,7 @@ func newScaleDownPlannerAndActuator(t *testing.T, ctx *context.AutoscalingContex
 		MinReplicaCount:           0,
 	}
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	sd := legacy.NewScaleDown(ctx, p, cs, ndt, deleteOptions)
+	sd := legacy.NewScaleDown(ctx, p, ndt, deleteOptions)
 	actuator := actuation.NewActuator(ctx, cs, ndt, deleteOptions)
 	wrapper := legacy.NewScaleDownWrapper(sd, actuator)
 	return wrapper, wrapper
