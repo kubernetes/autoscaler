@@ -164,7 +164,7 @@ func NewStaticAutoscaler(
 	}
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry, ndt, deleteOptions)
+	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, ndt, deleteOptions)
 	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions)
 	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
 	processorCallbacks.scaleDownPlanner = scaleDownWrapper
@@ -528,7 +528,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 
 		actuationStatus := a.scaleDownActuator.CheckStatus()
-		if typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, actuationStatus, pdbs, currentTime); typedErr != nil {
+		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, actuationStatus, pdbs, currentTime)
+		// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
+		unneededNodes := a.scaleDownPlanner.UnneededNodes()
+		a.clusterStateRegistry.UpdateScaleDownCandidates(unneededNodes, currentTime)
+		metrics.UpdateUnneededNodesCount(len(unneededNodes))
+		if typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
