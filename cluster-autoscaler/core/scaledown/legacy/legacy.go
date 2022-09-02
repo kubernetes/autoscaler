@@ -47,7 +47,6 @@ type ScaleDown struct {
 	processors           *processors.AutoscalingProcessors
 	unremovableNodes     *unremovable.Nodes
 	unneededNodes        *unneeded.Nodes
-	podLocationHints     map[string]string
 	nodeUtilizationMap   map[string]utilization.Info
 	usageTracker         *simulator.UsageTracker
 	nodeDeletionTracker  *deletiontracker.NodeDeletionTracker
@@ -67,7 +66,6 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 		processors:           processors,
 		unremovableNodes:     unremovableNodes,
 		unneededNodes:        unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		podLocationHints:     make(map[string]string),
 		nodeUtilizationMap:   make(map[string]utilization.Info),
 		usageTracker:         usageTracker,
 		nodeDeletionTracker:  ndt,
@@ -143,10 +141,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Look for nodes to remove in the current candidates
-	nodesToRemove, unremovable, newHints, simulatorErr := sd.removalSimulator.FindNodesToRemove(
+	nodesToRemove, unremovable, simulatorErr := sd.removalSimulator.FindNodesToRemove(
 		currentCandidates,
 		destinations,
-		sd.podLocationHints,
 		timestamp,
 		pdbs)
 	if simulatorErr != nil {
@@ -168,11 +165,10 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	if additionalCandidatesCount > 0 {
 		// Look for additional nodes to remove among the rest of nodes.
 		klog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
-		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
+		additionalNodesToRemove, additionalUnremovable, simulatorErr :=
 			sd.removalSimulator.FindNodesToRemove(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinations,
-				sd.podLocationHints,
 				timestamp,
 				pdbs)
 		if simulatorErr != nil {
@@ -183,9 +179,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 		nodesToRemove = append(nodesToRemove, additionalNodesToRemove...)
 		unremovable = append(unremovable, additionalUnremovable...)
-		for key, value := range additionalNewHints {
-			newHints[key] = value
-		}
 	}
 
 	for _, empty := range emptyNodesToRemove {
@@ -214,7 +207,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Update state and metrics
-	sd.podLocationHints = newHints
+	sd.removalSimulator.DropOldHints()
 	sd.nodeUtilizationMap = utilizationMap
 	return nil
 }
@@ -334,11 +327,9 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 	}
 
 	findNodesToRemoveStart := time.Now()
-	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, unremovable, _, err := sd.removalSimulator.FindNodesToRemove(
+	nodesToRemove, unremovable, err := sd.removalSimulator.FindNodesToRemove(
 		candidateNames,
 		allNodeNames,
-		sd.podLocationHints,
 		time.Now(),
 		pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
