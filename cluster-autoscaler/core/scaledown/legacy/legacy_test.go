@@ -159,7 +159,6 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.True(t, sd.unneededNodes.Contains("n2"))
 	assert.True(t, sd.unneededNodes.Contains("n7"))
 	assert.True(t, sd.unneededNodes.Contains("n8"))
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	for _, n := range []string{"n1", "n2", "n3", "n4", "n7", "n8"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -289,8 +288,6 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	assert.NoError(t, autoscalererr)
 	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
 	assert.True(t, sd.unneededNodes.Contains("n2"))
-
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	for _, n := range []string{"n1", "n2", "n3"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -489,8 +486,6 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 2, len(sd.unneededNodes.AsList()))
 	assert.True(t, sd.unneededNodes.Contains("n2"))
 	assert.True(t, sd.unneededNodes.Contains("n3"))
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
-	assert.Contains(t, sd.podLocationHints, p3.Namespace+"/"+p3.Name)
 	for _, n := range []string{"n1", "n2", "n3", "n4"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
