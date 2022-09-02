@@ -36,111 +36,6 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-func TestFindPlaceAllOk(t *testing.T) {
-	node1 := BuildTestNode("n1", 1000, 2000000)
-	SetNodeReadyState(node1, true, time.Time{})
-	node2 := BuildTestNode("n2", 1000, 2000000)
-	SetNodeReadyState(node2, true, time.Time{})
-
-	pod1 := BuildTestPod("p1", 300, 500000)
-	pod1.Spec.NodeName = "n1"
-	new1 := BuildTestPod("p2", 600, 500000)
-	new2 := BuildTestPod("p3", 500, 500000)
-
-	oldHints := make(map[string]string)
-	newHints := make(map[string]string)
-	destinations := map[string]bool{
-		"n1": true,
-		"n2": true,
-	}
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot,
-		[]*apiv1.Node{node1, node2},
-		[]*apiv1.Pod{pod1})
-
-	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), testDeleteOptions(), false).findPlaceFor(
-		"x",
-		[]*apiv1.Pod{new1, new2},
-		destinations,
-		oldHints, newHints, time.Now())
-
-	assert.Len(t, newHints, 2)
-	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
-	assert.Contains(t, newHints, new2.Namespace+"/"+new2.Name)
-	assert.NoError(t, err)
-}
-
-func TestFindPlaceAllBas(t *testing.T) {
-	node1 := BuildTestNode("n1", 1000, 2000000)
-	SetNodeReadyState(node1, true, time.Time{})
-	node2 := BuildTestNode("n2", 1000, 2000000)
-	SetNodeReadyState(node2, true, time.Time{})
-
-	pod1 := BuildTestPod("p1", 300, 500000)
-	pod1.Spec.NodeName = "n1"
-	new1 := BuildTestPod("p2", 600, 500000)
-	new2 := BuildTestPod("p3", 500, 500000)
-	new3 := BuildTestPod("p4", 700, 500000)
-
-	oldHints := make(map[string]string)
-	newHints := make(map[string]string)
-	destinations := map[string]bool{
-		"nbad": true,
-		"n1":   true,
-		"n2":   true,
-	}
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot,
-		[]*apiv1.Node{node1, node2},
-		[]*apiv1.Pod{pod1})
-
-	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), testDeleteOptions(), false).findPlaceFor(
-		"nbad",
-		[]*apiv1.Pod{new1, new2, new3},
-		destinations,
-		oldHints, newHints, time.Now())
-
-	assert.Error(t, err)
-	assert.True(t, len(newHints) == 2)
-	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
-	assert.Contains(t, newHints, new2.Namespace+"/"+new2.Name)
-}
-
-func TestFindNone(t *testing.T) {
-	node1 := BuildTestNode("n1", 1000, 2000000)
-	SetNodeReadyState(node1, true, time.Time{})
-	node2 := BuildTestNode("n2", 1000, 2000000)
-	SetNodeReadyState(node2, true, time.Time{})
-
-	pod1 := BuildTestPod("p1", 300, 500000)
-	pod1.Spec.NodeName = "n1"
-
-	destinations := map[string]bool{
-		"n1": true,
-		"n2": true,
-	}
-
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
-	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot,
-		[]*apiv1.Node{node1, node2},
-		[]*apiv1.Pod{pod1})
-
-	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), testDeleteOptions(), false).findPlaceFor(
-		"x",
-		[]*apiv1.Pod{},
-		destinations,
-		make(map[string]string),
-		make(map[string]string),
-		time.Now())
-	assert.NoError(t, err)
-}
-
 func TestFindEmptyNodes(t *testing.T) {
 	nodes := []*apiv1.Node{}
 	nodeNames := []string{}
@@ -312,9 +207,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), false)
-			toRemove, unremovable, _, err := r.FindNodesToRemove(
-				test.candidates, destinations, map[string]string{},
-				time.Now(), []*policyv1.PodDisruptionBudget{})
+			toRemove, unremovable, err := r.FindNodesToRemove(test.candidates, destinations, time.Now(), []*policyv1.PodDisruptionBudget{})
 			assert.NoError(t, err)
 			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
 			assert.Equal(t, toRemove, test.toRemove)
