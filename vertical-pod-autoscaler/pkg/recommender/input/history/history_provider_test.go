@@ -158,9 +158,7 @@ func TestGetEmptyClusterHistory(t *testing.T) {
 		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
 		prometheusClient: &mockClient,
 	}
-	mockClient.On("Query", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Times(1).Return(
-		prommodel.Matrix{}, nil)
-	mockClient.On("QueryRange", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return().Times(2).Return(
+	mockClient.On("QueryRange", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return().Times(3).Return(
 		prommodel.Matrix{}, nil)
 	tss, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
@@ -204,7 +202,7 @@ func TestGetCPUSamples(t *testing.T) {
 		},
 		nil)
 	mockClient.On("QueryRange", mock.Anything, memoryQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, labelsQuery, mock.AnythingOfType("v1.Range")).Return(prommodel.Matrix{}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{},
@@ -242,7 +240,7 @@ func TestGetMemorySamples(t *testing.T) {
 				},
 			},
 		}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, labelsQuery, mock.AnythingOfType("v1.Range")).Return(prommodel.Matrix{}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{},
@@ -283,7 +281,7 @@ func TestGetNamespacedMemorySamples(t *testing.T) {
 				},
 			},
 		}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, labelsQuery, mock.AnythingOfType("v1.Rang")).Return(prommodel.Matrix{}, nil)
 	podID := model.PodID{Namespace: "kube-system", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{},
@@ -306,7 +304,7 @@ func TestGetLabels(t *testing.T) {
 	}
 	mockClient.On("QueryRange", mock.Anything, cpuQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
 	mockClient.On("QueryRange", mock.Anything, memoryQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(
+	mockClient.On("QueryRange", mock.Anything, labelsQuery, mock.AnythingOfType("v1.Range")).Return(
 		prommodel.Matrix{
 			{
 				Metric: map[prommodel.LabelName]prommodel.LabelValue{

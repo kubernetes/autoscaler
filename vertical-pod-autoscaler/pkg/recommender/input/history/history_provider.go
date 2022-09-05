@@ -23,8 +23,6 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/klog/v2"
-
 	promapi "github.com/prometheus/client_golang/api"
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
@@ -223,10 +221,18 @@ func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*Pod
 }
 
 func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHistory, query string) error {
+	end := time.Now()
+	start := end.Add(-time.Duration(p.historyDuration))
+
 	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
 	defer cancel()
 
-	result, _, err := p.prometheusClient.Query(ctx, query, time.Now())
+	result, _, err := p.prometheusClient.QueryRange(ctx, query, prometheusv1.Range{
+		Start: start,
+		End:   end,
+		Step:  time.Duration(p.historyResolution),
+	})
+
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for labels: %v", err)
 	}
