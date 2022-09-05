@@ -344,6 +344,9 @@ serviceMonitor:
   path: /metrics
   # serviceMonitor.annotations -- Annotations to add to service monitor
   annotations: {}
+  ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
+  # serviceMonitor.metricRelabelings -- MetricRelabelConfigs to apply to samples before ingestion.
+  metricRelabelings: {}
 
 ## Custom PrometheusRule to be defined
 ## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
