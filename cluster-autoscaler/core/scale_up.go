@@ -262,6 +262,14 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 	return &skippedReasons{[]string{fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", "))}}
 }
 
+func filterOutPodResources(key string, pod *apiv1.Pod) {
+	for idx := range pod.Spec.Containers {
+		delete(pod.Spec.Containers[idx].Resources.Limits, apiv1.ResourceName(key))
+		delete(pod.Spec.Containers[idx].Resources.Requests, apiv1.ResourceName(key))
+	}
+}
+
+
 func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceGroups []*podEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, upcomingNodes []*schedulerframework.NodeInfo) (expander.Option, error) {
 	option := expander.Option{
 		NodeGroup: nodeGroup,
@@ -290,6 +298,9 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 
 	for _, eg := range podEquivalenceGroups {
 		samplePod := eg.pods[0]
+		for _, resourceKey := range context.IgnorePodResources {
+			filterOutPodResources(resourceKey, samplePod)
+		}
 		if err := context.PredicateChecker.CheckPredicates(context.ClusterSnapshot, samplePod, nodeInfo.Node().Name); err == nil {
 			// add pods to option
 			option.Pods = append(option.Pods, eg.pods...)
