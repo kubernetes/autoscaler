@@ -1,0 +1,1024 @@
+{
+  "version": "2.0",
+  "service": "<p/>",
+  "operations": {
+    "CreateGame": "<p> Creates a new game with an empty configuration. After creating your game, you can update the configuration using <code>UpdateGameConfiguration</code> or <code>ImportGameConfiguration</code>. </p>",
+    "CreateSnapshot": "<p>Creates a snapshot of the game configuration.</p>",
+    "CreateStage": "<p>Creates a new stage for stage-by-stage game development and deployment.</p>",
+    "DeleteGame": "<p>Deletes a game.</p>",
+    "DeleteStage": "<p>Deletes a stage from a game, along with the associated game runtime.</p>",
+    "DisconnectPlayer": "<p>Disconnects a player from the game runtime.</p> <p> If a player has multiple connections, this operation attempts to close all of them. </p>",
+    "ExportSnapshot": "<p>Exports a game configuration snapshot.</p>",
+    "GetExtension": "<p>Gets details about a specified extension.</p>",
+    "GetExtensionVersion": "<p>Gets details about a specified extension version.</p>",
+    "GetGame": "<p>Gets details about a game.</p>",
+    "GetGameConfiguration": "<p>Gets the configuration of the game.</p>",
+    "GetGeneratedCodeJob": "<p>Gets details about a job that is generating code for a snapshot.</p>",
+    "GetPlayerConnectionStatus": "<p>Gets the status of a player's connection to the game runtime.</p> <p> It's possible for a single player to have multiple connections to the game runtime. If a player is not connected, this operation returns an empty list. </p>",
+    "GetSnapshot": "<p>Gets a copy of the game configuration in a snapshot.</p>",
+    "GetStage": "<p>Gets information about a stage.</p>",
+    "GetStageDeployment": "<p>Gets information about a stage deployment.</p>",
+    "ImportGameConfiguration": "<p>Imports a game configuration.</p> <p> This operation replaces the current configuration of the game with the provided input. This is not a reversible operation. If you want to preserve the previous configuration, use <code>CreateSnapshot</code> to make a new snapshot before importing. </p>",
+    "ListExtensionVersions": "<p>Gets a paginated list of available versions for the extension.</p> <p> Each time an API change is made to an extension, the version is incremented. The list retrieved by this operation shows the versions that are currently available. </p>",
+    "ListExtensions": "<p>Gets a paginated list of available extensions.</p> <p> Extensions provide features that games can use from scripts. </p>",
+    "ListGames": "<p>Gets a paginated list of games.</p>",
+    "ListGeneratedCodeJobs": "<p>Gets a paginated list of code generation jobs for a snapshot.</p>",
+    "ListSnapshots": "<p>Gets a paginated list of snapshot summaries from the game.</p>",
+    "ListStageDeployments": "<p>Gets a paginated list of stage deployment summaries from the game.</p>",
+    "ListStages": "<p>Gets a paginated list of stage summaries from the game.</p>",
+    "ListTagsForResource": "<p>Lists the tags associated with a GameSparks resource.</p>",
+    "StartGeneratedCodeJob": "<p> Starts an asynchronous process that generates client code for system-defined and custom messages. The resulting code is collected as a .zip file and uploaded to a pre-signed Amazon S3 URL. </p>",
+    "StartStageDeployment": "<p>Deploys a snapshot to the stage and creates a new game runtime.</p> <p> After you call this operation, you can check the deployment status by using <code>GetStageDeployment</code>. </p> <p> If there are any players connected to the previous game runtime, then both runtimes persist. Existing connections to the previous runtime are maintained. When players disconnect and reconnect, they connect to the new runtime. After there are no connections to the previous game runtime, it is deleted. </p>",
+    "TagResource": "<p>Adds tags to a GameSparks resource.</p>",
+    "UntagResource": "<p>Removes tags from a GameSparks resource.</p>",
+    "UpdateGame": "<p>Updates details of the game.</p>",
+    "UpdateGameConfiguration": "<p>Updates one or more sections of the game configuration.</p>",
+    "UpdateSnapshot": "<p>Updates the metadata of a GameSparks snapshot.</p>",
+    "UpdateStage": "<p>Updates the metadata of a stage.</p>"
+  },
+  "shapes": {
+    "ARN": {
+      "base": null,
+      "refs": {
+        "GameDetails$Arn": "<p>The Amazon Resource Name (ARN) of this game.</p>",
+        "StageDetails$Arn": "<p>The Amazon Resource Name (ARN) of the stage.</p>"
+      }
+    },
+    "AccessDeniedException": {
+      "base": "<p>You do not have sufficient access to perform this action.</p>",
+      "refs": {
+      }
+    },
+    "ByteSize": {
+      "base": null,
+      "refs": {
+        "Section$Size": "<p>The size, in bytes, of the section contents.</p>"
+      }
+    },
+    "ClientToken": {
+      "base": null,
+      "refs": {
+        "CreateGameRequest$ClientToken": "<p> A client-defined token. With an active client token in the request, this action is idempotent. </p>",
+        "CreateStageRequest$ClientToken": "<p> A client-defined token. With an active client token in the request, this action is idempotent. </p>",
+        "StartStageDeploymentRequest$ClientToken": "<p> A client-defined token. With an active client token in the request, this action is idempotent. </p>"
+      }
+    },
+    "ConflictException": {
+      "base": "<p>The resource already exists, or another operation is in progress.</p>",
+      "refs": {
+      }
+    },
+    "Connection": {
+      "base": "<p>Details about a WebSocket connection.</p>",
+      "refs": {
+        "ConnectionList$member": null
+      }
+    },
+    "ConnectionId": {
+      "base": null,
+      "refs": {
+        "Connection$Id": "<p>The identifier used to indicate a specific WebSocket connection.</p>",
+        "ConnectionIdList$member": null
+      }
+    },
+    "ConnectionIdList": {
+      "base": null,
+      "refs": {
+        "DisconnectPlayerResult$DisconnectFailures": "<p>The list of the connection ids that could not be disconnected.</p>",
+        "DisconnectPlayerResult$DisconnectSuccesses": "<p>The list of the connection ids that were disconnected.</p>"
+      }
+    },
+    "ConnectionList": {
+      "base": null,
+      "refs": {
+        "GetPlayerConnectionStatusResult$Connections": "<p>The list of connection ids, one for each connection in use by the player.</p>"
+      }
+    },
+    "CreateGameRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "CreateGameResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "CreateSnapshotRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "CreateSnapshotResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "CreateStageRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "CreateStageResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DateTime": {
+      "base": null,
+      "refs": {
+        "Connection$Created": "<p>The date and time when the connection was created.</p>",
+        "GameConfigurationDetails$Created": "<p>The date when the game was created.</p>",
+        "GameConfigurationDetails$LastUpdated": "<p>The date when the game was last modified.</p>",
+        "GameDetails$Created": "<p>The date when the game was created.</p>",
+        "GameDetails$LastUpdated": "<p>The date when the game was last modified.</p>",
+        "GeneratedCodeJobDetails$ExpirationTime": "<p>The expiration date and time for the download URL.</p> <p> The download URL us guaranteed to be available until at least this time. </p>",
+        "SnapshotDetails$Created": "<p>The timestamp of when the snapshot was created.</p>",
+        "SnapshotDetails$LastUpdated": "<p>The timestamp of when the snapshot was last updated.</p>",
+        "SnapshotSummary$Created": "<p>The timestamp of when the snapshot was created.</p>",
+        "SnapshotSummary$LastUpdated": "<p>Then timestamp of when the snapshot was last updated.</p>",
+        "StageDeploymentDetails$Created": "<p>The timestamp of when the stage deployment was created.</p>",
+        "StageDeploymentDetails$LastUpdated": "<p>The timestamp of when the deployment was last updated.</p>",
+        "StageDeploymentSummary$LastUpdated": "<p>The timestamp of when the deployment was last updated.</p>",
+        "StageDetails$Created": "<p>The timestamp of when the stage was created.</p>",
+        "StageDetails$LastUpdated": "<p>The timestamp of when the stage was last updated.</p>"
+      }
+    },
+    "DeleteGameRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DeleteGameResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DeleteStageRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DeleteStageResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DeploymentAction": {
+      "base": null,
+      "refs": {
+        "StageDeploymentDetails$DeploymentAction": "<p>The type of action of the stage deployment.</p>",
+        "StageDeploymentSummary$DeploymentAction": "<p>The type of action of the deployment.</p>"
+      }
+    },
+    "DeploymentId": {
+      "base": null,
+      "refs": {
+        "GetStageDeploymentRequest$DeploymentId": "<p> The identifier of the stage deployment. <code>StartStageDeployment</code> returns the identifier that you use here. </p>",
+        "StageDeploymentDetails$DeploymentId": "<p>The identifier of the deployment.</p>",
+        "StageDeploymentSummary$DeploymentId": "<p>The identifier of the deployment.</p>"
+      }
+    },
+    "DeploymentResult": {
+      "base": "<p>The result of the deployment.</p>",
+      "refs": {
+        "StageDeploymentDetails$DeploymentResult": "<p>The result of the deployment.</p>",
+        "StageDeploymentSummary$DeploymentResult": "<p>The result of the deployment.</p>"
+      }
+    },
+    "DeploymentState": {
+      "base": null,
+      "refs": {
+        "StageDeploymentDetails$DeploymentState": "<p>The state of the deployment.</p>",
+        "StageDeploymentSummary$DeploymentState": "<p>The state of the deployment.</p>"
+      }
+    },
+    "DisconnectPlayerRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DisconnectPlayerResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "Document": {
+      "base": "<p/>",
+      "refs": {
+        "Section$Attributes": "<p>The content of a configuration section.</p>",
+        "SectionModification$Value": "<p>For add and replace operations, this is the value that will be used.</p> <p> This field should be omitted for delete operations. </p>"
+      }
+    },
+    "ExceptionMessage": {
+      "base": null,
+      "refs": {
+        "AccessDeniedException$Message": null,
+        "ConflictException$Message": null,
+        "InternalServerException$Message": null,
+        "ResourceNotFoundException$Message": null,
+        "ServiceQuotaExceededException$Message": null,
+        "ThrottlingException$Message": null,
+        "ValidationException$Message": null
+      }
+    },
+    "ExportSnapshotRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ExportSnapshotResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ExtensionDescription": {
+      "base": null,
+      "refs": {
+        "ExtensionDetails$Description": "<p>The description of the extension.</p>"
+      }
+    },
+    "ExtensionDetails": {
+      "base": "<p>Details about the extension.</p>",
+      "refs": {
+        "ExtensionDetailsList$member": null,
+        "GetExtensionResult$Extension": "<p>Details about the extension.</p>"
+      }
+    },
+    "ExtensionDetailsList": {
+      "base": null,
+      "refs": {
+        "ListExtensionsResult$Extensions": "<p>The list of extensions.</p>"
+      }
+    },
+    "ExtensionName": {
+      "base": null,
+      "refs": {
+        "ExtensionDetails$Name": "<p>The name of the extension.</p>",
+        "ExtensionVersionDetails$Name": "<p>The name of the extension.</p>",
+        "GetExtensionRequest$Name": "<p>The name of the extension.</p>",
+        "GetExtensionVersionRequest$Name": "<p>The name of the extension.</p>",
+        "ListExtensionVersionsRequest$Name": "<p>The name of the extension.</p>"
+      }
+    },
+    "ExtensionNamespace": {
+      "base": null,
+      "refs": {
+        "ExtensionDetails$Namespace": "<p>The namespace (qualifier) of the extension.</p>",
+        "ExtensionVersionDetails$Namespace": "<p>The namespace (qualifier) of the extension.</p>",
+        "GetExtensionRequest$Namespace": "<p>The namespace (qualifier) of the extension.</p>",
+        "GetExtensionVersionRequest$Namespace": "<p>The namespace (qualifier) of the extension.</p>",
+        "ListExtensionVersionsRequest$Namespace": "<p>The namespace (qualifier) of the extension.</p>"
+      }
+    },
+    "ExtensionVersion": {
+      "base": null,
+      "refs": {
+        "ExtensionVersionDetails$Version": "<p>The version of the extension.</p>",
+        "GetExtensionVersionRequest$ExtensionVersion": "<p>The version of the extension.</p>"
+      }
+    },
+    "ExtensionVersionDetails": {
+      "base": "<p>Details about the extension version.</p>",
+      "refs": {
+        "ExtensionVersionDetailsList$member": null,
+        "GetExtensionVersionResult$ExtensionVersion": "<p>The version of the extension.</p>"
+      }
+    },
+    "ExtensionVersionDetailsList": {
+      "base": null,
+      "refs": {
+        "ListExtensionVersionsResult$ExtensionVersions": "<p>The list of extension versions.</p>"
+      }
+    },
+    "ExtensionVersionSchema": {
+      "base": null,
+      "refs": {
+        "ExtensionVersionDetails$Schema": "<p>The model that defines the interface for this extension version.</p>"
+      }
+    },
+    "GameConfigurationDetails": {
+      "base": "<p>Details about the game configuration.</p> <p> The game configuration is organized into named sections, where the schema of each section is defined by an extension. The schema for these sections can be retrieved using the <code>GetExtensionVersion</code> operation. </p>",
+      "refs": {
+        "GetGameConfigurationResult$GameConfiguration": "<p>Details about the game configuration.</p>",
+        "ImportGameConfigurationResult$GameConfiguration": "<p>Details about the game configuration.</p>",
+        "UpdateGameConfigurationResult$GameConfiguration": "<p>Details about the game configuration.</p>"
+      }
+    },
+    "GameDescription": {
+      "base": null,
+      "refs": {
+        "CreateGameRequest$Description": "<p>The description of the game.</p>",
+        "GameDetails$Description": "<p>The description of the game.</p>",
+        "GameSummary$Description": "<p>The description of the game.</p>",
+        "UpdateGameRequest$Description": "<p>The description of the game.</p>"
+      }
+    },
+    "GameDetails": {
+      "base": "<p>Details about a game.</p>",
+      "refs": {
+        "CreateGameResult$Game": "<p>Details about the game that was created.</p>",
+        "GetGameResult$Game": "<p>The details of the game.</p>",
+        "UpdateGameResult$Game": "<p>The details of the game.</p>"
+      }
+    },
+    "GameKey": {
+      "base": null,
+      "refs": {
+        "StageDetails$GameKey": "<p>The game key associated with the stage.</p> <p> The game key is a unique identifier that the game client uses to connect to the GameSparks backend. </p>",
+        "StageSummary$GameKey": "<p>The game key associated with the stage.</p> <p> The game key is a unique identifier that the game client uses to connect to the GameSparks backend. </p>"
+      }
+    },
+    "GameName": {
+      "base": null,
+      "refs": {
+        "CreateGameRequest$GameName": "<p>The name of the game.</p>",
+        "CreateSnapshotRequest$GameName": "<p>The name of the game.</p>",
+        "CreateStageRequest$GameName": "<p>The name of the game.</p>",
+        "DeleteGameRequest$GameName": "<p>The name of the game to delete.</p>",
+        "DeleteStageRequest$GameName": "<p>The name of the game.</p>",
+        "DisconnectPlayerRequest$GameName": "<p>The name of the game.</p>",
+        "ExportSnapshotRequest$GameName": "<p>The name of the game.</p>",
+        "GameDetails$Name": "<p>The name of the game.</p>",
+        "GameSummary$Name": "<p>The name of the game.</p>",
+        "GetGameConfigurationRequest$GameName": "<p>The name of the game.</p>",
+        "GetGameRequest$GameName": "<p>The name of the game.</p>",
+        "GetGeneratedCodeJobRequest$GameName": "<p>The name of the game.</p>",
+        "GetPlayerConnectionStatusRequest$GameName": "<p>The name of the game.</p>",
+        "GetSnapshotRequest$GameName": "<p>The name of the game.</p>",
+        "GetStageDeploymentRequest$GameName": "<p>The name of the game.</p>",
+        "GetStageRequest$GameName": "<p>The name of the game.</p>",
+        "ImportGameConfigurationRequest$GameName": "<p>The name of the game.</p>",
+        "ListGeneratedCodeJobsRequest$GameName": "<p>The name of the game.</p>",
+        "ListSnapshotsRequest$GameName": "<p>The name of the game.</p>",
+        "ListStageDeploymentsRequest$GameName": "<p>The name of the game.</p>",
+        "ListStagesRequest$GameName": "<p>The name of the game.</p>",
+        "StartGeneratedCodeJobRequest$GameName": "<p>The name of the game.</p>",
+        "StartStageDeploymentRequest$GameName": "<p>The name of the game.</p>",
+        "UpdateGameConfigurationRequest$GameName": "<p>The name of the game.</p>",
+        "UpdateGameRequest$GameName": "<p>The name of the game.</p>",
+        "UpdateSnapshotRequest$GameName": "<p>The name of the game.</p>",
+        "UpdateStageRequest$GameName": "<p>The name of the game.</p>"
+      }
+    },
+    "GameSdkVersion": {
+      "base": null,
+      "refs": {
+        "Generator$GameSdkVersion": "<p>The target version of the GameSparks Game SDK.</p>"
+      }
+    },
+    "GameState": {
+      "base": null,
+      "refs": {
+        "GameDetails$State": "<p>The state of the game.</p>",
+        "GameSummary$State": "<p>The state of the game.</p>"
+      }
+    },
+    "GameSummary": {
+      "base": "<p>The summary of the properties of a game.</p>",
+      "refs": {
+        "GameSummaryList$member": null
+      }
+    },
+    "GameSummaryList": {
+      "base": null,
+      "refs": {
+        "ListGamesResult$Games": "<p>The list of games.</p>"
+      }
+    },
+    "GameTerminationProtection": {
+      "base": null,
+      "refs": {
+        "GameDetails$EnableTerminationProtection": "<p>Determines if the game can be deleted.</p>"
+      }
+    },
+    "GeneratedCodeJobDescription": {
+      "base": null,
+      "refs": {
+        "GeneratedCodeJobDetails$Description": "<p>The description of the generated code job.</p>"
+      }
+    },
+    "GeneratedCodeJobDetails": {
+      "base": "<p>Details about a generated code job.</p>",
+      "refs": {
+        "GeneratedCodeJobDetailsList$member": null,
+        "GetGeneratedCodeJobResult$GeneratedCodeJob": "<p>Details about the generated code job.</p>"
+      }
+    },
+    "GeneratedCodeJobDetailsList": {
+      "base": null,
+      "refs": {
+        "ListGeneratedCodeJobsResult$GeneratedCodeJobs": "<p>The list of generated code jobs.</p>"
+      }
+    },
+    "GeneratedCodeJobId": {
+      "base": null,
+      "refs": {
+        "GeneratedCodeJobDetails$GeneratedCodeJobId": "<p>The identifier for the generated code job.</p>",
+        "GetGeneratedCodeJobRequest$JobId": "<p>The identifier of the code generation job.</p>",
+        "StartGeneratedCodeJobResult$GeneratedCodeJobId": "<p> The identifier of the code generation job. You can use this identifier in the <code>GetGeneratedCodeJob</code> operation. </p>"
+      }
+    },
+    "GeneratedCodeJobState": {
+      "base": null,
+      "refs": {
+        "GeneratedCodeJobDetails$Status": "<p>The status of the generated code job</p>"
+      }
+    },
+    "Generator": {
+      "base": "<p>Properties that specify the code generator for a generated code job.</p>",
+      "refs": {
+        "StartGeneratedCodeJobRequest$Generator": "<p>Properties of the generator to use for the job.</p>"
+      }
+    },
+    "GetExtensionRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetExtensionResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetExtensionVersionRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetExtensionVersionResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetGameConfigurationRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetGameConfigurationResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetGameRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetGameResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetGeneratedCodeJobRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetGeneratedCodeJobResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetPlayerConnectionStatusRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetPlayerConnectionStatusResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetSnapshotRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetSnapshotResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetStageDeploymentRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetStageDeploymentResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetStageRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetStageResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ImportGameConfigurationRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ImportGameConfigurationResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ImportGameConfigurationSource": {
+      "base": "<p>The source used to import configuration sections.</p>",
+      "refs": {
+        "ImportGameConfigurationRequest$ImportSource": "<p>The source used to import configuration sections.</p>"
+      }
+    },
+    "InternalServerException": {
+      "base": "<p>The service encountered an internal error.</p>",
+      "refs": {
+      }
+    },
+    "Language": {
+      "base": null,
+      "refs": {
+        "Generator$Language": "<p>The programming language for the generated code.</p> <p> Not all languages are supported for each platform. For cases where multiple languages are supported, this parameter specifies the language to be used. If this value is omitted, the default language for the target platform will be used. </p>"
+      }
+    },
+    "ListExtensionVersionsRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListExtensionVersionsResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListExtensionsRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListExtensionsResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListGamesRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListGamesResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListGeneratedCodeJobsRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListGeneratedCodeJobsResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListSnapshotsRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListSnapshotsResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListStageDeploymentsRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListStageDeploymentsResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListStagesRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListStagesResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListTagsForResourceRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListTagsForResourceResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "LogGroupName": {
+      "base": null,
+      "refs": {
+        "StageDetails$LogGroup": "<p>The Amazon CloudWatch log group for game runtimes deployed to the stage.</p>"
+      }
+    },
+    "MaxResults": {
+      "base": null,
+      "refs": {
+        "ListExtensionVersionsRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>",
+        "ListExtensionsRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>",
+        "ListGamesRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>",
+        "ListGeneratedCodeJobsRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>",
+        "ListSnapshotsRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>",
+        "ListStageDeploymentsRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>",
+        "ListStagesRequest$MaxResults": "<p>The maximum number of results to return.</p> <p> Use this parameter with NextToken to get results as a set of sequential pages. </p>"
+      }
+    },
+    "Message": {
+      "base": null,
+      "refs": {
+        "DeploymentResult$Message": "<p>Details about the deployment result.</p>"
+      }
+    },
+    "NextToken": {
+      "base": null,
+      "refs": {
+        "ListExtensionVersionsRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListExtensionVersionsResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>",
+        "ListExtensionsRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListExtensionsResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>",
+        "ListGamesRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListGamesResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>",
+        "ListGeneratedCodeJobsRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListGeneratedCodeJobsResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>",
+        "ListSnapshotsRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListSnapshotsResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>",
+        "ListStageDeploymentsRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListStageDeploymentsResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>",
+        "ListStagesRequest$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use the token that is returned with a previous call to this operation. To start at the beginning of the result set, do not specify a value. </p>",
+        "ListStagesResult$NextToken": "<p>The token that indicates the start of the next sequential page of results.</p> <p> Use this value when making the next call to this operation to continue where the last one finished. </p>"
+      }
+    },
+    "Operation": {
+      "base": null,
+      "refs": {
+        "SectionModification$Operation": "<p>The operation to be performed on a configuration section.</p> <p> Content can be added, deleted, or replaced within a section. </p>"
+      }
+    },
+    "Path": {
+      "base": null,
+      "refs": {
+        "SectionModification$Path": "<p>The path within the section content to be modified.</p>"
+      }
+    },
+    "PlayerId": {
+      "base": null,
+      "refs": {
+        "DisconnectPlayerRequest$PlayerId": "<p>The unique identifier representing a player.</p>",
+        "GetPlayerConnectionStatusRequest$PlayerId": "<p>The unique identifier representing a player.</p>"
+      }
+    },
+    "RawGameConfigurationData": {
+      "base": null,
+      "refs": {
+        "ImportGameConfigurationSource$File": "<p>The JSON string containing the configuration sections.</p>"
+      }
+    },
+    "ResourceArn": {
+      "base": null,
+      "refs": {
+        "ListTagsForResourceRequest$ResourceArn": "<p>The Amazon Resource Name (ARN) of the GameSparks resource.</p>",
+        "TagResourceRequest$ResourceArn": "<p>The Amazon Resource Name (ARN) of the resource to add the tags to.</p>",
+        "UntagResourceRequest$ResourceArn": "<p>The Amazon Resource Name (ARN) of the resource to remove the tags from.</p>"
+      }
+    },
+    "ResourceNotFoundException": {
+      "base": "<p>The resource specified in the request does not exist.</p>",
+      "refs": {
+      }
+    },
+    "ResultCode": {
+      "base": null,
+      "refs": {
+        "DeploymentResult$ResultCode": "<p>The type of deployment result.</p>"
+      }
+    },
+    "RoleARN": {
+      "base": null,
+      "refs": {
+        "CreateStageRequest$Role": "<p> The Amazon Resource Name (ARN) of the role to run the game with. This role can be a game-defined role or the default role that GameSparks created. </p>",
+        "StageDetails$Role": "<p>The Amazon Resource Name (ARN) of the role used to run the game runtimes deployed to the stage.</p>",
+        "UpdateStageRequest$Role": "<p>The Amazon Resource Name (ARN) of the role to use for the game snapshots deployed to this stage.</p>"
+      }
+    },
+    "S3PresignedUrl": {
+      "base": null,
+      "refs": {
+        "ExportSnapshotResult$S3Url": "<p>The presigned URL for the snapshot data.</p> <p> This URL will be available for 10 minutes, and can be used to download the snapshot content. If the URL expires, a new one can be requested using the same operation. </p>",
+        "GeneratedCodeJobDetails$S3Url": "<p>A presigned URL that can be used to download the generated code.</p>"
+      }
+    },
+    "Section": {
+      "base": "<p>The configuration section.</p>",
+      "refs": {
+        "Sections$value": null
+      }
+    },
+    "SectionList": {
+      "base": null,
+      "refs": {
+        "GetGameConfigurationRequest$Sections": "<p>The list of sections to return.</p>",
+        "GetSnapshotRequest$Sections": "<p>The list of game configuration sections to be described.</p>"
+      }
+    },
+    "SectionModification": {
+      "base": "<p>A single modification to the configuration section.</p>",
+      "refs": {
+        "SectionModificationList$member": null
+      }
+    },
+    "SectionModificationList": {
+      "base": null,
+      "refs": {
+        "UpdateGameConfigurationRequest$Modifications": "<p>The list of modifications to make.</p>"
+      }
+    },
+    "SectionName": {
+      "base": null,
+      "refs": {
+        "Section$Name": "<p>The name of the section.</p>",
+        "SectionList$member": null,
+        "SectionModification$Section": "<p>The name of the section to be modified.</p>",
+        "Sections$key": null
+      }
+    },
+    "Sections": {
+      "base": null,
+      "refs": {
+        "GameConfigurationDetails$Sections": "<p>Configuration data, organized by section name.</p>",
+        "SnapshotDetails$Sections": "<p>The sections in the snapshot.</p>"
+      }
+    },
+    "ServiceQuotaExceededException": {
+      "base": "<p>The request would result in exceeding service quota.</p>",
+      "refs": {
+      }
+    },
+    "SnapshotDescription": {
+      "base": null,
+      "refs": {
+        "CreateSnapshotRequest$Description": "<p>The description of the snapshot.</p>",
+        "SnapshotDetails$Description": "<p>The description of the snapshot.</p>",
+        "SnapshotSummary$Description": "<p>The description of the snapshot.</p>",
+        "UpdateSnapshotRequest$Description": "<p>The description of the snapshot.</p>"
+      }
+    },
+    "SnapshotDetails": {
+      "base": "<p>Properties that provide details of a snapshot.</p>",
+      "refs": {
+        "CreateSnapshotResult$Snapshot": "<p>Properties that provide details of the created snapshot.</p>",
+        "GetSnapshotResult$Snapshot": "<p>Properties that provide details of the snapshot.</p>",
+        "UpdateSnapshotResult$Snapshot": "<p>Properties that provide details of the updated snapshot.</p>"
+      }
+    },
+    "SnapshotId": {
+      "base": null,
+      "refs": {
+        "ExportSnapshotRequest$SnapshotId": "<p>The identifier of the snapshot to export.</p>",
+        "GetGeneratedCodeJobRequest$SnapshotId": "<p>The identifier of the snapshot for the code generation job.</p>",
+        "GetSnapshotRequest$SnapshotId": "<p>The identifier of the snapshot.</p>",
+        "ListGeneratedCodeJobsRequest$SnapshotId": "<p>The identifier of the snapshot.</p>",
+        "SnapshotDetails$Id": "<p>The identifier of the snapshot.</p>",
+        "SnapshotSummary$Id": "<p>The identifier of the snapshot.</p>",
+        "StageDeploymentDetails$SnapshotId": "<p>The identifier of the snapshot associated with the stage deployment.</p>",
+        "StageDeploymentSummary$SnapshotId": "<p>The identifier of the snapshot associated with the stage deployment.</p>",
+        "StartGeneratedCodeJobRequest$SnapshotId": "<p>The identifier of the snapshot for which to generate code.</p>",
+        "StartStageDeploymentRequest$SnapshotId": "<p>The identifier of the snapshot to deploy.</p>",
+        "UpdateSnapshotRequest$SnapshotId": "<p>The identifier of the snapshot.</p>"
+      }
+    },
+    "SnapshotSummary": {
+      "base": "<p>The summary of the properties of a snapshot.</p>",
+      "refs": {
+        "SnapshotSummaryList$member": null
+      }
+    },
+    "SnapshotSummaryList": {
+      "base": null,
+      "refs": {
+        "ListSnapshotsResult$Snapshots": "<p> A list of snapshot summaries. You can use the returned snapshot IDs in the <code>UpdateSnapshot</code> and <code>GetSnapshot</code> operations. </p>"
+      }
+    },
+    "StageDeploymentDetails": {
+      "base": "<p>Properties that provide details of a stage deployment.</p>",
+      "refs": {
+        "GetStageDeploymentResult$StageDeployment": "<p>Properties that provide details of the stage deployment.</p>",
+        "StartStageDeploymentResult$StageDeployment": "<p>Properties that describe the stage deployment.</p>"
+      }
+    },
+    "StageDeploymentList": {
+      "base": null,
+      "refs": {
+        "ListStageDeploymentsResult$StageDeployments": "<p> A list of stage deployment summaries. You can use the deployment IDs in the <code>UpdateStageDeployment</code> and <code>GetStageDeployment</code> actions. </p>"
+      }
+    },
+    "StageDeploymentSummary": {
+      "base": "<p>The summary of the properties of a stage deployment.</p>",
+      "refs": {
+        "StageDeploymentList$member": null
+      }
+    },
+    "StageDescription": {
+      "base": null,
+      "refs": {
+        "CreateStageRequest$Description": "<p>The description of the stage.</p>",
+        "StageDetails$Description": "<p>The description of the stage.</p>",
+        "StageSummary$Description": "<p>The description of the stage.</p>",
+        "UpdateStageRequest$Description": "<p>The description of the stage.</p>"
+      }
+    },
+    "StageDetails": {
+      "base": "<p>Properties that provide details of a stage.</p>",
+      "refs": {
+        "CreateStageResult$Stage": "<p>Properties that describe the stage.</p>",
+        "GetStageResult$Stage": "<p>Properties that provide details of the stage.</p>",
+        "UpdateStageResult$Stage": "<p>Properties that provide details of the updated stage.</p>"
+      }
+    },
+    "StageName": {
+      "base": null,
+      "refs": {
+        "CreateStageRequest$StageName": "<p>The name of the stage.</p>",
+        "DeleteStageRequest$StageName": "<p>The name of the stage to delete.</p>",
+        "DisconnectPlayerRequest$StageName": "<p>The name of the stage.</p>",
+        "GetPlayerConnectionStatusRequest$StageName": "<p>The name of the stage.</p>",
+        "GetStageDeploymentRequest$StageName": "<p>The name of the stage.</p>",
+        "GetStageRequest$StageName": "<p>The name of the stage.</p>",
+        "ListStageDeploymentsRequest$StageName": "<p>The name of the stage.</p>",
+        "StageDetails$Name": "<p>The name of the stage.</p>",
+        "StageSummary$Name": "<p>The name of the stage.</p>",
+        "StartStageDeploymentRequest$StageName": "<p>The name of the stage to deploy the snapshot onto.</p>",
+        "UpdateStageRequest$StageName": "<p>The name of the stage.</p>"
+      }
+    },
+    "StageState": {
+      "base": null,
+      "refs": {
+        "StageDetails$State": "<p>The state of the stage.</p>",
+        "StageSummary$State": "<p>The state of the stage.</p>"
+      }
+    },
+    "StageSummary": {
+      "base": "<p>The summary of the properties of a stage.</p>",
+      "refs": {
+        "StageSummaryList$member": null
+      }
+    },
+    "StageSummaryList": {
+      "base": null,
+      "refs": {
+        "ListStagesResult$Stages": "<p> A list of stage summaries. You can use the stage names in the <code>UpdateStage</code> and <code>GetStage</code> actions. </p>"
+      }
+    },
+    "StartGeneratedCodeJobRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "StartGeneratedCodeJobResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "StartStageDeploymentRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "StartStageDeploymentResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "TagKey": {
+      "base": null,
+      "refs": {
+        "TagKeyList$member": null,
+        "TagMap$key": null
+      }
+    },
+    "TagKeyList": {
+      "base": null,
+      "refs": {
+        "UntagResourceRequest$tagKeys": "<p>The keys of the tags to remove.</p>"
+      }
+    },
+    "TagMap": {
+      "base": null,
+      "refs": {
+        "CreateGameRequest$Tags": "<p>The list of tags to apply to the game.</p>",
+        "CreateStageRequest$Tags": "<p>The list of tags to apply to the stage.</p>",
+        "GameDetails$Tags": "<p>The tags associated with the game.</p>",
+        "GameSummary$Tags": "<p>The tags associated with the game.</p>",
+        "ListTagsForResourceResult$tags": "<p>The tags associated with the resource.</p>",
+        "StageDetails$Tags": "<p>The tags associated with the stage.</p>",
+        "StageSummary$Tags": "<p>The tags associated with the stage.</p>",
+        "TagResourceRequest$tags": "<p>The tags to add to the resource.</p>"
+      }
+    },
+    "TagResourceRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "TagResourceResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "TagValue": {
+      "base": null,
+      "refs": {
+        "TagMap$value": null
+      }
+    },
+    "TargetPlatform": {
+      "base": null,
+      "refs": {
+        "Generator$TargetPlatform": "<p>The platform that will be used to run the generated code.</p>"
+      }
+    },
+    "ThrottlingException": {
+      "base": "<p>The request throughput limit was exceeded.</p>",
+      "refs": {
+      }
+    },
+    "UntagResourceRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UntagResourceResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateGameConfigurationRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateGameConfigurationResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateGameRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateGameResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateSnapshotRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateSnapshotResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateStageRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "UpdateStageResult": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ValidationException": {
+      "base": "<p>One of the parameters in the request is invalid.</p>",
+      "refs": {
+      }
+    }
+  }
+}

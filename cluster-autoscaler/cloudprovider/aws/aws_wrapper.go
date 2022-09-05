@@ -21,11 +21,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/eks"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/eks"
 	klog "k8s.io/klog/v2"
 )
 
@@ -34,14 +34,15 @@ type autoScalingI interface {
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeScalingActivities(*autoscaling.DescribeScalingActivitiesInput) (*autoscaling.DescribeScalingActivitiesOutput, error)
-	DescribeTagsPages(input *autoscaling.DescribeTagsInput, fn func(*autoscaling.DescribeTagsOutput, bool) bool) error
 	SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error)
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
 
 // ec2I is the interface abstracting specific API calls of the EC2 service provided by AWS SDK for use in CA
 type ec2I interface {
+	DescribeImages(input *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error)
 	DescribeLaunchTemplateVersions(input *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
+	GetInstanceTypesFromInstanceRequirementsPages(input *ec2.GetInstanceTypesFromInstanceRequirementsInput, fn func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool) error
 }
 
 // eksI is the interface that represents a specific aspect of EKS (Elastic Kubernetes Service) which is provided by AWS SDK for use in CA
@@ -142,13 +143,12 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*s
 }
 
 func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
+	asgs := make([]*autoscaling.Group, 0)
 	if len(names) == 0 {
-		return nil, nil
+		return asgs, nil
 	}
 
-	asgs := make([]*autoscaling.Group, 0)
-
-	// AWS only accepts up to 50 ASG names as input, describe them in batches
+	// AWS only accepts up to 100 ASG names as input, describe them in batches
 	for i := 0; i < len(names); i += maxAsgNamesPerDescribe {
 		end := i + maxAsgNamesPerDescribe
 
@@ -176,92 +176,498 @@ func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling
 	return asgs, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]string, error) {
-	// DescribeTags does an OR query when multiple filters on different tags are
-	// specified. In other words, DescribeTags returns [asg1, asg1] for keys
-	// [t1, t2] when there's only one asg tagged both t1 and t2.
-	filters := []*autoscaling.Filter{}
-	for key, value := range kvs {
-		filter := &autoscaling.Filter{
-			Name:   aws.String("key"),
-			Values: []*string{aws.String(key)},
-		}
-		filters = append(filters, filter)
+func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]*autoscaling.Group, error) {
+	asgs := make([]*autoscaling.Group, 0)
+	if len(tags) == 0 {
+		return asgs, nil
+	}
+
+	filters := make([]*autoscaling.Filter, 0)
+	for key, value := range tags {
 		if value != "" {
 			filters = append(filters, &autoscaling.Filter{
-				Name:   aws.String("value"),
+				Name:   aws.String(fmt.Sprintf("tag:%s", key)),
 				Values: []*string{aws.String(value)},
+			})
+		} else {
+			filters = append(filters, &autoscaling.Filter{
+				Name:   aws.String("tag-key"),
+				Values: []*string{aws.String(key)},
 			})
 		}
 	}
 
-	tags := []*autoscaling.TagDescription{}
-	input := &autoscaling.DescribeTagsInput{
+	input := &autoscaling.DescribeAutoScalingGroupsInput{
 		Filters:    filters,
 		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
 	}
 	start := time.Now()
-	err := m.DescribeTagsPages(input, func(out *autoscaling.DescribeTagsOutput, _ bool) bool {
-		tags = append(tags, out.Tags...)
+	err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+		asgs = append(asgs, output.AutoScalingGroups...)
 		// We return true while we want to be called with the next page of
 		// results, if any.
 		return true
 	})
-	observeAWSRequest("DescribeTagsPages", err, start)
-
+	observeAWSRequest("DescribeAutoScalingGroupsPages", err, start)
 	if err != nil {
 		return nil, err
 	}
 
-	// According to how DescribeTags API works, the result contains ASGs which
-	// not all but only subset of tags are associated. Explicitly select ASGs to
-	// which all the tags are associated so that we won't end up calling
-	// DescribeAutoScalingGroups API multiple times on an ASG.
-	asgNames := []string{}
-	asgNameOccurrences := make(map[string]int)
-	for _, t := range tags {
-		asgName := aws.StringValue(t.ResourceId)
-		occurrences := asgNameOccurrences[asgName] + 1
-		if occurrences >= len(kvs) {
-			asgNames = append(asgNames, asgName)
-		}
-		asgNameOccurrences[asgName] = occurrences
-	}
-
-	return asgNames, nil
+	return asgs, nil
 }
 
 func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTemplate) (string, error) {
-	params := &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String(launchTemplate.name),
-		Versions:           []*string{aws.String(launchTemplate.version)},
-	}
-
-	start := time.Now()
-	describeData, err := m.DescribeLaunchTemplateVersions(params)
-	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	templateData, err := m.getLaunchTemplateData(launchTemplate.name, launchTemplate.version)
 	if err != nil {
 		return "", err
 	}
 
-	if len(describeData.LaunchTemplateVersions) == 0 {
-		return "", fmt.Errorf("unable to find template versions")
+	instanceType := ""
+	if templateData.InstanceType != nil {
+		instanceType = *templateData.InstanceType
+	} else if templateData.InstanceRequirements != nil && templateData.ImageId != nil {
+		requirementsRequest, err := m.getRequirementsRequestFromEC2(templateData.InstanceRequirements)
+		if err != nil {
+			return "", fmt.Errorf("unable to get instance requirements request")
+		}
+		instanceType, err = m.getInstanceTypeFromInstanceRequirements(*templateData.ImageId, requirementsRequest)
+		if err != nil {
+			return "", err
+		}
+	}
+	if len(instanceType) == 0 {
+		return "", fmt.Errorf("unable to find instance type using launch template")
 	}
 
-	lt := describeData.LaunchTemplateVersions[0]
-	instanceType := lt.LaunchTemplateData.InstanceType
+	return instanceType, nil
+}
 
-	if instanceType == nil {
-		return "", fmt.Errorf("unable to find instance type within launch template")
+func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInstancesPolicy) (string, error) {
+	if policy.launchTemplate == nil {
+		return "", fmt.Errorf("no launch template found for mixed instances policy")
 	}
 
-	return aws.StringValue(instanceType), nil
+	templateData, err := m.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
+	if err != nil {
+		return "", err
+	}
+
+	requirements, err := m.getRequirementsRequestFromAutoscaling(policy.instanceRequirementsOverrides)
+	if err != nil {
+		return "", err
+	}
+	instanceType, err := m.getInstanceTypeFromInstanceRequirements(*templateData.ImageId, requirements)
+	if err != nil {
+		return "", err
+	}
+
+	return instanceType, nil
+}
+
+func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion string) (*ec2.ResponseLaunchTemplateData, error) {
+	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(templateName),
+		Versions:           []*string{aws.String(templateVersion)},
+	}
+
+	start := time.Now()
+	describeData, err := m.DescribeLaunchTemplateVersions(describeTemplateInput)
+	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	if err != nil {
+		return nil, err
+	}
+	if describeData == nil || len(describeData.LaunchTemplateVersions) == 0 {
+		return nil, fmt.Errorf("unable to find template versions for launch template %s", templateName)
+	}
+	if describeData.LaunchTemplateVersions[0].LaunchTemplateData == nil {
+		return nil, fmt.Errorf("no data found for launch template %s, version %s", templateName, templateVersion)
+	}
+
+	return describeData.LaunchTemplateVersions[0].LaunchTemplateData, nil
+}
+
+func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, requirementsRequest *ec2.InstanceRequirementsRequest) (string, error) {
+	describeImagesInput := &ec2.DescribeImagesInput{
+		ImageIds: []*string{aws.String(imageId)},
+	}
+
+	start := time.Now()
+	describeImagesOutput, err := m.DescribeImages(describeImagesInput)
+	observeAWSRequest("DescribeImages", err, start)
+	if err != nil {
+		return "", err
+	}
+
+	imageArchitectures := []*string{}
+	imageVirtualizationTypes := []*string{}
+	for _, image := range describeImagesOutput.Images {
+		imageArchitectures = append(imageArchitectures, image.Architecture)
+		imageVirtualizationTypes = append(imageVirtualizationTypes, image.VirtualizationType)
+	}
+
+	requirementsInput := &ec2.GetInstanceTypesFromInstanceRequirementsInput{
+		ArchitectureTypes:    imageArchitectures,
+		InstanceRequirements: requirementsRequest,
+		VirtualizationTypes:  imageVirtualizationTypes,
+	}
+
+	start = time.Now()
+	instanceTypes := []string{}
+	err = m.GetInstanceTypesFromInstanceRequirementsPages(requirementsInput, func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, isLastPage bool) bool {
+		for _, instanceType := range page.InstanceTypes {
+			instanceTypes = append(instanceTypes, *instanceType.InstanceType)
+		}
+		return !isLastPage
+	})
+	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
+	if err != nil {
+		return "", fmt.Errorf("unable to get instance types from requirements")
+	}
+
+	return instanceTypes[0], nil
+}
+
+func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
+	requirementsRequest := ec2.InstanceRequirementsRequest{}
+
+	// required instance requirements
+	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
+		Min: requirements.MemoryMiB.Min,
+		Max: requirements.MemoryMiB.Max,
+	}
+
+	requirementsRequest.VCpuCount = &ec2.VCpuCountRangeRequest{
+		Min: requirements.VCpuCount.Min,
+		Max: requirements.VCpuCount.Max,
+	}
+
+	// optional instance requirements
+	if requirements.AcceleratorCount != nil {
+		requirementsRequest.AcceleratorCount = &ec2.AcceleratorCountRequest{
+			Min: requirements.AcceleratorCount.Min,
+			Max: requirements.AcceleratorCount.Max,
+		}
+	}
+
+	if requirements.AcceleratorManufacturers != nil {
+		requirementsRequest.AcceleratorManufacturers = requirements.AcceleratorManufacturers
+	}
+
+	if requirements.AcceleratorNames != nil {
+		requirementsRequest.AcceleratorNames = requirements.AcceleratorNames
+	}
+
+	if requirements.AcceleratorTotalMemoryMiB != nil {
+		requirementsRequest.AcceleratorTotalMemoryMiB = &ec2.AcceleratorTotalMemoryMiBRequest{
+			Min: requirements.AcceleratorTotalMemoryMiB.Min,
+			Max: requirements.AcceleratorTotalMemoryMiB.Max,
+		}
+	}
+
+	if requirements.AcceleratorTypes != nil {
+		requirementsRequest.AcceleratorTypes = requirements.AcceleratorTypes
+	}
+
+	if requirements.BareMetal != nil {
+		requirementsRequest.BareMetal = requirements.BareMetal
+	}
+
+	if requirements.BaselineEbsBandwidthMbps != nil {
+		requirementsRequest.BaselineEbsBandwidthMbps = &ec2.BaselineEbsBandwidthMbpsRequest{
+			Min: requirements.BaselineEbsBandwidthMbps.Min,
+			Max: requirements.BaselineEbsBandwidthMbps.Max,
+		}
+	}
+
+	if requirements.BurstablePerformance != nil {
+		requirementsRequest.BurstablePerformance = requirements.BurstablePerformance
+	}
+
+	if requirements.CpuManufacturers != nil {
+		requirementsRequest.CpuManufacturers = requirements.CpuManufacturers
+	}
+
+	if requirements.ExcludedInstanceTypes != nil {
+		requirementsRequest.ExcludedInstanceTypes = requirements.ExcludedInstanceTypes
+	}
+
+	if requirements.InstanceGenerations != nil {
+		requirementsRequest.InstanceGenerations = requirements.InstanceGenerations
+	}
+
+	if requirements.LocalStorage != nil {
+		requirementsRequest.LocalStorage = requirements.LocalStorage
+	}
+
+	if requirements.LocalStorageTypes != nil {
+		requirementsRequest.LocalStorageTypes = requirements.LocalStorageTypes
+	}
+
+	if requirements.MemoryGiBPerVCpu != nil {
+		requirementsRequest.MemoryGiBPerVCpu = &ec2.MemoryGiBPerVCpuRequest{
+			Min: requirements.MemoryGiBPerVCpu.Min,
+			Max: requirements.MemoryGiBPerVCpu.Max,
+		}
+	}
+
+	if requirements.NetworkInterfaceCount != nil {
+		requirementsRequest.NetworkInterfaceCount = &ec2.NetworkInterfaceCountRequest{
+			Min: requirements.NetworkInterfaceCount.Min,
+			Max: requirements.NetworkInterfaceCount.Max,
+		}
+	}
+
+	if requirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.OnDemandMaxPricePercentageOverLowestPrice = requirements.OnDemandMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.RequireHibernateSupport != nil {
+		requirementsRequest.RequireHibernateSupport = requirements.RequireHibernateSupport
+	}
+
+	if requirements.SpotMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.SpotMaxPricePercentageOverLowestPrice = requirements.SpotMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.TotalLocalStorageGB != nil {
+		requirementsRequest.TotalLocalStorageGB = &ec2.TotalLocalStorageGBRequest{
+			Min: requirements.TotalLocalStorageGB.Min,
+			Max: requirements.TotalLocalStorageGB.Max,
+		}
+	}
+
+	return &requirementsRequest, nil
+}
+
+func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
+	requirementsRequest := ec2.InstanceRequirementsRequest{}
+
+	// required instance requirements
+	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
+		Min: requirements.MemoryMiB.Min,
+		Max: requirements.MemoryMiB.Max,
+	}
+
+	requirementsRequest.VCpuCount = &ec2.VCpuCountRangeRequest{
+		Min: requirements.VCpuCount.Min,
+		Max: requirements.VCpuCount.Max,
+	}
+
+	// optional instance requirements
+	if requirements.AcceleratorCount != nil {
+		requirementsRequest.AcceleratorCount = &ec2.AcceleratorCountRequest{
+			Min: requirements.AcceleratorCount.Min,
+			Max: requirements.AcceleratorCount.Max,
+		}
+	}
+
+	if requirements.AcceleratorManufacturers != nil {
+		requirementsRequest.AcceleratorManufacturers = requirements.AcceleratorManufacturers
+	}
+
+	if requirements.AcceleratorNames != nil {
+		requirementsRequest.AcceleratorNames = requirements.AcceleratorNames
+	}
+
+	if requirements.AcceleratorTotalMemoryMiB != nil {
+		requirementsRequest.AcceleratorTotalMemoryMiB = &ec2.AcceleratorTotalMemoryMiBRequest{
+			Min: requirements.AcceleratorTotalMemoryMiB.Min,
+			Max: requirements.AcceleratorTotalMemoryMiB.Max,
+		}
+	}
+
+	if requirements.AcceleratorTypes != nil {
+		requirementsRequest.AcceleratorTypes = requirements.AcceleratorTypes
+	}
+
+	if requirements.BareMetal != nil {
+		requirementsRequest.BareMetal = requirements.BareMetal
+	}
+
+	if requirements.BaselineEbsBandwidthMbps != nil {
+		requirementsRequest.BaselineEbsBandwidthMbps = &ec2.BaselineEbsBandwidthMbpsRequest{
+			Min: requirements.BaselineEbsBandwidthMbps.Min,
+			Max: requirements.BaselineEbsBandwidthMbps.Max,
+		}
+	}
+
+	if requirements.BurstablePerformance != nil {
+		requirementsRequest.BurstablePerformance = requirements.BurstablePerformance
+	}
+
+	if requirements.CpuManufacturers != nil {
+		requirementsRequest.CpuManufacturers = requirements.CpuManufacturers
+	}
+
+	if requirements.ExcludedInstanceTypes != nil {
+		requirementsRequest.ExcludedInstanceTypes = requirements.ExcludedInstanceTypes
+	}
+
+	if requirements.InstanceGenerations != nil {
+		requirementsRequest.InstanceGenerations = requirements.InstanceGenerations
+	}
+
+	if requirements.LocalStorage != nil {
+		requirementsRequest.LocalStorage = requirements.LocalStorage
+	}
+
+	if requirements.LocalStorageTypes != nil {
+		requirementsRequest.LocalStorageTypes = requirements.LocalStorageTypes
+	}
+
+	if requirements.MemoryGiBPerVCpu != nil {
+		requirementsRequest.MemoryGiBPerVCpu = &ec2.MemoryGiBPerVCpuRequest{
+			Min: requirements.MemoryGiBPerVCpu.Min,
+			Max: requirements.MemoryGiBPerVCpu.Max,
+		}
+	}
+
+	if requirements.NetworkInterfaceCount != nil {
+		requirementsRequest.NetworkInterfaceCount = &ec2.NetworkInterfaceCountRequest{
+			Min: requirements.NetworkInterfaceCount.Min,
+			Max: requirements.NetworkInterfaceCount.Max,
+		}
+	}
+
+	if requirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.OnDemandMaxPricePercentageOverLowestPrice = requirements.OnDemandMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.RequireHibernateSupport != nil {
+		requirementsRequest.RequireHibernateSupport = requirements.RequireHibernateSupport
+	}
+
+	if requirements.SpotMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.SpotMaxPricePercentageOverLowestPrice = requirements.SpotMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.TotalLocalStorageGB != nil {
+		requirementsRequest.TotalLocalStorageGB = &ec2.TotalLocalStorageGBRequest{
+			Min: requirements.TotalLocalStorageGB.Min,
+			Max: requirements.TotalLocalStorageGB.Max,
+		}
+	}
+
+	return &requirementsRequest, nil
+}
+
+func (m *awsWrapper) getEC2RequirementsFromAutoscaling(autoscalingRequirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirements, error) {
+	ec2Requirements := ec2.InstanceRequirements{}
+
+	// required instance requirements
+	ec2Requirements.MemoryMiB = &ec2.MemoryMiB{
+		Min: autoscalingRequirements.MemoryMiB.Min,
+		Max: autoscalingRequirements.MemoryMiB.Max,
+	}
+
+	ec2Requirements.VCpuCount = &ec2.VCpuCountRange{
+		Min: autoscalingRequirements.VCpuCount.Min,
+		Max: autoscalingRequirements.VCpuCount.Max,
+	}
+
+	// optional instance requirements
+	if autoscalingRequirements.AcceleratorCount != nil {
+		ec2Requirements.AcceleratorCount = &ec2.AcceleratorCount{
+			Min: autoscalingRequirements.AcceleratorCount.Min,
+			Max: autoscalingRequirements.AcceleratorCount.Max,
+		}
+	}
+
+	if autoscalingRequirements.AcceleratorManufacturers != nil {
+		ec2Requirements.AcceleratorManufacturers = autoscalingRequirements.AcceleratorManufacturers
+	}
+
+	if autoscalingRequirements.AcceleratorNames != nil {
+		ec2Requirements.AcceleratorNames = autoscalingRequirements.AcceleratorNames
+	}
+
+	if autoscalingRequirements.AcceleratorTotalMemoryMiB != nil {
+		ec2Requirements.AcceleratorTotalMemoryMiB = &ec2.AcceleratorTotalMemoryMiB{
+			Min: autoscalingRequirements.AcceleratorTotalMemoryMiB.Min,
+			Max: autoscalingRequirements.AcceleratorTotalMemoryMiB.Max,
+		}
+	}
+
+	if autoscalingRequirements.AcceleratorTypes != nil {
+		ec2Requirements.AcceleratorTypes = autoscalingRequirements.AcceleratorTypes
+	}
+
+	if autoscalingRequirements.BareMetal != nil {
+		ec2Requirements.BareMetal = autoscalingRequirements.BareMetal
+	}
+
+	if autoscalingRequirements.BaselineEbsBandwidthMbps != nil {
+		ec2Requirements.BaselineEbsBandwidthMbps = &ec2.BaselineEbsBandwidthMbps{
+			Min: autoscalingRequirements.BaselineEbsBandwidthMbps.Min,
+			Max: autoscalingRequirements.BaselineEbsBandwidthMbps.Max,
+		}
+	}
+
+	if autoscalingRequirements.BurstablePerformance != nil {
+		ec2Requirements.BurstablePerformance = autoscalingRequirements.BurstablePerformance
+	}
+
+	if autoscalingRequirements.CpuManufacturers != nil {
+		ec2Requirements.CpuManufacturers = autoscalingRequirements.CpuManufacturers
+	}
+
+	if autoscalingRequirements.ExcludedInstanceTypes != nil {
+		ec2Requirements.ExcludedInstanceTypes = autoscalingRequirements.ExcludedInstanceTypes
+	}
+
+	if autoscalingRequirements.InstanceGenerations != nil {
+		ec2Requirements.InstanceGenerations = autoscalingRequirements.InstanceGenerations
+	}
+
+	if autoscalingRequirements.LocalStorage != nil {
+		ec2Requirements.LocalStorage = autoscalingRequirements.LocalStorage
+	}
+
+	if autoscalingRequirements.LocalStorageTypes != nil {
+		ec2Requirements.LocalStorageTypes = autoscalingRequirements.LocalStorageTypes
+	}
+
+	if autoscalingRequirements.MemoryGiBPerVCpu != nil {
+		ec2Requirements.MemoryGiBPerVCpu = &ec2.MemoryGiBPerVCpu{
+			Min: autoscalingRequirements.MemoryGiBPerVCpu.Min,
+			Max: autoscalingRequirements.MemoryGiBPerVCpu.Max,
+		}
+	}
+
+	if autoscalingRequirements.NetworkInterfaceCount != nil {
+		ec2Requirements.NetworkInterfaceCount = &ec2.NetworkInterfaceCount{
+			Min: autoscalingRequirements.NetworkInterfaceCount.Min,
+			Max: autoscalingRequirements.NetworkInterfaceCount.Max,
+		}
+	}
+
+	if autoscalingRequirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+		ec2Requirements.OnDemandMaxPricePercentageOverLowestPrice = autoscalingRequirements.OnDemandMaxPricePercentageOverLowestPrice
+	}
+
+	if autoscalingRequirements.RequireHibernateSupport != nil {
+		ec2Requirements.RequireHibernateSupport = autoscalingRequirements.RequireHibernateSupport
+	}
+
+	if autoscalingRequirements.SpotMaxPricePercentageOverLowestPrice != nil {
+		ec2Requirements.SpotMaxPricePercentageOverLowestPrice = autoscalingRequirements.SpotMaxPricePercentageOverLowestPrice
+	}
+
+	if autoscalingRequirements.TotalLocalStorageGB != nil {
+		ec2Requirements.TotalLocalStorageGB = &ec2.TotalLocalStorageGB{
+			Min: autoscalingRequirements.TotalLocalStorageGB.Min,
+			Max: autoscalingRequirements.TotalLocalStorageGB.Max,
+		}
+	}
+
+	return &ec2Requirements, nil
 }
 
 func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, error) {
 	results := map[string]string{}
 	launchConfigsToQuery := map[string]string{}
 	launchTemplatesToQuery := map[string]*launchTemplate{}
+	mixedInstancesPoliciesToQuery := map[string]*mixedInstancesPolicy{}
 
 	for _, asg := range asgs {
 		name := asg.AwsRef.Name
@@ -272,6 +678,8 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 		} else if asg.MixedInstancesPolicy != nil {
 			if len(asg.MixedInstancesPolicy.instanceTypesOverrides) > 0 {
 				results[name] = asg.MixedInstancesPolicy.instanceTypesOverrides[0]
+			} else if asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
+				mixedInstancesPoliciesToQuery[name] = asg.MixedInstancesPolicy
 			} else {
 				launchTemplatesToQuery[name] = asg.MixedInstancesPolicy.launchTemplate
 			}
@@ -307,6 +715,17 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 		results[asgName] = instanceType
 	}
 	klog.V(4).Infof("Successfully queried %d launch templates", len(launchTemplatesToQuery))
+
+	// Have to match Instance Requirements one-at-a-time, since they are configured per asg and can't be queried in bulk
+	for asgName, policy := range mixedInstancesPoliciesToQuery {
+		instanceType, err := m.getInstanceTypeFromRequirementsOverrides(policy)
+		if err != nil {
+			klog.Errorf("Failed to query instance requirements for ASG %s: %v", asgName, err)
+			continue
+		}
+		results[asgName] = instanceType
+	}
+	klog.V(4).Infof("Successfully queried instance requirements for %d ASGs", len(mixedInstancesPoliciesToQuery))
 
 	return results, nil
 }

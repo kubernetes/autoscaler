@@ -30,17 +30,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
@@ -468,6 +469,37 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	observedTaints := observedNode.Spec.Taints
 	assert.Equal(t, 1, len(observedTaints))
 	assert.Equal(t, gpuTaint, observedTaints[0])
+
+	// Node with instance requirements
+	asg.MixedInstancesPolicy = &mixedInstancesPolicy{
+		instanceRequirementsOverrides: &autoscaling.InstanceRequirements{
+			VCpuCount: &autoscaling.VCpuCountRequest{
+				Min: aws.Int64(4),
+				Max: aws.Int64(8),
+			},
+			MemoryMiB: &autoscaling.MemoryMiBRequest{
+				Min: aws.Int64(4),
+				Max: aws.Int64(8),
+			},
+			AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
+			AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
+			AcceleratorCount: &autoscaling.AcceleratorCountRequest{
+				Min: aws.Int64(4),
+				Max: aws.Int64(8),
+			},
+		},
+	}
+	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+	})
+
+	assert.NoError(t, observedErr)
+	observedMemoryRequirement := observedNode.Status.Capacity[apiv1.ResourceMemory]
+	assert.Equal(t, int64(4*1024*1024), observedMemoryRequirement.Value())
+	observedVCpuRequirement := observedNode.Status.Capacity[apiv1.ResourceCPU]
+	assert.Equal(t, int64(4), observedVCpuRequirement.Value())
+	observedGpuRequirement := observedNode.Status.Capacity[gpu.ResourceNvidiaGPU]
+	assert.Equal(t, int64(4), observedGpuRequirement.Value())
 }
 
 func TestExtractLabelsFromAsg(t *testing.T) {
@@ -715,25 +747,6 @@ func TestFetchAutoAsgs(t *testing.T) {
 	asgRef := AwsRef{Name: groupname}
 
 	a := &autoScalingMock{}
-	// Lookup groups associated with tags
-	expectedTagsInput := &autoscaling.DescribeTagsInput{
-		Filters: []*autoscaling.Filter{
-			{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[0]})},
-			{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[1]})},
-		},
-		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
-	}
-	// Use MatchedBy pattern to avoid list order issue https://github.com/kubernetes/autoscaler/issues/1346
-	a.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
-		fn(&autoscaling.DescribeTagsOutput{
-			Tags: []*autoscaling.TagDescription{
-				{ResourceId: aws.String(groupname)},
-				{ResourceId: aws.String(groupname)},
-			}}, false)
-	}).Return(nil).Once()
 
 	// Describe the group to register it, then again to generate the instance
 	// cache.
@@ -754,7 +767,30 @@ func TestFetchAutoAsgs(t *testing.T) {
 				MaxSize:              aws.Int64(int64(max)),
 				DesiredCapacity:      aws.Int64(int64(min)),
 			}}}, false)
-	}).Return(nil).Twice()
+	}).Return(nil).Once()
+
+	expectedGroupsInputWithTags := &autoscaling.DescribeAutoScalingGroupsInput{
+		Filters: []*autoscaling.Filter{
+			{Name: aws.String("tag-key"), Values: aws.StringSlice([]string{tags[0]})},
+			{Name: aws.String("tag-key"), Values: aws.StringSlice([]string{tags[1]})},
+		},
+		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
+	}
+	a.On("DescribeAutoScalingGroupsPages",
+		mock.MatchedBy(tagsMatcher(expectedGroupsInputWithTags)),
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		zone := "test-1a"
+		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []*autoscaling.Group{{
+				AvailabilityZones:    []*string{&zone},
+				AutoScalingGroupName: aws.String(groupname),
+				MinSize:              aws.Int64(int64(min)),
+				MaxSize:              aws.Int64(int64(max)),
+				DesiredCapacity:      aws.Int64(int64(min)),
+			}}}, false)
+	}).Return(nil).Once()
 
 	a.On("DescribeScalingActivities",
 		&autoscaling.DescribeScalingActivitiesInput{
@@ -779,11 +815,13 @@ func TestFetchAutoAsgs(t *testing.T) {
 	validateAsg(t, asgs[asgRef], groupname, min, max)
 
 	// Simulate the previously discovered ASG disappearing
-	a.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
+	a.On("DescribeAutoScalingGroupsPages",
+		mock.MatchedBy(tagsMatcher(expectedGroupsInputWithTags)),
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
-		fn(&autoscaling.DescribeTagsOutput{Tags: []*autoscaling.TagDescription{}}, false)
+		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []*autoscaling.Group{}}, false)
 	}).Return(nil).Once()
 
 	err = m.asgCache.regenerate()
@@ -1063,8 +1101,8 @@ func TestOverridesActiveConfig(t *testing.T) {
 	}
 }
 
-func tagsMatcher(expected *autoscaling.DescribeTagsInput) func(*autoscaling.DescribeTagsInput) bool {
-	return func(actual *autoscaling.DescribeTagsInput) bool {
+func tagsMatcher(expected *autoscaling.DescribeAutoScalingGroupsInput) func(*autoscaling.DescribeAutoScalingGroupsInput) bool {
+	return func(actual *autoscaling.DescribeAutoScalingGroupsInput) bool {
 		expectedTags := flatTagSlice(expected.Filters)
 		actualTags := flatTagSlice(actual.Filters)
 
