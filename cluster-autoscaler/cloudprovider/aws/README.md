@@ -167,9 +167,9 @@ whose value is a list of tag keys that should be looked for. For example,
 `--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>`
 will find the ASGs that have at least all the given tags. Without the tags, the Cluster Autoscaler will be unable to add new instances
 to the ASG as it has not been discovered. In the example, a value is not given for the tags and in this case the value will be ignored and
-will be arbitary. Optionally, the tag value can be set to be non arbitary and and custom tags can also be added. For example,
+will be arbitary - only the tag name matters. Optionally, the tag value can be set to be non arbitary and and custom tags can also be added. For example,
 `--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled=foo,k8s.io/cluster-autoscaler/<cluster-name>=bar,my-custom-tag=custom-value`
-Now the ASG tags must have the correct values as well as the custom tag to be successfully discovered by the ASG. 
+Now the ASG tags must have the correct values as well as the custom tag to be successfully discovered by the Cluster Autoscaler. 
 
 Example deployment:
 
