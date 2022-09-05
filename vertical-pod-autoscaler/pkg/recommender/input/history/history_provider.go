@@ -22,9 +22,9 @@ import (
 	"sort"
 	"strings"
 	"time"
-	
-	"k8s.io/klog/v2"
 
+	"k8s.io/klog/v2"
+        
 	promapi "github.com/prometheus/client_golang/api"
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
