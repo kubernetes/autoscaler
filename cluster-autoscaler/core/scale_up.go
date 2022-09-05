@@ -269,7 +269,6 @@ func filterOutPodResources(key string, pod *apiv1.Pod) {
 	}
 }
 
-
 func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceGroups []*podEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, upcomingNodes []*schedulerframework.NodeInfo) (expander.Option, error) {
 	option := expander.Option{
 		NodeGroup: nodeGroup,
