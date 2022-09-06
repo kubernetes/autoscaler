@@ -25,7 +25,7 @@ type RemotePeeringConnectionDrgAttachmentNetworkDetails struct {
 	Id *string `mandatory:"true" json:"id"`
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m RemotePeeringConnectionDrgAttachmentNetworkDetails) GetId() *string {
 	return m.Id
 }

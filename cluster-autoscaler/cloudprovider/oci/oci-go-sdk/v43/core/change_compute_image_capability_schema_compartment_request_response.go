@@ -11,7 +11,7 @@ import (
 
 // ChangeComputeImageCapabilitySchemaCompartmentRequest wrapper for the ChangeComputeImageCapabilitySchemaCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeComputeImageCapabilitySchemaCompartment.go.html to see an example of how to use ChangeComputeImageCapabilitySchemaCompartmentRequest.
 type ChangeComputeImageCapabilitySchemaCompartmentRequest struct {

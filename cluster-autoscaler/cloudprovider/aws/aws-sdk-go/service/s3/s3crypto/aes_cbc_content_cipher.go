@@ -25,6 +25,7 @@ func AESCBCContentCipherBuilder(generator CipherDataGenerator, padder Padder) Co
 // RegisterAESCBCContentCipher registers the AES/CBC cipher and padder with the provided CryptoRegistry.
 //
 // Example:
+//
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := s3crypto.RegisterAESCBCContentCipher(cr, s3crypto.AESCBCPadder); err != nil {
 //		panic(err) // handle error

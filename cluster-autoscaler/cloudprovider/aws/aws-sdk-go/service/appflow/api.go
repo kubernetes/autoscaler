@@ -29,14 +29,13 @@ const opCreateConnectorProfile = "CreateConnectorProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectorProfileRequest method.
+//	req, resp := client.CreateConnectorProfileRequest(params)
 //
-//    // Example sending a request using the CreateConnectorProfileRequest method.
-//    req, resp := client.CreateConnectorProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CreateConnectorProfile
 func (c *Appflow) CreateConnectorProfileRequest(input *CreateConnectorProfileInput) (req *request.Request, output *CreateConnectorProfileOutput) {
@@ -72,24 +71,25 @@ func (c *Appflow) CreateConnectorProfileRequest(input *CreateConnectorProfileInp
 // API operation CreateConnectorProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota (such as the number of flows) to
-//   be exceeded.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota (such as the number of flows) to
+//     be exceeded.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CreateConnectorProfile
 func (c *Appflow) CreateConnectorProfile(input *CreateConnectorProfileInput) (*CreateConnectorProfileOutput, error) {
@@ -129,14 +129,13 @@ const opCreateFlow = "CreateFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFlowRequest method.
+//	req, resp := client.CreateFlowRequest(params)
 //
-//    // Example sending a request using the CreateFlowRequest method.
-//    req, resp := client.CreateFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CreateFlow
 func (c *Appflow) CreateFlowRequest(input *CreateFlowInput) (req *request.Request, output *CreateFlowOutput) {
@@ -171,31 +170,32 @@ func (c *Appflow) CreateFlowRequest(input *CreateFlowInput) (req *request.Reques
 // API operation CreateFlow for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota (such as the number of flows) to
-//   be exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota (such as the number of flows) to
+//     be exceeded.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
-//   * ConnectorServerException
-//   An error occurred when retrieving data from the connector endpoint.
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
+//
+//   - ConnectorServerException
+//     An error occurred when retrieving data from the connector endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CreateFlow
 func (c *Appflow) CreateFlow(input *CreateFlowInput) (*CreateFlowOutput, error) {
@@ -235,14 +235,13 @@ const opDeleteConnectorProfile = "DeleteConnectorProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectorProfileRequest method.
+//	req, resp := client.DeleteConnectorProfileRequest(params)
 //
-//    // Example sending a request using the DeleteConnectorProfileRequest method.
-//    req, resp := client.DeleteConnectorProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DeleteConnectorProfile
 func (c *Appflow) DeleteConnectorProfileRequest(input *DeleteConnectorProfileInput) (req *request.Request, output *DeleteConnectorProfileOutput) {
@@ -274,18 +273,19 @@ func (c *Appflow) DeleteConnectorProfileRequest(input *DeleteConnectorProfileInp
 // API operation DeleteConnectorProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DeleteConnectorProfile
 func (c *Appflow) DeleteConnectorProfile(input *DeleteConnectorProfileInput) (*DeleteConnectorProfileOutput, error) {
@@ -325,14 +325,13 @@ const opDeleteFlow = "DeleteFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFlowRequest method.
+//	req, resp := client.DeleteFlowRequest(params)
 //
-//    // Example sending a request using the DeleteFlowRequest method.
-//    req, resp := client.DeleteFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DeleteFlow
 func (c *Appflow) DeleteFlowRequest(input *DeleteFlowInput) (req *request.Request, output *DeleteFlowOutput) {
@@ -366,18 +365,19 @@ func (c *Appflow) DeleteFlowRequest(input *DeleteFlowInput) (req *request.Reques
 // API operation DeleteFlow for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DeleteFlow
 func (c *Appflow) DeleteFlow(input *DeleteFlowInput) (*DeleteFlowOutput, error) {
@@ -417,14 +417,13 @@ const opDescribeConnector = "DescribeConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectorRequest method.
+//	req, resp := client.DescribeConnectorRequest(params)
 //
-//    // Example sending a request using the DescribeConnectorRequest method.
-//    req, resp := client.DescribeConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnector
 func (c *Appflow) DescribeConnectorRequest(input *DescribeConnectorInput) (req *request.Request, output *DescribeConnectorOutput) {
@@ -457,16 +456,17 @@ func (c *Appflow) DescribeConnectorRequest(input *DescribeConnectorInput) (req *
 // API operation DescribeConnector for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnector
 func (c *Appflow) DescribeConnector(input *DescribeConnectorInput) (*DescribeConnectorOutput, error) {
@@ -506,14 +506,13 @@ const opDescribeConnectorEntity = "DescribeConnectorEntity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectorEntityRequest method.
+//	req, resp := client.DescribeConnectorEntityRequest(params)
 //
-//    // Example sending a request using the DescribeConnectorEntityRequest method.
-//    req, resp := client.DescribeConnectorEntityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnectorEntity
 func (c *Appflow) DescribeConnectorEntityRequest(input *DescribeConnectorEntityInput) (req *request.Request, output *DescribeConnectorEntityOutput) {
@@ -545,22 +544,23 @@ func (c *Appflow) DescribeConnectorEntityRequest(input *DescribeConnectorEntityI
 // API operation DescribeConnectorEntity for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ConnectorServerException
-//   An error occurred when retrieving data from the connector endpoint.
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConnectorServerException
+//     An error occurred when retrieving data from the connector endpoint.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnectorEntity
 func (c *Appflow) DescribeConnectorEntity(input *DescribeConnectorEntityInput) (*DescribeConnectorEntityOutput, error) {
@@ -600,14 +600,13 @@ const opDescribeConnectorProfiles = "DescribeConnectorProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectorProfilesRequest method.
+//	req, resp := client.DescribeConnectorProfilesRequest(params)
 //
-//    // Example sending a request using the DescribeConnectorProfilesRequest method.
-//    req, resp := client.DescribeConnectorProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnectorProfiles
 func (c *Appflow) DescribeConnectorProfilesRequest(input *DescribeConnectorProfilesInput) (req *request.Request, output *DescribeConnectorProfilesOutput) {
@@ -650,12 +649,13 @@ func (c *Appflow) DescribeConnectorProfilesRequest(input *DescribeConnectorProfi
 // API operation DescribeConnectorProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnectorProfiles
 func (c *Appflow) DescribeConnectorProfiles(input *DescribeConnectorProfilesInput) (*DescribeConnectorProfilesOutput, error) {
@@ -687,15 +687,14 @@ func (c *Appflow) DescribeConnectorProfilesWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeConnectorProfiles operation.
-//    pageNum := 0
-//    err := client.DescribeConnectorProfilesPages(params,
-//        func(page *appflow.DescribeConnectorProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeConnectorProfiles operation.
+//	pageNum := 0
+//	err := client.DescribeConnectorProfilesPages(params,
+//	    func(page *appflow.DescribeConnectorProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Appflow) DescribeConnectorProfilesPages(input *DescribeConnectorProfilesInput, fn func(*DescribeConnectorProfilesOutput, bool) bool) error {
 	return c.DescribeConnectorProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -747,14 +746,13 @@ const opDescribeConnectors = "DescribeConnectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectorsRequest method.
+//	req, resp := client.DescribeConnectorsRequest(params)
 //
-//    // Example sending a request using the DescribeConnectorsRequest method.
-//    req, resp := client.DescribeConnectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnectors
 func (c *Appflow) DescribeConnectorsRequest(input *DescribeConnectorsInput) (req *request.Request, output *DescribeConnectorsOutput) {
@@ -796,12 +794,13 @@ func (c *Appflow) DescribeConnectorsRequest(input *DescribeConnectorsInput) (req
 // API operation DescribeConnectors for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeConnectors
 func (c *Appflow) DescribeConnectors(input *DescribeConnectorsInput) (*DescribeConnectorsOutput, error) {
@@ -833,15 +832,14 @@ func (c *Appflow) DescribeConnectorsWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeConnectors operation.
-//    pageNum := 0
-//    err := client.DescribeConnectorsPages(params,
-//        func(page *appflow.DescribeConnectorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeConnectors operation.
+//	pageNum := 0
+//	err := client.DescribeConnectorsPages(params,
+//	    func(page *appflow.DescribeConnectorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Appflow) DescribeConnectorsPages(input *DescribeConnectorsInput, fn func(*DescribeConnectorsOutput, bool) bool) error {
 	return c.DescribeConnectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -893,14 +891,13 @@ const opDescribeFlow = "DescribeFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFlowRequest method.
+//	req, resp := client.DescribeFlowRequest(params)
 //
-//    // Example sending a request using the DescribeFlowRequest method.
-//    req, resp := client.DescribeFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeFlow
 func (c *Appflow) DescribeFlowRequest(input *DescribeFlowInput) (req *request.Request, output *DescribeFlowOutput) {
@@ -931,13 +928,14 @@ func (c *Appflow) DescribeFlowRequest(input *DescribeFlowInput) (req *request.Re
 // API operation DescribeFlow for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeFlow
 func (c *Appflow) DescribeFlow(input *DescribeFlowInput) (*DescribeFlowOutput, error) {
@@ -977,14 +975,13 @@ const opDescribeFlowExecutionRecords = "DescribeFlowExecutionRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFlowExecutionRecordsRequest method.
+//	req, resp := client.DescribeFlowExecutionRecordsRequest(params)
 //
-//    // Example sending a request using the DescribeFlowExecutionRecordsRequest method.
-//    req, resp := client.DescribeFlowExecutionRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeFlowExecutionRecords
 func (c *Appflow) DescribeFlowExecutionRecordsRequest(input *DescribeFlowExecutionRecordsInput) (req *request.Request, output *DescribeFlowExecutionRecordsOutput) {
@@ -1021,16 +1018,17 @@ func (c *Appflow) DescribeFlowExecutionRecordsRequest(input *DescribeFlowExecuti
 // API operation DescribeFlowExecutionRecords for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/DescribeFlowExecutionRecords
 func (c *Appflow) DescribeFlowExecutionRecords(input *DescribeFlowExecutionRecordsInput) (*DescribeFlowExecutionRecordsOutput, error) {
@@ -1062,15 +1060,14 @@ func (c *Appflow) DescribeFlowExecutionRecordsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFlowExecutionRecords operation.
-//    pageNum := 0
-//    err := client.DescribeFlowExecutionRecordsPages(params,
-//        func(page *appflow.DescribeFlowExecutionRecordsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFlowExecutionRecords operation.
+//	pageNum := 0
+//	err := client.DescribeFlowExecutionRecordsPages(params,
+//	    func(page *appflow.DescribeFlowExecutionRecordsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Appflow) DescribeFlowExecutionRecordsPages(input *DescribeFlowExecutionRecordsInput, fn func(*DescribeFlowExecutionRecordsOutput, bool) bool) error {
 	return c.DescribeFlowExecutionRecordsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1122,14 +1119,13 @@ const opListConnectorEntities = "ListConnectorEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectorEntitiesRequest method.
+//	req, resp := client.ListConnectorEntitiesRequest(params)
 //
-//    // Example sending a request using the ListConnectorEntitiesRequest method.
-//    req, resp := client.ListConnectorEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListConnectorEntities
 func (c *Appflow) ListConnectorEntitiesRequest(input *ListConnectorEntitiesInput) (req *request.Request, output *ListConnectorEntitiesOutput) {
@@ -1162,22 +1158,23 @@ func (c *Appflow) ListConnectorEntitiesRequest(input *ListConnectorEntitiesInput
 // API operation ListConnectorEntities for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ConnectorServerException
-//   An error occurred when retrieving data from the connector endpoint.
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConnectorServerException
+//     An error occurred when retrieving data from the connector endpoint.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListConnectorEntities
 func (c *Appflow) ListConnectorEntities(input *ListConnectorEntitiesInput) (*ListConnectorEntitiesOutput, error) {
@@ -1217,14 +1214,13 @@ const opListConnectors = "ListConnectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectorsRequest method.
+//	req, resp := client.ListConnectorsRequest(params)
 //
-//    // Example sending a request using the ListConnectorsRequest method.
-//    req, resp := client.ListConnectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListConnectors
 func (c *Appflow) ListConnectorsRequest(input *ListConnectorsInput) (req *request.Request, output *ListConnectorsOutput) {
@@ -1263,12 +1259,13 @@ func (c *Appflow) ListConnectorsRequest(input *ListConnectorsInput) (req *reques
 // API operation ListConnectors for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListConnectors
 func (c *Appflow) ListConnectors(input *ListConnectorsInput) (*ListConnectorsOutput, error) {
@@ -1300,15 +1297,14 @@ func (c *Appflow) ListConnectorsWithContext(ctx aws.Context, input *ListConnecto
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConnectors operation.
-//    pageNum := 0
-//    err := client.ListConnectorsPages(params,
-//        func(page *appflow.ListConnectorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConnectors operation.
+//	pageNum := 0
+//	err := client.ListConnectorsPages(params,
+//	    func(page *appflow.ListConnectorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Appflow) ListConnectorsPages(input *ListConnectorsInput, fn func(*ListConnectorsOutput, bool) bool) error {
 	return c.ListConnectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1360,14 +1356,13 @@ const opListFlows = "ListFlows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFlowsRequest method.
+//	req, resp := client.ListFlowsRequest(params)
 //
-//    // Example sending a request using the ListFlowsRequest method.
-//    req, resp := client.ListFlowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListFlows
 func (c *Appflow) ListFlowsRequest(input *ListFlowsInput) (req *request.Request, output *ListFlowsOutput) {
@@ -1404,12 +1399,13 @@ func (c *Appflow) ListFlowsRequest(input *ListFlowsInput) (req *request.Request,
 // API operation ListFlows for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListFlows
 func (c *Appflow) ListFlows(input *ListFlowsInput) (*ListFlowsOutput, error) {
@@ -1441,15 +1437,14 @@ func (c *Appflow) ListFlowsWithContext(ctx aws.Context, input *ListFlowsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFlows operation.
-//    pageNum := 0
-//    err := client.ListFlowsPages(params,
-//        func(page *appflow.ListFlowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFlows operation.
+//	pageNum := 0
+//	err := client.ListFlowsPages(params,
+//	    func(page *appflow.ListFlowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Appflow) ListFlowsPages(input *ListFlowsInput, fn func(*ListFlowsOutput, bool) bool) error {
 	return c.ListFlowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1501,14 +1496,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListTagsForResource
 func (c *Appflow) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1539,16 +1533,17 @@ func (c *Appflow) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
 //
-//   * ValidationException
-//   The request has invalid or missing parameters.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ListTagsForResource
 func (c *Appflow) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1588,14 +1583,13 @@ const opRegisterConnector = "RegisterConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterConnectorRequest method.
+//	req, resp := client.RegisterConnectorRequest(params)
 //
-//    // Example sending a request using the RegisterConnectorRequest method.
-//    req, resp := client.RegisterConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/RegisterConnector
 func (c *Appflow) RegisterConnectorRequest(input *RegisterConnectorInput) (req *request.Request, output *RegisterConnectorOutput) {
@@ -1627,38 +1621,39 @@ func (c *Appflow) RegisterConnectorRequest(input *RegisterConnectorInput) (req *
 // API operation RegisterConnector for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * AccessDeniedException
-//   AppFlow/Requester has invalid or missing permissions.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - AccessDeniedException
+//     AppFlow/Requester has invalid or missing permissions.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota (such as the number of flows) to
-//   be exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ThrottlingException
-//   API calls have exceeded the maximum allowed API request rate per account
-//   and per Region.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota (such as the number of flows) to
+//     be exceeded.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ThrottlingException
+//     API calls have exceeded the maximum allowed API request rate per account
+//     and per Region.
 //
-//   * ConnectorServerException
-//   An error occurred when retrieving data from the connector endpoint.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ConnectorServerException
+//     An error occurred when retrieving data from the connector endpoint.
+//
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/RegisterConnector
 func (c *Appflow) RegisterConnector(input *RegisterConnectorInput) (*RegisterConnectorOutput, error) {
@@ -1698,14 +1693,13 @@ const opStartFlow = "StartFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFlowRequest method.
+//	req, resp := client.StartFlowRequest(params)
 //
-//    // Example sending a request using the StartFlowRequest method.
-//    req, resp := client.StartFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/StartFlow
 func (c *Appflow) StartFlowRequest(input *StartFlowInput) (req *request.Request, output *StartFlowOutput) {
@@ -1738,22 +1732,23 @@ func (c *Appflow) StartFlowRequest(input *StartFlowInput) (req *request.Request,
 // API operation StartFlow for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota (such as the number of flows) to
-//   be exceeded.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota (such as the number of flows) to
+//     be exceeded.
+//
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/StartFlow
 func (c *Appflow) StartFlow(input *StartFlowInput) (*StartFlowOutput, error) {
@@ -1793,14 +1788,13 @@ const opStopFlow = "StopFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopFlowRequest method.
+//	req, resp := client.StopFlowRequest(params)
 //
-//    // Example sending a request using the StopFlowRequest method.
-//    req, resp := client.StopFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/StopFlow
 func (c *Appflow) StopFlowRequest(input *StopFlowInput) (req *request.Request, output *StopFlowOutput) {
@@ -1833,21 +1827,22 @@ func (c *Appflow) StopFlowRequest(input *StopFlowInput) (req *request.Request, o
 // API operation StopFlow for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
-//   * UnsupportedOperationException
-//   The requested operation is not supported for the current flow.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - UnsupportedOperationException
+//     The requested operation is not supported for the current flow.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/StopFlow
 func (c *Appflow) StopFlow(input *StopFlowInput) (*StopFlowOutput, error) {
@@ -1887,14 +1882,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/TagResource
 func (c *Appflow) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1926,16 +1920,17 @@ func (c *Appflow) TagResourceRequest(input *TagResourceInput) (req *request.Requ
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
 //
-//   * ValidationException
-//   The request has invalid or missing parameters.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/TagResource
 func (c *Appflow) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1975,14 +1970,13 @@ const opUnregisterConnector = "UnregisterConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnregisterConnectorRequest method.
+//	req, resp := client.UnregisterConnectorRequest(params)
 //
-//    // Example sending a request using the UnregisterConnectorRequest method.
-//    req, resp := client.UnregisterConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UnregisterConnector
 func (c *Appflow) UnregisterConnectorRequest(input *UnregisterConnectorInput) (req *request.Request, output *UnregisterConnectorOutput) {
@@ -2015,18 +2009,19 @@ func (c *Appflow) UnregisterConnectorRequest(input *UnregisterConnectorInput) (r
 // API operation UnregisterConnector for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UnregisterConnector
 func (c *Appflow) UnregisterConnector(input *UnregisterConnectorInput) (*UnregisterConnectorOutput, error) {
@@ -2066,14 +2061,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UntagResource
 func (c *Appflow) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2105,16 +2099,17 @@ func (c *Appflow) UntagResourceRequest(input *UntagResourceInput) (req *request.
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
 //
-//   * ValidationException
-//   The request has invalid or missing parameters.
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UntagResource
 func (c *Appflow) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2154,14 +2149,13 @@ const opUpdateConnectorProfile = "UpdateConnectorProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectorProfileRequest method.
+//	req, resp := client.UpdateConnectorProfileRequest(params)
 //
-//    // Example sending a request using the UpdateConnectorProfileRequest method.
-//    req, resp := client.UpdateConnectorProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateConnectorProfile
 func (c *Appflow) UpdateConnectorProfileRequest(input *UpdateConnectorProfileInput) (req *request.Request, output *UpdateConnectorProfileOutput) {
@@ -2192,24 +2186,25 @@ func (c *Appflow) UpdateConnectorProfileRequest(input *UpdateConnectorProfileInp
 // API operation UpdateConnectorProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateConnectorProfile
 func (c *Appflow) UpdateConnectorProfile(input *UpdateConnectorProfileInput) (*UpdateConnectorProfileOutput, error) {
@@ -2249,14 +2244,13 @@ const opUpdateFlow = "UpdateFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowRequest method.
+//	req, resp := client.UpdateFlowRequest(params)
 //
-//    // Example sending a request using the UpdateFlowRequest method.
-//    req, resp := client.UpdateFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateFlow
 func (c *Appflow) UpdateFlowRequest(input *UpdateFlowInput) (req *request.Request, output *UpdateFlowOutput) {
@@ -2287,31 +2281,32 @@ func (c *Appflow) UpdateFlowRequest(input *UpdateFlowInput) (req *request.Reques
 // API operation UpdateFlow for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request has invalid or missing parameters.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request (such as the source or destination
-//   connector profile) is not found.
+//   - ValidationException
+//     The request has invalid or missing parameters.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota (such as the number of flows) to
-//   be exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
 //
-//   * ConflictException
-//   There was a conflict when processing the request (for example, a flow with
-//   the given name already exists within the account. Check for conflicting resource
-//   names and try again.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota (such as the number of flows) to
+//     be exceeded.
 //
-//   * ConnectorAuthenticationException
-//   An error occurred when authenticating with the connector endpoint.
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
 //
-//   * ConnectorServerException
-//   An error occurred when retrieving data from the connector endpoint.
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
 //
-//   * InternalServerException
-//   An internal service error occurred during the processing of your request.
-//   Try again later.
+//   - ConnectorServerException
+//     An error occurred when retrieving data from the connector endpoint.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateFlow
 func (c *Appflow) UpdateFlow(input *UpdateFlowInput) (*UpdateFlowOutput, error) {

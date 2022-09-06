@@ -46,6 +46,7 @@ func (c CryptoRegistry) GetWrap(name string) (WrapEntry, bool) {
 //
 // This method should only be used if you need to register custom wrapping algorithms. Please see the following methods
 // for helpers to register AWS provided algorithms:
+//
 //	RegisterKMSContextWrapWithAnyCMK (kms+context)
 //	RegisterKMSContextWrapWithCMK (kms+context)
 //	RegisterKMSWrapWithAnyCMK (kms)
@@ -87,6 +88,7 @@ func (c CryptoRegistry) GetCEK(name string) (CEKEntry, bool) {
 //
 // This method should only be used if you need to register custom content encryption algorithms. Please see the following methods
 // for helpers to register AWS provided algorithms:
+//
 //	RegisterAESGCMContentCipher (AES/GCM)
 //	RegisterAESCBCContentCipher (AES/CBC)
 func (c *CryptoRegistry) AddCEK(name string, entry CEKEntry) error {

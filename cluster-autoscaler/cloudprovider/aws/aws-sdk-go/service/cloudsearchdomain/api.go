@@ -28,14 +28,13 @@ const opSearch = "Search"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchRequest method.
+//	req, resp := client.SearchRequest(params)
 //
-//    // Example sending a request using the SearchRequest method.
-//    req, resp := client.SearchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearchDomain) SearchRequest(input *SearchInput) (req *request.Request, output *SearchOutput) {
 	op := &request.Operation{
 		Name:       opSearch,
@@ -58,18 +57,18 @@ func (c *CloudSearchDomain) SearchRequest(input *SearchInput) (req *request.Requ
 // you specify the search criteria depends on which query parser you use. Amazon
 // CloudSearch supports four query parsers:
 //
-//    * simple: search all text and text-array fields for the specified string.
-//    Search for phrases, individual terms, and prefixes.
+//   - simple: search all text and text-array fields for the specified string.
+//     Search for phrases, individual terms, and prefixes.
 //
-//    * structured: search specific fields, construct compound queries using
-//    Boolean operators, and use advanced features such as term boosting and
-//    proximity searching.
+//   - structured: search specific fields, construct compound queries using
+//     Boolean operators, and use advanced features such as term boosting and
+//     proximity searching.
 //
-//    * lucene: specify search criteria using the Apache Lucene query parser
-//    syntax.
+//   - lucene: specify search criteria using the Apache Lucene query parser
+//     syntax.
 //
-//    * dismax: specify search criteria using the simplified subset of the Apache
-//    Lucene query parser syntax defined by the DisMax query parser.
+//   - dismax: specify search criteria using the simplified subset of the Apache
+//     Lucene query parser syntax defined by the DisMax query parser.
 //
 // For more information, see Searching Your Data (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/searching.html)
 // in the Amazon CloudSearch Developer Guide.
@@ -88,9 +87,8 @@ func (c *CloudSearchDomain) SearchRequest(input *SearchInput) (req *request.Requ
 // API operation Search for usage and error information.
 //
 // Returned Error Types:
-//   * SearchException
-//   Information about any problems encountered while processing a search request.
-//
+//   - SearchException
+//     Information about any problems encountered while processing a search request.
 func (c *CloudSearchDomain) Search(input *SearchInput) (*SearchOutput, error) {
 	req, out := c.SearchRequest(input)
 	return out, req.Send()
@@ -128,14 +126,13 @@ const opSuggest = "Suggest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SuggestRequest method.
+//	req, resp := client.SuggestRequest(params)
 //
-//    // Example sending a request using the SuggestRequest method.
-//    req, resp := client.SuggestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearchDomain) SuggestRequest(input *SuggestInput) (req *request.Request, output *SuggestOutput) {
 	op := &request.Operation{
 		Name:       opSuggest,
@@ -180,9 +177,8 @@ func (c *CloudSearchDomain) SuggestRequest(input *SuggestInput) (req *request.Re
 // API operation Suggest for usage and error information.
 //
 // Returned Error Types:
-//   * SearchException
-//   Information about any problems encountered while processing a search request.
-//
+//   - SearchException
+//     Information about any problems encountered while processing a search request.
 func (c *CloudSearchDomain) Suggest(input *SuggestInput) (*SuggestOutput, error) {
 	req, out := c.SuggestRequest(input)
 	return out, req.Send()
@@ -220,14 +216,13 @@ const opUploadDocuments = "UploadDocuments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadDocumentsRequest method.
+//	req, resp := client.UploadDocumentsRequest(params)
 //
-//    // Example sending a request using the UploadDocumentsRequest method.
-//    req, resp := client.UploadDocumentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *CloudSearchDomain) UploadDocumentsRequest(input *UploadDocumentsInput) (req *request.Request, output *UploadDocumentsOutput) {
 	op := &request.Operation{
 		Name:       opUploadDocuments,
@@ -277,9 +272,8 @@ func (c *CloudSearchDomain) UploadDocumentsRequest(input *UploadDocumentsInput) 
 // API operation UploadDocuments for usage and error information.
 //
 // Returned Error Types:
-//   * DocumentServiceException
-//   Information about any problems encountered while processing an upload request.
-//
+//   - DocumentServiceException
+//     Information about any problems encountered while processing an upload request.
 func (c *CloudSearchDomain) UploadDocuments(input *UploadDocumentsInput) (*UploadDocumentsOutput, error) {
 	req, out := c.UploadDocumentsRequest(input)
 	return out, req.Send()

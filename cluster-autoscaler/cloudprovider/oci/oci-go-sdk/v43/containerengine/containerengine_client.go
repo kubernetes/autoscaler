@@ -19,7 +19,7 @@ import (
 	"net/http"
 )
 
-//ContainerEngineClient a client for ContainerEngine
+// ContainerEngineClient a client for ContainerEngine
 type ContainerEngineClient struct {
 	common.BaseClient
 	config *common.ConfigurationProvider
@@ -41,7 +41,8 @@ func NewContainerEngineClientWithConfigurationProvider(configProvider common.Con
 
 // NewContainerEngineClientWithOboToken Creates a new default ContainerEngine client with the given configuration provider.
 // The obotoken will be added to default headers and signed; the configuration provider will be used for the signer
-//  as well as reading the region
+//
+//	as well as reading the region
 func NewContainerEngineClientWithOboToken(configProvider common.ConfigurationProvider, oboToken string) (client ContainerEngineClient, err error) {
 	baseClient, err := common.NewClientWithOboToken(configProvider, oboToken)
 	if err != nil {
@@ -83,7 +84,7 @@ func (client *ContainerEngineClient) ConfigurationProvider() *common.Configurati
 
 // ClusterMigrateToNativeVcn Initiates cluster migration to use native VCN.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ClusterMigrateToNativeVcn.go.html to see an example of how to use ClusterMigrateToNativeVcn API.
 func (client ContainerEngineClient) ClusterMigrateToNativeVcn(ctx context.Context, request ClusterMigrateToNativeVcnRequest) (response ClusterMigrateToNativeVcnResponse, err error) {
@@ -137,7 +138,7 @@ func (client ContainerEngineClient) clusterMigrateToNativeVcn(ctx context.Contex
 
 // CreateCluster Create a new cluster.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/CreateCluster.go.html to see an example of how to use CreateCluster API.
 func (client ContainerEngineClient) CreateCluster(ctx context.Context, request CreateClusterRequest) (response CreateClusterResponse, err error) {
@@ -196,7 +197,7 @@ func (client ContainerEngineClient) createCluster(ctx context.Context, request c
 
 // CreateKubeconfig Create the Kubeconfig YAML for a cluster.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/CreateKubeconfig.go.html to see an example of how to use CreateKubeconfig API.
 func (client ContainerEngineClient) CreateKubeconfig(ctx context.Context, request CreateKubeconfigRequest) (response CreateKubeconfigResponse, err error) {
@@ -249,7 +250,7 @@ func (client ContainerEngineClient) createKubeconfig(ctx context.Context, reques
 
 // CreateNodePool Create a new node pool.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/CreateNodePool.go.html to see an example of how to use CreateNodePool API.
 func (client ContainerEngineClient) CreateNodePool(ctx context.Context, request CreateNodePoolRequest) (response CreateNodePoolResponse, err error) {
@@ -308,7 +309,7 @@ func (client ContainerEngineClient) createNodePool(ctx context.Context, request 
 
 // DeleteCluster Delete a cluster.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/DeleteCluster.go.html to see an example of how to use DeleteCluster API.
 func (client ContainerEngineClient) DeleteCluster(ctx context.Context, request DeleteClusterRequest) (response DeleteClusterResponse, err error) {
@@ -362,7 +363,7 @@ func (client ContainerEngineClient) deleteCluster(ctx context.Context, request c
 
 // DeleteNodePool Delete a node pool.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/DeleteNodePool.go.html to see an example of how to use DeleteNodePool API.
 func (client ContainerEngineClient) DeleteNodePool(ctx context.Context, request DeleteNodePoolRequest) (response DeleteNodePoolResponse, err error) {
@@ -416,7 +417,7 @@ func (client ContainerEngineClient) deleteNodePool(ctx context.Context, request 
 
 // DeleteWorkRequest Cancel a work request that has not started.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/DeleteWorkRequest.go.html to see an example of how to use DeleteWorkRequest API.
 func (client ContainerEngineClient) DeleteWorkRequest(ctx context.Context, request DeleteWorkRequestRequest) (response DeleteWorkRequestResponse, err error) {
@@ -470,7 +471,7 @@ func (client ContainerEngineClient) deleteWorkRequest(ctx context.Context, reque
 
 // GetCluster Get the details of a cluster.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetCluster.go.html to see an example of how to use GetCluster API.
 func (client ContainerEngineClient) GetCluster(ctx context.Context, request GetClusterRequest) (response GetClusterResponse, err error) {
@@ -524,7 +525,7 @@ func (client ContainerEngineClient) getCluster(ctx context.Context, request comm
 
 // GetClusterMigrateToNativeVcnStatus Get details on a cluster's migration to native VCN.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetClusterMigrateToNativeVcnStatus.go.html to see an example of how to use GetClusterMigrateToNativeVcnStatus API.
 func (client ContainerEngineClient) GetClusterMigrateToNativeVcnStatus(ctx context.Context, request GetClusterMigrateToNativeVcnStatusRequest) (response GetClusterMigrateToNativeVcnStatusResponse, err error) {
@@ -578,7 +579,7 @@ func (client ContainerEngineClient) getClusterMigrateToNativeVcnStatus(ctx conte
 
 // GetClusterOptions Get options available for clusters.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetClusterOptions.go.html to see an example of how to use GetClusterOptions API.
 func (client ContainerEngineClient) GetClusterOptions(ctx context.Context, request GetClusterOptionsRequest) (response GetClusterOptionsResponse, err error) {
@@ -632,7 +633,7 @@ func (client ContainerEngineClient) getClusterOptions(ctx context.Context, reque
 
 // GetNodePool Get the details of a node pool.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetNodePool.go.html to see an example of how to use GetNodePool API.
 func (client ContainerEngineClient) GetNodePool(ctx context.Context, request GetNodePoolRequest) (response GetNodePoolResponse, err error) {
@@ -686,7 +687,7 @@ func (client ContainerEngineClient) getNodePool(ctx context.Context, request com
 
 // GetNodePoolOptions Get options available for node pools.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetNodePoolOptions.go.html to see an example of how to use GetNodePoolOptions API.
 func (client ContainerEngineClient) GetNodePoolOptions(ctx context.Context, request GetNodePoolOptionsRequest) (response GetNodePoolOptionsResponse, err error) {
@@ -740,7 +741,7 @@ func (client ContainerEngineClient) getNodePoolOptions(ctx context.Context, requ
 
 // GetWorkRequest Get the details of a work request.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetWorkRequest.go.html to see an example of how to use GetWorkRequest API.
 func (client ContainerEngineClient) GetWorkRequest(ctx context.Context, request GetWorkRequestRequest) (response GetWorkRequestResponse, err error) {
@@ -794,7 +795,7 @@ func (client ContainerEngineClient) getWorkRequest(ctx context.Context, request 
 
 // ListClusters List all the cluster objects in a compartment.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListClusters.go.html to see an example of how to use ListClusters API.
 func (client ContainerEngineClient) ListClusters(ctx context.Context, request ListClustersRequest) (response ListClustersResponse, err error) {
@@ -848,7 +849,7 @@ func (client ContainerEngineClient) listClusters(ctx context.Context, request co
 
 // ListNodePools List all the node pools in a compartment, and optionally filter by cluster.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListNodePools.go.html to see an example of how to use ListNodePools API.
 func (client ContainerEngineClient) ListNodePools(ctx context.Context, request ListNodePoolsRequest) (response ListNodePoolsResponse, err error) {
@@ -902,7 +903,7 @@ func (client ContainerEngineClient) listNodePools(ctx context.Context, request c
 
 // ListWorkRequestErrors Get the errors of a work request.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListWorkRequestErrors.go.html to see an example of how to use ListWorkRequestErrors API.
 func (client ContainerEngineClient) ListWorkRequestErrors(ctx context.Context, request ListWorkRequestErrorsRequest) (response ListWorkRequestErrorsResponse, err error) {
@@ -956,7 +957,7 @@ func (client ContainerEngineClient) listWorkRequestErrors(ctx context.Context, r
 
 // ListWorkRequestLogs Get the logs of a work request.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListWorkRequestLogs.go.html to see an example of how to use ListWorkRequestLogs API.
 func (client ContainerEngineClient) ListWorkRequestLogs(ctx context.Context, request ListWorkRequestLogsRequest) (response ListWorkRequestLogsResponse, err error) {
@@ -1010,7 +1011,7 @@ func (client ContainerEngineClient) listWorkRequestLogs(ctx context.Context, req
 
 // ListWorkRequests List all work requests in a compartment.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListWorkRequests.go.html to see an example of how to use ListWorkRequests API.
 func (client ContainerEngineClient) ListWorkRequests(ctx context.Context, request ListWorkRequestsRequest) (response ListWorkRequestsResponse, err error) {
@@ -1064,7 +1065,7 @@ func (client ContainerEngineClient) listWorkRequests(ctx context.Context, reques
 
 // UpdateCluster Update the details of a cluster.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/UpdateCluster.go.html to see an example of how to use UpdateCluster API.
 func (client ContainerEngineClient) UpdateCluster(ctx context.Context, request UpdateClusterRequest) (response UpdateClusterResponse, err error) {
@@ -1118,7 +1119,7 @@ func (client ContainerEngineClient) updateCluster(ctx context.Context, request c
 
 // UpdateClusterEndpointConfig Update the details of the cluster endpoint configuration.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/UpdateClusterEndpointConfig.go.html to see an example of how to use UpdateClusterEndpointConfig API.
 func (client ContainerEngineClient) UpdateClusterEndpointConfig(ctx context.Context, request UpdateClusterEndpointConfigRequest) (response UpdateClusterEndpointConfigResponse, err error) {
@@ -1172,7 +1173,7 @@ func (client ContainerEngineClient) updateClusterEndpointConfig(ctx context.Cont
 
 // UpdateNodePool Update the details of a node pool.
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/UpdateNodePool.go.html to see an example of how to use UpdateNodePool API.
 func (client ContainerEngineClient) UpdateNodePool(ctx context.Context, request UpdateNodePoolRequest) (response UpdateNodePoolResponse, err error) {

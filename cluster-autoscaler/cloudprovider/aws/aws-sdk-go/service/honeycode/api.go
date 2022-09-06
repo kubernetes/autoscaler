@@ -29,14 +29,13 @@ const opBatchCreateTableRows = "BatchCreateTableRows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchCreateTableRowsRequest method.
+//	req, resp := client.BatchCreateTableRowsRequest(params)
 //
-//    // Example sending a request using the BatchCreateTableRowsRequest method.
-//    req, resp := client.BatchCreateTableRowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchCreateTableRows
 func (c *Honeycode) BatchCreateTableRowsRequest(input *BatchCreateTableRowsInput) (req *request.Request, output *BatchCreateTableRowsOutput) {
@@ -76,33 +75,34 @@ func (c *Honeycode) BatchCreateTableRowsRequest(input *BatchCreateTableRowsInput
 // API operation BatchCreateTableRows for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceQuotaExceededException
-//   The request caused service quota to be breached.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ServiceQuotaExceededException
+//     The request caused service quota to be breached.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchCreateTableRows
 func (c *Honeycode) BatchCreateTableRows(input *BatchCreateTableRowsInput) (*BatchCreateTableRowsOutput, error) {
@@ -142,14 +142,13 @@ const opBatchDeleteTableRows = "BatchDeleteTableRows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteTableRowsRequest method.
+//	req, resp := client.BatchDeleteTableRowsRequest(params)
 //
-//    // Example sending a request using the BatchDeleteTableRowsRequest method.
-//    req, resp := client.BatchDeleteTableRowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchDeleteTableRows
 func (c *Honeycode) BatchDeleteTableRowsRequest(input *BatchDeleteTableRowsInput) (req *request.Request, output *BatchDeleteTableRowsOutput) {
@@ -182,30 +181,31 @@ func (c *Honeycode) BatchDeleteTableRowsRequest(input *BatchDeleteTableRowsInput
 // API operation BatchDeleteTableRows for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - RequestTimeoutException
+//     The request timed out.
+//
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchDeleteTableRows
 func (c *Honeycode) BatchDeleteTableRows(input *BatchDeleteTableRowsInput) (*BatchDeleteTableRowsOutput, error) {
@@ -245,14 +245,13 @@ const opBatchUpdateTableRows = "BatchUpdateTableRows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchUpdateTableRowsRequest method.
+//	req, resp := client.BatchUpdateTableRowsRequest(params)
 //
-//    // Example sending a request using the BatchUpdateTableRowsRequest method.
-//    req, resp := client.BatchUpdateTableRowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchUpdateTableRows
 func (c *Honeycode) BatchUpdateTableRowsRequest(input *BatchUpdateTableRowsInput) (req *request.Request, output *BatchUpdateTableRowsOutput) {
@@ -289,30 +288,31 @@ func (c *Honeycode) BatchUpdateTableRowsRequest(input *BatchUpdateTableRowsInput
 // API operation BatchUpdateTableRows for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - RequestTimeoutException
+//     The request timed out.
+//
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchUpdateTableRows
 func (c *Honeycode) BatchUpdateTableRows(input *BatchUpdateTableRowsInput) (*BatchUpdateTableRowsOutput, error) {
@@ -352,14 +352,13 @@ const opBatchUpsertTableRows = "BatchUpsertTableRows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchUpsertTableRowsRequest method.
+//	req, resp := client.BatchUpsertTableRowsRequest(params)
 //
-//    // Example sending a request using the BatchUpsertTableRowsRequest method.
-//    req, resp := client.BatchUpsertTableRowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchUpsertTableRows
 func (c *Honeycode) BatchUpsertTableRowsRequest(input *BatchUpsertTableRowsInput) (req *request.Request, output *BatchUpsertTableRowsOutput) {
@@ -402,33 +401,34 @@ func (c *Honeycode) BatchUpsertTableRowsRequest(input *BatchUpsertTableRowsInput
 // API operation BatchUpsertTableRows for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceQuotaExceededException
-//   The request caused service quota to be breached.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ServiceQuotaExceededException
+//     The request caused service quota to be breached.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/BatchUpsertTableRows
 func (c *Honeycode) BatchUpsertTableRows(input *BatchUpsertTableRowsInput) (*BatchUpsertTableRowsOutput, error) {
@@ -468,14 +468,13 @@ const opDescribeTableDataImportJob = "DescribeTableDataImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTableDataImportJobRequest method.
+//	req, resp := client.DescribeTableDataImportJobRequest(params)
 //
-//    // Example sending a request using the DescribeTableDataImportJobRequest method.
-//    req, resp := client.DescribeTableDataImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/DescribeTableDataImportJob
 func (c *Honeycode) DescribeTableDataImportJobRequest(input *DescribeTableDataImportJobInput) (req *request.Request, output *DescribeTableDataImportJobOutput) {
@@ -507,30 +506,31 @@ func (c *Honeycode) DescribeTableDataImportJobRequest(input *DescribeTableDataIm
 // API operation DescribeTableDataImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
+//
+//   - RequestTimeoutException
+//     The request timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/DescribeTableDataImportJob
 func (c *Honeycode) DescribeTableDataImportJob(input *DescribeTableDataImportJobInput) (*DescribeTableDataImportJobOutput, error) {
@@ -570,14 +570,13 @@ const opGetScreenData = "GetScreenData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetScreenDataRequest method.
+//	req, resp := client.GetScreenDataRequest(params)
 //
-//    // Example sending a request using the GetScreenDataRequest method.
-//    req, resp := client.GetScreenDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/GetScreenData
 func (c *Honeycode) GetScreenDataRequest(input *GetScreenDataInput) (req *request.Request, output *GetScreenDataOutput) {
@@ -610,30 +609,31 @@ func (c *Honeycode) GetScreenDataRequest(input *GetScreenDataInput) (req *reques
 // API operation GetScreenData for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/GetScreenData
 func (c *Honeycode) GetScreenData(input *GetScreenDataInput) (*GetScreenDataOutput, error) {
@@ -673,14 +673,13 @@ const opInvokeScreenAutomation = "InvokeScreenAutomation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InvokeScreenAutomationRequest method.
+//	req, resp := client.InvokeScreenAutomationRequest(params)
 //
-//    // Example sending a request using the InvokeScreenAutomationRequest method.
-//    req, resp := client.InvokeScreenAutomationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/InvokeScreenAutomation
 func (c *Honeycode) InvokeScreenAutomationRequest(input *InvokeScreenAutomationInput) (req *request.Request, output *InvokeScreenAutomationOutput) {
@@ -714,39 +713,40 @@ func (c *Honeycode) InvokeScreenAutomationRequest(input *InvokeScreenAutomationI
 // API operation InvokeScreenAutomation for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
 //
-//   * AutomationExecutionException
-//   The automation execution did not end successfully.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * AutomationExecutionTimeoutException
-//   The automation execution timed out.
+//   - AutomationExecutionException
+//     The automation execution did not end successfully.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - AutomationExecutionTimeoutException
+//     The automation execution timed out.
 //
-//   * ServiceQuotaExceededException
-//   The request caused service quota to be breached.
+//   - RequestTimeoutException
+//     The request timed out.
+//
+//   - ServiceQuotaExceededException
+//     The request caused service quota to be breached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/InvokeScreenAutomation
 func (c *Honeycode) InvokeScreenAutomation(input *InvokeScreenAutomationInput) (*InvokeScreenAutomationOutput, error) {
@@ -786,14 +786,13 @@ const opListTableColumns = "ListTableColumns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTableColumnsRequest method.
+//	req, resp := client.ListTableColumnsRequest(params)
 //
-//    // Example sending a request using the ListTableColumnsRequest method.
-//    req, resp := client.ListTableColumnsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTableColumns
 func (c *Honeycode) ListTableColumnsRequest(input *ListTableColumnsInput) (req *request.Request, output *ListTableColumnsOutput) {
@@ -831,30 +830,31 @@ func (c *Honeycode) ListTableColumnsRequest(input *ListTableColumnsInput) (req *
 // API operation ListTableColumns for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTableColumns
 func (c *Honeycode) ListTableColumns(input *ListTableColumnsInput) (*ListTableColumnsOutput, error) {
@@ -886,15 +886,14 @@ func (c *Honeycode) ListTableColumnsWithContext(ctx aws.Context, input *ListTabl
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTableColumns operation.
-//    pageNum := 0
-//    err := client.ListTableColumnsPages(params,
-//        func(page *honeycode.ListTableColumnsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTableColumns operation.
+//	pageNum := 0
+//	err := client.ListTableColumnsPages(params,
+//	    func(page *honeycode.ListTableColumnsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Honeycode) ListTableColumnsPages(input *ListTableColumnsInput, fn func(*ListTableColumnsOutput, bool) bool) error {
 	return c.ListTableColumnsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -946,14 +945,13 @@ const opListTableRows = "ListTableRows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTableRowsRequest method.
+//	req, resp := client.ListTableRowsRequest(params)
 //
-//    // Example sending a request using the ListTableRowsRequest method.
-//    req, resp := client.ListTableRowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTableRows
 func (c *Honeycode) ListTableRowsRequest(input *ListTableRowsInput) (req *request.Request, output *ListTableRowsOutput) {
@@ -991,30 +989,31 @@ func (c *Honeycode) ListTableRowsRequest(input *ListTableRowsInput) (req *reques
 // API operation ListTableRows for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - RequestTimeoutException
+//     The request timed out.
+//
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTableRows
 func (c *Honeycode) ListTableRows(input *ListTableRowsInput) (*ListTableRowsOutput, error) {
@@ -1046,15 +1045,14 @@ func (c *Honeycode) ListTableRowsWithContext(ctx aws.Context, input *ListTableRo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTableRows operation.
-//    pageNum := 0
-//    err := client.ListTableRowsPages(params,
-//        func(page *honeycode.ListTableRowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTableRows operation.
+//	pageNum := 0
+//	err := client.ListTableRowsPages(params,
+//	    func(page *honeycode.ListTableRowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Honeycode) ListTableRowsPages(input *ListTableRowsInput, fn func(*ListTableRowsOutput, bool) bool) error {
 	return c.ListTableRowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1106,14 +1104,13 @@ const opListTables = "ListTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTablesRequest method.
+//	req, resp := client.ListTablesRequest(params)
 //
-//    // Example sending a request using the ListTablesRequest method.
-//    req, resp := client.ListTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTables
 func (c *Honeycode) ListTablesRequest(input *ListTablesInput) (req *request.Request, output *ListTablesOutput) {
@@ -1150,30 +1147,31 @@ func (c *Honeycode) ListTablesRequest(input *ListTablesInput) (req *request.Requ
 // API operation ListTables for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTables
 func (c *Honeycode) ListTables(input *ListTablesInput) (*ListTablesOutput, error) {
@@ -1205,15 +1203,14 @@ func (c *Honeycode) ListTablesWithContext(ctx aws.Context, input *ListTablesInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTables operation.
-//    pageNum := 0
-//    err := client.ListTablesPages(params,
-//        func(page *honeycode.ListTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTables operation.
+//	pageNum := 0
+//	err := client.ListTablesPages(params,
+//	    func(page *honeycode.ListTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Honeycode) ListTablesPages(input *ListTablesInput, fn func(*ListTablesOutput, bool) bool) error {
 	return c.ListTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1265,14 +1262,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTagsForResource
 func (c *Honeycode) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1303,30 +1299,31 @@ func (c *Honeycode) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/ListTagsForResource
 func (c *Honeycode) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1366,14 +1363,13 @@ const opQueryTableRows = "QueryTableRows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the QueryTableRowsRequest method.
+//	req, resp := client.QueryTableRowsRequest(params)
 //
-//    // Example sending a request using the QueryTableRowsRequest method.
-//    req, resp := client.QueryTableRowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/QueryTableRows
 func (c *Honeycode) QueryTableRowsRequest(input *QueryTableRowsInput) (req *request.Request, output *QueryTableRowsOutput) {
@@ -1411,30 +1407,31 @@ func (c *Honeycode) QueryTableRowsRequest(input *QueryTableRowsInput) (req *requ
 // API operation QueryTableRows for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/QueryTableRows
 func (c *Honeycode) QueryTableRows(input *QueryTableRowsInput) (*QueryTableRowsOutput, error) {
@@ -1466,15 +1463,14 @@ func (c *Honeycode) QueryTableRowsWithContext(ctx aws.Context, input *QueryTable
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a QueryTableRows operation.
-//    pageNum := 0
-//    err := client.QueryTableRowsPages(params,
-//        func(page *honeycode.QueryTableRowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a QueryTableRows operation.
+//	pageNum := 0
+//	err := client.QueryTableRowsPages(params,
+//	    func(page *honeycode.QueryTableRowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Honeycode) QueryTableRowsPages(input *QueryTableRowsInput, fn func(*QueryTableRowsOutput, bool) bool) error {
 	return c.QueryTableRowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1526,14 +1522,13 @@ const opStartTableDataImportJob = "StartTableDataImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTableDataImportJobRequest method.
+//	req, resp := client.StartTableDataImportJobRequest(params)
 //
-//    // Example sending a request using the StartTableDataImportJobRequest method.
-//    req, resp := client.StartTableDataImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/StartTableDataImportJob
 func (c *Honeycode) StartTableDataImportJobRequest(input *StartTableDataImportJobInput) (req *request.Request, output *StartTableDataImportJobOutput) {
@@ -1567,33 +1562,34 @@ func (c *Honeycode) StartTableDataImportJobRequest(input *StartTableDataImportJo
 // API operation StartTableDataImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
-//   * ServiceQuotaExceededException
-//   The request caused service quota to be breached.
+//   - RequestTimeoutException
+//     The request timed out.
+//
+//   - ServiceQuotaExceededException
+//     The request caused service quota to be breached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/StartTableDataImportJob
 func (c *Honeycode) StartTableDataImportJob(input *StartTableDataImportJobInput) (*StartTableDataImportJobOutput, error) {
@@ -1633,14 +1629,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/TagResource
 func (c *Honeycode) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1673,30 +1668,31 @@ func (c *Honeycode) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/TagResource
 func (c *Honeycode) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1736,14 +1732,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/UntagResource
 func (c *Honeycode) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1776,30 +1771,31 @@ func (c *Honeycode) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action. Check that the
-//   workbook is owned by you and your IAM policy allows access to the resource
-//   in the request.
 //
-//   * InternalServerException
-//   There were unexpected errors from the server.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action. Check that the
+//     workbook is owned by you and your IAM policy allows access to the resource
+//     in the request.
 //
-//   * RequestTimeoutException
-//   The request timed out.
+//   - InternalServerException
+//     There were unexpected errors from the server.
 //
-//   * ResourceNotFoundException
-//   A Workbook, Table, App, Screen or Screen Automation was not found with the
-//   given ID.
+//   - RequestTimeoutException
+//     The request timed out.
 //
-//   * ServiceUnavailableException
-//   Remote service is unreachable.
+//   - ResourceNotFoundException
+//     A Workbook, Table, App, Screen or Screen Automation was not found with the
+//     given ID.
 //
-//   * ThrottlingException
-//   Tps(transactions per second) rate reached.
+//   - ServiceUnavailableException
+//     Remote service is unreachable.
 //
-//   * ValidationException
-//   Request is invalid. The message in the response contains details on why the
-//   request is invalid.
+//   - ThrottlingException
+//     Tps(transactions per second) rate reached.
+//
+//   - ValidationException
+//     Request is invalid. The message in the response contains details on why the
+//     request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/honeycode-2020-03-01/UntagResource
 func (c *Honeycode) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

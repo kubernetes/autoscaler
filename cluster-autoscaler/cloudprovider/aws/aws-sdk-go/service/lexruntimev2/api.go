@@ -38,14 +38,13 @@ const opDeleteSession = "DeleteSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSessionRequest method.
+//	req, resp := client.DeleteSessionRequest(params)
 //
-//    // Example sending a request using the DeleteSessionRequest method.
-//    req, resp := client.DeleteSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/DeleteSession
 func (c *LexRuntimeV2) DeleteSessionRequest(input *DeleteSessionInput) (req *request.Request, output *DeleteSessionOutput) {
@@ -89,17 +88,18 @@ func (c *LexRuntimeV2) DeleteSessionRequest(input *DeleteSessionInput) (req *req
 // API operation DeleteSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ValidationException
 //
-//   * InternalServerException
+//   - ThrottlingException
 //
-//   * ConflictException
+//   - InternalServerException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/DeleteSession
 func (c *LexRuntimeV2) DeleteSession(input *DeleteSessionInput) (*DeleteSessionOutput, error) {
@@ -139,14 +139,13 @@ const opGetSession = "GetSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSessionRequest method.
+//	req, resp := client.GetSessionRequest(params)
 //
-//    // Example sending a request using the GetSessionRequest method.
-//    req, resp := client.GetSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/GetSession
 func (c *LexRuntimeV2) GetSessionRequest(input *GetSessionInput) (req *request.Request, output *GetSessionOutput) {
@@ -184,15 +183,16 @@ func (c *LexRuntimeV2) GetSessionRequest(input *GetSessionInput) (req *request.R
 // API operation GetSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ValidationException
 //
-//   * InternalServerException
+//   - ThrottlingException
+//
+//   - InternalServerException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/GetSession
 func (c *LexRuntimeV2) GetSession(input *GetSessionInput) (*GetSessionOutput, error) {
@@ -232,14 +232,13 @@ const opPutSession = "PutSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSessionRequest method.
+//	req, resp := client.PutSessionRequest(params)
 //
-//    // Example sending a request using the PutSessionRequest method.
-//    req, resp := client.PutSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/PutSession
 func (c *LexRuntimeV2) PutSessionRequest(input *PutSessionInput) (req *request.Request, output *PutSessionOutput) {
@@ -272,21 +271,22 @@ func (c *LexRuntimeV2) PutSessionRequest(input *PutSessionInput) (req *request.R
 // API operation PutSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ValidationException
 //
-//   * InternalServerException
+//   - ThrottlingException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * DependencyFailedException
+//   - ConflictException
 //
-//   * BadGatewayException
+//   - DependencyFailedException
+//
+//   - BadGatewayException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/PutSession
 func (c *LexRuntimeV2) PutSession(input *PutSessionInput) (*PutSessionOutput, error) {
@@ -326,14 +326,13 @@ const opRecognizeText = "RecognizeText"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RecognizeTextRequest method.
+//	req, resp := client.RecognizeTextRequest(params)
 //
-//    // Example sending a request using the RecognizeTextRequest method.
-//    req, resp := client.RecognizeTextRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/RecognizeText
 func (c *LexRuntimeV2) RecognizeTextRequest(input *RecognizeTextInput) (req *request.Request, output *RecognizeTextOutput) {
@@ -365,18 +364,18 @@ func (c *LexRuntimeV2) RecognizeTextRequest(input *RecognizeTextInput) (req *req
 // returned as follows. For more information, see PostFulfillmentStatusSpecification
 // (https://docs.aws.amazon.com/lexv2/latest/dg/API_PostFulfillmentStatusSpecification.html).
 //
-//    * Success message - Returned if the Lambda function completes successfully
-//    and the intent state is fulfilled or ready fulfillment if the message
-//    is present.
+//   - Success message - Returned if the Lambda function completes successfully
+//     and the intent state is fulfilled or ready fulfillment if the message
+//     is present.
 //
-//    * Failed message - The failed message is returned if the Lambda function
-//    throws an exception or if the Lambda function returns a failed intent
-//    state without a message.
+//   - Failed message - The failed message is returned if the Lambda function
+//     throws an exception or if the Lambda function returns a failed intent
+//     state without a message.
 //
-//    * Timeout message - If you don't configure a timeout message and a timeout,
-//    and the Lambda function doesn't return within 30 seconds, the timeout
-//    message is returned. If you configure a timeout, the timeout message is
-//    returned when the period times out.
+//   - Timeout message - If you don't configure a timeout message and a timeout,
+//     and the Lambda function doesn't return within 30 seconds, the timeout
+//     message is returned. If you configure a timeout, the timeout message is
+//     returned when the period times out.
 //
 // For more information, see Completion message (https://docs.aws.amazon.com/lexv2/latest/dg/streaming-progress.html#progress-complete.html).
 //
@@ -388,21 +387,22 @@ func (c *LexRuntimeV2) RecognizeTextRequest(input *RecognizeTextInput) (req *req
 // API operation RecognizeText for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ValidationException
 //
-//   * InternalServerException
+//   - ThrottlingException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * DependencyFailedException
+//   - ConflictException
 //
-//   * BadGatewayException
+//   - DependencyFailedException
+//
+//   - BadGatewayException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/RecognizeText
 func (c *LexRuntimeV2) RecognizeText(input *RecognizeTextInput) (*RecognizeTextOutput, error) {
@@ -442,14 +442,13 @@ const opRecognizeUtterance = "RecognizeUtterance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RecognizeUtteranceRequest method.
+//	req, resp := client.RecognizeUtteranceRequest(params)
 //
-//    // Example sending a request using the RecognizeUtteranceRequest method.
-//    req, resp := client.RecognizeUtteranceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/RecognizeUtterance
 func (c *LexRuntimeV2) RecognizeUtteranceRequest(input *RecognizeUtteranceInput) (req *request.Request, output *RecognizeUtteranceOutput) {
@@ -481,23 +480,23 @@ func (c *LexRuntimeV2) RecognizeUtteranceRequest(input *RecognizeUtteranceInput)
 // The following request fields must be compressed with gzip and then base64
 // encoded before you send them to Amazon Lex V2.
 //
-//    * requestAttributes
+//   - requestAttributes
 //
-//    * sessionState
+//   - sessionState
 //
 // The following response fields are compressed using gzip and then base64 encoded
 // by Amazon Lex V2. Before you can use these fields, you must decode and decompress
 // them.
 //
-//    * inputTranscript
+//   - inputTranscript
 //
-//    * interpretations
+//   - interpretations
 //
-//    * messages
+//   - messages
 //
-//    * requestAttributes
+//   - requestAttributes
 //
-//    * sessionState
+//   - sessionState
 //
 // The example contains a Java application that compresses and encodes a Java
 // object to send to Amazon Lex V2, and a second that decodes and decompresses
@@ -507,18 +506,18 @@ func (c *LexRuntimeV2) RecognizeUtteranceRequest(input *RecognizeUtteranceInput)
 // returned as follows. For more information, see PostFulfillmentStatusSpecification
 // (https://docs.aws.amazon.com/lexv2/latest/dg/API_PostFulfillmentStatusSpecification.html).
 //
-//    * Success message - Returned if the Lambda function completes successfully
-//    and the intent state is fulfilled or ready fulfillment if the message
-//    is present.
+//   - Success message - Returned if the Lambda function completes successfully
+//     and the intent state is fulfilled or ready fulfillment if the message
+//     is present.
 //
-//    * Failed message - The failed message is returned if the Lambda function
-//    throws an exception or if the Lambda function returns a failed intent
-//    state without a message.
+//   - Failed message - The failed message is returned if the Lambda function
+//     throws an exception or if the Lambda function returns a failed intent
+//     state without a message.
 //
-//    * Timeout message - If you don't configure a timeout message and a timeout,
-//    and the Lambda function doesn't return within 30 seconds, the timeout
-//    message is returned. If you configure a timeout, the timeout message is
-//    returned when the period times out.
+//   - Timeout message - If you don't configure a timeout message and a timeout,
+//     and the Lambda function doesn't return within 30 seconds, the timeout
+//     message is returned. If you configure a timeout, the timeout message is
+//     returned when the period times out.
 //
 // For more information, see Completion message (https://docs.aws.amazon.com/lexv2/latest/dg/streaming-progress.html#progress-complete.html).
 //
@@ -530,21 +529,22 @@ func (c *LexRuntimeV2) RecognizeUtteranceRequest(input *RecognizeUtteranceInput)
 // API operation RecognizeUtterance for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ValidationException
 //
-//   * InternalServerException
+//   - ThrottlingException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * DependencyFailedException
+//   - ConflictException
 //
-//   * BadGatewayException
+//   - DependencyFailedException
+//
+//   - BadGatewayException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/RecognizeUtterance
 func (c *LexRuntimeV2) RecognizeUtterance(input *RecognizeUtteranceInput) (*RecognizeUtteranceOutput, error) {
@@ -584,14 +584,13 @@ const opStartConversation = "StartConversation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartConversationRequest method.
+//	req, resp := client.StartConversationRequest(params)
 //
-//    // Example sending a request using the StartConversationRequest method.
-//    req, resp := client.StartConversationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/StartConversation
 func (c *LexRuntimeV2) StartConversationRequest(input *StartConversationInput) (req *request.Request, output *StartConversationOutput) {
@@ -654,18 +653,18 @@ func (c *LexRuntimeV2) StartConversationRequest(input *StartConversationInput) (
 // returned as follows. For more information, see PostFulfillmentStatusSpecification
 // (https://docs.aws.amazon.com/lexv2/latest/dg/API_PostFulfillmentStatusSpecification.html).
 //
-//    * Success message - Returned if the Lambda function completes successfully
-//    and the intent state is fulfilled or ready fulfillment if the message
-//    is present.
+//   - Success message - Returned if the Lambda function completes successfully
+//     and the intent state is fulfilled or ready fulfillment if the message
+//     is present.
 //
-//    * Failed message - The failed message is returned if the Lambda function
-//    throws an exception or if the Lambda function returns a failed intent
-//    state without a message.
+//   - Failed message - The failed message is returned if the Lambda function
+//     throws an exception or if the Lambda function returns a failed intent
+//     state without a message.
 //
-//    * Timeout message - If you don't configure a timeout message and a timeout,
-//    and the Lambda function doesn't return within 30 seconds, the timeout
-//    message is returned. If you configure a timeout, the timeout message is
-//    returned when the period times out.
+//   - Timeout message - If you don't configure a timeout message and a timeout,
+//     and the Lambda function doesn't return within 30 seconds, the timeout
+//     message is returned. If you configure a timeout, the timeout message is
+//     returned when the period times out.
 //
 // For more information, see Completion message (https://docs.aws.amazon.com/lexv2/latest/dg/streaming-progress.html#progress-complete.html).
 //
@@ -678,11 +677,11 @@ func (c *LexRuntimeV2) StartConversationRequest(input *StartConversationInput) (
 //
 // The StartConversation operation is supported only in the following SDKs:
 //
-//    * AWS SDK for C++ (https://docs.aws.amazon.com/goto/SdkForCpp/runtime.lex.v2-2020-08-07/StartConversation)
+//   - AWS SDK for C++ (https://docs.aws.amazon.com/goto/SdkForCpp/runtime.lex.v2-2020-08-07/StartConversation)
 //
-//    * AWS SDK for Java V2 (https://docs.aws.amazon.com/goto/SdkForJavaV2/runtime.lex.v2-2020-08-07/StartConversation)
+//   - AWS SDK for Java V2 (https://docs.aws.amazon.com/goto/SdkForJavaV2/runtime.lex.v2-2020-08-07/StartConversation)
 //
-//    * AWS SDK for Ruby V3 (https://docs.aws.amazon.com/goto/SdkForRubyV3/runtime.lex.v2-2020-08-07/StartConversation)
+//   - AWS SDK for Ruby V3 (https://docs.aws.amazon.com/goto/SdkForRubyV3/runtime.lex.v2-2020-08-07/StartConversation)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -692,13 +691,14 @@ func (c *LexRuntimeV2) StartConversationRequest(input *StartConversationInput) (
 // API operation StartConversation for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * ThrottlingException
+//   - ValidationException
 //
-//   * InternalServerException
+//   - ThrottlingException
+//
+//   - InternalServerException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07/StartConversation
 func (c *LexRuntimeV2) StartConversation(input *StartConversationInput) (*StartConversationOutput, error) {
@@ -764,10 +764,10 @@ type StartConversationEventStream struct {
 //
 // The Reader member must be set before reading events from the stream.
 //
-//   es := NewStartConversationEventStream(func(o *StartConversationEventStream){
-//       es.Writer = myMockStreamWriter
-//       es.Reader = myMockStreamReader
-//   })
+//	es := NewStartConversationEventStream(func(o *StartConversationEventStream){
+//	    es.Writer = myMockStreamWriter
+//	    es.Reader = myMockStreamReader
+//	})
 func NewStartConversationEventStream(opts ...func(*StartConversationEventStream)) *StartConversationEventStream {
 	es := &StartConversationEventStream{
 		done: make(chan struct{}),
@@ -838,12 +838,12 @@ func (es *StartConversationEventStream) closeInputPipe() error {
 //
 // These events are:
 //
-//     * AudioInputEvent
-//     * ConfigurationEvent
-//     * DTMFInputEvent
-//     * DisconnectionEvent
-//     * PlaybackCompletionEvent
-//     * TextInputEvent
+//   - AudioInputEvent
+//   - ConfigurationEvent
+//   - DTMFInputEvent
+//   - DisconnectionEvent
+//   - PlaybackCompletionEvent
+//   - TextInputEvent
 func (es *StartConversationEventStream) Send(ctx aws.Context, event StartConversationRequestEventStreamEvent) error {
 	return es.Writer.Send(ctx, event)
 }
@@ -887,13 +887,13 @@ func (es *StartConversationEventStream) runInputStream(r *request.Request) {
 //
 // These events are:
 //
-//     * AudioResponseEvent
-//     * HeartbeatEvent
-//     * IntentResultEvent
-//     * PlaybackInterruptionEvent
-//     * TextResponseEvent
-//     * TranscriptEvent
-//     * StartConversationResponseEventStreamUnknownEvent
+//   - AudioResponseEvent
+//   - HeartbeatEvent
+//   - IntentResultEvent
+//   - PlaybackInterruptionEvent
+//   - TextResponseEvent
+//   - TranscriptEvent
+//   - StartConversationResponseEventStreamUnknownEvent
 func (es *StartConversationEventStream) Events() <-chan StartConversationResponseEventStreamEvent {
 	return es.Reader.Events()
 }
@@ -932,7 +932,6 @@ func (es *StartConversationEventStream) runOutputStream(r *request.Request) {
 //
 // You can use the closing of the Reader's Events channel to terminate your
 // application's read from the API's stream.
-//
 func (es *StartConversationEventStream) Close() (err error) {
 	es.closeOnce.Do(es.safeClose)
 	return es.Err()
@@ -4785,12 +4784,12 @@ func (s *StartConversationOutput) GetStream() *StartConversationEventStream {
 //
 // These events are:
 //
-//     * AudioInputEvent
-//     * ConfigurationEvent
-//     * DTMFInputEvent
-//     * DisconnectionEvent
-//     * PlaybackCompletionEvent
-//     * TextInputEvent
+//   - AudioInputEvent
+//   - ConfigurationEvent
+//   - DTMFInputEvent
+//   - DisconnectionEvent
+//   - PlaybackCompletionEvent
+//   - TextInputEvent
 type StartConversationRequestEventStreamEvent interface {
 	eventStartConversationRequestEventStream()
 	eventstreamapi.Marshaler
@@ -4804,12 +4803,12 @@ type StartConversationRequestEventStreamEvent interface {
 //
 // These events are:
 //
-//     * AudioInputEvent
-//     * ConfigurationEvent
-//     * DTMFInputEvent
-//     * DisconnectionEvent
-//     * PlaybackCompletionEvent
-//     * TextInputEvent
+//   - AudioInputEvent
+//   - ConfigurationEvent
+//   - DTMFInputEvent
+//   - DisconnectionEvent
+//   - PlaybackCompletionEvent
+//   - TextInputEvent
 type StartConversationRequestEventStreamWriter interface {
 	// Sends writes events to the stream blocking until the event has been
 	// written. An error is returned if the write fails.
@@ -4858,12 +4857,12 @@ func eventTypeForStartConversationRequestEventStreamEvent(event eventstreamapi.M
 //
 // These events are:
 //
-//     * AudioResponseEvent
-//     * HeartbeatEvent
-//     * IntentResultEvent
-//     * PlaybackInterruptionEvent
-//     * TextResponseEvent
-//     * TranscriptEvent
+//   - AudioResponseEvent
+//   - HeartbeatEvent
+//   - IntentResultEvent
+//   - PlaybackInterruptionEvent
+//   - TextResponseEvent
+//   - TranscriptEvent
 type StartConversationResponseEventStreamEvent interface {
 	eventStartConversationResponseEventStream()
 	eventstreamapi.Marshaler
@@ -4877,13 +4876,13 @@ type StartConversationResponseEventStreamEvent interface {
 //
 // These events are:
 //
-//     * AudioResponseEvent
-//     * HeartbeatEvent
-//     * IntentResultEvent
-//     * PlaybackInterruptionEvent
-//     * TextResponseEvent
-//     * TranscriptEvent
-//     * StartConversationResponseEventStreamUnknownEvent
+//   - AudioResponseEvent
+//   - HeartbeatEvent
+//   - IntentResultEvent
+//   - PlaybackInterruptionEvent
+//   - TextResponseEvent
+//   - TranscriptEvent
+//   - StartConversationResponseEventStreamUnknownEvent
 type StartConversationResponseEventStreamReader interface {
 	// Returns a channel of events as they are read from the event stream.
 	Events() <-chan StartConversationResponseEventStreamEvent

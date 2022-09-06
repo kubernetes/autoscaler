@@ -29,14 +29,13 @@ const opBatchCreatePartition = "BatchCreatePartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchCreatePartitionRequest method.
+//	req, resp := client.BatchCreatePartitionRequest(params)
 //
-//    // Example sending a request using the BatchCreatePartitionRequest method.
-//    req, resp := client.BatchCreatePartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchCreatePartition
 func (c *Glue) BatchCreatePartitionRequest(input *BatchCreatePartitionInput) (req *request.Request, output *BatchCreatePartitionOutput) {
@@ -67,26 +66,27 @@ func (c *Glue) BatchCreatePartitionRequest(input *BatchCreatePartitionInput) (re
 // API operation BatchCreatePartition for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchCreatePartition
 func (c *Glue) BatchCreatePartition(input *BatchCreatePartitionInput) (*BatchCreatePartitionOutput, error) {
@@ -126,14 +126,13 @@ const opBatchDeleteConnection = "BatchDeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteConnectionRequest method.
+//	req, resp := client.BatchDeleteConnectionRequest(params)
 //
-//    // Example sending a request using the BatchDeleteConnectionRequest method.
-//    req, resp := client.BatchDeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeleteConnection
 func (c *Glue) BatchDeleteConnectionRequest(input *BatchDeleteConnectionInput) (req *request.Request, output *BatchDeleteConnectionOutput) {
@@ -164,11 +163,12 @@ func (c *Glue) BatchDeleteConnectionRequest(input *BatchDeleteConnectionInput) (
 // API operation BatchDeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeleteConnection
 func (c *Glue) BatchDeleteConnection(input *BatchDeleteConnectionInput) (*BatchDeleteConnectionOutput, error) {
@@ -208,14 +208,13 @@ const opBatchDeletePartition = "BatchDeletePartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeletePartitionRequest method.
+//	req, resp := client.BatchDeletePartitionRequest(params)
 //
-//    // Example sending a request using the BatchDeletePartitionRequest method.
-//    req, resp := client.BatchDeletePartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeletePartition
 func (c *Glue) BatchDeletePartitionRequest(input *BatchDeletePartitionInput) (req *request.Request, output *BatchDeletePartitionOutput) {
@@ -246,17 +245,18 @@ func (c *Glue) BatchDeletePartitionRequest(input *BatchDeletePartitionInput) (re
 // API operation BatchDeletePartition for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeletePartition
 func (c *Glue) BatchDeletePartition(input *BatchDeletePartitionInput) (*BatchDeletePartitionOutput, error) {
@@ -296,14 +296,13 @@ const opBatchDeleteTable = "BatchDeleteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteTableRequest method.
+//	req, resp := client.BatchDeleteTableRequest(params)
 //
-//    // Example sending a request using the BatchDeleteTableRequest method.
-//    req, resp := client.BatchDeleteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeleteTable
 func (c *Glue) BatchDeleteTableRequest(input *BatchDeleteTableInput) (req *request.Request, output *BatchDeleteTableOutput) {
@@ -343,23 +342,24 @@ func (c *Glue) BatchDeleteTableRequest(input *BatchDeleteTableInput) (req *reque
 // API operation BatchDeleteTable for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ResourceNotReadyException
-//   A resource was not ready for a transaction.
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - ResourceNotReadyException
+//     A resource was not ready for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeleteTable
 func (c *Glue) BatchDeleteTable(input *BatchDeleteTableInput) (*BatchDeleteTableOutput, error) {
@@ -399,14 +399,13 @@ const opBatchDeleteTableVersion = "BatchDeleteTableVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteTableVersionRequest method.
+//	req, resp := client.BatchDeleteTableVersionRequest(params)
 //
-//    // Example sending a request using the BatchDeleteTableVersionRequest method.
-//    req, resp := client.BatchDeleteTableVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeleteTableVersion
 func (c *Glue) BatchDeleteTableVersionRequest(input *BatchDeleteTableVersionInput) (req *request.Request, output *BatchDeleteTableVersionOutput) {
@@ -437,17 +436,18 @@ func (c *Glue) BatchDeleteTableVersionRequest(input *BatchDeleteTableVersionInpu
 // API operation BatchDeleteTableVersion for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchDeleteTableVersion
 func (c *Glue) BatchDeleteTableVersion(input *BatchDeleteTableVersionInput) (*BatchDeleteTableVersionOutput, error) {
@@ -487,14 +487,13 @@ const opBatchGetBlueprints = "BatchGetBlueprints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetBlueprintsRequest method.
+//	req, resp := client.BatchGetBlueprintsRequest(params)
 //
-//    // Example sending a request using the BatchGetBlueprintsRequest method.
-//    req, resp := client.BatchGetBlueprintsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetBlueprints
 func (c *Glue) BatchGetBlueprintsRequest(input *BatchGetBlueprintsInput) (req *request.Request, output *BatchGetBlueprintsOutput) {
@@ -525,14 +524,15 @@ func (c *Glue) BatchGetBlueprintsRequest(input *BatchGetBlueprintsInput) (req *r
 // API operation BatchGetBlueprints for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetBlueprints
 func (c *Glue) BatchGetBlueprints(input *BatchGetBlueprintsInput) (*BatchGetBlueprintsOutput, error) {
@@ -572,14 +572,13 @@ const opBatchGetCrawlers = "BatchGetCrawlers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetCrawlersRequest method.
+//	req, resp := client.BatchGetCrawlersRequest(params)
 //
-//    // Example sending a request using the BatchGetCrawlersRequest method.
-//    req, resp := client.BatchGetCrawlersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetCrawlers
 func (c *Glue) BatchGetCrawlersRequest(input *BatchGetCrawlersInput) (req *request.Request, output *BatchGetCrawlersOutput) {
@@ -613,11 +612,12 @@ func (c *Glue) BatchGetCrawlersRequest(input *BatchGetCrawlersInput) (req *reque
 // API operation BatchGetCrawlers for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetCrawlers
 func (c *Glue) BatchGetCrawlers(input *BatchGetCrawlersInput) (*BatchGetCrawlersOutput, error) {
@@ -657,14 +657,13 @@ const opBatchGetCustomEntityTypes = "BatchGetCustomEntityTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetCustomEntityTypesRequest method.
+//	req, resp := client.BatchGetCustomEntityTypesRequest(params)
 //
-//    // Example sending a request using the BatchGetCustomEntityTypesRequest method.
-//    req, resp := client.BatchGetCustomEntityTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetCustomEntityTypes
 func (c *Glue) BatchGetCustomEntityTypesRequest(input *BatchGetCustomEntityTypesInput) (req *request.Request, output *BatchGetCustomEntityTypesOutput) {
@@ -695,14 +694,15 @@ func (c *Glue) BatchGetCustomEntityTypesRequest(input *BatchGetCustomEntityTypes
 // API operation BatchGetCustomEntityTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetCustomEntityTypes
 func (c *Glue) BatchGetCustomEntityTypes(input *BatchGetCustomEntityTypesInput) (*BatchGetCustomEntityTypesOutput, error) {
@@ -742,14 +742,13 @@ const opBatchGetDevEndpoints = "BatchGetDevEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetDevEndpointsRequest method.
+//	req, resp := client.BatchGetDevEndpointsRequest(params)
 //
-//    // Example sending a request using the BatchGetDevEndpointsRequest method.
-//    req, resp := client.BatchGetDevEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetDevEndpoints
 func (c *Glue) BatchGetDevEndpointsRequest(input *BatchGetDevEndpointsInput) (req *request.Request, output *BatchGetDevEndpointsOutput) {
@@ -783,17 +782,18 @@ func (c *Glue) BatchGetDevEndpointsRequest(input *BatchGetDevEndpointsInput) (re
 // API operation BatchGetDevEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetDevEndpoints
 func (c *Glue) BatchGetDevEndpoints(input *BatchGetDevEndpointsInput) (*BatchGetDevEndpointsOutput, error) {
@@ -833,14 +833,13 @@ const opBatchGetJobs = "BatchGetJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetJobsRequest method.
+//	req, resp := client.BatchGetJobsRequest(params)
 //
-//    // Example sending a request using the BatchGetJobsRequest method.
-//    req, resp := client.BatchGetJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetJobs
 func (c *Glue) BatchGetJobsRequest(input *BatchGetJobsInput) (req *request.Request, output *BatchGetJobsOutput) {
@@ -874,14 +873,15 @@ func (c *Glue) BatchGetJobsRequest(input *BatchGetJobsInput) (req *request.Reque
 // API operation BatchGetJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetJobs
 func (c *Glue) BatchGetJobs(input *BatchGetJobsInput) (*BatchGetJobsOutput, error) {
@@ -921,14 +921,13 @@ const opBatchGetPartition = "BatchGetPartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetPartitionRequest method.
+//	req, resp := client.BatchGetPartitionRequest(params)
 //
-//    // Example sending a request using the BatchGetPartitionRequest method.
-//    req, resp := client.BatchGetPartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetPartition
 func (c *Glue) BatchGetPartitionRequest(input *BatchGetPartitionInput) (req *request.Request, output *BatchGetPartitionOutput) {
@@ -959,23 +958,24 @@ func (c *Glue) BatchGetPartitionRequest(input *BatchGetPartitionInput) (req *req
 // API operation BatchGetPartition for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidStateException
-//   An error that indicates your data is in an invalid state.
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - InvalidStateException
+//     An error that indicates your data is in an invalid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetPartition
 func (c *Glue) BatchGetPartition(input *BatchGetPartitionInput) (*BatchGetPartitionOutput, error) {
@@ -1015,14 +1015,13 @@ const opBatchGetTriggers = "BatchGetTriggers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetTriggersRequest method.
+//	req, resp := client.BatchGetTriggersRequest(params)
 //
-//    // Example sending a request using the BatchGetTriggersRequest method.
-//    req, resp := client.BatchGetTriggersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetTriggers
 func (c *Glue) BatchGetTriggersRequest(input *BatchGetTriggersInput) (req *request.Request, output *BatchGetTriggersOutput) {
@@ -1056,14 +1055,15 @@ func (c *Glue) BatchGetTriggersRequest(input *BatchGetTriggersInput) (req *reque
 // API operation BatchGetTriggers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetTriggers
 func (c *Glue) BatchGetTriggers(input *BatchGetTriggersInput) (*BatchGetTriggersOutput, error) {
@@ -1103,14 +1103,13 @@ const opBatchGetWorkflows = "BatchGetWorkflows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetWorkflowsRequest method.
+//	req, resp := client.BatchGetWorkflowsRequest(params)
 //
-//    // Example sending a request using the BatchGetWorkflowsRequest method.
-//    req, resp := client.BatchGetWorkflowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetWorkflows
 func (c *Glue) BatchGetWorkflowsRequest(input *BatchGetWorkflowsInput) (req *request.Request, output *BatchGetWorkflowsOutput) {
@@ -1144,14 +1143,15 @@ func (c *Glue) BatchGetWorkflowsRequest(input *BatchGetWorkflowsInput) (req *req
 // API operation BatchGetWorkflows for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchGetWorkflows
 func (c *Glue) BatchGetWorkflows(input *BatchGetWorkflowsInput) (*BatchGetWorkflowsOutput, error) {
@@ -1191,14 +1191,13 @@ const opBatchStopJobRun = "BatchStopJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchStopJobRunRequest method.
+//	req, resp := client.BatchStopJobRunRequest(params)
 //
-//    // Example sending a request using the BatchStopJobRunRequest method.
-//    req, resp := client.BatchStopJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchStopJobRun
 func (c *Glue) BatchStopJobRunRequest(input *BatchStopJobRunInput) (req *request.Request, output *BatchStopJobRunOutput) {
@@ -1229,14 +1228,15 @@ func (c *Glue) BatchStopJobRunRequest(input *BatchStopJobRunInput) (req *request
 // API operation BatchStopJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchStopJobRun
 func (c *Glue) BatchStopJobRun(input *BatchStopJobRunInput) (*BatchStopJobRunOutput, error) {
@@ -1276,14 +1276,13 @@ const opBatchUpdatePartition = "BatchUpdatePartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchUpdatePartitionRequest method.
+//	req, resp := client.BatchUpdatePartitionRequest(params)
 //
-//    // Example sending a request using the BatchUpdatePartitionRequest method.
-//    req, resp := client.BatchUpdatePartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchUpdatePartition
 func (c *Glue) BatchUpdatePartitionRequest(input *BatchUpdatePartitionInput) (req *request.Request, output *BatchUpdatePartitionOutput) {
@@ -1314,20 +1313,21 @@ func (c *Glue) BatchUpdatePartitionRequest(input *BatchUpdatePartitionInput) (re
 // API operation BatchUpdatePartition for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/BatchUpdatePartition
 func (c *Glue) BatchUpdatePartition(input *BatchUpdatePartitionInput) (*BatchUpdatePartitionOutput, error) {
@@ -1367,14 +1367,13 @@ const opCancelMLTaskRun = "CancelMLTaskRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelMLTaskRunRequest method.
+//	req, resp := client.CancelMLTaskRunRequest(params)
 //
-//    // Example sending a request using the CancelMLTaskRunRequest method.
-//    req, resp := client.CancelMLTaskRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CancelMLTaskRun
 func (c *Glue) CancelMLTaskRunRequest(input *CancelMLTaskRunInput) (req *request.Request, output *CancelMLTaskRunOutput) {
@@ -1408,17 +1407,18 @@ func (c *Glue) CancelMLTaskRunRequest(input *CancelMLTaskRunInput) (req *request
 // API operation CancelMLTaskRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CancelMLTaskRun
 func (c *Glue) CancelMLTaskRun(input *CancelMLTaskRunInput) (*CancelMLTaskRunOutput, error) {
@@ -1458,14 +1458,13 @@ const opCancelStatement = "CancelStatement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelStatementRequest method.
+//	req, resp := client.CancelStatementRequest(params)
 //
-//    // Example sending a request using the CancelStatementRequest method.
-//    req, resp := client.CancelStatementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CancelStatement
 func (c *Glue) CancelStatementRequest(input *CancelStatementInput) (req *request.Request, output *CancelStatementOutput) {
@@ -1497,23 +1496,24 @@ func (c *Glue) CancelStatementRequest(input *CancelStatementInput) (req *request
 // API operation CancelStatement for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalSessionStateException
-//   The session is in an invalid state to perform a requested operation.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - IllegalSessionStateException
+//     The session is in an invalid state to perform a requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CancelStatement
 func (c *Glue) CancelStatement(input *CancelStatementInput) (*CancelStatementOutput, error) {
@@ -1553,14 +1553,13 @@ const opCheckSchemaVersionValidity = "CheckSchemaVersionValidity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CheckSchemaVersionValidityRequest method.
+//	req, resp := client.CheckSchemaVersionValidityRequest(params)
 //
-//    // Example sending a request using the CheckSchemaVersionValidityRequest method.
-//    req, resp := client.CheckSchemaVersionValidityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CheckSchemaVersionValidity
 func (c *Glue) CheckSchemaVersionValidityRequest(input *CheckSchemaVersionValidityInput) (req *request.Request, output *CheckSchemaVersionValidityOutput) {
@@ -1593,14 +1592,15 @@ func (c *Glue) CheckSchemaVersionValidityRequest(input *CheckSchemaVersionValidi
 // API operation CheckSchemaVersionValidity for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CheckSchemaVersionValidity
 func (c *Glue) CheckSchemaVersionValidity(input *CheckSchemaVersionValidityInput) (*CheckSchemaVersionValidityOutput, error) {
@@ -1640,14 +1640,13 @@ const opCreateBlueprint = "CreateBlueprint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBlueprintRequest method.
+//	req, resp := client.CreateBlueprintRequest(params)
 //
-//    // Example sending a request using the CreateBlueprintRequest method.
-//    req, resp := client.CreateBlueprintRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateBlueprint
 func (c *Glue) CreateBlueprintRequest(input *CreateBlueprintInput) (req *request.Request, output *CreateBlueprintOutput) {
@@ -1678,20 +1677,21 @@ func (c *Glue) CreateBlueprintRequest(input *CreateBlueprintInput) (req *request
 // API operation CreateBlueprint for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateBlueprint
 func (c *Glue) CreateBlueprint(input *CreateBlueprintInput) (*CreateBlueprintOutput, error) {
@@ -1731,14 +1731,13 @@ const opCreateClassifier = "CreateClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClassifierRequest method.
+//	req, resp := client.CreateClassifierRequest(params)
 //
-//    // Example sending a request using the CreateClassifierRequest method.
-//    req, resp := client.CreateClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateClassifier
 func (c *Glue) CreateClassifierRequest(input *CreateClassifierInput) (req *request.Request, output *CreateClassifierOutput) {
@@ -1772,14 +1771,15 @@ func (c *Glue) CreateClassifierRequest(input *CreateClassifierInput) (req *reque
 // API operation CreateClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateClassifier
 func (c *Glue) CreateClassifier(input *CreateClassifierInput) (*CreateClassifierOutput, error) {
@@ -1819,14 +1819,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateConnection
 func (c *Glue) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *CreateConnectionOutput) {
@@ -1858,20 +1857,21 @@ func (c *Glue) CreateConnectionRequest(input *CreateConnectionInput) (req *reque
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateConnection
 func (c *Glue) CreateConnection(input *CreateConnectionInput) (*CreateConnectionOutput, error) {
@@ -1911,14 +1911,13 @@ const opCreateCrawler = "CreateCrawler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCrawlerRequest method.
+//	req, resp := client.CreateCrawlerRequest(params)
 //
-//    // Example sending a request using the CreateCrawlerRequest method.
-//    req, resp := client.CreateCrawlerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateCrawler
 func (c *Glue) CreateCrawlerRequest(input *CreateCrawlerInput) (req *request.Request, output *CreateCrawlerOutput) {
@@ -1952,17 +1951,18 @@ func (c *Glue) CreateCrawlerRequest(input *CreateCrawlerInput) (req *request.Req
 // API operation CreateCrawler for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateCrawler
 func (c *Glue) CreateCrawler(input *CreateCrawlerInput) (*CreateCrawlerOutput, error) {
@@ -2002,14 +2002,13 @@ const opCreateCustomEntityType = "CreateCustomEntityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomEntityTypeRequest method.
+//	req, resp := client.CreateCustomEntityTypeRequest(params)
 //
-//    // Example sending a request using the CreateCustomEntityTypeRequest method.
-//    req, resp := client.CreateCustomEntityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateCustomEntityType
 func (c *Glue) CreateCustomEntityTypeRequest(input *CreateCustomEntityTypeInput) (req *request.Request, output *CreateCustomEntityTypeOutput) {
@@ -2045,26 +2044,27 @@ func (c *Glue) CreateCustomEntityTypeRequest(input *CreateCustomEntityTypeInput)
 // API operation CreateCustomEntityType for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * IdempotentParameterMismatchException
-//   The same unique identifier was associated with two different records.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - IdempotentParameterMismatchException
+//     The same unique identifier was associated with two different records.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateCustomEntityType
 func (c *Glue) CreateCustomEntityType(input *CreateCustomEntityTypeInput) (*CreateCustomEntityTypeOutput, error) {
@@ -2104,14 +2104,13 @@ const opCreateDatabase = "CreateDatabase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatabaseRequest method.
+//	req, resp := client.CreateDatabaseRequest(params)
 //
-//    // Example sending a request using the CreateDatabaseRequest method.
-//    req, resp := client.CreateDatabaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateDatabase
 func (c *Glue) CreateDatabaseRequest(input *CreateDatabaseInput) (req *request.Request, output *CreateDatabaseOutput) {
@@ -2143,26 +2142,27 @@ func (c *Glue) CreateDatabaseRequest(input *CreateDatabaseInput) (req *request.R
 // API operation CreateDatabase for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateDatabase
 func (c *Glue) CreateDatabase(input *CreateDatabaseInput) (*CreateDatabaseOutput, error) {
@@ -2202,14 +2202,13 @@ const opCreateDevEndpoint = "CreateDevEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDevEndpointRequest method.
+//	req, resp := client.CreateDevEndpointRequest(params)
 //
-//    // Example sending a request using the CreateDevEndpointRequest method.
-//    req, resp := client.CreateDevEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateDevEndpoint
 func (c *Glue) CreateDevEndpointRequest(input *CreateDevEndpointInput) (req *request.Request, output *CreateDevEndpointOutput) {
@@ -2240,29 +2239,30 @@ func (c *Glue) CreateDevEndpointRequest(input *CreateDevEndpointInput) (req *req
 // API operation CreateDevEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * IdempotentParameterMismatchException
-//   The same unique identifier was associated with two different records.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - IdempotentParameterMismatchException
+//     The same unique identifier was associated with two different records.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ValidationException
-//   A value could not be validated.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - ValidationException
+//     A value could not be validated.
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateDevEndpoint
 func (c *Glue) CreateDevEndpoint(input *CreateDevEndpointInput) (*CreateDevEndpointOutput, error) {
@@ -2302,14 +2302,13 @@ const opCreateJob = "CreateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateJobRequest method.
+//	req, resp := client.CreateJobRequest(params)
 //
-//    // Example sending a request using the CreateJobRequest method.
-//    req, resp := client.CreateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateJob
 func (c *Glue) CreateJobRequest(input *CreateJobInput) (req *request.Request, output *CreateJobOutput) {
@@ -2340,26 +2339,27 @@ func (c *Glue) CreateJobRequest(input *CreateJobInput) (req *request.Request, ou
 // API operation CreateJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * IdempotentParameterMismatchException
-//   The same unique identifier was associated with two different records.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - IdempotentParameterMismatchException
+//     The same unique identifier was associated with two different records.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateJob
 func (c *Glue) CreateJob(input *CreateJobInput) (*CreateJobOutput, error) {
@@ -2399,14 +2399,13 @@ const opCreateMLTransform = "CreateMLTransform"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMLTransformRequest method.
+//	req, resp := client.CreateMLTransformRequest(params)
 //
-//    // Example sending a request using the CreateMLTransformRequest method.
-//    req, resp := client.CreateMLTransformRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateMLTransform
 func (c *Glue) CreateMLTransformRequest(input *CreateMLTransformInput) (req *request.Request, output *CreateMLTransformOutput) {
@@ -2449,26 +2448,27 @@ func (c *Glue) CreateMLTransformRequest(input *CreateMLTransformInput) (req *req
 // API operation CreateMLTransform for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * IdempotentParameterMismatchException
-//   The same unique identifier was associated with two different records.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - IdempotentParameterMismatchException
+//     The same unique identifier was associated with two different records.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateMLTransform
 func (c *Glue) CreateMLTransform(input *CreateMLTransformInput) (*CreateMLTransformOutput, error) {
@@ -2508,14 +2508,13 @@ const opCreatePartition = "CreatePartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePartitionRequest method.
+//	req, resp := client.CreatePartitionRequest(params)
 //
-//    // Example sending a request using the CreatePartitionRequest method.
-//    req, resp := client.CreatePartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreatePartition
 func (c *Glue) CreatePartitionRequest(input *CreatePartitionInput) (req *request.Request, output *CreatePartitionOutput) {
@@ -2547,26 +2546,27 @@ func (c *Glue) CreatePartitionRequest(input *CreatePartitionInput) (req *request
 // API operation CreatePartition for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreatePartition
 func (c *Glue) CreatePartition(input *CreatePartitionInput) (*CreatePartitionOutput, error) {
@@ -2606,14 +2606,13 @@ const opCreatePartitionIndex = "CreatePartitionIndex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePartitionIndexRequest method.
+//	req, resp := client.CreatePartitionIndexRequest(params)
 //
-//    // Example sending a request using the CreatePartitionIndexRequest method.
-//    req, resp := client.CreatePartitionIndexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreatePartitionIndex
 func (c *Glue) CreatePartitionIndexRequest(input *CreatePartitionIndexInput) (req *request.Request, output *CreatePartitionIndexOutput) {
@@ -2645,26 +2644,27 @@ func (c *Glue) CreatePartitionIndexRequest(input *CreatePartitionIndexInput) (re
 // API operation CreatePartitionIndex for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreatePartitionIndex
 func (c *Glue) CreatePartitionIndex(input *CreatePartitionIndexInput) (*CreatePartitionIndexOutput, error) {
@@ -2704,14 +2704,13 @@ const opCreateRegistry = "CreateRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRegistryRequest method.
+//	req, resp := client.CreateRegistryRequest(params)
 //
-//    // Example sending a request using the CreateRegistryRequest method.
-//    req, resp := client.CreateRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateRegistry
 func (c *Glue) CreateRegistryRequest(input *CreateRegistryInput) (req *request.Request, output *CreateRegistryOutput) {
@@ -2742,23 +2741,24 @@ func (c *Glue) CreateRegistryRequest(input *CreateRegistryInput) (req *request.R
 // API operation CreateRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateRegistry
 func (c *Glue) CreateRegistry(input *CreateRegistryInput) (*CreateRegistryOutput, error) {
@@ -2798,14 +2798,13 @@ const opCreateSchema = "CreateSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSchemaRequest method.
+//	req, resp := client.CreateSchemaRequest(params)
 //
-//    // Example sending a request using the CreateSchemaRequest method.
-//    req, resp := client.CreateSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateSchema
 func (c *Glue) CreateSchemaRequest(input *CreateSchemaInput) (req *request.Request, output *CreateSchemaOutput) {
@@ -2847,26 +2846,27 @@ func (c *Glue) CreateSchemaRequest(input *CreateSchemaInput) (req *request.Reque
 // API operation CreateSchema for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateSchema
 func (c *Glue) CreateSchema(input *CreateSchemaInput) (*CreateSchemaOutput, error) {
@@ -2906,14 +2906,13 @@ const opCreateScript = "CreateScript"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateScriptRequest method.
+//	req, resp := client.CreateScriptRequest(params)
 //
-//    // Example sending a request using the CreateScriptRequest method.
-//    req, resp := client.CreateScriptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateScript
 func (c *Glue) CreateScriptRequest(input *CreateScriptInput) (req *request.Request, output *CreateScriptOutput) {
@@ -2944,14 +2943,15 @@ func (c *Glue) CreateScriptRequest(input *CreateScriptInput) (req *request.Reque
 // API operation CreateScript for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateScript
 func (c *Glue) CreateScript(input *CreateScriptInput) (*CreateScriptOutput, error) {
@@ -2991,14 +2991,13 @@ const opCreateSecurityConfiguration = "CreateSecurityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSecurityConfigurationRequest method.
+//	req, resp := client.CreateSecurityConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateSecurityConfigurationRequest method.
-//    req, resp := client.CreateSecurityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateSecurityConfiguration
 func (c *Glue) CreateSecurityConfigurationRequest(input *CreateSecurityConfigurationInput) (req *request.Request, output *CreateSecurityConfigurationOutput) {
@@ -3033,20 +3032,21 @@ func (c *Glue) CreateSecurityConfigurationRequest(input *CreateSecurityConfigura
 // API operation CreateSecurityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateSecurityConfiguration
 func (c *Glue) CreateSecurityConfiguration(input *CreateSecurityConfigurationInput) (*CreateSecurityConfigurationOutput, error) {
@@ -3086,14 +3086,13 @@ const opCreateSession = "CreateSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSessionRequest method.
+//	req, resp := client.CreateSessionRequest(params)
 //
-//    // Example sending a request using the CreateSessionRequest method.
-//    req, resp := client.CreateSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateSession
 func (c *Glue) CreateSessionRequest(input *CreateSessionInput) (req *request.Request, output *CreateSessionOutput) {
@@ -3124,29 +3123,30 @@ func (c *Glue) CreateSessionRequest(input *CreateSessionInput) (req *request.Req
 // API operation CreateSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * IdempotentParameterMismatchException
-//   The same unique identifier was associated with two different records.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - IdempotentParameterMismatchException
+//     The same unique identifier was associated with two different records.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ValidationException
-//   A value could not be validated.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - ValidationException
+//     A value could not be validated.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateSession
 func (c *Glue) CreateSession(input *CreateSessionInput) (*CreateSessionOutput, error) {
@@ -3186,14 +3186,13 @@ const opCreateTable = "CreateTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTableRequest method.
+//	req, resp := client.CreateTableRequest(params)
 //
-//    // Example sending a request using the CreateTableRequest method.
-//    req, resp := client.CreateTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateTable
 func (c *Glue) CreateTableRequest(input *CreateTableInput) (req *request.Request, output *CreateTableOutput) {
@@ -3225,32 +3224,33 @@ func (c *Glue) CreateTableRequest(input *CreateTableInput) (req *request.Request
 // API operation CreateTable for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - EncryptionException
+//     An encryption operation failed.
 //
-//   * ResourceNotReadyException
-//   A resource was not ready for a transaction.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - ResourceNotReadyException
+//     A resource was not ready for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateTable
 func (c *Glue) CreateTable(input *CreateTableInput) (*CreateTableOutput, error) {
@@ -3290,14 +3290,13 @@ const opCreateTrigger = "CreateTrigger"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTriggerRequest method.
+//	req, resp := client.CreateTriggerRequest(params)
 //
-//    // Example sending a request using the CreateTriggerRequest method.
-//    req, resp := client.CreateTriggerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateTrigger
 func (c *Glue) CreateTriggerRequest(input *CreateTriggerInput) (req *request.Request, output *CreateTriggerOutput) {
@@ -3328,29 +3327,30 @@ func (c *Glue) CreateTriggerRequest(input *CreateTriggerInput) (req *request.Req
 // API operation CreateTrigger for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * IdempotentParameterMismatchException
-//   The same unique identifier was associated with two different records.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - IdempotentParameterMismatchException
+//     The same unique identifier was associated with two different records.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateTrigger
 func (c *Glue) CreateTrigger(input *CreateTriggerInput) (*CreateTriggerOutput, error) {
@@ -3390,14 +3390,13 @@ const opCreateUserDefinedFunction = "CreateUserDefinedFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserDefinedFunctionRequest method.
+//	req, resp := client.CreateUserDefinedFunctionRequest(params)
 //
-//    // Example sending a request using the CreateUserDefinedFunctionRequest method.
-//    req, resp := client.CreateUserDefinedFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateUserDefinedFunction
 func (c *Glue) CreateUserDefinedFunctionRequest(input *CreateUserDefinedFunctionInput) (req *request.Request, output *CreateUserDefinedFunctionOutput) {
@@ -3429,26 +3428,27 @@ func (c *Glue) CreateUserDefinedFunctionRequest(input *CreateUserDefinedFunction
 // API operation CreateUserDefinedFunction for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateUserDefinedFunction
 func (c *Glue) CreateUserDefinedFunction(input *CreateUserDefinedFunctionInput) (*CreateUserDefinedFunctionOutput, error) {
@@ -3488,14 +3488,13 @@ const opCreateWorkflow = "CreateWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkflowRequest method.
+//	req, resp := client.CreateWorkflowRequest(params)
 //
-//    // Example sending a request using the CreateWorkflowRequest method.
-//    req, resp := client.CreateWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateWorkflow
 func (c *Glue) CreateWorkflowRequest(input *CreateWorkflowInput) (req *request.Request, output *CreateWorkflowOutput) {
@@ -3526,23 +3525,24 @@ func (c *Glue) CreateWorkflowRequest(input *CreateWorkflowInput) (req *request.R
 // API operation CreateWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/CreateWorkflow
 func (c *Glue) CreateWorkflow(input *CreateWorkflowInput) (*CreateWorkflowOutput, error) {
@@ -3582,14 +3582,13 @@ const opDeleteBlueprint = "DeleteBlueprint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBlueprintRequest method.
+//	req, resp := client.DeleteBlueprintRequest(params)
 //
-//    // Example sending a request using the DeleteBlueprintRequest method.
-//    req, resp := client.DeleteBlueprintRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteBlueprint
 func (c *Glue) DeleteBlueprintRequest(input *DeleteBlueprintInput) (req *request.Request, output *DeleteBlueprintOutput) {
@@ -3620,14 +3619,15 @@ func (c *Glue) DeleteBlueprintRequest(input *DeleteBlueprintInput) (req *request
 // API operation DeleteBlueprint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteBlueprint
 func (c *Glue) DeleteBlueprint(input *DeleteBlueprintInput) (*DeleteBlueprintOutput, error) {
@@ -3667,14 +3667,13 @@ const opDeleteClassifier = "DeleteClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClassifierRequest method.
+//	req, resp := client.DeleteClassifierRequest(params)
 //
-//    // Example sending a request using the DeleteClassifierRequest method.
-//    req, resp := client.DeleteClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteClassifier
 func (c *Glue) DeleteClassifierRequest(input *DeleteClassifierInput) (req *request.Request, output *DeleteClassifierOutput) {
@@ -3706,11 +3705,12 @@ func (c *Glue) DeleteClassifierRequest(input *DeleteClassifierInput) (req *reque
 // API operation DeleteClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteClassifier
 func (c *Glue) DeleteClassifier(input *DeleteClassifierInput) (*DeleteClassifierOutput, error) {
@@ -3750,14 +3750,13 @@ const opDeleteColumnStatisticsForPartition = "DeleteColumnStatisticsForPartition
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteColumnStatisticsForPartitionRequest method.
+//	req, resp := client.DeleteColumnStatisticsForPartitionRequest(params)
 //
-//    // Example sending a request using the DeleteColumnStatisticsForPartitionRequest method.
-//    req, resp := client.DeleteColumnStatisticsForPartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteColumnStatisticsForPartition
 func (c *Glue) DeleteColumnStatisticsForPartitionRequest(input *DeleteColumnStatisticsForPartitionInput) (req *request.Request, output *DeleteColumnStatisticsForPartitionOutput) {
@@ -3792,20 +3791,21 @@ func (c *Glue) DeleteColumnStatisticsForPartitionRequest(input *DeleteColumnStat
 // API operation DeleteColumnStatisticsForPartition for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteColumnStatisticsForPartition
 func (c *Glue) DeleteColumnStatisticsForPartition(input *DeleteColumnStatisticsForPartitionInput) (*DeleteColumnStatisticsForPartitionOutput, error) {
@@ -3845,14 +3845,13 @@ const opDeleteColumnStatisticsForTable = "DeleteColumnStatisticsForTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteColumnStatisticsForTableRequest method.
+//	req, resp := client.DeleteColumnStatisticsForTableRequest(params)
 //
-//    // Example sending a request using the DeleteColumnStatisticsForTableRequest method.
-//    req, resp := client.DeleteColumnStatisticsForTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteColumnStatisticsForTable
 func (c *Glue) DeleteColumnStatisticsForTableRequest(input *DeleteColumnStatisticsForTableInput) (req *request.Request, output *DeleteColumnStatisticsForTableOutput) {
@@ -3887,20 +3886,21 @@ func (c *Glue) DeleteColumnStatisticsForTableRequest(input *DeleteColumnStatisti
 // API operation DeleteColumnStatisticsForTable for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteColumnStatisticsForTable
 func (c *Glue) DeleteColumnStatisticsForTable(input *DeleteColumnStatisticsForTableInput) (*DeleteColumnStatisticsForTableOutput, error) {
@@ -3940,14 +3940,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteConnection
 func (c *Glue) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *DeleteConnectionOutput) {
@@ -3979,11 +3978,12 @@ func (c *Glue) DeleteConnectionRequest(input *DeleteConnectionInput) (req *reque
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteConnection
 func (c *Glue) DeleteConnection(input *DeleteConnectionInput) (*DeleteConnectionOutput, error) {
@@ -4023,14 +4023,13 @@ const opDeleteCrawler = "DeleteCrawler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCrawlerRequest method.
+//	req, resp := client.DeleteCrawlerRequest(params)
 //
-//    // Example sending a request using the DeleteCrawlerRequest method.
-//    req, resp := client.DeleteCrawlerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteCrawler
 func (c *Glue) DeleteCrawlerRequest(input *DeleteCrawlerInput) (req *request.Request, output *DeleteCrawlerOutput) {
@@ -4063,17 +4062,18 @@ func (c *Glue) DeleteCrawlerRequest(input *DeleteCrawlerInput) (req *request.Req
 // API operation DeleteCrawler for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * CrawlerRunningException
-//   The operation cannot be performed because the crawler is already running.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * SchedulerTransitioningException
-//   The specified scheduler is transitioning.
+//   - CrawlerRunningException
+//     The operation cannot be performed because the crawler is already running.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - SchedulerTransitioningException
+//     The specified scheduler is transitioning.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteCrawler
 func (c *Glue) DeleteCrawler(input *DeleteCrawlerInput) (*DeleteCrawlerOutput, error) {
@@ -4113,14 +4113,13 @@ const opDeleteCustomEntityType = "DeleteCustomEntityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomEntityTypeRequest method.
+//	req, resp := client.DeleteCustomEntityTypeRequest(params)
 //
-//    // Example sending a request using the DeleteCustomEntityTypeRequest method.
-//    req, resp := client.DeleteCustomEntityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteCustomEntityType
 func (c *Glue) DeleteCustomEntityTypeRequest(input *DeleteCustomEntityTypeInput) (req *request.Request, output *DeleteCustomEntityTypeOutput) {
@@ -4151,20 +4150,21 @@ func (c *Glue) DeleteCustomEntityTypeRequest(input *DeleteCustomEntityTypeInput)
 // API operation DeleteCustomEntityType for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteCustomEntityType
 func (c *Glue) DeleteCustomEntityType(input *DeleteCustomEntityTypeInput) (*DeleteCustomEntityTypeOutput, error) {
@@ -4204,14 +4204,13 @@ const opDeleteDatabase = "DeleteDatabase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatabaseRequest method.
+//	req, resp := client.DeleteDatabaseRequest(params)
 //
-//    // Example sending a request using the DeleteDatabaseRequest method.
-//    req, resp := client.DeleteDatabaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteDatabase
 func (c *Glue) DeleteDatabaseRequest(input *DeleteDatabaseInput) (req *request.Request, output *DeleteDatabaseOutput) {
@@ -4253,20 +4252,21 @@ func (c *Glue) DeleteDatabaseRequest(input *DeleteDatabaseInput) (req *request.R
 // API operation DeleteDatabase for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteDatabase
 func (c *Glue) DeleteDatabase(input *DeleteDatabaseInput) (*DeleteDatabaseOutput, error) {
@@ -4306,14 +4306,13 @@ const opDeleteDevEndpoint = "DeleteDevEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDevEndpointRequest method.
+//	req, resp := client.DeleteDevEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteDevEndpointRequest method.
-//    req, resp := client.DeleteDevEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteDevEndpoint
 func (c *Glue) DeleteDevEndpointRequest(input *DeleteDevEndpointInput) (req *request.Request, output *DeleteDevEndpointOutput) {
@@ -4345,17 +4344,18 @@ func (c *Glue) DeleteDevEndpointRequest(input *DeleteDevEndpointInput) (req *req
 // API operation DeleteDevEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteDevEndpoint
 func (c *Glue) DeleteDevEndpoint(input *DeleteDevEndpointInput) (*DeleteDevEndpointOutput, error) {
@@ -4395,14 +4395,13 @@ const opDeleteJob = "DeleteJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJobRequest method.
+//	req, resp := client.DeleteJobRequest(params)
 //
-//    // Example sending a request using the DeleteJobRequest method.
-//    req, resp := client.DeleteJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteJob
 func (c *Glue) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, output *DeleteJobOutput) {
@@ -4434,14 +4433,15 @@ func (c *Glue) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, ou
 // API operation DeleteJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteJob
 func (c *Glue) DeleteJob(input *DeleteJobInput) (*DeleteJobOutput, error) {
@@ -4481,14 +4481,13 @@ const opDeleteMLTransform = "DeleteMLTransform"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMLTransformRequest method.
+//	req, resp := client.DeleteMLTransformRequest(params)
 //
-//    // Example sending a request using the DeleteMLTransformRequest method.
-//    req, resp := client.DeleteMLTransformRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteMLTransform
 func (c *Glue) DeleteMLTransformRequest(input *DeleteMLTransformInput) (req *request.Request, output *DeleteMLTransformOutput) {
@@ -4524,17 +4523,18 @@ func (c *Glue) DeleteMLTransformRequest(input *DeleteMLTransformInput) (req *req
 // API operation DeleteMLTransform for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteMLTransform
 func (c *Glue) DeleteMLTransform(input *DeleteMLTransformInput) (*DeleteMLTransformOutput, error) {
@@ -4574,14 +4574,13 @@ const opDeletePartition = "DeletePartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePartitionRequest method.
+//	req, resp := client.DeletePartitionRequest(params)
 //
-//    // Example sending a request using the DeletePartitionRequest method.
-//    req, resp := client.DeletePartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeletePartition
 func (c *Glue) DeletePartitionRequest(input *DeletePartitionInput) (req *request.Request, output *DeletePartitionOutput) {
@@ -4613,17 +4612,18 @@ func (c *Glue) DeletePartitionRequest(input *DeletePartitionInput) (req *request
 // API operation DeletePartition for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeletePartition
 func (c *Glue) DeletePartition(input *DeletePartitionInput) (*DeletePartitionOutput, error) {
@@ -4663,14 +4663,13 @@ const opDeletePartitionIndex = "DeletePartitionIndex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePartitionIndexRequest method.
+//	req, resp := client.DeletePartitionIndexRequest(params)
 //
-//    // Example sending a request using the DeletePartitionIndexRequest method.
-//    req, resp := client.DeletePartitionIndexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeletePartitionIndex
 func (c *Glue) DeletePartitionIndexRequest(input *DeletePartitionIndexInput) (req *request.Request, output *DeletePartitionIndexOutput) {
@@ -4702,23 +4701,24 @@ func (c *Glue) DeletePartitionIndexRequest(input *DeletePartitionIndexInput) (re
 // API operation DeletePartitionIndex for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ConflictException
-//   The CreatePartitions API was called on a table that has indexes enabled.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - ConflictException
+//     The CreatePartitions API was called on a table that has indexes enabled.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeletePartitionIndex
 func (c *Glue) DeletePartitionIndex(input *DeletePartitionIndexInput) (*DeletePartitionIndexOutput, error) {
@@ -4758,14 +4758,13 @@ const opDeleteRegistry = "DeleteRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRegistryRequest method.
+//	req, resp := client.DeleteRegistryRequest(params)
 //
-//    // Example sending a request using the DeleteRegistryRequest method.
-//    req, resp := client.DeleteRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteRegistry
 func (c *Glue) DeleteRegistryRequest(input *DeleteRegistryInput) (req *request.Request, output *DeleteRegistryOutput) {
@@ -4800,17 +4799,18 @@ func (c *Glue) DeleteRegistryRequest(input *DeleteRegistryInput) (req *request.R
 // API operation DeleteRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteRegistry
 func (c *Glue) DeleteRegistry(input *DeleteRegistryInput) (*DeleteRegistryOutput, error) {
@@ -4850,14 +4850,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteResourcePolicy
 func (c *Glue) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -4889,20 +4888,21 @@ func (c *Glue) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (re
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConditionCheckFailureException
-//   A specified condition was not satisfied.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - ConditionCheckFailureException
+//     A specified condition was not satisfied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteResourcePolicy
 func (c *Glue) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -4942,14 +4942,13 @@ const opDeleteSchema = "DeleteSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSchemaRequest method.
+//	req, resp := client.DeleteSchemaRequest(params)
 //
-//    // Example sending a request using the DeleteSchemaRequest method.
-//    req, resp := client.DeleteSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSchema
 func (c *Glue) DeleteSchemaRequest(input *DeleteSchemaInput) (req *request.Request, output *DeleteSchemaOutput) {
@@ -4984,17 +4983,18 @@ func (c *Glue) DeleteSchemaRequest(input *DeleteSchemaInput) (req *request.Reque
 // API operation DeleteSchema for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSchema
 func (c *Glue) DeleteSchema(input *DeleteSchemaInput) (*DeleteSchemaOutput, error) {
@@ -5034,14 +5034,13 @@ const opDeleteSchemaVersions = "DeleteSchemaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSchemaVersionsRequest method.
+//	req, resp := client.DeleteSchemaVersionsRequest(params)
 //
-//    // Example sending a request using the DeleteSchemaVersionsRequest method.
-//    req, resp := client.DeleteSchemaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSchemaVersions
 func (c *Glue) DeleteSchemaVersionsRequest(input *DeleteSchemaVersionsInput) (req *request.Request, output *DeleteSchemaVersionsOutput) {
@@ -5088,17 +5087,18 @@ func (c *Glue) DeleteSchemaVersionsRequest(input *DeleteSchemaVersionsInput) (re
 // API operation DeleteSchemaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSchemaVersions
 func (c *Glue) DeleteSchemaVersions(input *DeleteSchemaVersionsInput) (*DeleteSchemaVersionsOutput, error) {
@@ -5138,14 +5138,13 @@ const opDeleteSecurityConfiguration = "DeleteSecurityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSecurityConfigurationRequest method.
+//	req, resp := client.DeleteSecurityConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteSecurityConfigurationRequest method.
-//    req, resp := client.DeleteSecurityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSecurityConfiguration
 func (c *Glue) DeleteSecurityConfigurationRequest(input *DeleteSecurityConfigurationInput) (req *request.Request, output *DeleteSecurityConfigurationOutput) {
@@ -5177,17 +5176,18 @@ func (c *Glue) DeleteSecurityConfigurationRequest(input *DeleteSecurityConfigura
 // API operation DeleteSecurityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSecurityConfiguration
 func (c *Glue) DeleteSecurityConfiguration(input *DeleteSecurityConfigurationInput) (*DeleteSecurityConfigurationOutput, error) {
@@ -5227,14 +5227,13 @@ const opDeleteSession = "DeleteSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSessionRequest method.
+//	req, resp := client.DeleteSessionRequest(params)
 //
-//    // Example sending a request using the DeleteSessionRequest method.
-//    req, resp := client.DeleteSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSession
 func (c *Glue) DeleteSessionRequest(input *DeleteSessionInput) (req *request.Request, output *DeleteSessionOutput) {
@@ -5265,23 +5264,24 @@ func (c *Glue) DeleteSessionRequest(input *DeleteSessionInput) (req *request.Req
 // API operation DeleteSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalSessionStateException
-//   The session is in an invalid state to perform a requested operation.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - IllegalSessionStateException
+//     The session is in an invalid state to perform a requested operation.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteSession
 func (c *Glue) DeleteSession(input *DeleteSessionInput) (*DeleteSessionOutput, error) {
@@ -5321,14 +5321,13 @@ const opDeleteTable = "DeleteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTableRequest method.
+//	req, resp := client.DeleteTableRequest(params)
 //
-//    // Example sending a request using the DeleteTableRequest method.
-//    req, resp := client.DeleteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteTable
 func (c *Glue) DeleteTableRequest(input *DeleteTableInput) (req *request.Request, output *DeleteTableOutput) {
@@ -5368,23 +5367,24 @@ func (c *Glue) DeleteTableRequest(input *DeleteTableInput) (req *request.Request
 // API operation DeleteTable for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ResourceNotReadyException
-//   A resource was not ready for a transaction.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - ResourceNotReadyException
+//     A resource was not ready for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteTable
 func (c *Glue) DeleteTable(input *DeleteTableInput) (*DeleteTableOutput, error) {
@@ -5424,14 +5424,13 @@ const opDeleteTableVersion = "DeleteTableVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTableVersionRequest method.
+//	req, resp := client.DeleteTableVersionRequest(params)
 //
-//    // Example sending a request using the DeleteTableVersionRequest method.
-//    req, resp := client.DeleteTableVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteTableVersion
 func (c *Glue) DeleteTableVersionRequest(input *DeleteTableVersionInput) (req *request.Request, output *DeleteTableVersionOutput) {
@@ -5463,17 +5462,18 @@ func (c *Glue) DeleteTableVersionRequest(input *DeleteTableVersionInput) (req *r
 // API operation DeleteTableVersion for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteTableVersion
 func (c *Glue) DeleteTableVersion(input *DeleteTableVersionInput) (*DeleteTableVersionOutput, error) {
@@ -5513,14 +5513,13 @@ const opDeleteTrigger = "DeleteTrigger"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTriggerRequest method.
+//	req, resp := client.DeleteTriggerRequest(params)
 //
-//    // Example sending a request using the DeleteTriggerRequest method.
-//    req, resp := client.DeleteTriggerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteTrigger
 func (c *Glue) DeleteTriggerRequest(input *DeleteTriggerInput) (req *request.Request, output *DeleteTriggerOutput) {
@@ -5552,17 +5551,18 @@ func (c *Glue) DeleteTriggerRequest(input *DeleteTriggerInput) (req *request.Req
 // API operation DeleteTrigger for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteTrigger
 func (c *Glue) DeleteTrigger(input *DeleteTriggerInput) (*DeleteTriggerOutput, error) {
@@ -5602,14 +5602,13 @@ const opDeleteUserDefinedFunction = "DeleteUserDefinedFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserDefinedFunctionRequest method.
+//	req, resp := client.DeleteUserDefinedFunctionRequest(params)
 //
-//    // Example sending a request using the DeleteUserDefinedFunctionRequest method.
-//    req, resp := client.DeleteUserDefinedFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteUserDefinedFunction
 func (c *Glue) DeleteUserDefinedFunctionRequest(input *DeleteUserDefinedFunctionInput) (req *request.Request, output *DeleteUserDefinedFunctionOutput) {
@@ -5641,17 +5640,18 @@ func (c *Glue) DeleteUserDefinedFunctionRequest(input *DeleteUserDefinedFunction
 // API operation DeleteUserDefinedFunction for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteUserDefinedFunction
 func (c *Glue) DeleteUserDefinedFunction(input *DeleteUserDefinedFunctionInput) (*DeleteUserDefinedFunctionOutput, error) {
@@ -5691,14 +5691,13 @@ const opDeleteWorkflow = "DeleteWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkflowRequest method.
+//	req, resp := client.DeleteWorkflowRequest(params)
 //
-//    // Example sending a request using the DeleteWorkflowRequest method.
-//    req, resp := client.DeleteWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteWorkflow
 func (c *Glue) DeleteWorkflowRequest(input *DeleteWorkflowInput) (req *request.Request, output *DeleteWorkflowOutput) {
@@ -5729,17 +5728,18 @@ func (c *Glue) DeleteWorkflowRequest(input *DeleteWorkflowInput) (req *request.R
 // API operation DeleteWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/DeleteWorkflow
 func (c *Glue) DeleteWorkflow(input *DeleteWorkflowInput) (*DeleteWorkflowOutput, error) {
@@ -5779,14 +5779,13 @@ const opGetBlueprint = "GetBlueprint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlueprintRequest method.
+//	req, resp := client.GetBlueprintRequest(params)
 //
-//    // Example sending a request using the GetBlueprintRequest method.
-//    req, resp := client.GetBlueprintRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetBlueprint
 func (c *Glue) GetBlueprintRequest(input *GetBlueprintInput) (req *request.Request, output *GetBlueprintOutput) {
@@ -5817,17 +5816,18 @@ func (c *Glue) GetBlueprintRequest(input *GetBlueprintInput) (req *request.Reque
 // API operation GetBlueprint for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetBlueprint
 func (c *Glue) GetBlueprint(input *GetBlueprintInput) (*GetBlueprintOutput, error) {
@@ -5867,14 +5867,13 @@ const opGetBlueprintRun = "GetBlueprintRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlueprintRunRequest method.
+//	req, resp := client.GetBlueprintRunRequest(params)
 //
-//    // Example sending a request using the GetBlueprintRunRequest method.
-//    req, resp := client.GetBlueprintRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetBlueprintRun
 func (c *Glue) GetBlueprintRunRequest(input *GetBlueprintRunInput) (req *request.Request, output *GetBlueprintRunOutput) {
@@ -5905,14 +5904,15 @@ func (c *Glue) GetBlueprintRunRequest(input *GetBlueprintRunInput) (req *request
 // API operation GetBlueprintRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetBlueprintRun
 func (c *Glue) GetBlueprintRun(input *GetBlueprintRunInput) (*GetBlueprintRunOutput, error) {
@@ -5952,14 +5952,13 @@ const opGetBlueprintRuns = "GetBlueprintRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlueprintRunsRequest method.
+//	req, resp := client.GetBlueprintRunsRequest(params)
 //
-//    // Example sending a request using the GetBlueprintRunsRequest method.
-//    req, resp := client.GetBlueprintRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetBlueprintRuns
 func (c *Glue) GetBlueprintRunsRequest(input *GetBlueprintRunsInput) (req *request.Request, output *GetBlueprintRunsOutput) {
@@ -5996,17 +5995,18 @@ func (c *Glue) GetBlueprintRunsRequest(input *GetBlueprintRunsInput) (req *reque
 // API operation GetBlueprintRuns for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetBlueprintRuns
 func (c *Glue) GetBlueprintRuns(input *GetBlueprintRunsInput) (*GetBlueprintRunsOutput, error) {
@@ -6038,15 +6038,14 @@ func (c *Glue) GetBlueprintRunsWithContext(ctx aws.Context, input *GetBlueprintR
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBlueprintRuns operation.
-//    pageNum := 0
-//    err := client.GetBlueprintRunsPages(params,
-//        func(page *glue.GetBlueprintRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBlueprintRuns operation.
+//	pageNum := 0
+//	err := client.GetBlueprintRunsPages(params,
+//	    func(page *glue.GetBlueprintRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetBlueprintRunsPages(input *GetBlueprintRunsInput, fn func(*GetBlueprintRunsOutput, bool) bool) error {
 	return c.GetBlueprintRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6098,14 +6097,13 @@ const opGetCatalogImportStatus = "GetCatalogImportStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCatalogImportStatusRequest method.
+//	req, resp := client.GetCatalogImportStatusRequest(params)
 //
-//    // Example sending a request using the GetCatalogImportStatusRequest method.
-//    req, resp := client.GetCatalogImportStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCatalogImportStatus
 func (c *Glue) GetCatalogImportStatusRequest(input *GetCatalogImportStatusInput) (req *request.Request, output *GetCatalogImportStatusOutput) {
@@ -6136,11 +6134,12 @@ func (c *Glue) GetCatalogImportStatusRequest(input *GetCatalogImportStatusInput)
 // API operation GetCatalogImportStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCatalogImportStatus
 func (c *Glue) GetCatalogImportStatus(input *GetCatalogImportStatusInput) (*GetCatalogImportStatusOutput, error) {
@@ -6180,14 +6179,13 @@ const opGetClassifier = "GetClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetClassifierRequest method.
+//	req, resp := client.GetClassifierRequest(params)
 //
-//    // Example sending a request using the GetClassifierRequest method.
-//    req, resp := client.GetClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetClassifier
 func (c *Glue) GetClassifierRequest(input *GetClassifierInput) (req *request.Request, output *GetClassifierOutput) {
@@ -6218,11 +6216,12 @@ func (c *Glue) GetClassifierRequest(input *GetClassifierInput) (req *request.Req
 // API operation GetClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetClassifier
 func (c *Glue) GetClassifier(input *GetClassifierInput) (*GetClassifierOutput, error) {
@@ -6262,14 +6261,13 @@ const opGetClassifiers = "GetClassifiers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetClassifiersRequest method.
+//	req, resp := client.GetClassifiersRequest(params)
 //
-//    // Example sending a request using the GetClassifiersRequest method.
-//    req, resp := client.GetClassifiersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetClassifiers
 func (c *Glue) GetClassifiersRequest(input *GetClassifiersInput) (req *request.Request, output *GetClassifiersOutput) {
@@ -6306,8 +6304,8 @@ func (c *Glue) GetClassifiersRequest(input *GetClassifiersInput) (req *request.R
 // API operation GetClassifiers for usage and error information.
 //
 // Returned Error Types:
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetClassifiers
 func (c *Glue) GetClassifiers(input *GetClassifiersInput) (*GetClassifiersOutput, error) {
@@ -6339,15 +6337,14 @@ func (c *Glue) GetClassifiersWithContext(ctx aws.Context, input *GetClassifiersI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetClassifiers operation.
-//    pageNum := 0
-//    err := client.GetClassifiersPages(params,
-//        func(page *glue.GetClassifiersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetClassifiers operation.
+//	pageNum := 0
+//	err := client.GetClassifiersPages(params,
+//	    func(page *glue.GetClassifiersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetClassifiersPages(input *GetClassifiersInput, fn func(*GetClassifiersOutput, bool) bool) error {
 	return c.GetClassifiersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6399,14 +6396,13 @@ const opGetColumnStatisticsForPartition = "GetColumnStatisticsForPartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetColumnStatisticsForPartitionRequest method.
+//	req, resp := client.GetColumnStatisticsForPartitionRequest(params)
 //
-//    // Example sending a request using the GetColumnStatisticsForPartitionRequest method.
-//    req, resp := client.GetColumnStatisticsForPartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetColumnStatisticsForPartition
 func (c *Glue) GetColumnStatisticsForPartitionRequest(input *GetColumnStatisticsForPartitionInput) (req *request.Request, output *GetColumnStatisticsForPartitionOutput) {
@@ -6440,20 +6436,21 @@ func (c *Glue) GetColumnStatisticsForPartitionRequest(input *GetColumnStatistics
 // API operation GetColumnStatisticsForPartition for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetColumnStatisticsForPartition
 func (c *Glue) GetColumnStatisticsForPartition(input *GetColumnStatisticsForPartitionInput) (*GetColumnStatisticsForPartitionOutput, error) {
@@ -6493,14 +6490,13 @@ const opGetColumnStatisticsForTable = "GetColumnStatisticsForTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetColumnStatisticsForTableRequest method.
+//	req, resp := client.GetColumnStatisticsForTableRequest(params)
 //
-//    // Example sending a request using the GetColumnStatisticsForTableRequest method.
-//    req, resp := client.GetColumnStatisticsForTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetColumnStatisticsForTable
 func (c *Glue) GetColumnStatisticsForTableRequest(input *GetColumnStatisticsForTableInput) (req *request.Request, output *GetColumnStatisticsForTableOutput) {
@@ -6534,20 +6530,21 @@ func (c *Glue) GetColumnStatisticsForTableRequest(input *GetColumnStatisticsForT
 // API operation GetColumnStatisticsForTable for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetColumnStatisticsForTable
 func (c *Glue) GetColumnStatisticsForTable(input *GetColumnStatisticsForTableInput) (*GetColumnStatisticsForTableOutput, error) {
@@ -6587,14 +6584,13 @@ const opGetConnection = "GetConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectionRequest method.
+//	req, resp := client.GetConnectionRequest(params)
 //
-//    // Example sending a request using the GetConnectionRequest method.
-//    req, resp := client.GetConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetConnection
 func (c *Glue) GetConnectionRequest(input *GetConnectionInput) (req *request.Request, output *GetConnectionOutput) {
@@ -6625,17 +6621,18 @@ func (c *Glue) GetConnectionRequest(input *GetConnectionInput) (req *request.Req
 // API operation GetConnection for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetConnection
 func (c *Glue) GetConnection(input *GetConnectionInput) (*GetConnectionOutput, error) {
@@ -6675,14 +6672,13 @@ const opGetConnections = "GetConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectionsRequest method.
+//	req, resp := client.GetConnectionsRequest(params)
 //
-//    // Example sending a request using the GetConnectionsRequest method.
-//    req, resp := client.GetConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetConnections
 func (c *Glue) GetConnectionsRequest(input *GetConnectionsInput) (req *request.Request, output *GetConnectionsOutput) {
@@ -6719,17 +6715,18 @@ func (c *Glue) GetConnectionsRequest(input *GetConnectionsInput) (req *request.R
 // API operation GetConnections for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetConnections
 func (c *Glue) GetConnections(input *GetConnectionsInput) (*GetConnectionsOutput, error) {
@@ -6761,15 +6758,14 @@ func (c *Glue) GetConnectionsWithContext(ctx aws.Context, input *GetConnectionsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetConnections operation.
-//    pageNum := 0
-//    err := client.GetConnectionsPages(params,
-//        func(page *glue.GetConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetConnections operation.
+//	pageNum := 0
+//	err := client.GetConnectionsPages(params,
+//	    func(page *glue.GetConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetConnectionsPages(input *GetConnectionsInput, fn func(*GetConnectionsOutput, bool) bool) error {
 	return c.GetConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6821,14 +6817,13 @@ const opGetCrawler = "GetCrawler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCrawlerRequest method.
+//	req, resp := client.GetCrawlerRequest(params)
 //
-//    // Example sending a request using the GetCrawlerRequest method.
-//    req, resp := client.GetCrawlerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCrawler
 func (c *Glue) GetCrawlerRequest(input *GetCrawlerInput) (req *request.Request, output *GetCrawlerOutput) {
@@ -6859,11 +6854,12 @@ func (c *Glue) GetCrawlerRequest(input *GetCrawlerInput) (req *request.Request, 
 // API operation GetCrawler for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCrawler
 func (c *Glue) GetCrawler(input *GetCrawlerInput) (*GetCrawlerOutput, error) {
@@ -6903,14 +6899,13 @@ const opGetCrawlerMetrics = "GetCrawlerMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCrawlerMetricsRequest method.
+//	req, resp := client.GetCrawlerMetricsRequest(params)
 //
-//    // Example sending a request using the GetCrawlerMetricsRequest method.
-//    req, resp := client.GetCrawlerMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCrawlerMetrics
 func (c *Glue) GetCrawlerMetricsRequest(input *GetCrawlerMetricsInput) (req *request.Request, output *GetCrawlerMetricsOutput) {
@@ -6947,8 +6942,8 @@ func (c *Glue) GetCrawlerMetricsRequest(input *GetCrawlerMetricsInput) (req *req
 // API operation GetCrawlerMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCrawlerMetrics
 func (c *Glue) GetCrawlerMetrics(input *GetCrawlerMetricsInput) (*GetCrawlerMetricsOutput, error) {
@@ -6980,15 +6975,14 @@ func (c *Glue) GetCrawlerMetricsWithContext(ctx aws.Context, input *GetCrawlerMe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCrawlerMetrics operation.
-//    pageNum := 0
-//    err := client.GetCrawlerMetricsPages(params,
-//        func(page *glue.GetCrawlerMetricsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCrawlerMetrics operation.
+//	pageNum := 0
+//	err := client.GetCrawlerMetricsPages(params,
+//	    func(page *glue.GetCrawlerMetricsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetCrawlerMetricsPages(input *GetCrawlerMetricsInput, fn func(*GetCrawlerMetricsOutput, bool) bool) error {
 	return c.GetCrawlerMetricsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7040,14 +7034,13 @@ const opGetCrawlers = "GetCrawlers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCrawlersRequest method.
+//	req, resp := client.GetCrawlersRequest(params)
 //
-//    // Example sending a request using the GetCrawlersRequest method.
-//    req, resp := client.GetCrawlersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCrawlers
 func (c *Glue) GetCrawlersRequest(input *GetCrawlersInput) (req *request.Request, output *GetCrawlersOutput) {
@@ -7084,8 +7077,8 @@ func (c *Glue) GetCrawlersRequest(input *GetCrawlersInput) (req *request.Request
 // API operation GetCrawlers for usage and error information.
 //
 // Returned Error Types:
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCrawlers
 func (c *Glue) GetCrawlers(input *GetCrawlersInput) (*GetCrawlersOutput, error) {
@@ -7117,15 +7110,14 @@ func (c *Glue) GetCrawlersWithContext(ctx aws.Context, input *GetCrawlersInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCrawlers operation.
-//    pageNum := 0
-//    err := client.GetCrawlersPages(params,
-//        func(page *glue.GetCrawlersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCrawlers operation.
+//	pageNum := 0
+//	err := client.GetCrawlersPages(params,
+//	    func(page *glue.GetCrawlersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetCrawlersPages(input *GetCrawlersInput, fn func(*GetCrawlersOutput, bool) bool) error {
 	return c.GetCrawlersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7177,14 +7169,13 @@ const opGetCustomEntityType = "GetCustomEntityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCustomEntityTypeRequest method.
+//	req, resp := client.GetCustomEntityTypeRequest(params)
 //
-//    // Example sending a request using the GetCustomEntityTypeRequest method.
-//    req, resp := client.GetCustomEntityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCustomEntityType
 func (c *Glue) GetCustomEntityTypeRequest(input *GetCustomEntityTypeInput) (req *request.Request, output *GetCustomEntityTypeOutput) {
@@ -7215,20 +7206,21 @@ func (c *Glue) GetCustomEntityTypeRequest(input *GetCustomEntityTypeInput) (req 
 // API operation GetCustomEntityType for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetCustomEntityType
 func (c *Glue) GetCustomEntityType(input *GetCustomEntityTypeInput) (*GetCustomEntityTypeOutput, error) {
@@ -7268,14 +7260,13 @@ const opGetDataCatalogEncryptionSettings = "GetDataCatalogEncryptionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataCatalogEncryptionSettingsRequest method.
+//	req, resp := client.GetDataCatalogEncryptionSettingsRequest(params)
 //
-//    // Example sending a request using the GetDataCatalogEncryptionSettingsRequest method.
-//    req, resp := client.GetDataCatalogEncryptionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDataCatalogEncryptionSettings
 func (c *Glue) GetDataCatalogEncryptionSettingsRequest(input *GetDataCatalogEncryptionSettingsInput) (req *request.Request, output *GetDataCatalogEncryptionSettingsOutput) {
@@ -7306,14 +7297,15 @@ func (c *Glue) GetDataCatalogEncryptionSettingsRequest(input *GetDataCatalogEncr
 // API operation GetDataCatalogEncryptionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDataCatalogEncryptionSettings
 func (c *Glue) GetDataCatalogEncryptionSettings(input *GetDataCatalogEncryptionSettingsInput) (*GetDataCatalogEncryptionSettingsOutput, error) {
@@ -7353,14 +7345,13 @@ const opGetDatabase = "GetDatabase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDatabaseRequest method.
+//	req, resp := client.GetDatabaseRequest(params)
 //
-//    // Example sending a request using the GetDatabaseRequest method.
-//    req, resp := client.GetDatabaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDatabase
 func (c *Glue) GetDatabaseRequest(input *GetDatabaseInput) (req *request.Request, output *GetDatabaseOutput) {
@@ -7391,20 +7382,21 @@ func (c *Glue) GetDatabaseRequest(input *GetDatabaseInput) (req *request.Request
 // API operation GetDatabase for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDatabase
 func (c *Glue) GetDatabase(input *GetDatabaseInput) (*GetDatabaseOutput, error) {
@@ -7444,14 +7436,13 @@ const opGetDatabases = "GetDatabases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDatabasesRequest method.
+//	req, resp := client.GetDatabasesRequest(params)
 //
-//    // Example sending a request using the GetDatabasesRequest method.
-//    req, resp := client.GetDatabasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDatabases
 func (c *Glue) GetDatabasesRequest(input *GetDatabasesInput) (req *request.Request, output *GetDatabasesOutput) {
@@ -7488,17 +7479,18 @@ func (c *Glue) GetDatabasesRequest(input *GetDatabasesInput) (req *request.Reque
 // API operation GetDatabases for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDatabases
 func (c *Glue) GetDatabases(input *GetDatabasesInput) (*GetDatabasesOutput, error) {
@@ -7530,15 +7522,14 @@ func (c *Glue) GetDatabasesWithContext(ctx aws.Context, input *GetDatabasesInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDatabases operation.
-//    pageNum := 0
-//    err := client.GetDatabasesPages(params,
-//        func(page *glue.GetDatabasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDatabases operation.
+//	pageNum := 0
+//	err := client.GetDatabasesPages(params,
+//	    func(page *glue.GetDatabasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetDatabasesPages(input *GetDatabasesInput, fn func(*GetDatabasesOutput, bool) bool) error {
 	return c.GetDatabasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7590,14 +7581,13 @@ const opGetDataflowGraph = "GetDataflowGraph"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataflowGraphRequest method.
+//	req, resp := client.GetDataflowGraphRequest(params)
 //
-//    // Example sending a request using the GetDataflowGraphRequest method.
-//    req, resp := client.GetDataflowGraphRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDataflowGraph
 func (c *Glue) GetDataflowGraphRequest(input *GetDataflowGraphInput) (req *request.Request, output *GetDataflowGraphOutput) {
@@ -7628,14 +7618,15 @@ func (c *Glue) GetDataflowGraphRequest(input *GetDataflowGraphInput) (req *reque
 // API operation GetDataflowGraph for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDataflowGraph
 func (c *Glue) GetDataflowGraph(input *GetDataflowGraphInput) (*GetDataflowGraphOutput, error) {
@@ -7675,14 +7666,13 @@ const opGetDevEndpoint = "GetDevEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDevEndpointRequest method.
+//	req, resp := client.GetDevEndpointRequest(params)
 //
-//    // Example sending a request using the GetDevEndpointRequest method.
-//    req, resp := client.GetDevEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDevEndpoint
 func (c *Glue) GetDevEndpointRequest(input *GetDevEndpointInput) (req *request.Request, output *GetDevEndpointOutput) {
@@ -7718,17 +7708,18 @@ func (c *Glue) GetDevEndpointRequest(input *GetDevEndpointInput) (req *request.R
 // API operation GetDevEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDevEndpoint
 func (c *Glue) GetDevEndpoint(input *GetDevEndpointInput) (*GetDevEndpointOutput, error) {
@@ -7768,14 +7759,13 @@ const opGetDevEndpoints = "GetDevEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDevEndpointsRequest method.
+//	req, resp := client.GetDevEndpointsRequest(params)
 //
-//    // Example sending a request using the GetDevEndpointsRequest method.
-//    req, resp := client.GetDevEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDevEndpoints
 func (c *Glue) GetDevEndpointsRequest(input *GetDevEndpointsInput) (req *request.Request, output *GetDevEndpointsOutput) {
@@ -7817,17 +7807,18 @@ func (c *Glue) GetDevEndpointsRequest(input *GetDevEndpointsInput) (req *request
 // API operation GetDevEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetDevEndpoints
 func (c *Glue) GetDevEndpoints(input *GetDevEndpointsInput) (*GetDevEndpointsOutput, error) {
@@ -7859,15 +7850,14 @@ func (c *Glue) GetDevEndpointsWithContext(ctx aws.Context, input *GetDevEndpoint
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDevEndpoints operation.
-//    pageNum := 0
-//    err := client.GetDevEndpointsPages(params,
-//        func(page *glue.GetDevEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDevEndpoints operation.
+//	pageNum := 0
+//	err := client.GetDevEndpointsPages(params,
+//	    func(page *glue.GetDevEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetDevEndpointsPages(input *GetDevEndpointsInput, fn func(*GetDevEndpointsOutput, bool) bool) error {
 	return c.GetDevEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7919,14 +7909,13 @@ const opGetJob = "GetJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobRequest method.
+//	req, resp := client.GetJobRequest(params)
 //
-//    // Example sending a request using the GetJobRequest method.
-//    req, resp := client.GetJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJob
 func (c *Glue) GetJobRequest(input *GetJobInput) (req *request.Request, output *GetJobOutput) {
@@ -7957,17 +7946,18 @@ func (c *Glue) GetJobRequest(input *GetJobInput) (req *request.Request, output *
 // API operation GetJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJob
 func (c *Glue) GetJob(input *GetJobInput) (*GetJobOutput, error) {
@@ -8007,14 +7997,13 @@ const opGetJobBookmark = "GetJobBookmark"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobBookmarkRequest method.
+//	req, resp := client.GetJobBookmarkRequest(params)
 //
-//    // Example sending a request using the GetJobBookmarkRequest method.
-//    req, resp := client.GetJobBookmarkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobBookmark
 func (c *Glue) GetJobBookmarkRequest(input *GetJobBookmarkInput) (req *request.Request, output *GetJobBookmarkOutput) {
@@ -8045,20 +8034,21 @@ func (c *Glue) GetJobBookmarkRequest(input *GetJobBookmarkInput) (req *request.R
 // API operation GetJobBookmark for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ValidationException
-//   A value could not be validated.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ValidationException
+//     A value could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobBookmark
 func (c *Glue) GetJobBookmark(input *GetJobBookmarkInput) (*GetJobBookmarkOutput, error) {
@@ -8098,14 +8088,13 @@ const opGetJobRun = "GetJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobRunRequest method.
+//	req, resp := client.GetJobRunRequest(params)
 //
-//    // Example sending a request using the GetJobRunRequest method.
-//    req, resp := client.GetJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobRun
 func (c *Glue) GetJobRunRequest(input *GetJobRunInput) (req *request.Request, output *GetJobRunOutput) {
@@ -8136,17 +8125,18 @@ func (c *Glue) GetJobRunRequest(input *GetJobRunInput) (req *request.Request, ou
 // API operation GetJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobRun
 func (c *Glue) GetJobRun(input *GetJobRunInput) (*GetJobRunOutput, error) {
@@ -8186,14 +8176,13 @@ const opGetJobRuns = "GetJobRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobRunsRequest method.
+//	req, resp := client.GetJobRunsRequest(params)
 //
-//    // Example sending a request using the GetJobRunsRequest method.
-//    req, resp := client.GetJobRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobRuns
 func (c *Glue) GetJobRunsRequest(input *GetJobRunsInput) (req *request.Request, output *GetJobRunsOutput) {
@@ -8230,17 +8219,18 @@ func (c *Glue) GetJobRunsRequest(input *GetJobRunsInput) (req *request.Request, 
 // API operation GetJobRuns for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobRuns
 func (c *Glue) GetJobRuns(input *GetJobRunsInput) (*GetJobRunsOutput, error) {
@@ -8272,15 +8262,14 @@ func (c *Glue) GetJobRunsWithContext(ctx aws.Context, input *GetJobRunsInput, op
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetJobRuns operation.
-//    pageNum := 0
-//    err := client.GetJobRunsPages(params,
-//        func(page *glue.GetJobRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetJobRuns operation.
+//	pageNum := 0
+//	err := client.GetJobRunsPages(params,
+//	    func(page *glue.GetJobRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetJobRunsPages(input *GetJobRunsInput, fn func(*GetJobRunsOutput, bool) bool) error {
 	return c.GetJobRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8332,14 +8321,13 @@ const opGetJobs = "GetJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobsRequest method.
+//	req, resp := client.GetJobsRequest(params)
 //
-//    // Example sending a request using the GetJobsRequest method.
-//    req, resp := client.GetJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobs
 func (c *Glue) GetJobsRequest(input *GetJobsInput) (req *request.Request, output *GetJobsOutput) {
@@ -8376,17 +8364,18 @@ func (c *Glue) GetJobsRequest(input *GetJobsInput) (req *request.Request, output
 // API operation GetJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetJobs
 func (c *Glue) GetJobs(input *GetJobsInput) (*GetJobsOutput, error) {
@@ -8418,15 +8407,14 @@ func (c *Glue) GetJobsWithContext(ctx aws.Context, input *GetJobsInput, opts ...
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetJobs operation.
-//    pageNum := 0
-//    err := client.GetJobsPages(params,
-//        func(page *glue.GetJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetJobs operation.
+//	pageNum := 0
+//	err := client.GetJobsPages(params,
+//	    func(page *glue.GetJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetJobsPages(input *GetJobsInput, fn func(*GetJobsOutput, bool) bool) error {
 	return c.GetJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8478,14 +8466,13 @@ const opGetMLTaskRun = "GetMLTaskRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMLTaskRunRequest method.
+//	req, resp := client.GetMLTaskRunRequest(params)
 //
-//    // Example sending a request using the GetMLTaskRunRequest method.
-//    req, resp := client.GetMLTaskRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTaskRun
 func (c *Glue) GetMLTaskRunRequest(input *GetMLTaskRunInput) (req *request.Request, output *GetMLTaskRunOutput) {
@@ -8520,17 +8507,18 @@ func (c *Glue) GetMLTaskRunRequest(input *GetMLTaskRunInput) (req *request.Reque
 // API operation GetMLTaskRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTaskRun
 func (c *Glue) GetMLTaskRun(input *GetMLTaskRunInput) (*GetMLTaskRunOutput, error) {
@@ -8570,14 +8558,13 @@ const opGetMLTaskRuns = "GetMLTaskRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMLTaskRunsRequest method.
+//	req, resp := client.GetMLTaskRunsRequest(params)
 //
-//    // Example sending a request using the GetMLTaskRunsRequest method.
-//    req, resp := client.GetMLTaskRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTaskRuns
 func (c *Glue) GetMLTaskRunsRequest(input *GetMLTaskRunsInput) (req *request.Request, output *GetMLTaskRunsOutput) {
@@ -8620,17 +8607,18 @@ func (c *Glue) GetMLTaskRunsRequest(input *GetMLTaskRunsInput) (req *request.Req
 // API operation GetMLTaskRuns for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTaskRuns
 func (c *Glue) GetMLTaskRuns(input *GetMLTaskRunsInput) (*GetMLTaskRunsOutput, error) {
@@ -8662,15 +8650,14 @@ func (c *Glue) GetMLTaskRunsWithContext(ctx aws.Context, input *GetMLTaskRunsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetMLTaskRuns operation.
-//    pageNum := 0
-//    err := client.GetMLTaskRunsPages(params,
-//        func(page *glue.GetMLTaskRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetMLTaskRuns operation.
+//	pageNum := 0
+//	err := client.GetMLTaskRunsPages(params,
+//	    func(page *glue.GetMLTaskRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetMLTaskRunsPages(input *GetMLTaskRunsInput, fn func(*GetMLTaskRunsOutput, bool) bool) error {
 	return c.GetMLTaskRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8722,14 +8709,13 @@ const opGetMLTransform = "GetMLTransform"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMLTransformRequest method.
+//	req, resp := client.GetMLTransformRequest(params)
 //
-//    // Example sending a request using the GetMLTransformRequest method.
-//    req, resp := client.GetMLTransformRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTransform
 func (c *Glue) GetMLTransformRequest(input *GetMLTransformInput) (req *request.Request, output *GetMLTransformOutput) {
@@ -8764,17 +8750,18 @@ func (c *Glue) GetMLTransformRequest(input *GetMLTransformInput) (req *request.R
 // API operation GetMLTransform for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTransform
 func (c *Glue) GetMLTransform(input *GetMLTransformInput) (*GetMLTransformOutput, error) {
@@ -8814,14 +8801,13 @@ const opGetMLTransforms = "GetMLTransforms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMLTransformsRequest method.
+//	req, resp := client.GetMLTransformsRequest(params)
 //
-//    // Example sending a request using the GetMLTransformsRequest method.
-//    req, resp := client.GetMLTransformsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTransforms
 func (c *Glue) GetMLTransformsRequest(input *GetMLTransformsInput) (req *request.Request, output *GetMLTransformsOutput) {
@@ -8862,17 +8848,18 @@ func (c *Glue) GetMLTransformsRequest(input *GetMLTransformsInput) (req *request
 // API operation GetMLTransforms for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMLTransforms
 func (c *Glue) GetMLTransforms(input *GetMLTransformsInput) (*GetMLTransformsOutput, error) {
@@ -8904,15 +8891,14 @@ func (c *Glue) GetMLTransformsWithContext(ctx aws.Context, input *GetMLTransform
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetMLTransforms operation.
-//    pageNum := 0
-//    err := client.GetMLTransformsPages(params,
-//        func(page *glue.GetMLTransformsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetMLTransforms operation.
+//	pageNum := 0
+//	err := client.GetMLTransformsPages(params,
+//	    func(page *glue.GetMLTransformsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetMLTransformsPages(input *GetMLTransformsInput, fn func(*GetMLTransformsOutput, bool) bool) error {
 	return c.GetMLTransformsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8964,14 +8950,13 @@ const opGetMapping = "GetMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMappingRequest method.
+//	req, resp := client.GetMappingRequest(params)
 //
-//    // Example sending a request using the GetMappingRequest method.
-//    req, resp := client.GetMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMapping
 func (c *Glue) GetMappingRequest(input *GetMappingInput) (req *request.Request, output *GetMappingOutput) {
@@ -9002,17 +8987,18 @@ func (c *Glue) GetMappingRequest(input *GetMappingInput) (req *request.Request, 
 // API operation GetMapping for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetMapping
 func (c *Glue) GetMapping(input *GetMappingInput) (*GetMappingOutput, error) {
@@ -9052,14 +9038,13 @@ const opGetPartition = "GetPartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPartitionRequest method.
+//	req, resp := client.GetPartitionRequest(params)
 //
-//    // Example sending a request using the GetPartitionRequest method.
-//    req, resp := client.GetPartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPartition
 func (c *Glue) GetPartitionRequest(input *GetPartitionInput) (req *request.Request, output *GetPartitionOutput) {
@@ -9090,20 +9075,21 @@ func (c *Glue) GetPartitionRequest(input *GetPartitionInput) (req *request.Reque
 // API operation GetPartition for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPartition
 func (c *Glue) GetPartition(input *GetPartitionInput) (*GetPartitionOutput, error) {
@@ -9143,14 +9129,13 @@ const opGetPartitionIndexes = "GetPartitionIndexes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPartitionIndexesRequest method.
+//	req, resp := client.GetPartitionIndexesRequest(params)
 //
-//    // Example sending a request using the GetPartitionIndexesRequest method.
-//    req, resp := client.GetPartitionIndexesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPartitionIndexes
 func (c *Glue) GetPartitionIndexesRequest(input *GetPartitionIndexesInput) (req *request.Request, output *GetPartitionIndexesOutput) {
@@ -9187,20 +9172,21 @@ func (c *Glue) GetPartitionIndexesRequest(input *GetPartitionIndexesInput) (req 
 // API operation GetPartitionIndexes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ConflictException
-//   The CreatePartitions API was called on a table that has indexes enabled.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - ConflictException
+//     The CreatePartitions API was called on a table that has indexes enabled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPartitionIndexes
 func (c *Glue) GetPartitionIndexes(input *GetPartitionIndexesInput) (*GetPartitionIndexesOutput, error) {
@@ -9232,15 +9218,14 @@ func (c *Glue) GetPartitionIndexesWithContext(ctx aws.Context, input *GetPartiti
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetPartitionIndexes operation.
-//    pageNum := 0
-//    err := client.GetPartitionIndexesPages(params,
-//        func(page *glue.GetPartitionIndexesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetPartitionIndexes operation.
+//	pageNum := 0
+//	err := client.GetPartitionIndexesPages(params,
+//	    func(page *glue.GetPartitionIndexesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetPartitionIndexesPages(input *GetPartitionIndexesInput, fn func(*GetPartitionIndexesOutput, bool) bool) error {
 	return c.GetPartitionIndexesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9292,14 +9277,13 @@ const opGetPartitions = "GetPartitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPartitionsRequest method.
+//	req, resp := client.GetPartitionsRequest(params)
 //
-//    // Example sending a request using the GetPartitionsRequest method.
-//    req, resp := client.GetPartitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPartitions
 func (c *Glue) GetPartitionsRequest(input *GetPartitionsInput) (req *request.Request, output *GetPartitionsOutput) {
@@ -9336,26 +9320,27 @@ func (c *Glue) GetPartitionsRequest(input *GetPartitionsInput) (req *request.Req
 // API operation GetPartitions for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidStateException
-//   An error that indicates your data is in an invalid state.
+//   - EncryptionException
+//     An encryption operation failed.
 //
-//   * ResourceNotReadyException
-//   A resource was not ready for a transaction.
+//   - InvalidStateException
+//     An error that indicates your data is in an invalid state.
+//
+//   - ResourceNotReadyException
+//     A resource was not ready for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPartitions
 func (c *Glue) GetPartitions(input *GetPartitionsInput) (*GetPartitionsOutput, error) {
@@ -9387,15 +9372,14 @@ func (c *Glue) GetPartitionsWithContext(ctx aws.Context, input *GetPartitionsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetPartitions operation.
-//    pageNum := 0
-//    err := client.GetPartitionsPages(params,
-//        func(page *glue.GetPartitionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetPartitions operation.
+//	pageNum := 0
+//	err := client.GetPartitionsPages(params,
+//	    func(page *glue.GetPartitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetPartitionsPages(input *GetPartitionsInput, fn func(*GetPartitionsOutput, bool) bool) error {
 	return c.GetPartitionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9447,14 +9431,13 @@ const opGetPlan = "GetPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPlanRequest method.
+//	req, resp := client.GetPlanRequest(params)
 //
-//    // Example sending a request using the GetPlanRequest method.
-//    req, resp := client.GetPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPlan
 func (c *Glue) GetPlanRequest(input *GetPlanInput) (req *request.Request, output *GetPlanOutput) {
@@ -9485,14 +9468,15 @@ func (c *Glue) GetPlanRequest(input *GetPlanInput) (req *request.Request, output
 // API operation GetPlan for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetPlan
 func (c *Glue) GetPlan(input *GetPlanInput) (*GetPlanOutput, error) {
@@ -9532,14 +9516,13 @@ const opGetRegistry = "GetRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRegistryRequest method.
+//	req, resp := client.GetRegistryRequest(params)
 //
-//    // Example sending a request using the GetRegistryRequest method.
-//    req, resp := client.GetRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetRegistry
 func (c *Glue) GetRegistryRequest(input *GetRegistryInput) (req *request.Request, output *GetRegistryOutput) {
@@ -9570,17 +9553,18 @@ func (c *Glue) GetRegistryRequest(input *GetRegistryInput) (req *request.Request
 // API operation GetRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetRegistry
 func (c *Glue) GetRegistry(input *GetRegistryInput) (*GetRegistryOutput, error) {
@@ -9620,14 +9604,13 @@ const opGetResourcePolicies = "GetResourcePolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePoliciesRequest method.
+//	req, resp := client.GetResourcePoliciesRequest(params)
 //
-//    // Example sending a request using the GetResourcePoliciesRequest method.
-//    req, resp := client.GetResourcePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetResourcePolicies
 func (c *Glue) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req *request.Request, output *GetResourcePoliciesOutput) {
@@ -9670,17 +9653,18 @@ func (c *Glue) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req 
 // API operation GetResourcePolicies for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetResourcePolicies
 func (c *Glue) GetResourcePolicies(input *GetResourcePoliciesInput) (*GetResourcePoliciesOutput, error) {
@@ -9712,15 +9696,14 @@ func (c *Glue) GetResourcePoliciesWithContext(ctx aws.Context, input *GetResourc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourcePolicies operation.
-//    pageNum := 0
-//    err := client.GetResourcePoliciesPages(params,
-//        func(page *glue.GetResourcePoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourcePolicies operation.
+//	pageNum := 0
+//	err := client.GetResourcePoliciesPages(params,
+//	    func(page *glue.GetResourcePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetResourcePoliciesPages(input *GetResourcePoliciesInput, fn func(*GetResourcePoliciesOutput, bool) bool) error {
 	return c.GetResourcePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9772,14 +9755,13 @@ const opGetResourcePolicy = "GetResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePolicyRequest method.
+//	req, resp := client.GetResourcePolicyRequest(params)
 //
-//    // Example sending a request using the GetResourcePolicyRequest method.
-//    req, resp := client.GetResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetResourcePolicy
 func (c *Glue) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *request.Request, output *GetResourcePolicyOutput) {
@@ -9810,17 +9792,18 @@ func (c *Glue) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *req
 // API operation GetResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetResourcePolicy
 func (c *Glue) GetResourcePolicy(input *GetResourcePolicyInput) (*GetResourcePolicyOutput, error) {
@@ -9860,14 +9843,13 @@ const opGetSchema = "GetSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSchemaRequest method.
+//	req, resp := client.GetSchemaRequest(params)
 //
-//    // Example sending a request using the GetSchemaRequest method.
-//    req, resp := client.GetSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchema
 func (c *Glue) GetSchemaRequest(input *GetSchemaInput) (req *request.Request, output *GetSchemaOutput) {
@@ -9898,17 +9880,18 @@ func (c *Glue) GetSchemaRequest(input *GetSchemaInput) (req *request.Request, ou
 // API operation GetSchema for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchema
 func (c *Glue) GetSchema(input *GetSchemaInput) (*GetSchemaOutput, error) {
@@ -9948,14 +9931,13 @@ const opGetSchemaByDefinition = "GetSchemaByDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSchemaByDefinitionRequest method.
+//	req, resp := client.GetSchemaByDefinitionRequest(params)
 //
-//    // Example sending a request using the GetSchemaByDefinitionRequest method.
-//    req, resp := client.GetSchemaByDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchemaByDefinition
 func (c *Glue) GetSchemaByDefinitionRequest(input *GetSchemaByDefinitionInput) (req *request.Request, output *GetSchemaByDefinitionOutput) {
@@ -9991,17 +9973,18 @@ func (c *Glue) GetSchemaByDefinitionRequest(input *GetSchemaByDefinitionInput) (
 // API operation GetSchemaByDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchemaByDefinition
 func (c *Glue) GetSchemaByDefinition(input *GetSchemaByDefinitionInput) (*GetSchemaByDefinitionOutput, error) {
@@ -10041,14 +10024,13 @@ const opGetSchemaVersion = "GetSchemaVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSchemaVersionRequest method.
+//	req, resp := client.GetSchemaVersionRequest(params)
 //
-//    // Example sending a request using the GetSchemaVersionRequest method.
-//    req, resp := client.GetSchemaVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchemaVersion
 func (c *Glue) GetSchemaVersionRequest(input *GetSchemaVersionInput) (req *request.Request, output *GetSchemaVersionOutput) {
@@ -10081,17 +10063,18 @@ func (c *Glue) GetSchemaVersionRequest(input *GetSchemaVersionInput) (req *reque
 // API operation GetSchemaVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchemaVersion
 func (c *Glue) GetSchemaVersion(input *GetSchemaVersionInput) (*GetSchemaVersionOutput, error) {
@@ -10131,14 +10114,13 @@ const opGetSchemaVersionsDiff = "GetSchemaVersionsDiff"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSchemaVersionsDiffRequest method.
+//	req, resp := client.GetSchemaVersionsDiffRequest(params)
 //
-//    // Example sending a request using the GetSchemaVersionsDiffRequest method.
-//    req, resp := client.GetSchemaVersionsDiffRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchemaVersionsDiff
 func (c *Glue) GetSchemaVersionsDiffRequest(input *GetSchemaVersionsDiffInput) (req *request.Request, output *GetSchemaVersionsDiffOutput) {
@@ -10173,17 +10155,18 @@ func (c *Glue) GetSchemaVersionsDiffRequest(input *GetSchemaVersionsDiffInput) (
 // API operation GetSchemaVersionsDiff for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSchemaVersionsDiff
 func (c *Glue) GetSchemaVersionsDiff(input *GetSchemaVersionsDiffInput) (*GetSchemaVersionsDiffOutput, error) {
@@ -10223,14 +10206,13 @@ const opGetSecurityConfiguration = "GetSecurityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSecurityConfigurationRequest method.
+//	req, resp := client.GetSecurityConfigurationRequest(params)
 //
-//    // Example sending a request using the GetSecurityConfigurationRequest method.
-//    req, resp := client.GetSecurityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSecurityConfiguration
 func (c *Glue) GetSecurityConfigurationRequest(input *GetSecurityConfigurationInput) (req *request.Request, output *GetSecurityConfigurationOutput) {
@@ -10261,17 +10243,18 @@ func (c *Glue) GetSecurityConfigurationRequest(input *GetSecurityConfigurationIn
 // API operation GetSecurityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSecurityConfiguration
 func (c *Glue) GetSecurityConfiguration(input *GetSecurityConfigurationInput) (*GetSecurityConfigurationOutput, error) {
@@ -10311,14 +10294,13 @@ const opGetSecurityConfigurations = "GetSecurityConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSecurityConfigurationsRequest method.
+//	req, resp := client.GetSecurityConfigurationsRequest(params)
 //
-//    // Example sending a request using the GetSecurityConfigurationsRequest method.
-//    req, resp := client.GetSecurityConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSecurityConfigurations
 func (c *Glue) GetSecurityConfigurationsRequest(input *GetSecurityConfigurationsInput) (req *request.Request, output *GetSecurityConfigurationsOutput) {
@@ -10355,17 +10337,18 @@ func (c *Glue) GetSecurityConfigurationsRequest(input *GetSecurityConfigurations
 // API operation GetSecurityConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSecurityConfigurations
 func (c *Glue) GetSecurityConfigurations(input *GetSecurityConfigurationsInput) (*GetSecurityConfigurationsOutput, error) {
@@ -10397,15 +10380,14 @@ func (c *Glue) GetSecurityConfigurationsWithContext(ctx aws.Context, input *GetS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSecurityConfigurations operation.
-//    pageNum := 0
-//    err := client.GetSecurityConfigurationsPages(params,
-//        func(page *glue.GetSecurityConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSecurityConfigurations operation.
+//	pageNum := 0
+//	err := client.GetSecurityConfigurationsPages(params,
+//	    func(page *glue.GetSecurityConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetSecurityConfigurationsPages(input *GetSecurityConfigurationsInput, fn func(*GetSecurityConfigurationsOutput, bool) bool) error {
 	return c.GetSecurityConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -10457,14 +10439,13 @@ const opGetSession = "GetSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSessionRequest method.
+//	req, resp := client.GetSessionRequest(params)
 //
-//    // Example sending a request using the GetSessionRequest method.
-//    req, resp := client.GetSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSession
 func (c *Glue) GetSessionRequest(input *GetSessionInput) (req *request.Request, output *GetSessionOutput) {
@@ -10495,20 +10476,21 @@ func (c *Glue) GetSessionRequest(input *GetSessionInput) (req *request.Request, 
 // API operation GetSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetSession
 func (c *Glue) GetSession(input *GetSessionInput) (*GetSessionOutput, error) {
@@ -10548,14 +10530,13 @@ const opGetStatement = "GetStatement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStatementRequest method.
+//	req, resp := client.GetStatementRequest(params)
 //
-//    // Example sending a request using the GetStatementRequest method.
-//    req, resp := client.GetStatementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetStatement
 func (c *Glue) GetStatementRequest(input *GetStatementInput) (req *request.Request, output *GetStatementOutput) {
@@ -10586,23 +10567,24 @@ func (c *Glue) GetStatementRequest(input *GetStatementInput) (req *request.Reque
 // API operation GetStatement for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalSessionStateException
-//   The session is in an invalid state to perform a requested operation.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - IllegalSessionStateException
+//     The session is in an invalid state to perform a requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetStatement
 func (c *Glue) GetStatement(input *GetStatementInput) (*GetStatementOutput, error) {
@@ -10642,14 +10624,13 @@ const opGetTable = "GetTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTableRequest method.
+//	req, resp := client.GetTableRequest(params)
 //
-//    // Example sending a request using the GetTableRequest method.
-//    req, resp := client.GetTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTable
 func (c *Glue) GetTableRequest(input *GetTableInput) (req *request.Request, output *GetTableOutput) {
@@ -10680,23 +10661,24 @@ func (c *Glue) GetTableRequest(input *GetTableInput) (req *request.Request, outp
 // API operation GetTable for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ResourceNotReadyException
-//   A resource was not ready for a transaction.
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - ResourceNotReadyException
+//     A resource was not ready for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTable
 func (c *Glue) GetTable(input *GetTableInput) (*GetTableOutput, error) {
@@ -10736,14 +10718,13 @@ const opGetTableVersion = "GetTableVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTableVersionRequest method.
+//	req, resp := client.GetTableVersionRequest(params)
 //
-//    // Example sending a request using the GetTableVersionRequest method.
-//    req, resp := client.GetTableVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTableVersion
 func (c *Glue) GetTableVersionRequest(input *GetTableVersionInput) (req *request.Request, output *GetTableVersionOutput) {
@@ -10774,20 +10755,21 @@ func (c *Glue) GetTableVersionRequest(input *GetTableVersionInput) (req *request
 // API operation GetTableVersion for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTableVersion
 func (c *Glue) GetTableVersion(input *GetTableVersionInput) (*GetTableVersionOutput, error) {
@@ -10827,14 +10809,13 @@ const opGetTableVersions = "GetTableVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTableVersionsRequest method.
+//	req, resp := client.GetTableVersionsRequest(params)
 //
-//    // Example sending a request using the GetTableVersionsRequest method.
-//    req, resp := client.GetTableVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTableVersions
 func (c *Glue) GetTableVersionsRequest(input *GetTableVersionsInput) (req *request.Request, output *GetTableVersionsOutput) {
@@ -10872,20 +10853,21 @@ func (c *Glue) GetTableVersionsRequest(input *GetTableVersionsInput) (req *reque
 // API operation GetTableVersions for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTableVersions
 func (c *Glue) GetTableVersions(input *GetTableVersionsInput) (*GetTableVersionsOutput, error) {
@@ -10917,15 +10899,14 @@ func (c *Glue) GetTableVersionsWithContext(ctx aws.Context, input *GetTableVersi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTableVersions operation.
-//    pageNum := 0
-//    err := client.GetTableVersionsPages(params,
-//        func(page *glue.GetTableVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTableVersions operation.
+//	pageNum := 0
+//	err := client.GetTableVersionsPages(params,
+//	    func(page *glue.GetTableVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetTableVersionsPages(input *GetTableVersionsInput, fn func(*GetTableVersionsOutput, bool) bool) error {
 	return c.GetTableVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -10977,14 +10958,13 @@ const opGetTables = "GetTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTablesRequest method.
+//	req, resp := client.GetTablesRequest(params)
 //
-//    // Example sending a request using the GetTablesRequest method.
-//    req, resp := client.GetTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTables
 func (c *Glue) GetTablesRequest(input *GetTablesInput) (req *request.Request, output *GetTablesOutput) {
@@ -11021,20 +11001,21 @@ func (c *Glue) GetTablesRequest(input *GetTablesInput) (req *request.Request, ou
 // API operation GetTables for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTables
 func (c *Glue) GetTables(input *GetTablesInput) (*GetTablesOutput, error) {
@@ -11066,15 +11047,14 @@ func (c *Glue) GetTablesWithContext(ctx aws.Context, input *GetTablesInput, opts
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTables operation.
-//    pageNum := 0
-//    err := client.GetTablesPages(params,
-//        func(page *glue.GetTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTables operation.
+//	pageNum := 0
+//	err := client.GetTablesPages(params,
+//	    func(page *glue.GetTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetTablesPages(input *GetTablesInput, fn func(*GetTablesOutput, bool) bool) error {
 	return c.GetTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11126,14 +11106,13 @@ const opGetTags = "GetTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTagsRequest method.
+//	req, resp := client.GetTagsRequest(params)
 //
-//    // Example sending a request using the GetTagsRequest method.
-//    req, resp := client.GetTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTags
 func (c *Glue) GetTagsRequest(input *GetTagsInput) (req *request.Request, output *GetTagsOutput) {
@@ -11164,17 +11143,18 @@ func (c *Glue) GetTagsRequest(input *GetTagsInput) (req *request.Request, output
 // API operation GetTags for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTags
 func (c *Glue) GetTags(input *GetTagsInput) (*GetTagsOutput, error) {
@@ -11214,14 +11194,13 @@ const opGetTrigger = "GetTrigger"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTriggerRequest method.
+//	req, resp := client.GetTriggerRequest(params)
 //
-//    // Example sending a request using the GetTriggerRequest method.
-//    req, resp := client.GetTriggerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTrigger
 func (c *Glue) GetTriggerRequest(input *GetTriggerInput) (req *request.Request, output *GetTriggerOutput) {
@@ -11252,17 +11231,18 @@ func (c *Glue) GetTriggerRequest(input *GetTriggerInput) (req *request.Request, 
 // API operation GetTrigger for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTrigger
 func (c *Glue) GetTrigger(input *GetTriggerInput) (*GetTriggerOutput, error) {
@@ -11302,14 +11282,13 @@ const opGetTriggers = "GetTriggers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTriggersRequest method.
+//	req, resp := client.GetTriggersRequest(params)
 //
-//    // Example sending a request using the GetTriggersRequest method.
-//    req, resp := client.GetTriggersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTriggers
 func (c *Glue) GetTriggersRequest(input *GetTriggersInput) (req *request.Request, output *GetTriggersOutput) {
@@ -11346,17 +11325,18 @@ func (c *Glue) GetTriggersRequest(input *GetTriggersInput) (req *request.Request
 // API operation GetTriggers for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetTriggers
 func (c *Glue) GetTriggers(input *GetTriggersInput) (*GetTriggersOutput, error) {
@@ -11388,15 +11368,14 @@ func (c *Glue) GetTriggersWithContext(ctx aws.Context, input *GetTriggersInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTriggers operation.
-//    pageNum := 0
-//    err := client.GetTriggersPages(params,
-//        func(page *glue.GetTriggersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTriggers operation.
+//	pageNum := 0
+//	err := client.GetTriggersPages(params,
+//	    func(page *glue.GetTriggersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetTriggersPages(input *GetTriggersInput, fn func(*GetTriggersOutput, bool) bool) error {
 	return c.GetTriggersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11448,14 +11427,13 @@ const opGetUnfilteredPartitionMetadata = "GetUnfilteredPartitionMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUnfilteredPartitionMetadataRequest method.
+//	req, resp := client.GetUnfilteredPartitionMetadataRequest(params)
 //
-//    // Example sending a request using the GetUnfilteredPartitionMetadataRequest method.
-//    req, resp := client.GetUnfilteredPartitionMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUnfilteredPartitionMetadata
 func (c *Glue) GetUnfilteredPartitionMetadataRequest(input *GetUnfilteredPartitionMetadataInput) (req *request.Request, output *GetUnfilteredPartitionMetadataOutput) {
@@ -11484,22 +11462,23 @@ func (c *Glue) GetUnfilteredPartitionMetadataRequest(input *GetUnfilteredPartiti
 // API operation GetUnfilteredPartitionMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * PermissionTypeMismatchException
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - PermissionTypeMismatchException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUnfilteredPartitionMetadata
 func (c *Glue) GetUnfilteredPartitionMetadata(input *GetUnfilteredPartitionMetadataInput) (*GetUnfilteredPartitionMetadataOutput, error) {
@@ -11539,14 +11518,13 @@ const opGetUnfilteredPartitionsMetadata = "GetUnfilteredPartitionsMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUnfilteredPartitionsMetadataRequest method.
+//	req, resp := client.GetUnfilteredPartitionsMetadataRequest(params)
 //
-//    // Example sending a request using the GetUnfilteredPartitionsMetadataRequest method.
-//    req, resp := client.GetUnfilteredPartitionsMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUnfilteredPartitionsMetadata
 func (c *Glue) GetUnfilteredPartitionsMetadataRequest(input *GetUnfilteredPartitionsMetadataInput) (req *request.Request, output *GetUnfilteredPartitionsMetadataOutput) {
@@ -11581,22 +11559,23 @@ func (c *Glue) GetUnfilteredPartitionsMetadataRequest(input *GetUnfilteredPartit
 // API operation GetUnfilteredPartitionsMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * PermissionTypeMismatchException
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - PermissionTypeMismatchException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUnfilteredPartitionsMetadata
 func (c *Glue) GetUnfilteredPartitionsMetadata(input *GetUnfilteredPartitionsMetadataInput) (*GetUnfilteredPartitionsMetadataOutput, error) {
@@ -11628,15 +11607,14 @@ func (c *Glue) GetUnfilteredPartitionsMetadataWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUnfilteredPartitionsMetadata operation.
-//    pageNum := 0
-//    err := client.GetUnfilteredPartitionsMetadataPages(params,
-//        func(page *glue.GetUnfilteredPartitionsMetadataOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUnfilteredPartitionsMetadata operation.
+//	pageNum := 0
+//	err := client.GetUnfilteredPartitionsMetadataPages(params,
+//	    func(page *glue.GetUnfilteredPartitionsMetadataOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetUnfilteredPartitionsMetadataPages(input *GetUnfilteredPartitionsMetadataInput, fn func(*GetUnfilteredPartitionsMetadataOutput, bool) bool) error {
 	return c.GetUnfilteredPartitionsMetadataPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11688,14 +11666,13 @@ const opGetUnfilteredTableMetadata = "GetUnfilteredTableMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUnfilteredTableMetadataRequest method.
+//	req, resp := client.GetUnfilteredTableMetadataRequest(params)
 //
-//    // Example sending a request using the GetUnfilteredTableMetadataRequest method.
-//    req, resp := client.GetUnfilteredTableMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUnfilteredTableMetadata
 func (c *Glue) GetUnfilteredTableMetadataRequest(input *GetUnfilteredTableMetadataInput) (req *request.Request, output *GetUnfilteredTableMetadataOutput) {
@@ -11724,22 +11701,23 @@ func (c *Glue) GetUnfilteredTableMetadataRequest(input *GetUnfilteredTableMetada
 // API operation GetUnfilteredTableMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * PermissionTypeMismatchException
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - PermissionTypeMismatchException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUnfilteredTableMetadata
 func (c *Glue) GetUnfilteredTableMetadata(input *GetUnfilteredTableMetadataInput) (*GetUnfilteredTableMetadataOutput, error) {
@@ -11779,14 +11757,13 @@ const opGetUserDefinedFunction = "GetUserDefinedFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserDefinedFunctionRequest method.
+//	req, resp := client.GetUserDefinedFunctionRequest(params)
 //
-//    // Example sending a request using the GetUserDefinedFunctionRequest method.
-//    req, resp := client.GetUserDefinedFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUserDefinedFunction
 func (c *Glue) GetUserDefinedFunctionRequest(input *GetUserDefinedFunctionInput) (req *request.Request, output *GetUserDefinedFunctionOutput) {
@@ -11817,20 +11794,21 @@ func (c *Glue) GetUserDefinedFunctionRequest(input *GetUserDefinedFunctionInput)
 // API operation GetUserDefinedFunction for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUserDefinedFunction
 func (c *Glue) GetUserDefinedFunction(input *GetUserDefinedFunctionInput) (*GetUserDefinedFunctionOutput, error) {
@@ -11870,14 +11848,13 @@ const opGetUserDefinedFunctions = "GetUserDefinedFunctions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserDefinedFunctionsRequest method.
+//	req, resp := client.GetUserDefinedFunctionsRequest(params)
 //
-//    // Example sending a request using the GetUserDefinedFunctionsRequest method.
-//    req, resp := client.GetUserDefinedFunctionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUserDefinedFunctions
 func (c *Glue) GetUserDefinedFunctionsRequest(input *GetUserDefinedFunctionsInput) (req *request.Request, output *GetUserDefinedFunctionsOutput) {
@@ -11914,20 +11891,21 @@ func (c *Glue) GetUserDefinedFunctionsRequest(input *GetUserDefinedFunctionsInpu
 // API operation GetUserDefinedFunctions for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetUserDefinedFunctions
 func (c *Glue) GetUserDefinedFunctions(input *GetUserDefinedFunctionsInput) (*GetUserDefinedFunctionsOutput, error) {
@@ -11959,15 +11937,14 @@ func (c *Glue) GetUserDefinedFunctionsWithContext(ctx aws.Context, input *GetUse
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUserDefinedFunctions operation.
-//    pageNum := 0
-//    err := client.GetUserDefinedFunctionsPages(params,
-//        func(page *glue.GetUserDefinedFunctionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUserDefinedFunctions operation.
+//	pageNum := 0
+//	err := client.GetUserDefinedFunctionsPages(params,
+//	    func(page *glue.GetUserDefinedFunctionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetUserDefinedFunctionsPages(input *GetUserDefinedFunctionsInput, fn func(*GetUserDefinedFunctionsOutput, bool) bool) error {
 	return c.GetUserDefinedFunctionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12019,14 +11996,13 @@ const opGetWorkflow = "GetWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowRequest method.
+//	req, resp := client.GetWorkflowRequest(params)
 //
-//    // Example sending a request using the GetWorkflowRequest method.
-//    req, resp := client.GetWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflow
 func (c *Glue) GetWorkflowRequest(input *GetWorkflowInput) (req *request.Request, output *GetWorkflowOutput) {
@@ -12057,17 +12033,18 @@ func (c *Glue) GetWorkflowRequest(input *GetWorkflowInput) (req *request.Request
 // API operation GetWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflow
 func (c *Glue) GetWorkflow(input *GetWorkflowInput) (*GetWorkflowOutput, error) {
@@ -12107,14 +12084,13 @@ const opGetWorkflowRun = "GetWorkflowRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowRunRequest method.
+//	req, resp := client.GetWorkflowRunRequest(params)
 //
-//    // Example sending a request using the GetWorkflowRunRequest method.
-//    req, resp := client.GetWorkflowRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflowRun
 func (c *Glue) GetWorkflowRunRequest(input *GetWorkflowRunInput) (req *request.Request, output *GetWorkflowRunOutput) {
@@ -12145,17 +12121,18 @@ func (c *Glue) GetWorkflowRunRequest(input *GetWorkflowRunInput) (req *request.R
 // API operation GetWorkflowRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflowRun
 func (c *Glue) GetWorkflowRun(input *GetWorkflowRunInput) (*GetWorkflowRunOutput, error) {
@@ -12195,14 +12172,13 @@ const opGetWorkflowRunProperties = "GetWorkflowRunProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowRunPropertiesRequest method.
+//	req, resp := client.GetWorkflowRunPropertiesRequest(params)
 //
-//    // Example sending a request using the GetWorkflowRunPropertiesRequest method.
-//    req, resp := client.GetWorkflowRunPropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflowRunProperties
 func (c *Glue) GetWorkflowRunPropertiesRequest(input *GetWorkflowRunPropertiesInput) (req *request.Request, output *GetWorkflowRunPropertiesOutput) {
@@ -12233,17 +12209,18 @@ func (c *Glue) GetWorkflowRunPropertiesRequest(input *GetWorkflowRunPropertiesIn
 // API operation GetWorkflowRunProperties for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflowRunProperties
 func (c *Glue) GetWorkflowRunProperties(input *GetWorkflowRunPropertiesInput) (*GetWorkflowRunPropertiesOutput, error) {
@@ -12283,14 +12260,13 @@ const opGetWorkflowRuns = "GetWorkflowRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowRunsRequest method.
+//	req, resp := client.GetWorkflowRunsRequest(params)
 //
-//    // Example sending a request using the GetWorkflowRunsRequest method.
-//    req, resp := client.GetWorkflowRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflowRuns
 func (c *Glue) GetWorkflowRunsRequest(input *GetWorkflowRunsInput) (req *request.Request, output *GetWorkflowRunsOutput) {
@@ -12327,17 +12303,18 @@ func (c *Glue) GetWorkflowRunsRequest(input *GetWorkflowRunsInput) (req *request
 // API operation GetWorkflowRuns for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/GetWorkflowRuns
 func (c *Glue) GetWorkflowRuns(input *GetWorkflowRunsInput) (*GetWorkflowRunsOutput, error) {
@@ -12369,15 +12346,14 @@ func (c *Glue) GetWorkflowRunsWithContext(ctx aws.Context, input *GetWorkflowRun
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetWorkflowRuns operation.
-//    pageNum := 0
-//    err := client.GetWorkflowRunsPages(params,
-//        func(page *glue.GetWorkflowRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetWorkflowRuns operation.
+//	pageNum := 0
+//	err := client.GetWorkflowRunsPages(params,
+//	    func(page *glue.GetWorkflowRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) GetWorkflowRunsPages(input *GetWorkflowRunsInput, fn func(*GetWorkflowRunsOutput, bool) bool) error {
 	return c.GetWorkflowRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12429,14 +12405,13 @@ const opImportCatalogToGlue = "ImportCatalogToGlue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportCatalogToGlueRequest method.
+//	req, resp := client.ImportCatalogToGlueRequest(params)
 //
-//    // Example sending a request using the ImportCatalogToGlueRequest method.
-//    req, resp := client.ImportCatalogToGlueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ImportCatalogToGlue
 func (c *Glue) ImportCatalogToGlueRequest(input *ImportCatalogToGlueInput) (req *request.Request, output *ImportCatalogToGlueOutput) {
@@ -12468,11 +12443,12 @@ func (c *Glue) ImportCatalogToGlueRequest(input *ImportCatalogToGlueInput) (req 
 // API operation ImportCatalogToGlue for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ImportCatalogToGlue
 func (c *Glue) ImportCatalogToGlue(input *ImportCatalogToGlueInput) (*ImportCatalogToGlueOutput, error) {
@@ -12512,14 +12488,13 @@ const opListBlueprints = "ListBlueprints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBlueprintsRequest method.
+//	req, resp := client.ListBlueprintsRequest(params)
 //
-//    // Example sending a request using the ListBlueprintsRequest method.
-//    req, resp := client.ListBlueprintsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListBlueprints
 func (c *Glue) ListBlueprintsRequest(input *ListBlueprintsInput) (req *request.Request, output *ListBlueprintsOutput) {
@@ -12556,14 +12531,15 @@ func (c *Glue) ListBlueprintsRequest(input *ListBlueprintsInput) (req *request.R
 // API operation ListBlueprints for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListBlueprints
 func (c *Glue) ListBlueprints(input *ListBlueprintsInput) (*ListBlueprintsOutput, error) {
@@ -12595,15 +12571,14 @@ func (c *Glue) ListBlueprintsWithContext(ctx aws.Context, input *ListBlueprintsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBlueprints operation.
-//    pageNum := 0
-//    err := client.ListBlueprintsPages(params,
-//        func(page *glue.ListBlueprintsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBlueprints operation.
+//	pageNum := 0
+//	err := client.ListBlueprintsPages(params,
+//	    func(page *glue.ListBlueprintsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListBlueprintsPages(input *ListBlueprintsInput, fn func(*ListBlueprintsOutput, bool) bool) error {
 	return c.ListBlueprintsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12655,14 +12630,13 @@ const opListCrawlers = "ListCrawlers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCrawlersRequest method.
+//	req, resp := client.ListCrawlersRequest(params)
 //
-//    // Example sending a request using the ListCrawlersRequest method.
-//    req, resp := client.ListCrawlersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListCrawlers
 func (c *Glue) ListCrawlersRequest(input *ListCrawlersInput) (req *request.Request, output *ListCrawlersOutput) {
@@ -12705,8 +12679,8 @@ func (c *Glue) ListCrawlersRequest(input *ListCrawlersInput) (req *request.Reque
 // API operation ListCrawlers for usage and error information.
 //
 // Returned Error Types:
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListCrawlers
 func (c *Glue) ListCrawlers(input *ListCrawlersInput) (*ListCrawlersOutput, error) {
@@ -12738,15 +12712,14 @@ func (c *Glue) ListCrawlersWithContext(ctx aws.Context, input *ListCrawlersInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCrawlers operation.
-//    pageNum := 0
-//    err := client.ListCrawlersPages(params,
-//        func(page *glue.ListCrawlersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCrawlers operation.
+//	pageNum := 0
+//	err := client.ListCrawlersPages(params,
+//	    func(page *glue.ListCrawlersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListCrawlersPages(input *ListCrawlersInput, fn func(*ListCrawlersOutput, bool) bool) error {
 	return c.ListCrawlersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12798,14 +12771,13 @@ const opListCustomEntityTypes = "ListCustomEntityTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomEntityTypesRequest method.
+//	req, resp := client.ListCustomEntityTypesRequest(params)
 //
-//    // Example sending a request using the ListCustomEntityTypesRequest method.
-//    req, resp := client.ListCustomEntityTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListCustomEntityTypes
 func (c *Glue) ListCustomEntityTypesRequest(input *ListCustomEntityTypesInput) (req *request.Request, output *ListCustomEntityTypesOutput) {
@@ -12842,14 +12814,15 @@ func (c *Glue) ListCustomEntityTypesRequest(input *ListCustomEntityTypesInput) (
 // API operation ListCustomEntityTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListCustomEntityTypes
 func (c *Glue) ListCustomEntityTypes(input *ListCustomEntityTypesInput) (*ListCustomEntityTypesOutput, error) {
@@ -12881,15 +12854,14 @@ func (c *Glue) ListCustomEntityTypesWithContext(ctx aws.Context, input *ListCust
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomEntityTypes operation.
-//    pageNum := 0
-//    err := client.ListCustomEntityTypesPages(params,
-//        func(page *glue.ListCustomEntityTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomEntityTypes operation.
+//	pageNum := 0
+//	err := client.ListCustomEntityTypesPages(params,
+//	    func(page *glue.ListCustomEntityTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListCustomEntityTypesPages(input *ListCustomEntityTypesInput, fn func(*ListCustomEntityTypesOutput, bool) bool) error {
 	return c.ListCustomEntityTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12941,14 +12913,13 @@ const opListDevEndpoints = "ListDevEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDevEndpointsRequest method.
+//	req, resp := client.ListDevEndpointsRequest(params)
 //
-//    // Example sending a request using the ListDevEndpointsRequest method.
-//    req, resp := client.ListDevEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListDevEndpoints
 func (c *Glue) ListDevEndpointsRequest(input *ListDevEndpointsInput) (req *request.Request, output *ListDevEndpointsOutput) {
@@ -12991,17 +12962,18 @@ func (c *Glue) ListDevEndpointsRequest(input *ListDevEndpointsInput) (req *reque
 // API operation ListDevEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListDevEndpoints
 func (c *Glue) ListDevEndpoints(input *ListDevEndpointsInput) (*ListDevEndpointsOutput, error) {
@@ -13033,15 +13005,14 @@ func (c *Glue) ListDevEndpointsWithContext(ctx aws.Context, input *ListDevEndpoi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDevEndpoints operation.
-//    pageNum := 0
-//    err := client.ListDevEndpointsPages(params,
-//        func(page *glue.ListDevEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDevEndpoints operation.
+//	pageNum := 0
+//	err := client.ListDevEndpointsPages(params,
+//	    func(page *glue.ListDevEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListDevEndpointsPages(input *ListDevEndpointsInput, fn func(*ListDevEndpointsOutput, bool) bool) error {
 	return c.ListDevEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13093,14 +13064,13 @@ const opListJobs = "ListJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsRequest method.
+//	req, resp := client.ListJobsRequest(params)
 //
-//    // Example sending a request using the ListJobsRequest method.
-//    req, resp := client.ListJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListJobs
 func (c *Glue) ListJobsRequest(input *ListJobsInput) (req *request.Request, output *ListJobsOutput) {
@@ -13143,17 +13113,18 @@ func (c *Glue) ListJobsRequest(input *ListJobsInput) (req *request.Request, outp
 // API operation ListJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListJobs
 func (c *Glue) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
@@ -13185,15 +13156,14 @@ func (c *Glue) ListJobsWithContext(ctx aws.Context, input *ListJobsInput, opts .
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobs operation.
-//    pageNum := 0
-//    err := client.ListJobsPages(params,
-//        func(page *glue.ListJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobs operation.
+//	pageNum := 0
+//	err := client.ListJobsPages(params,
+//	    func(page *glue.ListJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListJobsPages(input *ListJobsInput, fn func(*ListJobsOutput, bool) bool) error {
 	return c.ListJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13245,14 +13215,13 @@ const opListMLTransforms = "ListMLTransforms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMLTransformsRequest method.
+//	req, resp := client.ListMLTransformsRequest(params)
 //
-//    // Example sending a request using the ListMLTransformsRequest method.
-//    req, resp := client.ListMLTransformsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListMLTransforms
 func (c *Glue) ListMLTransformsRequest(input *ListMLTransformsInput) (req *request.Request, output *ListMLTransformsOutput) {
@@ -13293,17 +13262,18 @@ func (c *Glue) ListMLTransformsRequest(input *ListMLTransformsInput) (req *reque
 // API operation ListMLTransforms for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListMLTransforms
 func (c *Glue) ListMLTransforms(input *ListMLTransformsInput) (*ListMLTransformsOutput, error) {
@@ -13335,15 +13305,14 @@ func (c *Glue) ListMLTransformsWithContext(ctx aws.Context, input *ListMLTransfo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMLTransforms operation.
-//    pageNum := 0
-//    err := client.ListMLTransformsPages(params,
-//        func(page *glue.ListMLTransformsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMLTransforms operation.
+//	pageNum := 0
+//	err := client.ListMLTransformsPages(params,
+//	    func(page *glue.ListMLTransformsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListMLTransformsPages(input *ListMLTransformsInput, fn func(*ListMLTransformsOutput, bool) bool) error {
 	return c.ListMLTransformsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13395,14 +13364,13 @@ const opListRegistries = "ListRegistries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRegistriesRequest method.
+//	req, resp := client.ListRegistriesRequest(params)
 //
-//    // Example sending a request using the ListRegistriesRequest method.
-//    req, resp := client.ListRegistriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListRegistries
 func (c *Glue) ListRegistriesRequest(input *ListRegistriesInput) (req *request.Request, output *ListRegistriesOutput) {
@@ -13441,14 +13409,15 @@ func (c *Glue) ListRegistriesRequest(input *ListRegistriesInput) (req *request.R
 // API operation ListRegistries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListRegistries
 func (c *Glue) ListRegistries(input *ListRegistriesInput) (*ListRegistriesOutput, error) {
@@ -13480,15 +13449,14 @@ func (c *Glue) ListRegistriesWithContext(ctx aws.Context, input *ListRegistriesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRegistries operation.
-//    pageNum := 0
-//    err := client.ListRegistriesPages(params,
-//        func(page *glue.ListRegistriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRegistries operation.
+//	pageNum := 0
+//	err := client.ListRegistriesPages(params,
+//	    func(page *glue.ListRegistriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListRegistriesPages(input *ListRegistriesInput, fn func(*ListRegistriesOutput, bool) bool) error {
 	return c.ListRegistriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13540,14 +13508,13 @@ const opListSchemaVersions = "ListSchemaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSchemaVersionsRequest method.
+//	req, resp := client.ListSchemaVersionsRequest(params)
 //
-//    // Example sending a request using the ListSchemaVersionsRequest method.
-//    req, resp := client.ListSchemaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListSchemaVersions
 func (c *Glue) ListSchemaVersionsRequest(input *ListSchemaVersionsInput) (req *request.Request, output *ListSchemaVersionsOutput) {
@@ -13586,17 +13553,18 @@ func (c *Glue) ListSchemaVersionsRequest(input *ListSchemaVersionsInput) (req *r
 // API operation ListSchemaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListSchemaVersions
 func (c *Glue) ListSchemaVersions(input *ListSchemaVersionsInput) (*ListSchemaVersionsOutput, error) {
@@ -13628,15 +13596,14 @@ func (c *Glue) ListSchemaVersionsWithContext(ctx aws.Context, input *ListSchemaV
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSchemaVersions operation.
-//    pageNum := 0
-//    err := client.ListSchemaVersionsPages(params,
-//        func(page *glue.ListSchemaVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSchemaVersions operation.
+//	pageNum := 0
+//	err := client.ListSchemaVersionsPages(params,
+//	    func(page *glue.ListSchemaVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListSchemaVersionsPages(input *ListSchemaVersionsInput, fn func(*ListSchemaVersionsOutput, bool) bool) error {
 	return c.ListSchemaVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13688,14 +13655,13 @@ const opListSchemas = "ListSchemas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSchemasRequest method.
+//	req, resp := client.ListSchemasRequest(params)
 //
-//    // Example sending a request using the ListSchemasRequest method.
-//    req, resp := client.ListSchemasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListSchemas
 func (c *Glue) ListSchemasRequest(input *ListSchemasInput) (req *request.Request, output *ListSchemasOutput) {
@@ -13737,17 +13703,18 @@ func (c *Glue) ListSchemasRequest(input *ListSchemasInput) (req *request.Request
 // API operation ListSchemas for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListSchemas
 func (c *Glue) ListSchemas(input *ListSchemasInput) (*ListSchemasOutput, error) {
@@ -13779,15 +13746,14 @@ func (c *Glue) ListSchemasWithContext(ctx aws.Context, input *ListSchemasInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSchemas operation.
-//    pageNum := 0
-//    err := client.ListSchemasPages(params,
-//        func(page *glue.ListSchemasOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSchemas operation.
+//	pageNum := 0
+//	err := client.ListSchemasPages(params,
+//	    func(page *glue.ListSchemasOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListSchemasPages(input *ListSchemasInput, fn func(*ListSchemasOutput, bool) bool) error {
 	return c.ListSchemasPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13839,14 +13805,13 @@ const opListSessions = "ListSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSessionsRequest method.
+//	req, resp := client.ListSessionsRequest(params)
 //
-//    // Example sending a request using the ListSessionsRequest method.
-//    req, resp := client.ListSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListSessions
 func (c *Glue) ListSessionsRequest(input *ListSessionsInput) (req *request.Request, output *ListSessionsOutput) {
@@ -13883,17 +13848,18 @@ func (c *Glue) ListSessionsRequest(input *ListSessionsInput) (req *request.Reque
 // API operation ListSessions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListSessions
 func (c *Glue) ListSessions(input *ListSessionsInput) (*ListSessionsOutput, error) {
@@ -13925,15 +13891,14 @@ func (c *Glue) ListSessionsWithContext(ctx aws.Context, input *ListSessionsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSessions operation.
-//    pageNum := 0
-//    err := client.ListSessionsPages(params,
-//        func(page *glue.ListSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSessions operation.
+//	pageNum := 0
+//	err := client.ListSessionsPages(params,
+//	    func(page *glue.ListSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListSessionsPages(input *ListSessionsInput, fn func(*ListSessionsOutput, bool) bool) error {
 	return c.ListSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13985,14 +13950,13 @@ const opListStatements = "ListStatements"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStatementsRequest method.
+//	req, resp := client.ListStatementsRequest(params)
 //
-//    // Example sending a request using the ListStatementsRequest method.
-//    req, resp := client.ListStatementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListStatements
 func (c *Glue) ListStatementsRequest(input *ListStatementsInput) (req *request.Request, output *ListStatementsOutput) {
@@ -14023,23 +13987,24 @@ func (c *Glue) ListStatementsRequest(input *ListStatementsInput) (req *request.R
 // API operation ListStatements for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalSessionStateException
-//   The session is in an invalid state to perform a requested operation.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - IllegalSessionStateException
+//     The session is in an invalid state to perform a requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListStatements
 func (c *Glue) ListStatements(input *ListStatementsInput) (*ListStatementsOutput, error) {
@@ -14079,14 +14044,13 @@ const opListTriggers = "ListTriggers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTriggersRequest method.
+//	req, resp := client.ListTriggersRequest(params)
 //
-//    // Example sending a request using the ListTriggersRequest method.
-//    req, resp := client.ListTriggersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListTriggers
 func (c *Glue) ListTriggersRequest(input *ListTriggersInput) (req *request.Request, output *ListTriggersOutput) {
@@ -14129,17 +14093,18 @@ func (c *Glue) ListTriggersRequest(input *ListTriggersInput) (req *request.Reque
 // API operation ListTriggers for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListTriggers
 func (c *Glue) ListTriggers(input *ListTriggersInput) (*ListTriggersOutput, error) {
@@ -14171,15 +14136,14 @@ func (c *Glue) ListTriggersWithContext(ctx aws.Context, input *ListTriggersInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTriggers operation.
-//    pageNum := 0
-//    err := client.ListTriggersPages(params,
-//        func(page *glue.ListTriggersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTriggers operation.
+//	pageNum := 0
+//	err := client.ListTriggersPages(params,
+//	    func(page *glue.ListTriggersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListTriggersPages(input *ListTriggersInput, fn func(*ListTriggersOutput, bool) bool) error {
 	return c.ListTriggersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -14231,14 +14195,13 @@ const opListWorkflows = "ListWorkflows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkflowsRequest method.
+//	req, resp := client.ListWorkflowsRequest(params)
 //
-//    // Example sending a request using the ListWorkflowsRequest method.
-//    req, resp := client.ListWorkflowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListWorkflows
 func (c *Glue) ListWorkflowsRequest(input *ListWorkflowsInput) (req *request.Request, output *ListWorkflowsOutput) {
@@ -14275,14 +14238,15 @@ func (c *Glue) ListWorkflowsRequest(input *ListWorkflowsInput) (req *request.Req
 // API operation ListWorkflows for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ListWorkflows
 func (c *Glue) ListWorkflows(input *ListWorkflowsInput) (*ListWorkflowsOutput, error) {
@@ -14314,15 +14278,14 @@ func (c *Glue) ListWorkflowsWithContext(ctx aws.Context, input *ListWorkflowsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkflows operation.
-//    pageNum := 0
-//    err := client.ListWorkflowsPages(params,
-//        func(page *glue.ListWorkflowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkflows operation.
+//	pageNum := 0
+//	err := client.ListWorkflowsPages(params,
+//	    func(page *glue.ListWorkflowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) ListWorkflowsPages(input *ListWorkflowsInput, fn func(*ListWorkflowsOutput, bool) bool) error {
 	return c.ListWorkflowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -14374,14 +14337,13 @@ const opPutDataCatalogEncryptionSettings = "PutDataCatalogEncryptionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDataCatalogEncryptionSettingsRequest method.
+//	req, resp := client.PutDataCatalogEncryptionSettingsRequest(params)
 //
-//    // Example sending a request using the PutDataCatalogEncryptionSettingsRequest method.
-//    req, resp := client.PutDataCatalogEncryptionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutDataCatalogEncryptionSettings
 func (c *Glue) PutDataCatalogEncryptionSettingsRequest(input *PutDataCatalogEncryptionSettingsInput) (req *request.Request, output *PutDataCatalogEncryptionSettingsOutput) {
@@ -14415,14 +14377,15 @@ func (c *Glue) PutDataCatalogEncryptionSettingsRequest(input *PutDataCatalogEncr
 // API operation PutDataCatalogEncryptionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutDataCatalogEncryptionSettings
 func (c *Glue) PutDataCatalogEncryptionSettings(input *PutDataCatalogEncryptionSettingsInput) (*PutDataCatalogEncryptionSettingsOutput, error) {
@@ -14462,14 +14425,13 @@ const opPutResourcePolicy = "PutResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
 //
-//    // Example sending a request using the PutResourcePolicyRequest method.
-//    req, resp := client.PutResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutResourcePolicy
 func (c *Glue) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
@@ -14500,20 +14462,21 @@ func (c *Glue) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *req
 // API operation PutResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConditionCheckFailureException
-//   A specified condition was not satisfied.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - ConditionCheckFailureException
+//     A specified condition was not satisfied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutResourcePolicy
 func (c *Glue) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
@@ -14553,14 +14516,13 @@ const opPutSchemaVersionMetadata = "PutSchemaVersionMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSchemaVersionMetadataRequest method.
+//	req, resp := client.PutSchemaVersionMetadataRequest(params)
 //
-//    // Example sending a request using the PutSchemaVersionMetadataRequest method.
-//    req, resp := client.PutSchemaVersionMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutSchemaVersionMetadata
 func (c *Glue) PutSchemaVersionMetadataRequest(input *PutSchemaVersionMetadataInput) (req *request.Request, output *PutSchemaVersionMetadataOutput) {
@@ -14593,20 +14555,21 @@ func (c *Glue) PutSchemaVersionMetadataRequest(input *PutSchemaVersionMetadataIn
 // API operation PutSchemaVersionMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutSchemaVersionMetadata
 func (c *Glue) PutSchemaVersionMetadata(input *PutSchemaVersionMetadataInput) (*PutSchemaVersionMetadataOutput, error) {
@@ -14646,14 +14609,13 @@ const opPutWorkflowRunProperties = "PutWorkflowRunProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutWorkflowRunPropertiesRequest method.
+//	req, resp := client.PutWorkflowRunPropertiesRequest(params)
 //
-//    // Example sending a request using the PutWorkflowRunPropertiesRequest method.
-//    req, resp := client.PutWorkflowRunPropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutWorkflowRunProperties
 func (c *Glue) PutWorkflowRunPropertiesRequest(input *PutWorkflowRunPropertiesInput) (req *request.Request, output *PutWorkflowRunPropertiesOutput) {
@@ -14687,26 +14649,27 @@ func (c *Glue) PutWorkflowRunPropertiesRequest(input *PutWorkflowRunPropertiesIn
 // API operation PutWorkflowRunProperties for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/PutWorkflowRunProperties
 func (c *Glue) PutWorkflowRunProperties(input *PutWorkflowRunPropertiesInput) (*PutWorkflowRunPropertiesOutput, error) {
@@ -14746,14 +14709,13 @@ const opQuerySchemaVersionMetadata = "QuerySchemaVersionMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the QuerySchemaVersionMetadataRequest method.
+//	req, resp := client.QuerySchemaVersionMetadataRequest(params)
 //
-//    // Example sending a request using the QuerySchemaVersionMetadataRequest method.
-//    req, resp := client.QuerySchemaVersionMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/QuerySchemaVersionMetadata
 func (c *Glue) QuerySchemaVersionMetadataRequest(input *QuerySchemaVersionMetadataInput) (req *request.Request, output *QuerySchemaVersionMetadataOutput) {
@@ -14784,14 +14746,15 @@ func (c *Glue) QuerySchemaVersionMetadataRequest(input *QuerySchemaVersionMetada
 // API operation QuerySchemaVersionMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/QuerySchemaVersionMetadata
 func (c *Glue) QuerySchemaVersionMetadata(input *QuerySchemaVersionMetadataInput) (*QuerySchemaVersionMetadataOutput, error) {
@@ -14831,14 +14794,13 @@ const opRegisterSchemaVersion = "RegisterSchemaVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterSchemaVersionRequest method.
+//	req, resp := client.RegisterSchemaVersionRequest(params)
 //
-//    // Example sending a request using the RegisterSchemaVersionRequest method.
-//    req, resp := client.RegisterSchemaVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/RegisterSchemaVersion
 func (c *Glue) RegisterSchemaVersionRequest(input *RegisterSchemaVersionInput) (req *request.Request, output *RegisterSchemaVersionOutput) {
@@ -14881,23 +14843,24 @@ func (c *Glue) RegisterSchemaVersionRequest(input *RegisterSchemaVersionInput) (
 // API operation RegisterSchemaVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/RegisterSchemaVersion
 func (c *Glue) RegisterSchemaVersion(input *RegisterSchemaVersionInput) (*RegisterSchemaVersionOutput, error) {
@@ -14937,14 +14900,13 @@ const opRemoveSchemaVersionMetadata = "RemoveSchemaVersionMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveSchemaVersionMetadataRequest method.
+//	req, resp := client.RemoveSchemaVersionMetadataRequest(params)
 //
-//    // Example sending a request using the RemoveSchemaVersionMetadataRequest method.
-//    req, resp := client.RemoveSchemaVersionMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/RemoveSchemaVersionMetadata
 func (c *Glue) RemoveSchemaVersionMetadataRequest(input *RemoveSchemaVersionMetadataInput) (req *request.Request, output *RemoveSchemaVersionMetadataOutput) {
@@ -14976,14 +14938,15 @@ func (c *Glue) RemoveSchemaVersionMetadataRequest(input *RemoveSchemaVersionMeta
 // API operation RemoveSchemaVersionMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/RemoveSchemaVersionMetadata
 func (c *Glue) RemoveSchemaVersionMetadata(input *RemoveSchemaVersionMetadataInput) (*RemoveSchemaVersionMetadataOutput, error) {
@@ -15023,14 +14986,13 @@ const opResetJobBookmark = "ResetJobBookmark"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetJobBookmarkRequest method.
+//	req, resp := client.ResetJobBookmarkRequest(params)
 //
-//    // Example sending a request using the ResetJobBookmarkRequest method.
-//    req, resp := client.ResetJobBookmarkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ResetJobBookmark
 func (c *Glue) ResetJobBookmarkRequest(input *ResetJobBookmarkInput) (req *request.Request, output *ResetJobBookmarkOutput) {
@@ -15061,17 +15023,18 @@ func (c *Glue) ResetJobBookmarkRequest(input *ResetJobBookmarkInput) (req *reque
 // API operation ResetJobBookmark for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ResetJobBookmark
 func (c *Glue) ResetJobBookmark(input *ResetJobBookmarkInput) (*ResetJobBookmarkOutput, error) {
@@ -15111,14 +15074,13 @@ const opResumeWorkflowRun = "ResumeWorkflowRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResumeWorkflowRunRequest method.
+//	req, resp := client.ResumeWorkflowRunRequest(params)
 //
-//    // Example sending a request using the ResumeWorkflowRunRequest method.
-//    req, resp := client.ResumeWorkflowRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ResumeWorkflowRun
 func (c *Glue) ResumeWorkflowRunRequest(input *ResumeWorkflowRunInput) (req *request.Request, output *ResumeWorkflowRunOutput) {
@@ -15151,23 +15113,24 @@ func (c *Glue) ResumeWorkflowRunRequest(input *ResumeWorkflowRunInput) (req *req
 // API operation ResumeWorkflowRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentRunsExceededException
-//   Too many jobs are being run concurrently.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalWorkflowStateException
-//   The workflow is in an invalid state to perform a requested operation.
+//   - ConcurrentRunsExceededException
+//     Too many jobs are being run concurrently.
+//
+//   - IllegalWorkflowStateException
+//     The workflow is in an invalid state to perform a requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/ResumeWorkflowRun
 func (c *Glue) ResumeWorkflowRun(input *ResumeWorkflowRunInput) (*ResumeWorkflowRunOutput, error) {
@@ -15207,14 +15170,13 @@ const opRunStatement = "RunStatement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RunStatementRequest method.
+//	req, resp := client.RunStatementRequest(params)
 //
-//    // Example sending a request using the RunStatementRequest method.
-//    req, resp := client.RunStatementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/RunStatement
 func (c *Glue) RunStatementRequest(input *RunStatementInput) (req *request.Request, output *RunStatementOutput) {
@@ -15245,29 +15207,30 @@ func (c *Glue) RunStatementRequest(input *RunStatementInput) (req *request.Reque
 // API operation RunStatement for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ValidationException
-//   A value could not be validated.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - ValidationException
+//     A value could not be validated.
 //
-//   * IllegalSessionStateException
-//   The session is in an invalid state to perform a requested operation.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - IllegalSessionStateException
+//     The session is in an invalid state to perform a requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/RunStatement
 func (c *Glue) RunStatement(input *RunStatementInput) (*RunStatementOutput, error) {
@@ -15307,14 +15270,13 @@ const opSearchTables = "SearchTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchTablesRequest method.
+//	req, resp := client.SearchTablesRequest(params)
 //
-//    // Example sending a request using the SearchTablesRequest method.
-//    req, resp := client.SearchTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/SearchTables
 func (c *Glue) SearchTablesRequest(input *SearchTablesInput) (req *request.Request, output *SearchTablesOutput) {
@@ -15360,14 +15322,15 @@ func (c *Glue) SearchTablesRequest(input *SearchTablesInput) (req *request.Reque
 // API operation SearchTables for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/SearchTables
 func (c *Glue) SearchTables(input *SearchTablesInput) (*SearchTablesOutput, error) {
@@ -15399,15 +15362,14 @@ func (c *Glue) SearchTablesWithContext(ctx aws.Context, input *SearchTablesInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchTables operation.
-//    pageNum := 0
-//    err := client.SearchTablesPages(params,
-//        func(page *glue.SearchTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchTables operation.
+//	pageNum := 0
+//	err := client.SearchTablesPages(params,
+//	    func(page *glue.SearchTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Glue) SearchTablesPages(input *SearchTablesInput, fn func(*SearchTablesOutput, bool) bool) error {
 	return c.SearchTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -15459,14 +15421,13 @@ const opStartBlueprintRun = "StartBlueprintRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartBlueprintRunRequest method.
+//	req, resp := client.StartBlueprintRunRequest(params)
 //
-//    // Example sending a request using the StartBlueprintRunRequest method.
-//    req, resp := client.StartBlueprintRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartBlueprintRun
 func (c *Glue) StartBlueprintRunRequest(input *StartBlueprintRunInput) (req *request.Request, output *StartBlueprintRunOutput) {
@@ -15497,22 +15458,23 @@ func (c *Glue) StartBlueprintRunRequest(input *StartBlueprintRunInput) (req *req
 // API operation StartBlueprintRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * IllegalBlueprintStateException
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - IllegalBlueprintStateException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartBlueprintRun
 func (c *Glue) StartBlueprintRun(input *StartBlueprintRunInput) (*StartBlueprintRunOutput, error) {
@@ -15552,14 +15514,13 @@ const opStartCrawler = "StartCrawler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCrawlerRequest method.
+//	req, resp := client.StartCrawlerRequest(params)
 //
-//    // Example sending a request using the StartCrawlerRequest method.
-//    req, resp := client.StartCrawlerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartCrawler
 func (c *Glue) StartCrawlerRequest(input *StartCrawlerInput) (req *request.Request, output *StartCrawlerOutput) {
@@ -15592,14 +15553,15 @@ func (c *Glue) StartCrawlerRequest(input *StartCrawlerInput) (req *request.Reque
 // API operation StartCrawler for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * CrawlerRunningException
-//   The operation cannot be performed because the crawler is already running.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - CrawlerRunningException
+//     The operation cannot be performed because the crawler is already running.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartCrawler
 func (c *Glue) StartCrawler(input *StartCrawlerInput) (*StartCrawlerOutput, error) {
@@ -15639,14 +15601,13 @@ const opStartCrawlerSchedule = "StartCrawlerSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCrawlerScheduleRequest method.
+//	req, resp := client.StartCrawlerScheduleRequest(params)
 //
-//    // Example sending a request using the StartCrawlerScheduleRequest method.
-//    req, resp := client.StartCrawlerScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartCrawlerSchedule
 func (c *Glue) StartCrawlerScheduleRequest(input *StartCrawlerScheduleInput) (req *request.Request, output *StartCrawlerScheduleOutput) {
@@ -15679,20 +15640,21 @@ func (c *Glue) StartCrawlerScheduleRequest(input *StartCrawlerScheduleInput) (re
 // API operation StartCrawlerSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * SchedulerRunningException
-//   The specified scheduler is already running.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * SchedulerTransitioningException
-//   The specified scheduler is transitioning.
+//   - SchedulerRunningException
+//     The specified scheduler is already running.
 //
-//   * NoScheduleException
-//   There is no applicable schedule.
+//   - SchedulerTransitioningException
+//     The specified scheduler is transitioning.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - NoScheduleException
+//     There is no applicable schedule.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartCrawlerSchedule
 func (c *Glue) StartCrawlerSchedule(input *StartCrawlerScheduleInput) (*StartCrawlerScheduleOutput, error) {
@@ -15732,14 +15694,13 @@ const opStartExportLabelsTaskRun = "StartExportLabelsTaskRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartExportLabelsTaskRunRequest method.
+//	req, resp := client.StartExportLabelsTaskRunRequest(params)
 //
-//    // Example sending a request using the StartExportLabelsTaskRunRequest method.
-//    req, resp := client.StartExportLabelsTaskRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartExportLabelsTaskRun
 func (c *Glue) StartExportLabelsTaskRunRequest(input *StartExportLabelsTaskRunInput) (req *request.Request, output *StartExportLabelsTaskRunOutput) {
@@ -15778,17 +15739,18 @@ func (c *Glue) StartExportLabelsTaskRunRequest(input *StartExportLabelsTaskRunIn
 // API operation StartExportLabelsTaskRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartExportLabelsTaskRun
 func (c *Glue) StartExportLabelsTaskRun(input *StartExportLabelsTaskRunInput) (*StartExportLabelsTaskRunOutput, error) {
@@ -15828,14 +15790,13 @@ const opStartImportLabelsTaskRun = "StartImportLabelsTaskRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartImportLabelsTaskRunRequest method.
+//	req, resp := client.StartImportLabelsTaskRunRequest(params)
 //
-//    // Example sending a request using the StartImportLabelsTaskRunRequest method.
-//    req, resp := client.StartImportLabelsTaskRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartImportLabelsTaskRun
 func (c *Glue) StartImportLabelsTaskRunRequest(input *StartImportLabelsTaskRunInput) (req *request.Request, output *StartImportLabelsTaskRunOutput) {
@@ -15891,20 +15852,21 @@ func (c *Glue) StartImportLabelsTaskRunRequest(input *StartImportLabelsTaskRunIn
 // API operation StartImportLabelsTaskRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartImportLabelsTaskRun
 func (c *Glue) StartImportLabelsTaskRun(input *StartImportLabelsTaskRunInput) (*StartImportLabelsTaskRunOutput, error) {
@@ -15944,14 +15906,13 @@ const opStartJobRun = "StartJobRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartJobRunRequest method.
+//	req, resp := client.StartJobRunRequest(params)
 //
-//    // Example sending a request using the StartJobRunRequest method.
-//    req, resp := client.StartJobRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartJobRun
 func (c *Glue) StartJobRunRequest(input *StartJobRunInput) (req *request.Request, output *StartJobRunOutput) {
@@ -15982,23 +15943,24 @@ func (c *Glue) StartJobRunRequest(input *StartJobRunInput) (req *request.Request
 // API operation StartJobRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentRunsExceededException
-//   Too many jobs are being run concurrently.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentRunsExceededException
+//     Too many jobs are being run concurrently.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartJobRun
 func (c *Glue) StartJobRun(input *StartJobRunInput) (*StartJobRunOutput, error) {
@@ -16038,14 +16000,13 @@ const opStartMLEvaluationTaskRun = "StartMLEvaluationTaskRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMLEvaluationTaskRunRequest method.
+//	req, resp := client.StartMLEvaluationTaskRunRequest(params)
 //
-//    // Example sending a request using the StartMLEvaluationTaskRunRequest method.
-//    req, resp := client.StartMLEvaluationTaskRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartMLEvaluationTaskRun
 func (c *Glue) StartMLEvaluationTaskRunRequest(input *StartMLEvaluationTaskRunInput) (req *request.Request, output *StartMLEvaluationTaskRunOutput) {
@@ -16083,23 +16044,24 @@ func (c *Glue) StartMLEvaluationTaskRunRequest(input *StartMLEvaluationTaskRunIn
 // API operation StartMLEvaluationTaskRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentRunsExceededException
-//   Too many jobs are being run concurrently.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * MLTransformNotReadyException
-//   The machine learning transform is not ready to run.
+//   - ConcurrentRunsExceededException
+//     Too many jobs are being run concurrently.
+//
+//   - MLTransformNotReadyException
+//     The machine learning transform is not ready to run.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartMLEvaluationTaskRun
 func (c *Glue) StartMLEvaluationTaskRun(input *StartMLEvaluationTaskRunInput) (*StartMLEvaluationTaskRunOutput, error) {
@@ -16139,14 +16101,13 @@ const opStartMLLabelingSetGenerationTaskRun = "StartMLLabelingSetGenerationTaskR
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMLLabelingSetGenerationTaskRunRequest method.
+//	req, resp := client.StartMLLabelingSetGenerationTaskRunRequest(params)
 //
-//    // Example sending a request using the StartMLLabelingSetGenerationTaskRunRequest method.
-//    req, resp := client.StartMLLabelingSetGenerationTaskRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartMLLabelingSetGenerationTaskRun
 func (c *Glue) StartMLLabelingSetGenerationTaskRunRequest(input *StartMLLabelingSetGenerationTaskRunInput) (req *request.Request, output *StartMLLabelingSetGenerationTaskRunOutput) {
@@ -16190,20 +16151,21 @@ func (c *Glue) StartMLLabelingSetGenerationTaskRunRequest(input *StartMLLabeling
 // API operation StartMLLabelingSetGenerationTaskRun for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentRunsExceededException
-//   Too many jobs are being run concurrently.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - ConcurrentRunsExceededException
+//     Too many jobs are being run concurrently.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartMLLabelingSetGenerationTaskRun
 func (c *Glue) StartMLLabelingSetGenerationTaskRun(input *StartMLLabelingSetGenerationTaskRunInput) (*StartMLLabelingSetGenerationTaskRunOutput, error) {
@@ -16243,14 +16205,13 @@ const opStartTrigger = "StartTrigger"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTriggerRequest method.
+//	req, resp := client.StartTriggerRequest(params)
 //
-//    // Example sending a request using the StartTriggerRequest method.
-//    req, resp := client.StartTriggerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartTrigger
 func (c *Glue) StartTriggerRequest(input *StartTriggerInput) (req *request.Request, output *StartTriggerOutput) {
@@ -16282,23 +16243,24 @@ func (c *Glue) StartTriggerRequest(input *StartTriggerInput) (req *request.Reque
 // API operation StartTrigger for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentRunsExceededException
-//   Too many jobs are being run concurrently.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentRunsExceededException
+//     Too many jobs are being run concurrently.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartTrigger
 func (c *Glue) StartTrigger(input *StartTriggerInput) (*StartTriggerOutput, error) {
@@ -16338,14 +16300,13 @@ const opStartWorkflowRun = "StartWorkflowRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartWorkflowRunRequest method.
+//	req, resp := client.StartWorkflowRunRequest(params)
 //
-//    // Example sending a request using the StartWorkflowRunRequest method.
-//    req, resp := client.StartWorkflowRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartWorkflowRun
 func (c *Glue) StartWorkflowRunRequest(input *StartWorkflowRunInput) (req *request.Request, output *StartWorkflowRunOutput) {
@@ -16376,23 +16337,24 @@ func (c *Glue) StartWorkflowRunRequest(input *StartWorkflowRunInput) (req *reque
 // API operation StartWorkflowRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentRunsExceededException
-//   Too many jobs are being run concurrently.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - ConcurrentRunsExceededException
+//     Too many jobs are being run concurrently.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StartWorkflowRun
 func (c *Glue) StartWorkflowRun(input *StartWorkflowRunInput) (*StartWorkflowRunOutput, error) {
@@ -16432,14 +16394,13 @@ const opStopCrawler = "StopCrawler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopCrawlerRequest method.
+//	req, resp := client.StopCrawlerRequest(params)
 //
-//    // Example sending a request using the StopCrawlerRequest method.
-//    req, resp := client.StopCrawlerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopCrawler
 func (c *Glue) StopCrawlerRequest(input *StopCrawlerInput) (req *request.Request, output *StopCrawlerOutput) {
@@ -16471,17 +16432,18 @@ func (c *Glue) StopCrawlerRequest(input *StopCrawlerInput) (req *request.Request
 // API operation StopCrawler for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * CrawlerNotRunningException
-//   The specified crawler is not running.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * CrawlerStoppingException
-//   The specified crawler is stopping.
+//   - CrawlerNotRunningException
+//     The specified crawler is not running.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - CrawlerStoppingException
+//     The specified crawler is stopping.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopCrawler
 func (c *Glue) StopCrawler(input *StopCrawlerInput) (*StopCrawlerOutput, error) {
@@ -16521,14 +16483,13 @@ const opStopCrawlerSchedule = "StopCrawlerSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopCrawlerScheduleRequest method.
+//	req, resp := client.StopCrawlerScheduleRequest(params)
 //
-//    // Example sending a request using the StopCrawlerScheduleRequest method.
-//    req, resp := client.StopCrawlerScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopCrawlerSchedule
 func (c *Glue) StopCrawlerScheduleRequest(input *StopCrawlerScheduleInput) (req *request.Request, output *StopCrawlerScheduleOutput) {
@@ -16561,17 +16522,18 @@ func (c *Glue) StopCrawlerScheduleRequest(input *StopCrawlerScheduleInput) (req 
 // API operation StopCrawlerSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * SchedulerNotRunningException
-//   The specified scheduler is not running.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * SchedulerTransitioningException
-//   The specified scheduler is transitioning.
+//   - SchedulerNotRunningException
+//     The specified scheduler is not running.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - SchedulerTransitioningException
+//     The specified scheduler is transitioning.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopCrawlerSchedule
 func (c *Glue) StopCrawlerSchedule(input *StopCrawlerScheduleInput) (*StopCrawlerScheduleOutput, error) {
@@ -16611,14 +16573,13 @@ const opStopSession = "StopSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopSessionRequest method.
+//	req, resp := client.StopSessionRequest(params)
 //
-//    // Example sending a request using the StopSessionRequest method.
-//    req, resp := client.StopSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopSession
 func (c *Glue) StopSessionRequest(input *StopSessionInput) (req *request.Request, output *StopSessionOutput) {
@@ -16649,23 +16610,24 @@ func (c *Glue) StopSessionRequest(input *StopSessionInput) (req *request.Request
 // API operation StopSession for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to a resource was denied.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalSessionStateException
-//   The session is in an invalid state to perform a requested operation.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - IllegalSessionStateException
+//     The session is in an invalid state to perform a requested operation.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopSession
 func (c *Glue) StopSession(input *StopSessionInput) (*StopSessionOutput, error) {
@@ -16705,14 +16667,13 @@ const opStopTrigger = "StopTrigger"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopTriggerRequest method.
+//	req, resp := client.StopTriggerRequest(params)
 //
-//    // Example sending a request using the StopTriggerRequest method.
-//    req, resp := client.StopTriggerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopTrigger
 func (c *Glue) StopTriggerRequest(input *StopTriggerInput) (req *request.Request, output *StopTriggerOutput) {
@@ -16743,20 +16704,21 @@ func (c *Glue) StopTriggerRequest(input *StopTriggerInput) (req *request.Request
 // API operation StopTrigger for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopTrigger
 func (c *Glue) StopTrigger(input *StopTriggerInput) (*StopTriggerOutput, error) {
@@ -16796,14 +16758,13 @@ const opStopWorkflowRun = "StopWorkflowRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopWorkflowRunRequest method.
+//	req, resp := client.StopWorkflowRunRequest(params)
 //
-//    // Example sending a request using the StopWorkflowRunRequest method.
-//    req, resp := client.StopWorkflowRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopWorkflowRun
 func (c *Glue) StopWorkflowRunRequest(input *StopWorkflowRunInput) (req *request.Request, output *StopWorkflowRunOutput) {
@@ -16835,20 +16796,21 @@ func (c *Glue) StopWorkflowRunRequest(input *StopWorkflowRunInput) (req *request
 // API operation StopWorkflowRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * IllegalWorkflowStateException
-//   The workflow is in an invalid state to perform a requested operation.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - IllegalWorkflowStateException
+//     The workflow is in an invalid state to perform a requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/StopWorkflowRun
 func (c *Glue) StopWorkflowRun(input *StopWorkflowRunInput) (*StopWorkflowRunOutput, error) {
@@ -16888,14 +16850,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/TagResource
 func (c *Glue) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -16929,17 +16890,18 @@ func (c *Glue) TagResourceRequest(input *TagResourceInput) (req *request.Request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/TagResource
 func (c *Glue) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -16979,14 +16941,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UntagResource
 func (c *Glue) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -17018,17 +16979,18 @@ func (c *Glue) UntagResourceRequest(input *UntagResourceInput) (req *request.Req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UntagResource
 func (c *Glue) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -17068,14 +17030,13 @@ const opUpdateBlueprint = "UpdateBlueprint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBlueprintRequest method.
+//	req, resp := client.UpdateBlueprintRequest(params)
 //
-//    // Example sending a request using the UpdateBlueprintRequest method.
-//    req, resp := client.UpdateBlueprintRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateBlueprint
 func (c *Glue) UpdateBlueprintRequest(input *UpdateBlueprintInput) (req *request.Request, output *UpdateBlueprintOutput) {
@@ -17106,22 +17067,23 @@ func (c *Glue) UpdateBlueprintRequest(input *UpdateBlueprintInput) (req *request
 // API operation UpdateBlueprint for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * IllegalBlueprintStateException
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - IllegalBlueprintStateException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateBlueprint
 func (c *Glue) UpdateBlueprint(input *UpdateBlueprintInput) (*UpdateBlueprintOutput, error) {
@@ -17161,14 +17123,13 @@ const opUpdateClassifier = "UpdateClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClassifierRequest method.
+//	req, resp := client.UpdateClassifierRequest(params)
 //
-//    // Example sending a request using the UpdateClassifierRequest method.
-//    req, resp := client.UpdateClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateClassifier
 func (c *Glue) UpdateClassifierRequest(input *UpdateClassifierInput) (req *request.Request, output *UpdateClassifierOutput) {
@@ -17201,17 +17162,18 @@ func (c *Glue) UpdateClassifierRequest(input *UpdateClassifierInput) (req *reque
 // API operation UpdateClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * VersionMismatchException
-//   There was a version conflict.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - VersionMismatchException
+//     There was a version conflict.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateClassifier
 func (c *Glue) UpdateClassifier(input *UpdateClassifierInput) (*UpdateClassifierOutput, error) {
@@ -17251,14 +17213,13 @@ const opUpdateColumnStatisticsForPartition = "UpdateColumnStatisticsForPartition
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateColumnStatisticsForPartitionRequest method.
+//	req, resp := client.UpdateColumnStatisticsForPartitionRequest(params)
 //
-//    // Example sending a request using the UpdateColumnStatisticsForPartitionRequest method.
-//    req, resp := client.UpdateColumnStatisticsForPartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateColumnStatisticsForPartition
 func (c *Glue) UpdateColumnStatisticsForPartitionRequest(input *UpdateColumnStatisticsForPartitionInput) (req *request.Request, output *UpdateColumnStatisticsForPartitionOutput) {
@@ -17292,20 +17253,21 @@ func (c *Glue) UpdateColumnStatisticsForPartitionRequest(input *UpdateColumnStat
 // API operation UpdateColumnStatisticsForPartition for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateColumnStatisticsForPartition
 func (c *Glue) UpdateColumnStatisticsForPartition(input *UpdateColumnStatisticsForPartitionInput) (*UpdateColumnStatisticsForPartitionOutput, error) {
@@ -17345,14 +17307,13 @@ const opUpdateColumnStatisticsForTable = "UpdateColumnStatisticsForTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateColumnStatisticsForTableRequest method.
+//	req, resp := client.UpdateColumnStatisticsForTableRequest(params)
 //
-//    // Example sending a request using the UpdateColumnStatisticsForTableRequest method.
-//    req, resp := client.UpdateColumnStatisticsForTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateColumnStatisticsForTable
 func (c *Glue) UpdateColumnStatisticsForTableRequest(input *UpdateColumnStatisticsForTableInput) (req *request.Request, output *UpdateColumnStatisticsForTableOutput) {
@@ -17386,20 +17347,21 @@ func (c *Glue) UpdateColumnStatisticsForTableRequest(input *UpdateColumnStatisti
 // API operation UpdateColumnStatisticsForTable for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateColumnStatisticsForTable
 func (c *Glue) UpdateColumnStatisticsForTable(input *UpdateColumnStatisticsForTableInput) (*UpdateColumnStatisticsForTableOutput, error) {
@@ -17439,14 +17401,13 @@ const opUpdateConnection = "UpdateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectionRequest method.
+//	req, resp := client.UpdateConnectionRequest(params)
 //
-//    // Example sending a request using the UpdateConnectionRequest method.
-//    req, resp := client.UpdateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateConnection
 func (c *Glue) UpdateConnectionRequest(input *UpdateConnectionInput) (req *request.Request, output *UpdateConnectionOutput) {
@@ -17478,20 +17439,21 @@ func (c *Glue) UpdateConnectionRequest(input *UpdateConnectionInput) (req *reque
 // API operation UpdateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateConnection
 func (c *Glue) UpdateConnection(input *UpdateConnectionInput) (*UpdateConnectionOutput, error) {
@@ -17531,14 +17493,13 @@ const opUpdateCrawler = "UpdateCrawler"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCrawlerRequest method.
+//	req, resp := client.UpdateCrawlerRequest(params)
 //
-//    // Example sending a request using the UpdateCrawlerRequest method.
-//    req, resp := client.UpdateCrawlerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateCrawler
 func (c *Glue) UpdateCrawlerRequest(input *UpdateCrawlerInput) (req *request.Request, output *UpdateCrawlerOutput) {
@@ -17571,20 +17532,21 @@ func (c *Glue) UpdateCrawlerRequest(input *UpdateCrawlerInput) (req *request.Req
 // API operation UpdateCrawler for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * VersionMismatchException
-//   There was a version conflict.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - VersionMismatchException
+//     There was a version conflict.
 //
-//   * CrawlerRunningException
-//   The operation cannot be performed because the crawler is already running.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - CrawlerRunningException
+//     The operation cannot be performed because the crawler is already running.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateCrawler
 func (c *Glue) UpdateCrawler(input *UpdateCrawlerInput) (*UpdateCrawlerOutput, error) {
@@ -17624,14 +17586,13 @@ const opUpdateCrawlerSchedule = "UpdateCrawlerSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCrawlerScheduleRequest method.
+//	req, resp := client.UpdateCrawlerScheduleRequest(params)
 //
-//    // Example sending a request using the UpdateCrawlerScheduleRequest method.
-//    req, resp := client.UpdateCrawlerScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateCrawlerSchedule
 func (c *Glue) UpdateCrawlerScheduleRequest(input *UpdateCrawlerScheduleInput) (req *request.Request, output *UpdateCrawlerScheduleOutput) {
@@ -17663,20 +17624,21 @@ func (c *Glue) UpdateCrawlerScheduleRequest(input *UpdateCrawlerScheduleInput) (
 // API operation UpdateCrawlerSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * VersionMismatchException
-//   There was a version conflict.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * SchedulerTransitioningException
-//   The specified scheduler is transitioning.
+//   - VersionMismatchException
+//     There was a version conflict.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - SchedulerTransitioningException
+//     The specified scheduler is transitioning.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateCrawlerSchedule
 func (c *Glue) UpdateCrawlerSchedule(input *UpdateCrawlerScheduleInput) (*UpdateCrawlerScheduleOutput, error) {
@@ -17716,14 +17678,13 @@ const opUpdateDatabase = "UpdateDatabase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDatabaseRequest method.
+//	req, resp := client.UpdateDatabaseRequest(params)
 //
-//    // Example sending a request using the UpdateDatabaseRequest method.
-//    req, resp := client.UpdateDatabaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateDatabase
 func (c *Glue) UpdateDatabaseRequest(input *UpdateDatabaseInput) (req *request.Request, output *UpdateDatabaseOutput) {
@@ -17755,23 +17716,24 @@ func (c *Glue) UpdateDatabaseRequest(input *UpdateDatabaseInput) (req *request.R
 // API operation UpdateDatabase for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateDatabase
 func (c *Glue) UpdateDatabase(input *UpdateDatabaseInput) (*UpdateDatabaseOutput, error) {
@@ -17811,14 +17773,13 @@ const opUpdateDevEndpoint = "UpdateDevEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDevEndpointRequest method.
+//	req, resp := client.UpdateDevEndpointRequest(params)
 //
-//    // Example sending a request using the UpdateDevEndpointRequest method.
-//    req, resp := client.UpdateDevEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateDevEndpoint
 func (c *Glue) UpdateDevEndpointRequest(input *UpdateDevEndpointInput) (req *request.Request, output *UpdateDevEndpointOutput) {
@@ -17850,20 +17811,21 @@ func (c *Glue) UpdateDevEndpointRequest(input *UpdateDevEndpointInput) (req *req
 // API operation UpdateDevEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ValidationException
-//   A value could not be validated.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - ValidationException
+//     A value could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateDevEndpoint
 func (c *Glue) UpdateDevEndpoint(input *UpdateDevEndpointInput) (*UpdateDevEndpointOutput, error) {
@@ -17903,14 +17865,13 @@ const opUpdateJob = "UpdateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateJobRequest method.
+//	req, resp := client.UpdateJobRequest(params)
 //
-//    // Example sending a request using the UpdateJobRequest method.
-//    req, resp := client.UpdateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateJob
 func (c *Glue) UpdateJobRequest(input *UpdateJobInput) (req *request.Request, output *UpdateJobOutput) {
@@ -17941,20 +17902,21 @@ func (c *Glue) UpdateJobRequest(input *UpdateJobInput) (req *request.Request, ou
 // API operation UpdateJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateJob
 func (c *Glue) UpdateJob(input *UpdateJobInput) (*UpdateJobOutput, error) {
@@ -17994,14 +17956,13 @@ const opUpdateMLTransform = "UpdateMLTransform"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMLTransformRequest method.
+//	req, resp := client.UpdateMLTransformRequest(params)
 //
-//    // Example sending a request using the UpdateMLTransformRequest method.
-//    req, resp := client.UpdateMLTransformRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateMLTransform
 func (c *Glue) UpdateMLTransformRequest(input *UpdateMLTransformInput) (req *request.Request, output *UpdateMLTransformOutput) {
@@ -18037,20 +17998,21 @@ func (c *Glue) UpdateMLTransformRequest(input *UpdateMLTransformInput) (req *req
 // API operation UpdateMLTransform for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateMLTransform
 func (c *Glue) UpdateMLTransform(input *UpdateMLTransformInput) (*UpdateMLTransformOutput, error) {
@@ -18090,14 +18052,13 @@ const opUpdatePartition = "UpdatePartition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePartitionRequest method.
+//	req, resp := client.UpdatePartitionRequest(params)
 //
-//    // Example sending a request using the UpdatePartitionRequest method.
-//    req, resp := client.UpdatePartitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdatePartition
 func (c *Glue) UpdatePartitionRequest(input *UpdatePartitionInput) (req *request.Request, output *UpdatePartitionOutput) {
@@ -18129,20 +18090,21 @@ func (c *Glue) UpdatePartitionRequest(input *UpdatePartitionInput) (req *request
 // API operation UpdatePartition for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdatePartition
 func (c *Glue) UpdatePartition(input *UpdatePartitionInput) (*UpdatePartitionOutput, error) {
@@ -18182,14 +18144,13 @@ const opUpdateRegistry = "UpdateRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRegistryRequest method.
+//	req, resp := client.UpdateRegistryRequest(params)
 //
-//    // Example sending a request using the UpdateRegistryRequest method.
-//    req, resp := client.UpdateRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateRegistry
 func (c *Glue) UpdateRegistryRequest(input *UpdateRegistryInput) (req *request.Request, output *UpdateRegistryOutput) {
@@ -18222,20 +18183,21 @@ func (c *Glue) UpdateRegistryRequest(input *UpdateRegistryInput) (req *request.R
 // API operation UpdateRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateRegistry
 func (c *Glue) UpdateRegistry(input *UpdateRegistryInput) (*UpdateRegistryOutput, error) {
@@ -18275,14 +18237,13 @@ const opUpdateSchema = "UpdateSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSchemaRequest method.
+//	req, resp := client.UpdateSchemaRequest(params)
 //
-//    // Example sending a request using the UpdateSchemaRequest method.
-//    req, resp := client.UpdateSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateSchema
 func (c *Glue) UpdateSchemaRequest(input *UpdateSchemaInput) (req *request.Request, output *UpdateSchemaOutput) {
@@ -18325,20 +18286,21 @@ func (c *Glue) UpdateSchemaRequest(input *UpdateSchemaInput) (req *request.Reque
 // API operation UpdateSchema for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateSchema
 func (c *Glue) UpdateSchema(input *UpdateSchemaInput) (*UpdateSchemaOutput, error) {
@@ -18378,14 +18340,13 @@ const opUpdateTable = "UpdateTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTableRequest method.
+//	req, resp := client.UpdateTableRequest(params)
 //
-//    // Example sending a request using the UpdateTableRequest method.
-//    req, resp := client.UpdateTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateTable
 func (c *Glue) UpdateTableRequest(input *UpdateTableInput) (req *request.Request, output *UpdateTableOutput) {
@@ -18417,29 +18378,30 @@ func (c *Glue) UpdateTableRequest(input *UpdateTableInput) (req *request.Request
 // API operation UpdateTable for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * ResourceNotReadyException
-//   A resource was not ready for a transaction.
+//   - EncryptionException
+//     An encryption operation failed.
+//
+//   - ResourceNotReadyException
+//     A resource was not ready for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateTable
 func (c *Glue) UpdateTable(input *UpdateTableInput) (*UpdateTableOutput, error) {
@@ -18479,14 +18441,13 @@ const opUpdateTrigger = "UpdateTrigger"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTriggerRequest method.
+//	req, resp := client.UpdateTriggerRequest(params)
 //
-//    // Example sending a request using the UpdateTriggerRequest method.
-//    req, resp := client.UpdateTriggerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateTrigger
 func (c *Glue) UpdateTriggerRequest(input *UpdateTriggerInput) (req *request.Request, output *UpdateTriggerOutput) {
@@ -18517,20 +18478,21 @@ func (c *Glue) UpdateTriggerRequest(input *UpdateTriggerInput) (req *request.Req
 // API operation UpdateTrigger for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateTrigger
 func (c *Glue) UpdateTrigger(input *UpdateTriggerInput) (*UpdateTriggerOutput, error) {
@@ -18570,14 +18532,13 @@ const opUpdateUserDefinedFunction = "UpdateUserDefinedFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserDefinedFunctionRequest method.
+//	req, resp := client.UpdateUserDefinedFunctionRequest(params)
 //
-//    // Example sending a request using the UpdateUserDefinedFunctionRequest method.
-//    req, resp := client.UpdateUserDefinedFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateUserDefinedFunction
 func (c *Glue) UpdateUserDefinedFunctionRequest(input *UpdateUserDefinedFunctionInput) (req *request.Request, output *UpdateUserDefinedFunctionOutput) {
@@ -18609,20 +18570,21 @@ func (c *Glue) UpdateUserDefinedFunctionRequest(input *UpdateUserDefinedFunction
 // API operation UpdateUserDefinedFunction for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EncryptionException
+//     An encryption operation failed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateUserDefinedFunction
 func (c *Glue) UpdateUserDefinedFunction(input *UpdateUserDefinedFunctionInput) (*UpdateUserDefinedFunctionOutput, error) {
@@ -18662,14 +18624,13 @@ const opUpdateWorkflow = "UpdateWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWorkflowRequest method.
+//	req, resp := client.UpdateWorkflowRequest(params)
 //
-//    // Example sending a request using the UpdateWorkflowRequest method.
-//    req, resp := client.UpdateWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateWorkflow
 func (c *Glue) UpdateWorkflowRequest(input *UpdateWorkflowInput) (req *request.Request, output *UpdateWorkflowOutput) {
@@ -18700,20 +18661,21 @@ func (c *Glue) UpdateWorkflowRequest(input *UpdateWorkflowInput) (req *request.R
 // API operation UpdateWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/glue-2017-03-31/UpdateWorkflow
 func (c *Glue) UpdateWorkflow(input *UpdateWorkflowInput) (*UpdateWorkflowOutput, error) {
@@ -19431,17 +19393,17 @@ func (s *AuditContext) SetRequestedColumns(v []*string) *AuditContext {
 // the partitions at fault and try registering the index again. The most common
 // set of errors that can occur are categorized as follows:
 //
-//    * EncryptedPartitionError: The partitions are encrypted.
+//   - EncryptedPartitionError: The partitions are encrypted.
 //
-//    * InvalidPartitionTypeDataError: The partition value doesn't match the
-//    data type for that partition column.
+//   - InvalidPartitionTypeDataError: The partition value doesn't match the
+//     data type for that partition column.
 //
-//    * MissingPartitionValueError: The partitions are encrypted.
+//   - MissingPartitionValueError: The partitions are encrypted.
 //
-//    * UnsupportedPartitionCharacterError: Characters inside the partition
-//    value are not supported. For example: U+0000 , U+0001, U+0002.
+//   - UnsupportedPartitionCharacterError: Characters inside the partition
+//     value are not supported. For example: U+0000 , U+0001, U+0002.
 //
-//    * InternalError: Any error which does not belong to other error codes.
+//   - InternalError: Any error which does not belong to other error codes.
 type BackfillError struct {
 	_ struct{} `type:"structure"`
 

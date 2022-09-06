@@ -28,14 +28,13 @@ const opDeleteReportDefinition = "DeleteReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReportDefinitionRequest method.
+//	req, resp := client.DeleteReportDefinitionRequest(params)
 //
-//    // Example sending a request using the DeleteReportDefinitionRequest method.
-//    req, resp := client.DeleteReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/DeleteReportDefinition
 func (c *CostandUsageReportService) DeleteReportDefinitionRequest(input *DeleteReportDefinitionInput) (req *request.Request, output *DeleteReportDefinitionOutput) {
@@ -66,12 +65,13 @@ func (c *CostandUsageReportService) DeleteReportDefinitionRequest(input *DeleteR
 // API operation DeleteReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/DeleteReportDefinition
 func (c *CostandUsageReportService) DeleteReportDefinition(input *DeleteReportDefinitionInput) (*DeleteReportDefinitionOutput, error) {
@@ -111,14 +111,13 @@ const opDescribeReportDefinitions = "DescribeReportDefinitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReportDefinitionsRequest method.
+//	req, resp := client.DescribeReportDefinitionsRequest(params)
 //
-//    // Example sending a request using the DescribeReportDefinitionsRequest method.
-//    req, resp := client.DescribeReportDefinitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/DescribeReportDefinitions
 func (c *CostandUsageReportService) DescribeReportDefinitionsRequest(input *DescribeReportDefinitionsInput) (req *request.Request, output *DescribeReportDefinitionsOutput) {
@@ -155,9 +154,9 @@ func (c *CostandUsageReportService) DescribeReportDefinitionsRequest(input *Desc
 // API operation DescribeReportDefinitions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/DescribeReportDefinitions
 func (c *CostandUsageReportService) DescribeReportDefinitions(input *DescribeReportDefinitionsInput) (*DescribeReportDefinitionsOutput, error) {
@@ -189,15 +188,14 @@ func (c *CostandUsageReportService) DescribeReportDefinitionsWithContext(ctx aws
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReportDefinitions operation.
-//    pageNum := 0
-//    err := client.DescribeReportDefinitionsPages(params,
-//        func(page *costandusagereportservice.DescribeReportDefinitionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReportDefinitions operation.
+//	pageNum := 0
+//	err := client.DescribeReportDefinitionsPages(params,
+//	    func(page *costandusagereportservice.DescribeReportDefinitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CostandUsageReportService) DescribeReportDefinitionsPages(input *DescribeReportDefinitionsInput, fn func(*DescribeReportDefinitionsOutput, bool) bool) error {
 	return c.DescribeReportDefinitionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -249,14 +247,13 @@ const opModifyReportDefinition = "ModifyReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyReportDefinitionRequest method.
+//	req, resp := client.ModifyReportDefinitionRequest(params)
 //
-//    // Example sending a request using the ModifyReportDefinitionRequest method.
-//    req, resp := client.ModifyReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/ModifyReportDefinition
 func (c *CostandUsageReportService) ModifyReportDefinitionRequest(input *ModifyReportDefinitionInput) (req *request.Request, output *ModifyReportDefinitionOutput) {
@@ -288,12 +285,13 @@ func (c *CostandUsageReportService) ModifyReportDefinitionRequest(input *ModifyR
 // API operation ModifyReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/ModifyReportDefinition
 func (c *CostandUsageReportService) ModifyReportDefinition(input *ModifyReportDefinitionInput) (*ModifyReportDefinitionOutput, error) {
@@ -333,14 +331,13 @@ const opPutReportDefinition = "PutReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutReportDefinitionRequest method.
+//	req, resp := client.PutReportDefinitionRequest(params)
 //
-//    // Example sending a request using the PutReportDefinitionRequest method.
-//    req, resp := client.PutReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/PutReportDefinition
 func (c *CostandUsageReportService) PutReportDefinitionRequest(input *PutReportDefinitionInput) (req *request.Request, output *PutReportDefinitionOutput) {
@@ -372,20 +369,21 @@ func (c *CostandUsageReportService) PutReportDefinitionRequest(input *PutReportD
 // API operation PutReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * DuplicateReportNameException
-//   A report with the specified name already exists in the account. Specify a
-//   different report name.
 //
-//   * ReportLimitReachedException
-//   This account already has five reports defined. To define a new report, you
-//   must delete an existing report.
+//   - DuplicateReportNameException
+//     A report with the specified name already exists in the account. Specify a
+//     different report name.
 //
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
+//   - ReportLimitReachedException
+//     This account already has five reports defined. To define a new report, you
+//     must delete an existing report.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/PutReportDefinition
 func (c *CostandUsageReportService) PutReportDefinition(input *PutReportDefinitionInput) (*PutReportDefinitionOutput, error) {

@@ -29,14 +29,13 @@ const opCreateAccess = "CreateAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccessRequest method.
+//	req, resp := client.CreateAccessRequest(params)
 //
-//    // Example sending a request using the CreateAccessRequest method.
-//    req, resp := client.CreateAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateAccess
 func (c *Transfer) CreateAccessRequest(input *CreateAccessInput) (req *request.Request, output *CreateAccessOutput) {
@@ -72,23 +71,24 @@ func (c *Transfer) CreateAccessRequest(input *CreateAccessInput) (req *request.R
 // API operation CreateAccess for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - ResourceExistsException
+//     The requested resource does not exist.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateAccess
 func (c *Transfer) CreateAccess(input *CreateAccessInput) (*CreateAccessOutput, error) {
@@ -128,14 +128,13 @@ const opCreateServer = "CreateServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServerRequest method.
+//	req, resp := client.CreateServerRequest(params)
 //
-//    // Example sending a request using the CreateServerRequest method.
-//    req, resp := client.CreateServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateServer
 func (c *Transfer) CreateServerRequest(input *CreateServerInput) (req *request.Request, output *CreateServerOutput) {
@@ -169,31 +168,32 @@ func (c *Transfer) CreateServerRequest(input *CreateServerInput) (req *request.R
 // API operation CreateServer for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - ResourceExistsException
+//     The requested resource does not exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateServer
 func (c *Transfer) CreateServer(input *CreateServerInput) (*CreateServerOutput, error) {
@@ -233,14 +233,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateUser
 func (c *Transfer) CreateUserRequest(input *CreateUserInput) (req *request.Request, output *CreateUserOutput) {
@@ -277,23 +276,24 @@ func (c *Transfer) CreateUserRequest(input *CreateUserInput) (req *request.Reque
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - ResourceExistsException
+//     The requested resource does not exist.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateUser
 func (c *Transfer) CreateUser(input *CreateUserInput) (*CreateUserOutput, error) {
@@ -333,14 +333,13 @@ const opCreateWorkflow = "CreateWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkflowRequest method.
+//	req, resp := client.CreateWorkflowRequest(params)
 //
-//    // Example sending a request using the CreateWorkflowRequest method.
-//    req, resp := client.CreateWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateWorkflow
 func (c *Transfer) CreateWorkflowRequest(input *CreateWorkflowInput) (req *request.Request, output *CreateWorkflowOutput) {
@@ -374,27 +373,28 @@ func (c *Transfer) CreateWorkflowRequest(input *CreateWorkflowInput) (req *reque
 // API operation CreateWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceExistsException
+//     The requested resource does not exist.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/CreateWorkflow
 func (c *Transfer) CreateWorkflow(input *CreateWorkflowInput) (*CreateWorkflowOutput, error) {
@@ -434,14 +434,13 @@ const opDeleteAccess = "DeleteAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessRequest method.
+//	req, resp := client.DeleteAccessRequest(params)
 //
-//    // Example sending a request using the DeleteAccessRequest method.
-//    req, resp := client.DeleteAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteAccess
 func (c *Transfer) DeleteAccessRequest(input *DeleteAccessInput) (req *request.Request, output *DeleteAccessOutput) {
@@ -474,20 +473,21 @@ func (c *Transfer) DeleteAccessRequest(input *DeleteAccessInput) (req *request.R
 // API operation DeleteAccess for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteAccess
 func (c *Transfer) DeleteAccess(input *DeleteAccessInput) (*DeleteAccessOutput, error) {
@@ -527,14 +527,13 @@ const opDeleteServer = "DeleteServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServerRequest method.
+//	req, resp := client.DeleteServerRequest(params)
 //
-//    // Example sending a request using the DeleteServerRequest method.
-//    req, resp := client.DeleteServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteServer
 func (c *Transfer) DeleteServerRequest(input *DeleteServerInput) (req *request.Request, output *DeleteServerOutput) {
@@ -568,23 +567,24 @@ func (c *Transfer) DeleteServerRequest(input *DeleteServerInput) (req *request.R
 // API operation DeleteServer for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteServer
 func (c *Transfer) DeleteServer(input *DeleteServerInput) (*DeleteServerOutput, error) {
@@ -624,14 +624,13 @@ const opDeleteSshPublicKey = "DeleteSshPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSshPublicKeyRequest method.
+//	req, resp := client.DeleteSshPublicKeyRequest(params)
 //
-//    // Example sending a request using the DeleteSshPublicKeyRequest method.
-//    req, resp := client.DeleteSshPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteSshPublicKey
 func (c *Transfer) DeleteSshPublicKeyRequest(input *DeleteSshPublicKeyInput) (req *request.Request, output *DeleteSshPublicKeyOutput) {
@@ -663,25 +662,26 @@ func (c *Transfer) DeleteSshPublicKeyRequest(input *DeleteSshPublicKeyInput) (re
 // API operation DeleteSshPublicKey for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteSshPublicKey
 func (c *Transfer) DeleteSshPublicKey(input *DeleteSshPublicKeyInput) (*DeleteSshPublicKeyOutput, error) {
@@ -721,14 +721,13 @@ const opDeleteUser = "DeleteUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserRequest method.
+//	req, resp := client.DeleteUserRequest(params)
 //
-//    // Example sending a request using the DeleteUserRequest method.
-//    req, resp := client.DeleteUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteUser
 func (c *Transfer) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
@@ -765,20 +764,21 @@ func (c *Transfer) DeleteUserRequest(input *DeleteUserInput) (req *request.Reque
 // API operation DeleteUser for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteUser
 func (c *Transfer) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
@@ -818,14 +818,13 @@ const opDeleteWorkflow = "DeleteWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkflowRequest method.
+//	req, resp := client.DeleteWorkflowRequest(params)
 //
-//    // Example sending a request using the DeleteWorkflowRequest method.
-//    req, resp := client.DeleteWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteWorkflow
 func (c *Transfer) DeleteWorkflowRequest(input *DeleteWorkflowInput) (req *request.Request, output *DeleteWorkflowOutput) {
@@ -857,23 +856,24 @@ func (c *Transfer) DeleteWorkflowRequest(input *DeleteWorkflowInput) (req *reque
 // API operation DeleteWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DeleteWorkflow
 func (c *Transfer) DeleteWorkflow(input *DeleteWorkflowInput) (*DeleteWorkflowOutput, error) {
@@ -913,14 +913,13 @@ const opDescribeAccess = "DescribeAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccessRequest method.
+//	req, resp := client.DescribeAccessRequest(params)
 //
-//    // Example sending a request using the DescribeAccessRequest method.
-//    req, resp := client.DescribeAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeAccess
 func (c *Transfer) DescribeAccessRequest(input *DescribeAccessInput) (req *request.Request, output *DescribeAccessOutput) {
@@ -955,20 +954,21 @@ func (c *Transfer) DescribeAccessRequest(input *DescribeAccessInput) (req *reque
 // API operation DescribeAccess for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeAccess
 func (c *Transfer) DescribeAccess(input *DescribeAccessInput) (*DescribeAccessOutput, error) {
@@ -1008,14 +1008,13 @@ const opDescribeExecution = "DescribeExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExecutionRequest method.
+//	req, resp := client.DescribeExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeExecutionRequest method.
-//    req, resp := client.DescribeExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeExecution
 func (c *Transfer) DescribeExecutionRequest(input *DescribeExecutionInput) (req *request.Request, output *DescribeExecutionOutput) {
@@ -1047,20 +1046,21 @@ func (c *Transfer) DescribeExecutionRequest(input *DescribeExecutionInput) (req 
 // API operation DescribeExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeExecution
 func (c *Transfer) DescribeExecution(input *DescribeExecutionInput) (*DescribeExecutionOutput, error) {
@@ -1100,14 +1100,13 @@ const opDescribeSecurityPolicy = "DescribeSecurityPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSecurityPolicyRequest method.
+//	req, resp := client.DescribeSecurityPolicyRequest(params)
 //
-//    // Example sending a request using the DescribeSecurityPolicyRequest method.
-//    req, resp := client.DescribeSecurityPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeSecurityPolicy
 func (c *Transfer) DescribeSecurityPolicyRequest(input *DescribeSecurityPolicyInput) (req *request.Request, output *DescribeSecurityPolicyOutput) {
@@ -1141,20 +1140,21 @@ func (c *Transfer) DescribeSecurityPolicyRequest(input *DescribeSecurityPolicyIn
 // API operation DescribeSecurityPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeSecurityPolicy
 func (c *Transfer) DescribeSecurityPolicy(input *DescribeSecurityPolicyInput) (*DescribeSecurityPolicyOutput, error) {
@@ -1194,14 +1194,13 @@ const opDescribeServer = "DescribeServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServerRequest method.
+//	req, resp := client.DescribeServerRequest(params)
 //
-//    // Example sending a request using the DescribeServerRequest method.
-//    req, resp := client.DescribeServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeServer
 func (c *Transfer) DescribeServerRequest(input *DescribeServerInput) (req *request.Request, output *DescribeServerOutput) {
@@ -1236,20 +1235,21 @@ func (c *Transfer) DescribeServerRequest(input *DescribeServerInput) (req *reque
 // API operation DescribeServer for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeServer
 func (c *Transfer) DescribeServer(input *DescribeServerInput) (*DescribeServerOutput, error) {
@@ -1289,14 +1289,13 @@ const opDescribeUser = "DescribeUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUserRequest method.
+//	req, resp := client.DescribeUserRequest(params)
 //
-//    // Example sending a request using the DescribeUserRequest method.
-//    req, resp := client.DescribeUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeUser
 func (c *Transfer) DescribeUserRequest(input *DescribeUserInput) (req *request.Request, output *DescribeUserOutput) {
@@ -1331,20 +1330,21 @@ func (c *Transfer) DescribeUserRequest(input *DescribeUserInput) (req *request.R
 // API operation DescribeUser for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeUser
 func (c *Transfer) DescribeUser(input *DescribeUserInput) (*DescribeUserOutput, error) {
@@ -1384,14 +1384,13 @@ const opDescribeWorkflow = "DescribeWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkflowRequest method.
+//	req, resp := client.DescribeWorkflowRequest(params)
 //
-//    // Example sending a request using the DescribeWorkflowRequest method.
-//    req, resp := client.DescribeWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeWorkflow
 func (c *Transfer) DescribeWorkflowRequest(input *DescribeWorkflowInput) (req *request.Request, output *DescribeWorkflowOutput) {
@@ -1422,20 +1421,21 @@ func (c *Transfer) DescribeWorkflowRequest(input *DescribeWorkflowInput) (req *r
 // API operation DescribeWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/DescribeWorkflow
 func (c *Transfer) DescribeWorkflow(input *DescribeWorkflowInput) (*DescribeWorkflowOutput, error) {
@@ -1475,14 +1475,13 @@ const opImportSshPublicKey = "ImportSshPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportSshPublicKeyRequest method.
+//	req, resp := client.ImportSshPublicKeyRequest(params)
 //
-//    // Example sending a request using the ImportSshPublicKeyRequest method.
-//    req, resp := client.ImportSshPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ImportSshPublicKey
 func (c *Transfer) ImportSshPublicKeyRequest(input *ImportSshPublicKeyInput) (req *request.Request, output *ImportSshPublicKeyOutput) {
@@ -1518,28 +1517,29 @@ func (c *Transfer) ImportSshPublicKeyRequest(input *ImportSshPublicKeyInput) (re
 // API operation ImportSshPublicKey for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - ResourceExistsException
+//     The requested resource does not exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ImportSshPublicKey
 func (c *Transfer) ImportSshPublicKey(input *ImportSshPublicKeyInput) (*ImportSshPublicKeyOutput, error) {
@@ -1579,14 +1579,13 @@ const opListAccesses = "ListAccesses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessesRequest method.
+//	req, resp := client.ListAccessesRequest(params)
 //
-//    // Example sending a request using the ListAccessesRequest method.
-//    req, resp := client.ListAccessesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListAccesses
 func (c *Transfer) ListAccessesRequest(input *ListAccessesInput) (req *request.Request, output *ListAccessesOutput) {
@@ -1623,23 +1622,24 @@ func (c *Transfer) ListAccessesRequest(input *ListAccessesInput) (req *request.R
 // API operation ListAccesses for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListAccesses
 func (c *Transfer) ListAccesses(input *ListAccessesInput) (*ListAccessesOutput, error) {
@@ -1671,15 +1671,14 @@ func (c *Transfer) ListAccessesWithContext(ctx aws.Context, input *ListAccessesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccesses operation.
-//    pageNum := 0
-//    err := client.ListAccessesPages(params,
-//        func(page *transfer.ListAccessesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccesses operation.
+//	pageNum := 0
+//	err := client.ListAccessesPages(params,
+//	    func(page *transfer.ListAccessesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListAccessesPages(input *ListAccessesInput, fn func(*ListAccessesOutput, bool) bool) error {
 	return c.ListAccessesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1731,14 +1730,13 @@ const opListExecutions = "ListExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExecutionsRequest method.
+//	req, resp := client.ListExecutionsRequest(params)
 //
-//    // Example sending a request using the ListExecutionsRequest method.
-//    req, resp := client.ListExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListExecutions
 func (c *Transfer) ListExecutionsRequest(input *ListExecutionsInput) (req *request.Request, output *ListExecutionsOutput) {
@@ -1775,23 +1773,24 @@ func (c *Transfer) ListExecutionsRequest(input *ListExecutionsInput) (req *reque
 // API operation ListExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListExecutions
 func (c *Transfer) ListExecutions(input *ListExecutionsInput) (*ListExecutionsOutput, error) {
@@ -1823,15 +1822,14 @@ func (c *Transfer) ListExecutionsWithContext(ctx aws.Context, input *ListExecuti
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExecutions operation.
-//    pageNum := 0
-//    err := client.ListExecutionsPages(params,
-//        func(page *transfer.ListExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExecutions operation.
+//	pageNum := 0
+//	err := client.ListExecutionsPages(params,
+//	    func(page *transfer.ListExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListExecutionsPages(input *ListExecutionsInput, fn func(*ListExecutionsOutput, bool) bool) error {
 	return c.ListExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1883,14 +1881,13 @@ const opListSecurityPolicies = "ListSecurityPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSecurityPoliciesRequest method.
+//	req, resp := client.ListSecurityPoliciesRequest(params)
 //
-//    // Example sending a request using the ListSecurityPoliciesRequest method.
-//    req, resp := client.ListSecurityPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListSecurityPolicies
 func (c *Transfer) ListSecurityPoliciesRequest(input *ListSecurityPoliciesInput) (req *request.Request, output *ListSecurityPoliciesOutput) {
@@ -1928,19 +1925,20 @@ func (c *Transfer) ListSecurityPoliciesRequest(input *ListSecurityPoliciesInput)
 // API operation ListSecurityPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
+//
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListSecurityPolicies
 func (c *Transfer) ListSecurityPolicies(input *ListSecurityPoliciesInput) (*ListSecurityPoliciesOutput, error) {
@@ -1972,15 +1970,14 @@ func (c *Transfer) ListSecurityPoliciesWithContext(ctx aws.Context, input *ListS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSecurityPolicies operation.
-//    pageNum := 0
-//    err := client.ListSecurityPoliciesPages(params,
-//        func(page *transfer.ListSecurityPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSecurityPolicies operation.
+//	pageNum := 0
+//	err := client.ListSecurityPoliciesPages(params,
+//	    func(page *transfer.ListSecurityPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListSecurityPoliciesPages(input *ListSecurityPoliciesInput, fn func(*ListSecurityPoliciesOutput, bool) bool) error {
 	return c.ListSecurityPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2032,14 +2029,13 @@ const opListServers = "ListServers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServersRequest method.
+//	req, resp := client.ListServersRequest(params)
 //
-//    // Example sending a request using the ListServersRequest method.
-//    req, resp := client.ListServersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListServers
 func (c *Transfer) ListServersRequest(input *ListServersInput) (req *request.Request, output *ListServersOutput) {
@@ -2077,19 +2073,20 @@ func (c *Transfer) ListServersRequest(input *ListServersInput) (req *request.Req
 // API operation ListServers for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
+//
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListServers
 func (c *Transfer) ListServers(input *ListServersInput) (*ListServersOutput, error) {
@@ -2121,15 +2118,14 @@ func (c *Transfer) ListServersWithContext(ctx aws.Context, input *ListServersInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServers operation.
-//    pageNum := 0
-//    err := client.ListServersPages(params,
-//        func(page *transfer.ListServersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServers operation.
+//	pageNum := 0
+//	err := client.ListServersPages(params,
+//	    func(page *transfer.ListServersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListServersPages(input *ListServersInput, fn func(*ListServersOutput, bool) bool) error {
 	return c.ListServersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2181,14 +2177,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListTagsForResource
 func (c *Transfer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2226,19 +2221,20 @@ func (c *Transfer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
+//
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListTagsForResource
 func (c *Transfer) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2270,15 +2266,14 @@ func (c *Transfer) ListTagsForResourceWithContext(ctx aws.Context, input *ListTa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *transfer.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *transfer.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2330,14 +2325,13 @@ const opListUsers = "ListUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUsersRequest method.
+//	req, resp := client.ListUsersRequest(params)
 //
-//    // Example sending a request using the ListUsersRequest method.
-//    req, resp := client.ListUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListUsers
 func (c *Transfer) ListUsersRequest(input *ListUsersInput) (req *request.Request, output *ListUsersOutput) {
@@ -2375,23 +2369,24 @@ func (c *Transfer) ListUsersRequest(input *ListUsersInput) (req *request.Request
 // API operation ListUsers for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListUsers
 func (c *Transfer) ListUsers(input *ListUsersInput) (*ListUsersOutput, error) {
@@ -2423,15 +2418,14 @@ func (c *Transfer) ListUsersWithContext(ctx aws.Context, input *ListUsersInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUsers operation.
-//    pageNum := 0
-//    err := client.ListUsersPages(params,
-//        func(page *transfer.ListUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUsers operation.
+//	pageNum := 0
+//	err := client.ListUsersPages(params,
+//	    func(page *transfer.ListUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListUsersPages(input *ListUsersInput, fn func(*ListUsersOutput, bool) bool) error {
 	return c.ListUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2483,14 +2477,13 @@ const opListWorkflows = "ListWorkflows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkflowsRequest method.
+//	req, resp := client.ListWorkflowsRequest(params)
 //
-//    // Example sending a request using the ListWorkflowsRequest method.
-//    req, resp := client.ListWorkflowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListWorkflows
 func (c *Transfer) ListWorkflowsRequest(input *ListWorkflowsInput) (req *request.Request, output *ListWorkflowsOutput) {
@@ -2527,19 +2520,20 @@ func (c *Transfer) ListWorkflowsRequest(input *ListWorkflowsInput) (req *request
 // API operation ListWorkflows for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidNextTokenException
-//   The NextToken parameter that was passed is invalid.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InvalidNextTokenException
+//     The NextToken parameter that was passed is invalid.
+//
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/ListWorkflows
 func (c *Transfer) ListWorkflows(input *ListWorkflowsInput) (*ListWorkflowsOutput, error) {
@@ -2571,15 +2565,14 @@ func (c *Transfer) ListWorkflowsWithContext(ctx aws.Context, input *ListWorkflow
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkflows operation.
-//    pageNum := 0
-//    err := client.ListWorkflowsPages(params,
-//        func(page *transfer.ListWorkflowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkflows operation.
+//	pageNum := 0
+//	err := client.ListWorkflowsPages(params,
+//	    func(page *transfer.ListWorkflowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Transfer) ListWorkflowsPages(input *ListWorkflowsInput, fn func(*ListWorkflowsOutput, bool) bool) error {
 	return c.ListWorkflowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2631,14 +2624,13 @@ const opSendWorkflowStepState = "SendWorkflowStepState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendWorkflowStepStateRequest method.
+//	req, resp := client.SendWorkflowStepStateRequest(params)
 //
-//    // Example sending a request using the SendWorkflowStepStateRequest method.
-//    req, resp := client.SendWorkflowStepStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/SendWorkflowStepState
 func (c *Transfer) SendWorkflowStepStateRequest(input *SendWorkflowStepStateInput) (req *request.Request, output *SendWorkflowStepStateOutput) {
@@ -2674,28 +2666,29 @@ func (c *Transfer) SendWorkflowStepStateRequest(input *SendWorkflowStepStateInpu
 // API operation SendWorkflowStepState for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/SendWorkflowStepState
 func (c *Transfer) SendWorkflowStepState(input *SendWorkflowStepStateInput) (*SendWorkflowStepStateOutput, error) {
@@ -2735,14 +2728,13 @@ const opStartServer = "StartServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartServerRequest method.
+//	req, resp := client.StartServerRequest(params)
 //
-//    // Example sending a request using the StartServerRequest method.
-//    req, resp := client.StartServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/StartServer
 func (c *Transfer) StartServerRequest(input *StartServerInput) (req *request.Request, output *StartServerOutput) {
@@ -2782,25 +2774,26 @@ func (c *Transfer) StartServerRequest(input *StartServerInput) (req *request.Req
 // API operation StartServer for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/StartServer
 func (c *Transfer) StartServer(input *StartServerInput) (*StartServerOutput, error) {
@@ -2840,14 +2833,13 @@ const opStopServer = "StopServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopServerRequest method.
+//	req, resp := client.StopServerRequest(params)
 //
-//    // Example sending a request using the StopServerRequest method.
-//    req, resp := client.StopServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/StopServer
 func (c *Transfer) StopServerRequest(input *StopServerInput) (req *request.Request, output *StopServerOutput) {
@@ -2891,25 +2883,26 @@ func (c *Transfer) StopServerRequest(input *StopServerInput) (req *request.Reque
 // API operation StopServer for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/StopServer
 func (c *Transfer) StopServer(input *StopServerInput) (*StopServerOutput, error) {
@@ -2949,14 +2942,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/TagResource
 func (c *Transfer) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2991,20 +2983,21 @@ func (c *Transfer) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/TagResource
 func (c *Transfer) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3044,14 +3037,13 @@ const opTestIdentityProvider = "TestIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestIdentityProviderRequest method.
+//	req, resp := client.TestIdentityProviderRequest(params)
 //
-//    // Example sending a request using the TestIdentityProviderRequest method.
-//    req, resp := client.TestIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/TestIdentityProvider
 func (c *Transfer) TestIdentityProviderRequest(input *TestIdentityProviderInput) (req *request.Request, output *TestIdentityProviderOutput) {
@@ -3085,18 +3077,18 @@ func (c *Transfer) TestIdentityProviderRequest(input *TestIdentityProviderInput)
 // You cannot use TestIdentityProvider if the IdentityProviderType of your server
 // is SERVICE_MANAGED.
 //
-//    * If you provide any incorrect values for any parameters, the Response
-//    field is empty.
+//   - If you provide any incorrect values for any parameters, the Response
+//     field is empty.
 //
-//    * If you provide a server ID for a server that uses service-managed users,
-//    you get an error: An error occurred (InvalidRequestException) when calling
-//    the TestIdentityProvider operation: s-server-ID not configured for external
-//    auth
+//   - If you provide a server ID for a server that uses service-managed users,
+//     you get an error: An error occurred (InvalidRequestException) when calling
+//     the TestIdentityProvider operation: s-server-ID not configured for external
+//     auth
 //
-//    * If you enter a Server ID for the --server-id parameter that does not
-//    identify an actual Transfer server, you receive the following error: An
-//    error occurred (ResourceNotFoundException) when calling the TestIdentityProvider
-//    operation: Unknown server
+//   - If you enter a Server ID for the --server-id parameter that does not
+//     identify an actual Transfer server, you receive the following error: An
+//     error occurred (ResourceNotFoundException) when calling the TestIdentityProvider
+//     operation: Unknown server
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3106,20 +3098,21 @@ func (c *Transfer) TestIdentityProviderRequest(input *TestIdentityProviderInput)
 // API operation TestIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/TestIdentityProvider
 func (c *Transfer) TestIdentityProvider(input *TestIdentityProviderInput) (*TestIdentityProviderOutput, error) {
@@ -3159,14 +3152,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UntagResource
 func (c *Transfer) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3201,20 +3193,21 @@ func (c *Transfer) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UntagResource
 func (c *Transfer) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3254,14 +3247,13 @@ const opUpdateAccess = "UpdateAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAccessRequest method.
+//	req, resp := client.UpdateAccessRequest(params)
 //
-//    // Example sending a request using the UpdateAccessRequest method.
-//    req, resp := client.UpdateAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UpdateAccess
 func (c *Transfer) UpdateAccessRequest(input *UpdateAccessInput) (req *request.Request, output *UpdateAccessOutput) {
@@ -3293,23 +3285,24 @@ func (c *Transfer) UpdateAccessRequest(input *UpdateAccessInput) (req *request.R
 // API operation UpdateAccess for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - ResourceExistsException
+//     The requested resource does not exist.
+//
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UpdateAccess
 func (c *Transfer) UpdateAccess(input *UpdateAccessInput) (*UpdateAccessOutput, error) {
@@ -3349,14 +3342,13 @@ const opUpdateServer = "UpdateServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServerRequest method.
+//	req, resp := client.UpdateServerRequest(params)
 //
-//    // Example sending a request using the UpdateServerRequest method.
-//    req, resp := client.UpdateServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UpdateServer
 func (c *Transfer) UpdateServerRequest(input *UpdateServerInput) (req *request.Request, output *UpdateServerOutput) {
@@ -3390,36 +3382,37 @@ func (c *Transfer) UpdateServerRequest(input *UpdateServerInput) (req *request.R
 // API operation UpdateServer for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   This exception is thrown when the UpdateServer is called for a file transfer
-//   protocol-enabled server that has VPC as the endpoint type and the server's
-//   VpcEndpointID is not in the available state.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ConflictException
+//     This exception is thrown when the UpdateServer is called for a file transfer
+//     protocol-enabled server that has VPC as the endpoint type and the server's
+//     VpcEndpointID is not in the available state.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceExistsException
-//   The requested resource does not exist.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - ResourceExistsException
+//     The requested resource does not exist.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UpdateServer
 func (c *Transfer) UpdateServer(input *UpdateServerInput) (*UpdateServerOutput, error) {
@@ -3459,14 +3452,13 @@ const opUpdateUser = "UpdateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserRequest method.
+//	req, resp := client.UpdateUserRequest(params)
 //
-//    // Example sending a request using the UpdateUserRequest method.
-//    req, resp := client.UpdateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UpdateUser
 func (c *Transfer) UpdateUserRequest(input *UpdateUserInput) (req *request.Request, output *UpdateUserOutput) {
@@ -3501,25 +3493,26 @@ func (c *Transfer) UpdateUserRequest(input *UpdateUserInput) (req *request.Reque
 // API operation UpdateUser for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request has failed because the Amazon Web ServicesTransfer Family service
-//   is not available.
 //
-//   * InternalServiceError
-//   This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
-//   Family service.
+//   - ServiceUnavailableException
+//     The request has failed because the Amazon Web ServicesTransfer Family service
+//     is not available.
 //
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
+//   - InternalServiceError
+//     This exception is thrown when an error occurs in the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   * ResourceNotFoundException
-//   This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
-//   Family service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ResourceNotFoundException
+//     This exception is thrown when a resource is not found by the Amazon Web ServicesTransfer
+//     Family service.
 //
-//   HTTP Status Code: 400
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//     HTTP Status Code: 400
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transfer-2018-11-05/UpdateUser
 func (c *Transfer) UpdateUser(input *UpdateUserInput) (*UpdateUserOutput, error) {

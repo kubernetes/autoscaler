@@ -11,7 +11,7 @@ import (
 
 // AddVcnCidrRequest wrapper for the AddVcnCidr operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/AddVcnCidr.go.html to see an example of how to use AddVcnCidrRequest.
 type AddVcnCidrRequest struct {

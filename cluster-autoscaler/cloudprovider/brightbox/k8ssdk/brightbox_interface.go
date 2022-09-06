@@ -306,7 +306,7 @@ func (c *Cloud) GetCloudIPs() ([]brightbox.CloudIP, error) {
 	return client.CloudIPs()
 }
 
-//Get a cloudIp by id
+// Get a cloudIp by id
 func (c *Cloud) getCloudIP(id string) (*brightbox.CloudIP, error) {
 	klog.V(4).Infof("getCloudIP (%q)", id)
 	client, err := c.CloudClient()
@@ -378,7 +378,7 @@ func (c *Cloud) unmapCloudIP(id string) error {
 	return client.UnMapCloudIP(id)
 }
 
-//DestroyCloudIPs matching 'name' from a supplied list of cloudIPs
+// DestroyCloudIPs matching 'name' from a supplied list of cloudIPs
 func (c *Cloud) DestroyCloudIPs(cloudIPList []brightbox.CloudIP, name string) error {
 	klog.V(4).Infof("DestroyCloudIPs (%q)", name)
 	for _, v := range cloudIPList {

@@ -11,7 +11,7 @@ import (
 
 // GetInstanceConfigurationRequest wrapper for the GetInstanceConfiguration operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetInstanceConfiguration.go.html to see an example of how to use GetInstanceConfigurationRequest.
 type GetInstanceConfigurationRequest struct {

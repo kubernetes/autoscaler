@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type PostPaidServerSchedulerHints struct {
 	// 云服务器组ID，UUID格式。  云服务器组的ID可以从控制台或者参考[查询云服务器组列表](https://support.huaweicloud.com/api-ecs/ecs_03_1402.html)获取。
 

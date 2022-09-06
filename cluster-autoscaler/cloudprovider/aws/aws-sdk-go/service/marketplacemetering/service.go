@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MarketplaceMetering client from just a session.
-//     svc := marketplacemetering.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MarketplaceMetering client with additional configuration
-//     svc := marketplacemetering.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MarketplaceMetering client from just a session.
+//	svc := marketplacemetering.New(mySession)
+//
+//	// Create a MarketplaceMetering client with additional configuration
+//	svc := marketplacemetering.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MarketplaceMetering {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

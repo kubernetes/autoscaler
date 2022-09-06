@@ -44,22 +44,22 @@ type CreateInstanceConfigurationFromInstanceDetails struct {
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 }
 
-//GetCompartmentId returns CompartmentId
+// GetCompartmentId returns CompartmentId
 func (m CreateInstanceConfigurationFromInstanceDetails) GetCompartmentId() *string {
 	return m.CompartmentId
 }
 
-//GetDefinedTags returns DefinedTags
+// GetDefinedTags returns DefinedTags
 func (m CreateInstanceConfigurationFromInstanceDetails) GetDefinedTags() map[string]map[string]interface{} {
 	return m.DefinedTags
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m CreateInstanceConfigurationFromInstanceDetails) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetFreeformTags returns FreeformTags
+// GetFreeformTags returns FreeformTags
 func (m CreateInstanceConfigurationFromInstanceDetails) GetFreeformTags() map[string]string {
 	return m.FreeformTags
 }

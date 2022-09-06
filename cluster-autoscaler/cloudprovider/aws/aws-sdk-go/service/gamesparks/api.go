@@ -29,14 +29,13 @@ const opCreateGame = "CreateGame"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGameRequest method.
+//	req, resp := client.CreateGameRequest(params)
 //
-//    // Example sending a request using the CreateGameRequest method.
-//    req, resp := client.CreateGameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/CreateGame
 func (c *GameSparks) CreateGameRequest(input *CreateGameInput) (req *request.Request, output *CreateGameOutput) {
@@ -68,23 +67,24 @@ func (c *GameSparks) CreateGameRequest(input *CreateGameInput) (req *request.Req
 // API operation CreateGame for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * ServiceQuotaExceededException
-//   The request would result in exceeding service quota.
+//   - InternalServerException
+//     The service encountered an internal error.
+//
+//   - ServiceQuotaExceededException
+//     The request would result in exceeding service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/CreateGame
 func (c *GameSparks) CreateGame(input *CreateGameInput) (*CreateGameOutput, error) {
@@ -124,14 +124,13 @@ const opCreateSnapshot = "CreateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotRequest method.
+//	req, resp := client.CreateSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotRequest method.
-//    req, resp := client.CreateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/CreateSnapshot
 func (c *GameSparks) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Request, output *CreateSnapshotOutput) {
@@ -162,23 +161,24 @@ func (c *GameSparks) CreateSnapshotRequest(input *CreateSnapshotInput) (req *req
 // API operation CreateSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/CreateSnapshot
 func (c *GameSparks) CreateSnapshot(input *CreateSnapshotInput) (*CreateSnapshotOutput, error) {
@@ -218,14 +218,13 @@ const opCreateStage = "CreateStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStageRequest method.
+//	req, resp := client.CreateStageRequest(params)
 //
-//    // Example sending a request using the CreateStageRequest method.
-//    req, resp := client.CreateStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/CreateStage
 func (c *GameSparks) CreateStageRequest(input *CreateStageInput) (req *request.Request, output *CreateStageOutput) {
@@ -256,23 +255,24 @@ func (c *GameSparks) CreateStageRequest(input *CreateStageInput) (req *request.R
 // API operation CreateStage for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/CreateStage
 func (c *GameSparks) CreateStage(input *CreateStageInput) (*CreateStageOutput, error) {
@@ -312,14 +312,13 @@ const opDeleteGame = "DeleteGame"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGameRequest method.
+//	req, resp := client.DeleteGameRequest(params)
 //
-//    // Example sending a request using the DeleteGameRequest method.
-//    req, resp := client.DeleteGameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/DeleteGame
 func (c *GameSparks) DeleteGameRequest(input *DeleteGameInput) (req *request.Request, output *DeleteGameOutput) {
@@ -351,20 +350,21 @@ func (c *GameSparks) DeleteGameRequest(input *DeleteGameInput) (req *request.Req
 // API operation DeleteGame for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ConflictException
+//     The resource already exists, or another operation is in progress.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/DeleteGame
 func (c *GameSparks) DeleteGame(input *DeleteGameInput) (*DeleteGameOutput, error) {
@@ -404,14 +404,13 @@ const opDeleteStage = "DeleteStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStageRequest method.
+//	req, resp := client.DeleteStageRequest(params)
 //
-//    // Example sending a request using the DeleteStageRequest method.
-//    req, resp := client.DeleteStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/DeleteStage
 func (c *GameSparks) DeleteStageRequest(input *DeleteStageInput) (req *request.Request, output *DeleteStageOutput) {
@@ -443,23 +442,24 @@ func (c *GameSparks) DeleteStageRequest(input *DeleteStageInput) (req *request.R
 // API operation DeleteStage for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/DeleteStage
 func (c *GameSparks) DeleteStage(input *DeleteStageInput) (*DeleteStageOutput, error) {
@@ -499,14 +499,13 @@ const opDisconnectPlayer = "DisconnectPlayer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisconnectPlayerRequest method.
+//	req, resp := client.DisconnectPlayerRequest(params)
 //
-//    // Example sending a request using the DisconnectPlayerRequest method.
-//    req, resp := client.DisconnectPlayerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/DisconnectPlayer
 func (c *GameSparks) DisconnectPlayerRequest(input *DisconnectPlayerInput) (req *request.Request, output *DisconnectPlayerOutput) {
@@ -540,20 +539,21 @@ func (c *GameSparks) DisconnectPlayerRequest(input *DisconnectPlayerInput) (req 
 // API operation DisconnectPlayer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/DisconnectPlayer
 func (c *GameSparks) DisconnectPlayer(input *DisconnectPlayerInput) (*DisconnectPlayerOutput, error) {
@@ -593,14 +593,13 @@ const opExportSnapshot = "ExportSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportSnapshotRequest method.
+//	req, resp := client.ExportSnapshotRequest(params)
 //
-//    // Example sending a request using the ExportSnapshotRequest method.
-//    req, resp := client.ExportSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ExportSnapshot
 func (c *GameSparks) ExportSnapshotRequest(input *ExportSnapshotInput) (req *request.Request, output *ExportSnapshotOutput) {
@@ -631,20 +630,21 @@ func (c *GameSparks) ExportSnapshotRequest(input *ExportSnapshotInput) (req *req
 // API operation ExportSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ExportSnapshot
 func (c *GameSparks) ExportSnapshot(input *ExportSnapshotInput) (*ExportSnapshotOutput, error) {
@@ -684,14 +684,13 @@ const opGetExtension = "GetExtension"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExtensionRequest method.
+//	req, resp := client.GetExtensionRequest(params)
 //
-//    // Example sending a request using the GetExtensionRequest method.
-//    req, resp := client.GetExtensionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetExtension
 func (c *GameSparks) GetExtensionRequest(input *GetExtensionInput) (req *request.Request, output *GetExtensionOutput) {
@@ -722,20 +721,21 @@ func (c *GameSparks) GetExtensionRequest(input *GetExtensionInput) (req *request
 // API operation GetExtension for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetExtension
 func (c *GameSparks) GetExtension(input *GetExtensionInput) (*GetExtensionOutput, error) {
@@ -775,14 +775,13 @@ const opGetExtensionVersion = "GetExtensionVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExtensionVersionRequest method.
+//	req, resp := client.GetExtensionVersionRequest(params)
 //
-//    // Example sending a request using the GetExtensionVersionRequest method.
-//    req, resp := client.GetExtensionVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetExtensionVersion
 func (c *GameSparks) GetExtensionVersionRequest(input *GetExtensionVersionInput) (req *request.Request, output *GetExtensionVersionOutput) {
@@ -813,20 +812,21 @@ func (c *GameSparks) GetExtensionVersionRequest(input *GetExtensionVersionInput)
 // API operation GetExtensionVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetExtensionVersion
 func (c *GameSparks) GetExtensionVersion(input *GetExtensionVersionInput) (*GetExtensionVersionOutput, error) {
@@ -866,14 +866,13 @@ const opGetGame = "GetGame"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGameRequest method.
+//	req, resp := client.GetGameRequest(params)
 //
-//    // Example sending a request using the GetGameRequest method.
-//    req, resp := client.GetGameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetGame
 func (c *GameSparks) GetGameRequest(input *GetGameInput) (req *request.Request, output *GetGameOutput) {
@@ -904,20 +903,21 @@ func (c *GameSparks) GetGameRequest(input *GetGameInput) (req *request.Request, 
 // API operation GetGame for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetGame
 func (c *GameSparks) GetGame(input *GetGameInput) (*GetGameOutput, error) {
@@ -957,14 +957,13 @@ const opGetGameConfiguration = "GetGameConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGameConfigurationRequest method.
+//	req, resp := client.GetGameConfigurationRequest(params)
 //
-//    // Example sending a request using the GetGameConfigurationRequest method.
-//    req, resp := client.GetGameConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetGameConfiguration
 func (c *GameSparks) GetGameConfigurationRequest(input *GetGameConfigurationInput) (req *request.Request, output *GetGameConfigurationOutput) {
@@ -995,20 +994,21 @@ func (c *GameSparks) GetGameConfigurationRequest(input *GetGameConfigurationInpu
 // API operation GetGameConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetGameConfiguration
 func (c *GameSparks) GetGameConfiguration(input *GetGameConfigurationInput) (*GetGameConfigurationOutput, error) {
@@ -1048,14 +1048,13 @@ const opGetGeneratedCodeJob = "GetGeneratedCodeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGeneratedCodeJobRequest method.
+//	req, resp := client.GetGeneratedCodeJobRequest(params)
 //
-//    // Example sending a request using the GetGeneratedCodeJobRequest method.
-//    req, resp := client.GetGeneratedCodeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetGeneratedCodeJob
 func (c *GameSparks) GetGeneratedCodeJobRequest(input *GetGeneratedCodeJobInput) (req *request.Request, output *GetGeneratedCodeJobOutput) {
@@ -1086,20 +1085,21 @@ func (c *GameSparks) GetGeneratedCodeJobRequest(input *GetGeneratedCodeJobInput)
 // API operation GetGeneratedCodeJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetGeneratedCodeJob
 func (c *GameSparks) GetGeneratedCodeJob(input *GetGeneratedCodeJobInput) (*GetGeneratedCodeJobOutput, error) {
@@ -1139,14 +1139,13 @@ const opGetPlayerConnectionStatus = "GetPlayerConnectionStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPlayerConnectionStatusRequest method.
+//	req, resp := client.GetPlayerConnectionStatusRequest(params)
 //
-//    // Example sending a request using the GetPlayerConnectionStatusRequest method.
-//    req, resp := client.GetPlayerConnectionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetPlayerConnectionStatus
 func (c *GameSparks) GetPlayerConnectionStatusRequest(input *GetPlayerConnectionStatusInput) (req *request.Request, output *GetPlayerConnectionStatusOutput) {
@@ -1180,20 +1179,21 @@ func (c *GameSparks) GetPlayerConnectionStatusRequest(input *GetPlayerConnection
 // API operation GetPlayerConnectionStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetPlayerConnectionStatus
 func (c *GameSparks) GetPlayerConnectionStatus(input *GetPlayerConnectionStatusInput) (*GetPlayerConnectionStatusOutput, error) {
@@ -1233,14 +1233,13 @@ const opGetSnapshot = "GetSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSnapshotRequest method.
+//	req, resp := client.GetSnapshotRequest(params)
 //
-//    // Example sending a request using the GetSnapshotRequest method.
-//    req, resp := client.GetSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetSnapshot
 func (c *GameSparks) GetSnapshotRequest(input *GetSnapshotInput) (req *request.Request, output *GetSnapshotOutput) {
@@ -1271,20 +1270,21 @@ func (c *GameSparks) GetSnapshotRequest(input *GetSnapshotInput) (req *request.R
 // API operation GetSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetSnapshot
 func (c *GameSparks) GetSnapshot(input *GetSnapshotInput) (*GetSnapshotOutput, error) {
@@ -1324,14 +1324,13 @@ const opGetStage = "GetStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStageRequest method.
+//	req, resp := client.GetStageRequest(params)
 //
-//    // Example sending a request using the GetStageRequest method.
-//    req, resp := client.GetStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetStage
 func (c *GameSparks) GetStageRequest(input *GetStageInput) (req *request.Request, output *GetStageOutput) {
@@ -1362,20 +1361,21 @@ func (c *GameSparks) GetStageRequest(input *GetStageInput) (req *request.Request
 // API operation GetStage for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetStage
 func (c *GameSparks) GetStage(input *GetStageInput) (*GetStageOutput, error) {
@@ -1415,14 +1415,13 @@ const opGetStageDeployment = "GetStageDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStageDeploymentRequest method.
+//	req, resp := client.GetStageDeploymentRequest(params)
 //
-//    // Example sending a request using the GetStageDeploymentRequest method.
-//    req, resp := client.GetStageDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetStageDeployment
 func (c *GameSparks) GetStageDeploymentRequest(input *GetStageDeploymentInput) (req *request.Request, output *GetStageDeploymentOutput) {
@@ -1453,20 +1452,21 @@ func (c *GameSparks) GetStageDeploymentRequest(input *GetStageDeploymentInput) (
 // API operation GetStageDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/GetStageDeployment
 func (c *GameSparks) GetStageDeployment(input *GetStageDeploymentInput) (*GetStageDeploymentOutput, error) {
@@ -1506,14 +1506,13 @@ const opImportGameConfiguration = "ImportGameConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportGameConfigurationRequest method.
+//	req, resp := client.ImportGameConfigurationRequest(params)
 //
-//    // Example sending a request using the ImportGameConfigurationRequest method.
-//    req, resp := client.ImportGameConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ImportGameConfiguration
 func (c *GameSparks) ImportGameConfigurationRequest(input *ImportGameConfigurationInput) (req *request.Request, output *ImportGameConfigurationOutput) {
@@ -1548,23 +1547,24 @@ func (c *GameSparks) ImportGameConfigurationRequest(input *ImportGameConfigurati
 // API operation ImportGameConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceQuotaExceededException
-//   The request would result in exceeding service quota.
+//   - InternalServerException
+//     The service encountered an internal error.
+//
+//   - ServiceQuotaExceededException
+//     The request would result in exceeding service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ImportGameConfiguration
 func (c *GameSparks) ImportGameConfiguration(input *ImportGameConfigurationInput) (*ImportGameConfigurationOutput, error) {
@@ -1604,14 +1604,13 @@ const opListExtensionVersions = "ListExtensionVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExtensionVersionsRequest method.
+//	req, resp := client.ListExtensionVersionsRequest(params)
 //
-//    // Example sending a request using the ListExtensionVersionsRequest method.
-//    req, resp := client.ListExtensionVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListExtensionVersions
 func (c *GameSparks) ListExtensionVersionsRequest(input *ListExtensionVersionsInput) (req *request.Request, output *ListExtensionVersionsOutput) {
@@ -1652,20 +1651,21 @@ func (c *GameSparks) ListExtensionVersionsRequest(input *ListExtensionVersionsIn
 // API operation ListExtensionVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListExtensionVersions
 func (c *GameSparks) ListExtensionVersions(input *ListExtensionVersionsInput) (*ListExtensionVersionsOutput, error) {
@@ -1697,15 +1697,14 @@ func (c *GameSparks) ListExtensionVersionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExtensionVersions operation.
-//    pageNum := 0
-//    err := client.ListExtensionVersionsPages(params,
-//        func(page *gamesparks.ListExtensionVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExtensionVersions operation.
+//	pageNum := 0
+//	err := client.ListExtensionVersionsPages(params,
+//	    func(page *gamesparks.ListExtensionVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListExtensionVersionsPages(input *ListExtensionVersionsInput, fn func(*ListExtensionVersionsOutput, bool) bool) error {
 	return c.ListExtensionVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1757,14 +1756,13 @@ const opListExtensions = "ListExtensions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExtensionsRequest method.
+//	req, resp := client.ListExtensionsRequest(params)
 //
-//    // Example sending a request using the ListExtensionsRequest method.
-//    req, resp := client.ListExtensionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListExtensions
 func (c *GameSparks) ListExtensionsRequest(input *ListExtensionsInput) (req *request.Request, output *ListExtensionsOutput) {
@@ -1803,17 +1801,18 @@ func (c *GameSparks) ListExtensionsRequest(input *ListExtensionsInput) (req *req
 // API operation ListExtensions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListExtensions
 func (c *GameSparks) ListExtensions(input *ListExtensionsInput) (*ListExtensionsOutput, error) {
@@ -1845,15 +1844,14 @@ func (c *GameSparks) ListExtensionsWithContext(ctx aws.Context, input *ListExten
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExtensions operation.
-//    pageNum := 0
-//    err := client.ListExtensionsPages(params,
-//        func(page *gamesparks.ListExtensionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExtensions operation.
+//	pageNum := 0
+//	err := client.ListExtensionsPages(params,
+//	    func(page *gamesparks.ListExtensionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListExtensionsPages(input *ListExtensionsInput, fn func(*ListExtensionsOutput, bool) bool) error {
 	return c.ListExtensionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1905,14 +1903,13 @@ const opListGames = "ListGames"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGamesRequest method.
+//	req, resp := client.ListGamesRequest(params)
 //
-//    // Example sending a request using the ListGamesRequest method.
-//    req, resp := client.ListGamesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListGames
 func (c *GameSparks) ListGamesRequest(input *ListGamesInput) (req *request.Request, output *ListGamesOutput) {
@@ -1949,17 +1946,18 @@ func (c *GameSparks) ListGamesRequest(input *ListGamesInput) (req *request.Reque
 // API operation ListGames for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListGames
 func (c *GameSparks) ListGames(input *ListGamesInput) (*ListGamesOutput, error) {
@@ -1991,15 +1989,14 @@ func (c *GameSparks) ListGamesWithContext(ctx aws.Context, input *ListGamesInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGames operation.
-//    pageNum := 0
-//    err := client.ListGamesPages(params,
-//        func(page *gamesparks.ListGamesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGames operation.
+//	pageNum := 0
+//	err := client.ListGamesPages(params,
+//	    func(page *gamesparks.ListGamesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListGamesPages(input *ListGamesInput, fn func(*ListGamesOutput, bool) bool) error {
 	return c.ListGamesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2051,14 +2048,13 @@ const opListGeneratedCodeJobs = "ListGeneratedCodeJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGeneratedCodeJobsRequest method.
+//	req, resp := client.ListGeneratedCodeJobsRequest(params)
 //
-//    // Example sending a request using the ListGeneratedCodeJobsRequest method.
-//    req, resp := client.ListGeneratedCodeJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListGeneratedCodeJobs
 func (c *GameSparks) ListGeneratedCodeJobsRequest(input *ListGeneratedCodeJobsInput) (req *request.Request, output *ListGeneratedCodeJobsOutput) {
@@ -2095,20 +2091,21 @@ func (c *GameSparks) ListGeneratedCodeJobsRequest(input *ListGeneratedCodeJobsIn
 // API operation ListGeneratedCodeJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListGeneratedCodeJobs
 func (c *GameSparks) ListGeneratedCodeJobs(input *ListGeneratedCodeJobsInput) (*ListGeneratedCodeJobsOutput, error) {
@@ -2140,15 +2137,14 @@ func (c *GameSparks) ListGeneratedCodeJobsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGeneratedCodeJobs operation.
-//    pageNum := 0
-//    err := client.ListGeneratedCodeJobsPages(params,
-//        func(page *gamesparks.ListGeneratedCodeJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGeneratedCodeJobs operation.
+//	pageNum := 0
+//	err := client.ListGeneratedCodeJobsPages(params,
+//	    func(page *gamesparks.ListGeneratedCodeJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListGeneratedCodeJobsPages(input *ListGeneratedCodeJobsInput, fn func(*ListGeneratedCodeJobsOutput, bool) bool) error {
 	return c.ListGeneratedCodeJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2200,14 +2196,13 @@ const opListSnapshots = "ListSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSnapshotsRequest method.
+//	req, resp := client.ListSnapshotsRequest(params)
 //
-//    // Example sending a request using the ListSnapshotsRequest method.
-//    req, resp := client.ListSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListSnapshots
 func (c *GameSparks) ListSnapshotsRequest(input *ListSnapshotsInput) (req *request.Request, output *ListSnapshotsOutput) {
@@ -2244,20 +2239,21 @@ func (c *GameSparks) ListSnapshotsRequest(input *ListSnapshotsInput) (req *reque
 // API operation ListSnapshots for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListSnapshots
 func (c *GameSparks) ListSnapshots(input *ListSnapshotsInput) (*ListSnapshotsOutput, error) {
@@ -2289,15 +2285,14 @@ func (c *GameSparks) ListSnapshotsWithContext(ctx aws.Context, input *ListSnapsh
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSnapshots operation.
-//    pageNum := 0
-//    err := client.ListSnapshotsPages(params,
-//        func(page *gamesparks.ListSnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSnapshots operation.
+//	pageNum := 0
+//	err := client.ListSnapshotsPages(params,
+//	    func(page *gamesparks.ListSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListSnapshotsPages(input *ListSnapshotsInput, fn func(*ListSnapshotsOutput, bool) bool) error {
 	return c.ListSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2349,14 +2344,13 @@ const opListStageDeployments = "ListStageDeployments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStageDeploymentsRequest method.
+//	req, resp := client.ListStageDeploymentsRequest(params)
 //
-//    // Example sending a request using the ListStageDeploymentsRequest method.
-//    req, resp := client.ListStageDeploymentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListStageDeployments
 func (c *GameSparks) ListStageDeploymentsRequest(input *ListStageDeploymentsInput) (req *request.Request, output *ListStageDeploymentsOutput) {
@@ -2393,20 +2387,21 @@ func (c *GameSparks) ListStageDeploymentsRequest(input *ListStageDeploymentsInpu
 // API operation ListStageDeployments for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListStageDeployments
 func (c *GameSparks) ListStageDeployments(input *ListStageDeploymentsInput) (*ListStageDeploymentsOutput, error) {
@@ -2438,15 +2433,14 @@ func (c *GameSparks) ListStageDeploymentsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStageDeployments operation.
-//    pageNum := 0
-//    err := client.ListStageDeploymentsPages(params,
-//        func(page *gamesparks.ListStageDeploymentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStageDeployments operation.
+//	pageNum := 0
+//	err := client.ListStageDeploymentsPages(params,
+//	    func(page *gamesparks.ListStageDeploymentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListStageDeploymentsPages(input *ListStageDeploymentsInput, fn func(*ListStageDeploymentsOutput, bool) bool) error {
 	return c.ListStageDeploymentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2498,14 +2492,13 @@ const opListStages = "ListStages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStagesRequest method.
+//	req, resp := client.ListStagesRequest(params)
 //
-//    // Example sending a request using the ListStagesRequest method.
-//    req, resp := client.ListStagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListStages
 func (c *GameSparks) ListStagesRequest(input *ListStagesInput) (req *request.Request, output *ListStagesOutput) {
@@ -2542,20 +2535,21 @@ func (c *GameSparks) ListStagesRequest(input *ListStagesInput) (req *request.Req
 // API operation ListStages for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListStages
 func (c *GameSparks) ListStages(input *ListStagesInput) (*ListStagesOutput, error) {
@@ -2587,15 +2581,14 @@ func (c *GameSparks) ListStagesWithContext(ctx aws.Context, input *ListStagesInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStages operation.
-//    pageNum := 0
-//    err := client.ListStagesPages(params,
-//        func(page *gamesparks.ListStagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStages operation.
+//	pageNum := 0
+//	err := client.ListStagesPages(params,
+//	    func(page *gamesparks.ListStagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameSparks) ListStagesPages(input *ListStagesInput, fn func(*ListStagesOutput, bool) bool) error {
 	return c.ListStagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2647,14 +2640,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListTagsForResource
 func (c *GameSparks) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2685,14 +2677,15 @@ func (c *GameSparks) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/ListTagsForResource
 func (c *GameSparks) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2732,14 +2725,13 @@ const opStartGeneratedCodeJob = "StartGeneratedCodeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartGeneratedCodeJobRequest method.
+//	req, resp := client.StartGeneratedCodeJobRequest(params)
 //
-//    // Example sending a request using the StartGeneratedCodeJobRequest method.
-//    req, resp := client.StartGeneratedCodeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/StartGeneratedCodeJob
 func (c *GameSparks) StartGeneratedCodeJobRequest(input *StartGeneratedCodeJobInput) (req *request.Request, output *StartGeneratedCodeJobOutput) {
@@ -2772,20 +2764,21 @@ func (c *GameSparks) StartGeneratedCodeJobRequest(input *StartGeneratedCodeJobIn
 // API operation StartGeneratedCodeJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/StartGeneratedCodeJob
 func (c *GameSparks) StartGeneratedCodeJob(input *StartGeneratedCodeJobInput) (*StartGeneratedCodeJobOutput, error) {
@@ -2825,14 +2818,13 @@ const opStartStageDeployment = "StartStageDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartStageDeploymentRequest method.
+//	req, resp := client.StartStageDeploymentRequest(params)
 //
-//    // Example sending a request using the StartStageDeploymentRequest method.
-//    req, resp := client.StartStageDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/StartStageDeployment
 func (c *GameSparks) StartStageDeploymentRequest(input *StartStageDeploymentInput) (req *request.Request, output *StartStageDeploymentOutput) {
@@ -2871,23 +2863,24 @@ func (c *GameSparks) StartStageDeploymentRequest(input *StartStageDeploymentInpu
 // API operation StartStageDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/StartStageDeployment
 func (c *GameSparks) StartStageDeployment(input *StartStageDeploymentInput) (*StartStageDeploymentOutput, error) {
@@ -2927,14 +2920,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/TagResource
 func (c *GameSparks) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2966,14 +2958,15 @@ func (c *GameSparks) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/TagResource
 func (c *GameSparks) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3013,14 +3006,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UntagResource
 func (c *GameSparks) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3052,14 +3044,15 @@ func (c *GameSparks) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UntagResource
 func (c *GameSparks) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3099,14 +3092,13 @@ const opUpdateGame = "UpdateGame"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGameRequest method.
+//	req, resp := client.UpdateGameRequest(params)
 //
-//    // Example sending a request using the UpdateGameRequest method.
-//    req, resp := client.UpdateGameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateGame
 func (c *GameSparks) UpdateGameRequest(input *UpdateGameInput) (req *request.Request, output *UpdateGameOutput) {
@@ -3137,20 +3129,21 @@ func (c *GameSparks) UpdateGameRequest(input *UpdateGameInput) (req *request.Req
 // API operation UpdateGame for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateGame
 func (c *GameSparks) UpdateGame(input *UpdateGameInput) (*UpdateGameOutput, error) {
@@ -3190,14 +3183,13 @@ const opUpdateGameConfiguration = "UpdateGameConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGameConfigurationRequest method.
+//	req, resp := client.UpdateGameConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateGameConfigurationRequest method.
-//    req, resp := client.UpdateGameConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateGameConfiguration
 func (c *GameSparks) UpdateGameConfigurationRequest(input *UpdateGameConfigurationInput) (req *request.Request, output *UpdateGameConfigurationOutput) {
@@ -3228,23 +3220,24 @@ func (c *GameSparks) UpdateGameConfigurationRequest(input *UpdateGameConfigurati
 // API operation UpdateGameConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceQuotaExceededException
-//   The request would result in exceeding service quota.
+//   - InternalServerException
+//     The service encountered an internal error.
+//
+//   - ServiceQuotaExceededException
+//     The request would result in exceeding service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateGameConfiguration
 func (c *GameSparks) UpdateGameConfiguration(input *UpdateGameConfigurationInput) (*UpdateGameConfigurationOutput, error) {
@@ -3284,14 +3277,13 @@ const opUpdateSnapshot = "UpdateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSnapshotRequest method.
+//	req, resp := client.UpdateSnapshotRequest(params)
 //
-//    // Example sending a request using the UpdateSnapshotRequest method.
-//    req, resp := client.UpdateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateSnapshot
 func (c *GameSparks) UpdateSnapshotRequest(input *UpdateSnapshotInput) (req *request.Request, output *UpdateSnapshotOutput) {
@@ -3322,20 +3314,21 @@ func (c *GameSparks) UpdateSnapshotRequest(input *UpdateSnapshotInput) (req *req
 // API operation UpdateSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateSnapshot
 func (c *GameSparks) UpdateSnapshot(input *UpdateSnapshotInput) (*UpdateSnapshotOutput, error) {
@@ -3375,14 +3368,13 @@ const opUpdateStage = "UpdateStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStageRequest method.
+//	req, resp := client.UpdateStageRequest(params)
 //
-//    // Example sending a request using the UpdateStageRequest method.
-//    req, resp := client.UpdateStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateStage
 func (c *GameSparks) UpdateStageRequest(input *UpdateStageInput) (req *request.Request, output *UpdateStageOutput) {
@@ -3413,20 +3405,21 @@ func (c *GameSparks) UpdateStageRequest(input *UpdateStageInput) (req *request.R
 // API operation UpdateStage for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One of the parameters in the request is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * InternalServerException
-//   The service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - InternalServerException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamesparks-2021-08-17/UpdateStage
 func (c *GameSparks) UpdateStage(input *UpdateStageInput) (*UpdateStageOutput, error) {

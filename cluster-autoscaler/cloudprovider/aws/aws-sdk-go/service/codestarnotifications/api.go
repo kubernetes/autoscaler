@@ -29,14 +29,13 @@ const opCreateNotificationRule = "CreateNotificationRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNotificationRuleRequest method.
+//	req, resp := client.CreateNotificationRuleRequest(params)
 //
-//    // Example sending a request using the CreateNotificationRuleRequest method.
-//    req, resp := client.CreateNotificationRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/CreateNotificationRule
 func (c *CodeStarNotifications) CreateNotificationRuleRequest(input *CreateNotificationRuleInput) (req *request.Request, output *CreateNotificationRuleOutput) {
@@ -69,28 +68,29 @@ func (c *CodeStarNotifications) CreateNotificationRuleRequest(input *CreateNotif
 // API operation CreateNotificationRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   A resource with the same name or ID already exists. Notification rule names
-//   must be unique in your AWS account.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ResourceAlreadyExistsException
+//     A resource with the same name or ID already exists. Notification rule names
+//     must be unique in your AWS account.
 //
-//   * LimitExceededException
-//   One of the AWS CodeStar Notifications limits has been exceeded. Limits apply
-//   to accounts, notification rules, notifications, resources, and targets. For
-//   more information, see Limits.
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
-//   * ConfigurationException
-//   Some or all of the configuration is incomplete, missing, or not valid.
+//   - LimitExceededException
+//     One of the AWS CodeStar Notifications limits has been exceeded. Limits apply
+//     to accounts, notification rules, notifications, resources, and targets. For
+//     more information, see Limits.
 //
-//   * ConcurrentModificationException
-//   AWS CodeStar Notifications can't complete the request because the resource
-//   is being modified by another process. Wait a few minutes and try again.
+//   - ConfigurationException
+//     Some or all of the configuration is incomplete, missing, or not valid.
 //
-//   * AccessDeniedException
-//   AWS CodeStar Notifications can't create the notification rule because you
-//   do not have sufficient permissions.
+//   - ConcurrentModificationException
+//     AWS CodeStar Notifications can't complete the request because the resource
+//     is being modified by another process. Wait a few minutes and try again.
+//
+//   - AccessDeniedException
+//     AWS CodeStar Notifications can't create the notification rule because you
+//     do not have sufficient permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/CreateNotificationRule
 func (c *CodeStarNotifications) CreateNotificationRule(input *CreateNotificationRuleInput) (*CreateNotificationRuleOutput, error) {
@@ -130,14 +130,13 @@ const opDeleteNotificationRule = "DeleteNotificationRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNotificationRuleRequest method.
+//	req, resp := client.DeleteNotificationRuleRequest(params)
 //
-//    // Example sending a request using the DeleteNotificationRuleRequest method.
-//    req, resp := client.DeleteNotificationRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/DeleteNotificationRule
 func (c *CodeStarNotifications) DeleteNotificationRuleRequest(input *DeleteNotificationRuleInput) (req *request.Request, output *DeleteNotificationRuleOutput) {
@@ -168,17 +167,18 @@ func (c *CodeStarNotifications) DeleteNotificationRuleRequest(input *DeleteNotif
 // API operation DeleteNotificationRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more parameter values are not valid.
 //
-//   * LimitExceededException
-//   One of the AWS CodeStar Notifications limits has been exceeded. Limits apply
-//   to accounts, notification rules, notifications, resources, and targets. For
-//   more information, see Limits.
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
-//   * ConcurrentModificationException
-//   AWS CodeStar Notifications can't complete the request because the resource
-//   is being modified by another process. Wait a few minutes and try again.
+//   - LimitExceededException
+//     One of the AWS CodeStar Notifications limits has been exceeded. Limits apply
+//     to accounts, notification rules, notifications, resources, and targets. For
+//     more information, see Limits.
+//
+//   - ConcurrentModificationException
+//     AWS CodeStar Notifications can't complete the request because the resource
+//     is being modified by another process. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/DeleteNotificationRule
 func (c *CodeStarNotifications) DeleteNotificationRule(input *DeleteNotificationRuleInput) (*DeleteNotificationRuleOutput, error) {
@@ -218,14 +218,13 @@ const opDeleteTarget = "DeleteTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTargetRequest method.
+//	req, resp := client.DeleteTargetRequest(params)
 //
-//    // Example sending a request using the DeleteTargetRequest method.
-//    req, resp := client.DeleteTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/DeleteTarget
 func (c *CodeStarNotifications) DeleteTargetRequest(input *DeleteTargetInput) (req *request.Request, output *DeleteTargetOutput) {
@@ -257,8 +256,8 @@ func (c *CodeStarNotifications) DeleteTargetRequest(input *DeleteTargetInput) (r
 // API operation DeleteTarget for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/DeleteTarget
 func (c *CodeStarNotifications) DeleteTarget(input *DeleteTargetInput) (*DeleteTargetOutput, error) {
@@ -298,14 +297,13 @@ const opDescribeNotificationRule = "DescribeNotificationRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNotificationRuleRequest method.
+//	req, resp := client.DescribeNotificationRuleRequest(params)
 //
-//    // Example sending a request using the DescribeNotificationRuleRequest method.
-//    req, resp := client.DescribeNotificationRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/DescribeNotificationRule
 func (c *CodeStarNotifications) DescribeNotificationRuleRequest(input *DescribeNotificationRuleInput) (req *request.Request, output *DescribeNotificationRuleOutput) {
@@ -336,12 +334,13 @@ func (c *CodeStarNotifications) DescribeNotificationRuleRequest(input *DescribeN
 // API operation DescribeNotificationRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   AWS CodeStar Notifications can't find a resource that matches the provided
-//   ARN.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     AWS CodeStar Notifications can't find a resource that matches the provided
+//     ARN.
+//
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/DescribeNotificationRule
 func (c *CodeStarNotifications) DescribeNotificationRule(input *DescribeNotificationRuleInput) (*DescribeNotificationRuleOutput, error) {
@@ -381,14 +380,13 @@ const opListEventTypes = "ListEventTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventTypesRequest method.
+//	req, resp := client.ListEventTypesRequest(params)
 //
-//    // Example sending a request using the ListEventTypesRequest method.
-//    req, resp := client.ListEventTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListEventTypes
 func (c *CodeStarNotifications) ListEventTypesRequest(input *ListEventTypesInput) (req *request.Request, output *ListEventTypesOutput) {
@@ -425,12 +423,13 @@ func (c *CodeStarNotifications) ListEventTypesRequest(input *ListEventTypesInput
 // API operation ListEventTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The value for the enumeration token used in the request to return the next
-//   batch of the results is not valid.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - InvalidNextTokenException
+//     The value for the enumeration token used in the request to return the next
+//     batch of the results is not valid.
+//
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListEventTypes
 func (c *CodeStarNotifications) ListEventTypes(input *ListEventTypesInput) (*ListEventTypesOutput, error) {
@@ -462,15 +461,14 @@ func (c *CodeStarNotifications) ListEventTypesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEventTypes operation.
-//    pageNum := 0
-//    err := client.ListEventTypesPages(params,
-//        func(page *codestarnotifications.ListEventTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEventTypes operation.
+//	pageNum := 0
+//	err := client.ListEventTypesPages(params,
+//	    func(page *codestarnotifications.ListEventTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeStarNotifications) ListEventTypesPages(input *ListEventTypesInput, fn func(*ListEventTypesOutput, bool) bool) error {
 	return c.ListEventTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -522,14 +520,13 @@ const opListNotificationRules = "ListNotificationRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNotificationRulesRequest method.
+//	req, resp := client.ListNotificationRulesRequest(params)
 //
-//    // Example sending a request using the ListNotificationRulesRequest method.
-//    req, resp := client.ListNotificationRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListNotificationRules
 func (c *CodeStarNotifications) ListNotificationRulesRequest(input *ListNotificationRulesInput) (req *request.Request, output *ListNotificationRulesOutput) {
@@ -566,12 +563,13 @@ func (c *CodeStarNotifications) ListNotificationRulesRequest(input *ListNotifica
 // API operation ListNotificationRules for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The value for the enumeration token used in the request to return the next
-//   batch of the results is not valid.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - InvalidNextTokenException
+//     The value for the enumeration token used in the request to return the next
+//     batch of the results is not valid.
+//
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListNotificationRules
 func (c *CodeStarNotifications) ListNotificationRules(input *ListNotificationRulesInput) (*ListNotificationRulesOutput, error) {
@@ -603,15 +601,14 @@ func (c *CodeStarNotifications) ListNotificationRulesWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNotificationRules operation.
-//    pageNum := 0
-//    err := client.ListNotificationRulesPages(params,
-//        func(page *codestarnotifications.ListNotificationRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNotificationRules operation.
+//	pageNum := 0
+//	err := client.ListNotificationRulesPages(params,
+//	    func(page *codestarnotifications.ListNotificationRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeStarNotifications) ListNotificationRulesPages(input *ListNotificationRulesInput, fn func(*ListNotificationRulesOutput, bool) bool) error {
 	return c.ListNotificationRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -663,14 +660,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListTagsForResource
 func (c *CodeStarNotifications) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -701,12 +697,13 @@ func (c *CodeStarNotifications) ListTagsForResourceRequest(input *ListTagsForRes
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   AWS CodeStar Notifications can't find a resource that matches the provided
-//   ARN.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     AWS CodeStar Notifications can't find a resource that matches the provided
+//     ARN.
+//
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListTagsForResource
 func (c *CodeStarNotifications) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -746,14 +743,13 @@ const opListTargets = "ListTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTargetsRequest method.
+//	req, resp := client.ListTargetsRequest(params)
 //
-//    // Example sending a request using the ListTargetsRequest method.
-//    req, resp := client.ListTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListTargets
 func (c *CodeStarNotifications) ListTargetsRequest(input *ListTargetsInput) (req *request.Request, output *ListTargetsOutput) {
@@ -790,12 +786,13 @@ func (c *CodeStarNotifications) ListTargetsRequest(input *ListTargetsInput) (req
 // API operation ListTargets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The value for the enumeration token used in the request to return the next
-//   batch of the results is not valid.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - InvalidNextTokenException
+//     The value for the enumeration token used in the request to return the next
+//     batch of the results is not valid.
+//
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/ListTargets
 func (c *CodeStarNotifications) ListTargets(input *ListTargetsInput) (*ListTargetsOutput, error) {
@@ -827,15 +824,14 @@ func (c *CodeStarNotifications) ListTargetsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTargets operation.
-//    pageNum := 0
-//    err := client.ListTargetsPages(params,
-//        func(page *codestarnotifications.ListTargetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTargets operation.
+//	pageNum := 0
+//	err := client.ListTargetsPages(params,
+//	    func(page *codestarnotifications.ListTargetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeStarNotifications) ListTargetsPages(input *ListTargetsInput, fn func(*ListTargetsOutput, bool) bool) error {
 	return c.ListTargetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -887,14 +883,13 @@ const opSubscribe = "Subscribe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SubscribeRequest method.
+//	req, resp := client.SubscribeRequest(params)
 //
-//    // Example sending a request using the SubscribeRequest method.
-//    req, resp := client.SubscribeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/Subscribe
 func (c *CodeStarNotifications) SubscribeRequest(input *SubscribeInput) (req *request.Request, output *SubscribeOutput) {
@@ -927,12 +922,13 @@ func (c *CodeStarNotifications) SubscribeRequest(input *SubscribeInput) (req *re
 // API operation Subscribe for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   AWS CodeStar Notifications can't find a resource that matches the provided
-//   ARN.
+//   - ValidationException
+//     One or more parameter values are not valid.
+//
+//   - ResourceNotFoundException
+//     AWS CodeStar Notifications can't find a resource that matches the provided
+//     ARN.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/Subscribe
 func (c *CodeStarNotifications) Subscribe(input *SubscribeInput) (*SubscribeOutput, error) {
@@ -972,14 +968,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/TagResource
 func (c *CodeStarNotifications) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1010,16 +1005,17 @@ func (c *CodeStarNotifications) TagResourceRequest(input *TagResourceInput) (req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   AWS CodeStar Notifications can't find a resource that matches the provided
-//   ARN.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     AWS CodeStar Notifications can't find a resource that matches the provided
+//     ARN.
 //
-//   * ConcurrentModificationException
-//   AWS CodeStar Notifications can't complete the request because the resource
-//   is being modified by another process. Wait a few minutes and try again.
+//   - ValidationException
+//     One or more parameter values are not valid.
+//
+//   - ConcurrentModificationException
+//     AWS CodeStar Notifications can't complete the request because the resource
+//     is being modified by another process. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/TagResource
 func (c *CodeStarNotifications) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1059,14 +1055,13 @@ const opUnsubscribe = "Unsubscribe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnsubscribeRequest method.
+//	req, resp := client.UnsubscribeRequest(params)
 //
-//    // Example sending a request using the UnsubscribeRequest method.
-//    req, resp := client.UnsubscribeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/Unsubscribe
 func (c *CodeStarNotifications) UnsubscribeRequest(input *UnsubscribeInput) (req *request.Request, output *UnsubscribeOutput) {
@@ -1099,8 +1094,8 @@ func (c *CodeStarNotifications) UnsubscribeRequest(input *UnsubscribeInput) (req
 // API operation Unsubscribe for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/Unsubscribe
 func (c *CodeStarNotifications) Unsubscribe(input *UnsubscribeInput) (*UnsubscribeOutput, error) {
@@ -1140,14 +1135,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/UntagResource
 func (c *CodeStarNotifications) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1180,16 +1174,17 @@ func (c *CodeStarNotifications) UntagResourceRequest(input *UntagResourceInput) 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   AWS CodeStar Notifications can't find a resource that matches the provided
-//   ARN.
 //
-//   * ValidationException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     AWS CodeStar Notifications can't find a resource that matches the provided
+//     ARN.
 //
-//   * ConcurrentModificationException
-//   AWS CodeStar Notifications can't complete the request because the resource
-//   is being modified by another process. Wait a few minutes and try again.
+//   - ValidationException
+//     One or more parameter values are not valid.
+//
+//   - ConcurrentModificationException
+//     AWS CodeStar Notifications can't complete the request because the resource
+//     is being modified by another process. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/UntagResource
 func (c *CodeStarNotifications) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1229,14 +1224,13 @@ const opUpdateNotificationRule = "UpdateNotificationRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNotificationRuleRequest method.
+//	req, resp := client.UpdateNotificationRuleRequest(params)
 //
-//    // Example sending a request using the UpdateNotificationRuleRequest method.
-//    req, resp := client.UpdateNotificationRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/UpdateNotificationRule
 func (c *CodeStarNotifications) UpdateNotificationRuleRequest(input *UpdateNotificationRuleInput) (req *request.Request, output *UpdateNotificationRuleOutput) {
@@ -1273,12 +1267,13 @@ func (c *CodeStarNotifications) UpdateNotificationRuleRequest(input *UpdateNotif
 // API operation UpdateNotificationRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   AWS CodeStar Notifications can't find a resource that matches the provided
-//   ARN.
+//   - ValidationException
+//     One or more parameter values are not valid.
+//
+//   - ResourceNotFoundException
+//     AWS CodeStar Notifications can't find a resource that matches the provided
+//     ARN.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/UpdateNotificationRule
 func (c *CodeStarNotifications) UpdateNotificationRule(input *UpdateNotificationRuleInput) (*UpdateNotificationRuleOutput, error) {

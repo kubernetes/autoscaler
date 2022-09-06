@@ -29,14 +29,13 @@ const opCreateCallAnalyticsCategory = "CreateCallAnalyticsCategory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCallAnalyticsCategoryRequest method.
+//	req, resp := client.CreateCallAnalyticsCategoryRequest(params)
 //
-//    // Example sending a request using the CreateCallAnalyticsCategoryRequest method.
-//    req, resp := client.CreateCallAnalyticsCategoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateCallAnalyticsCategory
 func (c *TranscribeService) CreateCallAnalyticsCategoryRequest(input *CreateCallAnalyticsCategoryInput) (req *request.Request, output *CreateCallAnalyticsCategoryOutput) {
@@ -74,22 +73,23 @@ func (c *TranscribeService) CreateCallAnalyticsCategoryRequest(input *CreateCall
 // API operation CreateCallAnalyticsCategory for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateCallAnalyticsCategory
 func (c *TranscribeService) CreateCallAnalyticsCategory(input *CreateCallAnalyticsCategoryInput) (*CreateCallAnalyticsCategoryOutput, error) {
@@ -129,14 +129,13 @@ const opCreateLanguageModel = "CreateLanguageModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLanguageModelRequest method.
+//	req, resp := client.CreateLanguageModelRequest(params)
 //
-//    // Example sending a request using the CreateLanguageModelRequest method.
-//    req, resp := client.CreateLanguageModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateLanguageModel
 func (c *TranscribeService) CreateLanguageModelRequest(input *CreateLanguageModelInput) (req *request.Request, output *CreateLanguageModelOutput) {
@@ -171,22 +170,23 @@ func (c *TranscribeService) CreateLanguageModelRequest(input *CreateLanguageMode
 // API operation CreateLanguageModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateLanguageModel
 func (c *TranscribeService) CreateLanguageModel(input *CreateLanguageModelInput) (*CreateLanguageModelOutput, error) {
@@ -226,14 +226,13 @@ const opCreateMedicalVocabulary = "CreateMedicalVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMedicalVocabularyRequest method.
+//	req, resp := client.CreateMedicalVocabularyRequest(params)
 //
-//    // Example sending a request using the CreateMedicalVocabularyRequest method.
-//    req, resp := client.CreateMedicalVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateMedicalVocabulary
 func (c *TranscribeService) CreateMedicalVocabularyRequest(input *CreateMedicalVocabularyInput) (req *request.Request, output *CreateMedicalVocabularyOutput) {
@@ -273,22 +272,23 @@ func (c *TranscribeService) CreateMedicalVocabularyRequest(input *CreateMedicalV
 // API operation CreateMedicalVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateMedicalVocabulary
 func (c *TranscribeService) CreateMedicalVocabulary(input *CreateMedicalVocabularyInput) (*CreateMedicalVocabularyOutput, error) {
@@ -328,14 +328,13 @@ const opCreateVocabulary = "CreateVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVocabularyRequest method.
+//	req, resp := client.CreateVocabularyRequest(params)
 //
-//    // Example sending a request using the CreateVocabularyRequest method.
-//    req, resp := client.CreateVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateVocabulary
 func (c *TranscribeService) CreateVocabularyRequest(input *CreateVocabularyInput) (req *request.Request, output *CreateVocabularyOutput) {
@@ -373,22 +372,23 @@ func (c *TranscribeService) CreateVocabularyRequest(input *CreateVocabularyInput
 // API operation CreateVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateVocabulary
 func (c *TranscribeService) CreateVocabulary(input *CreateVocabularyInput) (*CreateVocabularyOutput, error) {
@@ -428,14 +428,13 @@ const opCreateVocabularyFilter = "CreateVocabularyFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVocabularyFilterRequest method.
+//	req, resp := client.CreateVocabularyFilterRequest(params)
 //
-//    // Example sending a request using the CreateVocabularyFilterRequest method.
-//    req, resp := client.CreateVocabularyFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateVocabularyFilter
 func (c *TranscribeService) CreateVocabularyFilterRequest(input *CreateVocabularyFilterInput) (req *request.Request, output *CreateVocabularyFilterOutput) {
@@ -468,22 +467,23 @@ func (c *TranscribeService) CreateVocabularyFilterRequest(input *CreateVocabular
 // API operation CreateVocabularyFilter for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/CreateVocabularyFilter
 func (c *TranscribeService) CreateVocabularyFilter(input *CreateVocabularyFilterInput) (*CreateVocabularyFilterOutput, error) {
@@ -523,14 +523,13 @@ const opDeleteCallAnalyticsCategory = "DeleteCallAnalyticsCategory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCallAnalyticsCategoryRequest method.
+//	req, resp := client.DeleteCallAnalyticsCategoryRequest(params)
 //
-//    // Example sending a request using the DeleteCallAnalyticsCategoryRequest method.
-//    req, resp := client.DeleteCallAnalyticsCategoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteCallAnalyticsCategory
 func (c *TranscribeService) DeleteCallAnalyticsCategoryRequest(input *DeleteCallAnalyticsCategoryInput) (req *request.Request, output *DeleteCallAnalyticsCategoryOutput) {
@@ -563,23 +562,24 @@ func (c *TranscribeService) DeleteCallAnalyticsCategoryRequest(input *DeleteCall
 // API operation DeleteCallAnalyticsCategory for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteCallAnalyticsCategory
 func (c *TranscribeService) DeleteCallAnalyticsCategory(input *DeleteCallAnalyticsCategoryInput) (*DeleteCallAnalyticsCategoryOutput, error) {
@@ -619,14 +619,13 @@ const opDeleteCallAnalyticsJob = "DeleteCallAnalyticsJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCallAnalyticsJobRequest method.
+//	req, resp := client.DeleteCallAnalyticsJobRequest(params)
 //
-//    // Example sending a request using the DeleteCallAnalyticsJobRequest method.
-//    req, resp := client.DeleteCallAnalyticsJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteCallAnalyticsJob
 func (c *TranscribeService) DeleteCallAnalyticsJobRequest(input *DeleteCallAnalyticsJobInput) (req *request.Request, output *DeleteCallAnalyticsJobOutput) {
@@ -659,19 +658,20 @@ func (c *TranscribeService) DeleteCallAnalyticsJobRequest(input *DeleteCallAnaly
 // API operation DeleteCallAnalyticsJob for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteCallAnalyticsJob
 func (c *TranscribeService) DeleteCallAnalyticsJob(input *DeleteCallAnalyticsJobInput) (*DeleteCallAnalyticsJobOutput, error) {
@@ -711,14 +711,13 @@ const opDeleteLanguageModel = "DeleteLanguageModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLanguageModelRequest method.
+//	req, resp := client.DeleteLanguageModelRequest(params)
 //
-//    // Example sending a request using the DeleteLanguageModelRequest method.
-//    req, resp := client.DeleteLanguageModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteLanguageModel
 func (c *TranscribeService) DeleteLanguageModelRequest(input *DeleteLanguageModelInput) (req *request.Request, output *DeleteLanguageModelOutput) {
@@ -751,19 +750,20 @@ func (c *TranscribeService) DeleteLanguageModelRequest(input *DeleteLanguageMode
 // API operation DeleteLanguageModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteLanguageModel
 func (c *TranscribeService) DeleteLanguageModel(input *DeleteLanguageModelInput) (*DeleteLanguageModelOutput, error) {
@@ -803,14 +803,13 @@ const opDeleteMedicalTranscriptionJob = "DeleteMedicalTranscriptionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMedicalTranscriptionJobRequest method.
+//	req, resp := client.DeleteMedicalTranscriptionJobRequest(params)
 //
-//    // Example sending a request using the DeleteMedicalTranscriptionJobRequest method.
-//    req, resp := client.DeleteMedicalTranscriptionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteMedicalTranscriptionJob
 func (c *TranscribeService) DeleteMedicalTranscriptionJobRequest(input *DeleteMedicalTranscriptionJobInput) (req *request.Request, output *DeleteMedicalTranscriptionJobOutput) {
@@ -844,19 +843,20 @@ func (c *TranscribeService) DeleteMedicalTranscriptionJobRequest(input *DeleteMe
 // API operation DeleteMedicalTranscriptionJob for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteMedicalTranscriptionJob
 func (c *TranscribeService) DeleteMedicalTranscriptionJob(input *DeleteMedicalTranscriptionJobInput) (*DeleteMedicalTranscriptionJobOutput, error) {
@@ -896,14 +896,13 @@ const opDeleteMedicalVocabulary = "DeleteMedicalVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMedicalVocabularyRequest method.
+//	req, resp := client.DeleteMedicalVocabularyRequest(params)
 //
-//    // Example sending a request using the DeleteMedicalVocabularyRequest method.
-//    req, resp := client.DeleteMedicalVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteMedicalVocabulary
 func (c *TranscribeService) DeleteMedicalVocabularyRequest(input *DeleteMedicalVocabularyInput) (req *request.Request, output *DeleteMedicalVocabularyOutput) {
@@ -936,23 +935,24 @@ func (c *TranscribeService) DeleteMedicalVocabularyRequest(input *DeleteMedicalV
 // API operation DeleteMedicalVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteMedicalVocabulary
 func (c *TranscribeService) DeleteMedicalVocabulary(input *DeleteMedicalVocabularyInput) (*DeleteMedicalVocabularyOutput, error) {
@@ -992,14 +992,13 @@ const opDeleteTranscriptionJob = "DeleteTranscriptionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTranscriptionJobRequest method.
+//	req, resp := client.DeleteTranscriptionJobRequest(params)
 //
-//    // Example sending a request using the DeleteTranscriptionJobRequest method.
-//    req, resp := client.DeleteTranscriptionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteTranscriptionJob
 func (c *TranscribeService) DeleteTranscriptionJobRequest(input *DeleteTranscriptionJobInput) (req *request.Request, output *DeleteTranscriptionJobOutput) {
@@ -1032,19 +1031,20 @@ func (c *TranscribeService) DeleteTranscriptionJobRequest(input *DeleteTranscrip
 // API operation DeleteTranscriptionJob for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteTranscriptionJob
 func (c *TranscribeService) DeleteTranscriptionJob(input *DeleteTranscriptionJobInput) (*DeleteTranscriptionJobOutput, error) {
@@ -1084,14 +1084,13 @@ const opDeleteVocabulary = "DeleteVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVocabularyRequest method.
+//	req, resp := client.DeleteVocabularyRequest(params)
 //
-//    // Example sending a request using the DeleteVocabularyRequest method.
-//    req, resp := client.DeleteVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteVocabulary
 func (c *TranscribeService) DeleteVocabularyRequest(input *DeleteVocabularyInput) (req *request.Request, output *DeleteVocabularyOutput) {
@@ -1124,23 +1123,24 @@ func (c *TranscribeService) DeleteVocabularyRequest(input *DeleteVocabularyInput
 // API operation DeleteVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteVocabulary
 func (c *TranscribeService) DeleteVocabulary(input *DeleteVocabularyInput) (*DeleteVocabularyOutput, error) {
@@ -1180,14 +1180,13 @@ const opDeleteVocabularyFilter = "DeleteVocabularyFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVocabularyFilterRequest method.
+//	req, resp := client.DeleteVocabularyFilterRequest(params)
 //
-//    // Example sending a request using the DeleteVocabularyFilterRequest method.
-//    req, resp := client.DeleteVocabularyFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteVocabularyFilter
 func (c *TranscribeService) DeleteVocabularyFilterRequest(input *DeleteVocabularyFilterInput) (req *request.Request, output *DeleteVocabularyFilterOutput) {
@@ -1220,23 +1219,24 @@ func (c *TranscribeService) DeleteVocabularyFilterRequest(input *DeleteVocabular
 // API operation DeleteVocabularyFilter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DeleteVocabularyFilter
 func (c *TranscribeService) DeleteVocabularyFilter(input *DeleteVocabularyFilterInput) (*DeleteVocabularyFilterOutput, error) {
@@ -1276,14 +1276,13 @@ const opDescribeLanguageModel = "DescribeLanguageModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLanguageModelRequest method.
+//	req, resp := client.DescribeLanguageModelRequest(params)
 //
-//    // Example sending a request using the DescribeLanguageModelRequest method.
-//    req, resp := client.DescribeLanguageModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DescribeLanguageModel
 func (c *TranscribeService) DescribeLanguageModelRequest(input *DescribeLanguageModelInput) (req *request.Request, output *DescribeLanguageModelOutput) {
@@ -1323,23 +1322,24 @@ func (c *TranscribeService) DescribeLanguageModelRequest(input *DescribeLanguage
 // API operation DescribeLanguageModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/DescribeLanguageModel
 func (c *TranscribeService) DescribeLanguageModel(input *DescribeLanguageModelInput) (*DescribeLanguageModelOutput, error) {
@@ -1379,14 +1379,13 @@ const opGetCallAnalyticsCategory = "GetCallAnalyticsCategory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCallAnalyticsCategoryRequest method.
+//	req, resp := client.GetCallAnalyticsCategoryRequest(params)
 //
-//    // Example sending a request using the GetCallAnalyticsCategoryRequest method.
-//    req, resp := client.GetCallAnalyticsCategoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetCallAnalyticsCategory
 func (c *TranscribeService) GetCallAnalyticsCategoryRequest(input *GetCallAnalyticsCategoryInput) (req *request.Request, output *GetCallAnalyticsCategoryOutput) {
@@ -1417,23 +1416,24 @@ func (c *TranscribeService) GetCallAnalyticsCategoryRequest(input *GetCallAnalyt
 // API operation GetCallAnalyticsCategory for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetCallAnalyticsCategory
 func (c *TranscribeService) GetCallAnalyticsCategory(input *GetCallAnalyticsCategoryInput) (*GetCallAnalyticsCategoryOutput, error) {
@@ -1473,14 +1473,13 @@ const opGetCallAnalyticsJob = "GetCallAnalyticsJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCallAnalyticsJobRequest method.
+//	req, resp := client.GetCallAnalyticsJobRequest(params)
 //
-//    // Example sending a request using the GetCallAnalyticsJobRequest method.
-//    req, resp := client.GetCallAnalyticsJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetCallAnalyticsJob
 func (c *TranscribeService) GetCallAnalyticsJobRequest(input *GetCallAnalyticsJobInput) (req *request.Request, output *GetCallAnalyticsJobOutput) {
@@ -1517,23 +1516,24 @@ func (c *TranscribeService) GetCallAnalyticsJobRequest(input *GetCallAnalyticsJo
 // API operation GetCallAnalyticsJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetCallAnalyticsJob
 func (c *TranscribeService) GetCallAnalyticsJob(input *GetCallAnalyticsJobInput) (*GetCallAnalyticsJobOutput, error) {
@@ -1573,14 +1573,13 @@ const opGetMedicalTranscriptionJob = "GetMedicalTranscriptionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMedicalTranscriptionJobRequest method.
+//	req, resp := client.GetMedicalTranscriptionJobRequest(params)
 //
-//    // Example sending a request using the GetMedicalTranscriptionJobRequest method.
-//    req, resp := client.GetMedicalTranscriptionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetMedicalTranscriptionJob
 func (c *TranscribeService) GetMedicalTranscriptionJobRequest(input *GetMedicalTranscriptionJobInput) (req *request.Request, output *GetMedicalTranscriptionJobOutput) {
@@ -1615,23 +1614,24 @@ func (c *TranscribeService) GetMedicalTranscriptionJobRequest(input *GetMedicalT
 // API operation GetMedicalTranscriptionJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetMedicalTranscriptionJob
 func (c *TranscribeService) GetMedicalTranscriptionJob(input *GetMedicalTranscriptionJobInput) (*GetMedicalTranscriptionJobOutput, error) {
@@ -1671,14 +1671,13 @@ const opGetMedicalVocabulary = "GetMedicalVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMedicalVocabularyRequest method.
+//	req, resp := client.GetMedicalVocabularyRequest(params)
 //
-//    // Example sending a request using the GetMedicalVocabularyRequest method.
-//    req, resp := client.GetMedicalVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetMedicalVocabulary
 func (c *TranscribeService) GetMedicalVocabularyRequest(input *GetMedicalVocabularyInput) (req *request.Request, output *GetMedicalVocabularyOutput) {
@@ -1709,23 +1708,24 @@ func (c *TranscribeService) GetMedicalVocabularyRequest(input *GetMedicalVocabul
 // API operation GetMedicalVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetMedicalVocabulary
 func (c *TranscribeService) GetMedicalVocabulary(input *GetMedicalVocabularyInput) (*GetMedicalVocabularyOutput, error) {
@@ -1765,14 +1765,13 @@ const opGetTranscriptionJob = "GetTranscriptionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTranscriptionJobRequest method.
+//	req, resp := client.GetTranscriptionJobRequest(params)
 //
-//    // Example sending a request using the GetTranscriptionJobRequest method.
-//    req, resp := client.GetTranscriptionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetTranscriptionJob
 func (c *TranscribeService) GetTranscriptionJobRequest(input *GetTranscriptionJobInput) (req *request.Request, output *GetTranscriptionJobOutput) {
@@ -1807,23 +1806,24 @@ func (c *TranscribeService) GetTranscriptionJobRequest(input *GetTranscriptionJo
 // API operation GetTranscriptionJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetTranscriptionJob
 func (c *TranscribeService) GetTranscriptionJob(input *GetTranscriptionJobInput) (*GetTranscriptionJobOutput, error) {
@@ -1863,14 +1863,13 @@ const opGetVocabulary = "GetVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVocabularyRequest method.
+//	req, resp := client.GetVocabularyRequest(params)
 //
-//    // Example sending a request using the GetVocabularyRequest method.
-//    req, resp := client.GetVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetVocabulary
 func (c *TranscribeService) GetVocabularyRequest(input *GetVocabularyInput) (req *request.Request, output *GetVocabularyOutput) {
@@ -1901,23 +1900,24 @@ func (c *TranscribeService) GetVocabularyRequest(input *GetVocabularyInput) (req
 // API operation GetVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetVocabulary
 func (c *TranscribeService) GetVocabulary(input *GetVocabularyInput) (*GetVocabularyOutput, error) {
@@ -1957,14 +1957,13 @@ const opGetVocabularyFilter = "GetVocabularyFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVocabularyFilterRequest method.
+//	req, resp := client.GetVocabularyFilterRequest(params)
 //
-//    // Example sending a request using the GetVocabularyFilterRequest method.
-//    req, resp := client.GetVocabularyFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetVocabularyFilter
 func (c *TranscribeService) GetVocabularyFilterRequest(input *GetVocabularyFilterInput) (req *request.Request, output *GetVocabularyFilterOutput) {
@@ -1995,23 +1994,24 @@ func (c *TranscribeService) GetVocabularyFilterRequest(input *GetVocabularyFilte
 // API operation GetVocabularyFilter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/GetVocabularyFilter
 func (c *TranscribeService) GetVocabularyFilter(input *GetVocabularyFilterInput) (*GetVocabularyFilterOutput, error) {
@@ -2051,14 +2051,13 @@ const opListCallAnalyticsCategories = "ListCallAnalyticsCategories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCallAnalyticsCategoriesRequest method.
+//	req, resp := client.ListCallAnalyticsCategoriesRequest(params)
 //
-//    // Example sending a request using the ListCallAnalyticsCategoriesRequest method.
-//    req, resp := client.ListCallAnalyticsCategoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListCallAnalyticsCategories
 func (c *TranscribeService) ListCallAnalyticsCategoriesRequest(input *ListCallAnalyticsCategoriesInput) (req *request.Request, output *ListCallAnalyticsCategoriesOutput) {
@@ -2097,19 +2096,20 @@ func (c *TranscribeService) ListCallAnalyticsCategoriesRequest(input *ListCallAn
 // API operation ListCallAnalyticsCategories for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListCallAnalyticsCategories
 func (c *TranscribeService) ListCallAnalyticsCategories(input *ListCallAnalyticsCategoriesInput) (*ListCallAnalyticsCategoriesOutput, error) {
@@ -2141,15 +2141,14 @@ func (c *TranscribeService) ListCallAnalyticsCategoriesWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCallAnalyticsCategories operation.
-//    pageNum := 0
-//    err := client.ListCallAnalyticsCategoriesPages(params,
-//        func(page *transcribeservice.ListCallAnalyticsCategoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCallAnalyticsCategories operation.
+//	pageNum := 0
+//	err := client.ListCallAnalyticsCategoriesPages(params,
+//	    func(page *transcribeservice.ListCallAnalyticsCategoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListCallAnalyticsCategoriesPages(input *ListCallAnalyticsCategoriesInput, fn func(*ListCallAnalyticsCategoriesOutput, bool) bool) error {
 	return c.ListCallAnalyticsCategoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2201,14 +2200,13 @@ const opListCallAnalyticsJobs = "ListCallAnalyticsJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCallAnalyticsJobsRequest method.
+//	req, resp := client.ListCallAnalyticsJobsRequest(params)
 //
-//    // Example sending a request using the ListCallAnalyticsJobsRequest method.
-//    req, resp := client.ListCallAnalyticsJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListCallAnalyticsJobs
 func (c *TranscribeService) ListCallAnalyticsJobsRequest(input *ListCallAnalyticsJobsInput) (req *request.Request, output *ListCallAnalyticsJobsOutput) {
@@ -2246,19 +2244,20 @@ func (c *TranscribeService) ListCallAnalyticsJobsRequest(input *ListCallAnalytic
 // API operation ListCallAnalyticsJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListCallAnalyticsJobs
 func (c *TranscribeService) ListCallAnalyticsJobs(input *ListCallAnalyticsJobsInput) (*ListCallAnalyticsJobsOutput, error) {
@@ -2290,15 +2289,14 @@ func (c *TranscribeService) ListCallAnalyticsJobsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCallAnalyticsJobs operation.
-//    pageNum := 0
-//    err := client.ListCallAnalyticsJobsPages(params,
-//        func(page *transcribeservice.ListCallAnalyticsJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCallAnalyticsJobs operation.
+//	pageNum := 0
+//	err := client.ListCallAnalyticsJobsPages(params,
+//	    func(page *transcribeservice.ListCallAnalyticsJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListCallAnalyticsJobsPages(input *ListCallAnalyticsJobsInput, fn func(*ListCallAnalyticsJobsOutput, bool) bool) error {
 	return c.ListCallAnalyticsJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2350,14 +2348,13 @@ const opListLanguageModels = "ListLanguageModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLanguageModelsRequest method.
+//	req, resp := client.ListLanguageModelsRequest(params)
 //
-//    // Example sending a request using the ListLanguageModelsRequest method.
-//    req, resp := client.ListLanguageModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListLanguageModels
 func (c *TranscribeService) ListLanguageModelsRequest(input *ListLanguageModelsInput) (req *request.Request, output *ListLanguageModelsOutput) {
@@ -2396,19 +2393,20 @@ func (c *TranscribeService) ListLanguageModelsRequest(input *ListLanguageModelsI
 // API operation ListLanguageModels for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListLanguageModels
 func (c *TranscribeService) ListLanguageModels(input *ListLanguageModelsInput) (*ListLanguageModelsOutput, error) {
@@ -2440,15 +2438,14 @@ func (c *TranscribeService) ListLanguageModelsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLanguageModels operation.
-//    pageNum := 0
-//    err := client.ListLanguageModelsPages(params,
-//        func(page *transcribeservice.ListLanguageModelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLanguageModels operation.
+//	pageNum := 0
+//	err := client.ListLanguageModelsPages(params,
+//	    func(page *transcribeservice.ListLanguageModelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListLanguageModelsPages(input *ListLanguageModelsInput, fn func(*ListLanguageModelsOutput, bool) bool) error {
 	return c.ListLanguageModelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2500,14 +2497,13 @@ const opListMedicalTranscriptionJobs = "ListMedicalTranscriptionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMedicalTranscriptionJobsRequest method.
+//	req, resp := client.ListMedicalTranscriptionJobsRequest(params)
 //
-//    // Example sending a request using the ListMedicalTranscriptionJobsRequest method.
-//    req, resp := client.ListMedicalTranscriptionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListMedicalTranscriptionJobs
 func (c *TranscribeService) ListMedicalTranscriptionJobsRequest(input *ListMedicalTranscriptionJobsInput) (req *request.Request, output *ListMedicalTranscriptionJobsOutput) {
@@ -2545,19 +2541,20 @@ func (c *TranscribeService) ListMedicalTranscriptionJobsRequest(input *ListMedic
 // API operation ListMedicalTranscriptionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListMedicalTranscriptionJobs
 func (c *TranscribeService) ListMedicalTranscriptionJobs(input *ListMedicalTranscriptionJobsInput) (*ListMedicalTranscriptionJobsOutput, error) {
@@ -2589,15 +2586,14 @@ func (c *TranscribeService) ListMedicalTranscriptionJobsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMedicalTranscriptionJobs operation.
-//    pageNum := 0
-//    err := client.ListMedicalTranscriptionJobsPages(params,
-//        func(page *transcribeservice.ListMedicalTranscriptionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMedicalTranscriptionJobs operation.
+//	pageNum := 0
+//	err := client.ListMedicalTranscriptionJobsPages(params,
+//	    func(page *transcribeservice.ListMedicalTranscriptionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListMedicalTranscriptionJobsPages(input *ListMedicalTranscriptionJobsInput, fn func(*ListMedicalTranscriptionJobsOutput, bool) bool) error {
 	return c.ListMedicalTranscriptionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2649,14 +2645,13 @@ const opListMedicalVocabularies = "ListMedicalVocabularies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMedicalVocabulariesRequest method.
+//	req, resp := client.ListMedicalVocabulariesRequest(params)
 //
-//    // Example sending a request using the ListMedicalVocabulariesRequest method.
-//    req, resp := client.ListMedicalVocabulariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListMedicalVocabularies
 func (c *TranscribeService) ListMedicalVocabulariesRequest(input *ListMedicalVocabulariesInput) (req *request.Request, output *ListMedicalVocabulariesOutput) {
@@ -2695,19 +2690,20 @@ func (c *TranscribeService) ListMedicalVocabulariesRequest(input *ListMedicalVoc
 // API operation ListMedicalVocabularies for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListMedicalVocabularies
 func (c *TranscribeService) ListMedicalVocabularies(input *ListMedicalVocabulariesInput) (*ListMedicalVocabulariesOutput, error) {
@@ -2739,15 +2735,14 @@ func (c *TranscribeService) ListMedicalVocabulariesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMedicalVocabularies operation.
-//    pageNum := 0
-//    err := client.ListMedicalVocabulariesPages(params,
-//        func(page *transcribeservice.ListMedicalVocabulariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMedicalVocabularies operation.
+//	pageNum := 0
+//	err := client.ListMedicalVocabulariesPages(params,
+//	    func(page *transcribeservice.ListMedicalVocabulariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListMedicalVocabulariesPages(input *ListMedicalVocabulariesInput, fn func(*ListMedicalVocabulariesOutput, bool) bool) error {
 	return c.ListMedicalVocabulariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2799,14 +2794,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListTagsForResource
 func (c *TranscribeService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2838,23 +2832,24 @@ func (c *TranscribeService) ListTagsForResourceRequest(input *ListTagsForResourc
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListTagsForResource
 func (c *TranscribeService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2894,14 +2889,13 @@ const opListTranscriptionJobs = "ListTranscriptionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTranscriptionJobsRequest method.
+//	req, resp := client.ListTranscriptionJobsRequest(params)
 //
-//    // Example sending a request using the ListTranscriptionJobsRequest method.
-//    req, resp := client.ListTranscriptionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListTranscriptionJobs
 func (c *TranscribeService) ListTranscriptionJobsRequest(input *ListTranscriptionJobsInput) (req *request.Request, output *ListTranscriptionJobsOutput) {
@@ -2938,19 +2932,20 @@ func (c *TranscribeService) ListTranscriptionJobsRequest(input *ListTranscriptio
 // API operation ListTranscriptionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListTranscriptionJobs
 func (c *TranscribeService) ListTranscriptionJobs(input *ListTranscriptionJobsInput) (*ListTranscriptionJobsOutput, error) {
@@ -2982,15 +2977,14 @@ func (c *TranscribeService) ListTranscriptionJobsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTranscriptionJobs operation.
-//    pageNum := 0
-//    err := client.ListTranscriptionJobsPages(params,
-//        func(page *transcribeservice.ListTranscriptionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTranscriptionJobs operation.
+//	pageNum := 0
+//	err := client.ListTranscriptionJobsPages(params,
+//	    func(page *transcribeservice.ListTranscriptionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListTranscriptionJobsPages(input *ListTranscriptionJobsInput, fn func(*ListTranscriptionJobsOutput, bool) bool) error {
 	return c.ListTranscriptionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3042,14 +3036,13 @@ const opListVocabularies = "ListVocabularies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVocabulariesRequest method.
+//	req, resp := client.ListVocabulariesRequest(params)
 //
-//    // Example sending a request using the ListVocabulariesRequest method.
-//    req, resp := client.ListVocabulariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListVocabularies
 func (c *TranscribeService) ListVocabulariesRequest(input *ListVocabulariesInput) (req *request.Request, output *ListVocabulariesOutput) {
@@ -3087,19 +3080,20 @@ func (c *TranscribeService) ListVocabulariesRequest(input *ListVocabulariesInput
 // API operation ListVocabularies for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListVocabularies
 func (c *TranscribeService) ListVocabularies(input *ListVocabulariesInput) (*ListVocabulariesOutput, error) {
@@ -3131,15 +3125,14 @@ func (c *TranscribeService) ListVocabulariesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVocabularies operation.
-//    pageNum := 0
-//    err := client.ListVocabulariesPages(params,
-//        func(page *transcribeservice.ListVocabulariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVocabularies operation.
+//	pageNum := 0
+//	err := client.ListVocabulariesPages(params,
+//	    func(page *transcribeservice.ListVocabulariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListVocabulariesPages(input *ListVocabulariesInput, fn func(*ListVocabulariesOutput, bool) bool) error {
 	return c.ListVocabulariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3191,14 +3184,13 @@ const opListVocabularyFilters = "ListVocabularyFilters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVocabularyFiltersRequest method.
+//	req, resp := client.ListVocabularyFiltersRequest(params)
 //
-//    // Example sending a request using the ListVocabularyFiltersRequest method.
-//    req, resp := client.ListVocabularyFiltersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListVocabularyFilters
 func (c *TranscribeService) ListVocabularyFiltersRequest(input *ListVocabularyFiltersInput) (req *request.Request, output *ListVocabularyFiltersOutput) {
@@ -3235,19 +3227,20 @@ func (c *TranscribeService) ListVocabularyFiltersRequest(input *ListVocabularyFi
 // API operation ListVocabularyFilters for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/ListVocabularyFilters
 func (c *TranscribeService) ListVocabularyFilters(input *ListVocabularyFiltersInput) (*ListVocabularyFiltersOutput, error) {
@@ -3279,15 +3272,14 @@ func (c *TranscribeService) ListVocabularyFiltersWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVocabularyFilters operation.
-//    pageNum := 0
-//    err := client.ListVocabularyFiltersPages(params,
-//        func(page *transcribeservice.ListVocabularyFiltersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVocabularyFilters operation.
+//	pageNum := 0
+//	err := client.ListVocabularyFiltersPages(params,
+//	    func(page *transcribeservice.ListVocabularyFiltersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *TranscribeService) ListVocabularyFiltersPages(input *ListVocabularyFiltersInput, fn func(*ListVocabularyFiltersOutput, bool) bool) error {
 	return c.ListVocabularyFiltersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3339,14 +3331,13 @@ const opStartCallAnalyticsJob = "StartCallAnalyticsJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCallAnalyticsJobRequest method.
+//	req, resp := client.StartCallAnalyticsJobRequest(params)
 //
-//    // Example sending a request using the StartCallAnalyticsJobRequest method.
-//    req, resp := client.StartCallAnalyticsJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/StartCallAnalyticsJob
 func (c *TranscribeService) StartCallAnalyticsJobRequest(input *StartCallAnalyticsJobInput) (req *request.Request, output *StartCallAnalyticsJobOutput) {
@@ -3383,22 +3374,23 @@ func (c *TranscribeService) StartCallAnalyticsJobRequest(input *StartCallAnalyti
 // API operation StartCallAnalyticsJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/StartCallAnalyticsJob
 func (c *TranscribeService) StartCallAnalyticsJob(input *StartCallAnalyticsJobInput) (*StartCallAnalyticsJobOutput, error) {
@@ -3438,14 +3430,13 @@ const opStartMedicalTranscriptionJob = "StartMedicalTranscriptionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMedicalTranscriptionJobRequest method.
+//	req, resp := client.StartMedicalTranscriptionJobRequest(params)
 //
-//    // Example sending a request using the StartMedicalTranscriptionJobRequest method.
-//    req, resp := client.StartMedicalTranscriptionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/StartMedicalTranscriptionJob
 func (c *TranscribeService) StartMedicalTranscriptionJobRequest(input *StartMedicalTranscriptionJobInput) (req *request.Request, output *StartMedicalTranscriptionJobOutput) {
@@ -3476,22 +3467,23 @@ func (c *TranscribeService) StartMedicalTranscriptionJobRequest(input *StartMedi
 // API operation StartMedicalTranscriptionJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/StartMedicalTranscriptionJob
 func (c *TranscribeService) StartMedicalTranscriptionJob(input *StartMedicalTranscriptionJobInput) (*StartMedicalTranscriptionJobOutput, error) {
@@ -3531,14 +3523,13 @@ const opStartTranscriptionJob = "StartTranscriptionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTranscriptionJobRequest method.
+//	req, resp := client.StartTranscriptionJobRequest(params)
 //
-//    // Example sending a request using the StartTranscriptionJobRequest method.
-//    req, resp := client.StartTranscriptionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/StartTranscriptionJob
 func (c *TranscribeService) StartTranscriptionJobRequest(input *StartTranscriptionJobInput) (req *request.Request, output *StartTranscriptionJobOutput) {
@@ -3569,22 +3560,23 @@ func (c *TranscribeService) StartTranscriptionJobRequest(input *StartTranscripti
 // API operation StartTranscriptionJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/StartTranscriptionJob
 func (c *TranscribeService) StartTranscriptionJob(input *StartTranscriptionJobInput) (*StartTranscriptionJobOutput, error) {
@@ -3624,14 +3616,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/TagResource
 func (c *TranscribeService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3663,26 +3654,27 @@ func (c *TranscribeService) TagResourceRequest(input *TagResourceInput) (req *re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - ConflictException
+//     There is already a resource with that name.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/TagResource
 func (c *TranscribeService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3722,14 +3714,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UntagResource
 func (c *TranscribeService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3761,26 +3752,27 @@ func (c *TranscribeService) UntagResourceRequest(input *UntagResourceInput) (req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
 //
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - ConflictException
+//     There is already a resource with that name.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
+//
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UntagResource
 func (c *TranscribeService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3820,14 +3812,13 @@ const opUpdateCallAnalyticsCategory = "UpdateCallAnalyticsCategory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCallAnalyticsCategoryRequest method.
+//	req, resp := client.UpdateCallAnalyticsCategoryRequest(params)
 //
-//    // Example sending a request using the UpdateCallAnalyticsCategoryRequest method.
-//    req, resp := client.UpdateCallAnalyticsCategoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateCallAnalyticsCategory
 func (c *TranscribeService) UpdateCallAnalyticsCategoryRequest(input *UpdateCallAnalyticsCategoryInput) (req *request.Request, output *UpdateCallAnalyticsCategoryOutput) {
@@ -3860,26 +3851,27 @@ func (c *TranscribeService) UpdateCallAnalyticsCategoryRequest(input *UpdateCall
 // API operation UpdateCallAnalyticsCategory for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateCallAnalyticsCategory
 func (c *TranscribeService) UpdateCallAnalyticsCategory(input *UpdateCallAnalyticsCategoryInput) (*UpdateCallAnalyticsCategoryOutput, error) {
@@ -3919,14 +3911,13 @@ const opUpdateMedicalVocabulary = "UpdateMedicalVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMedicalVocabularyRequest method.
+//	req, resp := client.UpdateMedicalVocabularyRequest(params)
 //
-//    // Example sending a request using the UpdateMedicalVocabularyRequest method.
-//    req, resp := client.UpdateMedicalVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateMedicalVocabulary
 func (c *TranscribeService) UpdateMedicalVocabularyRequest(input *UpdateMedicalVocabularyInput) (req *request.Request, output *UpdateMedicalVocabularyOutput) {
@@ -3960,26 +3951,27 @@ func (c *TranscribeService) UpdateMedicalVocabularyRequest(input *UpdateMedicalV
 // API operation UpdateMedicalVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateMedicalVocabulary
 func (c *TranscribeService) UpdateMedicalVocabulary(input *UpdateMedicalVocabularyInput) (*UpdateMedicalVocabularyOutput, error) {
@@ -4019,14 +4011,13 @@ const opUpdateVocabulary = "UpdateVocabulary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVocabularyRequest method.
+//	req, resp := client.UpdateVocabularyRequest(params)
 //
-//    // Example sending a request using the UpdateVocabularyRequest method.
-//    req, resp := client.UpdateVocabularyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateVocabulary
 func (c *TranscribeService) UpdateVocabularyRequest(input *UpdateVocabularyInput) (req *request.Request, output *UpdateVocabularyOutput) {
@@ -4059,26 +4050,27 @@ func (c *TranscribeService) UpdateVocabularyRequest(input *UpdateVocabularyInput
 // API operation UpdateVocabulary for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
 //
-//   * ConflictException
-//   There is already a resource with that name.
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
+//
+//   - ConflictException
+//     There is already a resource with that name.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateVocabulary
 func (c *TranscribeService) UpdateVocabulary(input *UpdateVocabularyInput) (*UpdateVocabularyOutput, error) {
@@ -4118,14 +4110,13 @@ const opUpdateVocabularyFilter = "UpdateVocabularyFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVocabularyFilterRequest method.
+//	req, resp := client.UpdateVocabularyFilterRequest(params)
 //
-//    // Example sending a request using the UpdateVocabularyFilterRequest method.
-//    req, resp := client.UpdateVocabularyFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateVocabularyFilter
 func (c *TranscribeService) UpdateVocabularyFilterRequest(input *UpdateVocabularyFilterInput) (req *request.Request, output *UpdateVocabularyFilterOutput) {
@@ -4156,23 +4147,24 @@ func (c *TranscribeService) UpdateVocabularyFilterRequest(input *UpdateVocabular
 // API operation UpdateVocabularyFilter for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Your request didn't pass one or more validation tests. For example, if the
-//   entity that you're trying to delete doesn't exist or if it is in a non-terminal
-//   state (for example, it's "in progress"). See the exception Message field
-//   for more information.
 //
-//   * LimitExceededException
-//   Either you have sent too many requests or your input file is too long. Wait
-//   before you resend your request, or use a smaller file and resend the request.
+//   - BadRequestException
+//     Your request didn't pass one or more validation tests. For example, if the
+//     entity that you're trying to delete doesn't exist or if it is in a non-terminal
+//     state (for example, it's "in progress"). See the exception Message field
+//     for more information.
 //
-//   * InternalFailureException
-//   There was an internal error. Check the error message and try your request
-//   again.
+//   - LimitExceededException
+//     Either you have sent too many requests or your input file is too long. Wait
+//     before you resend your request, or use a smaller file and resend the request.
 //
-//   * NotFoundException
-//   We can't find the requested resource. Check the name and try your request
-//   again.
+//   - InternalFailureException
+//     There was an internal error. Check the error message and try your request
+//     again.
+//
+//   - NotFoundException
+//     We can't find the requested resource. Check the name and try your request
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-2017-10-26/UpdateVocabularyFilter
 func (c *TranscribeService) UpdateVocabularyFilter(input *UpdateVocabularyFilterInput) (*UpdateVocabularyFilterOutput, error) {

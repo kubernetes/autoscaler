@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type NovaNetwork struct {
 	// IP地址。
 

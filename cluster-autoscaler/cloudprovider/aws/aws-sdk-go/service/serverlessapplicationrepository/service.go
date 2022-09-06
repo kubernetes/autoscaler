@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ServerlessApplicationRepository client from just a session.
-//     svc := serverlessapplicationrepository.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ServerlessApplicationRepository client with additional configuration
-//     svc := serverlessapplicationrepository.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ServerlessApplicationRepository client from just a session.
+//	svc := serverlessapplicationrepository.New(mySession)
+//
+//	// Create a ServerlessApplicationRepository client with additional configuration
+//	svc := serverlessapplicationrepository.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ServerlessApplicationRepository {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

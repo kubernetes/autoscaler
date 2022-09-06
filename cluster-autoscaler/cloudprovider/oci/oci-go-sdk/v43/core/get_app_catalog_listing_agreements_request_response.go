@@ -11,7 +11,7 @@ import (
 
 // GetAppCatalogListingAgreementsRequest wrapper for the GetAppCatalogListingAgreements operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetAppCatalogListingAgreements.go.html to see an example of how to use GetAppCatalogListingAgreementsRequest.
 type GetAppCatalogListingAgreementsRequest struct {

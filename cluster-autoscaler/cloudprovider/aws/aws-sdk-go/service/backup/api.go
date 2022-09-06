@@ -29,14 +29,13 @@ const opCreateBackupPlan = "CreateBackupPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackupPlanRequest method.
+//	req, resp := client.CreateBackupPlanRequest(params)
 //
-//    // Example sending a request using the CreateBackupPlanRequest method.
-//    req, resp := client.CreateBackupPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateBackupPlan
 func (c *Backup) CreateBackupPlanRequest(input *CreateBackupPlanInput) (req *request.Request, output *CreateBackupPlanOutput) {
@@ -72,22 +71,23 @@ func (c *Backup) CreateBackupPlanRequest(input *CreateBackupPlanInput) (req *req
 // API operation CreateBackupPlan for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
 //
-//   * AlreadyExistsException
-//   The required resource already exists.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - AlreadyExistsException
+//     The required resource already exists.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateBackupPlan
 func (c *Backup) CreateBackupPlan(input *CreateBackupPlanInput) (*CreateBackupPlanOutput, error) {
@@ -127,14 +127,13 @@ const opCreateBackupSelection = "CreateBackupSelection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackupSelectionRequest method.
+//	req, resp := client.CreateBackupSelectionRequest(params)
 //
-//    // Example sending a request using the CreateBackupSelectionRequest method.
-//    req, resp := client.CreateBackupSelectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateBackupSelection
 func (c *Backup) CreateBackupSelectionRequest(input *CreateBackupSelectionInput) (req *request.Request, output *CreateBackupSelectionOutput) {
@@ -166,22 +165,23 @@ func (c *Backup) CreateBackupSelectionRequest(input *CreateBackupSelectionInput)
 // API operation CreateBackupSelection for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
 //
-//   * AlreadyExistsException
-//   The required resource already exists.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - AlreadyExistsException
+//     The required resource already exists.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateBackupSelection
 func (c *Backup) CreateBackupSelection(input *CreateBackupSelectionInput) (*CreateBackupSelectionOutput, error) {
@@ -221,14 +221,13 @@ const opCreateBackupVault = "CreateBackupVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackupVaultRequest method.
+//	req, resp := client.CreateBackupVaultRequest(params)
 //
-//    // Example sending a request using the CreateBackupVaultRequest method.
-//    req, resp := client.CreateBackupVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateBackupVault
 func (c *Backup) CreateBackupVaultRequest(input *CreateBackupVaultInput) (req *request.Request, output *CreateBackupVaultOutput) {
@@ -264,22 +263,23 @@ func (c *Backup) CreateBackupVaultRequest(input *CreateBackupVaultInput) (req *r
 // API operation CreateBackupVault for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * AlreadyExistsException
-//   The required resource already exists.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
+//
+//   - AlreadyExistsException
+//     The required resource already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateBackupVault
 func (c *Backup) CreateBackupVault(input *CreateBackupVaultInput) (*CreateBackupVaultOutput, error) {
@@ -319,14 +319,13 @@ const opCreateFramework = "CreateFramework"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFrameworkRequest method.
+//	req, resp := client.CreateFrameworkRequest(params)
 //
-//    // Example sending a request using the CreateFrameworkRequest method.
-//    req, resp := client.CreateFrameworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateFramework
 func (c *Backup) CreateFrameworkRequest(input *CreateFrameworkInput) (req *request.Request, output *CreateFrameworkOutput) {
@@ -361,22 +360,23 @@ func (c *Backup) CreateFrameworkRequest(input *CreateFrameworkInput) (req *reque
 // API operation CreateFramework for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The required resource already exists.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - AlreadyExistsException
+//     The required resource already exists.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateFramework
 func (c *Backup) CreateFramework(input *CreateFrameworkInput) (*CreateFrameworkOutput, error) {
@@ -416,14 +416,13 @@ const opCreateReportPlan = "CreateReportPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReportPlanRequest method.
+//	req, resp := client.CreateReportPlanRequest(params)
 //
-//    // Example sending a request using the CreateReportPlanRequest method.
-//    req, resp := client.CreateReportPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateReportPlan
 func (c *Backup) CreateReportPlanRequest(input *CreateReportPlanInput) (req *request.Request, output *CreateReportPlanOutput) {
@@ -458,22 +457,23 @@ func (c *Backup) CreateReportPlanRequest(input *CreateReportPlanInput) (req *req
 // API operation CreateReportPlan for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The required resource already exists.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - AlreadyExistsException
+//     The required resource already exists.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/CreateReportPlan
 func (c *Backup) CreateReportPlan(input *CreateReportPlanInput) (*CreateReportPlanOutput, error) {
@@ -513,14 +513,13 @@ const opDeleteBackupPlan = "DeleteBackupPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupPlanRequest method.
+//	req, resp := client.DeleteBackupPlanRequest(params)
 //
-//    // Example sending a request using the DeleteBackupPlanRequest method.
-//    req, resp := client.DeleteBackupPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupPlan
 func (c *Backup) DeleteBackupPlanRequest(input *DeleteBackupPlanInput) (req *request.Request, output *DeleteBackupPlanOutput) {
@@ -554,22 +553,23 @@ func (c *Backup) DeleteBackupPlanRequest(input *DeleteBackupPlanInput) (req *req
 // API operation DeleteBackupPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupPlan
 func (c *Backup) DeleteBackupPlan(input *DeleteBackupPlanInput) (*DeleteBackupPlanOutput, error) {
@@ -609,14 +609,13 @@ const opDeleteBackupSelection = "DeleteBackupSelection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupSelectionRequest method.
+//	req, resp := client.DeleteBackupSelectionRequest(params)
 //
-//    // Example sending a request using the DeleteBackupSelectionRequest method.
-//    req, resp := client.DeleteBackupSelectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupSelection
 func (c *Backup) DeleteBackupSelectionRequest(input *DeleteBackupSelectionInput) (req *request.Request, output *DeleteBackupSelectionOutput) {
@@ -649,18 +648,19 @@ func (c *Backup) DeleteBackupSelectionRequest(input *DeleteBackupSelectionInput)
 // API operation DeleteBackupSelection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupSelection
 func (c *Backup) DeleteBackupSelection(input *DeleteBackupSelectionInput) (*DeleteBackupSelectionOutput, error) {
@@ -700,14 +700,13 @@ const opDeleteBackupVault = "DeleteBackupVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupVaultRequest method.
+//	req, resp := client.DeleteBackupVaultRequest(params)
 //
-//    // Example sending a request using the DeleteBackupVaultRequest method.
-//    req, resp := client.DeleteBackupVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVault
 func (c *Backup) DeleteBackupVaultRequest(input *DeleteBackupVaultInput) (req *request.Request, output *DeleteBackupVaultOutput) {
@@ -740,22 +739,23 @@ func (c *Backup) DeleteBackupVaultRequest(input *DeleteBackupVaultInput) (req *r
 // API operation DeleteBackupVault for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVault
 func (c *Backup) DeleteBackupVault(input *DeleteBackupVaultInput) (*DeleteBackupVaultOutput, error) {
@@ -795,14 +795,13 @@ const opDeleteBackupVaultAccessPolicy = "DeleteBackupVaultAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupVaultAccessPolicyRequest method.
+//	req, resp := client.DeleteBackupVaultAccessPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteBackupVaultAccessPolicyRequest method.
-//    req, resp := client.DeleteBackupVaultAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVaultAccessPolicy
 func (c *Backup) DeleteBackupVaultAccessPolicyRequest(input *DeleteBackupVaultAccessPolicyInput) (req *request.Request, output *DeleteBackupVaultAccessPolicyOutput) {
@@ -834,18 +833,19 @@ func (c *Backup) DeleteBackupVaultAccessPolicyRequest(input *DeleteBackupVaultAc
 // API operation DeleteBackupVaultAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVaultAccessPolicy
 func (c *Backup) DeleteBackupVaultAccessPolicy(input *DeleteBackupVaultAccessPolicyInput) (*DeleteBackupVaultAccessPolicyOutput, error) {
@@ -885,14 +885,13 @@ const opDeleteBackupVaultLockConfiguration = "DeleteBackupVaultLockConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupVaultLockConfigurationRequest method.
+//	req, resp := client.DeleteBackupVaultLockConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteBackupVaultLockConfigurationRequest method.
-//    req, resp := client.DeleteBackupVaultLockConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVaultLockConfiguration
 func (c *Backup) DeleteBackupVaultLockConfigurationRequest(input *DeleteBackupVaultLockConfigurationInput) (req *request.Request, output *DeleteBackupVaultLockConfigurationOutput) {
@@ -930,22 +929,23 @@ func (c *Backup) DeleteBackupVaultLockConfigurationRequest(input *DeleteBackupVa
 // API operation DeleteBackupVaultLockConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVaultLockConfiguration
 func (c *Backup) DeleteBackupVaultLockConfiguration(input *DeleteBackupVaultLockConfigurationInput) (*DeleteBackupVaultLockConfigurationOutput, error) {
@@ -985,14 +985,13 @@ const opDeleteBackupVaultNotifications = "DeleteBackupVaultNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupVaultNotificationsRequest method.
+//	req, resp := client.DeleteBackupVaultNotificationsRequest(params)
 //
-//    // Example sending a request using the DeleteBackupVaultNotificationsRequest method.
-//    req, resp := client.DeleteBackupVaultNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVaultNotifications
 func (c *Backup) DeleteBackupVaultNotificationsRequest(input *DeleteBackupVaultNotificationsInput) (req *request.Request, output *DeleteBackupVaultNotificationsOutput) {
@@ -1024,18 +1023,19 @@ func (c *Backup) DeleteBackupVaultNotificationsRequest(input *DeleteBackupVaultN
 // API operation DeleteBackupVaultNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteBackupVaultNotifications
 func (c *Backup) DeleteBackupVaultNotifications(input *DeleteBackupVaultNotificationsInput) (*DeleteBackupVaultNotificationsOutput, error) {
@@ -1075,14 +1075,13 @@ const opDeleteFramework = "DeleteFramework"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFrameworkRequest method.
+//	req, resp := client.DeleteFrameworkRequest(params)
 //
-//    // Example sending a request using the DeleteFrameworkRequest method.
-//    req, resp := client.DeleteFrameworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteFramework
 func (c *Backup) DeleteFrameworkRequest(input *DeleteFrameworkInput) (req *request.Request, output *DeleteFrameworkOutput) {
@@ -1114,22 +1113,23 @@ func (c *Backup) DeleteFrameworkRequest(input *DeleteFrameworkInput) (req *reque
 // API operation DeleteFramework for usage and error information.
 //
 // Returned Error Types:
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ConflictException
-//   Backup can't perform the action that you requested until it finishes performing
-//   a previous action. Try again later.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - ConflictException
+//     Backup can't perform the action that you requested until it finishes performing
+//     a previous action. Try again later.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteFramework
 func (c *Backup) DeleteFramework(input *DeleteFrameworkInput) (*DeleteFrameworkOutput, error) {
@@ -1169,14 +1169,13 @@ const opDeleteRecoveryPoint = "DeleteRecoveryPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecoveryPointRequest method.
+//	req, resp := client.DeleteRecoveryPointRequest(params)
 //
-//    // Example sending a request using the DeleteRecoveryPointRequest method.
-//    req, resp := client.DeleteRecoveryPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteRecoveryPoint
 func (c *Backup) DeleteRecoveryPointRequest(input *DeleteRecoveryPointInput) (req *request.Request, output *DeleteRecoveryPointOutput) {
@@ -1211,26 +1210,27 @@ func (c *Backup) DeleteRecoveryPointRequest(input *DeleteRecoveryPointInput) (re
 // API operation DeleteRecoveryPoint for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * InvalidResourceStateException
-//   Backup is already performing an action on this recovery point. It can't perform
-//   the action you requested until the first action finishes. Try again later.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidResourceStateException
+//     Backup is already performing an action on this recovery point. It can't perform
+//     the action you requested until the first action finishes. Try again later.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteRecoveryPoint
 func (c *Backup) DeleteRecoveryPoint(input *DeleteRecoveryPointInput) (*DeleteRecoveryPointOutput, error) {
@@ -1270,14 +1270,13 @@ const opDeleteReportPlan = "DeleteReportPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReportPlanRequest method.
+//	req, resp := client.DeleteReportPlanRequest(params)
 //
-//    // Example sending a request using the DeleteReportPlanRequest method.
-//    req, resp := client.DeleteReportPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteReportPlan
 func (c *Backup) DeleteReportPlanRequest(input *DeleteReportPlanInput) (req *request.Request, output *DeleteReportPlanOutput) {
@@ -1309,22 +1308,23 @@ func (c *Backup) DeleteReportPlanRequest(input *DeleteReportPlanInput) (req *req
 // API operation DeleteReportPlan for usage and error information.
 //
 // Returned Error Types:
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ConflictException
-//   Backup can't perform the action that you requested until it finishes performing
-//   a previous action. Try again later.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - ConflictException
+//     Backup can't perform the action that you requested until it finishes performing
+//     a previous action. Try again later.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DeleteReportPlan
 func (c *Backup) DeleteReportPlan(input *DeleteReportPlanInput) (*DeleteReportPlanOutput, error) {
@@ -1364,14 +1364,13 @@ const opDescribeBackupJob = "DescribeBackupJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBackupJobRequest method.
+//	req, resp := client.DescribeBackupJobRequest(params)
 //
-//    // Example sending a request using the DescribeBackupJobRequest method.
-//    req, resp := client.DescribeBackupJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeBackupJob
 func (c *Backup) DescribeBackupJobRequest(input *DescribeBackupJobInput) (req *request.Request, output *DescribeBackupJobOutput) {
@@ -1402,22 +1401,23 @@ func (c *Backup) DescribeBackupJobRequest(input *DescribeBackupJobInput) (req *r
 // API operation DescribeBackupJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * DependencyFailureException
-//   A dependent Amazon Web Services service or resource returned an error to
-//   the Backup service, and the action cannot be completed.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - DependencyFailureException
+//     A dependent Amazon Web Services service or resource returned an error to
+//     the Backup service, and the action cannot be completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeBackupJob
 func (c *Backup) DescribeBackupJob(input *DescribeBackupJobInput) (*DescribeBackupJobOutput, error) {
@@ -1457,14 +1457,13 @@ const opDescribeBackupVault = "DescribeBackupVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBackupVaultRequest method.
+//	req, resp := client.DescribeBackupVaultRequest(params)
 //
-//    // Example sending a request using the DescribeBackupVaultRequest method.
-//    req, resp := client.DescribeBackupVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeBackupVault
 func (c *Backup) DescribeBackupVaultRequest(input *DescribeBackupVaultInput) (req *request.Request, output *DescribeBackupVaultOutput) {
@@ -1495,18 +1494,19 @@ func (c *Backup) DescribeBackupVaultRequest(input *DescribeBackupVaultInput) (re
 // API operation DescribeBackupVault for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeBackupVault
 func (c *Backup) DescribeBackupVault(input *DescribeBackupVaultInput) (*DescribeBackupVaultOutput, error) {
@@ -1546,14 +1546,13 @@ const opDescribeCopyJob = "DescribeCopyJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCopyJobRequest method.
+//	req, resp := client.DescribeCopyJobRequest(params)
 //
-//    // Example sending a request using the DescribeCopyJobRequest method.
-//    req, resp := client.DescribeCopyJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeCopyJob
 func (c *Backup) DescribeCopyJobRequest(input *DescribeCopyJobInput) (req *request.Request, output *DescribeCopyJobOutput) {
@@ -1584,18 +1583,19 @@ func (c *Backup) DescribeCopyJobRequest(input *DescribeCopyJobInput) (req *reque
 // API operation DescribeCopyJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeCopyJob
 func (c *Backup) DescribeCopyJob(input *DescribeCopyJobInput) (*DescribeCopyJobOutput, error) {
@@ -1635,14 +1635,13 @@ const opDescribeFramework = "DescribeFramework"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFrameworkRequest method.
+//	req, resp := client.DescribeFrameworkRequest(params)
 //
-//    // Example sending a request using the DescribeFrameworkRequest method.
-//    req, resp := client.DescribeFrameworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeFramework
 func (c *Backup) DescribeFrameworkRequest(input *DescribeFrameworkInput) (req *request.Request, output *DescribeFrameworkOutput) {
@@ -1673,18 +1672,19 @@ func (c *Backup) DescribeFrameworkRequest(input *DescribeFrameworkInput) (req *r
 // API operation DescribeFramework for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeFramework
 func (c *Backup) DescribeFramework(input *DescribeFrameworkInput) (*DescribeFrameworkOutput, error) {
@@ -1724,14 +1724,13 @@ const opDescribeGlobalSettings = "DescribeGlobalSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGlobalSettingsRequest method.
+//	req, resp := client.DescribeGlobalSettingsRequest(params)
 //
-//    // Example sending a request using the DescribeGlobalSettingsRequest method.
-//    req, resp := client.DescribeGlobalSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeGlobalSettings
 func (c *Backup) DescribeGlobalSettingsRequest(input *DescribeGlobalSettingsInput) (req *request.Request, output *DescribeGlobalSettingsOutput) {
@@ -1764,12 +1763,13 @@ func (c *Backup) DescribeGlobalSettingsRequest(input *DescribeGlobalSettingsInpu
 // API operation DescribeGlobalSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeGlobalSettings
 func (c *Backup) DescribeGlobalSettings(input *DescribeGlobalSettingsInput) (*DescribeGlobalSettingsOutput, error) {
@@ -1809,14 +1809,13 @@ const opDescribeProtectedResource = "DescribeProtectedResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProtectedResourceRequest method.
+//	req, resp := client.DescribeProtectedResourceRequest(params)
 //
-//    // Example sending a request using the DescribeProtectedResourceRequest method.
-//    req, resp := client.DescribeProtectedResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeProtectedResource
 func (c *Backup) DescribeProtectedResourceRequest(input *DescribeProtectedResourceInput) (req *request.Request, output *DescribeProtectedResourceOutput) {
@@ -1849,18 +1848,19 @@ func (c *Backup) DescribeProtectedResourceRequest(input *DescribeProtectedResour
 // API operation DescribeProtectedResource for usage and error information.
 //
 // Returned Error Types:
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeProtectedResource
 func (c *Backup) DescribeProtectedResource(input *DescribeProtectedResourceInput) (*DescribeProtectedResourceOutput, error) {
@@ -1900,14 +1900,13 @@ const opDescribeRecoveryPoint = "DescribeRecoveryPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRecoveryPointRequest method.
+//	req, resp := client.DescribeRecoveryPointRequest(params)
 //
-//    // Example sending a request using the DescribeRecoveryPointRequest method.
-//    req, resp := client.DescribeRecoveryPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeRecoveryPoint
 func (c *Backup) DescribeRecoveryPointRequest(input *DescribeRecoveryPointInput) (req *request.Request, output *DescribeRecoveryPointOutput) {
@@ -1939,18 +1938,19 @@ func (c *Backup) DescribeRecoveryPointRequest(input *DescribeRecoveryPointInput)
 // API operation DescribeRecoveryPoint for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeRecoveryPoint
 func (c *Backup) DescribeRecoveryPoint(input *DescribeRecoveryPointInput) (*DescribeRecoveryPointOutput, error) {
@@ -1990,14 +1990,13 @@ const opDescribeRegionSettings = "DescribeRegionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRegionSettingsRequest method.
+//	req, resp := client.DescribeRegionSettingsRequest(params)
 //
-//    // Example sending a request using the DescribeRegionSettingsRequest method.
-//    req, resp := client.DescribeRegionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeRegionSettings
 func (c *Backup) DescribeRegionSettingsRequest(input *DescribeRegionSettingsInput) (req *request.Request, output *DescribeRegionSettingsOutput) {
@@ -2032,8 +2031,8 @@ func (c *Backup) DescribeRegionSettingsRequest(input *DescribeRegionSettingsInpu
 // API operation DescribeRegionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeRegionSettings
 func (c *Backup) DescribeRegionSettings(input *DescribeRegionSettingsInput) (*DescribeRegionSettingsOutput, error) {
@@ -2073,14 +2072,13 @@ const opDescribeReportJob = "DescribeReportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReportJobRequest method.
+//	req, resp := client.DescribeReportJobRequest(params)
 //
-//    // Example sending a request using the DescribeReportJobRequest method.
-//    req, resp := client.DescribeReportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeReportJob
 func (c *Backup) DescribeReportJobRequest(input *DescribeReportJobInput) (req *request.Request, output *DescribeReportJobOutput) {
@@ -2112,14 +2110,15 @@ func (c *Backup) DescribeReportJobRequest(input *DescribeReportJobInput) (req *r
 // API operation DescribeReportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeReportJob
 func (c *Backup) DescribeReportJob(input *DescribeReportJobInput) (*DescribeReportJobOutput, error) {
@@ -2159,14 +2158,13 @@ const opDescribeReportPlan = "DescribeReportPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReportPlanRequest method.
+//	req, resp := client.DescribeReportPlanRequest(params)
 //
-//    // Example sending a request using the DescribeReportPlanRequest method.
-//    req, resp := client.DescribeReportPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeReportPlan
 func (c *Backup) DescribeReportPlanRequest(input *DescribeReportPlanInput) (req *request.Request, output *DescribeReportPlanOutput) {
@@ -2198,18 +2196,19 @@ func (c *Backup) DescribeReportPlanRequest(input *DescribeReportPlanInput) (req 
 // API operation DescribeReportPlan for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeReportPlan
 func (c *Backup) DescribeReportPlan(input *DescribeReportPlanInput) (*DescribeReportPlanOutput, error) {
@@ -2249,14 +2248,13 @@ const opDescribeRestoreJob = "DescribeRestoreJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRestoreJobRequest method.
+//	req, resp := client.DescribeRestoreJobRequest(params)
 //
-//    // Example sending a request using the DescribeRestoreJobRequest method.
-//    req, resp := client.DescribeRestoreJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeRestoreJob
 func (c *Backup) DescribeRestoreJobRequest(input *DescribeRestoreJobInput) (req *request.Request, output *DescribeRestoreJobOutput) {
@@ -2288,22 +2286,23 @@ func (c *Backup) DescribeRestoreJobRequest(input *DescribeRestoreJobInput) (req 
 // API operation DescribeRestoreJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * DependencyFailureException
-//   A dependent Amazon Web Services service or resource returned an error to
-//   the Backup service, and the action cannot be completed.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - DependencyFailureException
+//     A dependent Amazon Web Services service or resource returned an error to
+//     the Backup service, and the action cannot be completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeRestoreJob
 func (c *Backup) DescribeRestoreJob(input *DescribeRestoreJobInput) (*DescribeRestoreJobOutput, error) {
@@ -2343,14 +2342,13 @@ const opDisassociateRecoveryPoint = "DisassociateRecoveryPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateRecoveryPointRequest method.
+//	req, resp := client.DisassociateRecoveryPointRequest(params)
 //
-//    // Example sending a request using the DisassociateRecoveryPointRequest method.
-//    req, resp := client.DisassociateRecoveryPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DisassociateRecoveryPoint
 func (c *Backup) DisassociateRecoveryPointRequest(input *DisassociateRecoveryPointInput) (req *request.Request, output *DisassociateRecoveryPointOutput) {
@@ -2387,26 +2385,27 @@ func (c *Backup) DisassociateRecoveryPointRequest(input *DisassociateRecoveryPoi
 // API operation DisassociateRecoveryPoint for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * InvalidResourceStateException
-//   Backup is already performing an action on this recovery point. It can't perform
-//   the action you requested until the first action finishes. Try again later.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidResourceStateException
+//     Backup is already performing an action on this recovery point. It can't perform
+//     the action you requested until the first action finishes. Try again later.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DisassociateRecoveryPoint
 func (c *Backup) DisassociateRecoveryPoint(input *DisassociateRecoveryPointInput) (*DisassociateRecoveryPointOutput, error) {
@@ -2446,14 +2445,13 @@ const opExportBackupPlanTemplate = "ExportBackupPlanTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportBackupPlanTemplateRequest method.
+//	req, resp := client.ExportBackupPlanTemplateRequest(params)
 //
-//    // Example sending a request using the ExportBackupPlanTemplateRequest method.
-//    req, resp := client.ExportBackupPlanTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ExportBackupPlanTemplate
 func (c *Backup) ExportBackupPlanTemplateRequest(input *ExportBackupPlanTemplateInput) (req *request.Request, output *ExportBackupPlanTemplateOutput) {
@@ -2484,18 +2482,19 @@ func (c *Backup) ExportBackupPlanTemplateRequest(input *ExportBackupPlanTemplate
 // API operation ExportBackupPlanTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ExportBackupPlanTemplate
 func (c *Backup) ExportBackupPlanTemplate(input *ExportBackupPlanTemplateInput) (*ExportBackupPlanTemplateOutput, error) {
@@ -2535,14 +2534,13 @@ const opGetBackupPlan = "GetBackupPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackupPlanRequest method.
+//	req, resp := client.GetBackupPlanRequest(params)
 //
-//    // Example sending a request using the GetBackupPlanRequest method.
-//    req, resp := client.GetBackupPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlan
 func (c *Backup) GetBackupPlanRequest(input *GetBackupPlanInput) (req *request.Request, output *GetBackupPlanOutput) {
@@ -2574,18 +2572,19 @@ func (c *Backup) GetBackupPlanRequest(input *GetBackupPlanInput) (req *request.R
 // API operation GetBackupPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlan
 func (c *Backup) GetBackupPlan(input *GetBackupPlanInput) (*GetBackupPlanOutput, error) {
@@ -2625,14 +2624,13 @@ const opGetBackupPlanFromJSON = "GetBackupPlanFromJSON"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackupPlanFromJSONRequest method.
+//	req, resp := client.GetBackupPlanFromJSONRequest(params)
 //
-//    // Example sending a request using the GetBackupPlanFromJSONRequest method.
-//    req, resp := client.GetBackupPlanFromJSONRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlanFromJSON
 func (c *Backup) GetBackupPlanFromJSONRequest(input *GetBackupPlanFromJSONInput) (req *request.Request, output *GetBackupPlanFromJSONOutput) {
@@ -2663,23 +2661,24 @@ func (c *Backup) GetBackupPlanFromJSONRequest(input *GetBackupPlanFromJSONInput)
 // API operation GetBackupPlanFromJSON for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlanFromJSON
 func (c *Backup) GetBackupPlanFromJSON(input *GetBackupPlanFromJSONInput) (*GetBackupPlanFromJSONOutput, error) {
@@ -2719,14 +2718,13 @@ const opGetBackupPlanFromTemplate = "GetBackupPlanFromTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackupPlanFromTemplateRequest method.
+//	req, resp := client.GetBackupPlanFromTemplateRequest(params)
 //
-//    // Example sending a request using the GetBackupPlanFromTemplateRequest method.
-//    req, resp := client.GetBackupPlanFromTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlanFromTemplate
 func (c *Backup) GetBackupPlanFromTemplateRequest(input *GetBackupPlanFromTemplateInput) (req *request.Request, output *GetBackupPlanFromTemplateOutput) {
@@ -2757,18 +2755,19 @@ func (c *Backup) GetBackupPlanFromTemplateRequest(input *GetBackupPlanFromTempla
 // API operation GetBackupPlanFromTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlanFromTemplate
 func (c *Backup) GetBackupPlanFromTemplate(input *GetBackupPlanFromTemplateInput) (*GetBackupPlanFromTemplateOutput, error) {
@@ -2808,14 +2807,13 @@ const opGetBackupSelection = "GetBackupSelection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackupSelectionRequest method.
+//	req, resp := client.GetBackupSelectionRequest(params)
 //
-//    // Example sending a request using the GetBackupSelectionRequest method.
-//    req, resp := client.GetBackupSelectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupSelection
 func (c *Backup) GetBackupSelectionRequest(input *GetBackupSelectionInput) (req *request.Request, output *GetBackupSelectionOutput) {
@@ -2847,18 +2845,19 @@ func (c *Backup) GetBackupSelectionRequest(input *GetBackupSelectionInput) (req 
 // API operation GetBackupSelection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupSelection
 func (c *Backup) GetBackupSelection(input *GetBackupSelectionInput) (*GetBackupSelectionOutput, error) {
@@ -2898,14 +2897,13 @@ const opGetBackupVaultAccessPolicy = "GetBackupVaultAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackupVaultAccessPolicyRequest method.
+//	req, resp := client.GetBackupVaultAccessPolicyRequest(params)
 //
-//    // Example sending a request using the GetBackupVaultAccessPolicyRequest method.
-//    req, resp := client.GetBackupVaultAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupVaultAccessPolicy
 func (c *Backup) GetBackupVaultAccessPolicyRequest(input *GetBackupVaultAccessPolicyInput) (req *request.Request, output *GetBackupVaultAccessPolicyOutput) {
@@ -2937,18 +2935,19 @@ func (c *Backup) GetBackupVaultAccessPolicyRequest(input *GetBackupVaultAccessPo
 // API operation GetBackupVaultAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupVaultAccessPolicy
 func (c *Backup) GetBackupVaultAccessPolicy(input *GetBackupVaultAccessPolicyInput) (*GetBackupVaultAccessPolicyOutput, error) {
@@ -2988,14 +2987,13 @@ const opGetBackupVaultNotifications = "GetBackupVaultNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackupVaultNotificationsRequest method.
+//	req, resp := client.GetBackupVaultNotificationsRequest(params)
 //
-//    // Example sending a request using the GetBackupVaultNotificationsRequest method.
-//    req, resp := client.GetBackupVaultNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupVaultNotifications
 func (c *Backup) GetBackupVaultNotificationsRequest(input *GetBackupVaultNotificationsInput) (req *request.Request, output *GetBackupVaultNotificationsOutput) {
@@ -3026,18 +3024,19 @@ func (c *Backup) GetBackupVaultNotificationsRequest(input *GetBackupVaultNotific
 // API operation GetBackupVaultNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupVaultNotifications
 func (c *Backup) GetBackupVaultNotifications(input *GetBackupVaultNotificationsInput) (*GetBackupVaultNotificationsOutput, error) {
@@ -3077,14 +3076,13 @@ const opGetRecoveryPointRestoreMetadata = "GetRecoveryPointRestoreMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecoveryPointRestoreMetadataRequest method.
+//	req, resp := client.GetRecoveryPointRestoreMetadataRequest(params)
 //
-//    // Example sending a request using the GetRecoveryPointRestoreMetadataRequest method.
-//    req, resp := client.GetRecoveryPointRestoreMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetRecoveryPointRestoreMetadata
 func (c *Backup) GetRecoveryPointRestoreMetadataRequest(input *GetRecoveryPointRestoreMetadataInput) (req *request.Request, output *GetRecoveryPointRestoreMetadataOutput) {
@@ -3115,18 +3113,19 @@ func (c *Backup) GetRecoveryPointRestoreMetadataRequest(input *GetRecoveryPointR
 // API operation GetRecoveryPointRestoreMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetRecoveryPointRestoreMetadata
 func (c *Backup) GetRecoveryPointRestoreMetadata(input *GetRecoveryPointRestoreMetadataInput) (*GetRecoveryPointRestoreMetadataOutput, error) {
@@ -3166,14 +3165,13 @@ const opGetSupportedResourceTypes = "GetSupportedResourceTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSupportedResourceTypesRequest method.
+//	req, resp := client.GetSupportedResourceTypesRequest(params)
 //
-//    // Example sending a request using the GetSupportedResourceTypesRequest method.
-//    req, resp := client.GetSupportedResourceTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetSupportedResourceTypes
 func (c *Backup) GetSupportedResourceTypesRequest(input *GetSupportedResourceTypesInput) (req *request.Request, output *GetSupportedResourceTypesOutput) {
@@ -3204,8 +3202,8 @@ func (c *Backup) GetSupportedResourceTypesRequest(input *GetSupportedResourceTyp
 // API operation GetSupportedResourceTypes for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetSupportedResourceTypes
 func (c *Backup) GetSupportedResourceTypes(input *GetSupportedResourceTypesInput) (*GetSupportedResourceTypesOutput, error) {
@@ -3245,14 +3243,13 @@ const opListBackupJobs = "ListBackupJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackupJobsRequest method.
+//	req, resp := client.ListBackupJobsRequest(params)
 //
-//    // Example sending a request using the ListBackupJobsRequest method.
-//    req, resp := client.ListBackupJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupJobs
 func (c *Backup) ListBackupJobsRequest(input *ListBackupJobsInput) (req *request.Request, output *ListBackupJobsOutput) {
@@ -3291,12 +3288,13 @@ func (c *Backup) ListBackupJobsRequest(input *ListBackupJobsInput) (req *request
 // API operation ListBackupJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupJobs
 func (c *Backup) ListBackupJobs(input *ListBackupJobsInput) (*ListBackupJobsOutput, error) {
@@ -3328,15 +3326,14 @@ func (c *Backup) ListBackupJobsWithContext(ctx aws.Context, input *ListBackupJob
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackupJobs operation.
-//    pageNum := 0
-//    err := client.ListBackupJobsPages(params,
-//        func(page *backup.ListBackupJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackupJobs operation.
+//	pageNum := 0
+//	err := client.ListBackupJobsPages(params,
+//	    func(page *backup.ListBackupJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListBackupJobsPages(input *ListBackupJobsInput, fn func(*ListBackupJobsOutput, bool) bool) error {
 	return c.ListBackupJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3388,14 +3385,13 @@ const opListBackupPlanTemplates = "ListBackupPlanTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackupPlanTemplatesRequest method.
+//	req, resp := client.ListBackupPlanTemplatesRequest(params)
 //
-//    // Example sending a request using the ListBackupPlanTemplatesRequest method.
-//    req, resp := client.ListBackupPlanTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlanTemplates
 func (c *Backup) ListBackupPlanTemplatesRequest(input *ListBackupPlanTemplatesInput) (req *request.Request, output *ListBackupPlanTemplatesOutput) {
@@ -3433,18 +3429,19 @@ func (c *Backup) ListBackupPlanTemplatesRequest(input *ListBackupPlanTemplatesIn
 // API operation ListBackupPlanTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlanTemplates
 func (c *Backup) ListBackupPlanTemplates(input *ListBackupPlanTemplatesInput) (*ListBackupPlanTemplatesOutput, error) {
@@ -3476,15 +3473,14 @@ func (c *Backup) ListBackupPlanTemplatesWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackupPlanTemplates operation.
-//    pageNum := 0
-//    err := client.ListBackupPlanTemplatesPages(params,
-//        func(page *backup.ListBackupPlanTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackupPlanTemplates operation.
+//	pageNum := 0
+//	err := client.ListBackupPlanTemplatesPages(params,
+//	    func(page *backup.ListBackupPlanTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListBackupPlanTemplatesPages(input *ListBackupPlanTemplatesInput, fn func(*ListBackupPlanTemplatesOutput, bool) bool) error {
 	return c.ListBackupPlanTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3536,14 +3532,13 @@ const opListBackupPlanVersions = "ListBackupPlanVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackupPlanVersionsRequest method.
+//	req, resp := client.ListBackupPlanVersionsRequest(params)
 //
-//    // Example sending a request using the ListBackupPlanVersionsRequest method.
-//    req, resp := client.ListBackupPlanVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlanVersions
 func (c *Backup) ListBackupPlanVersionsRequest(input *ListBackupPlanVersionsInput) (req *request.Request, output *ListBackupPlanVersionsOutput) {
@@ -3582,18 +3577,19 @@ func (c *Backup) ListBackupPlanVersionsRequest(input *ListBackupPlanVersionsInpu
 // API operation ListBackupPlanVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlanVersions
 func (c *Backup) ListBackupPlanVersions(input *ListBackupPlanVersionsInput) (*ListBackupPlanVersionsOutput, error) {
@@ -3625,15 +3621,14 @@ func (c *Backup) ListBackupPlanVersionsWithContext(ctx aws.Context, input *ListB
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackupPlanVersions operation.
-//    pageNum := 0
-//    err := client.ListBackupPlanVersionsPages(params,
-//        func(page *backup.ListBackupPlanVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackupPlanVersions operation.
+//	pageNum := 0
+//	err := client.ListBackupPlanVersionsPages(params,
+//	    func(page *backup.ListBackupPlanVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListBackupPlanVersionsPages(input *ListBackupPlanVersionsInput, fn func(*ListBackupPlanVersionsOutput, bool) bool) error {
 	return c.ListBackupPlanVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3685,14 +3680,13 @@ const opListBackupPlans = "ListBackupPlans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackupPlansRequest method.
+//	req, resp := client.ListBackupPlansRequest(params)
 //
-//    // Example sending a request using the ListBackupPlansRequest method.
-//    req, resp := client.ListBackupPlansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlans
 func (c *Backup) ListBackupPlansRequest(input *ListBackupPlansInput) (req *request.Request, output *ListBackupPlansOutput) {
@@ -3732,18 +3726,19 @@ func (c *Backup) ListBackupPlansRequest(input *ListBackupPlansInput) (req *reque
 // API operation ListBackupPlans for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlans
 func (c *Backup) ListBackupPlans(input *ListBackupPlansInput) (*ListBackupPlansOutput, error) {
@@ -3775,15 +3770,14 @@ func (c *Backup) ListBackupPlansWithContext(ctx aws.Context, input *ListBackupPl
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackupPlans operation.
-//    pageNum := 0
-//    err := client.ListBackupPlansPages(params,
-//        func(page *backup.ListBackupPlansOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackupPlans operation.
+//	pageNum := 0
+//	err := client.ListBackupPlansPages(params,
+//	    func(page *backup.ListBackupPlansOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListBackupPlansPages(input *ListBackupPlansInput, fn func(*ListBackupPlansOutput, bool) bool) error {
 	return c.ListBackupPlansPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3835,14 +3829,13 @@ const opListBackupSelections = "ListBackupSelections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackupSelectionsRequest method.
+//	req, resp := client.ListBackupSelectionsRequest(params)
 //
-//    // Example sending a request using the ListBackupSelectionsRequest method.
-//    req, resp := client.ListBackupSelectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupSelections
 func (c *Backup) ListBackupSelectionsRequest(input *ListBackupSelectionsInput) (req *request.Request, output *ListBackupSelectionsOutput) {
@@ -3880,18 +3873,19 @@ func (c *Backup) ListBackupSelectionsRequest(input *ListBackupSelectionsInput) (
 // API operation ListBackupSelections for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupSelections
 func (c *Backup) ListBackupSelections(input *ListBackupSelectionsInput) (*ListBackupSelectionsOutput, error) {
@@ -3923,15 +3917,14 @@ func (c *Backup) ListBackupSelectionsWithContext(ctx aws.Context, input *ListBac
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackupSelections operation.
-//    pageNum := 0
-//    err := client.ListBackupSelectionsPages(params,
-//        func(page *backup.ListBackupSelectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackupSelections operation.
+//	pageNum := 0
+//	err := client.ListBackupSelectionsPages(params,
+//	    func(page *backup.ListBackupSelectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListBackupSelectionsPages(input *ListBackupSelectionsInput, fn func(*ListBackupSelectionsOutput, bool) bool) error {
 	return c.ListBackupSelectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3983,14 +3976,13 @@ const opListBackupVaults = "ListBackupVaults"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackupVaultsRequest method.
+//	req, resp := client.ListBackupVaultsRequest(params)
 //
-//    // Example sending a request using the ListBackupVaultsRequest method.
-//    req, resp := client.ListBackupVaultsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupVaults
 func (c *Backup) ListBackupVaultsRequest(input *ListBackupVaultsInput) (req *request.Request, output *ListBackupVaultsOutput) {
@@ -4028,18 +4020,19 @@ func (c *Backup) ListBackupVaultsRequest(input *ListBackupVaultsInput) (req *req
 // API operation ListBackupVaults for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupVaults
 func (c *Backup) ListBackupVaults(input *ListBackupVaultsInput) (*ListBackupVaultsOutput, error) {
@@ -4071,15 +4064,14 @@ func (c *Backup) ListBackupVaultsWithContext(ctx aws.Context, input *ListBackupV
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackupVaults operation.
-//    pageNum := 0
-//    err := client.ListBackupVaultsPages(params,
-//        func(page *backup.ListBackupVaultsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackupVaults operation.
+//	pageNum := 0
+//	err := client.ListBackupVaultsPages(params,
+//	    func(page *backup.ListBackupVaultsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListBackupVaultsPages(input *ListBackupVaultsInput, fn func(*ListBackupVaultsOutput, bool) bool) error {
 	return c.ListBackupVaultsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4131,14 +4123,13 @@ const opListCopyJobs = "ListCopyJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCopyJobsRequest method.
+//	req, resp := client.ListCopyJobsRequest(params)
 //
-//    // Example sending a request using the ListCopyJobsRequest method.
-//    req, resp := client.ListCopyJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListCopyJobs
 func (c *Backup) ListCopyJobsRequest(input *ListCopyJobsInput) (req *request.Request, output *ListCopyJobsOutput) {
@@ -4175,12 +4166,13 @@ func (c *Backup) ListCopyJobsRequest(input *ListCopyJobsInput) (req *request.Req
 // API operation ListCopyJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListCopyJobs
 func (c *Backup) ListCopyJobs(input *ListCopyJobsInput) (*ListCopyJobsOutput, error) {
@@ -4212,15 +4204,14 @@ func (c *Backup) ListCopyJobsWithContext(ctx aws.Context, input *ListCopyJobsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCopyJobs operation.
-//    pageNum := 0
-//    err := client.ListCopyJobsPages(params,
-//        func(page *backup.ListCopyJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCopyJobs operation.
+//	pageNum := 0
+//	err := client.ListCopyJobsPages(params,
+//	    func(page *backup.ListCopyJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListCopyJobsPages(input *ListCopyJobsInput, fn func(*ListCopyJobsOutput, bool) bool) error {
 	return c.ListCopyJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4272,14 +4263,13 @@ const opListFrameworks = "ListFrameworks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFrameworksRequest method.
+//	req, resp := client.ListFrameworksRequest(params)
 //
-//    // Example sending a request using the ListFrameworksRequest method.
-//    req, resp := client.ListFrameworksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListFrameworks
 func (c *Backup) ListFrameworksRequest(input *ListFrameworksInput) (req *request.Request, output *ListFrameworksOutput) {
@@ -4317,12 +4307,13 @@ func (c *Backup) ListFrameworksRequest(input *ListFrameworksInput) (req *request
 // API operation ListFrameworks for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListFrameworks
 func (c *Backup) ListFrameworks(input *ListFrameworksInput) (*ListFrameworksOutput, error) {
@@ -4354,15 +4345,14 @@ func (c *Backup) ListFrameworksWithContext(ctx aws.Context, input *ListFramework
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFrameworks operation.
-//    pageNum := 0
-//    err := client.ListFrameworksPages(params,
-//        func(page *backup.ListFrameworksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFrameworks operation.
+//	pageNum := 0
+//	err := client.ListFrameworksPages(params,
+//	    func(page *backup.ListFrameworksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListFrameworksPages(input *ListFrameworksInput, fn func(*ListFrameworksOutput, bool) bool) error {
 	return c.ListFrameworksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4414,14 +4404,13 @@ const opListProtectedResources = "ListProtectedResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProtectedResourcesRequest method.
+//	req, resp := client.ListProtectedResourcesRequest(params)
 //
-//    // Example sending a request using the ListProtectedResourcesRequest method.
-//    req, resp := client.ListProtectedResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListProtectedResources
 func (c *Backup) ListProtectedResourcesRequest(input *ListProtectedResourcesInput) (req *request.Request, output *ListProtectedResourcesOutput) {
@@ -4460,12 +4449,13 @@ func (c *Backup) ListProtectedResourcesRequest(input *ListProtectedResourcesInpu
 // API operation ListProtectedResources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListProtectedResources
 func (c *Backup) ListProtectedResources(input *ListProtectedResourcesInput) (*ListProtectedResourcesOutput, error) {
@@ -4497,15 +4487,14 @@ func (c *Backup) ListProtectedResourcesWithContext(ctx aws.Context, input *ListP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProtectedResources operation.
-//    pageNum := 0
-//    err := client.ListProtectedResourcesPages(params,
-//        func(page *backup.ListProtectedResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProtectedResources operation.
+//	pageNum := 0
+//	err := client.ListProtectedResourcesPages(params,
+//	    func(page *backup.ListProtectedResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListProtectedResourcesPages(input *ListProtectedResourcesInput, fn func(*ListProtectedResourcesOutput, bool) bool) error {
 	return c.ListProtectedResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4557,14 +4546,13 @@ const opListRecoveryPointsByBackupVault = "ListRecoveryPointsByBackupVault"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecoveryPointsByBackupVaultRequest method.
+//	req, resp := client.ListRecoveryPointsByBackupVaultRequest(params)
 //
-//    // Example sending a request using the ListRecoveryPointsByBackupVaultRequest method.
-//    req, resp := client.ListRecoveryPointsByBackupVaultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListRecoveryPointsByBackupVault
 func (c *Backup) ListRecoveryPointsByBackupVaultRequest(input *ListRecoveryPointsByBackupVaultInput) (req *request.Request, output *ListRecoveryPointsByBackupVaultOutput) {
@@ -4602,18 +4590,19 @@ func (c *Backup) ListRecoveryPointsByBackupVaultRequest(input *ListRecoveryPoint
 // API operation ListRecoveryPointsByBackupVault for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListRecoveryPointsByBackupVault
 func (c *Backup) ListRecoveryPointsByBackupVault(input *ListRecoveryPointsByBackupVaultInput) (*ListRecoveryPointsByBackupVaultOutput, error) {
@@ -4645,15 +4634,14 @@ func (c *Backup) ListRecoveryPointsByBackupVaultWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecoveryPointsByBackupVault operation.
-//    pageNum := 0
-//    err := client.ListRecoveryPointsByBackupVaultPages(params,
-//        func(page *backup.ListRecoveryPointsByBackupVaultOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecoveryPointsByBackupVault operation.
+//	pageNum := 0
+//	err := client.ListRecoveryPointsByBackupVaultPages(params,
+//	    func(page *backup.ListRecoveryPointsByBackupVaultOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListRecoveryPointsByBackupVaultPages(input *ListRecoveryPointsByBackupVaultInput, fn func(*ListRecoveryPointsByBackupVaultOutput, bool) bool) error {
 	return c.ListRecoveryPointsByBackupVaultPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4705,14 +4693,13 @@ const opListRecoveryPointsByResource = "ListRecoveryPointsByResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecoveryPointsByResourceRequest method.
+//	req, resp := client.ListRecoveryPointsByResourceRequest(params)
 //
-//    // Example sending a request using the ListRecoveryPointsByResourceRequest method.
-//    req, resp := client.ListRecoveryPointsByResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListRecoveryPointsByResource
 func (c *Backup) ListRecoveryPointsByResourceRequest(input *ListRecoveryPointsByResourceInput) (req *request.Request, output *ListRecoveryPointsByResourceOutput) {
@@ -4753,18 +4740,19 @@ func (c *Backup) ListRecoveryPointsByResourceRequest(input *ListRecoveryPointsBy
 // API operation ListRecoveryPointsByResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListRecoveryPointsByResource
 func (c *Backup) ListRecoveryPointsByResource(input *ListRecoveryPointsByResourceInput) (*ListRecoveryPointsByResourceOutput, error) {
@@ -4796,15 +4784,14 @@ func (c *Backup) ListRecoveryPointsByResourceWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecoveryPointsByResource operation.
-//    pageNum := 0
-//    err := client.ListRecoveryPointsByResourcePages(params,
-//        func(page *backup.ListRecoveryPointsByResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecoveryPointsByResource operation.
+//	pageNum := 0
+//	err := client.ListRecoveryPointsByResourcePages(params,
+//	    func(page *backup.ListRecoveryPointsByResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListRecoveryPointsByResourcePages(input *ListRecoveryPointsByResourceInput, fn func(*ListRecoveryPointsByResourceOutput, bool) bool) error {
 	return c.ListRecoveryPointsByResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4856,14 +4843,13 @@ const opListReportJobs = "ListReportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReportJobsRequest method.
+//	req, resp := client.ListReportJobsRequest(params)
 //
-//    // Example sending a request using the ListReportJobsRequest method.
-//    req, resp := client.ListReportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListReportJobs
 func (c *Backup) ListReportJobsRequest(input *ListReportJobsInput) (req *request.Request, output *ListReportJobsOutput) {
@@ -4900,12 +4886,13 @@ func (c *Backup) ListReportJobsRequest(input *ListReportJobsInput) (req *request
 // API operation ListReportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListReportJobs
 func (c *Backup) ListReportJobs(input *ListReportJobsInput) (*ListReportJobsOutput, error) {
@@ -4937,15 +4924,14 @@ func (c *Backup) ListReportJobsWithContext(ctx aws.Context, input *ListReportJob
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReportJobs operation.
-//    pageNum := 0
-//    err := client.ListReportJobsPages(params,
-//        func(page *backup.ListReportJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReportJobs operation.
+//	pageNum := 0
+//	err := client.ListReportJobsPages(params,
+//	    func(page *backup.ListReportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListReportJobsPages(input *ListReportJobsInput, fn func(*ListReportJobsOutput, bool) bool) error {
 	return c.ListReportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4997,14 +4983,13 @@ const opListReportPlans = "ListReportPlans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReportPlansRequest method.
+//	req, resp := client.ListReportPlansRequest(params)
 //
-//    // Example sending a request using the ListReportPlansRequest method.
-//    req, resp := client.ListReportPlansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListReportPlans
 func (c *Backup) ListReportPlansRequest(input *ListReportPlansInput) (req *request.Request, output *ListReportPlansOutput) {
@@ -5042,12 +5027,13 @@ func (c *Backup) ListReportPlansRequest(input *ListReportPlansInput) (req *reque
 // API operation ListReportPlans for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListReportPlans
 func (c *Backup) ListReportPlans(input *ListReportPlansInput) (*ListReportPlansOutput, error) {
@@ -5079,15 +5065,14 @@ func (c *Backup) ListReportPlansWithContext(ctx aws.Context, input *ListReportPl
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReportPlans operation.
-//    pageNum := 0
-//    err := client.ListReportPlansPages(params,
-//        func(page *backup.ListReportPlansOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReportPlans operation.
+//	pageNum := 0
+//	err := client.ListReportPlansPages(params,
+//	    func(page *backup.ListReportPlansOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListReportPlansPages(input *ListReportPlansInput, fn func(*ListReportPlansOutput, bool) bool) error {
 	return c.ListReportPlansPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5139,14 +5124,13 @@ const opListRestoreJobs = "ListRestoreJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRestoreJobsRequest method.
+//	req, resp := client.ListRestoreJobsRequest(params)
 //
-//    // Example sending a request using the ListRestoreJobsRequest method.
-//    req, resp := client.ListRestoreJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListRestoreJobs
 func (c *Backup) ListRestoreJobsRequest(input *ListRestoreJobsInput) (req *request.Request, output *ListRestoreJobsOutput) {
@@ -5184,18 +5168,19 @@ func (c *Backup) ListRestoreJobsRequest(input *ListRestoreJobsInput) (req *reque
 // API operation ListRestoreJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListRestoreJobs
 func (c *Backup) ListRestoreJobs(input *ListRestoreJobsInput) (*ListRestoreJobsOutput, error) {
@@ -5227,15 +5212,14 @@ func (c *Backup) ListRestoreJobsWithContext(ctx aws.Context, input *ListRestoreJ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRestoreJobs operation.
-//    pageNum := 0
-//    err := client.ListRestoreJobsPages(params,
-//        func(page *backup.ListRestoreJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRestoreJobs operation.
+//	pageNum := 0
+//	err := client.ListRestoreJobsPages(params,
+//	    func(page *backup.ListRestoreJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListRestoreJobsPages(input *ListRestoreJobsInput, fn func(*ListRestoreJobsOutput, bool) bool) error {
 	return c.ListRestoreJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5287,14 +5271,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListTags
 func (c *Backup) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -5337,18 +5320,19 @@ func (c *Backup) ListTagsRequest(input *ListTagsInput) (req *request.Request, ou
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListTags
 func (c *Backup) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -5380,15 +5364,14 @@ func (c *Backup) ListTagsWithContext(ctx aws.Context, input *ListTagsInput, opts
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTags operation.
-//    pageNum := 0
-//    err := client.ListTagsPages(params,
-//        func(page *backup.ListTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTags operation.
+//	pageNum := 0
+//	err := client.ListTagsPages(params,
+//	    func(page *backup.ListTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Backup) ListTagsPages(input *ListTagsInput, fn func(*ListTagsOutput, bool) bool) error {
 	return c.ListTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5440,14 +5423,13 @@ const opPutBackupVaultAccessPolicy = "PutBackupVaultAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBackupVaultAccessPolicyRequest method.
+//	req, resp := client.PutBackupVaultAccessPolicyRequest(params)
 //
-//    // Example sending a request using the PutBackupVaultAccessPolicyRequest method.
-//    req, resp := client.PutBackupVaultAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/PutBackupVaultAccessPolicy
 func (c *Backup) PutBackupVaultAccessPolicyRequest(input *PutBackupVaultAccessPolicyInput) (req *request.Request, output *PutBackupVaultAccessPolicyOutput) {
@@ -5481,18 +5463,19 @@ func (c *Backup) PutBackupVaultAccessPolicyRequest(input *PutBackupVaultAccessPo
 // API operation PutBackupVaultAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/PutBackupVaultAccessPolicy
 func (c *Backup) PutBackupVaultAccessPolicy(input *PutBackupVaultAccessPolicyInput) (*PutBackupVaultAccessPolicyOutput, error) {
@@ -5532,14 +5515,13 @@ const opPutBackupVaultLockConfiguration = "PutBackupVaultLockConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBackupVaultLockConfigurationRequest method.
+//	req, resp := client.PutBackupVaultLockConfigurationRequest(params)
 //
-//    // Example sending a request using the PutBackupVaultLockConfigurationRequest method.
-//    req, resp := client.PutBackupVaultLockConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/PutBackupVaultLockConfiguration
 func (c *Backup) PutBackupVaultLockConfigurationRequest(input *PutBackupVaultLockConfigurationInput) (req *request.Request, output *PutBackupVaultLockConfigurationOutput) {
@@ -5579,22 +5561,23 @@ func (c *Backup) PutBackupVaultLockConfigurationRequest(input *PutBackupVaultLoc
 // API operation PutBackupVaultLockConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/PutBackupVaultLockConfiguration
 func (c *Backup) PutBackupVaultLockConfiguration(input *PutBackupVaultLockConfigurationInput) (*PutBackupVaultLockConfigurationOutput, error) {
@@ -5634,14 +5617,13 @@ const opPutBackupVaultNotifications = "PutBackupVaultNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBackupVaultNotificationsRequest method.
+//	req, resp := client.PutBackupVaultNotificationsRequest(params)
 //
-//    // Example sending a request using the PutBackupVaultNotificationsRequest method.
-//    req, resp := client.PutBackupVaultNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/PutBackupVaultNotifications
 func (c *Backup) PutBackupVaultNotificationsRequest(input *PutBackupVaultNotificationsInput) (req *request.Request, output *PutBackupVaultNotificationsOutput) {
@@ -5673,18 +5655,19 @@ func (c *Backup) PutBackupVaultNotificationsRequest(input *PutBackupVaultNotific
 // API operation PutBackupVaultNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/PutBackupVaultNotifications
 func (c *Backup) PutBackupVaultNotifications(input *PutBackupVaultNotificationsInput) (*PutBackupVaultNotificationsOutput, error) {
@@ -5724,14 +5707,13 @@ const opStartBackupJob = "StartBackupJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartBackupJobRequest method.
+//	req, resp := client.StartBackupJobRequest(params)
 //
-//    // Example sending a request using the StartBackupJobRequest method.
-//    req, resp := client.StartBackupJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartBackupJob
 func (c *Backup) StartBackupJobRequest(input *StartBackupJobInput) (req *request.Request, output *StartBackupJobOutput) {
@@ -5762,26 +5744,27 @@ func (c *Backup) StartBackupJobRequest(input *StartBackupJobInput) (req *request
 // API operation StartBackupJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartBackupJob
 func (c *Backup) StartBackupJob(input *StartBackupJobInput) (*StartBackupJobOutput, error) {
@@ -5821,14 +5804,13 @@ const opStartCopyJob = "StartCopyJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCopyJobRequest method.
+//	req, resp := client.StartCopyJobRequest(params)
 //
-//    // Example sending a request using the StartCopyJobRequest method.
-//    req, resp := client.StartCopyJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartCopyJob
 func (c *Backup) StartCopyJobRequest(input *StartCopyJobInput) (req *request.Request, output *StartCopyJobOutput) {
@@ -5861,26 +5843,27 @@ func (c *Backup) StartCopyJobRequest(input *StartCopyJobInput) (req *request.Req
 // API operation StartCopyJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartCopyJob
 func (c *Backup) StartCopyJob(input *StartCopyJobInput) (*StartCopyJobOutput, error) {
@@ -5920,14 +5903,13 @@ const opStartReportJob = "StartReportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartReportJobRequest method.
+//	req, resp := client.StartReportJobRequest(params)
 //
-//    // Example sending a request using the StartReportJobRequest method.
-//    req, resp := client.StartReportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartReportJob
 func (c *Backup) StartReportJobRequest(input *StartReportJobInput) (req *request.Request, output *StartReportJobOutput) {
@@ -5958,18 +5940,19 @@ func (c *Backup) StartReportJobRequest(input *StartReportJobInput) (req *request
 // API operation StartReportJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartReportJob
 func (c *Backup) StartReportJob(input *StartReportJobInput) (*StartReportJobOutput, error) {
@@ -6009,14 +5992,13 @@ const opStartRestoreJob = "StartRestoreJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartRestoreJobRequest method.
+//	req, resp := client.StartRestoreJobRequest(params)
 //
-//    // Example sending a request using the StartRestoreJobRequest method.
-//    req, resp := client.StartRestoreJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartRestoreJob
 func (c *Backup) StartRestoreJobRequest(input *StartRestoreJobInput) (req *request.Request, output *StartRestoreJobOutput) {
@@ -6047,18 +6029,19 @@ func (c *Backup) StartRestoreJobRequest(input *StartRestoreJobInput) (req *reque
 // API operation StartRestoreJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StartRestoreJob
 func (c *Backup) StartRestoreJob(input *StartRestoreJobInput) (*StartRestoreJobOutput, error) {
@@ -6098,14 +6081,13 @@ const opStopBackupJob = "StopBackupJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopBackupJobRequest method.
+//	req, resp := client.StopBackupJobRequest(params)
 //
-//    // Example sending a request using the StopBackupJobRequest method.
-//    req, resp := client.StopBackupJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StopBackupJob
 func (c *Backup) StopBackupJobRequest(input *StopBackupJobInput) (req *request.Request, output *StopBackupJobOutput) {
@@ -6137,22 +6119,23 @@ func (c *Backup) StopBackupJobRequest(input *StopBackupJobInput) (req *request.R
 // API operation StopBackupJob for usage and error information.
 //
 // Returned Error Types:
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/StopBackupJob
 func (c *Backup) StopBackupJob(input *StopBackupJobInput) (*StopBackupJobOutput, error) {
@@ -6192,14 +6175,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/TagResource
 func (c *Backup) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -6232,22 +6214,23 @@ func (c *Backup) TagResourceRequest(input *TagResourceInput) (req *request.Reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
+//
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/TagResource
 func (c *Backup) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -6287,14 +6270,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UntagResource
 func (c *Backup) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -6327,18 +6309,19 @@ func (c *Backup) UntagResourceRequest(input *UntagResourceInput) (req *request.R
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UntagResource
 func (c *Backup) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -6378,14 +6361,13 @@ const opUpdateBackupPlan = "UpdateBackupPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBackupPlanRequest method.
+//	req, resp := client.UpdateBackupPlanRequest(params)
 //
-//    // Example sending a request using the UpdateBackupPlanRequest method.
-//    req, resp := client.UpdateBackupPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateBackupPlan
 func (c *Backup) UpdateBackupPlanRequest(input *UpdateBackupPlanInput) (req *request.Request, output *UpdateBackupPlanOutput) {
@@ -6417,18 +6399,19 @@ func (c *Backup) UpdateBackupPlanRequest(input *UpdateBackupPlanInput) (req *req
 // API operation UpdateBackupPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateBackupPlan
 func (c *Backup) UpdateBackupPlan(input *UpdateBackupPlanInput) (*UpdateBackupPlanOutput, error) {
@@ -6468,14 +6451,13 @@ const opUpdateFramework = "UpdateFramework"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFrameworkRequest method.
+//	req, resp := client.UpdateFrameworkRequest(params)
 //
-//    // Example sending a request using the UpdateFrameworkRequest method.
-//    req, resp := client.UpdateFrameworkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateFramework
 func (c *Backup) UpdateFrameworkRequest(input *UpdateFrameworkInput) (req *request.Request, output *UpdateFrameworkOutput) {
@@ -6507,29 +6489,30 @@ func (c *Backup) UpdateFrameworkRequest(input *UpdateFrameworkInput) (req *reque
 // API operation UpdateFramework for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The required resource already exists.
 //
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
+//   - AlreadyExistsException
+//     The required resource already exists.
 //
-//   * LimitExceededException
-//   A limit in the request has been exceeded; for example, a maximum number of
-//   items allowed in a request.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - LimitExceededException
+//     A limit in the request has been exceeded; for example, a maximum number of
+//     items allowed in a request.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * ConflictException
-//   Backup can't perform the action that you requested until it finishes performing
-//   a previous action. Try again later.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - ConflictException
+//     Backup can't perform the action that you requested until it finishes performing
+//     a previous action. Try again later.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateFramework
 func (c *Backup) UpdateFramework(input *UpdateFrameworkInput) (*UpdateFrameworkOutput, error) {
@@ -6569,14 +6552,13 @@ const opUpdateGlobalSettings = "UpdateGlobalSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGlobalSettingsRequest method.
+//	req, resp := client.UpdateGlobalSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateGlobalSettingsRequest method.
-//    req, resp := client.UpdateGlobalSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateGlobalSettings
 func (c *Backup) UpdateGlobalSettingsRequest(input *UpdateGlobalSettingsInput) (req *request.Request, output *UpdateGlobalSettingsOutput) {
@@ -6610,19 +6592,20 @@ func (c *Backup) UpdateGlobalSettingsRequest(input *UpdateGlobalSettingsInput) (
 // API operation UpdateGlobalSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
+//
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateGlobalSettings
 func (c *Backup) UpdateGlobalSettings(input *UpdateGlobalSettingsInput) (*UpdateGlobalSettingsOutput, error) {
@@ -6662,14 +6645,13 @@ const opUpdateRecoveryPointLifecycle = "UpdateRecoveryPointLifecycle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRecoveryPointLifecycleRequest method.
+//	req, resp := client.UpdateRecoveryPointLifecycleRequest(params)
 //
-//    // Example sending a request using the UpdateRecoveryPointLifecycleRequest method.
-//    req, resp := client.UpdateRecoveryPointLifecycleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateRecoveryPointLifecycle
 func (c *Backup) UpdateRecoveryPointLifecycleRequest(input *UpdateRecoveryPointLifecycleInput) (req *request.Request, output *UpdateRecoveryPointLifecycleOutput) {
@@ -6717,22 +6699,23 @@ func (c *Backup) UpdateRecoveryPointLifecycleRequest(input *UpdateRecoveryPointL
 // API operation UpdateRecoveryPointLifecycle for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * InvalidRequestException
-//   Indicates that something is wrong with the input to the request. For example,
-//   a parameter is of the wrong type.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - InvalidRequestException
+//     Indicates that something is wrong with the input to the request. For example,
+//     a parameter is of the wrong type.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateRecoveryPointLifecycle
 func (c *Backup) UpdateRecoveryPointLifecycle(input *UpdateRecoveryPointLifecycleInput) (*UpdateRecoveryPointLifecycleOutput, error) {
@@ -6772,14 +6755,13 @@ const opUpdateRegionSettings = "UpdateRegionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRegionSettingsRequest method.
+//	req, resp := client.UpdateRegionSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateRegionSettingsRequest method.
-//    req, resp := client.UpdateRegionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateRegionSettings
 func (c *Backup) UpdateRegionSettingsRequest(input *UpdateRegionSettingsInput) (req *request.Request, output *UpdateRegionSettingsOutput) {
@@ -6816,15 +6798,16 @@ func (c *Backup) UpdateRegionSettingsRequest(input *UpdateRegionSettingsInput) (
 // API operation UpdateRegionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateRegionSettings
 func (c *Backup) UpdateRegionSettings(input *UpdateRegionSettingsInput) (*UpdateRegionSettingsOutput, error) {
@@ -6864,14 +6847,13 @@ const opUpdateReportPlan = "UpdateReportPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReportPlanRequest method.
+//	req, resp := client.UpdateReportPlanRequest(params)
 //
-//    // Example sending a request using the UpdateReportPlanRequest method.
-//    req, resp := client.UpdateReportPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateReportPlan
 func (c *Backup) UpdateReportPlanRequest(input *UpdateReportPlanInput) (req *request.Request, output *UpdateReportPlanOutput) {
@@ -6903,22 +6885,23 @@ func (c *Backup) UpdateReportPlanRequest(input *UpdateReportPlanInput) (req *req
 // API operation UpdateReportPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource that is required for the action doesn't exist.
 //
-//   * InvalidParameterValueException
-//   Indicates that something is wrong with a parameter's value. For example,
-//   the value is out of range.
+//   - ResourceNotFoundException
+//     A resource that is required for the action doesn't exist.
 //
-//   * ServiceUnavailableException
-//   The request failed due to a temporary failure of the server.
+//   - InvalidParameterValueException
+//     Indicates that something is wrong with a parameter's value. For example,
+//     the value is out of range.
 //
-//   * MissingParameterValueException
-//   Indicates that a required parameter is missing.
+//   - ServiceUnavailableException
+//     The request failed due to a temporary failure of the server.
 //
-//   * ConflictException
-//   Backup can't perform the action that you requested until it finishes performing
-//   a previous action. Try again later.
+//   - MissingParameterValueException
+//     Indicates that a required parameter is missing.
+//
+//   - ConflictException
+//     Backup can't perform the action that you requested until it finishes performing
+//     a previous action. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/UpdateReportPlan
 func (c *Backup) UpdateReportPlan(input *UpdateReportPlanInput) (*UpdateReportPlanOutput, error) {

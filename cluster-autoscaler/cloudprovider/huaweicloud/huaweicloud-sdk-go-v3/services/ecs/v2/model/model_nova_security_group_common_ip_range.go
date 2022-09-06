@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type NovaSecurityGroupCommonIpRange struct {
 	// 对端IP网段，cidr格式。
 

@@ -11,7 +11,7 @@ import (
 
 // GetCpeDeviceShapeRequest wrapper for the GetCpeDeviceShape operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetCpeDeviceShape.go.html to see an example of how to use GetCpeDeviceShapeRequest.
 type GetCpeDeviceShapeRequest struct {

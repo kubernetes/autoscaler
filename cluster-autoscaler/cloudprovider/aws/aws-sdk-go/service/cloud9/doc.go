@@ -10,42 +10,42 @@
 //
 // Cloud9 supports these operations:
 //
-//    * CreateEnvironmentEC2: Creates an Cloud9 development environment, launches
-//    an Amazon EC2 instance, and then connects from the instance to the environment.
+//   - CreateEnvironmentEC2: Creates an Cloud9 development environment, launches
+//     an Amazon EC2 instance, and then connects from the instance to the environment.
 //
-//    * CreateEnvironmentMembership: Adds an environment member to an environment.
+//   - CreateEnvironmentMembership: Adds an environment member to an environment.
 //
-//    * DeleteEnvironment: Deletes an environment. If an Amazon EC2 instance
-//    is connected to the environment, also terminates the instance.
+//   - DeleteEnvironment: Deletes an environment. If an Amazon EC2 instance
+//     is connected to the environment, also terminates the instance.
 //
-//    * DeleteEnvironmentMembership: Deletes an environment member from an environment.
+//   - DeleteEnvironmentMembership: Deletes an environment member from an environment.
 //
-//    * DescribeEnvironmentMemberships: Gets information about environment members
-//    for an environment.
+//   - DescribeEnvironmentMemberships: Gets information about environment members
+//     for an environment.
 //
-//    * DescribeEnvironments: Gets information about environments.
+//   - DescribeEnvironments: Gets information about environments.
 //
-//    * DescribeEnvironmentStatus: Gets status information for an environment.
+//   - DescribeEnvironmentStatus: Gets status information for an environment.
 //
-//    * ListEnvironments: Gets a list of environment identifiers.
+//   - ListEnvironments: Gets a list of environment identifiers.
 //
-//    * ListTagsForResource: Gets the tags for an environment.
+//   - ListTagsForResource: Gets the tags for an environment.
 //
-//    * TagResource: Adds tags to an environment.
+//   - TagResource: Adds tags to an environment.
 //
-//    * UntagResource: Removes tags from an environment.
+//   - UntagResource: Removes tags from an environment.
 //
-//    * UpdateEnvironment: Changes the settings of an existing environment.
+//   - UpdateEnvironment: Changes the settings of an existing environment.
 //
-//    * UpdateEnvironmentMembership: Changes the settings of an existing environment
-//    member for an environment.
+//   - UpdateEnvironmentMembership: Changes the settings of an existing environment
+//     member for an environment.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23 for more information on this service.
 //
 // See cloud9 package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/cloud9/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Cloud9 with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

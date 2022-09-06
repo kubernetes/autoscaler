@@ -11,7 +11,7 @@ import (
 
 // UpgradeDrgRequest wrapper for the UpgradeDrg operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpgradeDrg.go.html to see an example of how to use UpgradeDrgRequest.
 type UpgradeDrgRequest struct {

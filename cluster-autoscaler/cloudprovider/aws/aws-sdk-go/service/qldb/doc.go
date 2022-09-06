@@ -3,14 +3,14 @@
 // Package qldb provides the client and types for making API
 // requests to Amazon QLDB.
 //
-// The control plane for Amazon QLDB
+// # The control plane for Amazon QLDB
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/qldb-2019-01-02 for more information on this service.
 //
 // See qldb package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/qldb/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon QLDB with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

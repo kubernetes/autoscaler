@@ -27,7 +27,7 @@
 // See pinpointsmsvoicev2 package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/pinpointsmsvoicev2/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Pinpoint SMS Voice V2 with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.
