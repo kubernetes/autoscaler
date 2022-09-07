@@ -20,17 +20,38 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+const (
+	// this is a label used by eksctl to identify instances.
+	AwsIgnoredLabelEksctlInstanceId = "alpha.eksctl.io/instance-id"
+
+	// this is a label used by eksctl to identify "node group" names.
+	AwsIgnoredLabelEksctlNodegroupName = "alpha.eksctl.io/nodegroup-name"
+
+	// this is a label used by eks to identify "node group".
+	AwsIgnoredLabelEksNodegroup = "eks.amazonaws.com/nodegroup"
+
+	// this is a label used by the AWS CNI for custom networking.
+	AwsIgnoredLabelK8sEniconfig = "k8s.amazonaws.com/eniConfig"
+
+	// this is a label used by the AWS for spot.
+	AwsIgnoredLabelLifecycle = "lifecycle"
+
+	// this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
+	AwsIgnoredLabelEbsCsiZone = "topology.ebs.csi.aws.com/zone"
+)
+
 // CreateAwsNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they match usual conditions checked by IsCloudProviderNodeInfoSimilar,
 // even if they have different AWS-specific labels.
 func CreateAwsNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
 	awsIgnoredLabels := map[string]bool{
-		"alpha.eksctl.io/instance-id":    true, // this is a label used by eksctl to identify instances.
-		"alpha.eksctl.io/nodegroup-name": true, // this is a label used by eksctl to identify "node group" names.
-		"eks.amazonaws.com/nodegroup":    true, // this is a label used by eks to identify "node group".
-		"k8s.amazonaws.com/eniConfig":    true, // this is a label used by the AWS CNI for custom networking.
-		"lifecycle":                      true, // this is a label used by the AWS for spot.
-		"topology.ebs.csi.aws.com/zone":  true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
+		AwsIgnoredLabelEksctlInstanceId:    true,
+		AwsIgnoredLabelEksctlNodegroupName: true,
+		AwsIgnoredLabelEksNodegroup:        true,
+		AwsIgnoredLabelK8sEniconfig:        true,
+		AwsIgnoredLabelLifecycle:           true,
+		AwsIgnoredLabelEbsCsiZone:          true,
+		GceIgnoredLabelGkeZone:             true,
 	}
 
 	for k, v := range BasicIgnoredLabels {

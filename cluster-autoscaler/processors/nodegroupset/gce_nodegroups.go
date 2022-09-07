@@ -20,12 +20,17 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+const (
+	// this label is used to specify the zone of the instance
+	GceIgnoredLabelGkeZone = "topology.gke.io/zone"
+)
+
 // CreateGceNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they match usual conditions checked by IsCloudProviderNodeInfoSimilar,
 // even if they have different GCE-specific labels.
 func CreateGceNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
 	gceIgnoredLabels := map[string]bool{
-		"topology.gke.io/zone": true,
+		GceIgnoredLabelGkeZone: true,
 	}
 
 	for k, v := range BasicIgnoredLabels {
