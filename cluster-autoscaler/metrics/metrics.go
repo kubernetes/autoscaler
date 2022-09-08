@@ -75,6 +75,8 @@ const (
 	CpuResourceLimit string = "CpuResourceLimit"
 	// MemoryResourceLimit minimum or maximum reached, check the direction label to determine min or max
 	MemoryResourceLimit string = "MemoryResourceLimit"
+	// NodeGroupLimit the minimum or maxium node group limit reached, check the direction label to determine min or max
+	NodeGroupLimit string = "NodeGroupLimit"
 
 	// autoscaledGroup is managed by CA
 	autoscaledGroup NodeGroupType = "autoscaled"
@@ -586,4 +588,16 @@ func RegisterSkippedScaleUpCPU() {
 // RegisterSkippedScaleUpMemory increases the count of skipped scale outs because of Memory resource limits
 func RegisterSkippedScaleUpMemory() {
 	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, MemoryResourceLimit).Add(1.0)
+}
+
+// RegisterSkippedScaleUpNodeGroupMaxSize increases the count of skipped scale outs
+// because the node group has reached its maximum configured size
+func RegisterSkippedScaleUpNodeGroupMaxSize() {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, NodeGroupLimit).Add(1.0)
+}
+
+// RegisterSkippedScaleDownNodeGroupMinSize increases the count of skipped scale outs
+// because the node group has reached its minimum configured size
+func RegisterSkippedScaleDownNodeGroupMinSize() {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, NodeGroupLimit).Add(1.0)
 }

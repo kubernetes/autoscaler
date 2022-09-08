@@ -410,6 +410,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if currentTargetSize >= nodeGroup.MaxSize() {
 			klog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
 			skippedNodeGroups[nodeGroup.Id()] = maxLimitReachedReason
+			metrics.RegisterSkippedScaleUpNodeGroupMaxSize()
 			continue
 		}
 

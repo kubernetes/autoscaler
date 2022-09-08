@@ -124,7 +124,7 @@ scale down reasons are `empty`, `underutilized`, `unready`.
 * `skipped_scale_events_count` counts the number of times that the
   autoscaler has declined to scale a node group because of a resource limit being reached or
   similar internal event. Scale direction can be either `up` or `down`, and the reason explains
-  why the scaling was skipped (eg `CPULimitReached`, `MemoryLimitReached`). This is
+  why the scaling was skipped (eg `CPULimitReached`, `MemoryLimitReached`, `NodeGroupLimit`). This is
   different than failed scaling events in that the autoscaler is choosing not to perform
   a scaling action.
 

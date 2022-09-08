@@ -692,6 +692,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		if size-deletionsInProgress <= nodeGroup.MinSize() {
 			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			sd.unremovableNodes.AddReason(node, simulator.NodeGroupMinSizeReached)
+			metrics.RegisterSkippedScaleDownNodeGroupMinSize()
 			continue
 		}
 
