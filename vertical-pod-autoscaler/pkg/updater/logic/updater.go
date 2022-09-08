@@ -226,16 +226,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 
-				var DeleteOomingOnEvictionError bool
-				if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.DeleteOomingOnEvictionError != nil {
-					DeleteOomingOnEvictionError = *vpa.Spec.UpdatePolicy.DeleteOomingOnEvictionError
-				} else {
-					DeleteOomingOnEvictionError = u.deleteOomingOnEvictionError
-				}
-
 				// only try to delete the pod if the feature is enabled and if we would increase
 				// the resource requests or limits
-				if priority.ScaleUp && DeleteOomingOnEvictionError {
+				if u.isDeleteAllowed(priority, vpa.Spec) {
 					deleteErr := evictionLimiter.EvictViaDelete(pod, u.eventRecorder)
 					if deleteErr != nil {
 						klog.Warningf("deleting pod %v failed: %v", pod.Name, deleteErr)
@@ -261,6 +254,19 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 	}
 	timer.ObserveStep("EvictPods")
+}
+
+// Returns true if DeleteOomingOnEvictionError is set either as a global flag or in the vpa spec and if a scale up
+// of the pod is planned.
+func (u *updater) isDeleteAllowed(priority priority.PodPriority, vpaSpec vpa_types.VerticalPodAutoscalerSpec) bool {
+	var DeleteOomingOnEvictionError bool
+	if vpaSpec.UpdatePolicy != nil && vpaSpec.UpdatePolicy.DeleteOomingOnEvictionError != nil {
+		DeleteOomingOnEvictionError = *vpaSpec.UpdatePolicy.DeleteOomingOnEvictionError
+	} else {
+		DeleteOomingOnEvictionError = u.deleteOomingOnEvictionError
+	}
+
+	return priority.ScaleUp && DeleteOomingOnEvictionError
 }
 
 func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate.Limiter {

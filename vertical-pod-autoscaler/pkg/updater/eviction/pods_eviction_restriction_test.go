@@ -567,7 +567,7 @@ func TestEvictViaDeleteAtLeastOne(t *testing.T) {
 
 	for _, pod := range pods[:1] {
 		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder())
-		assert.Nil(t, err, "Should evict with no error")
+		assert.NoError(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[1:] {
 		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder())

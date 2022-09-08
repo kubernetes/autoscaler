@@ -26,9 +26,9 @@ Threshold for evicting pods is specified by recommended min/max values from VPA 
 Priority of evictions within a set of replicated pods is proportional to sum of percentages of changes in resources
 (i.e. pod with 15% memory increase 15% cpu decrease recommended will be evicted
 before pod with 20% memory increase and no change in cpu).
-* Deleting pods if the eviction fails and if the corresponding feature flag (`--experimental-deletion`) is enabled.
-Deletion is guarded by a treshold (`--experimental-deletion-threshold`) of how many restarts are required. The pod
-needs to be in `CrashLoopBackOff` and the LastTerminationReason needs to be `OOMKilled`.
+* Deleting pods if the eviction fails and if the corresponding feature flag (`--delete-ooming-on-eviction-error`) is enabled
+or if the appropriate field in the vpa spec is set (`Spec.DeleteOomingOnEvictionError`).
+The deletetion only happens if the pod is in in `CrashLoopBackOff` and at least one container needs to be `OOMKilled.
 
 # Missing parts
 * Recommendation API for fetching data from Vertical Pod Autoscaler Recommender.

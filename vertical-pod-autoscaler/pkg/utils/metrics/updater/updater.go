@@ -63,7 +63,7 @@ var (
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "deleted_pods_total",
-			Help:      "Number of Pods delete by Updater to apply a new recommendation.",
+			Help:      "Number of Pods deleted by Updater to apply a new recommendation.",
 		}, []string{"vpa_size_log2"},
 	)
 

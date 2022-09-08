@@ -124,6 +124,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 // Evict sends eviction instruction to api client. Returns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder record.EventRecorder) error {
+	// Make sure we can map the pod to a replication controller to prevent any problems when evicting the pod.
 	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
@@ -170,6 +171,7 @@ func (e *podsEvictionRestrictionImpl) canDelete(containerStatus apiv1.ContainerS
 // EvictViaDelete sends deletion instruction to api client. Returns error if pod cannot be deleted or if client returned error
 // Does not check if pod was actually deleted after termination grace period.
 func (e *podsEvictionRestrictionImpl) EvictViaDelete(podToEvict *apiv1.Pod, eventRecorder record.EventRecorder) error {
+	// Make sure we can map the pod to a replication controller to prevent any problems when evicting/deleting the pod.
 	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
@@ -184,7 +186,6 @@ func (e *podsEvictionRestrictionImpl) EvictViaDelete(podToEvict *apiv1.Pod, even
 	// The Pod is dead anyway so there is no reason to respect any potential PDBs.
 	for _, containerStatus := range podToEvict.Status.ContainerStatuses {
 		if e.canDelete(containerStatus) {
-
 			err := e.client.CoreV1().Pods(podToEvict.Namespace).Delete(context.TODO(), podToEvict.Name, metav1.DeleteOptions{})
 			if err != nil {
 				klog.Errorf("failed to delete pod %s/%s, after failed eviction, error: %v", podToEvict.Namespace, podToEvict.Name, err)

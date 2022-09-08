@@ -66,7 +66,7 @@ var (
 	namespace          = os.Getenv("NAMESPACE")
 	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 
-	deleteOomingOnEvictionError = flag.Bool("delete-ooming-on-eviction-error", false, "If true, updater will try to delete ooming pods when the eviction fails.")
+	deleteOomingOnEvictionError = flag.Bool("delete-ooming-on-eviction-error", false, "If true, updater will try to delete ooming pods when the eviction fails. By default it will try to use the eviction API only.")
 )
 
 const defaultResyncPeriod time.Duration = 10 * time.Minute

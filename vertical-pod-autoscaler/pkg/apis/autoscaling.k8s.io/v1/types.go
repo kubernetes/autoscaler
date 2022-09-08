@@ -118,7 +118,7 @@ type PodUpdatePolicy struct {
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
 
-	// Wheather to try to delete the pod when eviction fails or not.
+	// When true VPA will try to delete OOMing pods when eviction fails. When false it won't do that.
 	// Overrides global '--delete-ooming-on-eviction-error' flag.
 	// +optional
 	DeleteOomingOnEvictionError *bool `json:"deleteOomingOnEvictionError,omitempty" protobuf:"varint,2,opt,name=deleteOomingOnEvictionError"`
