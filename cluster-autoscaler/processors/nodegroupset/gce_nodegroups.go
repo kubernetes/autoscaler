@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	// this label is used to specify the zone of the instance
+	// GceIgnoredLabelGkeZone label is used to specify the zone of the instance
 	GceIgnoredLabelGkeZone = "topology.gke.io/zone"
 )
 

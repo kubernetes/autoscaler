@@ -21,22 +21,22 @@ import (
 )
 
 const (
-	// this is a label used by eksctl to identify instances.
+	// AwsIgnoredLabelEksctlInstanceId  is a label used by eksctl to identify instances.
 	AwsIgnoredLabelEksctlInstanceId = "alpha.eksctl.io/instance-id"
 
-	// this is a label used by eksctl to identify "node group" names.
+	// AwsIgnoredLabelEksctlNodegroupName is a label used by eksctl to identify "node group" names.
 	AwsIgnoredLabelEksctlNodegroupName = "alpha.eksctl.io/nodegroup-name"
 
-	// this is a label used by eks to identify "node group".
+	// AwsIgnoredLabelEksNodegroup is a label used by eks to identify "node group".
 	AwsIgnoredLabelEksNodegroup = "eks.amazonaws.com/nodegroup"
 
-	// this is a label used by the AWS CNI for custom networking.
+	// AwsIgnoredLabelK8sEniconfig is a label used by the AWS CNI for custom networking.
 	AwsIgnoredLabelK8sEniconfig = "k8s.amazonaws.com/eniConfig"
 
-	// this is a label used by the AWS for spot.
+	// AwsIgnoredLabelLifecycle is a label used by the AWS for spot.
 	AwsIgnoredLabelLifecycle = "lifecycle"
 
-	// this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
+	// AwsIgnoredLabelEbsCsiZone is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
 	AwsIgnoredLabelEbsCsiZone = "topology.ebs.csi.aws.com/zone"
 )
 

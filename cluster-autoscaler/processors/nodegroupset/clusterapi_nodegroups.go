@@ -23,16 +23,16 @@ import (
 // the following values are for cloud providers which have not yet created specific nodegroupset processors.
 // these values should be removed and replaced in the event that one of the cloud providers creates a nodegroupset processor.
 const (
-	// this is a label used by the Alibaba Cloud CSI driver as a target for Persistent Volume Node Affinity
+	// AlicloudIgnoredLabelCsiZone is a label used by the Alibaba Cloud CSI driver as a target for Persistent Volume Node Affinity
 	AlicloudIgnoredLabelCsiZone = "topology.diskplugin.csi.alibabacloud.com/zone"
 
-	// this is a label used by the IBM Cloud Cloud Controler Manager
+	// IbmcloudIgnoredLabelWorkerId is a label used by the IBM Cloud Cloud Controler Manager
 	IbmcloudIgnoredLabelWorkerId = "ibm-cloud.kubernetes.io/worker-id"
 
-	// this is a label used by the IBM Cloud CSI driver as a target for Persisten Volume Node Affinity
+	// IbmcloudIgnoredLabelVpcBlockCsi is a label used by the IBM Cloud CSI driver as a target for Persisten Volume Node Affinity
 	IbmcloudIgnoredLabelVpcBlockCsi = "vpc-block-csi-driver-labels"
 
-	// used on IBM Cloud when a VPC is in use
+	// IbmcloudIgnoredLabelVpcInstanceId on IBM Cloud when a VPC is in use
 	IbmcloudIgnoredLabelVpcInstanceId = "ibm-cloud.kubernetes.io/vpc-instance-id"
 )
 
