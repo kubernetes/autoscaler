@@ -410,7 +410,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if currentTargetSize >= nodeGroup.MaxSize() {
 			klog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
 			skippedNodeGroups[nodeGroup.Id()] = maxLimitReachedReason
-			metrics.RegisterSkippedScaleUpNodeGroupMaxSize()
+			metrics.RegisterSkippedScaleUpNodeGroupMaxSize(nodeGroup.Id())
 			continue
 		}
 
@@ -434,9 +434,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			for _, resource := range checkResult.exceededResources {
 				switch resource {
 				case cloudprovider.ResourceNameCores:
-					metrics.RegisterSkippedScaleUpCPU()
+					metrics.RegisterSkippedScaleUpCPU(nodeGroup.Id())
 				case cloudprovider.ResourceNameMemory:
-					metrics.RegisterSkippedScaleUpMemory()
+					metrics.RegisterSkippedScaleUpMemory(nodeGroup.Id())
 				default:
 					continue
 				}

@@ -692,7 +692,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		if size-deletionsInProgress <= nodeGroup.MinSize() {
 			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			sd.unremovableNodes.AddReason(node, simulator.NodeGroupMinSizeReached)
-			metrics.RegisterSkippedScaleDownNodeGroupMinSize()
+			metrics.RegisterSkippedScaleDownNodeGroupMinSize(nodeGroup.Id())
 			continue
 		}
 
@@ -710,9 +710,9 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 			for _, resource := range checkResult.exceededResources {
 				switch resource {
 				case cloudprovider.ResourceNameCores:
-					metrics.RegisterSkippedScaleDownCPU()
+					metrics.RegisterSkippedScaleDownCPU(nodeGroup.Id())
 				case cloudprovider.ResourceNameMemory:
-					metrics.RegisterSkippedScaleDownMemory()
+					metrics.RegisterSkippedScaleDownMemory(nodeGroup.Id())
 				default:
 					continue
 				}

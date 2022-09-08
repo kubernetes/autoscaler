@@ -330,7 +330,7 @@ var (
 			Name:      "skipped_scale_events_count",
 			Help:      "Count of scaling events that the CA has chosen to skip.",
 		},
-		[]string{"direction", "reason"},
+		[]string{"direction", "reason", "node_group"},
 	)
 
 	/**** Metrics related to NodeAutoprovisioning ****/
@@ -571,33 +571,33 @@ func UpdateOverflowingControllers(count int) {
 }
 
 // RegisterSkippedScaleDownCPU increases the count of skipped scale outs because of CPU resource limits
-func RegisterSkippedScaleDownCPU() {
-	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, CpuResourceLimit).Add(1.0)
+func RegisterSkippedScaleDownCPU(nodeGroup string) {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, CpuResourceLimit, nodeGroup).Add(1.0)
 }
 
 // RegisterSkippedScaleDownMemory increases the count of skipped scale outs because of Memory resource limits
-func RegisterSkippedScaleDownMemory() {
-	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, MemoryResourceLimit).Add(1.0)
+func RegisterSkippedScaleDownMemory(nodeGroup string) {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, MemoryResourceLimit, nodeGroup).Add(1.0)
 }
 
 // RegisterSkippedScaleUpCPU increases the count of skipped scale outs because of CPU resource limits
-func RegisterSkippedScaleUpCPU() {
-	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, CpuResourceLimit).Add(1.0)
+func RegisterSkippedScaleUpCPU(nodeGroup string) {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, CpuResourceLimit, nodeGroup).Add(1.0)
 }
 
 // RegisterSkippedScaleUpMemory increases the count of skipped scale outs because of Memory resource limits
-func RegisterSkippedScaleUpMemory() {
-	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, MemoryResourceLimit).Add(1.0)
+func RegisterSkippedScaleUpMemory(nodeGroup string) {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, MemoryResourceLimit, nodeGroup).Add(1.0)
 }
 
 // RegisterSkippedScaleUpNodeGroupMaxSize increases the count of skipped scale outs
 // because the node group has reached its maximum configured size
-func RegisterSkippedScaleUpNodeGroupMaxSize() {
-	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, NodeGroupLimit).Add(1.0)
+func RegisterSkippedScaleUpNodeGroupMaxSize(nodeGroup string) {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, NodeGroupLimit, nodeGroup).Add(1.0)
 }
 
 // RegisterSkippedScaleDownNodeGroupMinSize increases the count of skipped scale outs
 // because the node group has reached its minimum configured size
-func RegisterSkippedScaleDownNodeGroupMinSize() {
-	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, NodeGroupLimit).Add(1.0)
+func RegisterSkippedScaleDownNodeGroupMinSize(nodeGroup string) {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, NodeGroupLimit, nodeGroup).Add(1.0)
 }
