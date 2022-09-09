@@ -20,7 +20,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
         - name: admission-controller
-          image: k8s.gcr.io/autoscaling/vpa-admission-controller:0.11.0
+          image: k8s.gcr.io/autoscaling/vpa-admission-controller:0.12.0
           imagePullPolicy: Always
           env:
             - name: NAMESPACE
