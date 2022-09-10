@@ -123,7 +123,7 @@ func (r *RemovalSimulator) FindNodesToRemove(
 	}
 
 	for _, nodeName := range candidates {
-		rn, urn := r.CheckNodeRemoval(nodeName, destinationMap, timestamp, pdbs)
+		rn, urn := r.SimulateNodeRemoval(nodeName, destinationMap, timestamp, pdbs)
 		if rn != nil {
 			result = append(result, *rn)
 		} else if urn != nil {
@@ -133,10 +133,11 @@ func (r *RemovalSimulator) FindNodesToRemove(
 	return result, unremovable, nil
 }
 
-// CheckNodeRemoval checks whether a specific node can be removed. Depending on
+// SimulateNodeRemoval simulates removing a node from the cluster to check
+// whether it is possible to move its pods. Depending on
 // the outcome, exactly one of (NodeToBeRemoved, UnremovableNode) will be
 // populated in the return value, the other will be nil.
-func (r *RemovalSimulator) CheckNodeRemoval(
+func (r *RemovalSimulator) SimulateNodeRemoval(
 	nodeName string,
 	destinationMap map[string]bool,
 	timestamp time.Time,

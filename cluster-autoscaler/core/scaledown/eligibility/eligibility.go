@@ -63,9 +63,8 @@ func NewChecker(thresholdGetter utilizationThresholdGetter) *Checker {
 // utilization info.
 // TODO(x13n): Node utilization could actually be calculated independently for
 // all nodes and just used here. Next refactor...
-func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info) {
-	unremovableNodes.Update(context.ClusterSnapshot.NodeInfos(), timestamp)
-
+func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+	ineligible := []*simulator.UnremovableNode{}
 	skipped := 0
 	utilizationMap := make(map[string]utilization.Info)
 	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
@@ -75,13 +74,13 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 		nodeInfo, err := context.ClusterSnapshot.NodeInfos().Get(node.Name)
 		if err != nil {
 			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)
-			unremovableNodes.AddReason(node, simulator.UnexpectedError)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.UnexpectedError})
 			continue
 		}
 
 		// Skip nodes that were recently checked.
 		if unremovableNodes.IsRecent(node.Name) {
-			unremovableNodes.AddReason(node, simulator.RecentlyUnremovable)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.RecentlyUnremovable})
 			skipped++
 			continue
 		}
@@ -91,7 +90,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 			utilizationMap[node.Name] = *utilInfo
 		}
 		if reason != simulator.NoReason {
-			unremovableNodes.AddReason(node, reason)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: reason})
 			continue
 		}
 
@@ -102,7 +101,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 	if skipped > 0 {
 		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
-	return currentlyUnneededNodeNames, utilizationMap
+	return currentlyUnneededNodeNames, utilizationMap, ineligible
 }
 
 func (c *Checker) unremovableReasonAndNodeUtilization(context *context.AutoscalingContext, timestamp time.Time, nodeInfo *schedulerframework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {

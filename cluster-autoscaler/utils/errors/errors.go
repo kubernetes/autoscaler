@@ -61,6 +61,10 @@ const (
 	// NodeGroupDoesNotExistError signifies that a NodeGroup
 	// does not exist.
 	NodeGroupDoesNotExistError AutoscalerErrorType = "nodeGroupDoesNotExistError"
+	// UnexpectedScaleDownStateError means Cluster Autoscaler thinks ongoing
+	// scale down is already removing too much and so further node removals
+	// shouldn't be attempted.
+	UnexpectedScaleDownStateError AutoscalerErrorType = "unexpectedScaleDownStateError"
 )
 
 // NewAutoscalerError returns new autoscaler error with a message constructed from format string
