@@ -109,7 +109,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 				t.Fatalf("Could not create autoscaling context: %v", err)
 			}
 			unremovableNodes := unremovable.NewNodes()
-			got, _ := c.FilterOutUnremovable(&context, tc.nodes, now, unremovableNodes)
+			got, _, _ := c.FilterOutUnremovable(&context, tc.nodes, now, unremovableNodes)
 			assert.Equal(t, tc.want, got)
 		})
 	}
