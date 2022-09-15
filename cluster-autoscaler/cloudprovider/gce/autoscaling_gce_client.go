@@ -259,7 +259,8 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 		req.Instances = append(req.Instances, GenerateInstanceUrl(i))
 	}
 	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
-	if err != nil {
+	wasConflictErr := op != nil && op.HttpErrorStatusCode == http.StatusConflict
+	if !wasConflictErr && err != nil {
 		return err
 	}
 	return client.waitForOp(op, migRef.Project, migRef.Zone, true)
