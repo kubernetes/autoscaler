@@ -28,7 +28,7 @@ const (
 )
 
 // PodsLoggingQuota returns a new quota with default limit for pods at current verbosity.
-func PodsLoggingQuota() *quota {
+func PodsLoggingQuota() *Quota {
 	if klog.V(5).Enabled() {
 		return NewLoggingQuota(MaxPodsLoggedV5)
 	}

@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
@@ -95,7 +96,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	// No scale down node.
 	n5 := BuildTestNode("n5", 1000, 10)
 	n5.Annotations = map[string]string{
-		ScaleDownDisabledKey: "true",
+		eligibility.ScaleDownDisabledKey: "true",
 	}
 	// Node info not found.
 	n6 := BuildTestNode("n6", 1000, 10)
