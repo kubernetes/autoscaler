@@ -1249,37 +1249,6 @@ func getCountOfChan(c chan string) int {
 	}
 }
 
-func TestCalculateCoresAndMemoryTotal(t *testing.T) {
-	nodeConfigs := []NodeConfig{
-		{"n1", 2000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n2", 2000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n3", 2000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n4", 12000, 8000 * utils.MiB, 0, true, "ng1"},
-		{"n5", 16000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n6", 8000, 6000 * utils.MiB, 0, true, "ng1"},
-		{"n7", 6000, 16000 * utils.MiB, 0, true, "ng1"},
-	}
-	nodes := make([]*apiv1.Node, len(nodeConfigs))
-	for i, n := range nodeConfigs {
-		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
-		SetNodeReadyState(node, n.Ready, time.Now())
-		nodes[i] = node
-	}
-
-	nodes[6].Spec.Taints = []apiv1.Taint{
-		{
-			Key:    deletetaint.ToBeDeletedTaint,
-			Value:  fmt.Sprint(time.Now().Unix()),
-			Effect: apiv1.TaintEffectNoSchedule,
-		},
-	}
-
-	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(nodes, time.Now())
-
-	assert.Equal(t, int64(42), coresTotal)
-	assert.Equal(t, int64(44000*utils.MiB), memoryTotal)
-}
-
 func TestFilterOutMasters(t *testing.T) {
 	nodeConfigs := []NodeConfig{
 		{"n1", 2000, 4000, 0, false, "ng1"},
@@ -1331,55 +1300,6 @@ func TestFilterOutMasters(t *testing.T) {
 		withoutMastersNames[i] = n.Name
 	}
 	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
-}
-
-func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
-	type testcase struct {
-		limits            scaleDownResourcesLimits
-		delta             scaleDownResourcesDelta
-		exceededResources []string
-	}
-	tests := []testcase{
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 11},
-			exceededResources: []string{"a"},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"b": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
-			delta:             scaleDownResourcesDelta{"a": 0},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
-			delta:             scaleDownResourcesDelta{"a": 1},
-			exceededResources: []string{"a"},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10, "b": 20, "c": 30},
-			delta:             scaleDownResourcesDelta{"a": 11, "b": 20, "c": 31},
-			exceededResources: []string{"a", "c"},
-		},
-	}
-
-	for _, test := range tests {
-		checkResult := test.limits.checkScaleDownDeltaWithinLimits(test.delta)
-		if len(test.exceededResources) == 0 {
-			assert.Equal(t, scaleDownLimitsNotExceeded(), checkResult)
-		} else {
-			assert.Equal(t, scaleDownLimitsCheckResult{true, test.exceededResources}, checkResult)
-		}
-	}
 }
 
 func generateReplicaSets() []*appsv1.ReplicaSet {
