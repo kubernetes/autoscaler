@@ -46,10 +46,6 @@ func TestFilterOutUnremovable(t *testing.T) {
 	justDeletedNode.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-30, 10)}}
 	SetNodeReadyState(justDeletedNode, true, time.Time{})
 
-	tooOldDeletedNode := BuildTestNode("tooOldDeleted", 1000, 10)
-	tooOldDeletedNode.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-301, 10)}}
-	SetNodeReadyState(tooOldDeletedNode, true, time.Time{})
-
 	noScaleDownNode := BuildTestNode("noScaleDown", 1000, 10)
 	noScaleDownNode.Annotations = map[string]string{ScaleDownDisabledKey: "true"}
 	SetNodeReadyState(noScaleDownNode, true, time.Time{})
@@ -75,11 +71,6 @@ func TestFilterOutUnremovable(t *testing.T) {
 			desc:  "recently deleted node is filtered out",
 			nodes: []*apiv1.Node{regularNode, justDeletedNode},
 			want:  []string{"regular"},
-		},
-		{
-			desc:  "deleted long time ago stays",
-			nodes: []*apiv1.Node{regularNode, tooOldDeletedNode},
-			want:  []string{"regular", "tooOldDeleted"},
 		},
 		{
 			desc:  "marked no scale down is filtered out",
