@@ -185,7 +185,7 @@ func (lf *LimitsFinder) DeltaForNode(context *context.AutoscalingContext, node *
 	if cloudprovider.ContainsCustomResources(resourcesWithLimits) {
 		resourceTargets, err := lf.crp.GetNodeResourceTargets(context, node, nodeGroup)
 		if err != nil {
-			return Delta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node %v custom resources: %v", node.Name)
+			return Delta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get node %v custom resources: %v", node.Name)
 		}
 		for _, resourceTarget := range resourceTargets {
 			resultScaleDownDelta[resourceTarget.ResourceType] = resourceTarget.ResourceCount

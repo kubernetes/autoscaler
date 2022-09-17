@@ -96,6 +96,8 @@ type AutoscalingOptions struct {
 	CloudProviderName string
 	// NodeGroups is the list of node groups a.k.a autoscaling targets
 	NodeGroups []string
+	// EnforceNodeGroupMinSize is used to allow CA to scale up the node group to the configured min size if needed.
+	EnforceNodeGroupMinSize bool
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
