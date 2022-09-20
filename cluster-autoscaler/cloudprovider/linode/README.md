@@ -47,7 +47,7 @@ You can see an example of the cloud config file at [examples/cluster-autoscaler-
 | nodegroup \"linode_type\"/min-size" | minimum size for a specific node group | no | global/defaut-min-size-per-linode-type |
 | nodegroup \"linode_type\"/max-size" | maximum size for a specific node group | no | global/defaut-min-size-per-linode-type |
 
-Log levels of intertest for the Linode provider are:
+Log levels of interest for the Linode provider are:
 * 1 (flag: ```--v=1```): basic logging at start;
 * 2 (flag: ```--v=2```): logging of the node group composition at every scan;
 
