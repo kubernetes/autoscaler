@@ -1325,6 +1325,6 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 		ndt = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	sd := NewScaleDown(ctx, NewTestProcessors(), clusterStateRegistry, ndt)
-	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt)
+	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, 0*time.Second)
 	return NewScaleDownWrapper(sd, actuator)
 }
