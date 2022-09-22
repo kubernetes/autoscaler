@@ -238,7 +238,7 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 					if err != nil {
 						errBytes = []byte(fmt.Sprintf("operation failed, but error couldn't be recovered: %v", err))
 					}
-					return fmt.Errorf("error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, errBytes)
+					return fmt.Errorf("error while getting operation %s on %s: %s", operation.Name, operation.TargetLink, errBytes)
 				}
 
 				return nil
