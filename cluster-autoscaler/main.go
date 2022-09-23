@@ -325,6 +325,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
+		opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewAsgTagResourceNodeInfoProvider()
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
 		nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
