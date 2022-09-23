@@ -25,6 +25,8 @@ import (
 const (
 	// ResourceNvidiaGPU is the name of the Nvidia GPU resource.
 	ResourceNvidiaGPU = "nvidia.com/gpu"
+	// ResourceDirectX is the name of the DirectX resource on windows.
+	ResourceDirectX = "microsoft.com/directx"
 	// DefaultGPUType is the type of GPU used in NAP if the user
 	// don't specify what type of GPU his pod wants.
 	DefaultGPUType = "nvidia-tesla-k80"

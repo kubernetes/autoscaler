@@ -84,6 +84,38 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	nodeGpuUnready.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
 	expectedReadiness[nodeGpuUnready.Name] = false
 
+	nodeDirectXReady := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeDirectXReady",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeDirectXReady.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeDirectXReady.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
+	expectedReadiness[nodeDirectXReady.Name] = true
+
+	nodeDirectXUnready := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeDirectXUnready",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeDirectXUnready.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeDirectXUnready.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
+	expectedReadiness[nodeDirectXUnready.Name] = false
+
 	nodeGpuUnready2 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "nodeGpuUnready2",
@@ -124,12 +156,16 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeGpuReady,
 		nodeGpuUnready,
 		nodeGpuUnready2,
+		nodeDirectXReady,
+		nodeDirectXUnready,
 		nodeNoGpuReady,
 	}
 	initialAllNodes := []*apiv1.Node{
 		nodeGpuReady,
 		nodeGpuUnready,
 		nodeGpuUnready2,
+		nodeDirectXReady,
+		nodeDirectXUnready,
 		nodeNoGpuReady,
 		nodeNoGpuUnready,
 	}

@@ -43,10 +43,11 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 	for _, node := range readyNodes {
 		_, hasGpuLabel := node.Labels[context.CloudProvider.GPULabel()]
 		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
+		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
 		// We expect node to have GPU based on label, but it doesn't show up
 		// on node object. Assume the node is still not fully started (installing
 		// GPU drivers).
-		if hasGpuLabel && (!hasGpuAllocatable || gpuAllocatable.IsZero()) {
+		if hasGpuLabel && ((!hasGpuAllocatable || gpuAllocatable.IsZero()) && (!hasDirectXAllocatable || directXAllocatable.IsZero())) {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
