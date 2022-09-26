@@ -259,9 +259,14 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 		req.Instances = append(req.Instances, GenerateInstanceUrl(i))
 	}
 	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
-	wasConflictErr := op != nil && op.HttpErrorStatusCode == http.StatusConflict
-	if !wasConflictErr && err != nil {
-		return err
+
+	if err != nil {
+		if op != nil && op.HttpErrorStatusCode == http.StatusConflict {
+			klog.Warningf("conflicting MIG delete request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, op.HttpErrorMessage)
+		} else {
+			return err
+		}
+
 	}
 	return client.waitForOp(op, migRef.Project, migRef.Zone, true)
 }
