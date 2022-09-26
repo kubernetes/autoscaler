@@ -253,7 +253,8 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []GceRef) error {
 	registerRequest("instance_group_managers", "delete_instances")
 	req := gce.InstanceGroupManagersDeleteInstancesRequest{
-		Instances: []string{},
+		Instances:                      []string{},
+		SkipInstancesOnValidationError: true,
 	}
 	for _, i := range instances {
 		req.Instances = append(req.Instances, GenerateInstanceUrl(i))
