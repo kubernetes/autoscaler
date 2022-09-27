@@ -197,4 +197,6 @@ type AutoscalingOptions struct {
 	MaxNodeGroupBinpackingDuration time.Duration
 	// IgnorePodResourcesis a list of pod resources to ignore when considering a pod for scheduling.
 	IgnorePodResources []string
+	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
+	NodeDeletionBatcherInterval time.Duration
 }

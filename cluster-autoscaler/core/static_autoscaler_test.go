@@ -680,6 +680,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		MaxCoresTotal:                10,
 		MaxMemoryTotal:               100000,
 		ExpendablePodsPriorityCutoff: 10,
+		NodeDeletionBatcherInterval:  0 * time.Second,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
@@ -1399,7 +1400,7 @@ func newScaleDownPlannerAndActuator(t *testing.T, ctx *context.AutoscalingContex
 	ctx.MaxDrainParallelism = 1
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	sd := legacy.NewScaleDown(ctx, p, cs, ndt)
-	actuator := actuation.NewActuator(ctx, cs, ndt)
+	actuator := actuation.NewActuator(ctx, cs, ndt, 0*time.Second)
 	wrapper := legacy.NewScaleDownWrapper(sd, actuator)
 	return wrapper, wrapper
 }

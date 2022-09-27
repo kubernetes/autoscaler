@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -38,6 +37,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
@@ -95,7 +95,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	// No scale down node.
 	n5 := BuildTestNode("n5", 1000, 10)
 	n5.Annotations = map[string]string{
-		ScaleDownDisabledKey: "true",
+		eligibility.ScaleDownDisabledKey: "true",
 	}
 	// Node info not found.
 	n6 := BuildTestNode("n6", 1000, 10)
@@ -1248,139 +1248,6 @@ func getCountOfChan(c chan string) int {
 	}
 }
 
-func TestCalculateCoresAndMemoryTotal(t *testing.T) {
-	nodeConfigs := []NodeConfig{
-		{"n1", 2000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n2", 2000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n3", 2000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n4", 12000, 8000 * utils.MiB, 0, true, "ng1"},
-		{"n5", 16000, 7500 * utils.MiB, 0, true, "ng1"},
-		{"n6", 8000, 6000 * utils.MiB, 0, true, "ng1"},
-		{"n7", 6000, 16000 * utils.MiB, 0, true, "ng1"},
-	}
-	nodes := make([]*apiv1.Node, len(nodeConfigs))
-	for i, n := range nodeConfigs {
-		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
-		SetNodeReadyState(node, n.Ready, time.Now())
-		nodes[i] = node
-	}
-
-	nodes[6].Spec.Taints = []apiv1.Taint{
-		{
-			Key:    deletetaint.ToBeDeletedTaint,
-			Value:  fmt.Sprint(time.Now().Unix()),
-			Effect: apiv1.TaintEffectNoSchedule,
-		},
-	}
-
-	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(nodes, time.Now())
-
-	assert.Equal(t, int64(42), coresTotal)
-	assert.Equal(t, int64(44000*utils.MiB), memoryTotal)
-}
-
-func TestFilterOutMasters(t *testing.T) {
-	nodeConfigs := []NodeConfig{
-		{"n1", 2000, 4000, 0, false, "ng1"},
-		{"n2", 2000, 4000, 0, true, "ng2"},
-		{"n3", 2000, 8000, 0, true, ""}, // real master
-		{"n4", 1000, 2000, 0, true, "ng3"},
-		{"n5", 1000, 2000, 0, true, "ng3"},
-		{"n6", 2000, 8000, 0, true, ""}, // same machine type, no node group, no api server
-		{"n7", 2000, 8000, 0, true, ""}, // real master
-	}
-	nodes := make([]*schedulerframework.NodeInfo, len(nodeConfigs))
-	nodeMap := make(map[string]*schedulerframework.NodeInfo, len(nodeConfigs))
-	for i, n := range nodeConfigs {
-		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
-		SetNodeReadyState(node, n.Ready, time.Now())
-		nodeInfo := schedulerframework.NewNodeInfo()
-		nodeInfo.SetNode(node)
-		nodes[i] = nodeInfo
-		nodeMap[n.Name] = nodeInfo
-	}
-
-	BuildTestPodWithExtra := func(name, namespace, node string, labels map[string]string) *apiv1.Pod {
-		pod := BuildTestPod(name, 100, 200)
-		pod.Spec.NodeName = node
-		pod.Namespace = namespace
-		pod.Labels = labels
-		return pod
-	}
-
-	pods := []*apiv1.Pod{
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n2", map[string]string{}),                                          // without label
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "fake-kube-system", "n6", map[string]string{"component": "kube-apiserver"}),        // wrong namespace
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n3", map[string]string{"component": "kube-apiserver"}),             // real api server
-		BuildTestPodWithExtra("hidden-name", "kube-system", "n7", map[string]string{"component": "kube-apiserver"}),                                  // also a real api server
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n1", map[string]string{"component": "kube-apiserver-dev"}),         // wrong label
-		BuildTestPodWithExtra("custom-deployment", "custom", "n5", map[string]string{"component": "custom-component", "custom-key": "custom-value"}), // unrelated pod
-	}
-
-	for _, pod := range pods {
-		if node, found := nodeMap[pod.Spec.NodeName]; found {
-			node.AddPod(pod)
-		}
-	}
-
-	withoutMasters := filterOutMasters(nodes)
-
-	withoutMastersNames := make([]string, len(withoutMasters))
-	for i, n := range withoutMasters {
-		withoutMastersNames[i] = n.Name
-	}
-	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
-}
-
-func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
-	type testcase struct {
-		limits            scaleDownResourcesLimits
-		delta             scaleDownResourcesDelta
-		exceededResources []string
-	}
-	tests := []testcase{
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 11},
-			exceededResources: []string{"a"},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"b": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
-			delta:             scaleDownResourcesDelta{"a": 0},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
-			delta:             scaleDownResourcesDelta{"a": 1},
-			exceededResources: []string{"a"},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10, "b": 20, "c": 30},
-			delta:             scaleDownResourcesDelta{"a": 11, "b": 20, "c": 31},
-			exceededResources: []string{"a", "c"},
-		},
-	}
-
-	for _, test := range tests {
-		checkResult := test.limits.checkScaleDownDeltaWithinLimits(test.delta)
-		if len(test.exceededResources) == 0 {
-			assert.Equal(t, scaleDownLimitsNotExceeded(), checkResult)
-		} else {
-			assert.Equal(t, scaleDownLimitsCheckResult{true, test.exceededResources}, checkResult)
-		}
-	}
-}
-
 func generateReplicaSets() []*appsv1.ReplicaSet {
 	replicas := int32(5)
 	return []*appsv1.ReplicaSet{
@@ -1404,6 +1271,6 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 		ndt = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	sd := NewScaleDown(ctx, NewTestProcessors(), clusterStateRegistry, ndt)
-	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt)
+	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, 0*time.Second)
 	return NewScaleDownWrapper(sd, actuator)
 }
