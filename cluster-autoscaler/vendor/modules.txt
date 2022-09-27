@@ -1,13 +1,14 @@
 # cloud.google.com/go v0.81.0
 ## explicit
 cloud.google.com/go/compute/metadata
-# github.com/Azure/azure-sdk-for-go v55.8.0+incompatible
+# github.com/Azure/azure-sdk-for-go v66.0.0+incompatible
 ## explicit
 github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute
 github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute
-github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute
+github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute
 github.com/Azure/azure-sdk-for-go/services/containerregistry/mgmt/2019-05-01/containerregistry
 github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice
+github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network
 github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns
@@ -18,11 +19,11 @@ github.com/Azure/azure-sdk-for-go/storage
 github.com/Azure/azure-sdk-for-go/version
 # github.com/Azure/go-autorest v14.2.0+incompatible
 github.com/Azure/go-autorest
-# github.com/Azure/go-autorest/autorest v0.11.22
+# github.com/Azure/go-autorest/autorest v0.11.28
 ## explicit
 github.com/Azure/go-autorest/autorest
 github.com/Azure/go-autorest/autorest/azure
-# github.com/Azure/go-autorest/autorest/adal v0.9.17
+# github.com/Azure/go-autorest/autorest/adal v0.9.21
 ## explicit
 github.com/Azure/go-autorest/autorest/adal
 # github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
@@ -33,7 +34,7 @@ github.com/Azure/go-autorest/autorest/azure/cli
 # github.com/Azure/go-autorest/autorest/date v0.3.0
 ## explicit
 github.com/Azure/go-autorest/autorest/date
-# github.com/Azure/go-autorest/autorest/mocks v0.4.1
+# github.com/Azure/go-autorest/autorest/mocks v0.4.2
 github.com/Azure/go-autorest/autorest/mocks
 # github.com/Azure/go-autorest/autorest/to v0.4.0
 ## explicit
@@ -136,7 +137,6 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/autoscaling
 github.com/aws/aws-sdk-go/service/ec2
 github.com/aws/aws-sdk-go/service/ecr
-github.com/aws/aws-sdk-go/service/eks
 github.com/aws/aws-sdk-go/service/elb
 github.com/aws/aws-sdk-go/service/elbv2
 github.com/aws/aws-sdk-go/service/kms
@@ -201,13 +201,13 @@ github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
 # github.com/euank/go-kmsg-parser v2.0.0+incompatible
 github.com/euank/go-kmsg-parser/kmsgparser
-# github.com/evanphx/json-patch v4.12.0+incompatible
+# github.com/evanphx/json-patch v5.6.0+incompatible
 github.com/evanphx/json-patch
 # github.com/felixge/httpsnoop v1.0.1
 github.com/felixge/httpsnoop
 # github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 github.com/form3tech-oss/jwt-go
-# github.com/fsnotify/fsnotify v1.5.1
+# github.com/fsnotify/fsnotify v1.5.4
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 ## explicit
@@ -234,7 +234,8 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/types
-# github.com/golang-jwt/jwt/v4 v4.0.0
+# github.com/golang-jwt/jwt/v4 v4.4.2
+## explicit
 github.com/golang-jwt/jwt/v4
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 github.com/golang/groupcache/lru
@@ -303,7 +304,7 @@ github.com/google/gnostic/extensions
 github.com/google/gnostic/jsonschema
 github.com/google/gnostic/openapiv2
 github.com/google/gnostic/openapiv3
-# github.com/google/go-cmp v0.5.5
+# github.com/google/go-cmp v0.5.6
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/cmpopts
 github.com/google/go-cmp/cmp/internal/diff
@@ -499,7 +500,7 @@ github.com/storageos/go-api/serror
 github.com/storageos/go-api/types
 # github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.7.1
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
@@ -645,12 +646,12 @@ go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
-# golang.org/x/crypto v0.0.0-20220214200702-86341886e292
+# golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 ## explicit
 golang.org/x/crypto/cryptobyte
 golang.org/x/crypto/cryptobyte/asn1
+golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
-golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
@@ -683,7 +684,7 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20220209214540-3681064d5158
+# golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -745,7 +746,7 @@ google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/protobuf/field_mask
-# google.golang.org/grpc v1.40.0
+# google.golang.org/grpc v1.42.0
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -785,6 +786,7 @@ google.golang.org/grpc/internal/status
 google.golang.org/grpc/internal/syscall
 google.golang.org/grpc/internal/transport
 google.golang.org/grpc/internal/transport/networktype
+google.golang.org/grpc/internal/xds/env
 google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
 google.golang.org/grpc/peer
@@ -1462,7 +1464,7 @@ k8s.io/kube-scheduler/config/v1beta3
 k8s.io/kube-scheduler/extender/v1
 # k8s.io/kubectl v0.0.0 => k8s.io/kubectl v0.24.0
 k8s.io/kubectl/pkg/scale
-# k8s.io/kubelet v0.23.0 => k8s.io/kubelet v0.24.0
+# k8s.io/kubelet v0.23.5 => k8s.io/kubelet v0.24.0
 ## explicit
 k8s.io/kubelet/config/v1alpha1
 k8s.io/kubelet/config/v1beta1
@@ -1820,7 +1822,7 @@ k8s.io/utils/trace
 # sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.30
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client
-# sigs.k8s.io/cloud-provider-azure v1.23.2
+# sigs.k8s.io/cloud-provider-azure v1.23.11
 ## explicit
 sigs.k8s.io/cloud-provider-azure/pkg/auth
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients
@@ -1865,6 +1867,7 @@ sigs.k8s.io/cloud-provider-azure/pkg/azureclients/zoneclient
 sigs.k8s.io/cloud-provider-azure/pkg/cache
 sigs.k8s.io/cloud-provider-azure/pkg/consts
 sigs.k8s.io/cloud-provider-azure/pkg/metrics
+sigs.k8s.io/cloud-provider-azure/pkg/nodemanager
 sigs.k8s.io/cloud-provider-azure/pkg/provider
 sigs.k8s.io/cloud-provider-azure/pkg/retry
 sigs.k8s.io/cloud-provider-azure/pkg/version

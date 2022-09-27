@@ -119,7 +119,7 @@ func (c *Client) getDeployment(ctx context.Context, resourceGroupName string, de
 	)
 	result := resources.DeploymentExtended{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	response, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deployment.get.request", resourceID, rerr.Error())
@@ -179,7 +179,7 @@ func (c *Client) listDeployment(ctx context.Context, resourceGroupName string) (
 	page := &DeploymentResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deployment.list.request", resourceID, rerr.Error())

@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	compute20190701 "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/skewer"
 	"k8s.io/klog/v2"
 	"regexp"

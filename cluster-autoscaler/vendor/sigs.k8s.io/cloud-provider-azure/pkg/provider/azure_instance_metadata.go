@@ -59,18 +59,19 @@ type Subnet struct {
 
 // ComputeMetadata represents compute information
 type ComputeMetadata struct {
-	Environment    string `json:"azEnvironment,omitempty"`
-	SKU            string `json:"sku,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Zone           string `json:"zone,omitempty"`
-	VMSize         string `json:"vmSize,omitempty"`
-	OSType         string `json:"osType,omitempty"`
-	Location       string `json:"location,omitempty"`
-	FaultDomain    string `json:"platformFaultDomain,omitempty"`
-	UpdateDomain   string `json:"platformUpdateDomain,omitempty"`
-	ResourceGroup  string `json:"resourceGroupName,omitempty"`
-	VMScaleSetName string `json:"vmScaleSetName,omitempty"`
-	SubscriptionID string `json:"subscriptionId,omitempty"`
+	Environment            string `json:"azEnvironment,omitempty"`
+	SKU                    string `json:"sku,omitempty"`
+	Name                   string `json:"name,omitempty"`
+	Zone                   string `json:"zone,omitempty"`
+	VMSize                 string `json:"vmSize,omitempty"`
+	OSType                 string `json:"osType,omitempty"`
+	Location               string `json:"location,omitempty"`
+	FaultDomain            string `json:"platformFaultDomain,omitempty"`
+	PlatformSubFaultDomain string `json:"platformSubFaultDomain,omitempty"`
+	UpdateDomain           string `json:"platformUpdateDomain,omitempty"`
+	ResourceGroup          string `json:"resourceGroupName,omitempty"`
+	VMScaleSetName         string `json:"vmScaleSetName,omitempty"`
+	SubscriptionID         string `json:"subscriptionId,omitempty"`
 }
 
 // InstanceMetadata represents instance information.
