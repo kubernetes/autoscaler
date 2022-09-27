@@ -28,7 +28,7 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
@@ -231,6 +231,10 @@ func (az *Cloud) InstanceExists(ctx context.Context, node *v1.Node) (bool, error
 		var err error
 		providerID, err = cloudprovider.GetInstanceProviderID(ctx, az, types.NodeName(node.Name))
 		if err != nil {
+			if strings.Contains(err.Error(), cloudprovider.InstanceNotFound.Error()) {
+				return false, nil
+			}
+
 			klog.Errorf("InstanceExists: failed to get the provider ID by node name %s: %v", node.Name, err)
 			return false, err
 		}

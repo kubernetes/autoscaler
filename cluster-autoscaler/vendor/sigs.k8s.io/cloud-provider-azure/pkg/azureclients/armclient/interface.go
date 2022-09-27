@@ -36,7 +36,7 @@ type PutResourcesResponse struct {
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
 	// Send sends a http request to ARM service with possible retry to regional ARM endpoint.
-	Send(ctx context.Context, request *http.Request) (*http.Response, *retry.Error)
+	Send(ctx context.Context, request *http.Request, decorators ...autorest.SendDecorator) (*http.Response, *retry.Error)
 
 	// PreparePutRequest prepares put request
 	PreparePutRequest(ctx context.Context, decorators ...autorest.PrepareDecorator) (*http.Request, error)
@@ -88,11 +88,11 @@ type Interface interface {
 	// HeadResource heads a resource by resource ID
 	HeadResource(ctx context.Context, resourceID string) (*http.Response, *retry.Error)
 
-	// GetResource get a resource by resource ID
-	GetResource(ctx context.Context, resourceID, expand string) (*http.Response, *retry.Error)
+	// GetResourceWithExpandQuery get a resource by resource ID
+	GetResourceWithExpandQuery(ctx context.Context, resourceID, expand string) (*http.Response, *retry.Error)
 
 	//GetResourceWithDecorators get a resource with decorators by resource ID
-	GetResourceWithDecorators(ctx context.Context, resourceID string, decorators []autorest.PrepareDecorator) (*http.Response, *retry.Error)
+	GetResource(ctx context.Context, resourceID string, decorators ...autorest.PrepareDecorator) (*http.Response, *retry.Error)
 
 	// PostResource posts a resource by resource ID
 	PostResource(ctx context.Context, resourceID, action string, parameters interface{}, queryParameters map[string]interface{}) (*http.Response, *retry.Error)

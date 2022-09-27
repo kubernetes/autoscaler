@@ -127,7 +127,7 @@ func (c *Client) getSubnet(ctx context.Context, resourceGroupName string, virtua
 	)
 	result := network.Subnet{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "subnet.get.request", resourceID, rerr.Error())
@@ -191,7 +191,7 @@ func (c *Client) listSubnet(ctx context.Context, resourceGroupName string, virtu
 	page := &SubnetListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "subnet.list.request", resourceID, rerr.Error())

@@ -128,7 +128,7 @@ func (c *Client) getPublicIPAddress(ctx context.Context, resourceGroupName strin
 	)
 	result := network.PublicIPAddress{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "publicip.get.request", resourceID, rerr.Error())
@@ -205,7 +205,7 @@ func (c *Client) getVMSSPublicIPAddress(ctx context.Context, resourceGroupName s
 	decorators := []autorest.PrepareDecorator{
 		autorest.WithQueryParameters(queryParameters),
 	}
-	response, rerr := c.armClient.GetResourceWithDecorators(ctx, resourceID, decorators)
+	response, rerr := c.armClient.GetResource(ctx, resourceID, decorators...)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmsspublicip.get.request", resourceID, rerr.Error())
@@ -265,7 +265,7 @@ func (c *Client) listPublicIPAddress(ctx context.Context, resourceGroupName stri
 	page := &PublicIPAddressListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "publicip.list.request", resourceID, rerr.Error())
@@ -531,7 +531,7 @@ func (c *Client) listAllPublicIPAddress(ctx context.Context) ([]network.PublicIP
 	page := &PublicIPAddressListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "publicip.listall.request", resourceID, rerr.Error())

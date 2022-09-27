@@ -1,3 +1,5 @@
+// Deprecated: Please note, this package has been deprecated. A replacement package is available [github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork). We strongly encourage you to upgrade to continue receiving updates. See [Migration Guide](https://aka.ms/azsdk/golang/t2/migration) for guidance on upgrading. Refer to our [deprecation policy](https://azure.github.io/azure-sdk/policies_support.html) for more details.
+//
 // Package network implements the Azure ARM Network service API version .
 //
 // Network Client
@@ -145,7 +147,7 @@ func (client BaseClient) DeleteBastionShareableLink(ctx context.Context, resourc
 
 	result, err = client.DeleteBastionShareableLinkSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.BaseClient", "DeleteBastionShareableLink", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.BaseClient", "DeleteBastionShareableLink", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -179,6 +181,7 @@ func (client BaseClient) DeleteBastionShareableLinkPreparer(ctx context.Context,
 // http.Response Body if it receives an error.
 func (client BaseClient) DeleteBastionShareableLinkSender(req *http.Request) (future DeleteBastionShareableLinkFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -347,7 +350,7 @@ func (client BaseClient) Generatevirtualwanvpnserverconfigurationvpnprofile(ctx 
 
 	result, err = client.GeneratevirtualwanvpnserverconfigurationvpnprofileSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.BaseClient", "Generatevirtualwanvpnserverconfigurationvpnprofile", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.BaseClient", "Generatevirtualwanvpnserverconfigurationvpnprofile", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -381,6 +384,7 @@ func (client BaseClient) GeneratevirtualwanvpnserverconfigurationvpnprofilePrepa
 // http.Response Body if it receives an error.
 func (client BaseClient) GeneratevirtualwanvpnserverconfigurationvpnprofileSender(req *http.Request) (future GeneratevirtualwanvpnserverconfigurationvpnprofileFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -427,7 +431,7 @@ func (client BaseClient) GetActiveSessions(ctx context.Context, resourceGroupNam
 
 	result, err = client.GetActiveSessionsSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.BaseClient", "GetActiveSessions", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.BaseClient", "GetActiveSessions", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -459,6 +463,7 @@ func (client BaseClient) GetActiveSessionsPreparer(ctx context.Context, resource
 // http.Response Body if it receives an error.
 func (client BaseClient) GetActiveSessionsSender(req *http.Request) (future GetActiveSessionsFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -668,7 +673,7 @@ func (client BaseClient) PutBastionShareableLink(ctx context.Context, resourceGr
 
 	result, err = client.PutBastionShareableLinkSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.BaseClient", "PutBastionShareableLink", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.BaseClient", "PutBastionShareableLink", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -702,6 +707,7 @@ func (client BaseClient) PutBastionShareableLinkPreparer(ctx context.Context, re
 // http.Response Body if it receives an error.
 func (client BaseClient) PutBastionShareableLinkSender(req *http.Request) (future PutBastionShareableLinkFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
