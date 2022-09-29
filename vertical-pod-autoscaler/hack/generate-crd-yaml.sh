@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 REPOSITORY_ROOT=$(realpath $(dirname ${BASH_SOURCE})/..)
-CRD_OPTS=crd:trivialVersions=false,allowDangerousTypes=true
+CRD_OPTS=crd:allowDangerousTypes=true
 APIS_PATH=${REPOSITORY_ROOT}/pkg/apis
 OUTPUT=${REPOSITORY_ROOT}/deploy/vpa-v1-crd-gen.yaml
 WORKSPACE=$(mktemp -d)
@@ -32,8 +32,7 @@ trap cleanup EXIT
 if [[ -z $(which controller-gen) ]]; then
     (
         cd $WORKSPACE
-	      go mod init tmp
-	      go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.0
+	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@0.9.2
     )
     CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
 else
