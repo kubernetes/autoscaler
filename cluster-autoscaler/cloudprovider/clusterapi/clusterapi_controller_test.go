@@ -581,32 +581,32 @@ func deleteTestConfigs(t *testing.T, controller *machineController, testConfigs 
 
 func TestControllerFindMachine(t *testing.T) {
 	type testCase struct {
-		description             string
-		name                    string
-		namespace               string
-		useDeprecatedAnnotation bool
-		lookupSucceeds          bool
+		description    string
+		name           string
+		namespace      string
+		useAnnotation  bool
+		lookupSucceeds bool
 	}
 
 	var testCases = []testCase{{
-		description:             "lookup fails",
-		lookupSucceeds:          false,
-		useDeprecatedAnnotation: false,
-		name:                    "machine-does-not-exist",
-		namespace:               "namespace-does-not-exist",
+		description:    "lookup fails",
+		lookupSucceeds: false,
+		useAnnotation:  false,
+		name:           "machine-does-not-exist",
+		namespace:      "namespace-does-not-exist",
 	}, {
-		description:             "lookup fails in valid namespace",
-		lookupSucceeds:          false,
-		useDeprecatedAnnotation: false,
-		name:                    "machine-does-not-exist-in-existing-namespace",
+		description:    "lookup fails in valid namespace",
+		lookupSucceeds: false,
+		useAnnotation:  false,
+		name:           "machine-does-not-exist-in-existing-namespace",
 	}, {
-		description:             "lookup succeeds",
-		lookupSucceeds:          true,
-		useDeprecatedAnnotation: false,
+		description:    "lookup succeeds",
+		lookupSucceeds: true,
+		useAnnotation:  false,
 	}, {
-		description:             "lookup succeeds with deprecated annotation",
-		lookupSucceeds:          true,
-		useDeprecatedAnnotation: true,
+		description:    "lookup succeeds with annotation",
+		lookupSucceeds: true,
+		useAnnotation:  true,
 	}}
 
 	test := func(t *testing.T, tc testCase, testConfig *testConfig) {
@@ -644,7 +644,7 @@ func TestControllerFindMachine(t *testing.T) {
 			if tc.namespace == "" {
 				tc.namespace = testConfig.machines[0].GetNamespace()
 			}
-			if tc.useDeprecatedAnnotation {
+			if tc.useAnnotation {
 				for i := range testConfig.machines {
 					n := testConfig.nodes[i]
 					annotations := n.GetAnnotations()
