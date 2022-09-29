@@ -141,14 +141,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Look for nodes to remove in the current candidates
-	nodesToRemove, unremovable, simulatorErr := sd.removalSimulator.FindNodesToRemove(
+	nodesToRemove, unremovable := sd.removalSimulator.FindNodesToRemove(
 		currentCandidates,
 		destinations,
 		timestamp,
 		pdbs)
-	if simulatorErr != nil {
-		return sd.markSimulationError(simulatorErr, timestamp)
-	}
 
 	additionalCandidatesCount := sd.context.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
 	if additionalCandidatesCount > len(currentNonCandidates) {
@@ -165,15 +162,12 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	if additionalCandidatesCount > 0 {
 		// Look for additional nodes to remove among the rest of nodes.
 		klog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
-		additionalNodesToRemove, additionalUnremovable, simulatorErr :=
+		additionalNodesToRemove, additionalUnremovable :=
 			sd.removalSimulator.FindNodesToRemove(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinations,
 				timestamp,
 				pdbs)
-		if simulatorErr != nil {
-			return sd.markSimulationError(simulatorErr, timestamp)
-		}
 		if len(additionalNodesToRemove) > additionalCandidatesCount {
 			additionalNodesToRemove = additionalNodesToRemove[:additionalCandidatesCount]
 		}
@@ -221,16 +215,6 @@ func (sd *ScaleDown) NodeUtilizationMap() map[string]utilization.Info {
 // the scale down algorithm.
 func (sd *ScaleDown) UnremovableNodes() []*simulator.UnremovableNode {
 	return sd.unremovableNodes.AsList()
-}
-
-// markSimulationError indicates a simulation error by clearing relevant scale
-// down state and returning an appropriate error.
-func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
-	timestamp time.Time) errors.AutoscalerError {
-	klog.Errorf("Error while simulating node drains: %v", simulatorErr)
-	sd.unneededNodes.Clear()
-	sd.nodeUtilizationMap = make(map[string]utilization.Info)
-	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
 
 // chooseCandidates splits nodes into current candidates for scale-down and the
@@ -327,7 +311,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 	}
 
 	findNodesToRemoveStart := time.Now()
-	nodesToRemove, unremovable, err := sd.removalSimulator.FindNodesToRemove(
+	nodesToRemove, unremovable := sd.removalSimulator.FindNodesToRemove(
 		candidateNames,
 		allNodeNames,
 		time.Now(),
@@ -336,9 +320,6 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 
 	for _, unremovableNode := range unremovable {
 		sd.unremovableNodes.Add(unremovableNode)
-	}
-	if err != nil {
-		return nil, nil, status.ScaleDownError, err.AddPrefix("Find node to remove failed: ")
 	}
 
 	nodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, nodesToRemove, 1)
