@@ -28,10 +28,6 @@ import (
 )
 
 const (
-	deprecatedNodeGroupMinSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
-	deprecatedNodeGroupMaxSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
-	deprecatedClusterNameLabel              = "cluster.k8s.io/cluster-name"
-
 	cpuKey      = "capacity.cluster-autoscaler.kubernetes.io/cpu"
 	memoryKey   = "capacity.cluster-autoscaler.kubernetes.io/memory"
 	gpuTypeKey  = "capacity.cluster-autoscaler.kubernetes.io/gpu-type"
