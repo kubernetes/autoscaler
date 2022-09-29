@@ -168,6 +168,10 @@ type AutoscalingOptions struct {
 	ConcurrentGceRefreshes int
 	// Path to kube configuration if available
 	KubeConfigPath string
+	// Burst setting for kubernetes client
+	KubeClientBurst int
+	// QPS setting for kubernetes client
+	KubeClientQPS float64
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
