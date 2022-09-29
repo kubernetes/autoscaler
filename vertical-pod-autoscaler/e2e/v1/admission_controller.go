@@ -241,15 +241,23 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 	ginkgo.It("starts pod with default request when one container has a recommendation and one other one doesn't when a limit range applies", func() {
 		d := NewNHamstersDeployment(f, 2)
-		InstallLimitRangeWithMax(f, "300m", "1Gi", apiv1.LimitTypeContainer)
+		InstallLimitRangeWithMax(f, "400m", "1Gi", apiv1.LimitTypePod)
 
 		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
 		}
-		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
 		}
 		klog.Infof("d: %+v", d)
 		ginkgo.By("Setting up a VPA CRD")
@@ -259,10 +267,17 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 				{
 					ContainerName: "hamster",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
-						apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+						apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
 					},
 				},
+			},
+		}
+		mod := vpa_types.ContainerControlledValuesRequestsAndLimits
+		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{
+			{
+				ContainerName:    "*",
+				ControlledValues: &mod,
 			},
 		}
 		InstallVPA(f, vpaCRD)
@@ -270,15 +285,15 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := startDeploymentPods(f, d)
 
-		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
-		// should change it to recommended 250m CPU and 200Mi of memory.
+		// Originally both containers in each Pod had 400m CPU (one from
+		// recommendation the other one from request), 600Mi of memory (similarly),
+		// but admission controller should change it to recommended 200m CPU
+		// (1/2 of max in limit range) and 512Mi of memory (similarly).
 		for _, pod := range podList.Items {
-			// This is a bug; VPA should behave here like it does without a limit range
-			// It should have expectations like "tarts pod with recommendation when one container has a recommendation and one other one doesn't"
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
-			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
-			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("512Mi")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("512Mi")))
 		}
 	})
 
