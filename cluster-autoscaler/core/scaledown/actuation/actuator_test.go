@@ -940,25 +940,22 @@ func TestStartDeletion(t *testing.T) {
 }
 
 func TestStartDeletionInBatchBasic(t *testing.T) {
-	testNg1 := testprovider.NewTestNodeGroup("test-ng-1", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
-	testNg2 := testprovider.NewTestNodeGroup("test-ng-2", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
-	testNg3 := testprovider.NewTestNodeGroup("test-ng-3", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
 	deleteInterval := 1 * time.Second
 
 	for _, test := range []struct {
 		name                   string
 		deleteCalls            int
-		numNodesToDelete       map[*testprovider.TestNodeGroup][]int //per node group and per call
-		failedRequests         map[string]bool                       //per node group
-		wantSuccessfulDeletion map[string]int                        //per node group
+		numNodesToDelete       map[string][]int //per node group and per call
+		failedRequests         map[string]bool  //per node group
+		wantSuccessfulDeletion map[string]int   //per node group
 	}{
 		{
 			name:        "Succesfull deletion for all node group",
 			deleteCalls: 1,
-			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
-				testNg1: {4},
-				testNg2: {5},
-				testNg3: {1},
+			numNodesToDelete: map[string][]int{
+				"test-ng-1": {4},
+				"test-ng-2": {5},
+				"test-ng-3": {1},
 			},
 			wantSuccessfulDeletion: map[string]int{
 				"test-ng-1": 4,
@@ -969,10 +966,10 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 		{
 			name:        "Node deletion failed for one group",
 			deleteCalls: 1,
-			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
-				testNg1: {4},
-				testNg2: {5},
-				testNg3: {1},
+			numNodesToDelete: map[string][]int{
+				"test-ng-1": {4},
+				"test-ng-2": {5},
+				"test-ng-3": {1},
 			},
 			failedRequests: map[string]bool{
 				"test-ng-1": true,
@@ -986,10 +983,10 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 		{
 			name:        "Node deletion failed for one group two times",
 			deleteCalls: 2,
-			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
-				testNg1: {4, 3},
-				testNg2: {5},
-				testNg3: {1},
+			numNodesToDelete: map[string][]int{
+				"test-ng-1": {4, 3},
+				"test-ng-2": {5},
+				"test-ng-3": {1},
 			},
 			failedRequests: map[string]bool{
 				"test-ng-1": true,
@@ -1003,10 +1000,10 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 		{
 			name:        "Node deletion failed for all groups",
 			deleteCalls: 2,
-			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
-				testNg1: {4, 3},
-				testNg2: {5},
-				testNg3: {1},
+			numNodesToDelete: map[string][]int{
+				"test-ng-1": {4, 3},
+				"test-ng-2": {5},
+				"test-ng-3": {1},
 			},
 			failedRequests: map[string]bool{
 				"test-ng-1": true,
@@ -1041,7 +1038,16 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			for i := 0; i < test.deleteCalls; i++ {
 				deleteNodes = append(deleteNodes, []*apiv1.Node{})
 			}
-			for ng, numNodes := range test.numNodesToDelete {
+			testNg1 := testprovider.NewTestNodeGroup("test-ng-1", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+			testNg2 := testprovider.NewTestNodeGroup("test-ng-2", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+			testNg3 := testprovider.NewTestNodeGroup("test-ng-3", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+			testNg := map[string]*testprovider.TestNodeGroup{
+				"test-ng-1": testNg1,
+				"test-ng-2": testNg2,
+				"test-ng-3": testNg3,
+			}
+			for ngName, numNodes := range test.numNodesToDelete {
+				ng := testNg[ngName]
 				provider.InsertNodeGroup(ng)
 				ng.SetCloudProvider(provider)
 				for i, num := range numNodes {
