@@ -1,14 +1,10 @@
 approvers:
-- piosz
-- aleksandra-malinowska
-- losipiuk
-- schylek
 - kgolab
 reviewers:
 - feiskyer
-- piosz
-- aleksandra-malinowska
-- losipiuk
-- schylek
 - kgolab
-
+emeritus_approvers:
+- piosz # 2022-09-30
+- aleksandra-malinowska # 2022-09-30
+- losipiuk # 2022-09-30
+- schylek # 2022-09-30
