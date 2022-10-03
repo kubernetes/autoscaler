@@ -32,6 +32,7 @@ import (
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
+	klog "k8s.io/klog/v2"
 )
 
 var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
@@ -62,6 +63,110 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		for _, pod := range podList.Items {
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+		}
+	})
+
+	ginkgo.It("starts pods with new recommended request when recommendation includes an extra container", func() {
+		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "removed",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("500m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("500Mi"),
+					},
+				},
+				{
+					ContainerName: "hamster",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+					},
+				},
+			},
+		}
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to recommended 250m CPU and 200Mi of memory.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+		}
+	})
+
+	ginkgo.It("starts pods with old recommended request when recommendation has only a container that doesn't match", func() {
+		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "removed",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+					},
+				},
+			},
+		}
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to recommended 250m CPU and 200Mi of memory.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+		}
+	})
+
+	ginkgo.It("starts pod with recommendation when one container has a recommendation and one other one doesn't", func() {
+		d := NewNHamstersDeployment(f, 2)
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+		klog.Infof("d: %+v", d)
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "hamster",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+					},
+				},
+			},
+		}
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to recommended 250m CPU and 200Mi of memory.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
 		}
 	})
 
