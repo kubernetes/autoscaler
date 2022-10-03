@@ -77,12 +77,12 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["create","list","watch"]
+    verbs: ["create", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps"]
-    resourceNames: ["cluster-autoscaler-status", "cluster-autoscaler-priority-expander"]
+    resourceNames:
+      ["cluster-autoscaler-status", "cluster-autoscaler-priority-expander"]
     verbs: ["delete", "get", "update", "watch"]
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -99,7 +99,6 @@ subjects:
   - kind: ServiceAccount
     name: cluster-autoscaler
     namespace: kube-system
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -117,7 +116,6 @@ subjects:
   - kind: ServiceAccount
     name: cluster-autoscaler
     namespace: kube-system
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -136,12 +134,12 @@ spec:
       labels:
         app: cluster-autoscaler
       annotations:
-        prometheus.io/scrape: 'true'
-        prometheus.io/port: '8085'
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8085"
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:latest  # or your custom image
+        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.25.0 # or your custom image
           name: cluster-autoscaler
           imagePullPolicy: Always
           resources:
@@ -164,33 +162,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: api-url
-                  name: cluster-autoscaler
+                  name: civo-api-access
             - name: CIVO_API_KEY
               valueFrom:
                 secretKeyRef:
                   key: api-key
-                  name: cluster-autoscaler
+                  name: civo-api-access
             - name: CIVO_CLUSTER_ID
               valueFrom:
                 secretKeyRef:
                   key: cluster-id
-                  name: cluster-autoscaler
+                  name: civo-api-access
             - name: CIVO_REGION
               valueFrom:
                 secretKeyRef:
                   key: region
-                  name: cluster-autoscaler
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-type: Opaque
-stringData:
-  api-url: "http://api.civo.com"
-  api-key: "CJoNKBnMqGSFPma1e8tSOZm9DBsKQGKUlcVfhCBiGU2kWMWnam"
-  cluster-id: "43fd01e1-d063-4c32-8b35-0c94be18caac"
-  region: "DEV"
+                  name: civo-api-access
