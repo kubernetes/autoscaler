@@ -49,8 +49,8 @@ const (
 	bootDiskTypeLabel             = "cloud.google.com/gke-boot-disk"
 )
 
-// DefaultBootDiskSize is 100 GB.
-const DefaultBootDiskSize = 100 * units.GB
+// DefaultBootDiskSizeGB is 100 GB.
+const DefaultBootDiskSizeGB = 100
 
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices are in USD.
@@ -95,8 +95,8 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		// Boot disk price
 		bootDiskSize, _ := strconv.ParseInt(node.Annotations[BootDiskSizeAnnotation], 10, 64)
 		if bootDiskSize == 0 {
-			klog.Errorf("Boot disk size is not found for node %s, using default size %v", node.Name, DefaultBootDiskSize)
-			bootDiskSize = DefaultBootDiskSize
+			klog.Errorf("Boot disk size is not found for node %s, using default size %v", node.Name, DefaultBootDiskSizeGB)
+			bootDiskSize = DefaultBootDiskSizeGB
 		}
 		bootDiskType := node.Annotations[BootDiskTypeAnnotation]
 		if val, ok := node.Labels[bootDiskTypeLabel]; ok {
