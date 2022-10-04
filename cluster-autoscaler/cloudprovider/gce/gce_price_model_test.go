@@ -213,6 +213,12 @@ func TestGetNodePrice(t *testing.T) {
 			priceComparisonCoefficient: 1,
 			expanderSupport:            true,
 		},
+		"node with default boot disk is cheaper that node with more expensive boot disk type": {
+			cheaperNode:                testNode(t, "cheapNode", "", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNodeEphemeralStorage(t, "expensiveNode", false, 0, "pd-ssd", 100, false),
+			priceComparisonCoefficient: 1,
+			expanderSupport:            true,
+		},
 	}
 
 	for tn, tc := range cases {
