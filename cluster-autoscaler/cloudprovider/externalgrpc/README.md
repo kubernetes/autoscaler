@@ -19,7 +19,7 @@ For the cluster autoscaler parameters, use the `--cloud-provider=externalgrpc` f
 
 The use of mTLS is recommended, since simple, non-authenticated calls to the external gRPC cloud provider service will result in the creation / deletion of nodes.
 
-Log levels of intertest for this provider are:
+Log levels of interest for this provider are:
 * 1 (flag: ```--v=1```): basic logging of errors;
 * 5 (flag: ```--v=5```): detailed logging of every call;
 
