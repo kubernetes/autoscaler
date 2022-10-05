@@ -27,6 +27,7 @@ import (
 	log "github.com/golang/glog"
 	inf "gopkg.in/inf.v0"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/addon-resizer/healthcheck"
 )
 
 type operation int
@@ -99,7 +100,7 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the number of nodes, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64) {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -112,6 +113,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult); lastResult == overwrite {
 			lastChange = time.Now()
 		}
+		hc.UpdateLastActivity()
 	}
 }
 
