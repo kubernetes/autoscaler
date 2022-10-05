@@ -108,6 +108,7 @@ type Config struct {
 		DomainName      string `gcfg:"domain-name"`
 		Region          string
 		CAFile          string `gcfg:"ca-file"`
+		TLSInsecure     string `gcfg:"tls-insecure"`
 		SecretName      string `gcfg:"secret-name"`
 		SecretNamespace string `gcfg:"secret-namespace"`
 	}
@@ -169,15 +170,16 @@ func createProviderClient(cfg *Config, opts config.AutoscalingOptions) (*gopherc
 
 	klog.V(5).Infof("Using user-agent %q", userAgent.Join())
 
+	config := &tls.Config{}
+	config.InsecureSkipVerify = cfg.Global.TLSInsecure == "true"
 	if cfg.Global.CAFile != "" {
 		roots, err := certutil.NewPool(cfg.Global.CAFile)
 		if err != nil {
 			return nil, err
 		}
-		config := &tls.Config{}
 		config.RootCAs = roots
-		provider.HTTPClient.Transport = netutil.SetOldTransportDefaults(&http.Transport{TLSClientConfig: config})
 	}
+	provider.HTTPClient.Transport = netutil.SetOldTransportDefaults(&http.Transport{TLSClientConfig: config})
 
 	err = openstack.AuthenticateV3(provider, authOpts, gophercloud.EndpointOpts{})
 	if err != nil {
