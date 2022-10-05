@@ -27,6 +27,7 @@ var (
 	podMinCPUMillicores  = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
 	podMinMemoryMb       = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
 	targetCPUPercentile  = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	targetMemoryPeaksPercentile  = flag.Float64("target-memory-peaks-percentile", 0.9, "Memory usage percentile that will be used as a base for memory peak target recommendation. ")	
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -103,11 +104,10 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	lowerBoundCPUPercentile := 0.5
 	upperBoundCPUPercentile := 0.95
 
-	targetMemoryPeaksPercentile := 0.9
 	lowerBoundMemoryPeaksPercentile := 0.5
 	upperBoundMemoryPeaksPercentile := 0.95
 
-	targetEstimator := NewPercentileEstimator(*targetCPUPercentile, targetMemoryPeaksPercentile)
+	targetEstimator := NewPercentileEstimator(*targetCPUPercentile, *targetMemoryPeaksPercentile)
 	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
 	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
