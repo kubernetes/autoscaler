@@ -28,7 +28,7 @@ type InstanceType struct {
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
-var StaticListLastUpdateTime = "2022-05-30"
+var StaticListLastUpdateTime = "2022-09-16"
 
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*InstanceType{
@@ -2468,6 +2468,13 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:          0,
 		Architecture: "amd64",
 	},
+	"mac2.metal": {
+		InstanceType: "mac2.metal",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+		Architecture: "amd64",
+	},
 	"p2.16xlarge": {
 		InstanceType: "p2.16xlarge",
 		VCPU:         64,
@@ -3028,6 +3035,83 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:          0,
 		Architecture: "amd64",
 	},
+	"r6a.12xlarge": {
+		InstanceType: "r6a.12xlarge",
+		VCPU:         48,
+		MemoryMb:     393216,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.16xlarge": {
+		InstanceType: "r6a.16xlarge",
+		VCPU:         64,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.24xlarge": {
+		InstanceType: "r6a.24xlarge",
+		VCPU:         96,
+		MemoryMb:     786432,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.2xlarge": {
+		InstanceType: "r6a.2xlarge",
+		VCPU:         8,
+		MemoryMb:     65536,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.32xlarge": {
+		InstanceType: "r6a.32xlarge",
+		VCPU:         128,
+		MemoryMb:     1048576,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.48xlarge": {
+		InstanceType: "r6a.48xlarge",
+		VCPU:         192,
+		MemoryMb:     1572864,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.4xlarge": {
+		InstanceType: "r6a.4xlarge",
+		VCPU:         16,
+		MemoryMb:     131072,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.8xlarge": {
+		InstanceType: "r6a.8xlarge",
+		VCPU:         32,
+		MemoryMb:     262144,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.large": {
+		InstanceType: "r6a.large",
+		VCPU:         2,
+		MemoryMb:     16384,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.metal": {
+		InstanceType: "r6a.metal",
+		VCPU:         192,
+		MemoryMb:     1572864,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6a.xlarge": {
+		InstanceType: "r6a.xlarge",
+		VCPU:         4,
+		MemoryMb:     32768,
+		GPU:          0,
+		Architecture: "amd64",
+	},
 	"r6g.12xlarge": {
 		InstanceType: "r6g.12xlarge",
 		VCPU:         48,
@@ -3219,6 +3303,76 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"r6i.xlarge": {
 		InstanceType: "r6i.xlarge",
+		VCPU:         4,
+		MemoryMb:     32768,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.12xlarge": {
+		InstanceType: "r6id.12xlarge",
+		VCPU:         48,
+		MemoryMb:     393216,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.16xlarge": {
+		InstanceType: "r6id.16xlarge",
+		VCPU:         64,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.24xlarge": {
+		InstanceType: "r6id.24xlarge",
+		VCPU:         96,
+		MemoryMb:     786432,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.2xlarge": {
+		InstanceType: "r6id.2xlarge",
+		VCPU:         8,
+		MemoryMb:     65536,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.32xlarge": {
+		InstanceType: "r6id.32xlarge",
+		VCPU:         128,
+		MemoryMb:     1048576,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.4xlarge": {
+		InstanceType: "r6id.4xlarge",
+		VCPU:         16,
+		MemoryMb:     131072,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.8xlarge": {
+		InstanceType: "r6id.8xlarge",
+		VCPU:         32,
+		MemoryMb:     262144,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.large": {
+		InstanceType: "r6id.large",
+		VCPU:         2,
+		MemoryMb:     16384,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.metal": {
+		InstanceType: "r6id.metal",
+		VCPU:         128,
+		MemoryMb:     1048576,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"r6id.xlarge": {
+		InstanceType: "r6id.xlarge",
 		VCPU:         4,
 		MemoryMb:     32768,
 		GPU:          0,
