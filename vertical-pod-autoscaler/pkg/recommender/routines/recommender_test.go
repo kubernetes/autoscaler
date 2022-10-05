@@ -68,7 +68,7 @@ func TestSortedRecommendation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			namespace := "test-namespace"
 			vpa := model.NewVpa(model.VpaID{Namespace: namespace, VpaName: "my-vpa"}, labels.Nothing(), time.Unix(0, 0))
-			vpa.UpdateRecommendation(getCappedRecommendation(vpa.ID, tc.resources, nil))
+			vpa.UpdateRecommendation(logic.MapToListOfRecommendedContainerResources(tc.resources))
 			// Check that the slice is in the correct order.
 			for i := range vpa.Recommendation.ContainerRecommendations {
 				assert.Equal(t, tc.expectedLast[i], vpa.Recommendation.ContainerRecommendations[i].ContainerName)

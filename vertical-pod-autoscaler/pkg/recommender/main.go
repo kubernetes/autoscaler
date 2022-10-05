@@ -57,6 +57,7 @@ var (
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
+	postProcessors      = flag.String("recommendation-post-processors", "capping", "Coma separated list of post processor names.")
 )
 
 // Aggregation configuration flags
@@ -82,7 +83,11 @@ func main() {
 	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName)
+	validatedPostProcessors, err := routines.ParsePostProcessors(*postProcessors, true)
+	if err != nil {
+		klog.Fatalf("Failed to build post processors: %v", err)
+	}
+	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName, validatedPostProcessors)
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
