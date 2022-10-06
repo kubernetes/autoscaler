@@ -224,8 +224,8 @@ priority pod preemption.
 Older versions of CA won't take priorities into account.
 
 More about Pod Priority and Preemption:
- * [Priority in Kubernetes API](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-priority-api.md),
- * [Pod Preemption in Kubernetes](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-preemption.md),
+ * [Priority in Kubernetes API](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-priority-api.md),
+ * [Pod Preemption in Kubernetes](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-preemption.md),
  * [Pod Priority and Preemption tutorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
 
 ### How does Cluster Autoscaler remove nodes?
