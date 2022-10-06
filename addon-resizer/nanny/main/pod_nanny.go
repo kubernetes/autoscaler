@@ -30,6 +30,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
 	nannyscheme "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/scheme"
 	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
@@ -61,6 +62,7 @@ var (
 	estimator      = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
 	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of nodes resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
 	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.")
+	hcAddress      = flag.String("healthcheck-address", ":8080", "The address to expose an HTTP health-check on.")
 )
 
 func main() {
@@ -159,8 +161,12 @@ func main() {
 		glog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
+	period := time.Duration(*pollPeriod) * time.Millisecond
+	hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
+	hc.Serve()
+
 	// Begin nannying.
-	nanny.PollAPIServer(k8s, est, time.Duration(*pollPeriod)*time.Millisecond, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
+	nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
 }
 
 func userAgent() string {
