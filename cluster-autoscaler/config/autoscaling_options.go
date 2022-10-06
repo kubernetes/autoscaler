@@ -197,4 +197,13 @@ type AutoscalingOptions struct {
 	MaxNodeGroupBinpackingDuration time.Duration
 	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
 	NodeDeletionBatcherInterval time.Duration
+	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)
+	SkipNodesWithSystemPods bool
+	// SkipNodesWithLocalStorage tells if nodes with pods with local storage, e.g. EmptyDir or HostPath, should be deleted
+	SkipNodesWithLocalStorage bool
+	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
+	// to allow their pods deletion in scale down
+	MinReplicaCount int
+	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
+	NodeDeleteDelayAfterTaint time.Duration
 }

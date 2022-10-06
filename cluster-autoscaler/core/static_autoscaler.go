@@ -154,9 +154,15 @@ func NewStaticAutoscaler(
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
+	deleteOptions := simulator.NodeDeleteOptions{
+		SkipNodesWithSystemPods:   opts.SkipNodesWithSystemPods,
+		SkipNodesWithLocalStorage: opts.SkipNodesWithLocalStorage,
+		MinReplicaCount:           opts.MinReplicaCount,
+	}
+
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry, ndt)
-	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, opts.NodeDeletionBatcherInterval)
+	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry, ndt, deleteOptions)
+	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions)
 	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
 	processorCallbacks.scaleDownPlanner = scaleDownWrapper
 

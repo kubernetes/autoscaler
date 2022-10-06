@@ -646,7 +646,7 @@ func TestDrain(t *testing.T) {
 
 		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
-		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, testTime)
+		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, registry, 0, testTime)
 
 		if test.expectFatal {
 			assert.Equal(t, test.expectBlockingPod, blockingPod)
