@@ -17,7 +17,6 @@ limitations under the License.
 package simulator
 
 import (
-	"flag"
 	"fmt"
 	"time"
 
@@ -31,17 +30,6 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
-)
-
-var (
-	skipNodesWithSystemPods = flag.Bool("skip-nodes-with-system-pods", true,
-		"If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet "+
-			"or mirror pods)")
-	skipNodesWithLocalStorage = flag.Bool("skip-nodes-with-local-storage", true,
-		"If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
-
-	minReplicaCount = flag.Int("min-replica-count", 0,
-		"Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 )
 
 // NodeToBeRemoved contain information about a node that can be removed.
@@ -102,16 +90,19 @@ type RemovalSimulator struct {
 	predicateChecker PredicateChecker
 	usageTracker     *UsageTracker
 	canPersist       bool
+	deleteOptions    NodeDeleteOptions
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, usageTracker *UsageTracker, persistSuccessfulSimulations bool) *RemovalSimulator {
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker,
+	usageTracker *UsageTracker, deleteOptions NodeDeleteOptions, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:          listers,
 		clusterSnapshot:  clusterSnapshot,
 		predicateChecker: predicateChecker,
 		usageTracker:     usageTracker,
 		canPersist:       persistSuccessfulSimulations,
+		deleteOptions:    deleteOptions,
 	}
 }
 
@@ -166,8 +157,7 @@ func (r *RemovalSimulator) CheckNodeRemoval(
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
-	podsToRemove, daemonSetPods, blockingPod, err := DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods,
-		*skipNodesWithLocalStorage, r.listers, int32(*minReplicaCount), pdbs, timestamp)
+	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.listers, pdbs, timestamp)
 	if err != nil {
 		klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
 		if blockingPod != nil {
@@ -200,8 +190,8 @@ func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp
 			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
 			continue
 		}
-		// Should block on all pods.
-		podsToRemove, _, _, err := FastGetPodsToMove(nodeInfo, true, true, nil, timestamp)
+		// Should block on all pods
+		podsToRemove, _, _, err := GetPodsToMove(nodeInfo, r.deleteOptions, nil, nil, timestamp)
 		if err == nil && len(podsToRemove) == 0 {
 			result = append(result, node)
 		}

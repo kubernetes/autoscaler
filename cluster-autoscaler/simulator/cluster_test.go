@@ -58,7 +58,7 @@ func TestFindPlaceAllOk(t *testing.T) {
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
 
-	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), false).findPlaceFor(
+	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), testDeleteOptions(), false).findPlaceFor(
 		"x",
 		[]*apiv1.Pod{new1, new2},
 		destinations,
@@ -96,7 +96,7 @@ func TestFindPlaceAllBas(t *testing.T) {
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
 
-	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), false).findPlaceFor(
+	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), testDeleteOptions(), false).findPlaceFor(
 		"nbad",
 		[]*apiv1.Pod{new1, new2, new3},
 		destinations,
@@ -129,7 +129,7 @@ func TestFindNone(t *testing.T) {
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
 
-	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), false).findPlaceFor(
+	err = NewRemovalSimulator(nil, clusterSnapshot, predicateChecker, NewUsageTracker(), testDeleteOptions(), false).findPlaceFor(
 		"x",
 		[]*apiv1.Pod{},
 		destinations,
@@ -162,7 +162,7 @@ func TestFindEmptyNodes(t *testing.T) {
 	clusterSnapshot := NewBasicClusterSnapshot()
 	InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
 	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
-	r := NewRemovalSimulator(nil, clusterSnapshot, nil, nil, false)
+	r := NewRemovalSimulator(nil, clusterSnapshot, nil, nil, testDeleteOptions(), false)
 	emptyNodes := r.FindEmptyNodesToRemove(nodeNames, testTime)
 	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
 }
@@ -309,7 +309,7 @@ func TestFindNodesToRemove(t *testing.T) {
 				destinations = append(destinations, node.Name)
 			}
 			InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
-			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, false)
+			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), false)
 			toRemove, unremovable, _, err := r.FindNodesToRemove(
 				test.candidates, destinations, map[string]string{},
 				time.Now(), []*policyv1.PodDisruptionBudget{})
@@ -318,5 +318,13 @@ func TestFindNodesToRemove(t *testing.T) {
 			assert.Equal(t, toRemove, test.toRemove)
 			assert.Equal(t, unremovable, test.unremovable)
 		})
+	}
+}
+
+func testDeleteOptions() NodeDeleteOptions {
+	return NodeDeleteOptions{
+		SkipNodesWithSystemPods:   true,
+		SkipNodesWithLocalStorage: true,
+		MinReplicaCount:           0,
 	}
 }
