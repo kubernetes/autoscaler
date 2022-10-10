@@ -353,6 +353,7 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 
 	if totalUnready > csr.config.OkTotalUnreadyCount &&
 		float64(totalUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*float64(len(csr.nodes)) {
+		klog.Warningf("%d/%d nodes are unready - cluster not healthy", totalUnready, csr.config.OkTotalUnreadyCount)
 		return false
 	}
 
