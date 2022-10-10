@@ -1240,7 +1240,7 @@ func (c *AuditManager) DeleteAssessmentReportRequest(input *DeleteAssessmentRepo
 //
 // # The specified assessment report that’s stored in your S3 bucket
 //
-// The associated metadata that’s stored in Audit Manager
+// # The associated metadata that’s stored in Audit Manager
 //
 // If Audit Manager can’t access the assessment report in your S3 bucket,
 // the report isn’t deleted. In this event, the DeleteAssessmentReport operation
