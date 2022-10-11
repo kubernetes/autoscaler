@@ -87,7 +87,7 @@ var (
 	}
 )
 
-func getFilterInstance(t *testing.T, config string) (expander.Filter, *record.FakeRecorder, *apiv1.ConfigMap, error) {
+func getFilterInstance(t *testing.T, config string) (expander.Filter, *record.FakeRecorder, *apiv1.ConfigMap) {
 	cm := &apiv1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: testNamespace,
@@ -101,41 +101,41 @@ func getFilterInstance(t *testing.T, config string) (expander.Filter, *record.Fa
 	assert.Nil(t, err)
 	r := record.NewFakeRecorder(100)
 	s := NewFilter(lister.ConfigMaps(testNamespace), r)
-	return s, r, cm, err
+	return s, r, cm
 }
 
 func TestPriorityExpanderCorrecltyFiltersSingleMatchingOptionOutOfOne(t *testing.T) {
-	s, _, _, _ := getFilterInstance(t, config)
+	s, _, _ := getFilterInstance(t, config)
 	ret := s.BestOptions([]expander.Option{eoT2Large}, nil)
 	assert.Equal(t, ret, []expander.Option{eoT2Large})
 }
 
 func TestPriorityExpanderCorrecltyFiltersSingleMatchingOptionOutOfMany(t *testing.T) {
-	s, _, _, _ := getFilterInstance(t, config)
+	s, _, _ := getFilterInstance(t, config)
 	ret := s.BestOptions([]expander.Option{eoT2Large, eoM44XLarge}, nil)
 	assert.Equal(t, ret, []expander.Option{eoM44XLarge})
 }
 
 func TestPriorityExpanderFiltersToHigherPriorityMatch(t *testing.T) {
-	s, _, _, _ := getFilterInstance(t, wildcardMatchConfig)
+	s, _, _ := getFilterInstance(t, wildcardMatchConfig)
 	ret := s.BestOptions([]expander.Option{eoT2Large, eoT2Micro}, nil)
 	assert.Equal(t, ret, []expander.Option{eoT2Large})
 }
 
 func TestPriorityExpanderCorrecltyFiltersTwoMatchingOptionsOutOfMany(t *testing.T) {
-	s, _, _, _ := getFilterInstance(t, config)
+	s, _, _ := getFilterInstance(t, config)
 	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large, eoT2Micro}, nil)
 	assert.Equal(t, ret, []expander.Option{eoT2Large, eoT3Large})
 }
 
 func TestPriorityExpanderCorrecltyFallsBackToAllWhenNoMatches(t *testing.T) {
-	s, _, _, _ := getFilterInstance(t, config)
+	s, _, _ := getFilterInstance(t, config)
 	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large}, nil)
 	assert.Equal(t, ret, []expander.Option{eoT2Large, eoT3Large})
 }
 
 func TestPriorityExpanderCorrecltyHandlesConfigUpdate(t *testing.T) {
-	s, r, cm, _ := getFilterInstance(t, oneEntryConfig)
+	s, r, cm := getFilterInstance(t, oneEntryConfig)
 	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
 	assert.Equal(t, ret, []expander.Option{eoT2Large})
 
@@ -154,7 +154,7 @@ func TestPriorityExpanderCorrecltyHandlesConfigUpdate(t *testing.T) {
 }
 
 func TestPriorityExpanderCorrecltySkipsBadChangeConfig(t *testing.T) {
-	s, r, cm, _ := getFilterInstance(t, oneEntryConfig)
+	s, r, cm := getFilterInstance(t, oneEntryConfig)
 	priority := s.(*priority)
 	assert.Equal(t, 0, priority.okConfigUpdates)
 
@@ -165,5 +165,5 @@ func TestPriorityExpanderCorrecltySkipsBadChangeConfig(t *testing.T) {
 
 	event := <-r.Events
 	assert.EqualValues(t, configWarnConfigMapEmpty, event)
-	assert.Empty(t, ret)
+	assert.Equal(t, ret, []expander.Option{eoT2Large, eoT3Large, eoM44XLarge})
 }
