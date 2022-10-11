@@ -123,7 +123,7 @@ func (p *priority) BestOptions(expansionOptions []expander.Option, nodeInfo map[
 
 	priorities, cm, err := p.reloadConfigMap()
 	if err != nil {
-		return nil
+		return expansionOptions
 	}
 
 	maxPrio := -1
