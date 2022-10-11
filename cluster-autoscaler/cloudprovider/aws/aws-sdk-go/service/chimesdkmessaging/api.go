@@ -590,7 +590,7 @@ func (c *ChimeSDKMessaging) CreateChannelFlowRequest(input *CreateChannelFlowInp
 //
 // # New and updated messages
 //
-// Persistent and non-persistent messages
+// # Persistent and non-persistent messages
 //
 // # The Standard message type
 //
@@ -2537,15 +2537,15 @@ func (c *ChimeSDKMessaging) GetChannelMessageStatusRequest(input *GetChannelMess
 //
 // # SENT
 //
-// Message processed successfully
+// # Message processed successfully
 //
 // # PENDING
 //
-// Ongoing processing
+// # Ongoing processing
 //
 // # FAILED
 //
-// Processing failed
+// # Processing failed
 //
 // # DENIED
 //
