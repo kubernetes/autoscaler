@@ -104,8 +104,9 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
 	}
 	if opts.ExpanderStrategy == nil {
-		expanderStrategy, err := factory.ExpanderStrategyFromStrings(strings.Split(opts.ExpanderNames, ","), opts.CloudProvider,
-			opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+		expanderFactory := factory.NewFactory()
+		expanderFactory.RegisterDefaultExpanders(opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+		expanderStrategy, err := expanderFactory.Build(strings.Split(opts.ExpanderNames, ","))
 		if err != nil {
 			return err
 		}
