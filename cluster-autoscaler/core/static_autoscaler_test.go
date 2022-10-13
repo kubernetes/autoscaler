@@ -17,7 +17,10 @@ limitations under the License.
 package core
 
 import (
+	"bytes"
+	"flag"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -46,6 +49,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/fake"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
@@ -953,7 +957,6 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 }
 
 func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
-
 	// setup
 	provider := &mockprovider.CloudProvider{}
 
@@ -1375,6 +1378,103 @@ func TestSubtractNodes(t *testing.T) {
 	for _, tc := range testCases {
 		got := subtractNodes(tc.a, tc.b)
 		assert.Equal(t, nodeNames(got), nodeNames(tc.c))
+	}
+}
+
+func TestFilterOutYoungPods(t *testing.T) {
+	now := time.Now()
+	klog.InitFlags(nil)
+	flag.CommandLine.Parse([]string{"--logtostderr=false"})
+
+	p1 := BuildTestPod("p1", 500, 1000)
+	p1.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
+	p2 := BuildTestPod("p2", 500, 1000)
+	p2.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
+	p2.Annotations = map[string]string{
+		podScaleUpDelayAnnotationKey: "5m",
+	}
+	p3 := BuildTestPod("p3", 500, 1000)
+	p3.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
+	p3.Annotations = map[string]string{
+		podScaleUpDelayAnnotationKey: "2m",
+	}
+	p4 := BuildTestPod("p4", 500, 1000)
+	p4.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
+	p4.Annotations = map[string]string{
+		podScaleUpDelayAnnotationKey: "error",
+	}
+
+	tests := []struct {
+		name               string
+		newPodScaleUpDelay time.Duration
+		runTime            time.Time
+		pods               []*apiv1.Pod
+		expectedPods       []*apiv1.Pod
+		expectedError      string
+	}{
+		{
+			name:               "annotation delayed pod checking now",
+			newPodScaleUpDelay: 0,
+			runTime:            now,
+			pods:               []*apiv1.Pod{p1, p2},
+			expectedPods:       []*apiv1.Pod{p1},
+		},
+		{
+			name:               "annotation delayed pod checking after delay",
+			newPodScaleUpDelay: 0,
+			runTime:            now.Add(5 * time.Minute),
+			pods:               []*apiv1.Pod{p1, p2},
+			expectedPods:       []*apiv1.Pod{p1, p2},
+		},
+		{
+			name:               "globally delayed pods",
+			newPodScaleUpDelay: 5 * time.Minute,
+			runTime:            now,
+			pods:               []*apiv1.Pod{p1, p2},
+			expectedPods:       []*apiv1.Pod(nil),
+		},
+		{
+			name:               "annotation delay smaller than global",
+			newPodScaleUpDelay: 5 * time.Minute,
+			runTime:            now.Add(2 * time.Minute),
+			pods:               []*apiv1.Pod{p1, p3},
+			expectedPods:       []*apiv1.Pod(nil),
+			expectedError:      "Failed to set pod scale up delay for",
+		},
+		{
+			name:               "annotation delay with error",
+			newPodScaleUpDelay: 0,
+			runTime:            now,
+			pods:               []*apiv1.Pod{p1, p4},
+			expectedPods:       []*apiv1.Pod{p1, p4},
+			expectedError:      "Failed to parse pod",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context := context.AutoscalingContext{
+				AutoscalingOptions: config.AutoscalingOptions{
+					NewPodScaleUpDelay: tt.newPodScaleUpDelay,
+				},
+			}
+			autoscaler := &StaticAutoscaler{
+				AutoscalingContext: &context,
+			}
+
+			var buf bytes.Buffer
+			klog.SetOutput(&buf)
+			defer func() {
+				klog.SetOutput(os.Stderr)
+			}()
+
+			actual := autoscaler.filterOutYoungPods(tt.pods, tt.runTime)
+
+			assert.Equal(t, tt.expectedPods, actual)
+			if tt.expectedError != "" {
+				assert.Contains(t, buf.String(), tt.expectedError)
+			}
+		})
 	}
 }
 
