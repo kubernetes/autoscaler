@@ -57,9 +57,6 @@ var (
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
-
-	// list of post processors flag
-	postProcessorCapping = flag.Bool("post-processor-capping", true, "Enable 'capping' post processor: apply minAllowed/maxAllowed range for the recommendation")
 )
 
 // Aggregation configuration flags
@@ -87,9 +84,8 @@ func main() {
 	useCheckpoints := *storage != "prometheus"
 
 	var postProcessorsNames []routines.KnownPostProcessors
-	if *postProcessorCapping {
-		postProcessorsNames = append(postProcessorsNames, routines.Capping)
-	}
+	postProcessorsNames = append(postProcessorsNames, routines.Capping)
+
 	postProcessorFactory := routines.RecommendationPostProcessorFactory{PostProcessorsNames: postProcessorsNames}
 	postProcessors, err := postProcessorFactory.Build()
 	if err != nil {
