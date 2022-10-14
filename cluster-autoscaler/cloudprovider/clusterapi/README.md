@@ -228,6 +228,13 @@ rules:
     - list
 ```
 
+#### Pre-defined labels and taints on nodes scaled from zero
+
+The Cluster API provider currently does not support the addition of pre-defined
+labels and taints for node groups that are scaling from zero. This work is on-going
+and will be included in a future release once the API for specifying those
+labels and taints has been accepted by the community.
+
 ## Specifying a Custom Resource Group
 
 By default all Kubernetes resources consumed by the Cluster API provider will
