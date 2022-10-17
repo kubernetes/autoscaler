@@ -83,14 +83,11 @@ func TestRemove(t *testing.T) {
 	tracker.RegisterUsage("C", "Z", now)
 	tracker.RegisterUsage("M", "N", now)
 
-	utilization := map[string]time.Time{
-		"A": now,
-		"C": now,
-		"X": now,
-		"M": now,
-	}
+	unneededNodes := []string{"A", "C", "X", "M"}
 
-	RemoveNodeFromTracker(tracker, "A", utilization)
+	dropped := RemoveNodeFromTracker(tracker, "A", unneededNodes)
+
+	assert.Equal(t, []string{"A", "X"}, dropped)
 
 	_, foundA := tracker.Get("A")
 	C, foundC := tracker.Get("C")
@@ -101,12 +98,4 @@ func TestRemove(t *testing.T) {
 	assert.True(t, foundX)
 	assert.NotContains(t, C.usedBy, "A")
 	assert.Contains(t, C.usedBy, "X")
-
-	_, foundA = utilization["A"]
-	_, foundC = utilization["C"]
-	_, foundX = utilization["X"]
-
-	assert.False(t, foundA)
-	assert.True(t, foundC)
-	assert.False(t, foundX)
 }
