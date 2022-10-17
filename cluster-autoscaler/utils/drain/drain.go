@@ -78,13 +78,13 @@ func GetPodsForDeletionOnNodeDrain(
 	pdbs []*policyv1.PodDisruptionBudget,
 	skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool,
-	checkReferences bool, // Setting this to true requires client to be not-null.
 	listers kube_util.ListerRegistry,
 	minReplica int32,
 	currentTime time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *BlockingPod, err error) {
 
 	pods = []*apiv1.Pod{}
 	daemonSetPods = []*apiv1.Pod{}
+	checkReferences := listers != nil
 	// filter kube-system PDBs to avoid doing it for every kube-system pod
 	kubeSystemPDBs := make([]*policyv1.PodDisruptionBudget, 0)
 	for _, pdb := range pdbs {
