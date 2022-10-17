@@ -24,8 +24,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -41,6 +42,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -219,9 +221,16 @@ func TestCropNodesToBudgets(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			ctx := &context.AutoscalingContext{
 				AutoscalingOptions: config.AutoscalingOptions{
-					MaxScaleDownParallelism: 10,
-					MaxDrainParallelism:     5,
+					MaxScaleDownParallelism:     10,
+					MaxDrainParallelism:         5,
+					NodeDeletionBatcherInterval: 0 * time.Second,
+					NodeDeleteDelayAfterTaint:   1 * time.Second,
 				},
+			}
+			deleteOptions := simulator.NodeDeleteOptions{
+				SkipNodesWithSystemPods:   true,
+				SkipNodesWithLocalStorage: true,
+				MinReplicaCount:           0,
 			}
 			ndr := deletiontracker.NewNodeDeletionTracker(1 * time.Hour)
 			for i := 0; i < tc.emptyDeletionsInProgress; i++ {
@@ -230,7 +239,8 @@ func TestCropNodesToBudgets(t *testing.T) {
 			for i := 0; i < tc.drainDeletionsInProgress; i++ {
 				ndr.StartDeletionWithDrain("ng2", fmt.Sprintf("drain-node-%d", i))
 			}
-			actuator := NewActuator(ctx, nil, ndr, 0*time.Second)
+
+			actuator := NewActuator(ctx, nil, ndr, deleteOptions)
 			gotEmpty, gotDrain := actuator.cropNodesToBudgets(tc.emptyNodes, tc.drainNodes)
 			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)
@@ -303,8 +313,8 @@ func TestStartDeletion(t *testing.T) {
 		"deletion with drain": {
 			drainNodes: generateNodes(2, "drain"),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": generatePods(2, "drain-node-0"),
-				"drain-node-1": generatePods(2, "drain-node-1"),
+				"drain-node-0": removablePods(2, "drain-node-0"),
+				"drain-node-1": removablePods(2, "drain-node-1"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
@@ -312,13 +322,13 @@ func TestStartDeletion(t *testing.T) {
 					{
 						Node:        generateNode("drain-node-0"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(2, "drain-node-0"),
+						EvictedPods: removablePods(2, "drain-node-0"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
 						Node:        generateNode("drain-node-1"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(2, "drain-node-1"),
+						EvictedPods: removablePods(2, "drain-node-1"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
@@ -342,8 +352,8 @@ func TestStartDeletion(t *testing.T) {
 			emptyNodes: generateNodes(2, "empty"),
 			drainNodes: generateNodes(2, "drain"),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": generatePods(2, "drain-node-0"),
-				"drain-node-1": generatePods(2, "drain-node-1"),
+				"drain-node-0": removablePods(2, "drain-node-0"),
+				"drain-node-1": removablePods(2, "drain-node-1"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
@@ -363,13 +373,13 @@ func TestStartDeletion(t *testing.T) {
 					{
 						Node:        generateNode("drain-node-0"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(2, "drain-node-0"),
+						EvictedPods: removablePods(2, "drain-node-0"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
 						Node:        generateNode("drain-node-1"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(2, "drain-node-1"),
+						EvictedPods: removablePods(2, "drain-node-1"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
@@ -397,42 +407,26 @@ func TestStartDeletion(t *testing.T) {
 				"drain-node-1": {ResultType: status.NodeDeleteOk},
 			},
 		},
-		"failure to taint empty node stops further deletion": {
+		"failure to taint empty node stops deletion and cleans already applied taints": {
 			emptyNodes: generateNodes(4, "empty"),
 			drainNodes: generateNodes(1, "drain"),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": generatePods(2, "drain-node-0"),
+				"drain-node-0": removablePods(2, "drain-node-0"),
 			},
 			failedNodeTaint: map[string]bool{"empty-node-2": true},
 			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownError,
-				ScaledDownNodes: []*status.ScaleDownNode{
-					{
-						Node:        generateNode("empty-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
-					},
-					{
-						Node:        generateNode("empty-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
-					},
-				},
+				Result:          status.ScaleDownError,
+				ScaledDownNodes: nil,
 			},
-			wantDeletedNodes: []string{"empty-node-0", "empty-node-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"empty-node-0": {
 					{toBeDeletedTaint},
+					{},
 				},
 				"empty-node-1": {
 					{toBeDeletedTaint},
+					{},
 				},
-			},
-			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-node-1": {ResultType: status.NodeDeleteOk},
 			},
 			wantErr: cmpopts.AnyError,
 		},
@@ -440,10 +434,10 @@ func TestStartDeletion(t *testing.T) {
 			emptyNodes: generateNodes(2, "empty"),
 			drainNodes: generateNodes(4, "drain"),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": generatePods(2, "drain-node-0"),
-				"drain-node-1": generatePods(2, "drain-node-1"),
-				"drain-node-2": generatePods(2, "drain-node-2"),
-				"drain-node-3": generatePods(2, "drain-node-3"),
+				"drain-node-0": removablePods(2, "drain-node-0"),
+				"drain-node-1": removablePods(2, "drain-node-1"),
+				"drain-node-2": removablePods(2, "drain-node-2"),
+				"drain-node-3": removablePods(2, "drain-node-3"),
 			},
 			failedNodeTaint: map[string]bool{"drain-node-2": true},
 			wantStatus: &status.ScaleDownStatus{
@@ -471,14 +465,6 @@ func TestStartDeletion(t *testing.T) {
 				"empty-node-1": {
 					{toBeDeletedTaint},
 				},
-				"drain-node-0": {
-					{toBeDeletedTaint},
-					{},
-				},
-				"drain-node-1": {
-					{toBeDeletedTaint},
-					{},
-				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
 				"empty-node-0": {ResultType: status.NodeDeleteOk},
@@ -489,10 +475,10 @@ func TestStartDeletion(t *testing.T) {
 		"nodes that failed drain are correctly reported in results": {
 			drainNodes: generateNodes(4, "drain"),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": generatePods(3, "drain-node-0"),
-				"drain-node-1": generatePods(3, "drain-node-1"),
-				"drain-node-2": generatePods(3, "drain-node-2"),
-				"drain-node-3": generatePods(3, "drain-node-3"),
+				"drain-node-0": removablePods(3, "drain-node-0"),
+				"drain-node-1": removablePods(3, "drain-node-1"),
+				"drain-node-2": removablePods(3, "drain-node-2"),
+				"drain-node-3": removablePods(3, "drain-node-3"),
 			},
 			failedPodDrain: map[string]bool{
 				"drain-node-0-pod-0": true,
@@ -505,25 +491,25 @@ func TestStartDeletion(t *testing.T) {
 					{
 						Node:        generateNode("drain-node-0"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(3, "drain-node-0"),
+						EvictedPods: removablePods(3, "drain-node-0"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
 						Node:        generateNode("drain-node-1"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(3, "drain-node-1"),
+						EvictedPods: removablePods(3, "drain-node-1"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
 						Node:        generateNode("drain-node-2"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(3, "drain-node-2"),
+						EvictedPods: removablePods(3, "drain-node-2"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
 						Node:        generateNode("drain-node-3"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(3, "drain-node-3"),
+						EvictedPods: removablePods(3, "drain-node-3"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 				},
@@ -556,9 +542,9 @@ func TestStartDeletion(t *testing.T) {
 					ResultType: status.NodeDeleteErrorFailedToEvictPods,
 					Err:        cmpopts.AnyError,
 					PodEvictionResults: map[string]status.PodEvictionResult{
-						"drain-node-0-pod-0": {Pod: generatePod("drain-node-0-pod-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-0-pod-1": {Pod: generatePod("drain-node-0-pod-1"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-0-pod-2": {Pod: generatePod("drain-node-0-pod-2")},
+						"drain-node-0-pod-0": {Pod: removablePod("drain-node-0-pod-0", "drain-node-0"), Err: cmpopts.AnyError, TimedOut: true},
+						"drain-node-0-pod-1": {Pod: removablePod("drain-node-0-pod-1", "drain-node-0"), Err: cmpopts.AnyError, TimedOut: true},
+						"drain-node-0-pod-2": {Pod: removablePod("drain-node-0-pod-2", "drain-node-0")},
 					},
 				},
 				"drain-node-1": {ResultType: status.NodeDeleteOk},
@@ -566,9 +552,9 @@ func TestStartDeletion(t *testing.T) {
 					ResultType: status.NodeDeleteErrorFailedToEvictPods,
 					Err:        cmpopts.AnyError,
 					PodEvictionResults: map[string]status.PodEvictionResult{
-						"drain-node-2-pod-0": {Pod: generatePod("drain-node-2-pod-0")},
-						"drain-node-2-pod-1": {Pod: generatePod("drain-node-2-pod-1"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-2-pod-2": {Pod: generatePod("drain-node-2-pod-2")},
+						"drain-node-2-pod-0": {Pod: removablePod("drain-node-2-pod-0", "drain-node-2")},
+						"drain-node-2-pod-1": {Pod: removablePod("drain-node-2-pod-1", "drain-node-2"), Err: cmpopts.AnyError, TimedOut: true},
+						"drain-node-2-pod-2": {Pod: removablePod("drain-node-2-pod-2", "drain-node-2")},
 					},
 				},
 				"drain-node-3": {ResultType: status.NodeDeleteOk},
@@ -578,8 +564,8 @@ func TestStartDeletion(t *testing.T) {
 			emptyNodes: generateNodes(2, "empty"),
 			drainNodes: generateNodes(2, "drain"),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": generatePods(2, "drain-node-0"),
-				"drain-node-1": generatePods(2, "drain-node-1"),
+				"drain-node-0": removablePods(2, "drain-node-0"),
+				"drain-node-1": removablePods(2, "drain-node-1"),
 			},
 			failedNodeDeletion: map[string]bool{
 				"empty-node-1": true,
@@ -603,13 +589,13 @@ func TestStartDeletion(t *testing.T) {
 					{
 						Node:        generateNode("drain-node-0"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(2, "drain-node-0"),
+						EvictedPods: removablePods(2, "drain-node-0"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
 						Node:        generateNode("drain-node-1"),
 						NodeGroup:   testNg,
-						EvictedPods: generatePods(2, "drain-node-1"),
+						EvictedPods: removablePods(2, "drain-node-1"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
@@ -645,8 +631,8 @@ func TestStartDeletion(t *testing.T) {
 		"DS pods are evicted from empty nodes, but don't block deletion on error": {
 			emptyNodes: generateNodes(2, "empty"),
 			pods: map[string][]*apiv1.Pod{
-				"empty-node-0": {generateDsPod("empty-node-0-ds-pod-0"), generateDsPod("empty-node-0-ds-pod-1")},
-				"empty-node-1": {generateDsPod("empty-node-1-ds-pod-0"), generateDsPod("empty-node-1-ds-pod-1")},
+				"empty-node-0": {generateDsPod("empty-node-0-ds-pod-0", "empty-node-0"), generateDsPod("empty-node-0-ds-pod-1", "empty-node-0")},
+				"empty-node-1": {generateDsPod("empty-node-1-ds-pod-0", "empty-node-1"), generateDsPod("empty-node-1-ds-pod-1", "empty-node-1")},
 			},
 			failedPodDrain: map[string]bool{"empty-node-1-ds-pod-0": true},
 			wantStatus: &status.ScaleDownStatus{
@@ -681,11 +667,11 @@ func TestStartDeletion(t *testing.T) {
 				"empty-node-1": {ResultType: status.NodeDeleteOk},
 			},
 		},
-		"pods are not evicted from nodes with pods if the node is passed as empty": {
+		"nodes with pods are not deleted if the node is passed as empty": {
 			emptyNodes: generateNodes(2, "empty-but-with-pods"),
 			pods: map[string][]*apiv1.Pod{
-				"empty-but-with-pods-node-0": generatePods(2, "empty-but-with-pods-node--0"),
-				"empty-but-with-pods-node-1": generatePods(2, "empty-but-with-pods-node--1"),
+				"empty-but-with-pods-node-0": removablePods(2, "empty-but-with-pods-node-0"),
+				"empty-but-with-pods-node-1": removablePods(2, "empty-but-with-pods-node-1"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
@@ -704,19 +690,21 @@ func TestStartDeletion(t *testing.T) {
 					},
 				},
 			},
-			wantDeletedNodes: []string{"empty-but-with-pods-node-0", "empty-but-with-pods-node-1"},
+			wantDeletedNodes: nil,
 			wantDeletedPods:  nil,
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"empty-but-with-pods-node-0": {
 					{toBeDeletedTaint},
+					{},
 				},
 				"empty-but-with-pods-node-1": {
 					{toBeDeletedTaint},
+					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-but-with-pods-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-but-with-pods-node-1": {ResultType: status.NodeDeleteOk},
+				"empty-but-with-pods-node-0": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"empty-but-with-pods-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
 			},
 		},
 	} {
@@ -743,6 +731,8 @@ func TestStartDeletion(t *testing.T) {
 			taintUpdates := make(chan nodeTaints, 10)
 			deletedNodes := make(chan string, 10)
 			deletedPods := make(chan string, 10)
+
+			ds := generateDaemonSet()
 
 			// We're faking the whole k8s client, and some of the code needs to get live nodes and pods, so GET on nodes and pods has to be set up.
 			fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
@@ -819,7 +809,21 @@ func TestStartDeletion(t *testing.T) {
 				MaxPodEvictionTime:             0,
 				DaemonSetEvictionForEmptyNodes: true,
 			}
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
+			allPods := []*apiv1.Pod{}
+
+			for _, pods := range tc.pods {
+				allPods = append(allPods, pods...)
+			}
+
+			podLister := kube_util.NewTestPodLister(allPods)
+			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+			dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{ds})
+			if err != nil {
+				t.Fatalf("Couldn't create daemonset lister")
+			}
+
+			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, dsLister, nil, nil, nil, nil)
 			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
@@ -1046,6 +1050,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				"test-ng-2": testNg2,
 				"test-ng-3": testNg3,
 			}
+
 			for ngName, numNodes := range test.numNodesToDelete {
 				ng := testNg[ngName]
 				provider.InsertNodeGroup(ng)
@@ -1064,7 +1069,10 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				MaxPodEvictionTime:             0,
 				DaemonSetEvictionForEmptyNodes: true,
 			}
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
+			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, nil, nil)
 			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
@@ -1076,6 +1084,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				nodeDeletionBatcher: NewNodeDeletionBatcher(&ctx, csr, ndt, deleteInterval),
 				evictor:             Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom},
 			}
+
 			for _, nodes := range deleteNodes {
 				actuator.StartDeletion(nodes, []*apiv1.Node{}, time.Now())
 				time.Sleep(deleteInterval)
@@ -1143,22 +1152,29 @@ func generateNode(name string) *apiv1.Node {
 	}
 }
 
-func generatePods(count int, prefix string) []*apiv1.Pod {
+func removablePods(count int, prefix string) []*apiv1.Pod {
 	var result []*apiv1.Pod
 	for i := 0; i < count; i++ {
 		name := fmt.Sprintf("pod-%d", i)
 		if prefix != "" {
 			name = prefix + "-" + name
 		}
-		result = append(result, generatePod(name))
+		result = append(result, removablePod(name, prefix))
 	}
 	return result
 }
 
-func generatePod(name string) *apiv1.Pod {
+func removablePod(name string, node string) *apiv1.Pod {
 	return &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{Name: name},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+			Annotations: map[string]string{
+				"cluster-autoscaler.kubernetes.io/safe-to-evict": "true",
+			},
+		},
 		Spec: apiv1.PodSpec{
+			NodeName: node,
 			Containers: []apiv1.Container{
 				{
 					Name: "test-container",
@@ -1174,10 +1190,20 @@ func generatePod(name string) *apiv1.Pod {
 	}
 }
 
-func generateDsPod(name string) *apiv1.Pod {
-	pod := generatePod(name)
-	pod.OwnerReferences = GenerateOwnerReferences(name+"-ds", "DaemonSet", "apps/v1", "some-uid")
+func generateDsPod(name string, node string) *apiv1.Pod {
+	pod := removablePod(name, node)
+	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "some-uid")
 	return pod
+}
+
+func generateDaemonSet() *appsv1.DaemonSet {
+	return &appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ds",
+			Namespace: "default",
+			SelfLink:  "/apiv1s/apps/v1/namespaces/default/daemonsets/ds",
+		},
+	}
 }
 
 func generateUtilInfo(cpuUtil, memUtil float64) utilization.Info {

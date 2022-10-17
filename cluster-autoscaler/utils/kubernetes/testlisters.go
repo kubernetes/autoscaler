@@ -22,6 +22,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -41,6 +42,21 @@ func (lister TestPodLister) List() ([]*apiv1.Pod, error) {
 // NewTestPodLister returns a lister that returns provided pods
 func NewTestPodLister(pods []*apiv1.Pod) PodLister {
 	return TestPodLister{pods: pods}
+}
+
+// TestPodDisruptionBudgetLister is used in tests involving listers
+type TestPodDisruptionBudgetLister struct {
+	pdbs []*policyv1.PodDisruptionBudget
+}
+
+// List returns all pdbs in test lister.
+func (lister TestPodDisruptionBudgetLister) List() ([]*policyv1.PodDisruptionBudget, error) {
+	return lister.pdbs, nil
+}
+
+// NewTestPodDisruptionBudgetLister returns a lister that returns provided pod disruption budgets
+func NewTestPodDisruptionBudgetLister(pdbs []*policyv1.PodDisruptionBudget) PodDisruptionBudgetLister {
+	return TestPodDisruptionBudgetLister{pdbs: pdbs}
 }
 
 // TestNodeLister is used in tests involving listers

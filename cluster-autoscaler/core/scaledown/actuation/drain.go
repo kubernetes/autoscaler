@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -56,27 +57,26 @@ type Evictor struct {
 	DsEvictionRetryTime        time.Duration
 	DsEvictionEmptyNodeTimeout time.Duration
 	PodEvictionHeadroom        time.Duration
+	deleteOptions              simulator.NodeDeleteOptions
 }
 
 // NewDefaultEvictor returns an instance of Evictor using the default parameters.
-func NewDefaultEvictor() Evictor {
+func NewDefaultEvictor(deleteOptions simulator.NodeDeleteOptions) Evictor {
 	return Evictor{
 		EvictionRetryTime:          DefaultEvictionRetryTime,
 		DsEvictionRetryTime:        DefaultDsEvictionRetryTime,
 		DsEvictionEmptyNodeTimeout: DefaultDsEvictionEmptyNodeTimeout,
 		PodEvictionHeadroom:        DefaultPodEvictionHeadroom,
+		deleteOptions:              deleteOptions,
 	}
 }
 
 // DrainNode works like DrainNodeWithPods, but lists of pods to evict don't have to be provided. All non-mirror, non-DS pods on the
 // node are evicted. Mirror pods are not evicted. DaemonSet pods are evicted if DaemonSetEvictionForOccupiedNodes is enabled, or
 // if they have the EnableDsEvictionKey annotation.
-func (e Evictor) DrainNode(ctx *acontext.AutoscalingContext, node *apiv1.Node) (map[string]status.PodEvictionResult, error) {
-	dsPodsToEvict, nonDsPodsToEvict, err := podsToEvict(ctx, node.Name)
-	if err != nil {
-		return nil, err
-	}
-	return e.DrainNodeWithPods(ctx, node, nonDsPodsToEvict, dsPodsToEvict)
+func (e Evictor) DrainNode(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
+	dsPodsToEvict, nonDsPodsToEvict := podsToEvict(ctx, nodeInfo)
+	return e.DrainNodeWithPods(ctx, nodeInfo.Node(), nonDsPodsToEvict, dsPodsToEvict)
 }
 
 // DrainNodeWithPods performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
@@ -169,12 +169,9 @@ func (e Evictor) DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1
 }
 
 // EvictDaemonSetPods creates eviction objects for all DaemonSet pods on the node.
-func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeToDelete *apiv1.Node, timeNow time.Time) error {
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(nodeToDelete.Name)
-	if err != nil {
-		return fmt.Errorf("failed to get node info for %s", nodeToDelete.Name)
-	}
-	_, daemonSetPods, _, err := simulator.FastGetPodsToMove(nodeInfo, true, true, []*policyv1.PodDisruptionBudget{}, timeNow)
+func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo, timeNow time.Time) error {
+	nodeToDelete := nodeInfo.Node()
+	_, daemonSetPods, _, err := simulator.GetPodsToMove(nodeInfo, e.deleteOptions, nil, []*policyv1.PodDisruptionBudget{}, timeNow)
 	if err != nil {
 		return fmt.Errorf("failed to get DaemonSet pods for %s (error: %v)", nodeToDelete.Name, err)
 	}
@@ -245,11 +242,7 @@ func evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, isDaemonS
 	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
 }
 
-func podsToEvict(ctx *acontext.AutoscalingContext, nodeName string) (dsPods, nonDsPods []*apiv1.Pod, err error) {
-	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(nodeName)
-	if err != nil {
-		return nil, nil, err
-	}
+func podsToEvict(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo) (dsPods, nonDsPods []*apiv1.Pod) {
 	for _, podInfo := range nodeInfo.Pods {
 		if pod_util.IsMirrorPod(podInfo.Pod) {
 			continue
@@ -260,5 +253,5 @@ func podsToEvict(ctx *acontext.AutoscalingContext, nodeName string) (dsPods, non
 		}
 	}
 	dsPodsToEvict := daemonset.PodsToEvict(dsPods, ctx.DaemonSetEvictionForOccupiedNodes)
-	return dsPodsToEvict, nonDsPods, nil
+	return dsPodsToEvict, nonDsPods
 }
