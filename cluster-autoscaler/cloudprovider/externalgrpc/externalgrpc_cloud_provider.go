@@ -134,6 +134,11 @@ func (e *externalGrpcCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 	return ng, nil
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (e *externalGrpcCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+	return false, cloudprovider.ErrNotImplemented
+}
+
 // pricingModel implements cloudprovider.PricingModel interface.
 type pricingModel struct {
 	client protos.CloudProviderClient

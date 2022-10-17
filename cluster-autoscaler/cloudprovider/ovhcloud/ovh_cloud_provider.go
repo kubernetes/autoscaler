@@ -151,6 +151,11 @@ func (provider *OVHCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	return ng, err
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (provider *OVHCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // findNodeGroupFromCache tries to retrieve the associated node group from an already built mapping in cache
 func (provider *OVHCloudProvider) findNodeGroupFromCache(providerID string) cloudprovider.NodeGroup {
 	if ng, ok := provider.manager.NodeGroupPerProviderID[providerID]; ok {

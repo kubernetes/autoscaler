@@ -68,6 +68,11 @@ func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudp
 	return provider.manager.clusterForNode(node)
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (provider *cloudStackCloudProvider) NodeExists(node *v1.Node) (bool, error) {
+	return false, cloudprovider.ErrNotImplemented
+}
+
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 func (provider *cloudStackCloudProvider) Cleanup() error {
 	return provider.manager.cleanup()
