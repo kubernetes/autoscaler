@@ -131,6 +131,11 @@ func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 	return nodeGroup, nil
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (e *exoscaleCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+	return false, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
 func (e *exoscaleCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {

@@ -99,6 +99,11 @@ func (d *civoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 	return nil, nil
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (d *civoCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+	return false, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
 func (d *civoCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
