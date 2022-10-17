@@ -25,11 +25,11 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-  "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-  "k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
@@ -668,8 +668,8 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	provider.DeleteNode(ng1_2)
 	clusterstate.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	now.Add(time.Minute)
-	
-  err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, noNgNode}, nil, now)
+
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, noNgNode}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetCloudProviderDeletedNodes()))
 	assert.Equal(t, "ng1-2", clusterstate.GetCloudProviderDeletedNodes()[0].Name)
@@ -677,7 +677,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 
 	// The node is removed from Kubernetes
 	now.Add(time.Minute)
-  
+
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, noNgNode}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetCloudProviderDeletedNodes()))
@@ -689,8 +689,8 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	provider.AddNode("ng1", ng1_3)
 	clusterstate.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	now.Add(time.Minute)
-	
-  err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_3, noNgNode}, nil, now)
+
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_3, noNgNode}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetCloudProviderDeletedNodes()))
 
@@ -702,7 +702,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	clusterstate.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	now.Add(time.Minute)
 
-  err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, noNgNode, ng1_3}, nil, now)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, noNgNode, ng1_3}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetCloudProviderDeletedNodes()))
 	assert.Equal(t, "ng1-3", clusterstate.GetCloudProviderDeletedNodes()[0].Name)
@@ -712,7 +712,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	// until it is removed from Kubernetes
 	now.Add(time.Minute)
 
-  err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, noNgNode, ng1_3}, nil, now)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, noNgNode, ng1_3}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetCloudProviderDeletedNodes()))
 	assert.Equal(t, "ng1-3", clusterstate.GetCloudProviderDeletedNodes()[0].Name)
@@ -720,7 +720,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 
 	// The node is removed from Kubernetes
 	now.Add(time.Minute)
-  
+
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, noNgNode}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetCloudProviderDeletedNodes()))
