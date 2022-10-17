@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstate
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -297,6 +298,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
+	cloudProviderNodesRemoved := csr.getCloudProviderDeletedNodes(nodes, cloudProviderNodeInstances)
 	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime)
 
 	csr.Lock()
@@ -544,7 +546,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 
 	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
 		current.Registered++
-		if _, exists := csr.deletedNodes[node.Name]; exists {
+		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted++
 		} else if nr.Ready {
 			current.Ready++
@@ -684,7 +686,7 @@ func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []
 	csr.deletedNodes = result
 }
 
-//GetCloudProviderDeletedNodes returns a list of all nodes removed from cloud provider but registered in Kubernetes.
+// GetCloudProviderDeletedNodes returns a list of all nodes removed from cloud provider but registered in Kubernetes.
 func (csr *ClusterStateRegistry) GetCloudProviderDeletedNodes() []*apiv1.Node {
 	csr.Lock()
 	defer csr.Unlock()
@@ -990,35 +992,59 @@ func (csr *ClusterStateRegistry) getCloudProviderDeletedNodes(allNodes []*apiv1.
 	nodesRemoved := make([]*apiv1.Node, 0)
 	currentCloudInstances := make(map[string]string, 0)
 	registeredNodes := make(map[string]*apiv1.Node, 0)
-	for nodeGroupName, instances := range cloudProviderNodeInstances {
-		for _, instance := range instances {
-			currentCloudInstances[instance.Id] = nodeGroupName
-		}
-	}
-	for _, node := range allNodes {
-		registeredNodes[node.Name] = node
-	}
+	if len(allNodes) > 0 {
+		_, err := csr.cloudProvider.NodeExists(allNodes[0])
+		// Check if the cloud provider implements nodeExists method
+		nodeExistsNotImplemented := errors.Is(err, cloudprovider.ErrNotImplemented)
+		if nodeExistsNotImplemented {
+			// Fall-back to taint-based node deletion
+			for _, node := range allNodes {
+				if deletetaint.HasToBeDeletedTaint(node) {
+					nodesRemoved = append(nodesRemoved, node)
+				}
+			}
+		} else {
+			for nodeGroupName, instances := range cloudProviderNodeInstances {
+				for _, instance := range instances {
+					currentCloudInstances[instance.Id] = nodeGroupName
+				}
+			}
+			for _, node := range allNodes {
+				registeredNodes[node.Name] = node
+			}
 
-	// Fill previously deleted nodes, if they are still registered in Kubernetes
-	for nodeName, node := range csr.deletedNodes {
-		// Safety check to prevent flagging Kubernetes nodes as deleted
-		// if the Cloud Provider instance is re-discovered
-		_, cloudProviderFound := currentCloudInstances[node.Name]
-		if _, found := registeredNodes[nodeName]; found && !cloudProviderFound {
-			nodesRemoved = append(nodesRemoved, node)
-		}
-	}
+			// Fill previously deleted nodes, if they are still registered in Kubernetes
+			for nodeName, node := range csr.deletedNodes {
+				// Safety check to prevent flagging Kubernetes nodes as deleted
+				// if the Cloud Provider instance is re-discovered
+				_, cloudProviderFound := currentCloudInstances[node.Name]
+				if _, found := registeredNodes[nodeName]; found && !cloudProviderFound {
+					// Confirm that node is deleted by cloud provider, instead of
+					// a not-autoscaled node
+					nodeExists, existsErr := csr.cloudProvider.NodeExists(node)
+					if existsErr == nil && !nodeExists {
+						nodesRemoved = append(nodesRemoved, node)
+					}
+				}
+			}
 
-	// Seek nodes that may have been deleted since last update
-	// cloudProviderNodeInstances are retrieved by nodeGroup,
-	// not autoscaled nodes will be excluded
-	for _, instances := range csr.cloudProviderNodeInstances {
-		for _, instance := range instances {
-			if _, found := currentCloudInstances[instance.Id]; !found {
-				// Check Kubernetes registered nodes for corresponding deleted
-				// Cloud Provider instance
-				if kubeNode, kubeNodeFound := registeredNodes[instance.Id]; kubeNodeFound {
-					nodesRemoved = append(nodesRemoved, kubeNode)
+			// Seek nodes that may have been deleted since last update
+			// cloudProviderNodeInstances are retrieved by nodeGroup,
+			// not autoscaled nodes will be excluded
+			for _, instances := range csr.cloudProviderNodeInstances {
+				for _, instance := range instances {
+					if _, found := currentCloudInstances[instance.Id]; !found {
+						// Check Kubernetes registered nodes for corresponding deleted
+						// Cloud Provider instance
+						if kubeNode, kubeNodeFound := registeredNodes[instance.Id]; kubeNodeFound {
+							// Confirm that node is deleted by cloud provider, instead of
+							// a not-autoscaled node
+							nodeExists, existsErr := csr.cloudProvider.NodeExists(kubeNode)
+							if existsErr == nil && !nodeExists {
+								nodesRemoved = append(nodesRemoved, kubeNode)
+							}
+						}
+					}
 				}
 			}
 		}

@@ -109,6 +109,11 @@ func (tencentcloud *tencentCloudProvider) NodeGroupForNode(node *apiv1.Node) (cl
 	return asg, nil
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (tencentcloud *tencentCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // GPULabel returns the label added to nodes with GPU resource.
 func (tencentcloud *tencentCloudProvider) GPULabel() string {
 	return GPULabel

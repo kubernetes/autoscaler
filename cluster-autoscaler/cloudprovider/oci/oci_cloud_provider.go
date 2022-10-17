@@ -96,6 +96,11 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 	return ng, err
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (ocp *OciCloudProvider) NodeExists(n *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
 func (ocp *OciCloudProvider) Pricing() (cloudprovider.PricingModel, caerrors.AutoscalerError) {

@@ -180,6 +180,11 @@ func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (c
 	return asg, err
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (baiducloud *baiducloudCloudProvider) NodeExists(*apiv1.Node) (bool, error) {
+	return false, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
 func (baiducloud *baiducloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {

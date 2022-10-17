@@ -162,6 +162,11 @@ func (scw *scalewayCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	return scw.nodeGroupForNode(node)
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (scw *scalewayCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	ng, err := scw.nodeGroupForNode(node)
 	if err != nil {
