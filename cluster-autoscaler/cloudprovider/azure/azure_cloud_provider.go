@@ -106,6 +106,11 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	return azure.azureManager.GetNodeGroupForInstance(ref)
 }
 
+// NodeExists returns whether node exists in this cloud provider
+func (azure *AzureCloudProvider) NodeExists(*apiv1.Node) (bool, error) {
+	return false, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (azure *AzureCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
