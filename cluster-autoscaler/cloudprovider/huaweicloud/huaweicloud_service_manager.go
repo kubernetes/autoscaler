@@ -251,7 +251,7 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 			return nil, fmt.Errorf("unexpected get nil scaling group instances")
 		}
 
-		klog.Info("Got %d instances from scaling group, total instances: %d", len(*response.ScalingGroupInstances), *response.TotalNumber)
+		klog.Infof("Got %d instances from scaling group, total instances: %d", len(*response.ScalingGroupInstances), *response.TotalNumber)
 		scalingGroupInstances = append(scalingGroupInstances, *response.ScalingGroupInstances...)
 
 		// break once we get all instances
