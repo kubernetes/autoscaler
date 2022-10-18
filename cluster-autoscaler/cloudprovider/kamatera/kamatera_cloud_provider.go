@@ -72,7 +72,7 @@ func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 
 // NodeExists returns whether node exists in this cloud provider
 func (k *kamateraCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
-	return false, cloudprovider.ErrNotImplemented
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

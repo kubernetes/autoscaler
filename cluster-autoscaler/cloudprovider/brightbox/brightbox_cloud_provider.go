@@ -83,7 +83,7 @@ func (b *brightboxCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 
 // NodeExists returns whether node exists in this cloud provider
 func (b *brightboxCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
-	return false, cloudprovider.ErrNotImplemented
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // Refresh is before every main loop and can be used to dynamically

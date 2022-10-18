@@ -83,7 +83,7 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 
 // NodeExists returns whether node exists in this cloud provider
 func (p *provider) NodeExists(node *corev1.Node) (bool, error) {
-	return false, cloudprovider.ErrNotImplemented
+	return true, cloudprovider.ErrNotImplemented
 }
 
 func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {

@@ -136,7 +136,7 @@ func (e *externalGrpcCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 
 // NodeExists returns whether node exists in this cloud provider
 func (e *externalGrpcCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
-	return false, cloudprovider.ErrNotImplemented
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // pricingModel implements cloudprovider.PricingModel interface.
