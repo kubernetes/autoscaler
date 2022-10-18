@@ -29,7 +29,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -42,8 +43,8 @@ type AutoscalerOptions struct {
 	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker       simulator.PredicateChecker
-	ClusterSnapshot        simulator.ClusterSnapshot
+	PredicateChecker       predicatechecker.PredicateChecker
+	ClusterSnapshot        clustersnapshot.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
@@ -91,14 +92,14 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	}
 	if opts.PredicateChecker == nil {
 		predicateCheckerStopChannel := make(chan struct{})
-		predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
+		predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
 		if err != nil {
 			return err
 		}
 		opts.PredicateChecker = predicateChecker
 	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = simulator.NewBasicClusterSnapshot()
+		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
 	}
 	if opts.CloudProvider == nil {
 		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)

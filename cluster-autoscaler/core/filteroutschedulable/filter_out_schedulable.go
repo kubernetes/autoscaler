@@ -24,7 +24,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 
 	apiv1 "k8s.io/api/core/v1"
 	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
@@ -98,8 +99,8 @@ func (p *filterOutSchedulablePodListProcessor) CleanUp() {
 // and will be scheduled after lower priority pod preemption.
 func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(
 	unschedulableCandidates []*apiv1.Pod,
-	clusterSnapshot simulator.ClusterSnapshot,
-	predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
+	clusterSnapshot clustersnapshot.ClusterSnapshot,
+	predicateChecker predicatechecker.PredicateChecker) ([]*apiv1.Pod, error) {
 	unschedulablePodsCache := utils.NewPodSchedulableMap()
 
 	// Sort unschedulable pods by importance
