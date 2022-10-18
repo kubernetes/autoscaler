@@ -40,7 +40,7 @@ import (
 	acontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -157,7 +157,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 			assert.NoError(t, err)
 
-			simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{n1}, dsPods)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{n1}, dsPods)
 
 			evictor := Evictor{
 				DsEvictionEmptyNodeTimeout: scenario.dsEvictionTimeout,
@@ -572,7 +572,7 @@ func TestPodsToEvict(t *testing.T) {
 		},
 	} {
 		t.Run(tn, func(t *testing.T) {
-			snapshot := simulator.NewBasicClusterSnapshot()
+			snapshot := clustersnapshot.NewBasicClusterSnapshot()
 			node := BuildTestNode("test-node", 1000, 1000)
 			err := snapshot.AddNodeWithPods(node, tc.pods)
 			if err != nil {

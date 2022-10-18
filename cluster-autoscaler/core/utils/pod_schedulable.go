@@ -21,7 +21,7 @@ import (
 	"reflect"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
@@ -43,7 +43,7 @@ import (
 type PodSchedulableInfo struct {
 	spec            apiv1.PodSpec
 	labels          map[string]string
-	schedulingError *simulator.PredicateError
+	schedulingError *predicatechecker.PredicateError
 }
 
 const maxPodsPerOwnerRef = 10
@@ -68,7 +68,7 @@ func (psi *PodSchedulableInfo) Match(pod *apiv1.Pod) bool {
 }
 
 // Get returns scheduling info for given pod if matching one exists in PodSchedulableMap
-func (p PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, bool) {
+func (p PodSchedulableMap) Get(pod *apiv1.Pod) (*predicatechecker.PredicateError, bool) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil {
 		return nil, false
@@ -85,7 +85,7 @@ func (p PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, bool)
 }
 
 // Set sets scheduling info for given pod in PodSchedulableMap
-func (p PodSchedulableMap) Set(pod *apiv1.Pod, err *simulator.PredicateError) {
+func (p PodSchedulableMap) Set(pod *apiv1.Pod, err *predicatechecker.PredicateError) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil || pod_utils.IsDaemonSetPod(pod) {
 		return

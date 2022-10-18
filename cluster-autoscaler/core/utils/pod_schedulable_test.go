@@ -18,7 +18,7 @@ package utils
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"testing"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -65,7 +65,7 @@ func TestPodSchedulableMap(t *testing.T) {
 	assert.True(t, found)
 	assert.Nil(t, err)
 
-	cpuErr := simulator.GenericPredicateError()
+	cpuErr := predicatechecker.GenericPredicateError()
 
 	// Pod in different RC
 	_, found = pMap.Get(podInRc2)

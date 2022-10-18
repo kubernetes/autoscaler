@@ -24,7 +24,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -42,9 +43,9 @@ type AutoscalingContext struct {
 	CloudProvider cloudprovider.CloudProvider
 	// TODO(kgolab) - move away too as it's not config
 	// PredicateChecker to check if a pod can fit into a node.
-	PredicateChecker simulator.PredicateChecker
+	PredicateChecker predicatechecker.PredicateChecker
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
-	ClusterSnapshot simulator.ClusterSnapshot
+	ClusterSnapshot clustersnapshot.ClusterSnapshot
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
 	// EstimatorBuilder is the builder function for node count estimator to be used.
@@ -90,8 +91,8 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(
 	options config.AutoscalingOptions,
-	predicateChecker simulator.PredicateChecker,
-	clusterSnapshot simulator.ClusterSnapshot,
+	predicateChecker predicatechecker.PredicateChecker,
+	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *AutoscalingKubeClients,
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,

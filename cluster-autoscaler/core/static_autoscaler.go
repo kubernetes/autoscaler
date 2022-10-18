@@ -42,6 +42,8 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -121,8 +123,8 @@ func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
-	predicateChecker simulator.PredicateChecker,
-	clusterSnapshot simulator.ClusterSnapshot,
+	predicateChecker predicatechecker.PredicateChecker,
+	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
 	cloudProvider cloudprovider.CloudProvider,

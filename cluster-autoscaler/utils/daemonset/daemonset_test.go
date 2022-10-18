@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,7 +39,7 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
-	predicateChecker, err := simulator.NewTestPredicateChecker()
+	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 	ds1 := newDaemonSet("ds1", "0.1", "100M", nil)
 	ds2 := newDaemonSet("ds2", "0.1", "100M", map[string]string{"foo": "bar"})
