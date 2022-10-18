@@ -70,7 +70,7 @@ func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudp
 
 // NodeExists returns whether node exists in this cloud provider
 func (provider *cloudStackCloudProvider) NodeExists(node *v1.Node) (bool, error) {
-	return false, cloudprovider.ErrNotImplemented
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.

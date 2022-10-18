@@ -103,7 +103,7 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // NodeExists returns whether node exists in this cloud provider
 func (gce *GceCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
-	return false, cloudprovider.ErrNotImplemented
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
