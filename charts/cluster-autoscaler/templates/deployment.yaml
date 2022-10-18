@@ -201,6 +201,7 @@ spec:
           {{- if .Values.envFromConfigMap }}
             - configMapRef:
                 name: {{ .Values.envFromConfigMap }}
+                optional: {{ .Values.envFromConfigMapOptional }}
           {{- end }}
           {{- end }}
           livenessProbe:
