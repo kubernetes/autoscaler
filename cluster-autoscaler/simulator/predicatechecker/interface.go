@@ -14,16 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package simulator
+package predicatechecker
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+
 	apiv1 "k8s.io/api/core/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker interface {
-	FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error)
-	FitsAnyNodeMatching(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error)
-	CheckPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError
+	FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, error)
+	FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error)
+	CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError
 }

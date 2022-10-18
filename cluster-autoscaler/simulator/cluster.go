@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -86,15 +88,15 @@ const (
 // RemovalSimulator is a helper object for simulating node removal scenarios.
 type RemovalSimulator struct {
 	listers          kube_util.ListerRegistry
-	clusterSnapshot  ClusterSnapshot
-	predicateChecker PredicateChecker
+	clusterSnapshot  clustersnapshot.ClusterSnapshot
+	predicateChecker predicatechecker.PredicateChecker
 	usageTracker     *UsageTracker
 	canPersist       bool
 	deleteOptions    NodeDeleteOptions
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker,
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, predicateChecker predicatechecker.PredicateChecker,
 	usageTracker *UsageTracker, deleteOptions NodeDeleteOptions, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:          listers,
