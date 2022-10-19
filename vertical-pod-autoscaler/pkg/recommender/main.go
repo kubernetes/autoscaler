@@ -65,6 +65,8 @@ var (
 	memoryAggregationIntervalCount = flag.Int64("memory-aggregation-interval-count", model.DefaultMemoryAggregationIntervalCount, `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.`)
 	memoryHistogramDecayHalfLife   = flag.Duration("memory-histogram-decay-half-life", model.DefaultMemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
 	cpuHistogramDecayHalfLife      = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
+	oomBumpUpRatio                 = flag.Float64("oom-bump-up-ratio", model.DefaultOOMBumpUpRatio, `The bump up ratio when OOM occurred, default is 1.2`)
+	oomMinBumpUp                   = flag.Float64("oom-bump-up-ratio", model.DefaultOOMMinBumpUp, `Specifies minimal increase of memory after observing OOM., default is 100 * 1024 * 1024`)
 )
 
 func main() {
@@ -74,7 +76,7 @@ func main() {
 
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 
-	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife))
+	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
 	metrics.Initialize(*address, healthCheck)

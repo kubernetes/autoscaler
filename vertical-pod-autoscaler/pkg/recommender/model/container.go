@@ -199,8 +199,8 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(OOMMinBumpUp),
-		ScaleResource(memoryUsed, OOMBumpUpRatio))
+	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
+		ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
