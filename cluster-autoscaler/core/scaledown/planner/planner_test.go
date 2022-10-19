@@ -309,7 +309,7 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := simulator.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(), deleteOptions)
+			p := New(&context, NewTestProcessors(&context), deleteOptions)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
 			aErr := p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, nil, time.Now())

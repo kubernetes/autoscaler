@@ -64,7 +64,7 @@ func TestDeltaForNode(t *testing.T) {
 	for _, testCase := range testCases {
 		cp := testprovider.NewTestCloudProvider(nil, nil)
 		ctx := newContext(t, cp)
-		processors := test.NewTestProcessors()
+		processors := test.NewTestProcessors(&ctx)
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
@@ -105,7 +105,7 @@ func TestResourcesLeft(t *testing.T) {
 	for _, testCase := range testCases {
 		cp := newCloudProvider(t, 1000, 1000)
 		ctx := newContext(t, cp)
-		processors := test.NewTestProcessors()
+		processors := test.NewTestProcessors(&ctx)
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
@@ -156,7 +156,7 @@ func TestApplyResourcesLimits(t *testing.T) {
 	for _, testCase := range testCases {
 		cp := testprovider.NewTestCloudProvider(nil, nil)
 		ctx := newContext(t, cp)
-		processors := test.NewTestProcessors()
+		processors := test.NewTestProcessors(&ctx)
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
@@ -214,7 +214,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	provider.SetResourceLimiter(resourceLimiter)
 
 	context := newContext(t, provider)
-	processors := test.NewTestProcessors()
+	processors := test.NewTestProcessors(&context)
 
 	n1 := newNode(t, "n1", 8, 16)
 	utils_test.AddGpusToNode(n1, 4)

@@ -21,160 +21,182 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
-
-	"github.com/stretchr/testify/assert"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-func TestFilterOutSchedulableByPacking(t *testing.T) {
-	// TODO(scheduler_framework_integration) extend/cleanup the test
-	// - add more nodes
-	// - add better naming for pods/scenarios
+func TestFilterOutSchedulable(t *testing.T) {
+	node := buildReadyTestNode("node", 2000, 100)
+	matchesAllNodes := func(*schedulerframework.NodeInfo) bool { return true }
 
-	p2Owner := metav1.OwnerReference{
-		UID:        "controler_a",
-		Controller: pointer.BoolPtr(true),
-	}
-
-	p1 := BuildTestPod("p1", 1500, 200000)
-
-	// define owner to enable caching
-	p2_1 := BuildTestPod("p2_1", 3000, 200000)
-	p2_1.ObjectMeta.OwnerReferences = append(p2_1.ObjectMeta.OwnerReferences, p2Owner)
-	p2_2 := BuildTestPod("p2_2", 3000, 200000)
-	p2_2.ObjectMeta.OwnerReferences = append(p2_2.ObjectMeta.OwnerReferences, p2Owner)
-
-	p3_1 := BuildTestPod("p3_1", 300, 200000)
-	p3_2 := BuildTestPod("p3_2", 300, 200000)
-
-	scheduledPod1 := BuildTestPod("s1", 100, 200000)
-	scheduledPod1.Spec.NodeName = "node1"
-	scheduledPod2 := BuildTestPod("s2", 1500, 200000)
-	scheduledPod2.Spec.NodeName = "node1"
-
-	podWaitingForPreemption := BuildTestPod("w1", 1500, 200000)
-	var priority100 int32 = 100
-	podWaitingForPreemption.Spec.Priority = &priority100
-	podWaitingForPreemption.Status.NominatedNodeName = "node1"
-
-	p4 := BuildTestPod("p4", 1800, 200000)
-	p4.Spec.Priority = &priority100
-
-	node := BuildTestNode("node1", 2000, 2000000)
-	SetNodeReadyState(node, true, time.Time{})
-
-	tests := []struct {
-		name                    string
-		nodes                   []*apiv1.Node
-		scheduledPods           []*apiv1.Pod
-		pendingPods             []*apiv1.Pod
-		expectedFilteredOutPods []*apiv1.Pod
+	testCases := map[string]struct {
+		nodesWithPods           map[*apiv1.Node][]*apiv1.Pod
+		unschedulableCandidates []*apiv1.Pod
+		expectedScheduledPods   []*apiv1.Pod
+		expectedUnscheduledPods []*apiv1.Pod
+		nodeMatches             func(*schedulerframework.NodeInfo) bool
 	}{
-		{
-			name:                    "scenario 1",
-			nodes:                   []*apiv1.Node{node},
-			scheduledPods:           []*apiv1.Pod{scheduledPod1},
-			pendingPods:             []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
-			expectedFilteredOutPods: []*apiv1.Pod{p1, p3_1},
+		"single empty node, no pods": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			nodeMatches:   matchesAllNodes,
 		},
-		{
-			name:                    "scenario 2",
-			nodes:                   []*apiv1.Node{node},
-			scheduledPods:           []*apiv1.Pod{scheduledPod1, scheduledPod2},
-			pendingPods:             []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
-			expectedFilteredOutPods: []*apiv1.Pod{p3_1},
+		"single empty node, single schedulable pod": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod", 500, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod", 500, 10),
+			},
+			nodeMatches: matchesAllNodes,
 		},
-		{
-			name:                    "scenario 3",
-			nodes:                   []*apiv1.Node{node},
-			scheduledPods:           []*apiv1.Pod{scheduledPod1},
-			pendingPods:             []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2, p4},
-			expectedFilteredOutPods: []*apiv1.Pod{p4},
+		"single empty node, many schedulable pods": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				BuildTestPod("pod2", 500, 10),
+				BuildTestPod("pod3", 800, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				BuildTestPod("pod2", 500, 10),
+				BuildTestPod("pod3", 800, 10),
+			},
+			nodeMatches: matchesAllNodes,
+		},
+		"single empty node, single unschedulable pod": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 3000, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod1", 3000, 10),
+			},
+			nodeMatches: matchesAllNodes,
+		},
+		"single empty node, various pods": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				BuildTestPod("pod2", 500, 10),
+				BuildTestPod("pod3", 1800, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				BuildTestPod("pod2", 500, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod3", 1800, 10),
+			},
+			nodeMatches: matchesAllNodes,
+		},
+		"single empty node, some priority pods": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				buildPriorityTestPod("pod2", 500, 10, 10),
+				buildPriorityTestPod("pod3", 1800, 10, 20),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				buildPriorityTestPod("pod3", 1800, 10, 20),
+				BuildTestPod("pod1", 200, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				buildPriorityTestPod("pod2", 500, 10, 10),
+			},
+			nodeMatches: matchesAllNodes,
+		},
+		"non-empty node with a single pods scheduled": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
+				node: {
+					BuildTestPod("pod1", 500, 10),
+				},
+			},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod2", 1000, 10),
+				BuildTestPod("pod3", 300, 10),
+				BuildTestPod("pod4", 300, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod2", 1000, 10),
+				BuildTestPod("pod3", 300, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod4", 300, 10),
+			},
+			nodeMatches: matchesAllNodes,
+		},
+		"non-empty node with many pods scheduled": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
+				node: {
+					BuildTestPod("pod1", 500, 10),
+					BuildTestPod("pod2", 1000, 10),
+				},
+			},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod3", 1000, 10),
+				BuildTestPod("pod4", 300, 10),
+				BuildTestPod("pod5", 300, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod4", 300, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod3", 1000, 10),
+				BuildTestPod("pod5", 300, 10),
+			},
+			nodeMatches: matchesAllNodes,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 
-			for _, node := range tt.nodes {
+	for tn, tc := range testCases {
+		t.Run(tn, func(t *testing.T) {
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
+			assert.NoError(t, err)
+
+			var allExpectedScheduledPods []*apiv1.Pod
+			allExpectedScheduledPods = append(allExpectedScheduledPods, tc.expectedScheduledPods...)
+
+			for node, pods := range tc.nodesWithPods {
 				err := clusterSnapshot.AddNode(node)
 				assert.NoError(t, err)
-			}
 
-			for _, pod := range tt.scheduledPods {
-				err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
-				assert.NoError(t, err)
-			}
+				for _, pod := range pods {
+					pod.Spec.NodeName = node.Name
+					err = clusterSnapshot.AddPod(pod, node.Name)
+					assert.NoError(t, err)
 
-			filterOutSchedulablePodListProcessor := NewFilterOutSchedulablePodListProcessor()
+					allExpectedScheduledPods = append(allExpectedScheduledPods, pod)
+				}
+			}
 
 			clusterSnapshot.Fork()
 
-			var expectedPodsInSnapshot = tt.scheduledPods
-			for _, pod := range tt.expectedFilteredOutPods {
-				expectedPodsInSnapshot = append(expectedPodsInSnapshot, pod)
-			}
+			processor := NewFilterOutSchedulablePodListProcessor(predicateChecker)
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
 
-			var expectedPendingPods []*apiv1.Pod
-			for _, pod := range tt.pendingPods {
-				filteredOut := false
-				for _, filteredOutPod := range tt.expectedFilteredOutPods {
-					if pod == filteredOutPod {
-						filteredOut = true
-					}
-				}
-				if !filteredOut {
-					expectedPendingPods = append(expectedPendingPods, pod)
-				}
-			}
-
-			stillPendingPods, err := filterOutSchedulablePodListProcessor.filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker)
 			assert.NoError(t, err)
-			assert.ElementsMatch(t, stillPendingPods, expectedPendingPods, "pending pods differ")
+			assert.ElementsMatch(t, unschedulablePods, tc.expectedUnscheduledPods, "unschedulable pods differ")
 
-			// Check if snapshot was correctly modified
 			nodeInfos, err := clusterSnapshot.NodeInfos().List()
 			assert.NoError(t, err)
-			var podsInSnapshot []*apiv1.Pod
+			var scheduledPods []*apiv1.Pod
 			for _, nodeInfo := range nodeInfos {
 				for _, podInfo := range nodeInfo.Pods {
-					podsInSnapshot = append(podsInSnapshot, podInfo.Pod)
+					scheduledPods = append(scheduledPods, podInfo.Pod)
 				}
 			}
-			assert.ElementsMatch(t, podsInSnapshot, expectedPodsInSnapshot, "pods in snapshot differ")
-
-			// Verify hints map; it is very whitebox but better than nothing
-			var podUidsInHintsMap []types.UID
-			for uid := range filterOutSchedulablePodListProcessor.schedulablePodsNodeHints {
-				podUidsInHintsMap = append(podUidsInHintsMap, uid)
-			}
-			var expectedFilteredOutPodUids []types.UID
-			for _, pod := range tt.expectedFilteredOutPods {
-				expectedFilteredOutPodUids = append(expectedFilteredOutPodUids, pod.UID)
-			}
-			assert.ElementsMatch(t, expectedFilteredOutPodUids, podUidsInHintsMap)
-
-			// reset snapshot to initial state and run filterOutSchedulableByPacking with hinting map filled in
-			clusterSnapshot.Revert()
-			clusterSnapshot.Fork()
-
-			stillPendingPods, err = filterOutSchedulablePodListProcessor.filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker)
-			assert.NoError(t, err)
-			assert.ElementsMatch(t, stillPendingPods, expectedPendingPods, "pending pods differ (with hints map)")
-
+			assert.ElementsMatch(t, scheduledPods, allExpectedScheduledPods, "scheduled pods differ")
 		})
 	}
 }
 
-func BenchmarkFilterOutSchedulableByPacking(b *testing.B) {
+func BenchmarkFilterOutSchedulable(b *testing.B) {
 	// All pending pods in this scenario are unschedulable - predicates will fail.
 	tests := []struct {
 		name          string
@@ -256,8 +278,8 @@ func BenchmarkFilterOutSchedulableByPacking(b *testing.B) {
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {
-					filterOutSchedulablePodListProcessor := NewFilterOutSchedulablePodListProcessor()
-					if stillPending, err := filterOutSchedulablePodListProcessor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot, predicateChecker); err != nil {
+					processor := NewFilterOutSchedulablePodListProcessor(predicateChecker)
+					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
 						assert.Equal(b, len(stillPending), tc.pendingPods)
@@ -266,4 +288,16 @@ func BenchmarkFilterOutSchedulableByPacking(b *testing.B) {
 			})
 		}
 	}
+}
+
+func buildReadyTestNode(name string, cpu, mem int64) *apiv1.Node {
+	node := BuildTestNode(name, cpu, mem)
+	SetNodeReadyState(node, true, time.Time{})
+	return node
+}
+
+func buildPriorityTestPod(name string, cpu, mem int64, priority int32) *apiv1.Pod {
+	pod := BuildTestPod(name, cpu, mem)
+	pod.Spec.Priority = &priority
+	return pod
 }

@@ -1290,7 +1290,7 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 		SkipNodesWithLocalStorage: true,
 		MinReplicaCount:           0,
 	}
-	sd := NewScaleDown(ctx, NewTestProcessors(), ndt, deleteOptions)
+	sd := NewScaleDown(ctx, NewTestProcessors(ctx), ndt, deleteOptions)
 	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions)
 	return NewScaleDownWrapper(sd, actuator)
 }
