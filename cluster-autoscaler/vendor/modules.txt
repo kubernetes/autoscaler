@@ -1931,7 +1931,7 @@ k8s.io/legacy-cloud-providers/openstack
 k8s.io/legacy-cloud-providers/vsphere
 k8s.io/legacy-cloud-providers/vsphere/vclib
 k8s.io/legacy-cloud-providers/vsphere/vclib/diskmanagers
-# k8s.io/mount-utils v0.26.0-alpha.0 => k8s.io/mount-utils v0.26.0-alpha.0
+# k8s.io/mount-utils v1.21.5 => k8s.io/mount-utils v0.26.0-alpha.0
 ## explicit; go 1.19
 k8s.io/mount-utils
 # k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
