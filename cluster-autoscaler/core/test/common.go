@@ -133,9 +133,9 @@ func ExtractPodNames(pods []*apiv1.Pod) []string {
 }
 
 // NewTestProcessors returns a set of simple processors for use in tests.
-func NewTestProcessors() *processors.AutoscalingProcessors {
+func NewTestProcessors(context *context.AutoscalingContext) *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
-		PodListProcessor:       filteroutschedulable.NewFilterOutSchedulablePodListProcessor(),
+		PodListProcessor:       filteroutschedulable.NewFilterOutSchedulablePodListProcessor(context.PredicateChecker),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
