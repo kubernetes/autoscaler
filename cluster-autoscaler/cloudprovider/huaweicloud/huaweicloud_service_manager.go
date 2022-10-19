@@ -202,28 +202,13 @@ func (csm *cloudServiceManager) GetDesireInstanceNumber(groupID string) (int, er
 }
 
 func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.Instance, error) {
-	asClient := csm.getASClientFunc()
-	if asClient == nil {
-		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
-	}
-
-	// SDK 'ListScalingInstances' only return no more than 20 instances.
-	// If there is a need in the future, need to retrieve by pages.
-	opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
-		ScalingGroupId: groupID,
-	}
-	response, err := asClient.ListScalingInstances(opts)
+	scalingGroupInstances, err := csm.ListScalingInstances(groupID)
 	if err != nil {
-		klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
 		return nil, err
 	}
-	if response == nil || response.ScalingGroupInstances == nil {
-		klog.Infof("no instance in scaling group: %s", groupID)
-		return nil, nil
-	}
 
-	instances := make([]cloudprovider.Instance, 0, len(*response.ScalingGroupInstances))
-	for _, sgi := range *response.ScalingGroupInstances {
+	instances := make([]cloudprovider.Instance, 0, len(scalingGroupInstances))
+	for _, sgi := range scalingGroupInstances {
 		// When a new instance joining to the scaling group, the instance id maybe empty(nil).
 		if sgi.InstanceId == nil {
 			klog.Infof("ignore instance without instance id, maybe instance is joining.")
@@ -237,6 +222,48 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 	}
 
 	return instances, nil
+}
+
+func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicloudsdkasmodel.ScalingGroupInstance, error) {
+	asClient := csm.getASClientFunc()
+	if asClient == nil {
+		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
+	}
+
+	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
+	var startNumber int32 = 0
+	for {
+		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
+			ScalingGroupId: groupID,
+			StartNumber:    &startNumber,
+		}
+		response, err := asClient.ListScalingInstances(opts)
+		if err != nil {
+			klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
+			return nil, err
+		}
+		if response == nil {
+			klog.Errorf("Unexpected get nil response when listing instances.")
+			return nil, fmt.Errorf("unexpected get nil response when listing instances")
+		}
+		if response.ScalingGroupInstances == nil {
+			klog.Errorf("Unexpected get nil scaling group instances")
+			return nil, fmt.Errorf("unexpected get nil scaling group instances")
+		}
+
+		klog.Infof("Got %d instances from scaling group, total instances: %d", len(*response.ScalingGroupInstances), *response.TotalNumber)
+		scalingGroupInstances = append(scalingGroupInstances, *response.ScalingGroupInstances...)
+
+		// break once we get all instances
+		if response.TotalNumber != nil && len(scalingGroupInstances) == int(*response.TotalNumber) {
+			break
+		}
+
+		// get ready to request next page
+		startNumber += int32(len(*response.ScalingGroupInstances))
+	}
+
+	return scalingGroupInstances, nil
 }
 
 func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
@@ -318,7 +345,7 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 	}
 
 	// wait for instance number indeed be increased
-	return wait.Poll(5*time.Second, 300*time.Second, func() (done bool, err error) {
+	return wait.Poll(5*time.Second, 30*time.Minute, func() (done bool, err error) {
 		currentInstanceSize, err := csm.GetDesireInstanceNumber(groupID)
 		if err != nil {
 			return false, err
