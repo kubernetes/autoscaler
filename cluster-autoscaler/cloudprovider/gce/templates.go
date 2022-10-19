@@ -86,10 +86,8 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
 
-	if extendedResources != nil && len(extendedResources) > 0 {
-		for resourceName, quantity := range extendedResources {
-			capacity[resourceName] = quantity
-		}
+	for resourceName, quantity := range extendedResources {
+		capacity[resourceName] = quantity
 	}
 
 	return capacity, nil
@@ -199,7 +197,8 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 
 	extendedResources, err := extractExtendedResourcesFromKubeEnv(kubeEnvValue)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch extended resources from instance template: %v", err)
+		// External Resources are optional and should not break the template creation
+		klog.Errorf("could not fetch extended resources from instance template: %v", err)
 	}
 
 	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ssdCount, pods, mig.Version(), reserved, extendedResources)
