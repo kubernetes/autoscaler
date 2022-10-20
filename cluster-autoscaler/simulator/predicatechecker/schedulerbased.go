@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package simulator
+package predicatechecker
 
 import (
 	"context"
 	"fmt"
+
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
@@ -78,14 +80,14 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 }
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, error) {
 	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*schedulerframework.NodeInfo) bool {
 		return true
 	})
 }
 
 // FitsAnyNodeMatching checks if the given pod can be placed on any of the given nodes matching the provided function.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error) {
 	if clusterSnapshot == nil {
 		return "", fmt.Errorf("ClusterSnapshot not provided")
 	}
@@ -141,7 +143,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot Clu
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
+func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
 	if clusterSnapshot == nil {
 		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
 	}

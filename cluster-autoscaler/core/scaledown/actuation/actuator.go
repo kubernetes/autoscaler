@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -367,9 +368,9 @@ func (a *Actuator) scheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroupId st
 	}
 }
 
-func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (simulator.ClusterSnapshot, error) {
+func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
 	knownNodes := make(map[string]bool)
-	snapshot := simulator.NewBasicClusterSnapshot()
+	snapshot := clustersnapshot.NewBasicClusterSnapshot()
 
 	scheduledPods, err := a.ctx.ScheduledPodLister().List()
 	if err != nil {

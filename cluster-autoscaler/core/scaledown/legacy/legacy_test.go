@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -150,7 +151,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	sd := wrapper.sd
 	allNodes := []*apiv1.Node{n1, n2, n3, n4, n5, n7, n8, n9}
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4, p5, p6})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4, p5, p6})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
@@ -158,7 +159,6 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.True(t, sd.unneededNodes.Contains("n2"))
 	assert.True(t, sd.unneededNodes.Contains("n7"))
 	assert.True(t, sd.unneededNodes.Contains("n8"))
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	for _, n := range []string{"n1", "n2", "n3", "n4", "n7", "n8"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -171,7 +171,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	sd.unremovableNodes = unremovable.NewNodes()
 	sd.unneededNodes.Update([]simulator.NodeToBeRemoved{{Node: n1}, {Node: n2}, {Node: n3}, {Node: n4}}, time.Now())
 	allNodes = []*apiv1.Node{n1, n2, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
@@ -188,7 +188,7 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	sd.unremovableNodes = unremovable.NewNodes()
 	scaleDownCandidates := []*apiv1.Node{n1, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
@@ -196,7 +196,7 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	// Node n1 is unneeded, but should be skipped because it has just recently been found to be unremovable
 	allNodes = []*apiv1.Node{n1}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 
@@ -205,7 +205,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 1, len(sd.unremovableNodes.AsList()))
 
 	// But it should be checked after timeout
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now().Add(context.UnremovableNodeRecheckTimeout+time.Second), nil)
 	assert.NoError(t, autoscalererr)
 
@@ -282,14 +282,12 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	sd := wrapper.sd
 	allNodes := []*apiv1.Node{n1, n2, n3}
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3})
 
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
 	assert.True(t, sd.unneededNodes.Contains("n2"))
-
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	for _, n := range []string{"n1", "n2", "n3"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -397,7 +395,7 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 			wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 			sd := wrapper.sd
-			simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, allPods)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, allPods)
 
 			ng1 := provider.GetNodeGroup("n1").(*testprovider.TestNodeGroup)
 			ng1.SetOptions(tc.n1opts)
@@ -482,14 +480,12 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	sd := wrapper.sd
 
 	allNodes := []*apiv1.Node{n1, n2, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	assert.Equal(t, 2, len(sd.unneededNodes.AsList()))
 	assert.True(t, sd.unneededNodes.Contains("n2"))
 	assert.True(t, sd.unneededNodes.Contains("n3"))
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
-	assert.Contains(t, sd.podLocationHints, p3.Namespace+"/"+p3.Name)
 	for _, n := range []string{"n1", "n2", "n3", "n4"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -547,7 +543,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	assert.Equal(t, numCandidates, len(sd.unneededNodes.AsList()))
@@ -570,7 +566,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		}
 	}
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	// Check that the deleted node was replaced
@@ -631,7 +627,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	assert.Equal(t, numEmpty+numCandidates, len(sd.unneededNodes.AsList()))
@@ -687,7 +683,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
 	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	assert.NotEmpty(t, sd.unneededNodes)
@@ -777,7 +773,7 @@ func TestScaleDown(t *testing.T) {
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
@@ -1034,7 +1030,7 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, config.NodeDeletionTracker)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{})
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
@@ -1128,7 +1124,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	// N1 is unready so it requires a bigger unneeded time.
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
@@ -1152,7 +1148,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	// N1 has been unready for 2 hours, ok to delete.
 	context.CloudProvider = provider
 	wrapper = newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-2*time.Hour))
 	assert.NoError(t, autoscalererr)
 	empty, drain = wrapper.NodesToDelete(time.Now())
@@ -1242,7 +1238,7 @@ func TestScaleDownNoMove(t *testing.T) {
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
@@ -1289,13 +1285,12 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 	if ndt == nil {
 		ndt = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-
 	deleteOptions := simulator.NodeDeleteOptions{
 		SkipNodesWithSystemPods:   true,
 		SkipNodesWithLocalStorage: true,
 		MinReplicaCount:           0,
 	}
-	sd := NewScaleDown(ctx, NewTestProcessors(), clusterStateRegistry, ndt, deleteOptions)
+	sd := NewScaleDown(ctx, NewTestProcessors(), ndt, deleteOptions)
 	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions)
 	return NewScaleDownWrapper(sd, actuator)
 }

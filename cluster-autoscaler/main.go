@@ -48,7 +48,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -358,7 +358,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
-		ClusterSnapshot:      simulator.NewDeltaClusterSnapshot(),
+		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
 		KubeClient:           kubeClient,
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
