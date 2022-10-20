@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package simulator
+package predicatechecker
 
 import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ func TestCheckPredicate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var err error
 			predicateChecker, err := NewTestPredicateChecker()
-			clusterSnapshot := NewBasicClusterSnapshot()
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 			err = clusterSnapshot.AddNodeWithPods(tt.node, tt.scheduledPods)
 			assert.NoError(t, err)
 
@@ -103,7 +104,7 @@ func TestFitsAnyNode(t *testing.T) {
 
 	var err error
 
-	clusterSnapshot := NewBasicClusterSnapshot()
+	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 	err = clusterSnapshot.AddNode(n1000)
 	assert.NoError(t, err)
 	err = clusterSnapshot.AddNode(n2000)
@@ -144,7 +145,7 @@ func TestDebugInfo(t *testing.T) {
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	clusterSnapshot := NewBasicClusterSnapshot()
+	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 
 	err = clusterSnapshot.AddNode(node1)
 	assert.NoError(t, err)

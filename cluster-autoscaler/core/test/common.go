@@ -46,7 +46,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
@@ -166,14 +167,14 @@ func NewScaleTestAutoscalingContext(
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName, estimator.NewThresholdBasedEstimationLimiter(0, 0))
-	predicateChecker, err := simulator.NewTestPredicateChecker()
+	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
-	clusterSnapshot := simulator.NewBasicClusterSnapshot()
+	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{

@@ -17,9 +17,11 @@ limitations under the License.
 package simulator
 
 import (
-	"fmt"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -27,7 +29,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
 )
@@ -85,39 +86,36 @@ const (
 
 // RemovalSimulator is a helper object for simulating node removal scenarios.
 type RemovalSimulator struct {
-	listers          kube_util.ListerRegistry
-	clusterSnapshot  ClusterSnapshot
-	predicateChecker PredicateChecker
-	usageTracker     *UsageTracker
-	canPersist       bool
-	deleteOptions    NodeDeleteOptions
+	listers             kube_util.ListerRegistry
+	clusterSnapshot     clustersnapshot.ClusterSnapshot
+	usageTracker        *UsageTracker
+	canPersist          bool
+	deleteOptions       NodeDeleteOptions
+	schedulingSimulator *scheduling.HintingSimulator
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker,
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, predicateChecker predicatechecker.PredicateChecker,
 	usageTracker *UsageTracker, deleteOptions NodeDeleteOptions, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
-		listers:          listers,
-		clusterSnapshot:  clusterSnapshot,
-		predicateChecker: predicateChecker,
-		usageTracker:     usageTracker,
-		canPersist:       persistSuccessfulSimulations,
-		deleteOptions:    deleteOptions,
+		listers:             listers,
+		clusterSnapshot:     clusterSnapshot,
+		usageTracker:        usageTracker,
+		canPersist:          persistSuccessfulSimulations,
+		deleteOptions:       deleteOptions,
+		schedulingSimulator: scheduling.NewHintingSimulator(predicateChecker),
 	}
 }
 
-// FindNodesToRemove finds nodes that can be removed. Returns also an
-// information about good rescheduling location for each of the pods.
+// FindNodesToRemove finds nodes that can be removed.
 func (r *RemovalSimulator) FindNodesToRemove(
 	candidates []string,
 	destinations []string,
-	oldHints map[string]string,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget,
-) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
+) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, finalError errors.AutoscalerError) {
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*UnremovableNode, 0)
-	newHints := make(map[string]string, len(oldHints))
 
 	destinationMap := make(map[string]bool, len(destinations))
 	for _, destination := range destinations {
@@ -125,14 +123,14 @@ func (r *RemovalSimulator) FindNodesToRemove(
 	}
 
 	for _, nodeName := range candidates {
-		rn, urn := r.CheckNodeRemoval(nodeName, destinationMap, oldHints, newHints, timestamp, pdbs)
+		rn, urn := r.CheckNodeRemoval(nodeName, destinationMap, timestamp, pdbs)
 		if rn != nil {
 			result = append(result, *rn)
 		} else if urn != nil {
 			unremovable = append(unremovable, urn)
 		}
 	}
-	return result, unremovable, newHints, nil
+	return result, unremovable, nil
 }
 
 // CheckNodeRemoval checks whether a specific node can be removed. Depending on
@@ -141,8 +139,6 @@ func (r *RemovalSimulator) FindNodesToRemove(
 func (r *RemovalSimulator) CheckNodeRemoval(
 	nodeName string,
 	destinationMap map[string]bool,
-	oldHints map[string]string,
-	newHints map[string]string,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget,
 ) (*NodeToBeRemoved, *UnremovableNode) {
@@ -167,7 +163,7 @@ func (r *RemovalSimulator) CheckNodeRemoval(
 	}
 
 	err = r.withForkedSnapshot(func() error {
-		return r.findPlaceFor(nodeName, podsToRemove, destinationMap, oldHints, newHints, timestamp)
+		return r.findPlaceFor(nodeName, podsToRemove, destinationMap, timestamp)
 	})
 	if err != nil {
 		klog.V(2).Infof("node %s is not suitable for removal: %v", nodeName, err)
@@ -220,12 +216,7 @@ func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
 	return err
 }
 
-func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
-	oldHints map[string]string, newHints map[string]string, timestamp time.Time) error {
-	podKey := func(pod *apiv1.Pod) string {
-		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
-	}
-
+func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool, timestamp time.Time) error {
 	isCandidateNode := func(nodeName string) bool {
 		return nodeName != removedNode && nodes[nodeName]
 	}
@@ -240,45 +231,25 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 		}
 	}
 
+	newpods := make([]*apiv1.Pod, 0, len(pods))
 	for _, podptr := range pods {
 		newpod := *podptr
 		newpod.Spec.NodeName = ""
-		pod := &newpod
+		newpods = append(newpods, &newpod)
+	}
 
-		foundPlace := false
-		targetNode := ""
+	targetNodes, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode)
+	if err != nil {
+		return err
+	}
 
-		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
-
-		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && isCandidateNode(hintedNode) {
-			if err := r.predicateChecker.CheckPredicates(r.clusterSnapshot, pod, hintedNode); err == nil {
-				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
-				if err := r.clusterSnapshot.AddPod(pod, hintedNode); err != nil {
-					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, hintedNode, err)
-				}
-				newHints[podKey(pod)] = hintedNode
-				foundPlace = true
-				targetNode = hintedNode
-			}
-		}
-
-		if !foundPlace {
-			newNodeName, err := r.predicateChecker.FitsAnyNodeMatching(r.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
-				return isCandidateNode(nodeInfo.Node().Name)
-			})
-			if err == nil {
-				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)
-				if err := r.clusterSnapshot.AddPod(pod, newNodeName); err != nil {
-					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, newNodeName, err)
-				}
-				newHints[podKey(pod)] = newNodeName
-				targetNode = newNodeName
-			} else {
-				return fmt.Errorf("failed to find place for %s", podKey(pod))
-			}
-		}
-
+	for _, targetNode := range targetNodes {
 		r.usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
 	}
 	return nil
+}
+
+// DropOldHints drops old scheduling hints.
+func (r *RemovalSimulator) DropOldHints() {
+	r.schedulingSimulator.DropOldHints()
 }

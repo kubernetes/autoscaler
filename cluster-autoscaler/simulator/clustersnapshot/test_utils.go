@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package simulator
+package clustersnapshot
 
 import (
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
-
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 // InitializeClusterSnapshotOrDie clears cluster snapshot and then initializes it with given set of nodes and pods.
