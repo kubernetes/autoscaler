@@ -22,7 +22,7 @@ import (
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -75,7 +75,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker, err := simulator.NewTestPredicateChecker()
+	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{
@@ -160,7 +160,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker, err := simulator.NewTestPredicateChecker()
+	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
 	// Fill cache
@@ -249,7 +249,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
-	predicateChecker, err := simulator.NewTestPredicateChecker()
+	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{

@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
@@ -46,10 +45,8 @@ import (
 type ScaleDown struct {
 	context              *context.AutoscalingContext
 	processors           *processors.AutoscalingProcessors
-	clusterStateRegistry *clusterstate.ClusterStateRegistry
 	unremovableNodes     *unremovable.Nodes
 	unneededNodes        *unneeded.Nodes
-	podLocationHints     map[string]string
 	nodeUtilizationMap   map[string]utilization.Info
 	usageTracker         *simulator.UsageTracker
 	nodeDeletionTracker  *deletiontracker.NodeDeletionTracker
@@ -59,7 +56,7 @@ type ScaleDown struct {
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions) *ScaleDown {
+func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions) *ScaleDown {
 	usageTracker := simulator.NewUsageTracker()
 	removalSimulator := simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, usageTracker, deleteOptions, false)
 	unremovableNodes := unremovable.NewNodes()
@@ -67,10 +64,8 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 	return &ScaleDown{
 		context:              context,
 		processors:           processors,
-		clusterStateRegistry: clusterStateRegistry,
 		unremovableNodes:     unremovableNodes,
 		unneededNodes:        unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		podLocationHints:     make(map[string]string),
 		nodeUtilizationMap:   make(map[string]utilization.Info),
 		usageTracker:         usageTracker,
 		nodeDeletionTracker:  ndt,
@@ -146,10 +141,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Look for nodes to remove in the current candidates
-	nodesToRemove, unremovable, newHints, simulatorErr := sd.removalSimulator.FindNodesToRemove(
+	nodesToRemove, unremovable, simulatorErr := sd.removalSimulator.FindNodesToRemove(
 		currentCandidates,
 		destinations,
-		sd.podLocationHints,
 		timestamp,
 		pdbs)
 	if simulatorErr != nil {
@@ -171,11 +165,10 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	if additionalCandidatesCount > 0 {
 		// Look for additional nodes to remove among the rest of nodes.
 		klog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
-		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
+		additionalNodesToRemove, additionalUnremovable, simulatorErr :=
 			sd.removalSimulator.FindNodesToRemove(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinations,
-				sd.podLocationHints,
 				timestamp,
 				pdbs)
 		if simulatorErr != nil {
@@ -186,9 +179,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 		nodesToRemove = append(nodesToRemove, additionalNodesToRemove...)
 		unremovable = append(unremovable, additionalUnremovable...)
-		for key, value := range additionalNewHints {
-			newHints[key] = value
-		}
 	}
 
 	for _, empty := range emptyNodesToRemove {
@@ -217,11 +207,8 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Update state and metrics
-	sd.podLocationHints = newHints
+	sd.removalSimulator.DropOldHints()
 	sd.nodeUtilizationMap = utilizationMap
-	unneededNodesList := sd.unneededNodes.AsList()
-	sd.clusterStateRegistry.UpdateScaleDownCandidates(unneededNodesList, timestamp)
-	metrics.UpdateUnneededNodesCount(len(unneededNodesList))
 	return nil
 }
 
@@ -236,14 +223,13 @@ func (sd *ScaleDown) UnremovableNodes() []*simulator.UnremovableNode {
 	return sd.unremovableNodes.AsList()
 }
 
-// markSimulationError indicates a simulation error by clearing  relevant scale
+// markSimulationError indicates a simulation error by clearing relevant scale
 // down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	timestamp time.Time) errors.AutoscalerError {
 	klog.Errorf("Error while simulating node drains: %v", simulatorErr)
 	sd.unneededNodes.Clear()
 	sd.nodeUtilizationMap = make(map[string]utilization.Info)
-	sd.clusterStateRegistry.UpdateScaleDownCandidates(nil, timestamp)
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
 
@@ -341,11 +327,9 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 	}
 
 	findNodesToRemoveStart := time.Now()
-	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, unremovable, _, err := sd.removalSimulator.FindNodesToRemove(
+	nodesToRemove, unremovable, err := sd.removalSimulator.FindNodesToRemove(
 		candidateNames,
 		allNodeNames,
-		sd.podLocationHints,
 		time.Now(),
 		pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
