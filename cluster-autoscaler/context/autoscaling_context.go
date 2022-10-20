@@ -20,6 +20,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -54,6 +55,8 @@ type AutoscalingContext struct {
 	ProcessorCallbacks processor_callbacks.ProcessorCallbacks
 	// DebuggingSnapshotter is the interface for capturing the debugging snapshot
 	DebuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
+	// ScaleDownActuator is the interface for draining and deleting nodes
+	ScaleDownActuator scaledown.Actuator
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
