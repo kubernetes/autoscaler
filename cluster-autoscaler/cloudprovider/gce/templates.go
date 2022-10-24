@@ -72,7 +72,7 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
 func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture,
-	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator) (apiv1.ResourceList, error) {
+	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator, extendedResources apiv1.ResourceList) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -96,6 +96,10 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, arch, version)
 		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
+	}
+
+	for resourceName, quantity := range extendedResources {
+		capacity[resourceName] = quantity
 	}
 
 	return capacity, nil
@@ -215,10 +219,17 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, mig.Version(), reserved)
+	extendedResources, err := extractExtendedResourcesFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		// External Resources are optional and should not break the template creation
+		klog.Errorf("could not fetch extended resources from instance template: %v", err)
+	}
+
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, mig.Version(), reserved, extendedResources)
 	if err != nil {
 		return nil, err
 	}
+
 	node.Status = apiv1.NodeStatus{
 		Capacity: capacity,
 	}
@@ -460,6 +471,33 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 		return "", fmt.Errorf("kube-reserved not in kubelet args in kube-env: %q", kubeletArgs)
 	}
 	return kubeReserved, nil
+}
+
+func extractExtendedResourcesFromKubeEnv(kubeEnvValue string) (apiv1.ResourceList, error) {
+	extendedResourcesAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "extended_resources")
+	if err != nil {
+		klog.Warning("error while obtaining extended_resources from AUTOSCALER_ENV_VARS; %v", err)
+		return nil, err
+	}
+
+	if !found {
+		return apiv1.ResourceList{}, nil
+	}
+
+	extendedResourcesMap, err := parseKeyValueListToMap(extendedResourcesAsString)
+	if err != nil {
+		return apiv1.ResourceList{}, err
+	}
+
+	extendedResources := apiv1.ResourceList{}
+	for name, quantity := range extendedResourcesMap {
+		if q, err := resource.ParseQuantity(quantity); err == nil && q.Sign() >= 0 {
+			extendedResources[apiv1.ResourceName(name)] = q
+		} else if err != nil {
+			klog.Warning("ignoring invalid value in extended_resources defined in AUTOSCALER_ENV_VARS; %v", err)
+		}
+	}
+	return extendedResources, nil
 }
 
 // OperatingSystem denotes operating system used by nodes coming from node group
