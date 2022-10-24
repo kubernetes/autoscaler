@@ -53,4 +53,5 @@ resources:
 commonAnnotations:
   "api-approved.kubernetes.io": "https://github.com/kubernetes/kubernetes/pull/63797"
 EOF
-kubectl kustomize . > ${OUTPUT}
+echo --- > ${OUTPUT}
+kubectl kustomize . >> ${OUTPUT}
