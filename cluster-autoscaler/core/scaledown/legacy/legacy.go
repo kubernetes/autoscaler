@@ -116,7 +116,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
-	currentlyUnneededNodeNames, utilizationMap := sd.eligibilityChecker.FilterOutUnremovable(sd.context, scaleDownCandidates, timestamp, sd.unremovableNodes)
+	sd.unremovableNodes.Update(sd.context.ClusterSnapshot.NodeInfos(), timestamp)
+	currentlyUnneededNodeNames, utilizationMap, ineligible := sd.eligibilityChecker.FilterOutUnremovable(sd.context, scaleDownCandidates, timestamp, sd.unremovableNodes)
+	for _, n := range ineligible {
+		sd.unremovableNodes.Add(n)
+	}
 
 	emptyNodesToRemove := sd.getEmptyNodesToRemoveNoResourceLimits(currentlyUnneededNodeNames, timestamp)
 
