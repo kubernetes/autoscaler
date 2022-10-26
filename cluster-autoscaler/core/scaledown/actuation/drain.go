@@ -51,22 +51,28 @@ const (
 	DefaultDsEvictionRetryTime = 3 * time.Second
 )
 
+type evictionRegister interface {
+	RegisterEviction(*apiv1.Pod)
+}
+
 // Evictor can be used to evict pods from nodes.
 type Evictor struct {
 	EvictionRetryTime          time.Duration
 	DsEvictionRetryTime        time.Duration
 	DsEvictionEmptyNodeTimeout time.Duration
 	PodEvictionHeadroom        time.Duration
+	evictionRegister           evictionRegister
 	deleteOptions              simulator.NodeDeleteOptions
 }
 
 // NewDefaultEvictor returns an instance of Evictor using the default parameters.
-func NewDefaultEvictor(deleteOptions simulator.NodeDeleteOptions) Evictor {
+func NewDefaultEvictor(deleteOptions simulator.NodeDeleteOptions, evictionRegister evictionRegister) Evictor {
 	return Evictor{
 		EvictionRetryTime:          DefaultEvictionRetryTime,
 		DsEvictionRetryTime:        DefaultDsEvictionRetryTime,
 		DsEvictionEmptyNodeTimeout: DefaultDsEvictionEmptyNodeTimeout,
 		PodEvictionHeadroom:        DefaultPodEvictionHeadroom,
+		evictionRegister:           evictionRegister,
 		deleteOptions:              deleteOptions,
 	}
 }
@@ -89,14 +95,14 @@ func (e Evictor) DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1
 	for _, pod := range pods {
 		evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		go func(podToEvict *apiv1.Pod) {
-			confirmations <- evictPod(ctx, podToEvict, false, retryUntil, e.EvictionRetryTime)
+			confirmations <- evictPod(ctx, podToEvict, false, retryUntil, e.EvictionRetryTime, e.evictionRegister)
 		}(pod)
 	}
 
 	// Perform eviction of daemonset. We don't want to raise an error if daemonsetPod wasn't evict properly
 	for _, daemonSetPod := range daemonSetPods {
 		go func(podToEvict *apiv1.Pod) {
-			daemonSetConfirmations <- evictPod(ctx, podToEvict, true, retryUntil, e.EvictionRetryTime)
+			daemonSetConfirmations <- evictPod(ctx, podToEvict, true, retryUntil, e.EvictionRetryTime, e.evictionRegister)
 		}(daemonSetPod)
 
 	}
@@ -183,7 +189,7 @@ func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *
 	// Perform eviction of DaemonSet pods
 	for _, daemonSetPod := range daemonSetPods {
 		go func(podToEvict *apiv1.Pod) {
-			dsEviction <- evictPod(ctx, podToEvict, true, timeNow.Add(e.DsEvictionEmptyNodeTimeout), e.DsEvictionRetryTime)
+			dsEviction <- evictPod(ctx, podToEvict, true, timeNow.Add(e.DsEvictionEmptyNodeTimeout), e.DsEvictionRetryTime, e.evictionRegister)
 		}(daemonSetPod)
 	}
 	// Wait for creating eviction of DaemonSet pods
@@ -206,7 +212,7 @@ func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *
 	return nil
 }
 
-func evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, isDaemonSetPod bool, retryUntil time.Time, waitBetweenRetries time.Duration) status.PodEvictionResult {
+func evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, isDaemonSetPod bool, retryUntil time.Time, waitBetweenRetries time.Duration, evictionRegister evictionRegister) status.PodEvictionResult {
 	ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
 	maxTermination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
@@ -232,6 +238,9 @@ func evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, isDaemonS
 		}
 		lastError = ctx.ClientSet.CoreV1().Pods(podToEvict.Namespace).Evict(context.TODO(), eviction)
 		if lastError == nil || kube_errors.IsNotFound(lastError) {
+			if evictionRegister != nil {
+				evictionRegister.RegisterEviction(podToEvict)
+			}
 			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
 		}
 	}
