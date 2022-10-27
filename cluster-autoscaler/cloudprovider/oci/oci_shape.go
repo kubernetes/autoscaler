@@ -19,6 +19,7 @@ package oci
 import (
 	"context"
 	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/core"
 	"k8s.io/klog/v2"
 )
@@ -117,10 +118,29 @@ func (osf *shapeGetterImpl) GetInstancePoolShape(ip *core.InstancePool) (*Shape,
 				shape.MemoryInBytes = *instanceDetails.LaunchDetails.ShapeConfig.MemoryInGBs * 1024 * 1024 * 1024
 			}
 		} else {
-			allShapes, _ := osf.shapeClient.ListShapes(context.Background(), core.ListShapesRequest{
-				CompartmentId: instanceConfig.CompartmentId,
-			})
-			for _, nextShape := range allShapes.Items {
+			// Fetch the shape object by name
+			var page *string
+			var everyShape []core.Shape
+			for {
+				// List all available shapes
+				lisShapesReq := core.ListShapesRequest{}
+				lisShapesReq.CompartmentId = instanceConfig.CompartmentId
+				lisShapesReq.Page = page
+				lisShapesReq.Limit = common.Int(50)
+
+				listShapes, err := osf.shapeClient.ListShapes(context.Background(), lisShapesReq)
+				if err != nil {
+					return nil, err
+				}
+
+				everyShape = append(everyShape, listShapes.Items...)
+
+				if page = listShapes.OpcNextPage; listShapes.OpcNextPage == nil {
+					break
+				}
+			}
+
+			for _, nextShape := range everyShape {
 				if *nextShape.Shape == *instanceDetails.LaunchDetails.Shape {
 					shape.Name = *nextShape.Shape
 					if nextShape.Ocpus != nil {
