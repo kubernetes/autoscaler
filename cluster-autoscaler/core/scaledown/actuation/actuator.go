@@ -54,14 +54,14 @@ type Actuator struct {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndr *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions) *Actuator {
-	nbd := NewNodeDeletionBatcher(ctx, csr, ndr, ctx.NodeDeletionBatcherInterval)
+func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions) *Actuator {
+	nbd := NewNodeDeletionBatcher(ctx, csr, ndt, ctx.NodeDeletionBatcherInterval)
 	return &Actuator{
 		ctx:                 ctx,
 		clusterState:        csr,
-		nodeDeletionTracker: ndr,
+		nodeDeletionTracker: ndt,
 		nodeDeletionBatcher: nbd,
-		evictor:             NewDefaultEvictor(deleteOptions),
+		evictor:             NewDefaultEvictor(deleteOptions, ndt),
 		deleteOptions:       deleteOptions,
 	}
 }
