@@ -18,11 +18,12 @@ package oci
 
 import (
 	"fmt"
-	"gopkg.in/gcfg.v1"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/gcfg.v1"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -30,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
@@ -496,10 +496,8 @@ func getInstancePoolAvailabilityDomain(ip *core.InstancePool) (string, error) {
 
 func buildGenericLabelsForInstancePool(instancePool *core.InstancePool, nodeName, shape, availabilityDomain string) map[string]string {
 	result := make(map[string]string)
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
 
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
 	parts := strings.Split(*instancePool.Id, ".")
