@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 
 	apiv1 "k8s.io/api/core/v1"
 
