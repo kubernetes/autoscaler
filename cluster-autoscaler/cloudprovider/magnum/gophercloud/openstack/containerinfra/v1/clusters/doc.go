@@ -6,7 +6,8 @@ Example to Create a Cluster
 	masterCount := 1
 	nodeCount := 1
 	createTimeout := 30
-	opts := clusters.CreateOpts{
+	masterLBEnabled := true
+	createOpts := clusters.CreateOpts{
 		ClusterTemplateID: "0562d357-8641-4759-8fed-8173f02c9633",
 		CreateTimeout:     &createTimeout,
 		DiscoveryURL:      "",
@@ -17,6 +18,7 @@ Example to Create a Cluster
 		MasterFlavorID:    "m1.small",
 		Name:              "k8s",
 		NodeCount:         &nodeCount,
+		MasterLBEnabled:   &masterLBEnabled,
 	}
 
 	cluster, err := clusters.Create(serviceClient, createOpts).Extract()
@@ -84,6 +86,17 @@ Example to Update a Cluster
 		},
 	}
 	clusterUUID, err := clusters.Update(serviceClient, clusterUUID, updateOpts).Extract()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", clusterUUID)
+
+Example to Upgrade a Cluster
+
+	upgradeOpts := clusters.UpgradeOpts{
+		ClusterTemplate: "0562d357-8641-4759-8fed-8173f02c9633",
+	}
+	clusterUUID, err := clusters.Upgrade(serviceClient, clusterUUID, upgradeOpts).Extract()
 	if err != nil {
 		panic(err)
 	}

@@ -92,7 +92,8 @@ func Create(c *gophercloud.ServiceClient, opts CreateOptsBuilder) (r CreateResul
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Post(createURL(c), b, &r.Body, nil)
+	resp, err := c.Post(createURL(c), b, &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -181,7 +182,8 @@ func Adopt(c *gophercloud.ServiceClient, opts AdoptOptsBuilder) (r AdoptResult) 
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Post(adoptURL(c), b, &r.Body, nil)
+	resp, err := c.Post(adoptURL(c), b, &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -251,6 +253,9 @@ type ListOpts struct {
 	// ShowNested set to `true` to include nested stacks in the list.
 	ShowNested bool `q:"show_nested"`
 
+	// ShowHidden set to `true` to include hiddened stacks in the list.
+	ShowHidden bool `q:"show_hidden"`
+
 	// Tags lists stacks that contain one or more simple string tags.
 	Tags string `q:"tags"`
 
@@ -293,13 +298,15 @@ func List(c *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 
 // Get retreives a stack based on the stack name and stack ID.
 func Get(c *gophercloud.ServiceClient, stackName, stackID string) (r GetResult) {
-	_, r.Err = c.Get(getURL(c, stackName, stackID), &r.Body, nil)
+	resp, err := c.Get(getURL(c, stackName, stackID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Find retrieves a stack based on the stack name or stack ID.
 func Find(c *gophercloud.ServiceClient, stackIdentity string) (r GetResult) {
-	_, r.Err = c.Get(findURL(c, stackIdentity), &r.Body, nil)
+	resp, err := c.Get(findURL(c, stackIdentity), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -405,7 +412,8 @@ func Update(c *gophercloud.ServiceClient, stackName, stackID string, opts Update
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Put(updateURL(c, stackName, stackID), b, nil, nil)
+	resp, err := c.Put(updateURL(c, stackName, stackID), b, nil, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -418,13 +426,15 @@ func UpdatePatch(c *gophercloud.ServiceClient, stackName, stackID string, opts U
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Patch(updateURL(c, stackName, stackID), b, nil, nil)
+	resp, err := c.Patch(updateURL(c, stackName, stackID), b, nil, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete deletes a stack based on the stack name and stack ID.
 func Delete(c *gophercloud.ServiceClient, stackName, stackID string) (r DeleteResult) {
-	_, r.Err = c.Delete(deleteURL(c, stackName, stackID), nil)
+	resp, err := c.Delete(deleteURL(c, stackName, stackID), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -505,18 +515,20 @@ func Preview(c *gophercloud.ServiceClient, opts PreviewOptsBuilder) (r PreviewRe
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Post(previewURL(c), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Post(previewURL(c), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Abandon deletes the stack with the provided stackName and stackID, but leaves its
 // resources intact, and returns data describing the stack and its resources.
 func Abandon(c *gophercloud.ServiceClient, stackName, stackID string) (r AbandonResult) {
-	_, r.Err = c.Delete(abandonURL(c, stackName, stackID), &gophercloud.RequestOpts{
+	resp, err := c.Delete(abandonURL(c, stackName, stackID), &gophercloud.RequestOpts{
 		JSONResponse: &r.Body,
 		OkCodes:      []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

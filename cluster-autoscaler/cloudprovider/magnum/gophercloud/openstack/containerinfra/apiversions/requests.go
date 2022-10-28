@@ -14,6 +14,7 @@ func List(c *gophercloud.ServiceClient) pagination.Pager {
 
 // Get will get a specific API version, specified by major ID.
 func Get(client *gophercloud.ServiceClient, v string) (r GetResult) {
-	_, r.Err = client.Get(getURL(client, v), &r.Body, nil)
+	resp, err := client.Get(getURL(client, v), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

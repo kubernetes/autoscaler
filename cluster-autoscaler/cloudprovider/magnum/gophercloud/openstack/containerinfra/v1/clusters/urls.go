@@ -38,6 +38,10 @@ func updateURL(client *gophercloud.ServiceClient, id string) string {
 	return idURL(client, id)
 }
 
+func upgradeURL(client *gophercloud.ServiceClient, id string) string {
+	return client.ServiceURL("clusters", id, "actions/upgrade")
+}
+
 func resizeURL(client *gophercloud.ServiceClient, id string) string {
 	return client.ServiceURL("clusters", id, "actions/resize")
 }

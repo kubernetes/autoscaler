@@ -11,29 +11,17 @@ Gophercloud is an OpenStack Go SDK.
 
 ## How to install
 
-Before installing, you need to ensure that your [GOPATH environment variable](https://golang.org/doc/code.html#GOPATH)
-is pointing to an appropriate directory where you want to install Gophercloud:
+Reference a Gophercloud package in your code:
 
-```bash
-mkdir $HOME/go
-export GOPATH=$HOME/go
+```Go
+import "github.com/gophercloud/gophercloud"
 ```
 
-To protect yourself against changes in your dependencies, we highly recommend choosing a
-[dependency management solution](https://github.com/golang/go/wiki/PackageManagementTools) for
-your projects, such as [godep](https://github.com/tools/godep). Once this is set up, you can install
-Gophercloud as a dependency like so:
+Then update your `go.mod`:
 
-```bash
-go get github.com/gophercloud/gophercloud
-
-# Edit your code to import relevant packages from "github.com/gophercloud/gophercloud"
-
-godep save ./...
+```shell
+go mod tidy
 ```
-
-This will install all the source files you need into a `Godeps/_workspace` directory, which is
-referenceable from your own source files when you use the `godep go` command.
 
 ## Getting started
 
@@ -59,6 +47,13 @@ variables. To execute the file, run `source admin-openrc.sh` and you will be
 prompted for your password.
 
 ### Authentication
+
+> NOTE: It is now recommended to use the `clientconfig` package found at
+> https://github.com/gophercloud/utils/tree/master/openstack/clientconfig
+> for all authentication purposes.
+>
+> The below documentation is still relevant. clientconfig simply implements
+> the below and presents it in an easier and more flexible way.
 
 Once you have access to your credentials, you can begin plugging them into
 Gophercloud. The next step is authentication, and this is handled by a base
@@ -131,7 +126,9 @@ Have a look at the [FAQ](./docs/FAQ.md) for some tips on customizing the way Gop
 
 ## Backwards-Compatibility Guarantees
 
-None. Vendor it and write tests covering the parts you use.
+Gophercloud versioning follows [semver](https://semver.org/spec/v2.0.0.html).
+
+Before `v1.0.0`, there were no guarantees. Starting with v1, there will be no breaking changes within a major release.
 
 ## Contributing
 

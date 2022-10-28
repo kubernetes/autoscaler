@@ -39,6 +39,11 @@ type UpdateResult struct {
 	commonResult
 }
 
+// UpgradeResult is the response of a Upgrade operations.
+type UpgradeResult struct {
+	commonResult
+}
+
 // ResizeResult is the response of a Resize operations.
 type ResizeResult struct {
 	commonResult
@@ -60,6 +65,14 @@ func (r UpdateResult) Extract() (string, error) {
 	return s.UUID, err
 }
 
+func (r UpgradeResult) Extract() (string, error) {
+	var s struct {
+		UUID string
+	}
+	err := r.ExtractInto(&s)
+	return s.UUID, err
+}
+
 func (r ResizeResult) Extract() (string, error) {
 	var s struct {
 		UUID string
@@ -69,35 +82,40 @@ func (r ResizeResult) Extract() (string, error) {
 }
 
 type Cluster struct {
-	APIAddress        string             `json:"api_address"`
-	COEVersion        string             `json:"coe_version"`
-	ClusterTemplateID string             `json:"cluster_template_id"`
-	ContainerVersion  string             `json:"container_version"`
-	CreateTimeout     int                `json:"create_timeout"`
-	CreatedAt         time.Time          `json:"created_at"`
-	DiscoveryURL      string             `json:"discovery_url"`
-	DockerVolumeSize  int                `json:"docker_volume_size"`
-	Faults            map[string]string  `json:"faults"`
-	FlavorID          string             `json:"flavor_id"`
-	KeyPair           string             `json:"keypair"`
-	Labels            map[string]string  `json:"labels"`
-	Links             []gophercloud.Link `json:"links"`
-	MasterFlavorID    string             `json:"master_flavor_id"`
-	MasterAddresses   []string           `json:"master_addresses"`
-	MasterCount       int                `json:"master_count"`
-	Name              string             `json:"name"`
-	NodeAddresses     []string           `json:"node_addresses"`
-	NodeCount         int                `json:"node_count"`
-	ProjectID         string             `json:"project_id"`
-	StackID           string             `json:"stack_id"`
-	Status            string             `json:"status"`
-	StatusReason      string             `json:"status_reason"`
-	UUID              string             `json:"uuid"`
-	UpdatedAt         time.Time          `json:"updated_at"`
-	UserID            string             `json:"user_id"`
-	FloatingIPEnabled bool               `json:"floating_ip_enabled"`
-	FixedNetwork      string             `json:"fixed_network"`
-	FixedSubnet       string             `json:"fixed_subnet"`
+	APIAddress         string                 `json:"api_address"`
+	COEVersion         string                 `json:"coe_version"`
+	ClusterTemplateID  string                 `json:"cluster_template_id"`
+	ContainerVersion   string                 `json:"container_version"`
+	CreateTimeout      int                    `json:"create_timeout"`
+	CreatedAt          time.Time              `json:"created_at"`
+	DiscoveryURL       string                 `json:"discovery_url"`
+	DockerVolumeSize   int                    `json:"docker_volume_size"`
+	Faults             map[string]string      `json:"faults"`
+	FlavorID           string                 `json:"flavor_id"`
+	KeyPair            string                 `json:"keypair"`
+	Labels             map[string]string      `json:"labels"`
+	LabelsAdded        map[string]string      `json:"labels_added"`
+	LabelsOverridden   map[string]string      `json:"labels_overridden"`
+	LabelsSkipped      map[string]string      `json:"labels_skipped"`
+	Links              []gophercloud.Link     `json:"links"`
+	MasterFlavorID     string                 `json:"master_flavor_id"`
+	MasterAddresses    []string               `json:"master_addresses"`
+	MasterCount        int                    `json:"master_count"`
+	Name               string                 `json:"name"`
+	NodeAddresses      []string               `json:"node_addresses"`
+	NodeCount          int                    `json:"node_count"`
+	ProjectID          string                 `json:"project_id"`
+	StackID            string                 `json:"stack_id"`
+	Status             string                 `json:"status"`
+	StatusReason       string                 `json:"status_reason"`
+	UUID               string                 `json:"uuid"`
+	UpdatedAt          time.Time              `json:"updated_at"`
+	UserID             string                 `json:"user_id"`
+	FloatingIPEnabled  bool                   `json:"floating_ip_enabled"`
+	FixedNetwork       string                 `json:"fixed_network"`
+	FixedSubnet        string                 `json:"fixed_subnet"`
+	HealthStatus       string                 `json:"health_status"`
+	HealthStatusReason map[string]interface{} `json:"health_status_reason"`
 }
 
 type ClusterPage struct {

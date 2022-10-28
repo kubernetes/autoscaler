@@ -81,6 +81,9 @@ func (t *TE) Fetch() error {
 	if err != nil {
 		return err
 	}
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return fmt.Errorf("error fetching %s: %s", t.URL, resp.Status)
+	}
 	t.Bin = body
 	return nil
 }
@@ -116,11 +119,6 @@ func (t *TE) Parse() error {
 			return ErrInvalidDataFormat{}
 		}
 	}
-	return t.Validate()
-}
-
-// Validate validates the contents of TE
-func (t *TE) Validate() error {
 	return nil
 }
 

@@ -2,7 +2,9 @@ package testhelper
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,6 +19,18 @@ var (
 	// Server is an in-memory HTTP server for testing.
 	Server *httptest.Server
 )
+
+// SetupPersistentPortHTTP prepares the Mux and Server listening specific port.
+func SetupPersistentPortHTTP(t *testing.T, port int) {
+	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	if err != nil {
+		t.Errorf("Failed to listen to 127.0.0.1:%d: %s", port, err)
+	}
+	Mux = http.NewServeMux()
+	Server = httptest.NewUnstartedServer(Mux)
+	Server.Listener = l
+	Server.Start()
+}
 
 // SetupHTTP prepares the Mux and Server.
 func SetupHTTP() {
@@ -56,8 +70,21 @@ func TestMethod(t *testing.T, r *http.Request, expected string) {
 
 // TestHeader checks that the header on the http.Request matches the expected value.
 func TestHeader(t *testing.T, r *http.Request, header string, expected string) {
-	if actual := r.Header.Get(header); expected != actual {
-		t.Errorf("Header %s = %s, expected %s", header, actual, expected)
+	if len(r.Header.Values(header)) == 0 {
+		t.Errorf("Header %s not found, expected %q", header, expected)
+		return
+	}
+	for _, actual := range r.Header.Values(header) {
+		if expected != actual {
+			t.Errorf("Header %s = %q, expected %q", header, actual, expected)
+		}
+	}
+}
+
+// TestHeaderUnset checks that the header on the http.Request doesn't exist.
+func TestHeaderUnset(t *testing.T, r *http.Request, header string) {
+	if len(r.Header.Values(header)) > 0 {
+		t.Errorf("Header %s is not expected", header)
 	}
 }
 

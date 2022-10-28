@@ -1,8 +1,6 @@
 package clusters
 
 import (
-	"net/http"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/pagination"
 )
@@ -26,8 +24,10 @@ type CreateOpts struct {
 	Name              string            `json:"name"`
 	NodeCount         *int              `json:"node_count,omitempty"`
 	FloatingIPEnabled *bool             `json:"floating_ip_enabled,omitempty"`
+	MasterLBEnabled   *bool             `json:"master_lb_enabled,omitempty"`
 	FixedNetwork      string            `json:"fixed_network,omitempty"`
 	FixedSubnet       string            `json:"fixed_subnet,omitempty"`
+	MergeLabels       *bool             `json:"merge_labels,omitempty"`
 }
 
 // ToClusterCreateMap constructs a request body from CreateOpts.
@@ -42,33 +42,24 @@ func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r Create
 		r.Err = err
 		return
 	}
-	var result *http.Response
-	result, r.Err = client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
-
-	if r.Err == nil {
-		r.Header = result.Header
-	}
-
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Get retrieves a specific clusters based on its unique ID.
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	var result *http.Response
-	result, r.Err = client.Get(getURL(client, id), &r.Body, &gophercloud.RequestOpts{OkCodes: []int{200}})
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	resp, err := client.Get(getURL(client, id), &r.Body, &gophercloud.RequestOpts{OkCodes: []int{200}})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete deletes the specified cluster ID.
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	var result *http.Response
-	result, r.Err = client.Delete(deleteURL(client, id), nil)
-	r.Header = result.Header
+	resp, err := client.Delete(deleteURL(client, id), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -167,15 +158,46 @@ func Update(client *gophercloud.ServiceClient, id string, opts []UpdateOptsBuild
 		}
 		o = append(o, b)
 	}
-
-	var result *http.Response
-	result, r.Err = client.Patch(updateURL(client, id), o, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(updateURL(client, id), o, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
 
-	if r.Err == nil {
-		r.Header = result.Header
+type UpgradeOpts struct {
+	ClusterTemplate string `json:"cluster_template" required:"true"`
+	MaxBatchSize    *int   `json:"max_batch_size,omitempty"`
+	NodeGroup       string `json:"nodegroup,omitempty"`
+}
+
+// UpgradeOptsBuilder allows extensions to add additional parameters to the
+// Upgrade request.
+type UpgradeOptsBuilder interface {
+	ToClustersUpgradeMap() (map[string]interface{}, error)
+}
+
+// ToClustersUpgradeMap constructs a request body from UpgradeOpts.
+func (opts UpgradeOpts) ToClustersUpgradeMap() (map[string]interface{}, error) {
+	if opts.MaxBatchSize == nil {
+		defaultMaxBatchSize := 1
+		opts.MaxBatchSize = &defaultMaxBatchSize
 	}
+	return gophercloud.BuildRequestBody(opts, "")
+}
+
+// Upgrade implements cluster upgrade request.
+func Upgrade(client *gophercloud.ServiceClient, id string, opts UpgradeOptsBuilder) (r UpgradeResult) {
+	b, err := opts.ToClustersUpgradeMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+
+	resp, err := client.Post(upgradeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{202},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -204,14 +226,9 @@ func Resize(client *gophercloud.ServiceClient, id string, opts ResizeOptsBuilder
 		r.Err = err
 		return
 	}
-
-	var result *http.Response
-	result, r.Err = client.Post(resizeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(resizeURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
-
-	if r.Err == nil {
-		r.Header = result.Header
-	}
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

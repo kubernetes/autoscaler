@@ -85,7 +85,7 @@ func (t *Template) getFileContents(te interface{}, ignoreIf igFunc, recurse bool
 				childTemplate.client = t.client
 
 				// fetch the contents of the child template
-				if err := childTemplate.Parse(); err != nil {
+				if err := childTemplate.Fetch(); err != nil {
 					return err
 				}
 
@@ -93,8 +93,12 @@ func (t *Template) getFileContents(te interface{}, ignoreIf igFunc, recurse bool
 				// required if the child template itself contains references to
 				// other templates
 				if recurse {
-					if err := childTemplate.getFileContents(childTemplate.Parsed, ignoreIf, recurse); err != nil {
-						return err
+					if err := childTemplate.Parse(); err == nil {
+						if err := childTemplate.Validate(); err == nil {
+							if err := childTemplate.getFileContents(childTemplate.Parsed, ignoreIf, recurse); err != nil {
+								return err
+							}
+						}
 					}
 				}
 				// update parent template with current child templates' content.

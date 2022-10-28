@@ -50,6 +50,9 @@ type NodeGroup struct {
 	ProjectID        string             `json:"project_id"`
 	DockerVolumeSize *int               `json:"docker_volume_size"`
 	Labels           map[string]string  `json:"labels"`
+	LabelsAdded      map[string]string  `json:"labels_added"`
+	LabelsOverridden map[string]string  `json:"labels_overridden"`
+	LabelsSkipped    map[string]string  `json:"labels_skipped"`
 	Links            []gophercloud.Link `json:"links"`
 	FlavorID         string             `json:"flavor_id"`
 	ImageID          string             `json:"image_id"`
