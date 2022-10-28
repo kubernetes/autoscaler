@@ -3,6 +3,7 @@ package oci
 import (
 	"context"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/workrequests"
 	"reflect"
 	"testing"
 
@@ -27,6 +28,22 @@ type mockVirtualNetworkClient struct {
 type mockComputeClient struct {
 	err                         error
 	listVnicAttachmentsResponse core.ListVnicAttachmentsResponse
+}
+
+type mockWorkRequestClient struct {
+	err error
+}
+
+func (m *mockWorkRequestClient) GetWorkRequest(ctx context.Context, request workrequests.GetWorkRequestRequest) (workrequests.GetWorkRequestResponse, error) {
+	return workrequests.GetWorkRequestResponse{}, m.err
+}
+
+func (m *mockWorkRequestClient) ListWorkRequests(ctx context.Context, request workrequests.ListWorkRequestsRequest) (workrequests.ListWorkRequestsResponse, error) {
+	return workrequests.ListWorkRequestsResponse{}, m.err
+}
+
+func (m *mockWorkRequestClient) ListWorkRequestErrors(ctx context.Context, request workrequests.ListWorkRequestErrorsRequest) (workrequests.ListWorkRequestErrorsResponse, error) {
+	return workrequests.ListWorkRequestErrorsResponse{}, m.err
 }
 
 func (m *mockComputeClient) ListVnicAttachments(ctx context.Context, request core.ListVnicAttachmentsRequest) (core.ListVnicAttachmentsResponse, error) {
@@ -111,6 +128,10 @@ var virtualNetworkClient = &mockVirtualNetworkClient{
 	},
 }
 
+var workRequestsClient = &mockWorkRequestClient{
+	err: nil,
+}
+
 func TestInstancePoolFromArgs(t *testing.T) {
 
 	value := `1:5:ocid1.instancepool.oc1.phx.aaaaaaaah`
@@ -146,7 +167,7 @@ func TestInstancePoolFromArgs(t *testing.T) {
 
 func TestGetSetInstancePoolSize(t *testing.T) {
 
-	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
+	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient)
 	nodePoolCache.poolCache["ocid1.instancepool.oc1.phx.aaaaaaaai"] = &core.InstancePool{Size: common.Int(2)}
 
 	manager := &InstancePoolManagerImpl{instancePoolCache: nodePoolCache}
@@ -183,7 +204,7 @@ func TestGetSetInstancePoolSize(t *testing.T) {
 
 func TestGetInstancePoolForInstance(t *testing.T) {
 
-	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
+	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient)
 	nodePoolCache.poolCache["ocid1.instancepool.oc1.phx.aaaaaaaa1"] = &core.InstancePool{
 		Id:   common.String("ocid1.instancepool.oc1.phx.aaaaaaaa1"),
 		Size: common.Int(1),
@@ -267,7 +288,7 @@ func TestGetInstancePoolForInstance(t *testing.T) {
 
 func TestGetInstancePoolNodes(t *testing.T) {
 
-	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
+	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient)
 	nodePoolCache.poolCache["ocid1.instancepool.oc1.phx.aaaaaaaa1"] = &core.InstancePool{
 		Id:             common.String("ocid1.instancepool.oc1.phx.aaaaaaaa1"),
 		CompartmentId:  common.String("ocid1.compartment.oc1..aaaaaaaa1"),
@@ -406,7 +427,7 @@ func TestGetInstancePoolsAndInstances(t *testing.T) {
 		staticInstancePools: map[string]*InstancePoolNodeGroup{
 			"ocid1.instancepool.oc1.phx.aaaaaaaa1": {id: "ocid1.instancepool.oc1.phx.aaaaaaaa1"},
 		},
-		instancePoolCache: newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient),
+		instancePoolCache: newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient),
 	}
 
 	// Populate cache(s) (twice to increase code coverage).
@@ -481,7 +502,7 @@ func TestDeleteInstances(t *testing.T) {
 		staticInstancePools: map[string]*InstancePoolNodeGroup{
 			"ocid1.instancepool.oc1.phx.aaaaaaaa1": {id: "ocid1.instancepool.oc1.phx.aaaaaaaa1"},
 		},
-		instancePoolCache: newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient),
+		instancePoolCache: newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient),
 	}
 	manager.shapeGetter = createShapeGetter(shapeClient)
 	// Populate cache(s).
