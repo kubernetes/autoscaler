@@ -164,9 +164,12 @@ Auto-Discovery Setup is the preferred method to configure Cluster Autoscaler.
 
 To enable this, provide the `--node-group-auto-discovery` flag as an argument
 whose value is a list of tag keys that should be looked for. For example,
-`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>,my-custom-tag=custom-value`
-will find the ASGs that have the given tags. Optionally, a value can be provided
-for each tag as well.
+`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>`
+will find the ASGs that have at least all the given tags. Without the tags, the Cluster Autoscaler will be unable to add new instances
+to the ASG as it has not been discovered. In the example, a value is not given for the tags and in this case any value will be ignored and
+will be arbitrary - only the tag name matters. Optionally, the tag value can be set to be usable and custom tags can also be added. For example,
+`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled=foo,k8s.io/cluster-autoscaler/<cluster-name>=bar,my-custom-tag=custom-value`.
+Now the ASG tags must have the correct values as well as the custom tag to be successfully discovered by the Cluster Autoscaler. 
 
 Example deployment:
 
@@ -192,18 +195,24 @@ only the first instance type found will be used. See [Using Mixed Instances
 Policies and Spot Instances](#Using-Mixed-Instances-Policies-and-Spot-Instances)
 for details.
 
-Cluster Autoscaler supports hints that nodes will be labelled when they join the
-cluster via ASG tags. The tag is of the format
-`k8s.io/cluster-autoscaler/node-template/label/<label-name>`. `<label-name>` is
+When scaling up from 0 nodes, the Cluster Autoscaler reads ASG tags to derive information about the specifications of the nodes
+i.e labels and taints in that ASG. Note that it does not actually apply these labels or taints - this is done by an AWS generated 
+user data script. It gives the Cluster Autoscaler information about whether pending pods will be able to be scheduled should a new node
+be spun up for a particular ASG with the asumption the ASG tags accurately reflect the labels/taint actually applied. 
+
+The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the label tag
+on the ASG should a deployment have a NodeSelector, else no scaling will occur as the Cluster Autoscaler does not realise
+the ASG has that particular label. The tag is of the format
+`k8s.io/cluster-autoscaler/node-template/label/<label-name>`: `<label-value>` is
 the name of the label and the value of each tag specifies the label value.
 
 Example tags:
 
 - `k8s.io/cluster-autoscaler/node-template/label/foo`: `bar`
 
-Cluster Autoscaler supports hints that nodes will be tainted when they join the
-cluster via ASG tags. The tag is of the format
-`k8s.io/cluster-autoscaler/node-template/taint/<taint-name>`. `<taint-name>` is
+The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the taint tag
+on the ASG, else tainted nodes may get spun up that cannot actually have the pending pods run on it. The tag is of the format
+`k8s.io/cluster-autoscaler/node-template/taint/<taint-name>`:`<taint-value:taint-effect>` is
 the name of the taint and the value of each tag specifies the taint value and effect with the format `<taint-value>:<taint-effect>`.
 
 Example tags:
@@ -243,7 +252,9 @@ Recommendations:
 - It is recommended to use a second tag like
   `k8s.io/cluster-autoscaler/<cluster-name>` when
   `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent
-  ASGs from different clusters recognized as the node groups.
+  ASGs from different clusters having conflicts. 
+  An ASG must contain at least all the tags specified and as such secondary tags can differentiate between different 
+  clusters ASGs.
 - To prevent conflicts, do not provide a `--nodes` argument if
   `--node-group-auto-discovery` is specified.
 - Be sure to add `autoscaling:DescribeLaunchConfigurations` or
@@ -252,7 +263,7 @@ Recommendations:
   Configurations or Launch Templates.
 - If Cluster Autoscaler adds a node to the cluster, and the node has taints applied
   when it joins the cluster that Cluster Autoscaler was unaware of (because the tag
-  wasn't supplied), this can lead to significant confusion and misbehaviour.
+  wasn't supplied in ASG), this can lead to significant confusion and misbehaviour.
 
 ### Special note on GPU instances
 
