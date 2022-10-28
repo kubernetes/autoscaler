@@ -18,14 +18,13 @@ package kamatera
 
 import (
 	"context"
-	"encoding/hex"
-	"fmt"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
+	"strings"
 )
 
 func mockKamateraServerName() string {
-	return fmt.Sprintf("%s", hex.EncodeToString(uuid.NewV4().Bytes()))
+	return strings.ReplaceAll(uuid.New().String(), "-", "")
 }
 
 func mockServerConfig(namePrefix string, tags []string) ServerConfig {
