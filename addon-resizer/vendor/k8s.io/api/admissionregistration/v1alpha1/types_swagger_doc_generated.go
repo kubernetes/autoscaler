@@ -39,7 +39,7 @@ func (Initializer) SwaggerDoc() map[string]string {
 
 var map_InitializerConfiguration = map[string]string{
 	"":             "InitializerConfiguration describes the configuration of initializers.",
-	"metadata":     "Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata.",
+	"metadata":     "Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.",
 	"initializers": "Initializers is a list of resources and their default initializers Order-sensitive. When merging multiple InitializerConfigurations, we sort the initializers from different InitializerConfigurations by the name of the InitializerConfigurations; the order of the initializers from the same InitializerConfiguration is preserved.",
 }
 
@@ -49,7 +49,7 @@ func (InitializerConfiguration) SwaggerDoc() map[string]string {
 
 var map_InitializerConfigurationList = map[string]string{
 	"":         "InitializerConfigurationList is a list of InitializerConfiguration.",
-	"metadata": "Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+	"metadata": "Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
 	"items":    "List of InitializerConfiguration.",
 }
 
