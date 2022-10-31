@@ -17,9 +17,11 @@ limitations under the License.
 package planner
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/types"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -40,6 +42,10 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
+var rSetLabels = map[string]string{
+	"app": "rs",
+}
+
 func TestUpdateClusterState(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -49,6 +55,7 @@ func TestUpdateClusterState(t *testing.T) {
 		eligible        []string
 		wantUnneeded    []string
 		wantErr         bool
+		replicasSets    []*appsv1.ReplicaSet
 	}{
 		{
 			name: "all eligible",
@@ -93,8 +100,8 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n2", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2"),
-				scheduledPod("p2", 500, 1, "n2"),
+				scheduledPod("p1", 500, 1, "n2", "rs"),
+				scheduledPod("p2", 500, 1, "n2", "rs"),
 			},
 			eligible: []string{"n1"},
 			actuationStatus: &fakeActuationStatus{
@@ -109,9 +116,9 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n2", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2"),
-				scheduledPod("p2", 500, 1, "n2"),
-				scheduledPod("p3", 500, 1, "n2"),
+				scheduledPod("p1", 500, 1, "n2", "rs"),
+				scheduledPod("p2", 500, 1, "n2", "rs"),
+				scheduledPod("p3", 500, 1, "n2", "rs"),
 			},
 			eligible: []string{"n1"},
 			actuationStatus: &fakeActuationStatus{
@@ -129,10 +136,10 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2"),
-				scheduledPod("p2", 500, 1, "n2"),
-				scheduledPod("p4", 500, 1, "n4"),
-				scheduledPod("p5", 500, 1, "n4"),
+				scheduledPod("p1", 500, 1, "n2", "rs"),
+				scheduledPod("p2", 500, 1, "n2", "rs"),
+				scheduledPod("p4", 500, 1, "n4", "rs"),
+				scheduledPod("p5", 500, 1, "n4", "rs"),
 			},
 			eligible: []string{"n1", "n3"},
 			actuationStatus: &fakeActuationStatus{
@@ -149,11 +156,11 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2"),
-				scheduledPod("p2", 500, 1, "n2"),
-				scheduledPod("p3", 500, 1, "n2"),
-				scheduledPod("p4", 500, 1, "n4"),
-				scheduledPod("p5", 500, 1, "n4"),
+				scheduledPod("p1", 500, 1, "n2", "rs"),
+				scheduledPod("p2", 500, 1, "n2", "rs"),
+				scheduledPod("p3", 500, 1, "n2", "rs"),
+				scheduledPod("p4", 500, 1, "n4", "rs"),
+				scheduledPod("p5", 500, 1, "n4", "rs"),
 			},
 			eligible: []string{"n1", "n3"},
 			actuationStatus: &fakeActuationStatus{
@@ -172,11 +179,11 @@ func TestUpdateClusterState(t *testing.T) {
 				BuildTestNode("n5", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 400, 1, "n1"),
-				scheduledPod("p2", 400, 1, "n2"),
-				scheduledPod("p3", 400, 1, "n3"),
-				scheduledPod("p4", 400, 1, "n4"),
-				scheduledPod("p5", 400, 1, "n5"),
+				scheduledPod("p1", 400, 1, "n1", "rs"),
+				scheduledPod("p2", 400, 1, "n2", "rs"),
+				scheduledPod("p3", 400, 1, "n3", "rs"),
+				scheduledPod("p4", 400, 1, "n4", "rs"),
+				scheduledPod("p5", 400, 1, "n5", "rs"),
 			},
 			eligible: []string{"n1", "n3", "n5"},
 			actuationStatus: &fakeActuationStatus{
@@ -192,13 +199,13 @@ func TestUpdateClusterState(t *testing.T) {
 				BuildTestNode("n3", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2"),
-				scheduledPod("p2", 500, 1, "n2"),
+				scheduledPod("p1", 500, 1, "n2", "rs"),
+				scheduledPod("p2", 500, 1, "n2", "rs"),
 			},
 			eligible: []string{"n1", "n2"},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p3", 500, 1, "n4"),
+					scheduledPod("p3", 500, 1, "n4", "rs"),
 				},
 			},
 			wantUnneeded: []string{"n1"},
@@ -211,15 +218,15 @@ func TestUpdateClusterState(t *testing.T) {
 				BuildTestNode("n3", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2"),
-				scheduledPod("p2", 500, 1, "n2"),
+				scheduledPod("p1", 500, 1, "n2", "rs"),
+				scheduledPod("p2", 500, 1, "n2", "rs"),
 			},
 			eligible: []string{"n1", "n2"},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p3", 500, 1, "n4"),
-					scheduledPod("p4", 500, 1, "n4"),
-					scheduledPod("p5", 500, 1, "n4"),
+					scheduledPod("p3", 500, 1, "n4", "rs"),
+					scheduledPod("p4", 500, 1, "n4", "rs"),
+					scheduledPod("p5", 500, 1, "n4", "rs"),
 				},
 			},
 			wantUnneeded: []string{},
@@ -231,15 +238,15 @@ func TestUpdateClusterState(t *testing.T) {
 				BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n1"),
-				scheduledPod("p2", 500, 1, "n1"),
+				scheduledPod("p1", 500, 1, "n1", "rs"),
+				scheduledPod("p2", 500, 1, "n1", "rs"),
 			},
 			eligible: []string{"n1", "n2"},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p3", 500, 1, "n3"),
-					scheduledPod("p4", 500, 1, "n3"),
-					scheduledPod("p5", 500, 1, "n3"),
+					scheduledPod("p3", 500, 1, "n3", "rs"),
+					scheduledPod("p4", 500, 1, "n3", "rs"),
+					scheduledPod("p5", 500, 1, "n3", "rs"),
 				},
 			},
 			wantUnneeded: []string{},
@@ -255,18 +262,18 @@ func TestUpdateClusterState(t *testing.T) {
 				BuildTestNode("n5", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1"),
-				scheduledPod("p2", 200, 1, "n2"),
-				scheduledPod("p3", 200, 1, "n3"),
-				scheduledPod("p4", 200, 1, "n4"),
-				scheduledPod("p5", 200, 1, "n5"),
+				scheduledPod("p1", 200, 1, "n1", "rs"),
+				scheduledPod("p2", 200, 1, "n2", "rs"),
+				scheduledPod("p3", 200, 1, "n3", "rs"),
+				scheduledPod("p4", 200, 1, "n4", "rs"),
+				scheduledPod("p5", 200, 1, "n5", "rs"),
 			},
 			eligible: []string{"n1", "n3", "n5"},
 			actuationStatus: &fakeActuationStatus{
 				currentlyDrained: []string{"n2", "n4"},
 				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p6", 600, 1, "n6"),
-					scheduledPod("p7", 600, 1, "n6"),
+					scheduledPod("p6", 600, 1, "n6", "rs"),
+					scheduledPod("p7", 600, 1, "n6", "rs"),
 				},
 			},
 			wantUnneeded: []string{},
@@ -281,27 +288,110 @@ func TestUpdateClusterState(t *testing.T) {
 				BuildTestNode("n5", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1"),
-				scheduledPod("p2", 200, 1, "n2"),
-				scheduledPod("p3", 200, 1, "n3"),
-				scheduledPod("p4", 200, 1, "n4"),
-				scheduledPod("p5", 200, 1, "n5"),
+				scheduledPod("p1", 200, 1, "n1", "rs"),
+				scheduledPod("p2", 200, 1, "n2", "rs"),
+				scheduledPod("p3", 200, 1, "n3", "rs"),
+				scheduledPod("p4", 200, 1, "n4", "rs"),
+				scheduledPod("p5", 200, 1, "n5", "rs"),
 			},
 			eligible: []string{"n1", "n3", "n5"},
 			actuationStatus: &fakeActuationStatus{
 				currentlyDrained: []string{"n2", "n4"},
 				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p6", 600, 1, "n6"),
+					scheduledPod("p6", 600, 1, "n6", "rs"),
 				},
 			},
 			wantUnneeded: []string{"n1"},
+		},
+		{
+			name: "multiple drained nodes and recent evictions, replicas rescheduled, two nodes unneeded",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+				nodeUndergoingDeletion("n4", 1000, 10),
+				BuildTestNode("n5", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				scheduledPod("p1", 200, 1, "n1", "rs"),
+				scheduledPod("p2", 200, 1, "n2", "rs"),
+				scheduledPod("p3", 200, 1, "n3", "rs"),
+				scheduledPod("p4", 200, 1, "n4", "rs"),
+				scheduledPod("p5", 200, 1, "n5", "rs"),
+			},
+			eligible: []string{"n1", "n3", "n5"},
+			actuationStatus: &fakeActuationStatus{
+				currentlyDrained: []string{"n2", "n4"},
+				recentEvictions: []*apiv1.Pod{
+					scheduledPod("p6", 600, 1, "n1", "rs1"),
+					scheduledPod("p7", 600, 1, "n3", "rs1"),
+				},
+			},
+			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 2, rSetLabels), generateReplicaSets("rs", 5)...),
+			wantUnneeded: []string{"n1", "n3"},
+		},
+		{
+			name: "multiple drained nodes and recent evictions, some replicas rescheduled, one node unneeded",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+				nodeUndergoingDeletion("n4", 1000, 10),
+				BuildTestNode("n5", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				scheduledPod("p1", 200, 1, "n1", "rs"),
+				scheduledPod("p2", 200, 1, "n2", "rs"),
+				scheduledPod("p3", 200, 1, "n3", "rs"),
+				scheduledPod("p4", 200, 1, "n4", "rs"),
+				scheduledPod("p5", 200, 1, "n5", "rs"),
+			},
+			eligible: []string{"n1", "n3", "n5"},
+			actuationStatus: &fakeActuationStatus{
+				currentlyDrained: []string{"n2", "n4"},
+				recentEvictions: []*apiv1.Pod{
+					scheduledPod("p6", 600, 1, "n1", "rs1"),
+					scheduledPod("p7", 600, 1, "n3", "rs1"),
+				},
+			},
+			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 1, rSetLabels), generateReplicaSets("rs", 5)...),
+			wantUnneeded: []string{"n1"},
+		},
+		{
+			name: "multiple drained nodes and recent evictions, pods belonging to ds",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+				nodeUndergoingDeletion("n4", 1000, 10),
+				BuildTestNode("n5", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				scheduledPod("p1", 200, 1, "n1", "rs"),
+				scheduledPod("p2", 200, 1, "n2", "rs"),
+				scheduledPod("p3", 200, 1, "n3", "rs"),
+				scheduledPod("p4", 200, 1, "n4", "rs"),
+				scheduledPod("p5", 200, 1, "n5", "rs"),
+			},
+			eligible: []string{"n1", "n3", "n5"},
+			actuationStatus: &fakeActuationStatus{
+				currentlyDrained: []string{"n2", "n4"},
+				recentEvictions: []*apiv1.Pod{
+					scheduledDSPod("p6", 600, 1, "n1"),
+					scheduledDSPod("p7", 600, 1, "n3"),
+				},
+			},
+			wantUnneeded: []string{"n1", "n3"},
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			rsLister, err := kube_util.NewTestReplicaSetLister(generateReplicaSets())
+			if tc.replicasSets == nil {
+				tc.replicasSets = generateReplicaSets("rs", 5)
+			}
+			rsLister, err := kube_util.NewTestReplicaSetLister(tc.replicasSets)
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -330,14 +420,13 @@ func TestUpdateClusterState(t *testing.T) {
 	}
 }
 
-func generateReplicaSets() []*appsv1.ReplicaSet {
-	replicas := int32(5)
+func generateReplicaSets(name string, replicas int32) []*appsv1.ReplicaSet {
 	return []*appsv1.ReplicaSet{
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "rs",
+				Name:      name,
 				Namespace: "default",
-				SelfLink:  "api/v1/namespaces/default/replicasets/rs",
+				UID:       rSetUID(name),
 			},
 			Spec: appsv1.ReplicaSetSpec{
 				Replicas: &replicas,
@@ -346,10 +435,44 @@ func generateReplicaSets() []*appsv1.ReplicaSet {
 	}
 }
 
-func scheduledPod(name string, cpu, memory int64, nodeName string) *apiv1.Pod {
+func generateReplicaSetWithReplicas(name string, specReplicas, statusReplicas int32, labels map[string]string) []*appsv1.ReplicaSet {
+	return []*appsv1.ReplicaSet{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: "default",
+				UID:       rSetUID(name),
+			},
+			Spec: appsv1.ReplicaSetSpec{
+				Replicas: &specReplicas,
+				Selector: metav1.SetAsLabelSelector(labels),
+			},
+			Status: appsv1.ReplicaSetStatus{
+				Replicas: statusReplicas,
+			},
+		},
+	}
+}
+
+func rSetUID(name string) types.UID {
+	return types.UID(fmt.Sprintf("api/v1/namespaces/default/replicasets/%s", name))
+}
+
+func scheduledDSPod(name string, cpu, memory int64, nodeName string) *apiv1.Pod {
 	p := BuildTestPod(name, cpu, memory)
-	p.OwnerReferences = GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	p.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "extensions/v1beta1", "api/v1/namespaces/default/daemonsets/ds")
 	p.Spec.NodeName = nodeName
+	p.Namespace = "default"
+	p.Labels = rSetLabels
+	return p
+}
+
+func scheduledPod(name string, cpu, memory int64, nodeName, rSetName string) *apiv1.Pod {
+	p := BuildTestPod(name, cpu, memory)
+	p.OwnerReferences = GenerateOwnerReferences(rSetName, "ReplicaSet", "extensions/v1beta1", rSetUID(rSetName))
+	p.Spec.NodeName = nodeName
+	p.Namespace = "default"
+	p.Labels = rSetLabels
 	return p
 }
 
