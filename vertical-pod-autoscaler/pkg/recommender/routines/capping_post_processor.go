@@ -23,14 +23,14 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// cappingPostProcessor ensure that the policy is applied to recommendation
+// CappingPostProcessor ensure that the policy is applied to recommendation
 // it applies policy for fields: MinAllowed and MaxAllowed
-type cappingPostProcessor struct{}
+type CappingPostProcessor struct{}
 
-var _ RecommendationPostProcessor = &cappingPostProcessor{}
+var _ RecommendationPostProcessor = &CappingPostProcessor{}
 
 // Process apply the capping post-processing to the recommendation. (use to be function getCappedRecommendation)
-func (c cappingPostProcessor) Process(vpa *model.Vpa, recommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
+func (c CappingPostProcessor) Process(vpa *model.Vpa, recommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
 	// TODO: maybe rename the vpa_utils.ApplyVPAPolicy to something that mention that it is doing capping only
 	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, policy)
 	if err != nil {
