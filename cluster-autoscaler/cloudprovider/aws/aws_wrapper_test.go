@@ -163,13 +163,14 @@ func TestGetManagedNodegroup(t *testing.T) {
 	assert.Equal(t, taintList[1].Effect, apiv1.TaintEffect(taintEffect2))
 	assert.Equal(t, taintList[1].Key, taintKey2)
 	assert.Equal(t, taintList[1].Value, taintValue2)
-	assert.Equal(t, len(labelMap), 6)
+	assert.Equal(t, len(labelMap), 7)
 	assert.Equal(t, labelMap[labelKey1], labelValue1)
 	assert.Equal(t, labelMap[labelKey2], labelValue2)
 	assert.Equal(t, labelMap["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, labelMap["amiType"], amiType)
 	assert.Equal(t, labelMap["capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
+	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 }
 
 func TestGetManagedNodegroupWithNilValues(t *testing.T) {
@@ -207,10 +208,11 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
 	assert.Equal(t, len(taintList), 0)
-	assert.Equal(t, len(labelMap), 3)
+	assert.Equal(t, len(labelMap), 4)
 	assert.Equal(t, labelMap["amiType"], amiType)
 	assert.Equal(t, labelMap["capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
+	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 }
 
 func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
@@ -248,10 +250,11 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
 	assert.Equal(t, len(taintList), 0)
-	assert.Equal(t, len(labelMap), 3)
+	assert.Equal(t, len(labelMap), 4)
 	assert.Equal(t, labelMap["amiType"], amiType)
 	assert.Equal(t, labelMap["capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
+	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 }
 
 func TestMoreThen100Groups(t *testing.T) {
