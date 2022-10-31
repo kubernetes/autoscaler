@@ -125,10 +125,11 @@ func TestGetManagedNodegroupNoTaintsOrLabels(t *testing.T) {
 	assert.Equal(t, cacheObj.name, nodegroupName)
 	assert.Equal(t, cacheObj.clusterName, clusterName)
 	assert.Equal(t, len(cacheObj.taints), 0)
-	assert.Equal(t, len(cacheObj.labels), 3)
+	assert.Equal(t, len(cacheObj.labels), 4)
 	assert.Equal(t, cacheObj.labels["amiType"], amiType)
 	assert.Equal(t, cacheObj.labels["capacityType"], capacityType)
 	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
 }
 
 func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
@@ -194,13 +195,14 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 	assert.Equal(t, cacheObj.taints[1].Effect, apiv1.TaintEffect(taintEffect2))
 	assert.Equal(t, cacheObj.taints[1].Key, taintKey2)
 	assert.Equal(t, cacheObj.taints[1].Value, taintValue2)
-	assert.Equal(t, len(cacheObj.labels), 6)
+	assert.Equal(t, len(cacheObj.labels), 7)
 	assert.Equal(t, cacheObj.labels[labelKey1], labelValue1)
 	assert.Equal(t, cacheObj.labels[labelKey2], labelValue2)
 	assert.Equal(t, cacheObj.labels["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, cacheObj.labels["amiType"], amiType)
 	assert.Equal(t, cacheObj.labels["capacityType"], capacityType)
 	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
 }
 
 func TestGetManagedNodegroupInfoObjectWithError(t *testing.T) {
@@ -294,13 +296,14 @@ func TestGetManagedNodegroupInfoObjectNoCachedNodegroup(t *testing.T) {
 
 	mngInfoObject, err := c.getManagedNodegroupInfoObject(nodegroupName, clusterName)
 	require.NoError(t, err)
-	assert.Equal(t, len(mngInfoObject.labels), 6)
+	assert.Equal(t, len(mngInfoObject.labels), 7)
 	assert.Equal(t, mngInfoObject.labels[labelKey1], labelValue1)
 	assert.Equal(t, mngInfoObject.labels[labelKey2], labelValue2)
 	assert.Equal(t, mngInfoObject.labels["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, mngInfoObject.labels["amiType"], amiType)
 	assert.Equal(t, mngInfoObject.labels["capacityType"], capacityType)
 	assert.Equal(t, mngInfoObject.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, mngInfoObject.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
 	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
@@ -377,13 +380,14 @@ func TestGetManagedNodegroupLabelsNoCachedNodegroup(t *testing.T) {
 
 	labelsMap, err := c.getManagedNodegroupLabels(nodegroupName, clusterName)
 	require.NoError(t, err)
-	assert.Equal(t, len(labelsMap), 6)
+	assert.Equal(t, len(labelsMap), 7)
 	assert.Equal(t, labelsMap[labelKey1], labelValue1)
 	assert.Equal(t, labelsMap[labelKey2], labelValue2)
 	assert.Equal(t, labelsMap["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, labelsMap["amiType"], amiType)
 	assert.Equal(t, labelsMap["capacityType"], capacityType)
 	assert.Equal(t, labelsMap["k8sVersion"], k8sVersion)
+	assert.Equal(t, labelsMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
@@ -471,13 +475,14 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroupThatExpires(t *testing.T) {
 	// Query for nodegroup entry after it expires - should have the new labels added
 	newLabelsMap, err := c.getManagedNodegroupLabels(nodegroupName, clusterName)
 	require.NoError(t, err)
-	assert.Equal(t, len(newLabelsMap), 6)
+	assert.Equal(t, len(newLabelsMap), 7)
 	assert.Equal(t, newLabelsMap[labelKey1], labelValue1)
 	assert.Equal(t, newLabelsMap[labelKey2], labelValue2)
 	assert.Equal(t, newLabelsMap["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, newLabelsMap["amiType"], amiType)
 	assert.Equal(t, newLabelsMap["capacityType"], capacityType)
 	assert.Equal(t, newLabelsMap["k8sVersion"], k8sVersion)
+	assert.Equal(t, newLabelsMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,

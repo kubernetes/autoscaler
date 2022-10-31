@@ -91,6 +91,10 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 		labels["k8sVersion"] = *r.Nodegroup.Version
 	}
 
+	if r.Nodegroup.NodegroupName != nil && len(*r.Nodegroup.NodegroupName) > 0 {
+		labels["eks.amazonaws.com/nodegroup"] = *r.Nodegroup.NodegroupName
+	}
+
 	if r.Nodegroup.Labels != nil && len(r.Nodegroup.Labels) > 0 {
 		labelsMap := r.Nodegroup.Labels
 		for k, v := range labelsMap {
