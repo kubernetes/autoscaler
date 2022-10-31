@@ -17,12 +17,9 @@ limitations under the License.
 package logic
 
 import (
-	"k8s.io/apimachinery/pkg/labels"
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"testing"
 )
 
 func TestMinResourcesApplied(t *testing.T) {
@@ -127,10 +124,10 @@ func TestMapToListOfRecommendedContainerResources(t *testing.T) {
 		{
 			name: "All recommendations sorted",
 			resources: RecommendedPodResources{
-				"a-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
-				"b-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
-				"c-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
-				"d-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
+				"a-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1e6)}},
+				"b-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(2), model.ResourceMemory: model.MemoryAmountFromBytes(2e6)}},
+				"c-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(3), model.ResourceMemory: model.MemoryAmountFromBytes(3e6)}},
+				"d-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(4), model.ResourceMemory: model.MemoryAmountFromBytes(4e6)}},
 			},
 			expectedLast: []string{
 				"a-container",
@@ -142,10 +139,10 @@ func TestMapToListOfRecommendedContainerResources(t *testing.T) {
 		{
 			name: "All recommendations unsorted",
 			resources: RecommendedPodResources{
-				"b-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
-				"a-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
-				"d-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
-				"c-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1000)}},
+				"b-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1e6)}},
+				"a-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(2), model.ResourceMemory: model.MemoryAmountFromBytes(2e6)}},
+				"d-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(3), model.ResourceMemory: model.MemoryAmountFromBytes(3e6)}},
+				"c-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(4), model.ResourceMemory: model.MemoryAmountFromBytes(4e6)}},
 			},
 			expectedLast: []string{
 				"a-container",
@@ -157,12 +154,13 @@ func TestMapToListOfRecommendedContainerResources(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			namespace := "test-namespace"
-			vpa := model.NewVpa(model.VpaID{Namespace: namespace, VpaName: "my-vpa"}, labels.Nothing(), time.Unix(0, 0))
-			vpa.UpdateRecommendation(MapToListOfRecommendedContainerResources(tc.resources))
-			// Check that the slice is in the correct order.
-			for i := range vpa.Recommendation.ContainerRecommendations {
-				assert.Equal(t, tc.expectedLast[i], vpa.Recommendation.ContainerRecommendations[i].ContainerName)
+			outRecommendations := MapToListOfRecommendedContainerResources(tc.resources)
+			for i, outRecommendation := range outRecommendations.ContainerRecommendations {
+				containerName := tc.expectedLast[i]
+				assert.Equal(t, containerName, outRecommendation.ContainerName)
+				// also check that the recommendation is not changed
+				assert.Equal(t, int64(tc.resources[containerName].Target[model.ResourceCPU]), outRecommendation.Target.Cpu().MilliValue())
+				assert.Equal(t, int64(tc.resources[containerName].Target[model.ResourceMemory]), outRecommendation.Target.Memory().Value())
 			}
 		})
 	}
