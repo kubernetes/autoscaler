@@ -83,13 +83,8 @@ func main() {
 
 	useCheckpoints := *storage != "prometheus"
 
-	var postProcessorsNames []routines.KnownPostProcessors
-	postProcessorsNames = append(postProcessorsNames, routines.Capping)
-
-	postProcessorFactory := routines.RecommendationPostProcessorFactory{PostProcessorsNames: postProcessorsNames}
-	postProcessors, err := postProcessorFactory.Build()
-	if err != nil {
-		klog.Fatalf("Failed to build post processors: %v", err)
+	postProcessors := []routines.RecommendationPostProcessor{
+		&routines.CappingPostProcessor{},
 	}
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName, postProcessors)
 
