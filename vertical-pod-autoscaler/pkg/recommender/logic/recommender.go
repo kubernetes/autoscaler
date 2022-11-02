@@ -18,7 +18,9 @@ package logic
 
 import (
 	"flag"
+	"sort"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
@@ -146,4 +148,32 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 		targetEstimator,
 		lowerBoundEstimator,
 		upperBoundEstimator}
+}
+
+// MapToListOfRecommendedContainerResources converts the map of RecommendedContainerResources into a stable sorted list
+// This can be used to get a stable sequence while ranging on the data
+func MapToListOfRecommendedContainerResources(resources RecommendedPodResources) *vpa_types.RecommendedPodResources {
+	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
+	// Sort the container names from the map. This is because maps are an
+	// unordered data structure, and iterating through the map will return
+	// a different order on every call.
+	containerNames := make([]string, 0, len(resources))
+	for containerName := range resources {
+		containerNames = append(containerNames, containerName)
+	}
+	sort.Strings(containerNames)
+	// Create the list of recommendations for each container.
+	for _, name := range containerNames {
+		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
+			ContainerName:  name,
+			Target:         model.ResourcesAsResourceList(resources[name].Target),
+			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound),
+			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound),
+			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target),
+		})
+	}
+	recommendation := &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: containerResources,
+	}
+	return recommendation
 }

@@ -17,10 +17,9 @@ limitations under the License.
 package logic
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"testing"
 )
 
 func TestMinResourcesApplied(t *testing.T) {
@@ -114,4 +113,55 @@ func TestControlledResourcesFilteredDefault(t *testing.T) {
 	assert.Contains(t, recommendedResources[containerName].Target, model.ResourceCPU)
 	assert.Contains(t, recommendedResources[containerName].LowerBound, model.ResourceCPU)
 	assert.Contains(t, recommendedResources[containerName].UpperBound, model.ResourceCPU)
+}
+
+func TestMapToListOfRecommendedContainerResources(t *testing.T) {
+	cases := []struct {
+		name         string
+		resources    RecommendedPodResources
+		expectedLast []string
+	}{
+		{
+			name: "All recommendations sorted",
+			resources: RecommendedPodResources{
+				"a-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1e6)}},
+				"b-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(2), model.ResourceMemory: model.MemoryAmountFromBytes(2e6)}},
+				"c-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(3), model.ResourceMemory: model.MemoryAmountFromBytes(3e6)}},
+				"d-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(4), model.ResourceMemory: model.MemoryAmountFromBytes(4e6)}},
+			},
+			expectedLast: []string{
+				"a-container",
+				"b-container",
+				"c-container",
+				"d-container",
+			},
+		},
+		{
+			name: "All recommendations unsorted",
+			resources: RecommendedPodResources{
+				"b-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(1), model.ResourceMemory: model.MemoryAmountFromBytes(1e6)}},
+				"a-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(2), model.ResourceMemory: model.MemoryAmountFromBytes(2e6)}},
+				"d-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(3), model.ResourceMemory: model.MemoryAmountFromBytes(3e6)}},
+				"c-container": RecommendedContainerResources{Target: model.Resources{model.ResourceCPU: model.CPUAmountFromCores(4), model.ResourceMemory: model.MemoryAmountFromBytes(4e6)}},
+			},
+			expectedLast: []string{
+				"a-container",
+				"b-container",
+				"c-container",
+				"d-container",
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			outRecommendations := MapToListOfRecommendedContainerResources(tc.resources)
+			for i, outRecommendation := range outRecommendations.ContainerRecommendations {
+				containerName := tc.expectedLast[i]
+				assert.Equal(t, containerName, outRecommendation.ContainerName)
+				// also check that the recommendation is not changed
+				assert.Equal(t, int64(tc.resources[containerName].Target[model.ResourceCPU]), outRecommendation.Target.Cpu().MilliValue())
+				assert.Equal(t, int64(tc.resources[containerName].Target[model.ResourceMemory]), outRecommendation.Target.Memory().Value())
+			}
+		})
+	}
 }

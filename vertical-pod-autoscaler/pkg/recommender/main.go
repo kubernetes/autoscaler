@@ -82,7 +82,11 @@ func main() {
 	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName)
+
+	postProcessors := []routines.RecommendationPostProcessor{
+		&routines.CappingPostProcessor{},
+	}
+	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName, postProcessors)
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
