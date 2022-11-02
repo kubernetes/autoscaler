@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -165,9 +166,14 @@ func NewStaticAutoscaler(
 		MinReplicaCount:           opts.MinReplicaCount,
 	}
 
+	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
+	// during the struct creation rather than here.
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, ndt, deleteOptions)
 	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions)
+	autoscalingContext.ScaleDownActuator = actuator
+
+	// TODO: Remove the wrapper once the legacy implementation becomes obsolete.
 	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
 	processorCallbacks.scaleDownPlanner = scaleDownWrapper
 
@@ -326,7 +332,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	scaleUpStatus := &status.ScaleUpStatus{Result: status.ScaleUpNotTried}
 	scaleUpStatusProcessorAlreadyCalled := false
-	scaleDownStatus := &status.ScaleDownStatus{Result: status.ScaleDownNotTried}
+	scaleDownStatus := &scaledownstatus.ScaleDownStatus{Result: scaledownstatus.ScaleDownNotTried}
 	scaleDownStatusProcessorAlreadyCalled := false
 
 	defer func() {
@@ -485,7 +491,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		if scaleUpStatus.Result == status.ScaleUpSuccessful {
 			a.lastScaleUpTime = currentTime
 			// No scale down in this iteration.
-			scaleDownStatus.Result = status.ScaleDownInCooldown
+			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
 			return nil
 		}
 	}
@@ -493,7 +499,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if a.ScaleDownEnabled {
 		pdbs, err := pdbLister.List()
 		if err != nil {
-			scaleDownStatus.Result = status.ScaleDownError
+			scaleDownStatus.Result = scaledownstatus.ScaleDownError
 			klog.Errorf("Failed to list pod disruption budgets: %v", err)
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
@@ -536,7 +542,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		a.clusterStateRegistry.UpdateScaleDownCandidates(unneededNodes, currentTime)
 		metrics.UpdateUnneededNodesCount(len(unneededNodes))
 		if typedErr != nil {
-			scaleDownStatus.Result = status.ScaleDownError
+			scaleDownStatus.Result = scaledownstatus.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
 		}
@@ -555,7 +561,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		metrics.UpdateScaleDownInCooldown(scaleDownInCooldown)
 
 		if scaleDownInCooldown {
-			scaleDownStatus.Result = status.ScaleDownInCooldown
+			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
 		} else {
 			klog.V(4).Infof("Starting scale down")
 
@@ -581,13 +587,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
 
-			if scaleDownStatus.Result == status.ScaleDownNodeDeleteStarted {
+			if scaleDownStatus.Result == scaledownstatus.ScaleDownNodeDeleteStarted {
 				a.lastScaleDownDeleteTime = currentTime
 				a.clusterStateRegistry.Recalculate()
 			}
 
-			if (scaleDownStatus.Result == status.ScaleDownNoNodeDeleted ||
-				scaleDownStatus.Result == status.ScaleDownNoUnneeded) &&
+			if (scaleDownStatus.Result == scaledownstatus.ScaleDownNoNodeDeleted ||
+				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				taintableNodes := a.scaleDownPlanner.UnneededNodes()
 				untaintableNodes := subtractNodes(allNodes, taintableNodes)

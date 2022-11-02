@@ -30,8 +30,8 @@ import (
 	"k8s.io/klog/v2"
 
 	acontext "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
