@@ -159,6 +159,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	n2 := BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Now())
 	n3 := BuildTestNode("n3", 1000, 1000)
+	n4 := BuildTestNode("n4", 1000, 1000)
 
 	p1 := BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
@@ -177,7 +178,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			return ret
 		},
 		nil, nil,
-		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni})
+		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -191,11 +192,12 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
 		},
-		EstimatorName:    estimator.BinpackingEstimatorName,
-		ScaleDownEnabled: true,
-		MaxNodesTotal:    1,
-		MaxCoresTotal:    10,
-		MaxMemoryTotal:   100000,
+		EstimatorName:           estimator.BinpackingEstimatorName,
+		EnforceNodeGroupMinSize: true,
+		ScaleDownEnabled:        true,
+		MaxNodesTotal:           1,
+		MaxCoresTotal:           10,
+		MaxMemoryTotal:          100000,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
@@ -316,6 +318,22 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
+
+	// Scale up to node gorup min size.
+	readyNodeLister.SetNodes([]*apiv1.Node{n4})
+	allNodeLister.SetNodes([]*apiv1.Node{n4})
+	scheduledPodMock.On("List").Return([]*apiv1.Pod{}, nil)
+	unschedulablePodMock.On("List").Return([]*apiv1.Pod{}, nil)
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+	onScaleUpMock.On("ScaleUp", "ng3", 2).Return(nil).Once() // 2 new nodes are supposed to be scaled up.
+
+	provider.AddNodeGroup("ng3", 3, 10, 1)
+	provider.AddNode("ng3", n4)
+
+	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, onScaleUpMock)
 }
 
 func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
