@@ -139,15 +139,13 @@ There are four modes in which *VPAs* operate:
   them on existing pods using the preferred update mechanism. Currently, this is
   equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
   of pod requests is available, it may be used as the preferred update mechanism by
-  the `"Auto"` mode. **NOTE:** This feature of VPA is experimental and may cause downtime
-  for your applications.
+  the `"Auto"` mode.
 * `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes. Otherwise, prefer the `"Auto"` mode which may take
-  advantage of restart-free updates once they are available. **NOTE:** This feature of VPA
-  is experimental and may cause downtime for your applications.
+  advantage of restart-free updates once they are available.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change the resource requirements of the pods.
@@ -298,9 +296,13 @@ You can then choose which recommender to use by setting `recommenders` inside th
 
 # Known limitations
 
-* Updating running pods is an experimental feature of VPA. Whenever VPA updates
-  the pod resources, the pod is recreated, which causes all running containers to
-  be restarted. The pod may be recreated on a different node.
+* Whenever VPA updates the pod resources, the pod is recreated, which causes all
+  running containers to be recreated. The pod may be recreated on a different
+  node.
+* VPA cannot guarantee that pods it evicts or deletes to apply recommendations
+  (when configured in `Auto` and `Recreate` modes) will be successfully
+  recreated. This can be partly
+  addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * VPA does not evict pods which are not run under a controller. For such pods
   `Auto` mode is currently equivalent to `Initial`.
 * Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics) (HPA) on CPU or memory** at this moment.
