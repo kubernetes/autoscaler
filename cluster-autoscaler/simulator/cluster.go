@@ -196,9 +196,7 @@ func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp
 }
 
 func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
-	if err = r.clusterSnapshot.Fork(); err != nil {
-		return err
-	}
+	r.clusterSnapshot.Fork()
 	defer func() {
 		if err == nil && r.canPersist {
 			cleanupErr := r.clusterSnapshot.Commit()
@@ -206,10 +204,7 @@ func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
 				klog.Fatalf("Got error when calling ClusterSnapshot.Commit(); %v", cleanupErr)
 			}
 		} else {
-			cleanupErr := r.clusterSnapshot.Revert()
-			if cleanupErr != nil {
-				klog.Fatalf("Got error when calling ClusterSnapshot.Revert(); %v", cleanupErr)
-			}
+			r.clusterSnapshot.Revert()
 		}
 	}()
 	err = f()
