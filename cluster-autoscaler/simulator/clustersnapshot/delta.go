@@ -444,24 +444,17 @@ func (snapshot *DeltaClusterSnapshot) IsPVCUsedByPods(key string) bool {
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
-// Forking already forked snapshot is not allowed and will result with an error.
 // Time: O(1)
-func (snapshot *DeltaClusterSnapshot) Fork() error {
-	if snapshot.data.baseData != nil {
-		return fmt.Errorf("snapshot already forked")
-	}
+func (snapshot *DeltaClusterSnapshot) Fork() {
 	snapshot.data = snapshot.data.fork()
-	return nil
 }
 
 // Revert reverts snapshot state to moment of forking.
 // Time: O(1)
-func (snapshot *DeltaClusterSnapshot) Revert() error {
+func (snapshot *DeltaClusterSnapshot) Revert() {
 	if snapshot.data.baseData != nil {
 		snapshot.data = snapshot.data.baseData
 	}
-	return nil
-
 }
 
 // Commit commits changes done after forking.
