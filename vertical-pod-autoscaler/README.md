@@ -139,15 +139,21 @@ There are four modes in which *VPAs* operate:
   them on existing pods using the preferred update mechanism. Currently, this is
   equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
   of pod requests is available, it may be used as the preferred update mechanism by
-  the `"Auto"` mode. **NOTE:** This feature of VPA is experimental and may cause downtime
-  for your applications.
+  the `"Auto"` mode. **NOTE:** This feature of VPA may cause downtime for your
+  applications if new pods can't start (for example because there is no space for them
+  in the cluster). Using
+  [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#cluster-autoscaler)
+  should mitigagte the problem.
 * `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes. Otherwise, prefer the `"Auto"` mode which may take
   advantage of restart-free updates once they are available. **NOTE:** This feature of VPA
-  is experimental and may cause downtime for your applications.
+  may cause downtime for your applications if new pods can't start (for example because
+  there is no space for the in the cluster). Using
+  [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#cluster-autoscaler)
+  should mitigagte the problem.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change the resource requirements of the pods.
