@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -42,15 +43,36 @@ type ClusterSnapshot interface {
 	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
 	IsPVCUsedByPods(key string) bool
 
-	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
-	// Forking already forked snapshot is not allowed and will result with an error.
-	Fork() error
+	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
+	// Use WithForkedSnapshot() helper function instead if possible.
+	Fork()
 	// Revert reverts snapshot state to moment of forking.
-	Revert() error
+	Revert()
 	// Commit commits changes done after forking.
 	Commit() error
-	// Clear reset cluster snapshot to empty, unforked state
+	// Clear reset cluster snapshot to empty, unforked state.
 	Clear()
 }
 
 var errNodeNotFound = errors.New("node not found")
+
+// WithForkedSnapshot is a helper function for snapshot that makes sure all Fork() calls are closed with Commit() or Revert() calls.
+// The function return (error, error) pair. The first error comes from the passed function, the second error indicate the success of the function itself.
+func WithForkedSnapshot(snapshot ClusterSnapshot, f func() (bool, error)) (error, error) {
+	var commit bool
+	var err, cleanupErr error
+	snapshot.Fork()
+	defer func() {
+		if commit {
+			cleanupErr = snapshot.Commit()
+			if cleanupErr != nil {
+				klog.Errorf("Got error when calling ClusterSnapshot.Commit(), will try to revert; %v", cleanupErr)
+			}
+		}
+		if !commit || cleanupErr != nil {
+			snapshot.Revert()
+		}
+	}()
+	commit, err = f()
+	return err, cleanupErr
+}
