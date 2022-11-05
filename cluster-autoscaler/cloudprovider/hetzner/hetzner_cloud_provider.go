@@ -99,8 +99,8 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	return group, nil
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (d *HetznerCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
