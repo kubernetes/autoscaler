@@ -180,8 +180,8 @@ func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (c
 	return asg, err
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (baiducloud *baiducloudCloudProvider) NodeExists(*apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (baiducloud *baiducloudCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

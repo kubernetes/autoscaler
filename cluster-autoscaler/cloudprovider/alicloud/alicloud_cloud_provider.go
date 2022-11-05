@@ -127,8 +127,8 @@ func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	return ali.manager.GetAsgForInstance(instanceId)
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (ali *aliCloudProvider) NodeExists(*apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (ali *aliCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
