@@ -120,8 +120,8 @@ func (pcp *packetCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 	return nil, fmt.Errorf("Could not find group for node: %s", node.Spec.ProviderID)
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (pcp *packetCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (pcp *packetCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

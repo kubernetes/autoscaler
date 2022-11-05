@@ -1122,7 +1122,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			}
 			return nil
 		}, nil)
-	provider.On("NodeExists", mock.Anything).Return(
+	provider.On("HasInstance", mock.Anything).Return(
 		func(node *apiv1.Node) bool {
 			return false
 		}, nil)
@@ -1254,7 +1254,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	provider = &mockprovider.CloudProvider{}
 	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupC})
 	provider.On("NodeGroupForNode", mock.Anything).Return(nil, nil)
-	provider.On("NodeExists", mock.Anything).Return(
+	provider.On("HasInstance", mock.Anything).Return(
 		func(node *apiv1.Node) bool {
 			return false
 		}, nil)

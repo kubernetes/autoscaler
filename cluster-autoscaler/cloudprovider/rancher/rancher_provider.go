@@ -172,8 +172,8 @@ func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloud
 	return nil, nil
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (provider *RancherCloudProvider) NodeExists(node *corev1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (provider *RancherCloudProvider) HasInstance(node *corev1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

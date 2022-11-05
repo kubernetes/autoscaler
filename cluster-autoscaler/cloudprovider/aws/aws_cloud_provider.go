@@ -120,8 +120,8 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	}, nil
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (aws *awsCloudProvider) NodeExists(*apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (aws *awsCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

@@ -100,9 +100,9 @@ type CloudProvider interface {
 	// occurred. Must be implemented.
 	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
 
-	// NodeExists returns whether the node exists in cloud provider,
-	// true if the node is available, false if it has been deleted
-	NodeExists(*apiv1.Node) (bool, error)
+	// HasInstance returns whether the node has corresponding instance in cloud provider,
+	// true if the node has an instance, false if it no longer exists
+	HasInstance(*apiv1.Node) (bool, error)
 
 	// Pricing returns pricing model for this cloud provider or error if not available.
 	// Implementation optional.
