@@ -123,8 +123,8 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (hcp *huaweicloudCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (hcp *huaweicloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

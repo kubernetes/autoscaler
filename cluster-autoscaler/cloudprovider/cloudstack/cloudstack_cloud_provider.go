@@ -68,8 +68,8 @@ func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudp
 	return provider.manager.clusterForNode(node)
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (provider *cloudStackCloudProvider) NodeExists(node *v1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (provider *cloudStackCloudProvider) HasInstance(node *v1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
@@ -155,7 +155,7 @@ func BuildCloudStack(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 	}
 
 	return &cloudStackCloudProvider{
-		manager:         manager,
+		manager: manager,
 		resourceLimiter: rl,
 	}
 }

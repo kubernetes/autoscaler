@@ -298,7 +298,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
-	cloudProviderNodesRemoved := csr.getCloudProviderDeletedNodes(nodes, cloudProviderNodeInstances)
+	cloudProviderNodesRemoved := csr.getCloudProviderDeletedNodes(nodes)
 	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime)
 
 	csr.Lock()
@@ -675,7 +675,7 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 }
 
 func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []*apiv1.Node) {
-	result := make(map[string]*apiv1.Node)
+	result := make(map[string]*apiv1.Node, len(deletedNodes)+len(csr.deletedNodes))
 	for _, deleted := range deletedNodes {
 		if prev, found := csr.deletedNodes[deleted.Name]; found {
 			result[deleted.Name] = prev
@@ -988,68 +988,26 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
-func (csr *ClusterStateRegistry) getCloudProviderDeletedNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance) []*apiv1.Node {
+func (csr *ClusterStateRegistry) getCloudProviderDeletedNodes(allNodes []*apiv1.Node) []*apiv1.Node {
 	nodesRemoved := make([]*apiv1.Node, 0)
-	currentCloudInstances := make(map[string]string, 0)
-	registeredNodes := make(map[string]*apiv1.Node, 0)
-	if len(allNodes) > 0 {
-		_, err := csr.cloudProvider.NodeExists(allNodes[0])
-		// Check if the cloud provider implements nodeExists method
-		nodeExistsNotImplemented := errors.Is(err, cloudprovider.ErrNotImplemented)
-		if nodeExistsNotImplemented {
-			// Fall-back to taint-based node deletion
-			for _, node := range allNodes {
-				if deletetaint.HasToBeDeletedTaint(node) {
-					nodesRemoved = append(nodesRemoved, node)
-				}
-			}
-		} else {
-			for nodeGroupName, instances := range cloudProviderNodeInstances {
-				for _, instance := range instances {
-					currentCloudInstances[instance.Id] = nodeGroupName
-				}
-			}
-			for _, node := range allNodes {
-				registeredNodes[node.Name] = node
-			}
-
-			// Fill previously deleted nodes, if they are still registered in Kubernetes
-			for nodeName, node := range csr.deletedNodes {
-				// Safety check to prevent flagging Kubernetes nodes as deleted
-				// if the Cloud Provider instance is re-discovered
-				_, cloudProviderFound := currentCloudInstances[node.Name]
-				if _, found := registeredNodes[nodeName]; found && !cloudProviderFound {
-					// Confirm that node is deleted by cloud provider, instead of
-					// a not-autoscaled node
-					nodeExists, existsErr := csr.cloudProvider.NodeExists(node)
-					if existsErr == nil && !nodeExists {
-						nodesRemoved = append(nodesRemoved, node)
-					}
-				}
-			}
-
-			// Seek nodes that may have been deleted since last update
-			// cloudProviderNodeInstances are retrieved by nodeGroup,
-			// not autoscaled nodes will be excluded
-			for _, instances := range csr.cloudProviderNodeInstances {
-				for _, instance := range instances {
-					if _, found := currentCloudInstances[instance.Id]; !found {
-						// Check Kubernetes registered nodes for corresponding deleted
-						// Cloud Provider instance
-						if kubeNode, kubeNodeFound := registeredNodes[instance.Id]; kubeNodeFound {
-							// Confirm that node is deleted by cloud provider, instead of
-							// a not-autoscaled node
-							nodeExists, existsErr := csr.cloudProvider.NodeExists(kubeNode)
-							if existsErr == nil && !nodeExists {
-								nodesRemoved = append(nodesRemoved, kubeNode)
-							}
-						}
-					}
-				}
-			}
+	for _, node := range allNodes {
+		if !csr.hasCloudProviderInstance(node) {
+			nodesRemoved = append(nodesRemoved, node)
 		}
 	}
 	return nodesRemoved
+}
+
+func (csr *ClusterStateRegistry) hasCloudProviderInstance(node *apiv1.Node) bool {
+	exists, err := csr.cloudProvider.HasInstance(node)
+	if err == nil {
+		return exists
+	}
+	if !errors.Is(err, cloudprovider.ErrNotImplemented) {
+		klog.Warningf("Failed to check whether node has cloud instance for %s: %v", node.Name, err)
+		return exists
+	}
+	return !deletetaint.HasToBeDeletedTaint(node)
 }
 
 // GetAutoscaledNodesCount calculates and returns the actual and the target number of nodes

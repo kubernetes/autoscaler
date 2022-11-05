@@ -232,8 +232,8 @@ func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 	return nil, nil
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (ic *IonosCloudCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (ic *IonosCloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

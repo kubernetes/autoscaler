@@ -177,8 +177,8 @@ func (_m *CloudProvider) NodeGroupForNode(_a0 *v1.Node) (cloudprovider.NodeGroup
 	return r0, r1
 }
 
-// NodeExists provides a mock function with given fields:
-func (_m *CloudProvider) NodeExists(_a0 *v1.Node) (bool, error) {
+// HasInstance provides a mock function with given fields:
+func (_m *CloudProvider) HasInstance(_a0 *v1.Node) (bool, error) {
 	ret := _m.Called(_a0)
 
 	var r0 bool

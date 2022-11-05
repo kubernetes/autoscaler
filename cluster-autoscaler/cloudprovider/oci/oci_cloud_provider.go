@@ -96,8 +96,8 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 	return ng, err
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (ocp *OciCloudProvider) NodeExists(n *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (ocp *OciCloudProvider) HasInstance(n *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

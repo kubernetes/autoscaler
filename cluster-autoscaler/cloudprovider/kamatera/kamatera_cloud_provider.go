@@ -70,8 +70,8 @@ func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 	return nil, nil
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (k *kamateraCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (k *kamateraCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 

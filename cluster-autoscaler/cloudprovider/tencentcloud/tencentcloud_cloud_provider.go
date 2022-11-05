@@ -109,8 +109,8 @@ func (tencentcloud *tencentCloudProvider) NodeGroupForNode(node *apiv1.Node) (cl
 	return asg, nil
 }
 
-// NodeExists returns whether node exists in this cloud provider
-func (tencentcloud *tencentCloudProvider) NodeExists(node *apiv1.Node) (bool, error) {
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (tencentcloud *tencentCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
