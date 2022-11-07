@@ -56,11 +56,11 @@ exposes the Scale subresource.
 // or other objects that expose the Scale subresource).
 type Balancer struct {
    metav1.TypeMeta
-   // Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+   // Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
    // +optional
    metav1.ObjectMeta
    // Specification of the Balancer behavior.
-   // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+   // More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
    Spec BalancerSpec
    // Current information about the Balancer.
    // +optional
