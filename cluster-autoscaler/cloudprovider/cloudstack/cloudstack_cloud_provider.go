@@ -155,7 +155,7 @@ func BuildCloudStack(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 	}
 
 	return &cloudStackCloudProvider{
-		manager: manager,
+		manager:         manager,
 		resourceLimiter: rl,
 	}
 }
