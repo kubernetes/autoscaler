@@ -5,7 +5,6 @@
 - [Intro](#intro)
 - [Installation](#installation)
   - [Compatibility](#compatibility)
-  - [Notice on deprecation of v1beta2 version (>=0.13.0)](#notice-on-deprecation-of-v1beta2-version-0130)
   - [Notice on removal of v1beta1 version (>=0.5.0)](#notice-on-removal-of-v1beta1-version-050)
   - [Prerequisites](#prerequisites)
   - [Install command](#install-command)
@@ -20,7 +19,6 @@
   - [Capping to Limit Range](#capping-to-limit-range)
   - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
   - [Starting multiple recommenders](#starting-multiple-recommenders)
-  - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
@@ -48,13 +46,12 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 0.13.0
+The current default version is Vertical Pod Autoscaler 0.12.0
 
 ### Compatibility
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
-| 0.13            | 1.25+              |
 | 0.12            | 1.25+              |
 | 0.11            | 1.22 - 1.24        |
 | 0.10            | 1.22+              |
@@ -62,14 +59,6 @@ The current default version is Vertical Pod Autoscaler 0.13.0
 | 0.8             | 1.13+              |
 | 0.4 to 0.7      | 1.11+              |
 | 0.3.X and lower | 1.7+               |
-
-### Notice on deprecation of v1beta2 version (>=0.13.0)
-**NOTE:** In 0.13.0 we deprecate `autoscaling.k8s.io/v1beta2` API. We plan to
-remove this API version. While for now you can continue to use `v1beta2` API we
-recommend using `autoscaling.k8s.io/v1` instead. `v1` and `v1beta2` APIs are
-almost identical (`v1` API has some fields which are not present in `v1beta2)
-so simply changing which API version you're calling should be enough in almost
-all cases.
 
 ### Notice on removal of v1beta1 version (>=0.5.0)
 
@@ -150,13 +139,15 @@ There are four modes in which *VPAs* operate:
   them on existing pods using the preferred update mechanism. Currently, this is
   equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
   of pod requests is available, it may be used as the preferred update mechanism by
-  the `"Auto"` mode.
+  the `"Auto"` mode. **NOTE:** This feature of VPA is experimental and may cause downtime
+  for your applications.
 * `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes. Otherwise, prefer the `"Auto"` mode which may take
-  advantage of restart-free updates once they are available.
+  advantage of restart-free updates once they are available. **NOTE:** This feature of VPA
+  is experimental and may cause downtime for your applications.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change the resource requirements of the pods.
@@ -305,12 +296,10 @@ Please note the usage of the following arguments to override default names and p
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
 
-
-### Custom memory bump-up after OOMKill
-After an OOMKill event was observed, VPA increases the memory recommendation based on the observed memory usage in the event according to this formula: `recommendation = memory-usage-in-oomkill-event + max(oom-min-bump-up-bytes, memory-usage-in-oomkill-event * oom-bump-up-ratio)`. 
-You can configure the minimum bump-up as well as the multiplier by specifying startup arguments for the recommender:
-`oom-bump-up-ratio` specifies the memory bump up ratio when OOM occurred, default is `1.2`. This means, memory will be increased by 20% after an OOMKill event.
-`oom-min-bump-up-bytes` specifies minimal increase of memory after observing OOM. Defaults to `100 * 1024 * 1024` (=100MiB)
+### Override default values when OOM occurs
+The below parameters can be used to overwrite the default values when an OOM event is occured.
+OOMBumpUpRatio specifies how much memory will be added after observing OOM.
+OOMMinBumpUp specifies minimal increase of memory after observing OOM.
 
 Usage in recommender deployment
 ```
@@ -321,26 +310,11 @@ Usage in recommender deployment
       - --oom-min-bump-up-bytes=524288000
 ```
 
-### Using CPU management with static policy
-
-If you are using the [CPU management with static policy](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy) for some containers,
-you probably want the CPU recommendation to be an integer. A dedicated recommendation pre-processor can perform a round up on the CPU recommendation. Recommendation capping still applies after the round up.   
-To activate this feature, pass the flag `--cpu-integer-post-processor-enabled` when you start the recommender. 
-The pre-processor only acts on containers having a specific configuration. This configuration consists in an annotation on your VPA object for each impacted container.
-The annotation format is the following:
-```
-vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
-```
-
 # Known limitations
 
-* Whenever VPA updates the pod resources, the pod is recreated, which causes all
-  running containers to be recreated. The pod may be recreated on a different
-  node.
-* VPA cannot guarantee that pods it evicts or deletes to apply recommendations
-  (when configured in `Auto` and `Recreate` modes) will be successfully
-  recreated. This can be partly
-  addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
+* Updating running pods is an experimental feature of VPA. Whenever VPA updates
+  the pod resources, the pod is recreated, which causes all running containers to
+  be restarted. The pod may be recreated on a different node.
 * VPA does not evict pods which are not run under a controller. For such pods
   `Auto` mode is currently equivalent to `Initial`.
 * Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics) (HPA) on CPU or memory** at this moment.
