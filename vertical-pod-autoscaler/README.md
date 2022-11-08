@@ -307,7 +307,7 @@ Usage in recommender deployment
   - name: recommender
     args:
       - --oom-bump-up-ratio=2.0
-      - --oom-min-bump-up=524288000
+      - --oom-min-bump-up-bytes=524288000
 ```
 
 # Known limitations

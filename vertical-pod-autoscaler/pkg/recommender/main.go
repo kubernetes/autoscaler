@@ -18,8 +18,9 @@ package main
 
 import (
 	"flag"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"time"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -66,7 +67,7 @@ var (
 	memoryHistogramDecayHalfLife   = flag.Duration("memory-histogram-decay-half-life", model.DefaultMemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
 	cpuHistogramDecayHalfLife      = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
 	oomBumpUpRatio                 = flag.Float64("oom-bump-up-ratio", model.DefaultOOMBumpUpRatio, `The bump up ratio when OOM occurred, default is 1.2`)
-	oomMinBumpUp                   = flag.Float64("oom-min-bump-up", model.DefaultOOMMinBumpUp, `Specifies minimal increase of memory after observing OOM., default is 100 * 1024 * 1024`)
+	oomMinBumpUp                   = flag.Float64("oom-min-bump-up-bytes", model.DefaultOOMMinBumpUp, `Specifies minimal increase of memory after observing OOM., default is 100 * 1024 * 1024`)
 )
 
 func main() {
