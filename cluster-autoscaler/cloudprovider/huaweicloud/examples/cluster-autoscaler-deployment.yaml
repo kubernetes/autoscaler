@@ -31,6 +31,9 @@ spec:
             - --scale-down-delay-after-add=1m0s
             - --scale-down-unneeded-time=1m0s
             - --expander=random
+            - --max-empty-bulk-delete=100
+            - --max-scale-down-parallelism=100
+            - --node-deletion-batcher-interval=10s
           volumeMounts:
             - name: cloud-config
               mountPath: /config
