@@ -28,6 +28,7 @@ this document:
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
+  * [How can I increase the information that the CA is logging?](#how-can-i-increase-the-information-that-the-ca-is-logging)
   * [How can I see all the events from Cluster Autoscaler?](#how-can-i-see-all-events-from-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
@@ -907,6 +908,23 @@ There are three options:
       nodes),
     * on nodes,
     * on kube-system/cluster-autoscaler-status config map.
+
+### How can I increase the information that the CA is logging?
+
+By default, the Cluster Autoscaler will be conservative about the log messages that it emits.
+This is primarily due to performance degradations in scenarios where clusters have a large
+number of nodes (> 100). In these cases excess log messages will lead to the log storage
+filling more quickly, and in some cases (eg clusters with >1000 nodes) the processing
+performance of the Cluster Autoscaler can be impacted.
+
+The `--v` flag controls how verbose the Cluster Autoscaler will be when running. In most
+cases using a value of `--v=0` or `--v=1` will be sufficient to monitor its activity.
+If you would like to have more information, especially about the scaling decisions made
+by the Cluster Autoscaler, then setting a value of `--v=4` is recommended. If you are
+debugging connection issues between the Cluster Autoscaler and the Kubernetes API server,
+or infrastructure endpoints, then setting a value of `--v=9` will show all the individual
+HTTP calls made. Be aware that using verbosity levels higher than `--v=1` will generate
+an increased amount of logs, prepare your deployments and storage accordingly.
 
 ### What events are emitted by CA?
 
