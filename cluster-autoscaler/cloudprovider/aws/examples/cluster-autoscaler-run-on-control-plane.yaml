@@ -142,6 +142,8 @@ spec:
         runAsNonRoot: true
         runAsUser: 65534
         fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: cluster-autoscaler
       tolerations:
         - effect: NoSchedule
