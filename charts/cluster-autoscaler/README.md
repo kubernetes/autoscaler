@@ -342,7 +342,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | priorityConfigMapAnnotations | object | `{}` | Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap. |
 | prometheusRule.additionalLabels | object | `{}` | Additional labels to be set in metadata. |
 | prometheusRule.enabled | bool | `false` | If true, creates a Prometheus Operator PrometheusRule. |
-| prometheusRule.interval | string | `nil` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). |
+| prometheusRule.interval | string | `"1m"` | How often rules in the group are evaluated (falls back to the default value of `global.evaluation_interval` (which is 1m) if not set). |
 | prometheusRule.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
 | prometheusRule.rules | list | `[]` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). |
 | rbac.clusterScoped | bool | `true` | if set to false will only provision RBAC to alter resources in the current namespace. Most useful for Cluster-API |
