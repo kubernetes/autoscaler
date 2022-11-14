@@ -176,7 +176,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - all
+                - ALL
             readOnlyRootFilesystem: true
       volumes:
         - name: ssl-certs
