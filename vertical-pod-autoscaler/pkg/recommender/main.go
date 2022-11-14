@@ -67,6 +67,12 @@ var (
 	cpuHistogramDecayHalfLife      = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
 )
 
+// Post processors flags
+var (
+	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
+	postProcessorCPUasInteger = flag.Bool("cpu-integer-post-processor-enabled", false, "Enable the cpu-integer recommendation post processor. Only containers that specify it can have their CPU recommendation rounded up to an integer value.")
+)
+
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
@@ -85,6 +91,9 @@ func main() {
 
 	postProcessors := []routines.RecommendationPostProcessor{
 		&routines.CappingPostProcessor{},
+	}
+	if *postProcessorCPUasInteger {
+		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName, postProcessors)
 
