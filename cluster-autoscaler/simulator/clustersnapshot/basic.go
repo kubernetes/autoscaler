@@ -26,8 +26,7 @@ import (
 // BasicClusterSnapshot is simple, reference implementation of ClusterSnapshot.
 // It is inefficient. But hopefully bug-free and good for initial testing.
 type BasicClusterSnapshot struct {
-	baseData   *internalBasicSnapshotData
-	forkedData *internalBasicSnapshotData
+	data []*internalBasicSnapshotData
 }
 
 type internalBasicSnapshotData struct {
@@ -208,10 +207,7 @@ func NewBasicClusterSnapshot() *BasicClusterSnapshot {
 }
 
 func (snapshot *BasicClusterSnapshot) getInternalData() *internalBasicSnapshotData {
-	if snapshot.forkedData != nil {
-		return snapshot.forkedData
-	}
-	return snapshot.baseData
+	return snapshot.data[len(snapshot.data)-1]
 }
 
 // AddNode adds node to the snapshot.
@@ -258,36 +254,33 @@ func (snapshot *BasicClusterSnapshot) IsPVCUsedByPods(key string) bool {
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
-// Forking already forked snapshot is not allowed and will result with an error.
-func (snapshot *BasicClusterSnapshot) Fork() error {
-	if snapshot.forkedData != nil {
-		return fmt.Errorf("snapshot already forked")
-	}
-	snapshot.forkedData = snapshot.baseData.clone()
-	return nil
+func (snapshot *BasicClusterSnapshot) Fork() {
+	forkData := snapshot.getInternalData().clone()
+	snapshot.data = append(snapshot.data, forkData)
 }
 
 // Revert reverts snapshot state to moment of forking.
-func (snapshot *BasicClusterSnapshot) Revert() error {
-	snapshot.forkedData = nil
-	return nil
+func (snapshot *BasicClusterSnapshot) Revert() {
+	if len(snapshot.data) == 1 {
+		return
+	}
+	snapshot.data = snapshot.data[:len(snapshot.data)-1]
 }
 
 // Commit commits changes done after forking.
 func (snapshot *BasicClusterSnapshot) Commit() error {
-	if snapshot.forkedData == nil {
+	if len(snapshot.data) <= 1 {
 		// do nothing
 		return nil
 	}
-	snapshot.baseData = snapshot.forkedData
-	snapshot.forkedData = nil
+	snapshot.data = append(snapshot.data[:len(snapshot.data)-2], snapshot.data[len(snapshot.data)-1])
 	return nil
 }
 
 // Clear reset cluster snapshot to empty, unforked state
 func (snapshot *BasicClusterSnapshot) Clear() {
-	snapshot.baseData = newInternalBasicSnapshotData()
-	snapshot.forkedData = nil
+	baseData := newInternalBasicSnapshotData()
+	snapshot.data = []*internalBasicSnapshotData{baseData}
 }
 
 // implementation of SharedLister interface

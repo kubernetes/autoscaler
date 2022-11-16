@@ -116,8 +116,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 
 			filterOutSchedulablePodListProcessor := NewFilterOutSchedulablePodListProcessor()
 
-			err = clusterSnapshot.Fork()
-			assert.NoError(t, err)
+			clusterSnapshot.Fork()
 
 			var expectedPodsInSnapshot = tt.scheduledPods
 			for _, pod := range tt.expectedFilteredOutPods {
@@ -164,10 +163,8 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 			assert.ElementsMatch(t, expectedFilteredOutPodUids, podUidsInHintsMap)
 
 			// reset snapshot to initial state and run filterOutSchedulableByPacking with hinting map filled in
-			err = clusterSnapshot.Revert()
-			assert.NoError(t, err)
-			err = clusterSnapshot.Fork()
-			assert.NoError(t, err)
+			clusterSnapshot.Revert()
+			clusterSnapshot.Fork()
 
 			stillPendingPods, err = filterOutSchedulablePodListProcessor.filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker)
 			assert.NoError(t, err)
