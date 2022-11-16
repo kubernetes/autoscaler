@@ -162,6 +162,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 
 func TestForking(t *testing.T) {
 	testCases := validTestCases(t)
+	node := BuildTestNode("specialNode-2", 10, 100)
 
 	for name, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
@@ -175,8 +176,7 @@ func TestForking(t *testing.T) {
 			t.Run(fmt.Sprintf("%s: %s fork", name, tc.name), func(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, tc.state)
 
-				err := snapshot.Fork()
-				assert.NoError(t, err)
+				snapshot.Fork()
 
 				tc.op(snapshot)
 
@@ -186,13 +186,26 @@ func TestForking(t *testing.T) {
 			t.Run(fmt.Sprintf("%s: %s fork & revert", name, tc.name), func(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, tc.state)
 
-				err := snapshot.Fork()
-				assert.NoError(t, err)
+				snapshot.Fork()
 
 				tc.op(snapshot)
 
-				err = snapshot.Revert()
-				assert.NoError(t, err)
+				snapshot.Revert()
+
+				// Modifications should no longer be applied.
+				compareStates(t, tc.state, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s fork & fork & revert & revert", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				snapshot.Fork()
+				tc.op(snapshot)
+				snapshot.Fork()
+
+				snapshot.AddNode(node)
+
+				snapshot.Revert()
+				snapshot.Revert()
 
 				// Modifications should no longer be applied.
 				compareStates(t, tc.state, getSnapshotState(t, snapshot))
@@ -200,12 +213,42 @@ func TestForking(t *testing.T) {
 			t.Run(fmt.Sprintf("%s: %s fork & commit", name, tc.name), func(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, tc.state)
 
-				err := snapshot.Fork()
-				assert.NoError(t, err)
-
+				snapshot.Fork()
 				tc.op(snapshot)
 
-				err = snapshot.Commit()
+				err := snapshot.Commit()
+				assert.NoError(t, err)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s fork & fork & commit & revert", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				snapshot.Fork()
+				snapshot.Fork()
+				tc.op(snapshot)
+
+				err := snapshot.Commit()
+				assert.NoError(t, err)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+
+				snapshot.Revert()
+				// Modifications should no longer be applied.
+				compareStates(t, tc.state, getSnapshotState(t, snapshot))
+
+			})
+			t.Run(fmt.Sprintf("%s: %s fork & fork & revert & commit", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				snapshot.Fork()
+				tc.op(snapshot)
+				snapshot.Fork()
+				snapshot.AddNode(node)
+				snapshot.Revert()
+				err := snapshot.Commit()
 				assert.NoError(t, err)
 
 				// Modifications should be applied.
@@ -220,7 +263,7 @@ func TestForking(t *testing.T) {
 				_, err = snapshot.NodeInfos().HavePodsWithAffinityList()
 				assert.NoError(t, err)
 
-				err = snapshot.Fork()
+				snapshot.Fork()
 				assert.NoError(t, err)
 
 				tc.op(snapshot)
@@ -278,10 +321,9 @@ func TestClear(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				err := snapshot.Fork()
-				assert.NoError(t, err)
+				snapshot.Fork()
 
-				err = snapshot.AddNodes(extraNodes)
+				err := snapshot.AddNodes(extraNodes)
 				assert.NoError(t, err)
 
 				for _, pod := range extraPods {
@@ -291,16 +333,12 @@ func TestClear(t *testing.T) {
 
 				compareStates(t, snapshotState{allNodes, allPods}, getSnapshotState(t, snapshot))
 
-				// Fork()ing twice is not allowed.
-				err = snapshot.Fork()
-				assert.Error(t, err)
-
 				snapshot.Clear()
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
 
 				// Clear() should break out of forked state.
-				err = snapshot.Fork()
+				snapshot.Fork()
 				assert.NoError(t, err)
 			})
 	}
@@ -346,7 +384,7 @@ func TestNode404(t *testing.T) {
 					err := snapshot.AddNode(node)
 					assert.NoError(t, err)
 
-					err = snapshot.Fork()
+					snapshot.Fork()
 					assert.NoError(t, err)
 
 					err = snapshot.RemoveNode("node")
@@ -421,7 +459,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 					err := snapshot.AddNode(node)
 					assert.NoError(t, err)
 
-					err = snapshot.Fork()
+					snapshot.Fork()
 					assert.NoError(t, err)
 
 					// Node already in base, shouldn't be able to add in fork.
@@ -433,10 +471,9 @@ func TestNodeAlreadyExists(t *testing.T) {
 				func(t *testing.T) {
 					snapshot := snapshotFactory()
 
-					err := snapshot.Fork()
-					assert.NoError(t, err)
+					snapshot.Fork()
 
-					err = snapshot.AddNode(node)
+					err := snapshot.AddNode(node)
 					assert.NoError(t, err)
 
 					// Node already in fork.
@@ -447,10 +484,9 @@ func TestNodeAlreadyExists(t *testing.T) {
 				func(t *testing.T) {
 					snapshot := snapshotFactory()
 
-					err := snapshot.Fork()
-					assert.NoError(t, err)
+					snapshot.Fork()
 
-					err = snapshot.AddNode(node)
+					err := snapshot.AddNode(node)
 					assert.NoError(t, err)
 
 					err = snapshot.Commit()
@@ -662,7 +698,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			err = snapshot.Fork()
+			snapshot.Fork()
 			assert.NoError(t, err)
 			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
@@ -673,8 +709,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, true, volumeExists)
 
-			err = snapshot.Revert()
-			assert.NoError(t, err)
+			snapshot.Revert()
 
 			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, false, volumeExists)
@@ -693,5 +728,39 @@ func TestPVCClearAndFork(t *testing.T) {
 			assert.Equal(t, false, volumeExists)
 
 		})
+	}
+}
+
+func TestWithForkedSnapshot(t *testing.T) {
+	testCases := validTestCases(t)
+	err := fmt.Errorf("some error")
+	for name, snapshotFactory := range snapshots {
+		for _, tc := range testCases {
+			snapshot := startSnapshot(t, snapshotFactory, tc.state)
+			successFunc := func() (bool, error) {
+				tc.op(snapshot)
+				return true, err
+			}
+			failedFunc := func() (bool, error) {
+				tc.op(snapshot)
+				return false, err
+			}
+			t.Run(fmt.Sprintf("%s: %s WithForkedSnapshot for failed function", name, tc.name), func(t *testing.T) {
+				err1, err2 := WithForkedSnapshot(snapshot, failedFunc)
+				assert.Error(t, err1)
+				assert.NoError(t, err2)
+
+				// Modifications should not be applied.
+				compareStates(t, tc.state, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s WithForkedSnapshot for success function", name, tc.name), func(t *testing.T) {
+				err1, err2 := WithForkedSnapshot(snapshot, successFunc)
+				assert.Error(t, err1)
+				assert.NoError(t, err2)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+			})
+		}
 	}
 }
