@@ -188,22 +188,23 @@ func BenchmarkForkAddRevert(b *testing.B) {
 					err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
 					assert.NoError(b, err)
 				}
-				tmpNode := BuildTestNode("tmp", 2000, 2000000)
+				tmpNode1 := BuildTestNode("tmp-1", 2000, 2000000)
+				tmpNode2 := BuildTestNode("tmp-2", 2000, 2000000)
 				b.ResetTimer()
 				b.Run(fmt.Sprintf("%s: ForkAddRevert (%d nodes, %d pods)", snapshotName, ntc, ptc), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
-						err = clusterSnapshot.Fork()
+						clusterSnapshot.Fork()
+						err = clusterSnapshot.AddNode(tmpNode1)
 						if err != nil {
 							assert.NoError(b, err)
 						}
-						err = clusterSnapshot.AddNode(tmpNode)
+						clusterSnapshot.Fork()
+						err = clusterSnapshot.AddNode(tmpNode2)
 						if err != nil {
 							assert.NoError(b, err)
 						}
-						err = clusterSnapshot.Revert()
-						if err != nil {
-							assert.NoError(b, err)
-						}
+						clusterSnapshot.Revert()
+						clusterSnapshot.Revert()
 					}
 				})
 			}
@@ -236,9 +237,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			if err := snapshot.AddNodes(nodes[:tc.nodeCount]); err != nil {
 				assert.NoError(b, err)
 			}
-			if err := snapshot.Fork(); err != nil {
-				assert.NoError(b, err)
-			}
+			snapshot.Fork()
 			if err := snapshot.AddNodes(nodes[tc.nodeCount:]); err != nil {
 				assert.NoError(b, err)
 			}

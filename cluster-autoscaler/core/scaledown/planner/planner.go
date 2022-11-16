@@ -84,9 +84,9 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, pdb []*policyv1.PodDisruptionBudget, currentTime time.Time) errors.AutoscalerError {
 	p.latestUpdate = currentTime
 	p.actuationStatus = as
-	// TODO: clone cluster snapshot to avoid persisting changes done by the
-	// simulation. Or - better yet - allow the snapshot to be forked twice
-	// and just fork it here.
+	// Avoid persisting changes done by the simulation.
+	p.context.ClusterSnapshot.Fork()
+	defer p.context.ClusterSnapshot.Revert()
 	err := p.injectOngoingActuation()
 	if err != nil {
 		p.CleanUpUnneededNodes()

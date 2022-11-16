@@ -68,10 +68,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 		Pods:      make([]*apiv1.Pod, 0),
 	}
 
-	if err := context.ClusterSnapshot.Fork(); err != nil {
-		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
-		return expander.Option{}, err
-	}
+	context.ClusterSnapshot.Fork()
 
 	// add test node to snapshot
 	var pods []*apiv1.Pod
@@ -80,12 +77,9 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 	}
 	if err := context.ClusterSnapshot.AddNodeWithPods(nodeInfo.Node(), pods); err != nil {
 		klog.Errorf("Error while adding test Node; %v", err)
-		if err := context.ClusterSnapshot.Revert(); err != nil {
-			klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
-		}
-		// TODO: Or should I just skip the node group? specifically if Revert fails it is fatal error.
-		//       Maybe we should not return error from Revert as we cannot handle it in any way on the caller side?
-		return expander.Option{}, err
+		context.ClusterSnapshot.Revert()
+		// TODO: Or should I just skip the node group?
+		return expander.Option{}, nil
 	}
 
 	for _, eg := range podEquivalenceGroups {
@@ -104,10 +98,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 		}
 	}
 
-	if err := context.ClusterSnapshot.Revert(); err != nil {
-		klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
-		return expander.Option{}, err
-	}
+	context.ClusterSnapshot.Revert()
 
 	if len(option.Pods) > 0 {
 		estimator := context.EstimatorBuilder(context.PredicateChecker, context.ClusterSnapshot)
