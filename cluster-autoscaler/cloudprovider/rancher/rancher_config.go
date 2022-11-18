@@ -29,6 +29,7 @@ type cloudConfig struct {
 	ClusterName       string `yaml:"clusterName"`
 	ClusterNamespace  string `yaml:"clusterNamespace"`
 	ClusterAPIVersion string `yaml:"clusterAPIVersion"`
+	ProviderIDPrefix  string `yaml:"providerIDPrefix"`
 }
 
 func newConfig(file string) (*cloudConfig, error) {
@@ -37,7 +38,7 @@ func newConfig(file string) (*cloudConfig, error) {
 		return nil, fmt.Errorf("unable to read cloud config file: %w", err)
 	}
 
-	config := &cloudConfig{}
+	config := &cloudConfig{ProviderIDPrefix: rke2ProviderID}
 	if err := yaml.Unmarshal(b, config); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal config file: %w", err)
 	}

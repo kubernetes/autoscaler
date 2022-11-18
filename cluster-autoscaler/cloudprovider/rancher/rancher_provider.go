@@ -43,7 +43,7 @@ const (
 	// providerName is the cloud provider name for rancher
 	providerName = "rancher"
 
-	// rke2ProviderID identifies nodes that are using RKE2
+	// rke2ProviderID is the default Provider ID to identify nodes that are using RKE2
 	rke2ProviderID       = "rke2"
 	rke2ProviderIDPrefix = rke2ProviderID + "://"
 
@@ -146,8 +146,8 @@ func (provider *RancherCloudProvider) Pricing() (cloudprovider.PricingModel, aut
 
 // NodeGroupForNode returns the node group for the given node.
 func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
-	// skip nodes that are not managed by rke2.
-	if !strings.HasPrefix(node.Spec.ProviderID, rke2ProviderID) {
+	// skip nodes that are not managed by the defined providerID
+	if !strings.HasPrefix(node.Spec.ProviderID, provider.config.ProviderIDPrefix) {
 		return nil, nil
 	}
 

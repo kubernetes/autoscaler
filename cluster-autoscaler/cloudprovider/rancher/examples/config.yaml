@@ -7,3 +7,5 @@ clusterName: my-cluster
 clusterNamespace: fleet-default
 # optional, will be auto-discovered if not specified
 #clusterAPIVersion: v1alpha4
+# optional, default: rke2
+providerIDPrefix: rke2

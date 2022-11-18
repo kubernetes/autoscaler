@@ -39,4 +39,9 @@ func TestNewConfig(t *testing.T) {
 	if len(cfg.ClusterNamespace) == 0 {
 		t.Fatal("expected cluster namespace to be set")
 	}
+
+	if len(cfg.ProviderIDPrefix) == 0 {
+		// It is optional, but set in this context
+		t.Fatal("expected provider id to be set")
+	}
 }
