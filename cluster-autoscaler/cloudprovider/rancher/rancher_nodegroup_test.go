@@ -494,6 +494,7 @@ func setup(machines []runtime.Object) (*RancherCloudProvider, error) {
 		ClusterName:       testCluster,
 		ClusterNamespace:  testNamespace,
 		ClusterAPIVersion: "v1alpha4",
+		ProviderIDPrefix:  rke2ProviderID,
 	}
 
 	machinePools := []provisioningv1.RKEMachinePool{
