@@ -72,3 +72,10 @@ spec:
         cluster.provisioning.cattle.io/autoscaler-resource-ephemeral-storage: 50Gi
         cluster.provisioning.cattle.io/autoscaler-resource-memory: 4Gi
 ```
+
+
+## Troubleshooting
+
+### Problem identifying node's nodegroups
+
+If you get `Nodegroup is nil for <prefix>:///<node-id>`, and `<prefix>` != `rke2`, you can set `providerIDPrefix: <prefix>` in the configuration file in order to identify correctly the nodes.
