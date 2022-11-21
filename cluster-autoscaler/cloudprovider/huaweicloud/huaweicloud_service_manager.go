@@ -626,8 +626,55 @@ func (csm *cloudServiceManager) buildNodeFromTemplate(asgName string, template *
 
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
 
+	node.Spec.Taints = extractTaintsFromTags(template.tags)
+
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+// extractTaintsFromTags extract taints from as group tags.
+// The tag is of the format "k8s.io_cluster-autoscaler_node-template_taint_<taint-key>". "<taint-key>" is
+// the name of the taint and the value of each tag specifies the taint value and effect with the
+// format "<taint-value>:<taint-effect>".
+// Example tags: "k8s.io_cluster-autoscaler_node-template_taint_dedicated": "true:NoSchedule"
+func extractTaintsFromTags(tags map[string]string) []apiv1.Taint {
+	taints := make([]apiv1.Taint, 0)
+
+	for tagKey, tagValue := range tags {
+		if !strings.Contains(tagKey, "k8s.io_cluster-autoscaler_node-template_taint_") {
+			continue
+		}
+
+		splits := strings.Split(tagKey, "k8s.io_cluster-autoscaler_node-template_taint_")
+		// If the tagKey is 'k8s.io_cluster-autoscaler_node-template_taint_', the second element is '',
+		// this should be ruled out.
+		if len(splits) < 2 || splits[1] == "" {
+			klog.Warningf("Invalid tag key format:%s", tagKey)
+			continue
+		}
+
+		values := strings.Split(tagValue, ":")
+		if len(values) != 2 {
+			klog.Warningf("Invalid tag value format:%s", tagValue)
+			continue
+		}
+
+		if values[1] != string(apiv1.TaintEffectNoSchedule) &&
+			values[1] != string(apiv1.TaintEffectPreferNoSchedule) &&
+			values[1] != string(apiv1.TaintEffectNoExecute) {
+			klog.Warningf("Invalid tag value format:%s", tagValue)
+			continue
+		}
+
+		taints = append(taints, apiv1.Taint{
+			Key:    splits[1],
+			Value:  values[0],
+			Effect: apiv1.TaintEffect(values[1]),
+		})
+		klog.V(6).Infof("Extract taints from tag key/value successfully:%s, %s", tagKey, tagValue)
+	}
+
+	return taints
 }
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
@@ -643,6 +690,10 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 
 	// append custom node labels
 	for key, value := range template.tags {
+		// ignore the tag which represents a taint
+		if strings.Contains(key, "k8s.io_cluster-autoscaler_node-template_taint_") {
+			continue
+		}
 		result[key] = value
 	}
 
