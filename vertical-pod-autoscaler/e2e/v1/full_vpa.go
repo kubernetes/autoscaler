@@ -43,7 +43,7 @@ const (
 	// the initial values should be outside minimal bounds
 	initialCPU     = int64(10) // mCPU
 	initialMemory  = int64(10) // MB
-	oomTestTimeout = 8 * time.Minute
+	oomTestTimeout = 12 * time.Minute
 )
 
 var _ = FullVpaE2eDescribe("Pods under VPA", func() {
