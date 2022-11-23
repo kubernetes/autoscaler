@@ -66,7 +66,7 @@ const (
 
 var (
 	resourceConsumerImage = imageutils.GetE2EImage(imageutils.ResourceConsumer)
-	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "40000"}
+	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "50000"}
 )
 
 var (
