@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -25,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
@@ -212,8 +214,8 @@ func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
 }
 
 func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool, timestamp time.Time) error {
-	isCandidateNode := func(nodeName string) bool {
-		return nodeName != removedNode && nodes[nodeName]
+	isCandidateNode := func(nodeInfo *schedulerframework.NodeInfo) bool {
+		return nodeInfo.Node().Name != removedNode && nodes[nodeInfo.Node().Name]
 	}
 
 	pods = tpu.ClearTPURequests(pods)
@@ -233,13 +235,16 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 		newpods = append(newpods, &newpod)
 	}
 
-	targetNodes, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode)
+	statuses, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode, true)
 	if err != nil {
 		return err
 	}
+	if len(statuses) != len(newpods) {
+		return fmt.Errorf("can reschedule only %d out of %d pods", len(statuses), len(newpods))
+	}
 
-	for _, targetNode := range targetNodes {
-		r.usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
+	for _, status := range statuses {
+		r.usageTracker.RegisterUsage(removedNode, status.NodeName, timestamp)
 	}
 	return nil
 }
