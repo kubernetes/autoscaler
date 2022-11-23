@@ -27,8 +27,13 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+// Status contains information about pods scheduled by the HintingSimulator
+type Status struct {
+	Pod      *apiv1.Pod
+	NodeName string
+}
+
 // HintingSimulator is a helper object for simulating scheduler behavior.
-// TODO(x13n): Reuse this in filter_out_unschedulable.
 type HintingSimulator struct {
 	predicateChecker predicatechecker.PredicateChecker
 	hints            *Hints
@@ -44,53 +49,75 @@ func NewHintingSimulator(predicateChecker predicatechecker.PredicateChecker) *Hi
 
 // TrySchedulePods attempts to schedule provided pods on any acceptable nodes.
 // Each node is considered acceptable iff isNodeAcceptable() returns true.
-// Returns a list of nodes that were chosen or an error if scheduling any of the pods failed.
+// Returns a list of scheduled pods with assigned pods and the count of overflowing
+// controllers, or an error if an unexpected error occurs.
+// If the breakOnFailure is set to true, the function will stop scheduling attempts
+// after the first scheduling attempt that fails. This is useful if all provided
+// pods need to be scheduled.
 // Note: this function does not fork clusterSnapshot: this has to be done by the caller.
-func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(string) bool) ([]string, error) {
-	var nodeNames []string
+func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*schedulerframework.NodeInfo) bool, breakOnFailure bool) ([]Status, int, error) {
+	similarPods := NewSimilarPodsScheduling()
+
+	var statuses []Status
 	for _, pod := range pods {
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 		nodeName, err := s.findNodeWithHints(clusterSnapshot, pod, isNodeAcceptable)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
+
 		if nodeName == "" {
-			nodeName, err = s.schedulePod(clusterSnapshot, pod, isNodeAcceptable)
+			nodeName, err = s.findNode(similarPods, clusterSnapshot, pod, isNodeAcceptable)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 		}
-		nodeNames = append(nodeNames, nodeName)
+
+		if nodeName != "" {
+			klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodeName)
+			if err := clusterSnapshot.AddPod(pod, nodeName); err != nil {
+				return nil, 0, fmt.Errorf("simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, nodeName, err)
+			}
+			statuses = append(statuses, Status{Pod: pod, NodeName: nodeName})
+		} else if breakOnFailure {
+			break
+		}
 	}
-	return nodeNames, nil
+	return statuses, similarPods.OverflowingControllerCount(), nil
 }
 
-func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(string) bool) (string, error) {
+func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) (string, error) {
 	hk := HintKeyFromPod(pod)
-	if hintedNode, hasHint := s.hints.Get(hk); hasHint && isNodeAcceptable(hintedNode) {
+	if hintedNode, hasHint := s.hints.Get(hk); hasHint {
 		if err := s.predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
-			klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
-			if err := clusterSnapshot.AddPod(pod, hintedNode); err != nil {
-				return "", fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, hintedNode, err)
-			}
 			s.hints.Set(hk, hintedNode)
-			return hintedNode, nil
+
+			nodeInfo, err := clusterSnapshot.NodeInfos().Get(hintedNode)
+			if err != nil {
+				return "", err
+			}
+
+			if isNodeAcceptable(nodeInfo) {
+				return hintedNode, nil
+			}
 		}
 	}
 	return "", nil
 }
 
-func (s *HintingSimulator) schedulePod(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(string) bool) (string, error) {
-	newNodeName, err := s.predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
-		return isNodeAcceptable(nodeInfo.Node().Name)
-	})
+func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) (string, error) {
+	if similarPods.IsSimilarUnschedulable(pod) {
+		klog.V(4).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
+		return "", nil
+	}
+
+	newNodeName, err := s.predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, isNodeAcceptable)
 	if err != nil {
-		return "", fmt.Errorf("failed to find place for %s/%s", pod.Namespace, pod.Name)
+		klog.V(4).Infof("failed to find place for %s/%s: %v", pod.Namespace, pod.Name, err)
+		similarPods.SetUnschedulable(pod)
+		return "", nil
 	}
-	klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)
-	if err := clusterSnapshot.AddPod(pod, newNodeName); err != nil {
-		return "", fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, newNodeName, err)
-	}
+
 	s.hints.Set(HintKeyFromPod(pod), newNodeName)
 	return newNodeName, nil
 }
@@ -101,6 +128,6 @@ func (s *HintingSimulator) DropOldHints() {
 }
 
 // ScheduleAnywhere can be passed to TrySchedulePods when there are no extra restrictions on nodes to consider.
-func ScheduleAnywhere(_ string) bool {
+func ScheduleAnywhere(_ *schedulerframework.NodeInfo) bool {
 	return true
 }

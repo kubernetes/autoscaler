@@ -543,7 +543,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleTestConfig) *ScaleTestResul
 		extraPods[i] = pod
 	}
 
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
@@ -699,7 +699,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 
@@ -741,7 +741,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
 
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
@@ -813,7 +813,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
 	}
 
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, resourceManager, pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 
@@ -868,7 +868,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{t}
 	processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{t, 0}
 
@@ -922,7 +922,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{t}
 	processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{t, 2}
 
@@ -979,7 +979,7 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
-	processors := NewTestProcessors()
+	processors := NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 

@@ -368,7 +368,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts.Processors = ca_processors.DefaultProcessors()
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime)
-	opts.Processors.PodListProcessor = filteroutschedulable.NewFilterOutSchedulablePodListProcessor()
+	opts.Processors.PodListProcessor = filteroutschedulable.NewFilterOutSchedulablePodListProcessor(opts.PredicateChecker)
 
 	var nodeInfoComparator nodegroupset.NodeInfoComparator
 	if len(autoscalingOptions.BalancingLabels) > 0 {

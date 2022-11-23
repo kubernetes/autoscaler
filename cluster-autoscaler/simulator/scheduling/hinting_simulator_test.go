@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -34,7 +35,8 @@ func TestTrySchedulePods(t *testing.T) {
 		nodes           []*apiv1.Node
 		pods            []*apiv1.Pod
 		newPods         []*apiv1.Pod
-		acceptableNodes func(string) bool
+		acceptableNodes func(*schedulerframework.NodeInfo) bool
+		wantStatuses    []Status
 		wantErr         bool
 	}{
 		{
@@ -47,10 +49,14 @@ func TestTrySchedulePods(t *testing.T) {
 				buildScheduledPod("p1", 300, 500000, "n1"),
 			},
 			newPods: []*apiv1.Pod{
-				BuildTestPod("p2", 600, 500000),
+				BuildTestPod("p2", 800, 500000),
 				BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: ScheduleAnywhere,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
+				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
+			},
 		},
 		{
 			desc: "three new pods, two nodes, no fit",
@@ -62,12 +68,15 @@ func TestTrySchedulePods(t *testing.T) {
 				buildScheduledPod("p1", 300, 500000, "n1"),
 			},
 			newPods: []*apiv1.Pod{
-				BuildTestPod("p2", 600, 500000),
+				BuildTestPod("p2", 800, 500000),
 				BuildTestPod("p3", 500, 500000),
 				BuildTestPod("p4", 700, 500000),
 			},
 			acceptableNodes: ScheduleAnywhere,
-			wantErr:         true,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
+				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
+			},
 		},
 		{
 			desc: "no new pods, two nodes",
@@ -95,6 +104,10 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: singleNodeOk("n2"),
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n2"},
+				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n2"},
+			},
 		},
 		{
 			desc: "two nodes, but only one acceptable, no fit",
@@ -110,7 +123,9 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: singleNodeOk("n1"),
-			wantErr:         true,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n1"},
+			},
 		},
 	}
 
@@ -123,21 +138,24 @@ func TestTrySchedulePods(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
 			s := NewHintingSimulator(predicateChecker)
-			_, err = s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes)
+			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
 			if tc.wantErr {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				numScheduled := countPods(t, clusterSnapshot)
-				assert.Equal(t, len(tc.pods)+len(tc.newPods), numScheduled)
-				s.DropOldHints()
-				// Check if new hints match actually scheduled node names.
-				for _, np := range tc.newPods {
-					hintedNode, found := s.hints.Get(HintKeyFromPod(np))
-					assert.True(t, found)
-					actualNode := nodeNameForPod(t, clusterSnapshot, np.Name)
-					assert.Equal(t, hintedNode, actualNode)
-				}
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantStatuses, statuses)
+
+			numScheduled := countPods(t, clusterSnapshot)
+			assert.Equal(t, len(tc.pods)+len(tc.wantStatuses), numScheduled)
+			s.DropOldHints()
+			// Check if new hints match actually scheduled node names.
+			for _, status := range tc.wantStatuses {
+				hintedNode, found := s.hints.Get(HintKeyFromPod(status.Pod))
+				assert.True(t, found)
+				actualNode := nodeNameForPod(t, clusterSnapshot, status.Pod.Name)
+				assert.Equal(t, hintedNode, actualNode)
 			}
 		})
 	}
@@ -202,13 +220,16 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, nodes, []*apiv1.Pod{})
 			pods := make([]*apiv1.Pod, 0, len(tc.podNodes))
 			s := NewHintingSimulator(predicateChecker)
+			var expectedStatuses []Status
 			for p, n := range tc.podNodes {
 				pod := BuildTestPod(p, 1, 1)
 				pods = append(pods, pod)
 				s.hints.Set(HintKeyFromPod(pod), n)
+				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
 			}
-			_, err = s.TrySchedulePods(clusterSnapshot, pods, ScheduleAnywhere)
+			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, ScheduleAnywhere, false)
 			assert.NoError(t, err)
+			assert.Equal(t, expectedStatuses, statuses)
 
 			for p, hinted := range tc.podNodes {
 				actual := nodeNameForPod(t, clusterSnapshot, p)
@@ -255,8 +276,8 @@ func nodeNameForPod(t *testing.T, clusterSnapshot clustersnapshot.ClusterSnapsho
 	return ""
 }
 
-func singleNodeOk(nodeName string) func(string) bool {
-	return func(otherNodeName string) bool {
-		return nodeName == otherNodeName
+func singleNodeOk(nodeName string) func(*schedulerframework.NodeInfo) bool {
+	return func(nodeInfo *schedulerframework.NodeInfo) bool {
+		return nodeName == nodeInfo.Node().Name
 	}
 }

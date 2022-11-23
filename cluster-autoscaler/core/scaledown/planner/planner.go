@@ -212,9 +212,12 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 	pods = clearNodeName(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
-	_, err := p.actuationInjector.TrySchedulePods(p.context.ClusterSnapshot, pods, scheduling.ScheduleAnywhere)
+	statuses, _, err := p.actuationInjector.TrySchedulePods(p.context.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true)
 	if err != nil {
-		return fmt.Errorf("cannot scale down, no place to reschedule pods from ongoing deletions: %v", err)
+		return fmt.Errorf("cannot scale down, an unexpected error occurred: %v", err)
+	}
+	if len(statuses) != len(pods) {
+		return fmt.Errorf("cannot scale down, can reschedule only %d out of %d pods from ongoing deletions", len(statuses), len(pods))
 	}
 	return nil
 }
