@@ -89,12 +89,13 @@ func main() {
 
 	useCheckpoints := *storage != "prometheus"
 
-	postProcessors := []routines.RecommendationPostProcessor{
-		&routines.CappingPostProcessor{},
-	}
+	var postProcessors []routines.RecommendationPostProcessor
 	if *postProcessorCPUasInteger {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
+	// CappingPostProcessor, should always come in the last position for post-processing
+	postProcessors = append(postProcessors, &routines.CappingPostProcessor{})
+
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName, postProcessors)
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
