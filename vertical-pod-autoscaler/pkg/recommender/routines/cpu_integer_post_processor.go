@@ -18,9 +18,9 @@ package routines
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"math"
 	"strings"
 )
 
@@ -44,18 +44,6 @@ func (p *IntegerCPUPostProcessor) Process(vpa *model.Vpa, recommendation *vpa_ty
 
 	amendedRecommendation := recommendation.DeepCopy()
 
-	process := func(recommendation apiv1.ResourceList) {
-		for resourceName, recommended := range recommendation {
-			if resourceName != apiv1.ResourceCPU {
-				continue
-			}
-			v := float64(recommended.MilliValue()) / 1000
-			r := int64(math.Ceil(v))
-			recommended.Set(r)
-			recommendation[resourceName] = recommended
-		}
-	}
-
 	for key, value := range vpa.Annotations {
 		containerName := extractContainerName(key, vpaPostProcessorPrefix, vpaPostProcessorIntegerCPUSuffix)
 		if containerName == "" || value != vpaPostProcessorIntegerCPUValue {
@@ -66,13 +54,23 @@ func (p *IntegerCPUPostProcessor) Process(vpa *model.Vpa, recommendation *vpa_ty
 			if r.ContainerName != containerName {
 				continue
 			}
-			process(r.Target)
-			process(r.LowerBound)
-			process(r.UpperBound)
-			process(r.UncappedTarget)
+			setIntegerCPURecommendation(r.Target)
+			setIntegerCPURecommendation(r.LowerBound)
+			setIntegerCPURecommendation(r.UpperBound)
+			setIntegerCPURecommendation(r.UncappedTarget)
 		}
 	}
 	return amendedRecommendation
+}
+
+func setIntegerCPURecommendation(recommendation apiv1.ResourceList) {
+	for resourceName, recommended := range recommendation {
+		if resourceName != apiv1.ResourceCPU {
+			continue
+		}
+		recommended.RoundUp(resource.Scale(0))
+		recommendation[resourceName] = recommended
+	}
 }
 
 // extractContainerName return the container name for the feature based on annotation key
