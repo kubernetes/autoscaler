@@ -26,7 +26,7 @@ import (
 	"testing"
 )
 
-func Test_extractContainerName(t *testing.T) {
+func TestExtractContainerName(t *testing.T) {
 	tests := []struct {
 		name   string
 		key    string
@@ -70,7 +70,7 @@ func Test_extractContainerName(t *testing.T) {
 	}
 }
 
-func Test_integerCPUPostProcessor_Process(t *testing.T) {
+func TestIntegerCPUPostProcessor_Process(t *testing.T) {
 	tests := []struct {
 		name           string
 		vpa            *model.Vpa
@@ -80,7 +80,7 @@ func Test_integerCPUPostProcessor_Process(t *testing.T) {
 		{
 			name: "No containers match",
 			vpa: &model.Vpa{Annotations: map[string]string{
-				vpaPostProcessorPrefix + "container-other" + vpaPostProcessorIntegerCPUSuffix: "true",
+				vpaPostProcessorPrefix + "container-other" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
 			}},
 			recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -98,7 +98,7 @@ func Test_integerCPUPostProcessor_Process(t *testing.T) {
 		{
 			name: "2 containers, 1 matching only",
 			vpa: &model.Vpa{Annotations: map[string]string{
-				vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: "true",
+				vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
 			}},
 			recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -116,8 +116,8 @@ func Test_integerCPUPostProcessor_Process(t *testing.T) {
 		{
 			name: "2 containers, 2 matching",
 			vpa: &model.Vpa{Annotations: map[string]string{
-				vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: "true",
-				vpaPostProcessorPrefix + "container2" + vpaPostProcessorIntegerCPUSuffix: "true",
+				vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
+				vpaPostProcessorPrefix + "container2" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
 			}},
 			recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
@@ -183,7 +183,7 @@ func equalResourceList(rla, rlb v1.ResourceList) bool {
 	return true
 }
 
-func Test_setIntegerCPURecommendation(t *testing.T) {
+func TestSetIntegerCPURecommendation(t *testing.T) {
 	tests := []struct {
 		name                   string
 		recommendation         v1.ResourceList
