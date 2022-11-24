@@ -19,6 +19,7 @@ package routines
 import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -136,25 +137,96 @@ func Test_integerCPUPostProcessor_Process(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := IntegerCPUPostProcessor{}
 			got := c.Process(tt.vpa, tt.recommendation, nil)
-			assert.Equalf(t, reScale3(tt.want), reScale3(got), "Process(%v, %v, nil)", tt.vpa, tt.recommendation)
+			assert.True(t, equalRecommendedPodResources(tt.want, got), "Process(%v, %v, nil)", tt.vpa, tt.recommendation)
 		})
 	}
 }
 
-func reScale3(recommended *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+func equalRecommendedPodResources(a, b *vpa_types.RecommendedPodResources) bool {
+	if len(a.ContainerRecommendations) != len(b.ContainerRecommendations) {
+		return false
+	}
 
-	scale3 := func(rl v1.ResourceList) {
-		for k, v := range rl {
-			v.SetMilli(v.MilliValue())
-			rl[k] = v
+	for i := range a.ContainerRecommendations {
+		if !equalResourceList(a.ContainerRecommendations[i].LowerBound, b.ContainerRecommendations[i].LowerBound) {
+			return false
+		}
+		if !equalResourceList(a.ContainerRecommendations[i].Target, b.ContainerRecommendations[i].Target) {
+			return false
+		}
+		if !equalResourceList(a.ContainerRecommendations[i].UncappedTarget, b.ContainerRecommendations[i].UncappedTarget) {
+			return false
+		}
+		if !equalResourceList(a.ContainerRecommendations[i].UpperBound, b.ContainerRecommendations[i].UpperBound) {
+			return false
 		}
 	}
+	return true
+}
 
-	for _, r := range recommended.ContainerRecommendations {
-		scale3(r.LowerBound)
-		scale3(r.Target)
-		scale3(r.UncappedTarget)
-		scale3(r.UpperBound)
+func equalResourceList(rla, rlb v1.ResourceList) bool {
+	if len(rla) != len(rlb) {
+		return false
 	}
-	return recommended
+	for k := range rla {
+		q := rla[k]
+		if q.Cmp(rlb[k]) != 0 {
+			return false
+		}
+	}
+	for k := range rlb {
+		q := rlb[k]
+		if q.Cmp(rla[k]) != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func Test_setIntegerCPURecommendation(t *testing.T) {
+	tests := []struct {
+		name                   string
+		recommendation         v1.ResourceList
+		expectedRecommendation v1.ResourceList
+	}{
+		{
+			name: "unchanged",
+			recommendation: map[v1.ResourceName]resource.Quantity{
+				v1.ResourceCPU:    resource.MustParse("8"),
+				v1.ResourceMemory: resource.MustParse("6Gi"),
+			},
+			expectedRecommendation: map[v1.ResourceName]resource.Quantity{
+				v1.ResourceCPU:    resource.MustParse("8"),
+				v1.ResourceMemory: resource.MustParse("6Gi"),
+			},
+		},
+		{
+			name: "round up from 0.1",
+			recommendation: map[v1.ResourceName]resource.Quantity{
+				v1.ResourceCPU:    resource.MustParse("8.1"),
+				v1.ResourceMemory: resource.MustParse("6Gi"),
+			},
+			expectedRecommendation: map[v1.ResourceName]resource.Quantity{
+				v1.ResourceCPU:    resource.MustParse("9"),
+				v1.ResourceMemory: resource.MustParse("6Gi"),
+			},
+		},
+		{
+			name: "round up from 0.9",
+			recommendation: map[v1.ResourceName]resource.Quantity{
+				v1.ResourceCPU:    resource.MustParse("8.9"),
+				v1.ResourceMemory: resource.MustParse("6Gi"),
+			},
+			expectedRecommendation: map[v1.ResourceName]resource.Quantity{
+				v1.ResourceCPU:    resource.MustParse("9"),
+				v1.ResourceMemory: resource.MustParse("6Gi"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setIntegerCPURecommendation(tt.recommendation)
+			assert.True(t, equalResourceList(tt.recommendation, tt.expectedRecommendation))
+		})
+	}
 }
