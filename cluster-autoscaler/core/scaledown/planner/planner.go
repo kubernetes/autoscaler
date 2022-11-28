@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
+	pdbdisruptions "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
@@ -62,18 +63,19 @@ type replicasInfo struct {
 
 // Planner is responsible for deciding which nodes should be deleted during scale down.
 type Planner struct {
-	context               *context.AutoscalingContext
-	unremovableNodes      *unremovable.Nodes
-	unneededNodes         *unneeded.Nodes
-	rs                    removalSimulator
-	actuationInjector     *scheduling.HintingSimulator
-	latestUpdate          time.Time
-	eligibilityChecker    eligibilityChecker
-	nodeUtilizationMap    map[string]utilization.Info
-	actuationStatus       scaledown.ActuationStatus
-	resourceLimitsFinder  *resource.LimitsFinder
-	cc                    controllerReplicasCalculator
-	scaleDownSetProcessor nodes.ScaleDownSetProcessor
+	context                 *context.AutoscalingContext
+	unremovableNodes        *unremovable.Nodes
+	unneededNodes           *unneeded.Nodes
+	rs                      removalSimulator
+	actuationInjector       *scheduling.HintingSimulator
+	latestUpdate            time.Time
+	eligibilityChecker      eligibilityChecker
+	nodeUtilizationMap      map[string]utilization.Info
+	actuationStatus         scaledown.ActuationStatus
+	resourceLimitsFinder    *resource.LimitsFinder
+	cc                      controllerReplicasCalculator
+	scaleDownSetProcessor   nodes.ScaleDownSetProcessor
+	pdbRemainingDisruptions *pdbdisruptions.PdbRemainingDisruptions
 }
 
 // New creates a new Planner object.
@@ -97,12 +99,18 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 // up-to-date information about the cluster.
 // Planner will evaluate scaleDownCandidates in the order provided here.
 func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, pdb []*policyv1.PodDisruptionBudget, currentTime time.Time) errors.AutoscalerError {
+	var err error
 	p.latestUpdate = currentTime
 	p.actuationStatus = as
+	p.pdbRemainingDisruptions, err = pdbdisruptions.NewPdbRemainingDisruptions(pdb)
+	if err != nil {
+		p.CleanUpUnneededNodes()
+		return errors.NewAutoscalerError(errors.InternalError, err.Error())
+	}
 	// Avoid persisting changes done by the simulation.
 	p.context.ClusterSnapshot.Fork()
 	defer p.context.ClusterSnapshot.Revert()
-	err := p.injectOngoingActuation()
+	err = p.injectOngoingActuation()
 	if err != nil {
 		p.CleanUpUnneededNodes()
 		return errors.ToAutoscalerError(errors.UnexpectedScaleDownStateError, err)
@@ -110,7 +118,7 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	deletions := asMap(merged(as.DeletionsInProgress()))
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
 	scaleDownCandidates = filterOutOngoingDeletions(scaleDownCandidates, deletions)
-	p.categorizeNodes(asMap(nodeNames(podDestinations)), scaleDownCandidates, pdb)
+	p.categorizeNodes(asMap(nodeNames(podDestinations)), scaleDownCandidates)
 	p.rs.DropOldHints()
 	p.actuationInjector.DropOldHints()
 	return nil
@@ -275,7 +283,7 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 // categorizeNodes determines, for each node, whether it can be eventually
 // removed or if there are reasons preventing that.
 // TODO: Track remaining PDB budget.
-func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node, pdbs []*policyv1.PodDisruptionBudget) {
+func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node) {
 	unremovableTimeout := p.latestUpdate.Add(p.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
@@ -293,14 +301,19 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			break
 		default:
 		}
-		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, pdbs)
+		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.pdbRemainingDisruptions.GetPdbs())
+		if removable != nil {
+			_, inParallel, _ := p.pdbRemainingDisruptions.CanDisrupt(removable.PodsToReschedule)
+			if !inParallel {
+				removable.IsRisky = true
+			}
+			delete(podDestinations, removable.Node.Name)
+			p.pdbRemainingDisruptions.Update(removable.PodsToReschedule)
+			removableList = append(removableList, *removable)
+		}
 		if unremovable != nil {
 			unremovableCount += 1
 			p.unremovableNodes.AddTimeout(unremovable, unremovableTimeout)
-		}
-		if removable != nil {
-			delete(podDestinations, removable.Node.Name)
-			removableList = append(removableList, *removable)
 		}
 	}
 	p.unneededNodes.Update(removableList, p.latestUpdate)
