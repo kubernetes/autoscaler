@@ -297,9 +297,9 @@ Please note the usage of the following arguments to override default names and p
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
 
 ### Override default values when OOM occurs
-The below parameters can be used to overwrite the default values when an OOM event is occured.
-OOMBumpUpRatio specifies how much memory will be added after observing OOM.
-OOMMinBumpUp specifies minimal increase of memory after observing OOM.
+The below parameters can be used to overwrite the default values when an OOM event is occurred. When VPA observes an OOM it will use a sample that higher of:
+`oom-bump-up-ratio` specifies times the memory usage observed during OOM.
+`oom-min-bump-up-bytes` specifies minimal increase of memory after observing OOM.
 
 Usage in recommender deployment
 ```
