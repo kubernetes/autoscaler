@@ -150,6 +150,18 @@ func (client *Client) InitWithEcsRamRole(regionId, roleName string) (err error) 
 	return client.InitWithOptions(regionId, config, credential)
 }
 
+// InitWithRRSA need regionId,roleARN,oidcProviderARN,oidcTokenFilePath and roleSessionName
+func (client *Client) InitWithRRSA(regionId, roleARN, oidcProviderARN, oidcTokenFilePath, roleSessionName string) (err error) {
+	config := client.InitClientConfig()
+	credential := &credentials.OIDCCredential{
+		RoleArn:           roleARN,
+		OIDCProviderArn:   oidcProviderARN,
+		OIDCTokenFilePath: oidcTokenFilePath,
+		RoleSessionName:   roleSessionName,
+	}
+	return client.InitWithOptions(regionId, config, credential)
+}
+
 // InitClientConfig init client config
 func (client *Client) InitClientConfig() (config *Config) {
 	if client.config != nil {
@@ -392,6 +404,13 @@ func NewClientWithRamRoleArn(regionId string, accessKeyId, accessKeySecret, role
 func NewClientWithEcsRamRole(regionId string, roleName string) (client *Client, err error) {
 	client = &Client{}
 	err = client.InitWithEcsRamRole(regionId, roleName)
+	return
+}
+
+// NewClientWithRRSA create client with RRSA on ECS
+func NewClientWithRRSA(regionId, roleARN, oidcProviderARN, oidcTokenFilePath, roleSessionName string) (client *Client, err error) {
+	client = &Client{}
+	err = client.InitWithRRSA(regionId, roleARN, oidcProviderARN, oidcTokenFilePath, roleSessionName)
 	return
 }
 
