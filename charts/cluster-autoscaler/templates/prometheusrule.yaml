@@ -12,8 +12,6 @@ spec:
     - name: {{ include "cluster-autoscaler.fullname" . }}
       {{- if .Values.prometheusRule.interval }}
       interval: {{ .Values.prometheusRule.interval }}
-      {{- else }}
-      interval: 1m
       {{- end }}
       rules: {{- tpl (toYaml .Values.prometheusRule.rules) . | nindent 8 }}
 {{- end }}

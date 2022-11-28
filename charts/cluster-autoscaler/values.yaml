@@ -358,8 +358,8 @@ prometheusRule:
   additionalLabels: {}
   # prometheusRule.namespace -- Namespace which Prometheus is running in.
   namespace: monitoring
-  # prometheusRule.interval -- How often rules in the group are evaluated (falls back to the default value of `global.evaluation_interval` (which is 1m) if not set).
-  interval: 1m
+  # prometheusRule.interval -- How often rules in the group are evaluated (falls back to the Prometheus level value of `global.evaluation_interval` if not set).
+  interval: nil
   # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
   rules: []
 
