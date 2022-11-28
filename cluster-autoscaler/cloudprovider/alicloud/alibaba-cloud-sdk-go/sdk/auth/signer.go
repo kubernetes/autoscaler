@@ -61,6 +61,10 @@ func NewSignerWithCredential(credential Credential, commonApi func(request *requ
 		{
 			signer, err = signers.NewEcsRamRoleSigner(instance, commonApi)
 		}
+	case *credentials.OIDCCredential:
+		{
+			signer, err = signers.NewOIDCSigner(instance)
+		}
 	case *credentials.BaseCredential: // deprecated user interface
 		{
 			signer, err = signers.NewAccessKeySigner(instance.ToAccessKeyCredential())
