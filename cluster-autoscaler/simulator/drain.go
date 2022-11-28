@@ -71,7 +71,8 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDele
 }
 
 func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.BlockingPod, error) {
-	// TODO: make it more efficient.
+	// TODO: remove it after deprecating legacy scale down.
+	// PdbRemainingDisruption.CanDisrupt() to replace this function.
 	for _, pdb := range pdbs {
 		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
 		if err != nil {
