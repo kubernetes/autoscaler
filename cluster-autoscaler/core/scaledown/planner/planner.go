@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
@@ -61,32 +62,34 @@ type replicasInfo struct {
 
 // Planner is responsible for deciding which nodes should be deleted during scale down.
 type Planner struct {
-	context              *context.AutoscalingContext
-	unremovableNodes     *unremovable.Nodes
-	unneededNodes        *unneeded.Nodes
-	rs                   removalSimulator
-	actuationInjector    *scheduling.HintingSimulator
-	latestUpdate         time.Time
-	eligibilityChecker   eligibilityChecker
-	nodeUtilizationMap   map[string]utilization.Info
-	actuationStatus      scaledown.ActuationStatus
-	resourceLimitsFinder *resource.LimitsFinder
-	cc                   controllerReplicasCalculator
+	context               *context.AutoscalingContext
+	unremovableNodes      *unremovable.Nodes
+	unneededNodes         *unneeded.Nodes
+	rs                    removalSimulator
+	actuationInjector     *scheduling.HintingSimulator
+	latestUpdate          time.Time
+	eligibilityChecker    eligibilityChecker
+	nodeUtilizationMap    map[string]utilization.Info
+	actuationStatus       scaledown.ActuationStatus
+	resourceLimitsFinder  *resource.LimitsFinder
+	cc                    controllerReplicasCalculator
+	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 }
 
 // New creates a new Planner object.
 func New(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions simulator.NodeDeleteOptions) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	return &Planner{
-		context:              context,
-		unremovableNodes:     unremovable.NewNodes(),
-		unneededNodes:        unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		rs:                   simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, true),
-		actuationInjector:    scheduling.NewHintingSimulator(context.PredicateChecker),
-		eligibilityChecker:   eligibility.NewChecker(processors.NodeGroupConfigProcessor),
-		nodeUtilizationMap:   make(map[string]utilization.Info),
-		resourceLimitsFinder: resourceLimitsFinder,
-		cc:                   newControllerReplicasCalculator(context.ListerRegistry),
+		context:               context,
+		unremovableNodes:      unremovable.NewNodes(),
+		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
+		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, true),
+		actuationInjector:     scheduling.NewHintingSimulator(context.PredicateChecker),
+		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
+		nodeUtilizationMap:    make(map[string]utilization.Info),
+		resourceLimitsFinder:  resourceLimitsFinder,
+		cc:                    newControllerReplicasCalculator(context.ListerRegistry),
+		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
 	}
 }
 
@@ -133,11 +136,24 @@ func (p *Planner) NodesToDelete() (empty, needDrain []*apiv1.Node) {
 		return nil, nil
 	}
 	limitsLeft := p.resourceLimitsFinder.LimitsLeft(p.context, nodes, resourceLimiter, p.latestUpdate)
-	empty, needDrain, unremovable := p.unneededNodes.RemovableAt(p.context, p.latestUpdate, limitsLeft, resourceLimiter.GetResources(), p.actuationStatus)
+	emptyRemovable, needDrainRemovable, unremovable := p.unneededNodes.RemovableAt(p.context, p.latestUpdate, limitsLeft, resourceLimiter.GetResources(), p.actuationStatus)
 	for _, u := range unremovable {
 		p.unremovableNodes.Add(u)
 	}
-	// TODO: filter results with ScaleDownSetProcessor.GetNodesToRemove
+	nodesToRemove := p.scaleDownSetProcessor.GetNodesToRemove(
+		p.context,
+		// We need to pass empty nodes first, as there might be some non-empty scale
+		// downs already in progress. If we pass the empty nodes first, they will be first
+		// to get deleted, thus we decrease chances of hitting the limit on non-empty scale down.
+		append(emptyRemovable, needDrainRemovable...),
+		p.context.AutoscalingOptions.MaxScaleDownParallelism)
+	for _, nodeToRemove := range nodesToRemove {
+		if len(nodeToRemove.PodsToReschedule) > 0 {
+			needDrain = append(needDrain, nodeToRemove.Node)
+		} else {
+			empty = append(empty, nodeToRemove.Node)
+		}
+	}
 	return empty, needDrain
 }
 
