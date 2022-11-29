@@ -52,7 +52,7 @@ func newAutoScalingWrapper(cfg *cloudConfig) (*autoScalingWrapper, error) {
 	asw := &autoScalingWrapper{
 		cfg: cfg,
 	}
-	if cfg.STSEnabled || cfg.RRSAEnabled {
+	if cfg.STSEnabled {
 		go func(asw *autoScalingWrapper, cfg *cloudConfig) {
 			timer := time.NewTicker(refreshClientInterval)
 			defer timer.Stop()

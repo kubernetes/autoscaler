@@ -107,7 +107,7 @@ func newInstanceWrapper(cfg *cloudConfig) (*instanceWrapper, error) {
 		return nil, fmt.Errorf("your cloud config is not valid")
 	}
 	iw := &instanceWrapper{}
-	if cfg.STSEnabled || cfg.RRSAEnabled {
+	if cfg.STSEnabled {
 		go func(iw *instanceWrapper, cfg *cloudConfig) {
 			timer := time.NewTicker(refreshClientInterval)
 			defer timer.Stop()

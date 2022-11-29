@@ -19,7 +19,6 @@ package signers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/jmespath/go-jmespath"
 	"io/ioutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
@@ -29,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -44,7 +44,6 @@ type OIDCSigner struct {
 	roleSessionName   string
 	sessionCredential *SessionCredential
 	credential        *credentials.OIDCCredential
-	commonApi         func(request *requests.CommonRequest, signer interface{}) (response *responses.CommonResponse, err error)
 }
 
 // NewOIDCSigner returns OIDCSigner
@@ -100,6 +99,7 @@ func (signer *OIDCSigner) GetAccessKeyId() (accessKeyId string, err error) {
 	if err != nil && (signer.sessionCredential == nil || len(signer.sessionCredential.AccessKeyId) <= 0) {
 		return "", err
 	}
+
 	return signer.sessionCredential.AccessKeyId, nil
 }
 
@@ -111,6 +111,7 @@ func (signer *OIDCSigner) GetExtraParam() map[string]string {
 	if signer.sessionCredential == nil || len(signer.sessionCredential.StsToken) <= 0 {
 		return make(map[string]string)
 	}
+
 	return map[string]string{"SecurityToken": signer.sessionCredential.StsToken}
 }
 
@@ -121,22 +122,26 @@ func (signer *OIDCSigner) Sign(stringToSign, secretSuffix string) string {
 }
 
 func (signer *OIDCSigner) buildCommonRequest() (request *requests.CommonRequest, err error) {
+	const endpoint = "sts.aliyuncs.com"
+	const stsApiVersion = "2015-04-01"
+	const action = "AssumeRoleWithOIDC"
 	request = requests.NewCommonRequest()
-	request.Domain = "sts.aliyuncs.com"
 	request.Scheme = requests.HTTPS
-	request.Method = "POST"
-	request.QueryParams["Timestamp"] = utils.GetTimeInFormatISO8601()
-	request.QueryParams["Action"] = "AssumeRoleWithOIDC"
+	request.Domain = endpoint
+	request.Method = requests.POST
+	request.QueryParams["Action"] = action
+	request.QueryParams["Version"] = stsApiVersion
 	request.QueryParams["Format"] = "JSON"
+	request.QueryParams["Timestamp"] = utils.GetTimeInFormatISO8601()
+	request.QueryParams["SignatureNonce"] = utils.GetUUIDV4()
 	request.FormParams["RoleArn"] = signer.credential.RoleArn
 	request.FormParams["OIDCProviderArn"] = signer.credential.OIDCProviderArn
 	request.FormParams["OIDCToken"] = signer.getOIDCToken(signer.credential.OIDCTokenFilePath)
 	request.QueryParams["RoleSessionName"] = signer.credential.RoleSessionName
-	request.QueryParams["Version"] = "2015-04-01"
-	request.QueryParams["SignatureNonce"] = uuid.New().String()
-	request.Headers["Host"] = request.Domain
+	request.Headers["host"] = endpoint
 	request.Headers["Accept-Encoding"] = "identity"
 	request.Headers["content-type"] = "application/x-www-form-urlencoded"
+	request.Headers["user-agent"] = fmt.Sprintf("AlibabaCloud (%s; %s) Golang/%s Core/%s TeaDSL/1", runtime.GOOS, runtime.GOARCH, strings.Trim(runtime.Version(), "go"), "0.01")
 	return
 }
 
@@ -158,13 +163,8 @@ func (signer *OIDCSigner) getOIDCToken(OIDCTokenFilePath string) string {
 }
 
 func (signer *OIDCSigner) refreshApi(request *requests.CommonRequest) (response *responses.CommonResponse, err error) {
-	requestUrl := request.BuildUrl()
-	var urlEncoded string
-	if request.FormParams != nil {
-		urlEncoded = utils.GetUrlFormedMap(request.FormParams)
-	}
-
-	httpRequest, err := http.NewRequest(request.Method, requestUrl, strings.NewReader(urlEncoded))
+	body := utils.GetUrlFormedMap(request.FormParams)
+	httpRequest, err := http.NewRequest(request.Method, fmt.Sprintf("%s://%s/?%s", strings.ToLower(request.Scheme), request.Domain, utils.GetUrlFormedMap(request.QueryParams)), strings.NewReader(body))
 	if err != nil {
 		fmt.Println("refresh RRSA token err", err)
 		return
@@ -172,10 +172,8 @@ func (signer *OIDCSigner) refreshApi(request *requests.CommonRequest) (response 
 
 	httpRequest.Proto = "HTTP/1.1"
 	httpRequest.Host = request.Domain
-	for key, value := range request.Headers {
-		if value != "" {
-			httpRequest.Header[key] = []string{value}
-		}
+	for k, v := range request.Headers {
+		httpRequest.Header.Add(k, v)
 	}
 
 	httpClient := &http.Client{}
@@ -187,15 +185,17 @@ func (signer *OIDCSigner) refreshApi(request *requests.CommonRequest) (response 
 
 	response = responses.NewCommonResponse()
 	err = responses.Unmarshal(response, httpResponse, "")
+
 	return
 }
 
 func (signer *OIDCSigner) refreshCredential(response *responses.CommonResponse) (err error) {
 	if response.GetHttpStatus() != http.StatusOK {
-		message := "refresh session token failed"
+		message := "refresh RRSA failed"
 		err = errors.NewServerError(response.GetHttpStatus(), response.GetHttpContentString(), message)
 		return
 	}
+
 	var data interface{}
 	err = json.Unmarshal(response.GetHttpContentBytes(), &data)
 	if err != nil {
