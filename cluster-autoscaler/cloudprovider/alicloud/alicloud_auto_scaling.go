@@ -52,7 +52,7 @@ func newAutoScalingWrapper(cfg *cloudConfig) (*autoScalingWrapper, error) {
 	asw := &autoScalingWrapper{
 		cfg: cfg,
 	}
-	if cfg.STSEnabled == true {
+	if cfg.STSEnabled {
 		go func(asw *autoScalingWrapper, cfg *cloudConfig) {
 			timer := time.NewTicker(refreshClientInterval)
 			defer timer.Stop()
@@ -76,7 +76,7 @@ func newAutoScalingWrapper(cfg *cloudConfig) (*autoScalingWrapper, error) {
 
 func getEssClient(cfg *cloudConfig) (client *ess.Client, err error) {
 	region := cfg.getRegion()
-	if cfg.STSEnabled == true {
+	if cfg.STSEnabled {
 		auth, err := cfg.getSTSToken()
 		if err != nil {
 			klog.Errorf("Failed to get sts token from metadata,Because of %s", err.Error())
@@ -85,6 +85,11 @@ func getEssClient(cfg *cloudConfig) (client *ess.Client, err error) {
 		client, err = ess.NewClientWithStsToken(region, auth.AccessKeyId, auth.AccessKeySecret, auth.SecurityToken)
 		if err != nil {
 			klog.Errorf("Failed to create client with sts in metadata because of %s", err.Error())
+		}
+	} else if cfg.RRSAEnabled {
+		client, err = ess.NewClientWithRRSA(region, cfg.RoleARN, cfg.OIDCProviderARN, cfg.OIDCTokenFilePath, cfg.RoleSessionName)
+		if err != nil {
+			klog.Errorf("Failed to create ess client with RRSA, because of %s", err.Error())
 		}
 	} else {
 		client, err = ess.NewClientWithAccessKey(region, cfg.AccessKeyID, cfg.AccessKeySecret)
