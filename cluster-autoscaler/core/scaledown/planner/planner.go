@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
@@ -49,32 +51,45 @@ type removalSimulator interface {
 	SimulateNodeRemoval(node string, podDestinations map[string]bool, timestamp time.Time, pdbs []*policyv1.PodDisruptionBudget) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode)
 }
 
+// controllerReplicasCalculator calculates a number of target and expected replicas for a given controller.
+type controllerReplicasCalculator interface {
+	getReplicas(metav1.OwnerReference, string) (*replicasInfo, error)
+}
+
+type replicasInfo struct {
+	targetReplicas, currentReplicas int32
+}
+
 // Planner is responsible for deciding which nodes should be deleted during scale down.
 type Planner struct {
-	context              *context.AutoscalingContext
-	unremovableNodes     *unremovable.Nodes
-	unneededNodes        *unneeded.Nodes
-	rs                   removalSimulator
-	actuationInjector    *scheduling.HintingSimulator
-	latestUpdate         time.Time
-	eligibilityChecker   eligibilityChecker
-	nodeUtilizationMap   map[string]utilization.Info
-	actuationStatus      scaledown.ActuationStatus
-	resourceLimitsFinder *resource.LimitsFinder
+	context               *context.AutoscalingContext
+	unremovableNodes      *unremovable.Nodes
+	unneededNodes         *unneeded.Nodes
+	rs                    removalSimulator
+	actuationInjector     *scheduling.HintingSimulator
+	latestUpdate          time.Time
+	eligibilityChecker    eligibilityChecker
+	nodeUtilizationMap    map[string]utilization.Info
+	actuationStatus       scaledown.ActuationStatus
+	resourceLimitsFinder  *resource.LimitsFinder
+	cc                    controllerReplicasCalculator
+	scaleDownSetProcessor nodes.ScaleDownSetProcessor
 }
 
 // New creates a new Planner object.
 func New(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions simulator.NodeDeleteOptions) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	return &Planner{
-		context:              context,
-		unremovableNodes:     unremovable.NewNodes(),
-		unneededNodes:        unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		rs:                   simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, true),
-		actuationInjector:    scheduling.NewHintingSimulator(context.PredicateChecker),
-		eligibilityChecker:   eligibility.NewChecker(processors.NodeGroupConfigProcessor),
-		nodeUtilizationMap:   make(map[string]utilization.Info),
-		resourceLimitsFinder: resourceLimitsFinder,
+		context:               context,
+		unremovableNodes:      unremovable.NewNodes(),
+		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
+		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, true),
+		actuationInjector:     scheduling.NewHintingSimulator(context.PredicateChecker),
+		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
+		nodeUtilizationMap:    make(map[string]utilization.Info),
+		resourceLimitsFinder:  resourceLimitsFinder,
+		cc:                    newControllerReplicasCalculator(context.ListerRegistry),
+		scaleDownSetProcessor: processors.ScaleDownSetProcessor,
 	}
 }
 
@@ -121,11 +136,24 @@ func (p *Planner) NodesToDelete() (empty, needDrain []*apiv1.Node) {
 		return nil, nil
 	}
 	limitsLeft := p.resourceLimitsFinder.LimitsLeft(p.context, nodes, resourceLimiter, p.latestUpdate)
-	empty, needDrain, unremovable := p.unneededNodes.RemovableAt(p.context, p.latestUpdate, limitsLeft, resourceLimiter.GetResources(), p.actuationStatus)
+	emptyRemovable, needDrainRemovable, unremovable := p.unneededNodes.RemovableAt(p.context, p.latestUpdate, limitsLeft, resourceLimiter.GetResources(), p.actuationStatus)
 	for _, u := range unremovable {
 		p.unremovableNodes.Add(u)
 	}
-	// TODO: filter results with ScaleDownSetProcessor.GetNodesToRemove
+	nodesToRemove := p.scaleDownSetProcessor.GetNodesToRemove(
+		p.context,
+		// We need to pass empty nodes first, as there might be some non-empty scale
+		// downs already in progress. If we pass the empty nodes first, they will be first
+		// to get deleted, thus we decrease chances of hitting the limit on non-empty scale down.
+		append(emptyRemovable, needDrainRemovable...),
+		p.context.AutoscalingOptions.MaxScaleDownParallelism)
+	for _, nodeToRemove := range nodesToRemove {
+		if len(nodeToRemove.PodsToReschedule) > 0 {
+			needDrain = append(needDrain, nodeToRemove.Node)
+		} else {
+			empty = append(empty, nodeToRemove.Node)
+		}
+	}
 	return empty, needDrain
 }
 
@@ -165,19 +193,42 @@ func (p *Planner) NodeUtilizationMap() map[string]utilization.Info {
 //   - pods which were recently evicted (it is up to ActuationStatus to decide
 //     what "recently" means in this case).
 //
-// It is entirely possible for some external controller to have already created
-// a replacement pod for such recent evictions, in which case the subsequent
-// simulation will count them twice. This is ok: it is much safer to disrupt
-// the scale down because of double-counting some pods than it is to scale down
-// too aggressively.
+// For pods that are controlled by controller known by CA, it will check whether
+// they have been recreated and will inject only not yet recreated pods.
 func (p *Planner) injectOngoingActuation() error {
-	err := p.injectPods(currentlyDrainedPods(p.context.ClusterSnapshot.NodeInfos(), p.actuationStatus))
+	currentlyDrainedRecreatablePods := filterRecreatable(currentlyDrainedPods(p.context.ClusterSnapshot.NodeInfos(), p.actuationStatus))
+	recentlyEvictedRecreatablePods := filterRecreatable(p.actuationStatus.RecentEvictions())
+	err := p.injectPods(currentlyDrainedRecreatablePods)
 	if err != nil {
 		return err
 	}
-	// TODO(x13n): Check owner references to avoid double-counting already
-	// recreated pods.
-	return p.injectPods(p.actuationStatus.RecentEvictions())
+	return p.injectPods(filterOutRecreatedPods(recentlyEvictedRecreatablePods, p.cc))
+}
+
+func filterOutRecreatedPods(pods []*apiv1.Pod, cc controllerReplicasCalculator) []*apiv1.Pod {
+	var podsToInject []*apiv1.Pod
+	addedReplicas := make(map[string]int32)
+	for _, pod := range pods {
+		ownerRef := getKnownOwnerRef(pod.GetOwnerReferences())
+		// in case of unknown ownerRef (i.e. not recognized by CA) we still inject
+		// the pod, to be on the safe side in case there is some custom controller
+		// that will recreate the pod.
+		if ownerRef == nil {
+			podsToInject = append(podsToInject, pod)
+			continue
+		}
+		rep, err := cc.getReplicas(*ownerRef, pod.Namespace)
+		if err != nil {
+			podsToInject = append(podsToInject, pod)
+			continue
+		}
+		ownerUID := string(ownerRef.UID)
+		if rep.targetReplicas > rep.currentReplicas && addedReplicas[ownerUID] < rep.targetReplicas-rep.currentReplicas {
+			podsToInject = append(podsToInject, pod)
+			addedReplicas[ownerUID] += 1
+		}
+	}
+	return podsToInject
 }
 
 func currentlyDrainedPods(niLister framework.NodeInfoLister, as scaledown.ActuationStatus) []*apiv1.Pod {
@@ -208,7 +259,6 @@ func filterRecreatable(pods []*apiv1.Pod) []*apiv1.Pod {
 }
 
 func (p *Planner) injectPods(pods []*apiv1.Pod) error {
-	pods = filterRecreatable(pods)
 	pods = clearNodeName(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
@@ -253,6 +303,17 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}
+}
+
+// getKnownOwnerRef returns ownerRef that is known by CA and CA knows the logic of how this controller recreates pods.
+func getKnownOwnerRef(ownerRefs []metav1.OwnerReference) *metav1.OwnerReference {
+	for _, ownerRef := range ownerRefs {
+		switch ownerRef.Kind {
+		case "StatefulSet", "Job", "ReplicaSet", "ReplicationController":
+			return &ownerRef
+		}
+	}
+	return nil
 }
 
 func merged(a, b []string) []string {

@@ -62,8 +62,9 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 			klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
 			continue
 		}
-		if size <= nodeGroup.MinSize() {
-			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+		minSize := nodeGroup.MinSize()
+		if size <= minSize {
+			klog.V(1).Infof("Skipping %s - node group min size reached (current: %d, min: %d)", node.Name, size, minSize)
 			continue
 		}
 		result = append(result, node)
