@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/filteroutschedulable"
+	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
@@ -135,7 +135,10 @@ func ExtractPodNames(pods []*apiv1.Pod) []string {
 // NewTestProcessors returns a set of simple processors for use in tests.
 func NewTestProcessors(context *context.AutoscalingContext) *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
-		PodListProcessor:       filteroutschedulable.NewFilterOutSchedulablePodListProcessor(context.PredicateChecker),
+		PodListProcessor: podlistprocessor.NewDefaultPodListProcessor(
+			podlistprocessor.NewCurrentlyDrainedNodesPodListProcessor(),
+			podlistprocessor.NewFilterOutSchedulablePodListProcessor(context.PredicateChecker),
+		),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
