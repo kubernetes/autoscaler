@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
@@ -36,11 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-
-	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	klog "k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type eligibilityChecker interface {
@@ -110,10 +108,9 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	// Avoid persisting changes done by the simulation.
 	p.context.ClusterSnapshot.Fork()
 	defer p.context.ClusterSnapshot.Revert()
-	err = p.injectOngoingActuation()
+	err = p.injectRecentlyEvictedPods()
 	if err != nil {
-		p.CleanUpUnneededNodes()
-		return errors.ToAutoscalerError(errors.UnexpectedScaleDownStateError, err)
+		klog.Warningf("Not all recently evicted pods could be injected")
 	}
 	deletions := asMap(merged(as.DeletionsInProgress()))
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
@@ -194,23 +191,17 @@ func (p *Planner) NodeUtilizationMap() map[string]utilization.Info {
 	return p.nodeUtilizationMap
 }
 
-// injectOngoingActuation injects pods into ClusterSnapshot, to allow
+// injectRecentlyEvictedPods injects pods into ClusterSnapshot, to allow
 // subsequent simulation to anticipate which pods will end up getting replaced
-// due to being evicted by previous scale down(s). There are two sets of such
-// pods:
-//   - existing pods from currently drained nodes
-//   - pods which were recently evicted (it is up to ActuationStatus to decide
-//     what "recently" means in this case).
+// due to being evicted by previous scale down(s). This function injects pods
+// which were recently evicted (it is up to ActuationStatus to decide what
+// "recently" means in this case). The existing pods from currently drained
+// nodes are already added before scale-up to optimize scale-up latency.
 //
 // For pods that are controlled by controller known by CA, it will check whether
 // they have been recreated and will inject only not yet recreated pods.
-func (p *Planner) injectOngoingActuation() error {
-	currentlyDrainedRecreatablePods := filterRecreatable(currentlyDrainedPods(p.context.ClusterSnapshot.NodeInfos(), p.actuationStatus))
-	recentlyEvictedRecreatablePods := filterRecreatable(p.actuationStatus.RecentEvictions())
-	err := p.injectPods(currentlyDrainedRecreatablePods)
-	if err != nil {
-		return err
-	}
+func (p *Planner) injectRecentlyEvictedPods() error {
+	recentlyEvictedRecreatablePods := pod_util.FilterRecreatablePods(p.actuationStatus.RecentEvictions())
 	return p.injectPods(filterOutRecreatedPods(recentlyEvictedRecreatablePods, p.cc))
 }
 
@@ -240,35 +231,8 @@ func filterOutRecreatedPods(pods []*apiv1.Pod, cc controllerReplicasCalculator) 
 	return podsToInject
 }
 
-func currentlyDrainedPods(niLister framework.NodeInfoLister, as scaledown.ActuationStatus) []*apiv1.Pod {
-	var pods []*apiv1.Pod
-	_, ds := as.DeletionsInProgress()
-	for _, d := range ds {
-		ni, err := niLister.Get(d)
-		if err != nil {
-			klog.Warningf("Couldn't get node %v info, assuming the node got deleted already: %v", d, err)
-			continue
-		}
-		for _, pi := range ni.Pods {
-			pods = append(pods, pi.Pod)
-		}
-	}
-	return pods
-}
-
-func filterRecreatable(pods []*apiv1.Pod) []*apiv1.Pod {
-	filtered := make([]*apiv1.Pod, 0, len(pods))
-	for _, p := range pods {
-		if pod_util.IsStaticPod(p) || pod_util.IsMirrorPod(p) || pod_util.IsDaemonSetPod(p) {
-			continue
-		}
-		filtered = append(filtered, p)
-	}
-	return filtered
-}
-
 func (p *Planner) injectPods(pods []*apiv1.Pod) error {
-	pods = clearNodeName(pods)
+	pods = pod_util.ClearPodNodeNames(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
 	statuses, _, err := p.actuationInjector.TrySchedulePods(p.context.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true)
@@ -276,7 +240,7 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 		return fmt.Errorf("cannot scale down, an unexpected error occurred: %v", err)
 	}
 	if len(statuses) != len(pods) {
-		return fmt.Errorf("cannot scale down, can reschedule only %d out of %d pods from ongoing deletions", len(statuses), len(pods))
+		return fmt.Errorf("can reschedule only %d out of %d pods from ongoing deletions", len(statuses), len(pods))
 	}
 	return nil
 }
@@ -363,16 +327,6 @@ func filterOutOngoingDeletions(ns []*apiv1.Node, deleted map[string]bool) []*api
 		rv = append(rv, n)
 	}
 	return rv
-}
-
-func clearNodeName(pods []*apiv1.Pod) []*apiv1.Pod {
-	newpods := make([]*apiv1.Pod, 0, len(pods))
-	for _, podptr := range pods {
-		newpod := *podptr
-		newpod.Spec.NodeName = ""
-		newpods = append(newpods, &newpod)
-	}
-	return newpods
 }
 
 func sortByRisk(nodes []simulator.NodeToBeRemoved) []simulator.NodeToBeRemoved {
