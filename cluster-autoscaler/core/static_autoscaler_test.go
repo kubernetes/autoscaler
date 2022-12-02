@@ -143,6 +143,15 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 	return args.Error(0)
 }
 
+func setUpScaleDownActuator(ctx *context.AutoscalingContext, options config.AutoscalingOptions) {
+	deleteOptions := simulator.NodeDeleteOptions{
+		SkipNodesWithSystemPods:   options.SkipNodesWithSystemPods,
+		SkipNodesWithLocalStorage: options.SkipNodesWithLocalStorage,
+		MinReplicaCount:           options.MinReplicaCount,
+	}
+	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions)
+}
+
 func TestStaticAutoscalerRunOnce(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
@@ -203,6 +212,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
+
+	setUpScaleDownActuator(&context, options)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
@@ -413,6 +424,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
+	setUpScaleDownActuator(&context, options)
+
 	processors := NewTestProcessors(&context)
 	processors.NodeGroupManager = nodeGroupManager
 	processors.NodeGroupListProcessor = nodeGroupListProcessor
@@ -555,6 +568,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
+
+	setUpScaleDownActuator(&context, options)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
@@ -710,6 +725,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
+	setUpScaleDownActuator(&context, options)
+
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -839,6 +856,8 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
+	setUpScaleDownActuator(&context, options)
+
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -935,6 +954,8 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
+
+	setUpScaleDownActuator(&context, options)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
