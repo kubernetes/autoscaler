@@ -285,10 +285,14 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		p.unremovableNodes.Add(n)
 	}
 	p.nodeUtilizationMap = utilizationMap
-	for _, node := range currentlyUnneededNodeNames {
-		// TODO(x13n): break on timeout. Figure out how to handle nodes
-		// identified as unneeded in previous iteration, but now
-		// skipped due to timeout.
+	timer := time.NewTimer(p.context.ScaleDownSimulationTimeout)
+	for i, node := range currentlyUnneededNodeNames {
+		select {
+		case <-timer.C:
+			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
+			break
+		default:
+		}
 		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, pdbs)
 		if unremovable != nil {
 			unremovableCount += 1

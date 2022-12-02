@@ -119,6 +119,9 @@ type AutoscalingOptions struct {
 	// The formula to calculate additional candidates number is following:
 	// max(#nodes * ScaleDownCandidatesPoolRatio, ScaleDownCandidatesPoolMinCount)
 	ScaleDownCandidatesPoolMinCount int
+	// ScaleDownSimulationTimeout defines the maximum time that can be
+	// spent on scale down simulation.
+	ScaleDownSimulationTimeout time.Duration
 	// NodeDeletionDelayTimeout is maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
