@@ -37,8 +37,8 @@ import (
 // NodeToBeRemoved contain information about a node that can be removed.
 type NodeToBeRemoved struct {
 	// Node to be removed.
-	Node    *apiv1.Node
-	// IsRisky indicates that node has high chance to fail during removal. 
+	Node *apiv1.Node
+	// IsRisky indicates that node has high chance to fail during removal.
 	IsRisky bool
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
