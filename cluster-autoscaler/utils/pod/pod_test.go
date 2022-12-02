@@ -19,8 +19,10 @@ package pod
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -193,6 +195,97 @@ func TestIsStaticPod(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := IsStaticPod(tt.pod); got != tt.want {
 				t.Errorf("IsStaticPod() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFilterRecreatablePods(t *testing.T) {
+	testCases := []struct {
+		name     string
+		pods     []*apiv1.Pod
+		wantPods []*apiv1.Pod
+	}{
+		{
+			name: "no pods",
+		},
+		{
+			name:     "keep single pod",
+			pods:     []*apiv1.Pod{BuildTestPod("p", 100, 1)},
+			wantPods: []*apiv1.Pod{BuildTestPod("p", 100, 1)},
+		},
+		{
+			name:     "keep single RS pod",
+			pods:     []*apiv1.Pod{SetRSPodSpec(BuildTestPod("p", 100, 1), "rs")},
+			wantPods: []*apiv1.Pod{SetRSPodSpec(BuildTestPod("p", 100, 1), "rs")},
+		},
+		{
+			name: "filter-out single DS pod",
+			pods: []*apiv1.Pod{SetDSPodSpec(BuildTestPod("p", 100, 1))},
+		},
+		{
+			name: "filter-out single mirror pod",
+			pods: []*apiv1.Pod{SetMirrorPodSpec(BuildTestPod("p", 100, 1))},
+		},
+		{
+			name: "filter-out single static pod",
+			pods: []*apiv1.Pod{SetStaticPodSpec(BuildTestPod("p", 100, 1))},
+		},
+		{
+			name: "all pods together",
+			pods: []*apiv1.Pod{
+				BuildTestPod("p1", 100, 1),
+				SetRSPodSpec(BuildTestPod("p2", 100, 1), "rs"),
+				SetDSPodSpec(BuildTestPod("p3", 100, 1)),
+				SetMirrorPodSpec(BuildTestPod("p4", 100, 1)),
+				SetStaticPodSpec(BuildTestPod("p5", 100, 1)),
+			},
+			wantPods: []*apiv1.Pod{
+				BuildTestPod("p1", 100, 1),
+				SetRSPodSpec(BuildTestPod("p2", 100, 1), "rs"),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.ElementsMatch(t, tc.wantPods, FilterRecreatablePods(tc.pods))
+		})
+	}
+}
+
+func TestClearPodNodeNames(t *testing.T) {
+	testCases := []struct {
+		name string
+		pods []*apiv1.Pod
+	}{
+		{
+			name: "no pods",
+		},
+		{
+			name: "single scheduled pod",
+			pods: []*apiv1.Pod{BuildScheduledTestPod("p", 100, 1, "n")},
+		},
+		{
+			name: "single not scheduled pod",
+			pods: []*apiv1.Pod{BuildTestPod("p", 100, 1)},
+		},
+		{
+			name: "mixed scheduled and not scheduled pod",
+			pods: []*apiv1.Pod{
+				BuildScheduledTestPod("p", 100, 1, "n"),
+				BuildTestPod("p", 100, 1),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for i, cleanedPod := range ClearPodNodeNames(tc.pods) {
+				assert.Equal(t, "", cleanedPod.Spec.NodeName)
+				// check if pods are otherwise the same
+				cleanedPod.Spec.NodeName = tc.pods[i].Spec.NodeName
+				assert.Equal(t, tc.pods[i], cleanedPod)
 			}
 		})
 	}
