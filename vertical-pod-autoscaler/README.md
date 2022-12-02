@@ -5,6 +5,7 @@
 - [Intro](#intro)
 - [Installation](#installation)
   - [Compatibility](#compatibility)
+  - [Notice on deprecation of v1beta2 version (>=0.13.0)](#notice-on-deprecation-of-v1beta2-version-0130)
   - [Notice on removal of v1beta1 version (>=0.5.0)](#notice-on-removal-of-v1beta1-version-050)
   - [Prerequisites](#prerequisites)
   - [Install command](#install-command)
@@ -59,6 +60,14 @@ The current default version is Vertical Pod Autoscaler 0.12.0
 | 0.8             | 1.13+              |
 | 0.4 to 0.7      | 1.11+              |
 | 0.3.X and lower | 1.7+               |
+
+### Notice on deprecation of v1beta2 version (>=0.13.0)
+**NOTE:** In 0.13.0 we deprecate `autoscaling.k8s.io/v1beta2` API. We plan to
+remove this API version. While for now you can continue to use `v1beta2` API we
+recommend using `autoscaling.k8s.io/v1` instead. `v1` and `v1beta2` APIs are
+almost identical (`v1` API has some fields which are not present in `v1beta2)
+so simply chaning which API version you're calling should be enough in almost
+all cases.
 
 ### Notice on removal of v1beta1 version (>=0.5.0)
 
