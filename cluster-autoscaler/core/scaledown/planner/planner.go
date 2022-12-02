@@ -148,6 +148,7 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	for _, u := range unremovable {
 		p.unremovableNodes.Add(u)
 	}
+	needDrainRemovable = sortByRisk(needDrainRemovable)
 	nodesToRemove := p.scaleDownSetProcessor.GetNodesToRemove(
 		p.context,
 		// We need to pass empty nodes first, as there might be some non-empty scale
@@ -372,4 +373,17 @@ func clearNodeName(pods []*apiv1.Pod) []*apiv1.Pod {
 		newpods = append(newpods, &newpod)
 	}
 	return newpods
+}
+
+func sortByRisk(nodes []simulator.NodeToBeRemoved) []simulator.NodeToBeRemoved {
+	riskyNodes := []simulator.NodeToBeRemoved{}
+	okNodes := []simulator.NodeToBeRemoved{}
+	for _, nodeToRemove := range nodes {
+		if nodeToRemove.IsRisky {
+			riskyNodes = append(riskyNodes, nodeToRemove)
+		} else {
+			okNodes = append(okNodes, nodeToRemove)
+		}
+	}
+	return append(okNodes, riskyNodes...)
 }
