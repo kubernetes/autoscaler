@@ -25,8 +25,11 @@ import (
 	"os"
 	"time"
 
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
-	klog "k8s.io/klog/v2"
+	awssdk "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
 )
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
@@ -78,16 +81,19 @@ var InstanceTypes = map[string]*InstanceType{
 // Please note that the IAM user running the static instance types generator must be
 // a non-anonymous user with privileges to call the DescribeInstanceTypes EC2 API.
 func main() {
-	var region = flag.String("region", "", "aws region you'd like to generate instances from."+
-		"It will populate list from all regions if region is not specified.")
+	var region = flag.String("region", "", "aws region you'd like to generate instances from.")
 	flag.Parse()
+	if awssdk.StringValue(region) == "" {
+		klog.Fatalf("Region is required to generate instance types")
+	}
+
 	defer klog.Flush()
 
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region)},
-	)
+	sess, err := session.NewSession(&awssdk.Config{
+		Region: region,
+	})
 	if err != nil {
-		return nil, err
+		klog.Fatal(err)
 	}
 
 	instanceTypes, err := aws.GenerateEC2InstanceTypes(sess)
