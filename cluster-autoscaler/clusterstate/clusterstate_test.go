@@ -45,7 +45,7 @@ func GetCloudProviderDeletedNodeNames(csr *ClusterStateRegistry) []string {
 	defer csr.Unlock()
 
 	result := make([]string, 0, len(csr.deletedNodes))
-	for nodeName, _ := range csr.deletedNodes {
+	for nodeName := range csr.deletedNodes {
 		result = append(result, nodeName)
 	}
 	return result
