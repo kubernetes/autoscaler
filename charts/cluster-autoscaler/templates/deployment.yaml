@@ -59,6 +59,11 @@ spec:
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
             {{- end }}
           {{- end }}
+          {{- if eq .Values.cloudProvider "rancher" }}
+            {{- if .Values.cloudConfigPath }}
+            - --cloud-config={{ .Values.cloudConfigPath }}
+            {{- end }}
+          {{- end }}
           {{- if eq .Values.cloudProvider "aws" }}
             {{- if .Values.autoDiscovery.clusterName }}
             - --node-group-auto-discovery=asg:tag={{ tpl (join "," .Values.autoDiscovery.tags) . }}
