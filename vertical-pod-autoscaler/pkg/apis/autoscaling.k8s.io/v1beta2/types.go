@@ -39,10 +39,15 @@ type VerticalPodAutoscalerList struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:resource:shortName=vpa
+// +k8s:prerelease-lifecycle-gen=true
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
 // autoscaler, which automatically manages pod resources based on historical and
 // real time resource utilization.
+// +k8s:prerelease-lifecycle-gen:introduced=0.4.0
+// +k8s:prerelease-lifecycle-gen:deprecated=0.13.0
+// +k8s:prerelease-lifecycle-gen:replacement=autoscaling,v1,VerticalPodAutoscaler
+// +kubebuilder:deprecatedversion:warning=autoscaling.k8s.io/v1beta2 API is deprecated
 type VerticalPodAutoscaler struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
