@@ -315,9 +315,10 @@ func newNodeName(n *hetznerNodeGroup) string {
 
 func buildNodeGroupLabels(n *hetznerNodeGroup) map[string]string {
 	return map[string]string{
-		apiv1.LabelInstanceType:     n.instanceType,
-		apiv1.LabelZoneRegionStable: n.region,
-		nodeGroupLabel:              n.id,
+		apiv1.LabelInstanceType:      n.instanceType,
+		apiv1.LabelZoneRegionStable:  n.region,
+		"csi.hetzner.cloud/location": n.region,
+		nodeGroupLabel:               n.id,
 	}
 }
 
