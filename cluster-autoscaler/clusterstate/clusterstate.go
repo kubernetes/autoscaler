@@ -122,7 +122,7 @@ type ClusterStateRegistry struct {
 	acceptableRanges                   map[string]AcceptableRange
 	incorrectNodeGroupSizes            map[string]IncorrectNodeGroupSize
 	unregisteredNodes                  map[string]UnregisteredNode
-	deletedNodes                       map[string]*apiv1.Node
+	deletedNodes                       map[string]struct{}
 	candidatesForScaleDown             map[string][]string
 	backoff                            backoff.Backoff
 	lastStatus                         *api.ClusterAutoscalerStatus
@@ -155,7 +155,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		acceptableRanges:                make(map[string]AcceptableRange),
 		incorrectNodeGroupSizes:         make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:               make(map[string]UnregisteredNode),
-		deletedNodes:                    make(map[string]*apiv1.Node),
+		deletedNodes:                    make(map[string]struct{}),
 		candidatesForScaleDown:          make(map[string][]string),
 		backoff:                         backoff,
 		lastStatus:                      emptyStatus,
@@ -675,27 +675,11 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 }
 
 func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []*apiv1.Node) {
-	result := make(map[string]*apiv1.Node, len(deletedNodes)+len(csr.deletedNodes))
+	result := make(map[string]struct{}, len(deletedNodes))
 	for _, deleted := range deletedNodes {
-		if prev, found := csr.deletedNodes[deleted.Name]; found {
-			result[deleted.Name] = prev
-		} else {
-			result[deleted.Name] = deleted
-		}
+		result[deleted.Name] = struct{}{}
 	}
 	csr.deletedNodes = result
-}
-
-// GetCloudProviderDeletedNodes returns a list of all nodes removed from cloud provider but registered in Kubernetes.
-func (csr *ClusterStateRegistry) GetCloudProviderDeletedNodes() []*apiv1.Node {
-	csr.Lock()
-	defer csr.Unlock()
-
-	result := make([]*apiv1.Node, 0, len(csr.deletedNodes))
-	for _, deleted := range csr.deletedNodes {
-		result = append(result, deleted)
-	}
-	return result
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
@@ -1004,8 +988,7 @@ func (csr *ClusterStateRegistry) hasCloudProviderInstance(node *apiv1.Node) bool
 		return exists
 	}
 	if !errors.Is(err, cloudprovider.ErrNotImplemented) {
-		klog.Warningf("Failed to check whether node has cloud instance for %s: %v", node.Name, err)
-		return exists
+		klog.Warningf("Failed to check cloud provider has instance for %s: %v", node.Name, err)
 	}
 	return !deletetaint.HasToBeDeletedTaint(node)
 }
