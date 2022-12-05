@@ -322,3 +322,17 @@ spec:
 **Warning**: If the Autoscaler is enabled **and** the replicas field is set for a `MachineDeployment` or `MachineSet` the Cluster may enter a broken state where replicas become unpredictable.
 
 If the replica field is unset in the Cluster definition Autoscaling can be enabled [as described above](#enabling-autoscaling)
+
+## Special note on GPU instances
+
+As with other providers, if the device plugin on nodes that provides GPU
+resources takes some time to advertise the GPU resource to the cluster, this
+may cause Cluster Autoscaler to unnecessarily scale out multiple times.
+
+To avoid this, you can configure `kubelet` on your GPU nodes to label the node
+before it joins the cluster by passing it the `--node-labels` flag. For the
+CAPI cloudprovider, the label format is as follows:
+
+`cluster-api/accelerator=<gpu-type>`
+
+`<gpu-type>` is arbitrary.
