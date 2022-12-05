@@ -514,7 +514,9 @@ spec:
     served: true
     storage: true
     subresources: {}
-  - name: v1beta2
+  - deprecated: true
+    deprecationWarning: autoscaling.k8s.io/v1beta2 API is deprecated
+    name: v1beta2
     schema:
       openAPIV3Schema:
         description: VerticalPodAutoscaler is the configuration for a vertical pod
