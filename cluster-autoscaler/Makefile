@@ -28,6 +28,10 @@ ifdef DOCKER_RM
 else
   RM_FLAG=
 endif
+ifndef AWS_REGION
+  AWS_REGION=$(shell aws configure get region)
+endif
+
 IMAGE=$(REGISTRY)/cluster-autoscaler$(PROVIDER)
 
 export DOCKER_CLI_EXPERIMENTAL := enabled
@@ -78,7 +82,7 @@ clean-arch-%:
 	rm -f cluster-autoscaler-$*
 
 generate:
-	go generate ./cloudprovider/aws
+	AWS_REGION=$(AWS_REGION) go generate ./cloudprovider/aws
 
 format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
