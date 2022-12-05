@@ -51,9 +51,9 @@ type AggregationsConfig struct {
 	// CPUHistogramDecayHalfLife is the amount of time it takes a historical
 	// CPU usage sample to lose half of its weight.
 	CPUHistogramDecayHalfLife time.Duration
-	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
+	// OOMBumpUpRatio specifies the memory bump up ratio when OOM occurred.
 	OOMBumpUpRatio float64
-	// OOMMinBumpUp specifies minimal increase of memory after observing OOM.
+	// OOMMinBumpUp specifies the minimal increase of memory when OOM occurred in bytes.
 	OOMMinBumpUp float64
 }
 
@@ -75,10 +75,10 @@ const (
 	// DefaultCPUHistogramDecayHalfLife is the default value for CPUHistogramDecayHalfLife.
 	// CPU usage sample to lose half of its weight.
 	DefaultCPUHistogramDecayHalfLife = time.Hour * 24
-	// DefaultOOMBumpUpRatio specifies how much memory will be added after observing OOM.
-	DefaultOOMBumpUpRatio float64 = 1.2
-	// DefaultOOMMinBumpUp specifies minimal increase of memory after observing OOM.
-	DefaultOOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
+	// DefaultOOMBumpUpRatio is the default value for OOMBumpUpRatio.
+	DefaultOOMBumpUpRatio float64 = 1.2 // Memory is increased by 20% after an OOMKill.
+	// DefaultOOMMinBumpUp is the default value for OOMMinBumpUp.
+	DefaultOOMMinBumpUp float64 = 100 * 1024 * 1024 // Memory is increased by at least 100MB after an OOMKill.
 )
 
 // GetMemoryAggregationWindowLength returns the total length of the memory usage history aggregated by VPA.
