@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -175,9 +176,18 @@ func NewStaticAutoscaler(
 	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions)
 	autoscalingContext.ScaleDownActuator = actuator
 
-	// TODO: Remove the wrapper once the legacy implementation becomes obsolete.
-	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
-	processorCallbacks.scaleDownPlanner = scaleDownWrapper
+	var scaleDownPlanner scaledown.Planner
+	var scaleDownActuator scaledown.Actuator
+	if opts.ParallelDrain {
+		scaleDownPlanner = planner.New(autoscalingContext, processors, deleteOptions)
+		scaleDownActuator = actuator
+	} else {
+		// TODO: Remove the wrapper once the legacy implementation becomes obsolete.
+		scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
+		scaleDownPlanner = scaleDownWrapper
+		scaleDownActuator = scaleDownWrapper
+	}
+	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	scaleUpResourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
 
@@ -189,8 +199,8 @@ func NewStaticAutoscaler(
 		lastScaleUpTime:         initialScaleTime,
 		lastScaleDownDeleteTime: initialScaleTime,
 		lastScaleDownFailTime:   initialScaleTime,
-		scaleDownPlanner:        scaleDownWrapper,
-		scaleDownActuator:       scaleDownWrapper,
+		scaleDownPlanner:        scaleDownPlanner,
+		scaleDownActuator:       scaleDownActuator,
 		scaleUpResourceManager:  scaleUpResourceManager,
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,

@@ -124,7 +124,7 @@ func (p *Planner) CleanUpUnneededNodes() {
 
 // NodesToDelete returns all Nodes that could be removed right now, according
 // to the Planner.
-func (p *Planner) NodesToDelete() (empty, needDrain []*apiv1.Node) {
+func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	nodes, err := allNodes(p.context.ClusterSnapshot)
 	if err != nil {
 		klog.Errorf("Nothing will scale down, failed to list nodes from ClusterSnapshot: %v", err)
