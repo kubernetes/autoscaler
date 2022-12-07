@@ -127,7 +127,9 @@ func (s *AdmissionServer) admit(data []byte) (*v1.AdmissionResponse, metrics_adm
 
 // Serve is a handler function of AdmissionServer
 func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
-	timer := metrics_admission.NewAdmissionLatency()
+	executionTimer := metrics_admission.NewExecutionTimer()
+	defer executionTimer.ObserveTotal()
+	admissionLatency := metrics_admission.NewAdmissionLatency()
 
 	var body []byte
 	if r.Body != nil {
@@ -135,14 +137,14 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 			body = data
 		}
 	}
-
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		klog.Errorf("contentType=%s, expect application/json", contentType)
-		timer.Observe(metrics_admission.Error, metrics_admission.Unknown)
+		admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
 		return
 	}
+	executionTimer.ObserveStep("read_request")
 
 	reviewResponse, status, resource := s.admit(body)
 	ar := v1.AdmissionReview{
@@ -152,19 +154,23 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 			APIVersion: "admission.k8s.io/v1",
 		},
 	}
+	executionTimer.ObserveStep("admit")
 
 	resp, err := json.Marshal(ar)
 	if err != nil {
 		klog.Error(err)
-		timer.Observe(metrics_admission.Error, resource)
+		admissionLatency.Observe(metrics_admission.Error, resource)
 		return
 	}
+	executionTimer.ObserveStep("build_response")
 
-	if _, err := w.Write(resp); err != nil {
+	_, err = w.Write(resp)
+	if err != nil {
 		klog.Error(err)
-		timer.Observe(metrics_admission.Error, resource)
+		admissionLatency.Observe(metrics_admission.Error, resource)
 		return
 	}
+	executionTimer.ObserveStep("write_response")
 
-	timer.Observe(status, resource)
+	admissionLatency.Observe(status, resource)
 }
