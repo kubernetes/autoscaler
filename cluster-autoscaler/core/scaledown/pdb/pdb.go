@@ -17,66 +17,71 @@ limitations under the License.
 package pdb
 
 import (
-	"fmt"
-
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	"k8s.io/klog/v2"
 )
 
 // PdbRemainingDisruptions stores how many discuptiption is left for pdb.
 type PdbRemainingDisruptions struct {
-	pdbs []*policyv1.PodDisruptionBudget
+	pdbs      []*policyv1.PodDisruptionBudget
+	selectors map[*policyv1.PodDisruptionBudget]labels.Selector
 }
 
 // NewPdbRemainingDisruptions initialize PdbRemainingDisruptions.
-func NewPdbRemainingDisruptions(pdbs []*policyv1.PodDisruptionBudget) *PdbRemainingDisruptions {
+func NewPdbRemainingDisruptions(pdbs []*policyv1.PodDisruptionBudget) (*PdbRemainingDisruptions, error) {
 	pdbsCopy := make([]*policyv1.PodDisruptionBudget, len(pdbs))
+	selectors := make(map[*policyv1.PodDisruptionBudget]labels.Selector)
 	for i, pdb := range pdbs {
 		pdbsCopy[i] = pdb.DeepCopy()
-	}
-	return &PdbRemainingDisruptions{pdbsCopy}
-}
-
-// CanDisrupt return if the pod can be removed.
-func (p *PdbRemainingDisruptions) CanDisrupt(pods []*apiv1.Pod) (bool, *drain.BlockingPod) {
-	for _, pdb := range p.pdbs {
 		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
 		if err != nil {
-			klog.Errorf("Can't get selector for pdb %s", pdb.GetNamespace()+" "+pdb.GetName())
-			return false, nil
+			return nil, err
 		}
+		selectors[pdbsCopy[i]] = selector
+	}
+	return &PdbRemainingDisruptions{pdbsCopy, selectors}, nil
+}
+
+// CanDisrupt return if the set of pods can be removed.
+// inParallel indicates that the pods could not be removed in parallel.
+// If inParallel == false, evicting this set of pods from node could fail due to drain timeout.
+func (p *PdbRemainingDisruptions) CanDisrupt(pods []*apiv1.Pod) (canRemove, inParallel bool, blockingPod *drain.BlockingPod) {
+	inParallel = true
+	for _, pdb := range p.pdbs {
+		selector := p.selectors[pdb]
 		count := int32(0)
 		for _, pod := range pods {
 			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
 				count += 1
+				if pdb.Status.DisruptionsAllowed < 1 {
+					return false, false, &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}
+				}
 				if pdb.Status.DisruptionsAllowed < count {
-					return false, &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}
+					inParallel = false
+					blockingPod = &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}
 				}
 			}
 		}
 	}
-	return true, nil
+	return true, inParallel, blockingPod
 }
 
 // Update make updates the remaining disruptions for pdb.
-func (p *PdbRemainingDisruptions) Update(pods []*apiv1.Pod) error {
+func (p *PdbRemainingDisruptions) Update(pods []*apiv1.Pod) {
 	for _, pdb := range p.pdbs {
-		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
-		if err != nil {
-			return err
-		}
+		selector := p.selectors[pdb]
 		for _, pod := range pods {
 			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
-				if pdb.Status.DisruptionsAllowed < 1 {
-					return fmt.Errorf("Pod can't be removed, pdb is blocking by pdb %s, disruptionsAllowed: %v", pdb.GetNamespace()+"/"+pdb.GetName(), pdb.Status.DisruptionsAllowed)
-				}
 				pdb.Status.DisruptionsAllowed -= 1
 			}
 		}
 	}
-	return nil
+}
+
+// GetPdbs return pdb list.
+func (p *PdbRemainingDisruptions) GetPdbs() []*policyv1.PodDisruptionBudget {
+	return p.pdbs
 }
