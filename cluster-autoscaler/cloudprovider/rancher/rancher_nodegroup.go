@@ -46,6 +46,7 @@ type nodeGroup struct {
 	maxSize   int
 	resources corev1.ResourceList
 	replicas  int
+	machines  []unstructured.Unstructured
 }
 
 type node struct {
@@ -112,7 +113,7 @@ func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
 	}
 
 	for _, del := range toDelete {
-		node, err := ng.findNodeByProviderID(rke2ProviderIDPrefix + del.Name)
+		node, err := ng.findNodeByProviderID(del.Spec.ProviderID)
 		if err != nil {
 			return err
 		}
@@ -274,7 +275,7 @@ func (ng *nodeGroup) setSize(size int) error {
 // getting the underlying machines and extracting the providerID, which
 // corresponds to the name of the k8s node object.
 func (ng *nodeGroup) nodes() ([]node, error) {
-	machines, err := ng.machines()
+	machines, err := ng.listMachines()
 	if err != nil {
 		return nil, err
 	}
@@ -328,9 +329,13 @@ func (ng *nodeGroup) nodes() ([]node, error) {
 	return nodes, nil
 }
 
-// machines returns the unstructured objects of all cluster-api machines in a
-// node group. The machines are found using the deployment name label.
-func (ng *nodeGroup) machines() ([]unstructured.Unstructured, error) {
+// listMachines returns the unstructured objects of all cluster-api machines
+// in a node group. The machines are found using the deployment name label.
+func (ng *nodeGroup) listMachines() ([]unstructured.Unstructured, error) {
+	if ng.machines != nil {
+		return ng.machines, nil
+	}
+
 	machinesList, err := ng.provider.client.Resource(machineGVR(ng.provider.config.ClusterAPIVersion)).
 		Namespace(ng.provider.config.ClusterNamespace).List(
 		context.TODO(), metav1.ListOptions{
@@ -340,7 +345,23 @@ func (ng *nodeGroup) machines() ([]unstructured.Unstructured, error) {
 		},
 	)
 
+	ng.machines = machinesList.Items
 	return machinesList.Items, err
+}
+
+func (ng *nodeGroup) machineByName(name string) (*unstructured.Unstructured, error) {
+	machines, err := ng.listMachines()
+	if err != nil {
+		return nil, fmt.Errorf("error listing machines in node group %s: %w", ng.name, err)
+	}
+
+	for _, machine := range machines {
+		if machine.GetName() == name {
+			return &machine, nil
+		}
+	}
+
+	return nil, fmt.Errorf("machine %s not found in list", name)
 }
 
 // markMachineForDeletion sets an annotation on the cluster-api machine
