@@ -14,37 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//go:generate go run ec2_instance_types/gen.go
+//go:generate go run ec2_instance_types/gen.go -region $AWS_REGION
 
 package aws
 
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math/rand"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/endpoints"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/eks"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	klog "k8s.io/klog/v2"
-	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
 const (
@@ -74,131 +68,15 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
-func validateOverrides(cfg *provider_aws.CloudConfig) error {
-	if len(cfg.ServiceOverride) == 0 {
-		return nil
-	}
-	set := make(map[string]bool)
-	for onum, ovrd := range cfg.ServiceOverride {
-		// Note: gcfg does not space trim, so we have to when comparing to empty string ""
-		name := strings.TrimSpace(ovrd.Service)
-		if name == "" {
-			return fmt.Errorf("service name is missing [Service is \"\"] in override %s", onum)
-		}
-		// insure the map service name is space trimmed
-		ovrd.Service = name
-
-		region := strings.TrimSpace(ovrd.Region)
-		if region == "" {
-			return fmt.Errorf("service region is missing [Region is \"\"] in override %s", onum)
-		}
-		// insure the map region is space trimmed
-		ovrd.Region = region
-
-		url := strings.TrimSpace(ovrd.URL)
-		if url == "" {
-			return fmt.Errorf("url is missing [URL is \"\"] in override %s", onum)
-		}
-		signingRegion := strings.TrimSpace(ovrd.SigningRegion)
-		if signingRegion == "" {
-			return fmt.Errorf("signingRegion is missing [SigningRegion is \"\"] in override %s", onum)
-		}
-		signature := name + "_" + region
-		if set[signature] {
-			return fmt.Errorf("duplicate entry found for service override [%s] (%s in %s)", onum, name, region)
-		}
-		set[signature] = true
-	}
-	return nil
-}
-
-func getResolver(cfg *provider_aws.CloudConfig) endpoints.ResolverFunc {
-	defaultResolver := endpoints.DefaultResolver()
-	defaultResolverFn := func(service, region string,
-		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
-		return defaultResolver.EndpointFor(service, region, optFns...)
-	}
-	if len(cfg.ServiceOverride) == 0 {
-		return defaultResolverFn
-	}
-
-	return func(service, region string,
-		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
-		for _, override := range cfg.ServiceOverride {
-			if override.Service == service && override.Region == region {
-				return endpoints.ResolvedEndpoint{
-					URL:           override.URL,
-					SigningRegion: override.SigningRegion,
-					SigningMethod: override.SigningMethod,
-					SigningName:   override.SigningName,
-				}, nil
-			}
-		}
-		return defaultResolver.EndpointFor(service, region, optFns...)
-	}
-}
-
-type awsSDKProvider struct {
-	cfg *provider_aws.CloudConfig
-}
-
-func newAWSSDKProvider(cfg *provider_aws.CloudConfig) *awsSDKProvider {
-	return &awsSDKProvider{
-		cfg: cfg,
-	}
-}
-
-// getRegion deduces the current AWS Region.
-func getRegion(cfg ...*aws.Config) string {
-	region, present := os.LookupEnv("AWS_REGION")
-	if !present {
-		sess, err := session.NewSession()
-		if err != nil {
-			klog.Errorf("Error getting AWS session while retrieving region: %v", err)
-		} else {
-			svc := ec2metadata.New(sess, cfg...)
-			if r, err := svc.Region(); err == nil {
-				region = r
-			}
-		}
-	}
-	return region
-}
-
 // createAwsManagerInternal allows for custom objects to be passed in by tests
-//
-// #1449 If running tests outside of AWS without AWS_REGION among environment
-// variables, avoid a 5+ second EC2 Metadata lookup timeout in getRegion by
-// setting and resetting AWS_REGION before calling createAWSManagerInternal:
-//
-//	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
-//	os.Setenv("AWS_REGION", "fanghorn")
 func createAWSManagerInternal(
-	configReader io.Reader,
+	awsSDKProvider *awsSDKProvider,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	awsService *awsWrapper,
 	instanceTypes map[string]*InstanceType,
 ) (*AwsManager, error) {
-
-	cfg, err := readAWSCloudConfig(configReader)
-	if err != nil {
-		klog.Errorf("Couldn't read config: %v", err)
-		return nil, err
-	}
-
-	if err = validateOverrides(cfg); err != nil {
-		klog.Errorf("Unable to validate custom endpoint overrides: %v", err)
-		return nil, err
-	}
-
 	if awsService == nil {
-		awsSdkProvider := newAWSSDKProvider(cfg)
-		sess, err := session.NewSession(aws.NewConfig().WithRegion(getRegion()).
-			WithEndpointResolver(getResolver(awsSdkProvider.cfg)))
-		if err != nil {
-			return nil, err
-		}
-
+		sess := awsSDKProvider.session
 		awsService = &awsWrapper{autoscaling.New(sess), ec2.New(sess), eks.New(sess)}
 	}
 
@@ -228,24 +106,9 @@ func createAWSManagerInternal(
 	return manager, nil
 }
 
-// readAWSCloudConfig reads an instance of AWSCloudConfig from config reader.
-func readAWSCloudConfig(config io.Reader) (*provider_aws.CloudConfig, error) {
-	var cfg provider_aws.CloudConfig
-	var err error
-
-	if config != nil {
-		err = gcfg.ReadInto(&cfg, config)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return &cfg, nil
-}
-
 // CreateAwsManager constructs awsManager object.
-func CreateAwsManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, instanceTypes map[string]*InstanceType) (*AwsManager, error) {
-	return createAWSManagerInternal(configReader, discoveryOpts, nil, instanceTypes)
+func CreateAwsManager(awsSDKProvider *awsSDKProvider, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, instanceTypes map[string]*InstanceType) (*AwsManager, error) {
+	return createAWSManagerInternal(awsSDKProvider, discoveryOpts, nil, instanceTypes)
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
