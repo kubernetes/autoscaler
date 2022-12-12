@@ -18,6 +18,7 @@ package oci
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 // OciRef contains s reference to some entity in OCI world.
@@ -33,6 +34,7 @@ type OciRef struct {
 }
 
 func nodeToOciRef(n *apiv1.Node) (OciRef, error) {
+
 	return OciRef{
 		Name:               n.ObjectMeta.Name,
 		AvailabilityDomain: getNodeAZ(n),
@@ -90,6 +92,12 @@ func getNodeExternalAddress(node *apiv1.Node) string {
 // getNodeInstancePoolID returns the instance pool ID if set as a label or annotation or an empty string if is not found.
 func getNodeInstancePoolID(node *apiv1.Node) string {
 
+	// Handle unfilled instance placeholder (instances that have yet to be created)
+	if strings.Contains(node.Name, instanceIDUnfulfilled) {
+		instIndex := strings.LastIndex(node.Name, "-")
+		return strings.Replace(node.Name[:instIndex], instanceIDUnfulfilled, "", 1)
+	}
+
 	poolIDPrefixLabel, _ := node.Labels[instancePoolIDLabelPrefix]
 	poolIDSuffixLabel, _ := node.Labels[instancePoolIDLabelSuffix]
 
@@ -103,6 +111,11 @@ func getNodeInstancePoolID(node *apiv1.Node) string {
 
 // getNodeInstanceID returns the instance ID if set as a label or annotation or an empty string if is not found.
 func getNodeInstanceID(node *apiv1.Node) string {
+
+	// Handle unfilled instance placeholder (instances that have yet to be created)
+	if strings.Contains(node.Name, instanceIDUnfulfilled) {
+		return node.Name
+	}
 
 	instancePrefixLabel, _ := node.Labels[instanceIDLabelPrefix]
 	instanceSuffixLabel, _ := node.Labels[instanceIDLabelSuffix]
