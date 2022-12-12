@@ -105,7 +105,7 @@ __Or__ you have overridden this behaviour with one of the relevant flags. [See b
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
-See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases)
+See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases).
 
 ### Is Cluster Autoscaler an Alpha, Beta or GA product?
 
