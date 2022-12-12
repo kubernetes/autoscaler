@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package filteroutschedulable
+package podlistprocessor
 
 import (
 	"sort"
@@ -43,9 +43,7 @@ func NewFilterOutSchedulablePodListProcessor(predicateChecker predicatechecker.P
 }
 
 // Process filters out pods which are schedulable from list of unschedulable pods.
-func (p *filterOutSchedulablePodListProcessor) Process(
-	context *context.AutoscalingContext,
-	unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) Process(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// It's likely we added a new node and the scheduler just haven't managed to put the
 	// pod on in yet. In this situation we don't want to trigger another scale-up.
