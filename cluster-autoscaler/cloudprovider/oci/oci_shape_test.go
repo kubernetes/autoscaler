@@ -117,7 +117,7 @@ func TestGetShape(t *testing.T) {
 }
 
 func TestGetInstancePoolTemplateNode(t *testing.T) {
-	instancePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
+	instancePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient)
 	instancePoolCache.poolCache["ocid1.instancepool.oc1.phx.aaaaaaaa1"] = &core.InstancePool{
 		Id:             common.String("ocid1.instancepool.oc1.phx.aaaaaaaa1"),
 		CompartmentId:  common.String("ocid1.compartment.oc1..aaaaaaaa1"),
