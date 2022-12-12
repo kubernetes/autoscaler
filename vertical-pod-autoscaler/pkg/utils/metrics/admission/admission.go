@@ -77,12 +77,16 @@ var (
 			Buckets:   []float64{0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0},
 		}, []string{"status", "resource"},
 	)
+
+	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
+		"Time spent in various parts of VPA admission controller")
 )
 
 // Register initializes all metrics for VPA Admission Contoller
 func Register() {
 	prometheus.MustRegister(admissionCount)
 	prometheus.MustRegister(admissionLatency)
+	prometheus.MustRegister(functionLatency)
 }
 
 // OnAdmittedPod increases the counter of pods handled by VPA Admission Controller
@@ -101,4 +105,9 @@ func NewAdmissionLatency() *AdmissionLatency {
 // Observe measures the execution time from when the AdmissionLatency was created
 func (t *AdmissionLatency) Observe(status AdmissionStatus, resource AdmissionResource) {
 	(*t.histo).WithLabelValues(string(status), string(resource)).Observe(time.Since(t.start).Seconds())
+}
+
+// NewExecutionTimer provides a timer for Admission Controller's Serve execution
+func NewExecutionTimer() *metrics.ExecutionTimer {
+	return metrics.NewExecutionTimer(functionLatency)
 }
