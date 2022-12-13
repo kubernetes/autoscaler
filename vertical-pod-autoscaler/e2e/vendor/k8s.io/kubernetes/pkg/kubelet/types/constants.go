@@ -27,7 +27,6 @@ const (
 
 // Different container runtimes.
 const (
-	DockerContainerRuntime = "docker"
 	RemoteContainerRuntime = "remote"
 )
 
@@ -43,4 +42,14 @@ const (
 const (
 	LimitedSwap   = "LimitedSwap"
 	UnlimitedSwap = "UnlimitedSwap"
+)
+
+// Alpha conditions managed by Kubelet that are not yet part of the API. The
+// entries here should be moved to staging/src/k8s.io.api/core/v1/types.go
+// once the feature managing the condition graduates to Beta.
+const (
+	// PodHasNetwork indicates networking has been configured successfully for the
+	// pod and IP address(es) assigned. Images for containers specified in the pod
+	// spec can be pulled and containers launched after this condition is true.
+	PodHasNetwork = "PodHasNetwork"
 )

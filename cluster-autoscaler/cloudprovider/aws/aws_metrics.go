@@ -19,7 +19,7 @@ package aws
 import (
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awserr"
 	k8smetrics "k8s.io/component-base/metrics"
 	"k8s.io/component-base/metrics/legacyregistry"
 )

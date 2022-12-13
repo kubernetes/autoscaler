@@ -17,7 +17,6 @@ limitations under the License.
 package core
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"strings"
@@ -312,7 +311,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 
 	if len(option.Pods) > 0 {
 		estimator := context.EstimatorBuilder(context.PredicateChecker, context.ClusterSnapshot)
-		option.NodeCount = estimator.Estimate(option.Pods, nodeInfo)
+		option.NodeCount, option.Pods = estimator.Estimate(option.Pods, nodeInfo, option.NodeGroup)
 	}
 
 	return option, nil
@@ -431,6 +430,16 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if checkResult.exceeded {
 			klog.V(4).Infof("Skipping node group %s; maximal limit exceeded for %v", nodeGroup.Id(), checkResult.exceededResources)
 			skippedNodeGroups[nodeGroup.Id()] = maxResourceLimitReached(checkResult.exceededResources)
+			for _, resource := range checkResult.exceededResources {
+				switch resource {
+				case cloudprovider.ResourceNameCores:
+					metrics.RegisterSkippedScaleUpCPU()
+				case cloudprovider.ResourceNameMemory:
+					metrics.RegisterSkippedScaleUpMemory()
+				default:
+					continue
+				}
+			}
 			continue
 		}
 
@@ -575,14 +584,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				}
 			}
 			if len(targetNodeGroups) > 1 {
-				var buffer bytes.Buffer
-				for i, ng := range targetNodeGroups {
-					if i > 0 {
-						buffer.WriteString(", ")
-					}
-					buffer.WriteString(ng.Id())
+				var names = []string{}
+				for _, ng := range targetNodeGroups {
+					names = append(names, ng.Id())
 				}
-				klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), buffer.String())
+				klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), strings.Join(names, ", "))
 			}
 		}
 		scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
@@ -664,26 +670,29 @@ func filterNodeGroupsByPods(
 
 	result := make([]cloudprovider.NodeGroup, 0)
 
-groupsloop:
 	for _, group := range groups {
 		option, found := expansionOptions[group.Id()]
 		if !found {
 			klog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration", group.Id())
 			continue
 		}
-		fittingPods := option.Pods
-		podSet := make(map[*apiv1.Pod]bool, len(fittingPods))
-		for _, pod := range fittingPods {
-			podSet[pod] = true
+		fittingPods := make(map[*apiv1.Pod]bool, len(option.Pods))
+		for _, pod := range option.Pods {
+			fittingPods[pod] = true
 		}
+		allFit := true
 		for _, pod := range podsRequiredToFit {
-			if _, found := podSet[pod]; !found {
+			if _, found := fittingPods[pod]; !found {
 				klog.V(1).Infof("Group %v, can't fit pod %v/%v, removing from scale-up consideration", group.Id(), pod.Namespace, pod.Name)
-				continue groupsloop
+				allFit = false
+				break
 			}
 		}
-		result = append(result, group)
+		if allFit {
+			result = append(result, group)
+		}
 	}
+
 	return result
 }
 

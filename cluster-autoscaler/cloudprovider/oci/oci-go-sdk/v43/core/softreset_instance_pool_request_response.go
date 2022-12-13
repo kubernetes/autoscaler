@@ -11,7 +11,7 @@ import (
 
 // SoftresetInstancePoolRequest wrapper for the SoftresetInstancePool operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/SoftresetInstancePool.go.html to see an example of how to use SoftresetInstancePoolRequest.
 type SoftresetInstancePoolRequest struct {

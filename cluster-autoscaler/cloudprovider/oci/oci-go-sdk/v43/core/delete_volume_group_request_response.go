@@ -11,7 +11,7 @@ import (
 
 // DeleteVolumeGroupRequest wrapper for the DeleteVolumeGroup operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteVolumeGroup.go.html to see an example of how to use DeleteVolumeGroupRequest.
 type DeleteVolumeGroupRequest struct {

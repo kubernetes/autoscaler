@@ -17,35 +17,39 @@ limitations under the License.
 package status
 
 import (
+	"time"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	klog "k8s.io/klog/v2"
 )
 
 // ScaleDownStatus represents the state of scale down.
 type ScaleDownStatus struct {
-	Result            ScaleDownResult
-	ScaledDownNodes   []*ScaleDownNode
-	UnremovableNodes  []*UnremovableNode
-	RemovedNodeGroups []cloudprovider.NodeGroup
-	NodeDeleteResults map[string]NodeDeleteResult
+	Result                ScaleDownResult
+	ScaledDownNodes       []*ScaleDownNode
+	UnremovableNodes      []*UnremovableNode
+	RemovedNodeGroups     []cloudprovider.NodeGroup
+	NodeDeleteResults     map[string]NodeDeleteResult
+	NodeDeleteResultsAsOf time.Time
 }
 
 // SetUnremovableNodesInfo sets the status of nodes that were found to be unremovable.
-func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string]*simulator.UnremovableNode, nodeUtilizationMap map[string]simulator.UtilizationInfo, cp cloudprovider.CloudProvider) {
-	s.UnremovableNodes = make([]*UnremovableNode, 0, len(unremovableNodesMap))
+func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodes []*simulator.UnremovableNode, nodeUtilizationMap map[string]utilization.Info, cp cloudprovider.CloudProvider) {
+	s.UnremovableNodes = make([]*UnremovableNode, 0, len(unremovableNodes))
 
-	for _, unremovableNode := range unremovableNodesMap {
+	for _, unremovableNode := range unremovableNodes {
 		nodeGroup, err := cp.NodeGroupForNode(unremovableNode.Node)
 		if err != nil {
 			klog.Errorf("Couldn't find node group for unremovable node in cloud provider %s", unremovableNode.Node.Name)
 			continue
 		}
 
-		var utilInfoPtr *simulator.UtilizationInfo
+		var utilInfoPtr *utilization.Info
 		if utilInfo, found := nodeUtilizationMap[unremovableNode.Node.Name]; found {
 			utilInfoPtr = &utilInfo
 			// It's okay if we don't find the util info, it's not computed for some unremovable nodes that are skipped early in the loop.
@@ -65,7 +69,7 @@ func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string
 type UnremovableNode struct {
 	Node        *apiv1.Node
 	NodeGroup   cloudprovider.NodeGroup
-	UtilInfo    *simulator.UtilizationInfo
+	UtilInfo    *utilization.Info
 	Reason      simulator.UnremovableReason
 	BlockingPod *drain.BlockingPod
 }
@@ -75,7 +79,7 @@ type ScaleDownNode struct {
 	Node        *apiv1.Node
 	NodeGroup   cloudprovider.NodeGroup
 	EvictedPods []*apiv1.Pod
-	UtilInfo    simulator.UtilizationInfo
+	UtilInfo    utilization.Info
 }
 
 // ScaleDownResult represents the result of scale down.
@@ -113,6 +117,8 @@ const (
 	NodeDeleteErrorFailedToEvictPods
 	// NodeDeleteErrorFailedToDelete - failed to delete the node from the cloud provider.
 	NodeDeleteErrorFailedToDelete
+	// NodeDeleteErrorInternal - failed to delete the node because of an unexpected error.
+	NodeDeleteErrorInternal
 )
 
 // NodeDeleteResult contains information about the result of a node deletion.

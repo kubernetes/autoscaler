@@ -9,7 +9,7 @@ autoscalingGroups:
 
 image:
   repository: docker.io/openstackmagnum/cluster-autoscaler
-  tag: v1.19.0
+  tag: v1.23.0
 
 nodeSelector:
   node-role.kubernetes.io/master: ""

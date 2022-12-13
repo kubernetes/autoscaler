@@ -18,12 +18,11 @@ package securitygroupclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -38,6 +37,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const nsgResourceType = "Microsoft.Network/networkSecurityGroups"
 
 // Client implements SecurityGroup client Interface.
 type Client struct {
@@ -121,12 +122,12 @@ func (c *Client) getSecurityGroup(ctx context.Context, resourceGroupName string,
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/networkSecurityGroups",
+		nsgResourceType,
 		networkSecurityGroupName,
 	)
 	result := network.SecurityGroup{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "securitygroup.get.request", resourceID, rerr.Error())
@@ -179,14 +180,12 @@ func (c *Client) List(ctx context.Context, resourceGroupName string) ([]network.
 
 // listSecurityGroup gets a list of SecurityGroups in the resource group.
 func (c *Client) listSecurityGroup(ctx context.Context, resourceGroupName string) ([]network.SecurityGroup, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/networkSecurityGroups",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName))
+	resourceID := armclient.GetResourceListID(c.subscriptionID, resourceGroupName, nsgResourceType)
 	result := make([]network.SecurityGroup, 0)
 	page := &SecurityGroupListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "securitygroup.list.request", resourceID, rerr.Error())
@@ -253,18 +252,15 @@ func (c *Client) createOrUpdateNSG(ctx context.Context, resourceGroupName string
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/networkSecurityGroups",
+		nsgResourceType,
 		networkSecurityGroupName,
 	)
-	decorators := []autorest.PrepareDecorator{
-		autorest.WithPathParameters("{resourceID}", map[string]interface{}{"resourceID": resourceID}),
-		autorest.WithJSON(parameters),
-	}
+	decorators := []autorest.PrepareDecorator{}
 	if etag != "" {
 		decorators = append(decorators, autorest.WithHeader("If-Match", autorest.String(etag)))
 	}
 
-	response, rerr := c.armClient.PutResourceWithDecorators(ctx, resourceID, parameters, decorators)
+	response, rerr := c.armClient.PutResource(ctx, resourceID, parameters, decorators...)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "securityGroup.put.request", resourceID, rerr.Error())
@@ -328,11 +324,11 @@ func (c *Client) deleteNSG(ctx context.Context, resourceGroupName string, networ
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/networkSecurityGroups",
+		nsgResourceType,
 		networkSecurityGroupName,
 	)
 
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }
 
 func (c *Client) listResponder(resp *http.Response) (result network.SecurityGroupListResult, err error) {

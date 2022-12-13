@@ -19,6 +19,7 @@ package routines
 import (
 	"context"
 	"flag"
+	"sort"
 	"time"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -34,7 +35,7 @@ import (
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -114,14 +115,16 @@ func (r *recommender) UpdateVPAs() {
 		vpa.UpdateConditions(hasMatchingPods)
 		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
 			klog.Warningf("%v", err)
-			klog.V(4).Infof("VPA dump")
-			klog.V(4).Infof("%+v", vpa)
-			klog.V(4).Infof("HasMatchingPods: %v", hasMatchingPods)
-			klog.V(4).Infof("PodCount: %v", vpa.PodCount)
-			pods := r.clusterState.GetMatchingPods(vpa)
-			klog.V(4).Infof("MatchingPods: %+v", pods)
-			if len(pods) != vpa.PodCount {
-				klog.Errorf("ClusterState pod count and matching pods disagree for vpa %v/%v", vpa.ID.Namespace, vpa.ID.VpaName)
+			if klog.V(4).Enabled() {
+				klog.Infof("VPA dump")
+				klog.Infof("%+v", vpa)
+				klog.Infof("HasMatchingPods: %v", hasMatchingPods)
+				klog.Infof("PodCount: %v", vpa.PodCount)
+				pods := r.clusterState.GetMatchingPods(vpa)
+				klog.Infof("MatchingPods: %+v", pods)
+				if len(pods) != vpa.PodCount {
+					klog.Errorf("ClusterState pod count and matching pods disagree for vpa %v/%v", vpa.ID.Namespace, vpa.ID.VpaName)
+				}
 			}
 		}
 		cnt.Add(vpa)
@@ -142,13 +145,22 @@ func (r *recommender) UpdateVPAs() {
 func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodResources,
 	policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
 	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
-	for containerName, res := range resources {
+	// Sort the container names from the map. This is because maps are an
+	// unordered data structure, and iterating through the map will return
+	// a different order on every call.
+	containerNames := make([]string, 0, len(resources))
+	for containerName := range resources {
+		containerNames = append(containerNames, containerName)
+	}
+	sort.Strings(containerNames)
+	// Create the list of recommendations for each container.
+	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
-			ContainerName:  containerName,
-			Target:         model.ResourcesAsResourceList(res.Target),
-			LowerBound:     model.ResourcesAsResourceList(res.LowerBound),
-			UpperBound:     model.ResourcesAsResourceList(res.UpperBound),
-			UncappedTarget: model.ResourcesAsResourceList(res.Target),
+			ContainerName:  name,
+			Target:         model.ResourcesAsResourceList(resources[name].Target),
+			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound),
+			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound),
+			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target),
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{
@@ -249,7 +261,7 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	return RecommenderFactory{
 		ClusterState:           clusterState,
-		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace),
+		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace, "default-metrics-client"),
 		ControllerFetcher:      controllerFetcher,
 		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
 		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),

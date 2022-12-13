@@ -11,7 +11,7 @@ import (
 
 // ChangeInstanceCompartmentRequest wrapper for the ChangeInstanceCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeInstanceCompartment.go.html to see an example of how to use ChangeInstanceCompartmentRequest.
 type ChangeInstanceCompartmentRequest struct {

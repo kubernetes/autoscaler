@@ -23,7 +23,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	v1 "k8s.io/api/core/v1"
@@ -241,7 +241,7 @@ func getNodePrivateIPAddress(service *v1.Service, node *v1.Node) string {
 	for _, nodeAddress := range node.Status.Addresses {
 		if strings.EqualFold(string(nodeAddress.Type), string(v1.NodeInternalIP)) &&
 			utilnet.IsIPv6String(nodeAddress.Address) == isIPV6SVC {
-			klog.V(4).Infof("getNodePrivateIPAddress: node %s, ip %s", node.Name, nodeAddress.Address)
+			klog.V(6).Infof("getNodePrivateIPAddress: node %s, ip %s", node.Name, nodeAddress.Address)
 			return nodeAddress.Address
 		}
 	}
@@ -259,4 +259,44 @@ func getNodePrivateIPAddresses(node *v1.Node) []string {
 	}
 
 	return addresses
+}
+
+func isLBBackendPoolTypeIPConfig(service *v1.Service, lb *network.LoadBalancer, clusterName string) bool {
+	if lb == nil || lb.LoadBalancerPropertiesFormat == nil || lb.BackendAddressPools == nil {
+		klog.V(4).Infof("isLBBackendPoolTypeIPConfig: no backend pools in the LB %s", to.String(lb.Name))
+		return false
+	}
+	lbBackendPoolName := getBackendPoolName(clusterName, service)
+	for _, bp := range *lb.BackendAddressPools {
+		if strings.EqualFold(to.String(bp.Name), lbBackendPoolName) {
+			return bp.BackendAddressPoolPropertiesFormat != nil &&
+				bp.BackendIPConfigurations != nil &&
+				len(*bp.BackendIPConfigurations) != 0
+		}
+	}
+	return false
+}
+
+func getBoolValueFromServiceAnnotations(service *v1.Service, key string) bool {
+	if l, found := service.Annotations[key]; found {
+		return strings.EqualFold(strings.TrimSpace(l), consts.TrueAnnotationValue)
+	}
+	return false
+}
+
+func sameContentInSlices(s1 []string, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	map1 := make(map[string]int)
+	for _, s := range s1 {
+		map1[s]++
+	}
+	for _, s := range s2 {
+		if v, ok := map1[s]; !ok || v <= 0 {
+			return false
+		}
+		map1[s]--
+	}
+	return true
 }

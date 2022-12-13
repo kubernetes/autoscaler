@@ -3778,15 +3778,15 @@ func (r ApiLabelsFindByUrnRequest) Execute() (Label, *APIResponse, error) {
 }
 
 /*
- * LabelsFindByUrn Retrieve labels by URN
- * Retrieve a label by label URN.
+  - LabelsFindByUrn Retrieve labels by URN
+  - Retrieve a label by label URN.
 
 The URN is unique for each label, and consists of:
 
 urn:label:<resource_type>:<resource_uuid>:<key>
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param labelurn The label URN; URN is unique for each label, and consists of:  urn:label:<resource_type>:<resource_uuid>:<key><key>
- * @return ApiLabelsFindByUrnRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param labelurn The label URN; URN is unique for each label, and consists of:  urn:label:<resource_type>:<resource_uuid>:<key><key>
+  - @return ApiLabelsFindByUrnRequest
 */
 func (a *LabelsApiService) LabelsFindByUrn(ctx _context.Context, labelurn string) ApiLabelsFindByUrnRequest {
 	return ApiLabelsFindByUrnRequest{

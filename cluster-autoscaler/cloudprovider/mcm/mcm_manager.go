@@ -97,7 +97,7 @@ var (
 	machineDeploymentGVR = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machinedeployments"}
 )
 
-//McmManager manages the client communication for MachineDeployments.
+// McmManager manages the client communication for MachineDeployments.
 type McmManager struct {
 	namespace               string
 	interrupt               chan struct{}
@@ -248,7 +248,9 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 }
 
 // TODO: In general, any controller checking this needs to be dynamic so
-//  users don't have to restart their controller manager if they change the apiserver.
+//
+//	users don't have to restart their controller manager if they change the apiserver.
+//
 // Until we get there, the structure here needs to be exposed for the construction of a proper ControllerContext.
 func getAvailableResources(clientBuilder CoreClientBuilder) (map[schema.GroupVersionResource]bool, error) {
 	var discoveryClient discovery.DiscoveryInterface
@@ -374,7 +376,6 @@ func (m *McmManager) GetMachineDeploymentForMachine(machine *Ref) (*MachineDeplo
 }
 
 // Refresh does nothing at the moment.
-//
 func (m *McmManager) Refresh() error {
 	return nil
 }

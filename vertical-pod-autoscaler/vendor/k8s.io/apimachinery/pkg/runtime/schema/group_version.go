@@ -176,15 +176,6 @@ func (gv GroupVersion) Empty() bool {
 // String puts "group" and "version" into a single "group/version" string. For the legacy v1
 // it returns "v1".
 func (gv GroupVersion) String() string {
-	// special case the internal apiVersion for the legacy kube types
-	if gv.Empty() {
-		return ""
-	}
-
-	// special case of "v1" for backward compatibility
-	if len(gv.Group) == 0 && gv.Version == "v1" {
-		return gv.Version
-	}
 	if len(gv.Group) > 0 {
 		return gv.Group + "/" + gv.Version
 	}
@@ -200,7 +191,8 @@ func (gv GroupVersion) Identifier() string {
 // if none of the options match the group. It prefers a match to group and version over just group.
 // TODO: Move GroupVersion to a package under pkg/runtime, since it's used by scheme.
 // TODO: Introduce an adapter type between GroupVersion and runtime.GroupVersioner, and use LegacyCodec(GroupVersion)
-//   in fewer places.
+//
+//	in fewer places.
 func (gv GroupVersion) KindForGroupVersionKinds(kinds []GroupVersionKind) (target GroupVersionKind, ok bool) {
 	for _, gvk := range kinds {
 		if gvk.Group == gv.Group && gvk.Version == gv.Version {
@@ -248,14 +240,15 @@ func (gv GroupVersion) WithResource(resource string) GroupVersionResource {
 // GroupVersions can be used to represent a set of desired group versions.
 // TODO: Move GroupVersions to a package under pkg/runtime, since it's used by scheme.
 // TODO: Introduce an adapter type between GroupVersions and runtime.GroupVersioner, and use LegacyCodec(GroupVersion)
-//   in fewer places.
+//
+//	in fewer places.
 type GroupVersions []GroupVersion
 
 // Identifier implements runtime.GroupVersioner interface.
-func (gv GroupVersions) Identifier() string {
-	groupVersions := make([]string, 0, len(gv))
-	for i := range gv {
-		groupVersions = append(groupVersions, gv[i].String())
+func (gvs GroupVersions) Identifier() string {
+	groupVersions := make([]string, 0, len(gvs))
+	for i := range gvs {
+		groupVersions = append(groupVersions, gvs[i].String())
 	}
 	return fmt.Sprintf("[%s]", strings.Join(groupVersions, ","))
 }

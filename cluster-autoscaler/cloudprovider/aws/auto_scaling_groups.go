@@ -23,10 +23,9 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	klog "k8s.io/klog/v2"
 )
 
@@ -57,8 +56,9 @@ type launchTemplate struct {
 }
 
 type mixedInstancesPolicy struct {
-	launchTemplate         *launchTemplate
-	instanceTypesOverrides []string
+	launchTemplate                *launchTemplate
+	instanceTypesOverrides        []string
+	instanceRequirementsOverrides *autoscaling.InstanceRequirements
 }
 
 type asg struct {
@@ -324,23 +324,18 @@ func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if
 // they no longer exist in AWS.
-func (m *asgCache) fetchAutoAsgNames() ([]string, error) {
-	groupNames := make([]string, 0)
-
+func (m *asgCache) buildAsgTags() map[string]string {
+	groupTags := map[string]string{}
 	for _, spec := range m.asgAutoDiscoverySpecs {
-		names, err := m.awsService.getAutoscalingGroupNamesByTags(spec.Tags)
-		if err != nil {
-			return nil, fmt.Errorf("cannot autodiscover ASGs: %s", err)
+		for k, v := range spec.Tags {
+			groupTags[k] = v
 		}
-
-		groupNames = append(groupNames, names...)
 	}
 
-	return groupNames, nil
+	return groupTags
 }
 
-func (m *asgCache) buildAsgNames() ([]string, error) {
-	// Collect explicitly specified names
+func (m *asgCache) buildAsgNames() []string {
 	refreshNames := make([]string, len(m.explicitlyConfigured))
 	i := 0
 	for k := range m.explicitlyConfigured {
@@ -348,23 +343,7 @@ func (m *asgCache) buildAsgNames() ([]string, error) {
 		i++
 	}
 
-	// Append auto-discovered names
-	autoDiscoveredNames, err := m.fetchAutoAsgNames()
-	if err != nil {
-		return nil, err
-	}
-	for _, name := range autoDiscoveredNames {
-		autoRef := AwsRef{Name: name}
-
-		if m.explicitlyConfigured[autoRef] {
-			// This ASG was already explicitly configured, we only need to fetch it once
-			continue
-		}
-
-		refreshNames = append(refreshNames, name)
-	}
-
-	return refreshNames, nil
+	return refreshNames
 }
 
 // regenerate the cached view of explicitly configured and auto-discovered ASGs
@@ -376,18 +355,22 @@ func (m *asgCache) regenerate() error {
 	newAsgToInstancesCache := make(map[AwsRef][]AwsInstanceRef)
 	newInstanceStatusMap := make(map[AwsInstanceRef]*string)
 
-	// Build list of known ASG names
-	refreshNames, err := m.buildAsgNames()
+	// Fetch details of all ASGs
+	refreshNames := m.buildAsgNames()
+	klog.V(4).Infof("Regenerating instance to ASG map for ASG names: %v", refreshNames)
+	namedGroups, err := m.awsService.getAutoscalingGroupsByNames(refreshNames)
 	if err != nil {
 		return err
 	}
 
-	// Fetch details of all ASGs
-	klog.V(4).Infof("Regenerating instance to ASG map for ASGs: %v", refreshNames)
-	groups, err := m.awsService.getAutoscalingGroupsByNames(refreshNames)
+	refreshTags := m.buildAsgTags()
+	klog.V(4).Infof("Regenerating instance to ASG map for ASG tags: %v", refreshTags)
+	taggedGroups, err := m.awsService.getAutoscalingGroupsByTags(refreshTags)
 	if err != nil {
 		return err
 	}
+
+	groups := append(namedGroups, taggedGroups...)
 
 	// If currently any ASG has more Desired than running Instances, introduce placeholders
 	// for the instances to come up. This is required to track Desired instances that
@@ -533,17 +516,31 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 	}
 
 	if g.MixedInstancesPolicy != nil {
-		getInstanceTypes := func(data []*autoscaling.LaunchTemplateOverrides) []string {
-			res := make([]string, len(data))
-			for i := 0; i < len(data); i++ {
-				res[i] = aws.StringValue(data[i].InstanceType)
+		getInstanceTypes := func(overrides []*autoscaling.LaunchTemplateOverrides) []string {
+			res := []string{}
+			for _, override := range overrides {
+				if override.InstanceType != nil {
+					res = append(res, *override.InstanceType)
+				}
 			}
 			return res
 		}
 
+		getInstanceTypeRequirements := func(overrides []*autoscaling.LaunchTemplateOverrides) *autoscaling.InstanceRequirements {
+			if len(overrides) == 1 && overrides[0].InstanceRequirements != nil {
+				return overrides[0].InstanceRequirements
+			}
+			return nil
+		}
+
 		asg.MixedInstancesPolicy = &mixedInstancesPolicy{
-			launchTemplate:         buildLaunchTemplateFromSpec(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification),
-			instanceTypesOverrides: getInstanceTypes(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
+			launchTemplate:                buildLaunchTemplateFromSpec(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification),
+			instanceTypesOverrides:        getInstanceTypes(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
+			instanceRequirementsOverrides: getInstanceTypeRequirements(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
+		}
+
+		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) != 0 && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
+			return nil, fmt.Errorf("invalid setup of both instance type and instance requirements overrides configured")
 		}
 	}
 

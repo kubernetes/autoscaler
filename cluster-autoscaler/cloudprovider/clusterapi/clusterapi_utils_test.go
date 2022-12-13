@@ -18,13 +18,14 @@ package clusterapi
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 const (
@@ -114,24 +115,6 @@ func TestUtilParseScalingBounds(t *testing.T) {
 		},
 		min: 0,
 		max: 1,
-	}, {
-		description: "deprecated min/max annotations still work, result is min 0, max 1",
-		annotations: map[string]string{
-			deprecatedNodeGroupMinSizeAnnotationKey: "0",
-			deprecatedNodeGroupMaxSizeAnnotationKey: "1",
-		},
-		min: 0,
-		max: 1,
-	}, {
-		description: "deprecated min/max annotations do not take precedence over non-deprecated annotations, result is min 1, max 2",
-		annotations: map[string]string{
-			deprecatedNodeGroupMinSizeAnnotationKey: "0",
-			deprecatedNodeGroupMaxSizeAnnotationKey: "1",
-			nodeGroupMinSizeAnnotationKey:           "1",
-			nodeGroupMaxSizeAnnotationKey:           "2",
-		},
-		min: 1,
-		max: 2,
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
 			machineSet := unstructured.Unstructured{
@@ -447,6 +430,229 @@ func TestUtilNormalizedProviderID(t *testing.T) {
 	}
 }
 
+func TestScaleFromZeroEnabled(t *testing.T) {
+	for _, tc := range []struct {
+		description string
+		enabled     bool
+		annotations map[string]string
+	}{{
+		description: "nil annotations",
+		enabled:     false,
+	}, {
+		description: "empty annotations",
+		annotations: map[string]string{},
+		enabled:     false,
+	}, {
+		description: "non-matching annotation",
+		annotations: map[string]string{"foo": "bar"},
+		enabled:     false,
+	}, {
+		description: "matching key, incomplete annotations",
+		annotations: map[string]string{
+			"foo":  "bar",
+			cpuKey: "1",
+		},
+		enabled: false,
+	}, {
+		description: "matching key, complete annotations",
+		annotations: map[string]string{
+			"foo":     "bar",
+			cpuKey:    "1",
+			memoryKey: "2Mi",
+		},
+		enabled: true,
+	}} {
+		t.Run(tc.description, func(t *testing.T) {
+			got := scaleFromZeroAnnotationsEnabled(tc.annotations)
+			if tc.enabled != got {
+				t.Errorf("expected %t, got %t", tc.enabled, got)
+			}
+		})
+	}
+}
+
+func TestParseCPUCapacity(t *testing.T) {
+	for _, tc := range []struct {
+		description      string
+		annotations      map[string]string
+		expectedQuantity resource.Quantity
+		expectedError    bool
+	}{{
+		description:      "nil annotations",
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "empty annotations",
+		annotations:      map[string]string{},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "bad quantity",
+		annotations:      map[string]string{cpuKey: "not-a-quantity"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
+	}, {
+		description:      "valid quantity with units",
+		annotations:      map[string]string{cpuKey: "123m"},
+		expectedError:    false,
+		expectedQuantity: resource.MustParse("123m"),
+	}, {
+		description:      "valid quantity without units",
+		annotations:      map[string]string{cpuKey: "1"},
+		expectedError:    false,
+		expectedQuantity: resource.MustParse("1"),
+	}, {
+		description:      "valid fractional quantity without units",
+		annotations:      map[string]string{cpuKey: "0.1"},
+		expectedError:    false,
+		expectedQuantity: resource.MustParse("0.1"),
+	}} {
+		t.Run(tc.description, func(t *testing.T) {
+			got, err := parseCPUCapacity(tc.annotations)
+			if tc.expectedError && err == nil {
+				t.Fatal("expected an error")
+			}
+			if tc.expectedQuantity.Cmp(got) != 0 {
+				t.Errorf("expected %v, got %v", tc.expectedQuantity.String(), got.String())
+			}
+		})
+	}
+}
+
+func TestParseMemoryCapacity(t *testing.T) {
+	for _, tc := range []struct {
+		description      string
+		annotations      map[string]string
+		expectedQuantity resource.Quantity
+		expectedError    bool
+	}{{
+		description:      "nil annotations",
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "empty annotations",
+		annotations:      map[string]string{},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "bad quantity",
+		annotations:      map[string]string{memoryKey: "not-a-quantity"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
+	}, {
+		description:      "quantity as with no unit type",
+		annotations:      map[string]string{memoryKey: "1024"},
+		expectedQuantity: *resource.NewQuantity(1024, resource.DecimalSI),
+		expectedError:    false,
+	}, {
+		description:      "quantity with unit type (Mi)",
+		annotations:      map[string]string{memoryKey: "456Mi"},
+		expectedError:    false,
+		expectedQuantity: *resource.NewQuantity(456*units.MiB, resource.DecimalSI),
+	}, {
+		description:      "quantity with unit type (Gi)",
+		annotations:      map[string]string{memoryKey: "8Gi"},
+		expectedError:    false,
+		expectedQuantity: *resource.NewQuantity(8*units.GiB, resource.DecimalSI),
+	}} {
+		t.Run(tc.description, func(t *testing.T) {
+			got, err := parseMemoryCapacity(tc.annotations)
+			if tc.expectedError && err == nil {
+				t.Fatal("expected an error")
+			}
+			if tc.expectedQuantity.Cmp(got) != 0 {
+				t.Errorf("expected %v, got %v", tc.expectedQuantity.String(), got.String())
+			}
+		})
+	}
+}
+
+func TestParseGPUCapacity(t *testing.T) {
+	for _, tc := range []struct {
+		description      string
+		annotations      map[string]string
+		expectedQuantity resource.Quantity
+		expectedError    bool
+	}{{
+		description:      "nil annotations",
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "empty annotations",
+		annotations:      map[string]string{},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "bad quantity",
+		annotations:      map[string]string{gpuCountKey: "not-a-quantity"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
+	}, {
+		description:      "valid quantity",
+		annotations:      map[string]string{gpuCountKey: "13"},
+		expectedError:    false,
+		expectedQuantity: resource.MustParse("13"),
+	}, {
+		description:      "valid quantity, bad unit type",
+		annotations:      map[string]string{gpuCountKey: "13Mi"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
+	}} {
+		t.Run(tc.description, func(t *testing.T) {
+			got, err := parseGPUCount(tc.annotations)
+			if tc.expectedError && err == nil {
+				t.Fatal("expected an error")
+			}
+			if tc.expectedQuantity.Cmp(got) != 0 {
+				t.Errorf("expected %v, got %v", tc.expectedQuantity.String(), got.String())
+			}
+		})
+	}
+}
+
+func TestParseMaxPodsCapacity(t *testing.T) {
+	for _, tc := range []struct {
+		description      string
+		annotations      map[string]string
+		expectedQuantity resource.Quantity
+		expectedError    bool
+	}{{
+		description:      "nil annotations",
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "empty annotations",
+		annotations:      map[string]string{},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+	}, {
+		description:      "bad quantity",
+		annotations:      map[string]string{maxPodsKey: "not-a-quantity"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
+	}, {
+		description:      "valid quantity",
+		annotations:      map[string]string{maxPodsKey: "13"},
+		expectedError:    false,
+		expectedQuantity: resource.MustParse("13"),
+	}, {
+		description:      "valid quantity, bad unit type",
+		annotations:      map[string]string{maxPodsKey: "13Mi"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
+	}} {
+		t.Run(tc.description, func(t *testing.T) {
+			got, err := parseMaxPodsCapacity(tc.annotations)
+			if tc.expectedError && err == nil {
+				t.Fatal("expected an error")
+			}
+			if tc.expectedQuantity.Cmp(got) != 0 {
+				t.Errorf("expected %v, got %v", tc.expectedQuantity.String(), got.String())
+			}
+		})
+	}
+}
+
 func Test_clusterNameFromResource(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
@@ -486,94 +692,6 @@ func Test_clusterNameFromResource(t *testing.T) {
 			},
 		},
 		want: "",
-	}, {
-		name: "cluster name set in MachineSet labels, v1alpha1 MachineSet",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineSetKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-					"labels": map[string]interface{}{
-						deprecatedClusterNameLabel: "bar",
-					},
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
-	}, {
-		name: "cluster name set in MachineDeployment, v1alpha1 MachineDeployment",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineDeploymentKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-					"labels": map[string]interface{}{
-						deprecatedClusterNameLabel: "bar",
-					},
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
-	}, {
-		name: "cluster name set in Machine template labels, v1alpha1 MachineSet",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineSetKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-					"template": map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"labels": map[string]interface{}{
-								deprecatedClusterNameLabel: "bar",
-							},
-						},
-					},
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
-	}, {
-		name: "cluster name set in Machine template, v1alpha1 MachineDeployment",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineDeploymentKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-					"template": map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"labels": map[string]interface{}{
-								deprecatedClusterNameLabel: "bar",
-							},
-						},
-					},
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
 	}, {
 		name: "cluster name not set, v1alpha2 MachineSet",
 		resource: &unstructured.Unstructured{
@@ -735,9 +853,7 @@ func Test_getKeyHelpers(t *testing.T) {
 	}
 
 	testgroup := "test.k8s.io"
-	if err := os.Setenv(CAPIGroupEnvVar, testgroup); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	t.Setenv(CAPIGroupEnvVar, testgroup)
 
 	for _, tc := range []struct {
 		name     string

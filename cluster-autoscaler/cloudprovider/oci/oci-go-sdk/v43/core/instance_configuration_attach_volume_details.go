@@ -88,22 +88,22 @@ func (m *instanceconfigurationattachvolumedetails) UnmarshalPolymorphicJSON(data
 	}
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m instanceconfigurationattachvolumedetails) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetIsReadOnly returns IsReadOnly
+// GetIsReadOnly returns IsReadOnly
 func (m instanceconfigurationattachvolumedetails) GetIsReadOnly() *bool {
 	return m.IsReadOnly
 }
 
-//GetDevice returns Device
+// GetDevice returns Device
 func (m instanceconfigurationattachvolumedetails) GetDevice() *string {
 	return m.Device
 }
 
-//GetIsShareable returns IsShareable
+// GetIsShareable returns IsShareable
 func (m instanceconfigurationattachvolumedetails) GetIsShareable() *bool {
 	return m.IsShareable
 }

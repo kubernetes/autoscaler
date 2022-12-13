@@ -121,7 +121,9 @@ func getConfidence(s *model.AggregateContainerState) float64 {
 // Returns resources computed by the underlying estimator, scaled based on the
 // confidence metric, which depends on the amount of available historical data.
 // Each resource is transformed as follows:
-//     scaledResource = originalResource * (1 + 1/confidence)^exponent.
+//
+//	scaledResource = originalResource * (1 + 1/confidence)^exponent.
+//
 // This can be used to widen or narrow the gap between the lower and upper bound
 // estimators depending on how much input data is available to the estimators.
 func (e *confidenceMultiplier) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {

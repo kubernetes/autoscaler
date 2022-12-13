@@ -31,11 +31,12 @@ import (
 )
 
 const (
-	ociUseInstancePrincipalEnvVar = "OCI_USE_INSTANCE_PRINCIPAL"
-	ociCompartmentEnvVar          = "OCI_COMPARTMENT_ID"
-	ociRegionEnvVar               = "OCI_REGION"
-	ociRefreshInterval            = "OCI_REFRESH_INTERVAL"
-	ociAnnotationCompartmentID    = "oci.oraclecloud.com/compartment-id"
+	ociUseInstancePrincipalEnvVar       = "OCI_USE_INSTANCE_PRINCIPAL"
+	ociUseNonPoolMemberAnnotationEnvVar = "OCI_USE_NON_POOL_MEMBER_ANNOTATION"
+	ociCompartmentEnvVar                = "OCI_COMPARTMENT_ID"
+	ociRegionEnvVar                     = "OCI_REGION"
+	ociRefreshInterval                  = "OCI_REFRESH_INTERVAL"
+	ociAnnotationCompartmentID          = "oci.oraclecloud.com/compartment-id"
 	// ResourceGPU is the GPU resource type
 	ResourceGPU            apiv1.ResourceName = "nvidia.com/gpu"
 	defaultRefreshInterval                    = 5 * time.Minute
@@ -51,10 +52,11 @@ type OciCloudProvider struct {
 // CloudConfig holds the cloud config for OCI provider.
 type CloudConfig struct {
 	Global struct {
-		RefreshInterval       time.Duration `gcfg:"refresh-interval"`
-		CompartmentID         string        `gcfg:"compartment-id"`
-		Region                string        `gcfg:"region"`
-		UseInstancePrinciples bool          `gcfg:"use-instance-principals"`
+		RefreshInterval        time.Duration `gcfg:"refresh-interval"`
+		CompartmentID          string        `gcfg:"compartment-id"`
+		Region                 string        `gcfg:"region"`
+		UseInstancePrinciples  bool          `gcfg:"use-instance-principals"`
+		UseNonMemberAnnotation bool          `gcfg:"use-non-member-annotation"`
 	}
 }
 

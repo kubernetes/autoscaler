@@ -22,9 +22,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
 )
 
 func TestGetStaticEC2InstanceTypes(t *testing.T) {
@@ -123,12 +123,7 @@ func TestGetCurrentAwsRegion(t *testing.T) {
 
 func TestGetCurrentAwsRegionWithRegionEnv(t *testing.T) {
 	region := "us-west-2"
-	if oldRegion, found := os.LookupEnv("AWS_REGION"); found {
-		defer os.Setenv("AWS_REGION", oldRegion)
-	} else {
-		defer os.Unsetenv("AWS_REGION")
-	}
-	os.Setenv("AWS_REGION", region)
+	t.Setenv("AWS_REGION", region)
 
 	result, err := GetCurrentAwsRegion()
 	assert.Nil(t, err)

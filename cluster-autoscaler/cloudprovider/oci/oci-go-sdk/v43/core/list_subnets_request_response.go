@@ -11,7 +11,7 @@ import (
 
 // ListSubnetsRequest wrapper for the ListSubnets operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListSubnets.go.html to see an example of how to use ListSubnetsRequest.
 type ListSubnetsRequest struct {

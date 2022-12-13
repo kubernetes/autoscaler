@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/v2"
 	v1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	policyv1 "k8s.io/api/policy/v1"
@@ -473,10 +473,7 @@ func (j *TestJig) sanityCheckService(svc *v1.Service, svcType v1.ServiceType) (*
 		}
 	}
 
-	expectNodePorts := false
-	if svcType != v1.ServiceTypeClusterIP && svcType != v1.ServiceTypeExternalName {
-		expectNodePorts = true
-	}
+	expectNodePorts := needsNodePorts(svc)
 	for i, port := range svc.Spec.Ports {
 		hasNodePort := (port.NodePort != 0)
 		if hasNodePort != expectNodePorts {
@@ -497,6 +494,24 @@ func (j *TestJig) sanityCheckService(svc *v1.Service, svcType v1.ServiceType) (*
 	// }
 
 	return svc, nil
+}
+
+func needsNodePorts(svc *v1.Service) bool {
+	if svc == nil {
+		return false
+	}
+	// Type NodePort
+	if svc.Spec.Type == v1.ServiceTypeNodePort {
+		return true
+	}
+	if svc.Spec.Type != v1.ServiceTypeLoadBalancer {
+		return false
+	}
+	// Type LoadBalancer
+	if svc.Spec.AllocateLoadBalancerNodePorts == nil {
+		return true //back-compat
+	}
+	return *svc.Spec.AllocateLoadBalancerNodePorts
 }
 
 // UpdateService fetches a service, calls the update function on it, and
@@ -946,10 +961,10 @@ func (j *TestJig) checkClusterIPServiceReachability(svc *v1.Service, pod *v1.Pod
 }
 
 // checkNodePortServiceReachability ensures that service of type nodePort are reachable
-// - Internal clients should be reachable to service over -
-//   	ServiceName:ServicePort, ClusterIP:ServicePort and NodeInternalIPs:NodePort
-// - External clients should be reachable to service over -
-//   	NodePublicIPs:NodePort
+//   - Internal clients should be reachable to service over -
+//     ServiceName:ServicePort, ClusterIP:ServicePort and NodeInternalIPs:NodePort
+//   - External clients should be reachable to service over -
+//     NodePublicIPs:NodePort
 func (j *TestJig) checkNodePortServiceReachability(svc *v1.Service, pod *v1.Pod) error {
 	clusterIP := svc.Spec.ClusterIP
 	servicePorts := svc.Spec.Ports

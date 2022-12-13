@@ -18,8 +18,10 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [AWS](./cloudprovider/aws/README.md)
 * [BaiduCloud](./cloudprovider/baiducloud/README.md)
 * [Brightbox](./cloudprovider/brightbox/README.md)
+* [CherryServers](./cloudprovider/cherryservers/README.md)
 * [CloudStack](./cloudprovider/cloudstack/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
+* [External gRPC](./cloudprovider/externalgrpc/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
 * [Equinix Metal](./cloudprovider/packet/README.md#notes) 
 * [IonosCloud](./cloudprovider/ionoscloud/README.md)
@@ -30,6 +32,9 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [BizflyCloud](./cloudprovider/bizflycloud/README.md)
 * [Vultr](./cloudprovider/vultr/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
+* [Scaleway](./cloudprovider/scaleway/README.md)
+* [Rancher](./cloudprovider/rancher/README.md)
+* [Kamatera](./cloudprovider/kamatera/README.md)
 
 # Releases
 
@@ -67,6 +72,7 @@ Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match 
 
 | Kubernetes Version | CA Version | Gardener CA Version | 
 |--------------------|------------|---------------------|
+| 1.25.X             | 1.25.X     | 1.25.X              |
 | 1.24.X             | 1.24.X     | 1.24.X              |
 | 1.23.X             | 1.23.X     | 1.23.X              |
 | 1.22.X             | 1.22.X     | 1.22.X              |
@@ -182,11 +188,13 @@ Supported cloud providers:
 * Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
 * Alibaba Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
 * Brightbox https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/brightbox/README.md
+* CherryServers https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cherryservers/README.md
 * OpenStack Magnum https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/magnum/README.md
 * DigitalOcean https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/digitalocean/README.md
 * CloudStack https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloudstack/README.md
 * Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
 * Equinix Metal https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/packet/README.md
+* External gRPC https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/externalgrpc/README.md
 * OVHcloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/ovhcloud/README.md
 * Linode https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/linode/README.md
 * OCI https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/oci/README.md
@@ -194,3 +202,7 @@ Supported cloud providers:
 * Cluster API https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md
 * Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
+* BaiduCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/baiducloud/README.md
+* Huawei Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/huaweicloud/README.md
+* Rancher https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/rancher/README.md
+* Kamatera https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/kamatera/README.md

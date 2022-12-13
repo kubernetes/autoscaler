@@ -88,7 +88,7 @@ func (driver *Driver) adjustNodeGroups() error {
 	return nil
 }
 
-//getNumberOfReadyNodes tries to retrieve the list of node objects in the cluster.
+// getNumberOfReadyNodes tries to retrieve the list of node objects in the cluster.
 func (c *Cluster) getNumberOfReadyNodes() int16 {
 	nodes, _ := c.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	count := 0

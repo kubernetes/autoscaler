@@ -11,7 +11,7 @@ import (
 
 // ChangeDedicatedVmHostCompartmentRequest wrapper for the ChangeDedicatedVmHostCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeDedicatedVmHostCompartment.go.html to see an example of how to use ChangeDedicatedVmHostCompartmentRequest.
 type ChangeDedicatedVmHostCompartmentRequest struct {

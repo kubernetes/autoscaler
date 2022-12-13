@@ -18,7 +18,6 @@ package deploymentclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -37,6 +36,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const deploymentResourceType = "Microsoft.Resources/deployments"
 
 // Client implements ContainerService client Interface.
 type Client struct {
@@ -114,12 +115,12 @@ func (c *Client) getDeployment(ctx context.Context, resourceGroupName string, de
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Resources/deployments",
+		deploymentResourceType,
 		deploymentName,
 	)
 	result := resources.DeploymentExtended{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	response, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deployment.get.request", resourceID, rerr.Error())
@@ -172,14 +173,12 @@ func (c *Client) List(ctx context.Context, resourceGroupName string) ([]resource
 
 // listDeployment gets a list of deployments in the resource group.
 func (c *Client) listDeployment(ctx context.Context, resourceGroupName string) ([]resources.DeploymentExtended, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Resources/deployments",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName))
+	resourceID := armclient.GetResourceListID(c.subscriptionID, resourceGroupName, deploymentResourceType)
 	result := make([]resources.DeploymentExtended, 0)
 	page := &DeploymentResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deployment.list.request", resourceID, rerr.Error())
@@ -335,18 +334,15 @@ func (c *Client) createOrUpdateDeployment(ctx context.Context, resourceGroupName
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Resources/deployments",
+		deploymentResourceType,
 		deploymentName,
 	)
-	decorators := []autorest.PrepareDecorator{
-		autorest.WithPathParameters("{resourceID}", map[string]interface{}{"resourceID": resourceID}),
-		autorest.WithJSON(parameters),
-	}
+	decorators := []autorest.PrepareDecorator{}
 	if etag != "" {
 		decorators = append(decorators, autorest.WithHeader("If-Match", autorest.String(etag)))
 	}
 
-	response, rerr := c.armClient.PutResourceWithDecorators(ctx, resourceID, parameters, decorators)
+	response, rerr := c.armClient.PutResource(ctx, resourceID, parameters, decorators...)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deployment.put.request", resourceID, rerr.Error())
@@ -410,11 +406,11 @@ func (c *Client) deleteDeployment(ctx context.Context, resourceGroupName string,
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Resources/deployments",
+		deploymentResourceType,
 		deploymentName,
 	)
 
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }
 
 // ExportTemplate exports the template used for specified deployment
@@ -434,10 +430,12 @@ func (c *Client) ExportTemplate(ctx context.Context, resourceGroupName string, d
 		return resources.DeploymentExportResult{}, rerr
 	}
 
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Resources/deployments/%s/exportTemplate",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName),
-		autorest.Encode("path", deploymentName))
+	resourceID := armclient.GetResourceID(
+		c.subscriptionID,
+		resourceGroupName,
+		deploymentResourceType,
+		deploymentName,
+	)
 	response, rerr := c.armClient.PostResource(ctx, resourceID, "exportTemplate", struct{}{}, map[string]interface{}{})
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {

@@ -75,14 +75,16 @@ type AzureStorageProfile struct {
 }
 
 // AzureImageReference is specifies information about the image to use. You can specify information about platform images,
-// marketplace images, community images or virtual machine images. This element is required when you want to use a platform image,
-// marketplace image, community image or virtual machine image, but is not used in other creation operations.
+// marketplace images, community images, shared gallery images or virtual machine images. This element is required when you want to use a platform image,
+// marketplace image, community image, shared gallery image or virtual machine image, but is not used in other creation operations.
 type AzureImageReference struct {
 	ID string `json:"id,omitempty"`
 	// Uniform Resource Name of the OS image to be used , it has the format 'publisher:offer:sku:version'
 	URN *string `json:"urn,omitempty"`
 	// CommunityGalleryImageID is the id of the OS image to be used, hosted within an Azure Community Image Gallery.
 	CommunityGalleryImageID *string `json:"communityGalleryImageID,omitempty"`
+	// SharedGalleryImageID is the id of the OS image to be used, hosted within an Azure Shared Image Gallery.
+	SharedGalleryImageID *string `json:"sharedGalleryImageID,omitempty"`
 }
 
 // AzureOSDisk is specifies information about the operating system disk used by the virtual machine. <br><br> For more

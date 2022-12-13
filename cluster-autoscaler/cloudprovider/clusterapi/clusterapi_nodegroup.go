@@ -18,9 +18,14 @@ package clusterapi
 
 import (
 	"fmt"
+	"math/rand"
+
+	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	kubeletapis "k8s.io/kubelet/pkg/apis"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -29,6 +34,11 @@ import (
 
 const (
 	debugFormat = "%s (min: %d, max: %d, replicas: %d)"
+
+	// The default for the maximum number of pods is inspired by the Kubernetes
+	// best practices documentation for large clusters.
+	// see https://kubernetes.io/docs/setup/best-practices/cluster-large/
+	defaultMaxPods = 110
 )
 
 type nodegroup struct {
@@ -52,7 +62,14 @@ func (ng *nodegroup) MaxSize() int {
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
 func (ng *nodegroup) TargetSize() (int, error) {
-	return ng.scalableResource.Replicas()
+	replicas, found, err := unstructured.NestedInt64(ng.scalableResource.unstructured.Object, "spec", "replicas")
+	if err != nil {
+		return 0, errors.Wrap(err, "error getting replica count")
+	}
+	if !found {
+		return 0, fmt.Errorf("unable to find replicas")
+	}
+	return int(replicas), nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node
@@ -163,7 +180,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("size decrease must be negative")
 	}
 
-	size, err := ng.TargetSize()
+	size, err := ng.scalableResource.Replicas()
 	if err != nil {
 		return err
 	}
@@ -226,7 +243,58 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 // node by default, using manifest (most likely only kube-proxy).
 // Implementation optional.
 func (ng *nodegroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	if !ng.scalableResource.CanScaleFromZero() {
+		return nil, cloudprovider.ErrNotImplemented
+	}
+
+	capacity, err := ng.scalableResource.InstanceCapacity()
+	if err != nil {
+		return nil, err
+	}
+
+	nodeName := fmt.Sprintf("%s-asg-%d", ng.scalableResource.Name(), rand.Int63())
+	node := corev1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   nodeName,
+			Labels: map[string]string{},
+		},
+	}
+
+	node.Status.Capacity = capacity
+	node.Status.Allocatable = capacity
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+	node.Spec.Taints = ng.scalableResource.Taints()
+
+	node.Labels, err = ng.buildTemplateLabels(nodeName)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.scalableResource.Name()))
+	nodeInfo.SetNode(&node)
+
+	return nodeInfo, nil
+}
+
+func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
+	labels := cloudprovider.JoinStringMaps(ng.scalableResource.Labels(), buildGenericLabels(nodeName))
+
+	nodes, err := ng.Nodes()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(nodes) > 0 {
+		node, err := ng.machineController.findNodeByProviderID(normalizedProviderString(nodes[0].Id))
+		if err != nil {
+			return nil, err
+		}
+
+		if node != nil {
+			labels = cloudprovider.JoinStringMaps(labels, extractNodeLabels(node))
+		}
+	}
+	return labels, nil
 }
 
 // Exist checks if the node group really exists on the cloud nodegroup
@@ -281,9 +349,9 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 		return nil, err
 	}
 
-	// We don't scale from 0 so nodes must belong to a nodegroup
-	// that has a scale size of at least 1.
-	if found && replicas == 0 {
+	// Ensure that if the nodegroup has 0 replicas it is capable
+	// of scaling before adding it.
+	if found && replicas == 0 && !scalableResource.CanScaleFromZero() {
 		return nil, nil
 	}
 
@@ -296,4 +364,48 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 		machineController: controller,
 		scalableResource:  scalableResource,
 	}, nil
+}
+
+func buildGenericLabels(nodeName string) map[string]string {
+	// TODO revisit this function and add an explanation about what these
+	// labels are used for, or remove them if not necessary
+	m := make(map[string]string)
+	m[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	m[corev1.LabelArchStable] = cloudprovider.DefaultArch
+
+	m[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	m[corev1.LabelOSStable] = cloudprovider.DefaultOS
+
+	m[corev1.LabelHostname] = nodeName
+	return m
+}
+
+// extract a predefined list of labels from the existing node
+func extractNodeLabels(node *corev1.Node) map[string]string {
+	m := make(map[string]string)
+	if node.Labels == nil {
+		return m
+	}
+
+	setLabelIfNotEmpty(m, node.Labels, kubeletapis.LabelArch)
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelArchStable)
+
+	setLabelIfNotEmpty(m, node.Labels, kubeletapis.LabelOS)
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelOSStable)
+
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelInstanceType)
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelInstanceTypeStable)
+
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneRegion)
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneRegionStable)
+
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneFailureDomain)
+
+	return m
+}
+
+func setLabelIfNotEmpty(to, from map[string]string, key string) {
+	if value := from[key]; value != "" {
+		to[key] = value
+	}
 }

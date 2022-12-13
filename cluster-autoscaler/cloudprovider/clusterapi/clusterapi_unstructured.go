@@ -20,12 +20,17 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
+	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	klog "k8s.io/klog/v2"
 )
 
 type unstructuredScalableResource struct {
@@ -163,6 +168,166 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 	return updateErr
 }
 
+func (r unstructuredScalableResource) Labels() map[string]string {
+	labels, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "metadata", "labels")
+	if !found || err != nil {
+		return nil
+	}
+	return labels
+}
+
+func (r unstructuredScalableResource) Taints() []apiv1.Taint {
+	taints, found, err := unstructured.NestedSlice(r.unstructured.Object, "spec", "template", "spec", "taints")
+	if !found || err != nil {
+		return nil
+	}
+	ret := make([]apiv1.Taint, len(taints))
+	for i, t := range taints {
+		if v, ok := t.(apiv1.Taint); ok {
+			ret[i] = v
+		} else {
+			// if we cannot convert the interface to a Taint, return early with zero value
+			return nil
+		}
+	}
+	return ret
+}
+
+// A node group can scale from zero if it can inform about the CPU and memory
+// capacity of the nodes within the group.
+func (r unstructuredScalableResource) CanScaleFromZero() bool {
+	capacity, err := r.InstanceCapacity()
+	if err != nil {
+		return false
+	}
+	// CPU and memory are the minimum necessary for scaling from zero
+	_, cpuOk := capacity[corev1.ResourceCPU]
+	_, memOk := capacity[corev1.ResourceMemory]
+
+	return cpuOk && memOk
+}
+
+// Inspect the annotations on the scalable resource, and the status.capacity
+// field of the machine template infrastructure resource to build the projected
+// capacity for this node group. The returned map will be empty if the
+// provider does not support scaling from zero, or the annotations have not
+// been added.
+func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceName]resource.Quantity, error) {
+	capacityAnnotations := map[corev1.ResourceName]resource.Quantity{}
+
+	cpu, err := r.InstanceCPUCapacityAnnotation()
+	if err != nil {
+		return nil, err
+	}
+	if !cpu.IsZero() {
+		capacityAnnotations[corev1.ResourceCPU] = cpu
+	}
+
+	mem, err := r.InstanceMemoryCapacityAnnotation()
+	if err != nil {
+		return nil, err
+	}
+	if !mem.IsZero() {
+		capacityAnnotations[corev1.ResourceMemory] = mem
+	}
+
+	gpuCount, err := r.InstanceGPUCapacityAnnotation()
+	if err != nil {
+		return nil, err
+	}
+	gpuType := r.InstanceGPUTypeAnnotation()
+	if !gpuCount.IsZero() && gpuType != "" {
+		capacityAnnotations[corev1.ResourceName(gpuType)] = gpuCount
+	}
+
+	maxPods, err := r.InstanceMaxPodsCapacityAnnotation()
+	if err != nil {
+		return nil, err
+	}
+	if maxPods.IsZero() {
+		maxPods = *resource.NewQuantity(defaultMaxPods, resource.DecimalSI)
+	}
+	capacityAnnotations[corev1.ResourcePods] = maxPods
+
+	infraObj, err := r.readInfrastructureReferenceResource()
+	if err != nil || infraObj == nil {
+		// because it is possible that the infrastructure provider does not implement
+		// the capacity in the infrastructure reference, if there are annotations we
+		// should return them here.
+		// Check against 1 here because the max pods is always set.
+		if len(capacityAnnotations) > 1 {
+			return capacityAnnotations, nil
+		}
+		return nil, err
+	}
+	capacityInfraStatus := resourceCapacityFromInfrastructureObject(infraObj)
+
+	// The annotations should override any values from the status block of the machine template.
+	// We loop through the status block capacity first, then overwrite any values with the
+	// annotation capacities.
+	capacity := map[corev1.ResourceName]resource.Quantity{}
+	for k, v := range capacityInfraStatus {
+		capacity[k] = v
+	}
+	for k, v := range capacityAnnotations {
+		capacity[k] = v
+	}
+
+	return capacity, nil
+}
+
+func (r unstructuredScalableResource) InstanceCPUCapacityAnnotation() (resource.Quantity, error) {
+	return parseCPUCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceMemoryCapacityAnnotation() (resource.Quantity, error) {
+	return parseMemoryCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceGPUCapacityAnnotation() (resource.Quantity, error) {
+	return parseGPUCount(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceGPUTypeAnnotation() string {
+	return parseGPUType(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceMaxPodsCapacityAnnotation() (resource.Quantity, error) {
+	return parseMaxPodsCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+	infraref, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "infrastructureRef")
+	if !found || err != nil {
+		return nil, nil
+	}
+
+	apiversion, ok := infraref["apiVersion"]
+	if !ok {
+		return nil, nil
+	}
+	kind, ok := infraref["kind"]
+	if !ok {
+		return nil, nil
+	}
+	name, ok := infraref["name"]
+	if !ok {
+		return nil, nil
+	}
+	// kind needs to be lower case and plural
+	kind = fmt.Sprintf("%ss", strings.ToLower(kind))
+	gvk := schema.FromAPIVersionAndKind(apiversion, kind)
+	res := schema.GroupVersionResource{Group: gvk.Group, Version: gvk.Version, Resource: gvk.Kind}
+
+	infra, err := r.controller.getInfrastructureResource(res, name, r.Namespace())
+	if err != nil {
+		klog.V(4).Infof("Unable to read infrastructure reference, error: %v", err)
+		return nil, err
+	}
+
+	return infra, nil
+}
+
 func newUnstructuredScalableResource(controller *machineController, u *unstructured.Unstructured) (*unstructuredScalableResource, error) {
 	minSize, maxSize, err := parseScalingBounds(u.GetAnnotations())
 	if err != nil {
@@ -175,4 +340,22 @@ func newUnstructuredScalableResource(controller *machineController, u *unstructu
 		maxSize:      maxSize,
 		minSize:      minSize,
 	}, nil
+}
+
+func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructured) map[corev1.ResourceName]resource.Quantity {
+	capacity := map[corev1.ResourceName]resource.Quantity{}
+
+	infracap, found, err := unstructured.NestedStringMap(infraobj.Object, "status", "capacity")
+	if !found || err != nil {
+		return capacity
+	}
+
+	for k, v := range infracap {
+		// if we cannot parse the quantity, don't add it to the capacity
+		if value, err := resource.ParseQuantity(v); err == nil {
+			capacity[corev1.ResourceName(k)] = value
+		}
+	}
+
+	return capacity
 }

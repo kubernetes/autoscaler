@@ -153,72 +153,72 @@ func (m *volumeattachment) UnmarshalPolymorphicJSON(data []byte) (interface{}, e
 	}
 }
 
-//GetAvailabilityDomain returns AvailabilityDomain
+// GetAvailabilityDomain returns AvailabilityDomain
 func (m volumeattachment) GetAvailabilityDomain() *string {
 	return m.AvailabilityDomain
 }
 
-//GetCompartmentId returns CompartmentId
+// GetCompartmentId returns CompartmentId
 func (m volumeattachment) GetCompartmentId() *string {
 	return m.CompartmentId
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m volumeattachment) GetId() *string {
 	return m.Id
 }
 
-//GetInstanceId returns InstanceId
+// GetInstanceId returns InstanceId
 func (m volumeattachment) GetInstanceId() *string {
 	return m.InstanceId
 }
 
-//GetLifecycleState returns LifecycleState
+// GetLifecycleState returns LifecycleState
 func (m volumeattachment) GetLifecycleState() VolumeAttachmentLifecycleStateEnum {
 	return m.LifecycleState
 }
 
-//GetTimeCreated returns TimeCreated
+// GetTimeCreated returns TimeCreated
 func (m volumeattachment) GetTimeCreated() *common.SDKTime {
 	return m.TimeCreated
 }
 
-//GetVolumeId returns VolumeId
+// GetVolumeId returns VolumeId
 func (m volumeattachment) GetVolumeId() *string {
 	return m.VolumeId
 }
 
-//GetDevice returns Device
+// GetDevice returns Device
 func (m volumeattachment) GetDevice() *string {
 	return m.Device
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m volumeattachment) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetIsReadOnly returns IsReadOnly
+// GetIsReadOnly returns IsReadOnly
 func (m volumeattachment) GetIsReadOnly() *bool {
 	return m.IsReadOnly
 }
 
-//GetIsShareable returns IsShareable
+// GetIsShareable returns IsShareable
 func (m volumeattachment) GetIsShareable() *bool {
 	return m.IsShareable
 }
 
-//GetIsPvEncryptionInTransitEnabled returns IsPvEncryptionInTransitEnabled
+// GetIsPvEncryptionInTransitEnabled returns IsPvEncryptionInTransitEnabled
 func (m volumeattachment) GetIsPvEncryptionInTransitEnabled() *bool {
 	return m.IsPvEncryptionInTransitEnabled
 }
 
-//GetIsMultipath returns IsMultipath
+// GetIsMultipath returns IsMultipath
 func (m volumeattachment) GetIsMultipath() *bool {
 	return m.IsMultipath
 }
 
-//GetIscsiLoginState returns IscsiLoginState
+// GetIscsiLoginState returns IscsiLoginState
 func (m volumeattachment) GetIscsiLoginState() VolumeAttachmentIscsiLoginStateEnum {
 	return m.IscsiLoginState
 }

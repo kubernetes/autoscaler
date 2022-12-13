@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -33,22 +34,40 @@ const (
 var AvailableEstimators = []string{BinpackingEstimatorName}
 
 // Estimator calculates the number of nodes of given type needed to schedule pods.
+// It returns the number of new nodes needed as well as the list of pods it managed
+// to schedule on those nodes.
 type Estimator interface {
-	Estimate([]*apiv1.Pod, *schedulerframework.NodeInfo) int
+	Estimate([]*apiv1.Pod, *schedulerframework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.
 type EstimatorBuilder func(simulator.PredicateChecker, simulator.ClusterSnapshot) Estimator
 
 // NewEstimatorBuilder creates a new estimator object from flag.
-func NewEstimatorBuilder(name string) (EstimatorBuilder, error) {
+func NewEstimatorBuilder(name string, limiter EstimationLimiter) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
 			predicateChecker simulator.PredicateChecker,
 			clusterSnapshot simulator.ClusterSnapshot) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot)
+			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)
+}
+
+// EstimationLimiter controls how many nodes can be added by Estimator.
+// A limiter can be used to prevent costly estimation if an actual ability to
+// scale-up is limited by external factors.
+type EstimationLimiter interface {
+	// StartEstimation is called at the start of estimation.
+	StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup)
+	// EndEstimation is called at the end of estimation.
+	EndEstimation()
+	// PermissionToAddNode is called by an estimator when it wants to add additional
+	// nodes to simulation. If permission is not granted the Estimator is expected
+	// not to add any more nodes in this simulation.
+	// There is no requirement for the Estimator to stop calculations, it's
+	// just not expected to add any more nodes.
+	PermissionToAddNode() bool
 }

@@ -18,10 +18,10 @@ package azure
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"os"
-	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 )
 
 func TestInitializeCloudProviderRateLimitConfigWithNoConfigReturnsNoError(t *testing.T) {
@@ -44,8 +44,8 @@ func TestInitializeCloudProviderRateLimitConfigWithReadRateLimitSettingsFromEnv(
 	emptyConfig := &CloudProviderRateLimitConfig{}
 	var rateLimitReadQPS float32 = 3.0
 	rateLimitReadBuckets := 10
-	os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-	os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
+	t.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
+	t.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
 
 	err := initializeCloudProviderRateLimitConfig(emptyConfig)
 	assert.NoError(t, err)
@@ -53,9 +53,6 @@ func TestInitializeCloudProviderRateLimitConfigWithReadRateLimitSettingsFromEnv(
 	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
 	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitReadQPS)
 	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets)
-
-	os.Unsetenv(rateLimitReadBucketsEnvVar)
-	os.Unsetenv(rateLimitReadQPSEnvVar)
 }
 
 func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
@@ -65,10 +62,10 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettings
 	var rateLimitWriteQPS float32 = 6.0
 	rateLimitWriteBuckets := 20
 
-	os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-	os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
-	os.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
-	os.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
+	t.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
+	t.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
+	t.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
+	t.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
 
 	err := initializeCloudProviderRateLimitConfig(emptyConfig)
 
@@ -77,11 +74,6 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettings
 	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
 	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
 	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
-
-	os.Unsetenv(rateLimitReadQPSEnvVar)
-	os.Unsetenv(rateLimitReadBucketsEnvVar)
-	os.Unsetenv(rateLimitWriteQPSEnvVar)
-	os.Unsetenv(rateLimitWriteBucketsEnvVar)
 }
 
 func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadySetInConfig(t *testing.T) {
@@ -99,10 +91,10 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadyS
 		},
 	}
 
-	os.Setenv(rateLimitReadQPSEnvVar, "99")
-	os.Setenv(rateLimitReadBucketsEnvVar, "99")
-	os.Setenv(rateLimitWriteQPSEnvVar, "99")
-	os.Setenv(rateLimitWriteBucketsEnvVar, "99")
+	t.Setenv(rateLimitReadQPSEnvVar, "99")
+	t.Setenv(rateLimitReadBucketsEnvVar, "99")
+	t.Setenv(rateLimitWriteQPSEnvVar, "99")
+	t.Setenv(rateLimitWriteBucketsEnvVar, "99")
 
 	err := initializeCloudProviderRateLimitConfig(configWithRateLimits)
 
@@ -111,11 +103,6 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadyS
 	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucket, rateLimitReadBuckets)
 	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
 	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
-
-	os.Unsetenv(rateLimitReadQPSEnvVar)
-	os.Unsetenv(rateLimitReadBucketsEnvVar)
-	os.Unsetenv(rateLimitWriteQPSEnvVar)
-	os.Unsetenv(rateLimitWriteBucketsEnvVar)
 }
 
 func TestInitializeCloudProviderRateLimitConfigWithInvalidReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
@@ -163,35 +150,30 @@ func TestInitializeCloudProviderRateLimitConfigWithInvalidReadAndWriteRateLimitS
 
 	for i, test := range testCases {
 		if test.isInvalidRateLimitReadQPSEnvVar {
-			os.Setenv(rateLimitReadQPSEnvVar, invalidSetting)
+			t.Setenv(rateLimitReadQPSEnvVar, invalidSetting)
 		} else {
-			os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
+			t.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
 		}
 		if test.isInvalidRateLimitReadBucketsEnvVar {
-			os.Setenv(rateLimitReadBucketsEnvVar, invalidSetting)
+			t.Setenv(rateLimitReadBucketsEnvVar, invalidSetting)
 		} else {
-			os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
+			t.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
 		}
 		if test.isInvalidRateLimitWriteQPSEnvVar {
-			os.Setenv(rateLimitWriteQPSEnvVar, invalidSetting)
+			t.Setenv(rateLimitWriteQPSEnvVar, invalidSetting)
 		} else {
-			os.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
+			t.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
 		}
 		if test.isInvalidRateLimitWriteBucketsEnvVar {
-			os.Setenv(rateLimitWriteBucketsEnvVar, invalidSetting)
+			t.Setenv(rateLimitWriteBucketsEnvVar, invalidSetting)
 		} else {
-			os.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
+			t.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
 		}
 
 		err := initializeCloudProviderRateLimitConfig(emptyConfig)
 
 		assert.Equal(t, test.expectedErr, err != nil, "TestCase[%d]: %s, return error: %v", i, test.desc, err)
 		assert.Equal(t, test.expectedErrMsg, err, "TestCase[%d]: %s, expected: %v, return: %v", i, test.desc, test.expectedErrMsg, err)
-
-		os.Unsetenv(rateLimitReadQPSEnvVar)
-		os.Unsetenv(rateLimitReadBucketsEnvVar)
-		os.Unsetenv(rateLimitWriteQPSEnvVar)
-		os.Unsetenv(rateLimitWriteBucketsEnvVar)
 	}
 }
 

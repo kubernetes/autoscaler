@@ -100,6 +100,17 @@ func GetServicePrincipalToken(config *AzureAuthConfig, env *azure.Environment, r
 		}
 		if len(config.UserAssignedIdentityID) > 0 {
 			klog.V(4).Info("azure: using User Assigned MSI ID to retrieve access token")
+			resourceID, err := azure.ParseResourceID(config.UserAssignedIdentityID)
+			if err == nil &&
+				strings.EqualFold(resourceID.Provider, "Microsoft.ManagedIdentity") &&
+				strings.EqualFold(resourceID.ResourceType, "userAssignedIdentities") {
+				klog.V(4).Info("azure: User Assigned MSI ID is resource ID")
+				return adal.NewServicePrincipalTokenFromMSIWithIdentityResourceID(msiEndpoint,
+					resource,
+					config.UserAssignedIdentityID)
+			}
+
+			klog.V(4).Info("azure: User Assigned MSI ID is client ID. Resource ID parsing error: %+v", err)
 			return adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(msiEndpoint,
 				resource,
 				config.UserAssignedIdentityID)

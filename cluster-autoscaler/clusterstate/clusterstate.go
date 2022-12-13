@@ -42,15 +42,6 @@ import (
 const (
 	// MaxNodeStartupTime is the maximum time from the moment the node is registered to the time the node is ready.
 	MaxNodeStartupTime = 15 * time.Minute
-
-	// MaxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.
-	MaxNodeGroupBackoffDuration = 30 * time.Minute
-
-	// InitialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start.
-	InitialNodeGroupBackoffDuration = 5 * time.Minute
-
-	// NodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.
-	NodeGroupBackoffResetTimeout = 3 * time.Hour
 )
 
 // ScaleUpRequest contains information about the requested node group scale up.
@@ -666,7 +657,7 @@ func (csr *ClusterStateRegistry) updateUnregisteredNodes(unregisteredNodes []Unr
 	csr.unregisteredNodes = result
 }
 
-//GetUnregisteredNodes returns a list of all unregistered nodes.
+// GetUnregisteredNodes returns a list of all unregistered nodes.
 func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 	csr.Lock()
 	defer csr.Unlock()

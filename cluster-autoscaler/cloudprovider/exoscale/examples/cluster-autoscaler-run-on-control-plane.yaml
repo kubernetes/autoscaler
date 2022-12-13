@@ -143,7 +143,7 @@ spec:
       serviceAccountName: cluster-autoscaler
       containers:
         - name: cluster-autoscaler
-          image: exoscale/cluster-autoscaler:latest
+          image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.24.0
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -180,6 +180,11 @@ spec:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ''
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          effect: "NoSchedule"
       volumes:
         - name: ssl-certs
           hostPath:

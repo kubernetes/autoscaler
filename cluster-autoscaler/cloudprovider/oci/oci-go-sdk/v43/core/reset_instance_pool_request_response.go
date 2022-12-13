@@ -11,7 +11,7 @@ import (
 
 // ResetInstancePoolRequest wrapper for the ResetInstancePool operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ResetInstancePool.go.html to see an example of how to use ResetInstancePoolRequest.
 type ResetInstancePoolRequest struct {

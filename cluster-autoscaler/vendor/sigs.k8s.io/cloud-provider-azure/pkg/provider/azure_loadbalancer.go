@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	v1 "k8s.io/api/core/v1"
@@ -36,6 +36,7 @@ import (
 	servicehelpers "k8s.io/cloud-provider/service/helpers"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
+	"k8s.io/utils/strings/slices"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -47,15 +48,15 @@ import (
 // if so, what its status is.
 func (az *Cloud) GetLoadBalancer(ctx context.Context, clusterName string, service *v1.Service) (status *v1.LoadBalancerStatus, exists bool, err error) {
 	// Since public IP is not a part of the load balancer on Azure,
-	// there is a chance that we could orphan public IP resources while we delete the load blanacer (kubernetes/kubernetes#80571).
+	// there is a chance that we could orphan public IP resources while we delete the load balancer (kubernetes/kubernetes#80571).
 	// We need to make sure the existence of the load balancer depends on the load balancer resource and public IP resource on Azure.
 	existsPip := func() bool {
-		pipName, _, err := az.determinePublicIPName(clusterName, service)
+		pipName, _, err := az.determinePublicIPName(clusterName, service, nil)
 		if err != nil {
 			return false
 		}
 		pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
-		_, existsPip, err := az.getPublicIPAddress(pipResourceGroup, pipName)
+		_, existsPip, err := az.getPublicIPAddress(pipResourceGroup, pipName, azcache.CacheReadTypeDefault)
 		if err != nil {
 			return false
 		}
@@ -85,27 +86,16 @@ func getPublicIPDomainNameLabel(service *v1.Service) (string, bool) {
 	return "", false
 }
 
-// EnsureLoadBalancer creates a new load balancer 'name', or updates the existing one. Returns the status of the balancer
-func (az *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, service *v1.Service, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
-	// When a client updates the internal load balancer annotation,
-	// the service may be switched from an internal LB to a public one, or vise versa.
-	// Here we'll firstly ensure service do not lie in the opposite LB.
+// reconcileService reconcile the LoadBalancer service. It returns LoadBalancerStatus on success.
+func (az *Cloud) reconcileService(ctx context.Context, clusterName string, service *v1.Service, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
 	serviceName := getServiceName(service)
-	klog.V(5).Infof("ensureloadbalancer(%s): START clusterName=%q, service: %v", serviceName, clusterName, service)
-
-	mc := metrics.NewMetricContext("services", "ensure_loadbalancer", az.ResourceGroup, az.SubscriptionID, serviceName)
-	isOperationSucceeded := false
-	defer func() {
-		mc.ObserveOperationWithResult(isOperationSucceeded)
-	}()
-
 	lb, err := az.reconcileLoadBalancer(clusterName, service, nodes, true /* wantLb */)
 	if err != nil {
 		klog.Errorf("reconcileLoadBalancer(%s) failed: %v", serviceName, err)
 		return nil, err
 	}
 
-	lbStatus, _, err := az.getServiceLoadBalancerStatus(service, lb)
+	lbStatus, fipConfig, err := az.getServiceLoadBalancerStatus(service, lb, nil)
 	if err != nil {
 		klog.Errorf("getServiceLoadBalancerStatus(%s) failed: %v", serviceName, err)
 		return nil, err
@@ -115,10 +105,17 @@ func (az *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, ser
 	if lbStatus != nil && len(lbStatus.Ingress) > 0 {
 		serviceIP = &lbStatus.Ingress[0].IP
 	}
-	klog.V(2).Infof("EnsureLoadBalancer: reconciling security group for service %q with IP %q, wantLb = true", serviceName, logSafe(serviceIP))
+	klog.V(2).Infof("reconcileService: reconciling security group for service %q with IP %q, wantLb = true", serviceName, logSafe(serviceIP))
 	if _, err := az.reconcileSecurityGroup(clusterName, service, serviceIP, true /* wantLb */); err != nil {
 		klog.Errorf("reconcileSecurityGroup(%s) failed: %#v", serviceName, err)
 		return nil, err
+	}
+
+	if fipConfig != nil {
+		if err := az.reconcilePrivateLinkService(clusterName, service, fipConfig, true /* wantPLS */); err != nil {
+			klog.Errorf("reconcilePrivateLinkService(%s) failed: %#v", serviceName, err)
+			return nil, err
+		}
 	}
 
 	updateService := updateServiceLoadBalancerIP(service, to.String(serviceIP))
@@ -129,9 +126,33 @@ func (az *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, ser
 	}
 
 	// lb is not reused here because the ETAG may be changed in above operations, hence reconcilePublicIP() would get lb again from cache.
-	klog.V(2).Infof("EnsureLoadBalancer: reconciling pip")
+	klog.V(2).Infof("reconcileService: reconciling pip")
 	if _, err := az.reconcilePublicIP(clusterName, updateService, to.String(lb.Name), true /* wantLb */); err != nil {
 		klog.Errorf("reconcilePublicIP(%s) failed: %#v", serviceName, err)
+		return nil, err
+	}
+
+	return lbStatus, nil
+}
+
+// EnsureLoadBalancer creates a new load balancer 'name', or updates the existing one. Returns the status of the balancer
+func (az *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, service *v1.Service, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
+	// When a client updates the internal load balancer annotation,
+	// the service may be switched from an internal LB to a public one, or vise versa.
+	// Here we'll firstly ensure service do not lie in the opposite LB.
+	var err error
+	serviceName := getServiceName(service)
+	mc := metrics.NewMetricContext("services", "ensure_loadbalancer", az.ResourceGroup, az.SubscriptionID, serviceName)
+	klog.V(5).InfoS("EnsureLoadBalancer Start", "service", serviceName, "cluster", clusterName, "service_spec", service)
+
+	isOperationSucceeded := false
+	defer func() {
+		mc.ObserveOperationWithResult(isOperationSucceeded)
+		klog.V(5).InfoS("EnsureLoadBalancer Finish", "service", serviceName, "cluster", clusterName, "service_spec", service, "error", err)
+	}()
+
+	lbStatus, err := az.reconcileService(ctx, clusterName, service, nodes)
+	if err != nil {
 		return nil, err
 	}
 
@@ -141,18 +162,34 @@ func (az *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, ser
 
 // UpdateLoadBalancer updates hosts under the specified load balancer.
 func (az *Cloud) UpdateLoadBalancer(ctx context.Context, clusterName string, service *v1.Service, nodes []*v1.Node) error {
+	var err error
+	serviceName := getServiceName(service)
+	mc := metrics.NewMetricContext("services", "update_loadbalancer", az.ResourceGroup, az.SubscriptionID, serviceName)
+	klog.V(5).InfoS("UpdateLoadBalancer Start", "service", serviceName, "cluster", clusterName, "service_spec", service)
+	isOperationSucceeded := false
+	defer func() {
+		mc.ObserveOperationWithResult(isOperationSucceeded)
+		klog.V(5).InfoS("UpdateLoadBalancer Finish", "service", serviceName, "cluster", clusterName, "service_spec", service, "error", err)
+	}()
+
 	shouldUpdateLB, err := az.shouldUpdateLoadBalancer(clusterName, service, nodes)
 	if err != nil {
 		return err
 	}
 
 	if !shouldUpdateLB {
+		isOperationSucceeded = true
 		klog.V(2).Infof("UpdateLoadBalancer: skipping service %s because it is either being deleted or does not exist anymore", service.Name)
 		return nil
 	}
 
-	_, err = az.EnsureLoadBalancer(ctx, clusterName, service, nodes)
-	return err
+	_, err = az.reconcileService(ctx, clusterName, service, nodes)
+	if err != nil {
+		return err
+	}
+
+	isOperationSucceeded = true
+	return nil
 }
 
 // EnsureLoadBalancerDeleted deletes the specified load balancer if it
@@ -162,14 +199,15 @@ func (az *Cloud) UpdateLoadBalancer(ctx context.Context, clusterName string, ser
 // have multiple underlying components, meaning a Get could say that the LB
 // doesn't exist even if some part of it is still laying around.
 func (az *Cloud) EnsureLoadBalancerDeleted(ctx context.Context, clusterName string, service *v1.Service) error {
+	var err error
 	isInternal := requiresInternalLoadBalancer(service)
 	serviceName := getServiceName(service)
-	klog.V(5).Infof("Delete service (%s): START clusterName=%q", serviceName, clusterName)
-
 	mc := metrics.NewMetricContext("services", "ensure_loadbalancer_deleted", az.ResourceGroup, az.SubscriptionID, serviceName)
+	klog.V(5).InfoS("EnsureLoadBalancerDeleted Start", "service", serviceName, "cluster", clusterName, "service_spec", service)
 	isOperationSucceeded := false
 	defer func() {
 		mc.ObserveOperationWithResult(isOperationSucceeded)
+		klog.V(5).InfoS("EnsureLoadBalancerDeleted Finish", "service", serviceName, "cluster", clusterName, "service_spec", service, "error", err)
 	}()
 
 	serviceIPToCleanup, err := az.findServiceIPAddress(ctx, clusterName, service, isInternal)
@@ -178,15 +216,18 @@ func (az *Cloud) EnsureLoadBalancerDeleted(ctx context.Context, clusterName stri
 	}
 
 	klog.V(2).Infof("EnsureLoadBalancerDeleted: reconciling security group for service %q with IP %q, wantLb = false", serviceName, serviceIPToCleanup)
-	if _, err := az.reconcileSecurityGroup(clusterName, service, &serviceIPToCleanup, false /* wantLb */); err != nil {
+	_, err = az.reconcileSecurityGroup(clusterName, service, &serviceIPToCleanup, false /* wantLb */)
+	if err != nil {
 		return err
 	}
 
-	if _, err := az.reconcileLoadBalancer(clusterName, service, nil, false /* wantLb */); err != nil && !retry.HasStatusForbiddenOrIgnoredError(err) {
+	_, err = az.reconcileLoadBalancer(clusterName, service, nil, false /* wantLb */)
+	if err != nil && !retry.HasStatusForbiddenOrIgnoredError(err) {
 		return err
 	}
 
-	if _, err := az.reconcilePublicIP(clusterName, service, "", false /* wantLb */); err != nil {
+	_, err = az.reconcilePublicIP(clusterName, service, "", false /* wantLb */)
+	if err != nil {
 		return err
 	}
 
@@ -226,9 +267,14 @@ func (az *Cloud) shouldChangeLoadBalancer(service *v1.Service, currLBName, clust
 		return false
 	}
 
-	// if the current LB is what we want, keep it
 	lbName := strings.TrimSuffix(currLBName, consts.InternalLoadBalancerNameSuffix)
+	// change the LB from vmSet dedicated to primary if the vmSet becomes the primary one
 	if strings.EqualFold(lbName, vmSetName) {
+		if lbName != clusterName &&
+			strings.EqualFold(az.VMSet.GetPrimaryVMSetName(), vmSetName) {
+			klog.V(2).Infof("shouldChangeLoadBalancer(%s, %s, %s): change the LB to another one", service.Name, currLBName, clusterName)
+			return true
+		}
 		return false
 	}
 	if strings.EqualFold(vmSetName, az.VMSet.GetPrimaryVMSetName()) && strings.EqualFold(clusterName, lbName) {
@@ -281,6 +327,13 @@ func (az *Cloud) removeFrontendIPConfigurationFromLoadBalancer(lb *network.LoadB
 			}
 		}
 		lb.Probes = &lbProbes
+	}
+
+	// clean up any private link service associated with the frontEndIPConfig
+	err := az.reconcilePrivateLinkService(clusterName, service, fip, false /* wantPLS */)
+	if err != nil {
+		klog.Errorf("removeFrontendIPConfigurationFromLoadBalancer(%s, %s, %s, %s): failed to clean up PLS: %v", to.String(lb.Name), to.String(fip.Name), clusterName, service.Name, err)
+		return err
 	}
 
 	if len(fipConfigs) == 0 {
@@ -379,7 +432,7 @@ func (az *Cloud) cleanOrphanedLoadBalancer(lb *network.LoadBalancer, existingLBs
 
 // safeDeleteLoadBalancer deletes the load balancer after decoupling it from the vmSet
 func (az *Cloud) safeDeleteLoadBalancer(lb network.LoadBalancer, clusterName, vmSetName string, service *v1.Service) *retry.Error {
-	if strings.EqualFold(az.LoadBalancerBackendPoolConfigurationType, consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration) {
+	if isLBBackendPoolTypeIPConfig(service, &lb, clusterName) {
 		lbBackendPoolID := az.getBackendPoolID(to.String(lb.Name), az.getLoadBalancerResourceGroup(), getBackendPoolName(clusterName, service))
 		err := az.VMSet.EnsureBackendPoolDeleted(service, lbBackendPoolID, vmSetName, lb.BackendAddressPools, true)
 		if err != nil {
@@ -387,7 +440,7 @@ func (az *Cloud) safeDeleteLoadBalancer(lb network.LoadBalancer, clusterName, vm
 		}
 	}
 
-	klog.V(2).Infof("safeDeleteLoadBalancer: deleting LB %s because the corresponding vmSet is supposed to be in the primary SLB", to.String(lb.Name))
+	klog.V(2).Infof("safeDeleteLoadBalancer: deleting LB %s", to.String(lb.Name))
 	rerr := az.DeleteLB(service, to.String(lb.Name))
 	if rerr != nil {
 		return rerr
@@ -395,28 +448,6 @@ func (az *Cloud) safeDeleteLoadBalancer(lb network.LoadBalancer, clusterName, vm
 	_ = az.lbCache.Delete(to.String(lb.Name))
 
 	return nil
-}
-
-func extractBackendIPConfigurationIDsFromLB(lb network.LoadBalancer, lbBackendPoolName string) []string {
-	result := make([]string, 0)
-	if lb.LoadBalancerPropertiesFormat != nil &&
-		lb.BackendAddressPools != nil {
-		for i := 0; i < len(*lb.BackendAddressPools); i++ {
-			backendPool := (*lb.BackendAddressPools)[i]
-			if strings.EqualFold(to.String(backendPool.Name), lbBackendPoolName) {
-				if backendPool.BackendAddressPoolPropertiesFormat != nil &&
-					backendPool.BackendIPConfigurations != nil {
-					for _, ipConfiguration := range *backendPool.BackendIPConfigurations {
-						if ipConfiguration.ID != nil {
-							result = append(result, to.String(ipConfiguration.ID))
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return result
 }
 
 // reconcileSharedLoadBalancer deletes the dedicated SLBs of the non-primary vmSets. There are
@@ -427,9 +458,8 @@ func extractBackendIPConfigurationIDsFromLB(lb network.LoadBalancer, lbBackendPo
 // It runs only once everytime the cloud controller manager restarts.
 func (az *Cloud) reconcileSharedLoadBalancer(service *v1.Service, clusterName string, nodes []*v1.Node) ([]network.LoadBalancer, error) {
 	var (
-		primarySLBs, existingLBs []network.LoadBalancer
-		changed                  bool
-		err                      error
+		existingLBs []network.LoadBalancer
+		err         error
 	)
 
 	existingLBs, err = az.ListManagedLBs(service, nodes, clusterName)
@@ -452,15 +482,21 @@ func (az *Cloud) reconcileSharedLoadBalancer(service *v1.Service, clusterName st
 		return existingLBs, nil
 	}
 
-	lbBackendPoolName := getBackendPoolName(clusterName, service)
-	lbNamesToBeDeleted := sets.NewString()
-	// 1: delete unwanted LBs
-	for _, lb := range existingLBs {
-		lbNamePrefix := strings.TrimSuffix(to.String(lb.Name), consts.InternalLoadBalancerNameSuffix)
+	// Skip if nodes is nil, which means the service is being deleted.
+	// When nodes is nil, all LBs included unmanaged LBs will be returned,
+	// if we don't skip this function, the unmanaged ones may be deleted later.
+	if nodes == nil {
+		klog.V(4).Infof("reconcileSharedLoadBalancer: returning early because the service %s is being deleted", service.Name)
+		return existingLBs, nil
+	}
 
+	lbNamesToBeDeleted := sets.NewString()
+	// delete unwanted LBs
+	for _, lb := range existingLBs {
+		klog.V(4).Infof("reconcileSharedLoadBalancer: checking LB %s", to.String(lb.Name))
 		// skip the internal or external primary load balancer
+		lbNamePrefix := strings.TrimSuffix(to.String(lb.Name), consts.InternalLoadBalancerNameSuffix)
 		if strings.EqualFold(lbNamePrefix, clusterName) {
-			primarySLBs = append(primarySLBs, lb)
 			continue
 		}
 
@@ -468,6 +504,7 @@ func (az *Cloud) reconcileSharedLoadBalancer(service *v1.Service, clusterName st
 		// the vmSet is supposed to have dedicated SLBs
 		vmSetName := strings.ToLower(az.mapLoadBalancerNameToVMSet(to.String(lb.Name), clusterName))
 		if az.EnableMultipleStandardLoadBalancers && !az.getVMSetNamesSharingPrimarySLB().Has(vmSetName) {
+			klog.V(4).Infof("reconcileSharedLoadBalancer: skip deleting the LB %s because the vmSet %s needs a dedicated SLB", to.String(lb.Name), vmSetName)
 			continue
 		}
 
@@ -475,6 +512,7 @@ func (az *Cloud) reconcileSharedLoadBalancer(service *v1.Service, clusterName st
 		// If the VMSet name is in az.NodePoolsWithoutDedicatedSLB, we should
 		// decouple the VMSet from the lb and delete the lb. Then adding the VMSet
 		// to the backend pool of the primary slb.
+		klog.V(2).Infof("reconcileSharedLoadBalancer: deleting LB %s because the corresponding vmSet is supposed to be in the primary SLB", to.String(lb.Name))
 		rerr := az.safeDeleteLoadBalancer(lb, clusterName, vmSetName, service)
 		if rerr != nil {
 			return nil, rerr.Error()
@@ -483,91 +521,15 @@ func (az *Cloud) reconcileSharedLoadBalancer(service *v1.Service, clusterName st
 		// remove the deleted lb from the list and construct a new primary
 		// lb, so that getServiceLoadBalancer doesn't have to call list api again
 		lbNamesToBeDeleted.Insert(strings.ToLower(to.String(lb.Name)))
-		changed = true
 	}
 
-	if !changed {
-		klog.V(4).Infof("reconcileSharedLoadBalancer: no changes made, return now")
-		return existingLBs, nil
-	}
-
-	vmSetsToBeMovedToPrimarySLB := sets.NewString()
-	ipConfigIDsToBeAddedToPrimarySLB := sets.NewString()
-	// 2: add nodes to the backend pool of the primary SLBs
 	for i := len(existingLBs) - 1; i >= 0; i-- {
 		lb := existingLBs[i]
 		if !lbNamesToBeDeleted.Has(strings.ToLower(to.String(lb.Name))) {
 			continue
 		}
-
-		vmSetName := strings.ToLower(az.mapLoadBalancerNameToVMSet(to.String(lb.Name), clusterName))
-		vmSetsToBeMovedToPrimarySLB.Insert(vmSetName)
-		isInternalLB := strings.HasSuffix(to.String(lb.Name), consts.InternalLoadBalancerNameSuffix)
-		primarySLBName := clusterName
-		if isInternalLB {
-			primarySLBName = fmt.Sprintf("%s%s", clusterName, consts.InternalLoadBalancerNameSuffix)
-		}
-		primaryLBBackendPoolID := az.getBackendPoolID(primarySLBName, az.getLoadBalancerResourceGroup(), getBackendPoolName(clusterName, service))
-
-		klog.V(2).Infof("reconcileSharedLoadBalancer: binding the vmSet %s to the backend pool %s", vmSetName, primaryLBBackendPoolID)
-		if strings.EqualFold(az.LoadBalancerBackendPoolConfigurationType, consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration) {
-			err = az.VMSet.EnsureHostsInPool(service, nodes, primaryLBBackendPoolID, vmSetName)
-			if err != nil {
-				return nil, fmt.Errorf("reconcileSharedLoadBalancer: failed to EnsureHostsInPool: %w", err)
-			}
-
-			for _, id := range extractBackendIPConfigurationIDsFromLB(lb, lbBackendPoolName) {
-				ipConfigIDsToBeAddedToPrimarySLB.Insert(id)
-			}
-		}
-
 		// remove the deleted LB from the list
 		existingLBs = append(existingLBs[:i], existingLBs[i+1:]...)
-	}
-
-	for _, primarySLB := range primarySLBs {
-		if primarySLB.LoadBalancerPropertiesFormat != nil &&
-			primarySLB.BackendAddressPools != nil {
-			for i := 0; i < len(*primarySLB.BackendAddressPools); i++ {
-				if strings.EqualFold(to.String((*primarySLB.BackendAddressPools)[i].Name), lbBackendPoolName) {
-					if az.isLBBackendPoolTypeNodeIPConfig() {
-						backendPoolIPConfigs := (*primarySLB.BackendAddressPools)[i].BackendIPConfigurations
-						for _, id := range ipConfigIDsToBeAddedToPrimarySLB.List() {
-							*backendPoolIPConfigs = append(*backendPoolIPConfigs, network.InterfaceIPConfiguration{
-								ID: to.StringPtr(id),
-							})
-						}
-					} else if az.isLBBackendPoolTypeNodeIP() {
-						backendPool := (*primarySLB.BackendAddressPools)[i]
-						if backendPool.LoadBalancerBackendAddresses == nil {
-							lbBackendPoolAddresses := make([]network.LoadBalancerBackendAddress, 0)
-							backendPool.LoadBalancerBackendAddresses = &lbBackendPoolAddresses
-						}
-
-						if err := az.LoadBalancerBackendPool.EnsureHostsInPool(service, nodes, "", "", clusterName, to.String(primarySLB.Name), backendPool); err != nil {
-							return nil, fmt.Errorf("reconcileSharedLoadBalancer: failed to EnsureHostsInPool: %w", err)
-						}
-
-						(*primarySLB.BackendAddressPools)[i] = backendPool
-					}
-
-					break
-				}
-			}
-		}
-	}
-
-	for i, existingLB := range existingLBs {
-		for _, primarySLB := range primarySLBs {
-			if strings.EqualFold(to.String(existingLB.Name), to.String(primarySLB.Name)) {
-				// Proactively disable the etag to prevent etag mismatch error when putting lb later.
-				// This could happen because when we remove the hosts from the lb, the nrp
-				// would put the lb to remove the backend references as well.
-				primarySLB.Etag = nil
-
-				existingLBs[i] = primarySLB
-			}
-		}
 	}
 
 	return existingLBs, nil
@@ -592,6 +554,9 @@ func (az *Cloud) getServiceLoadBalancer(service *v1.Service, clusterName string,
 			return nil, nil, false, err
 		}
 	}
+
+	// reuse pip list to reduce api call
+	var pips *[]network.PublicIPAddress
 
 	// check if the service already has a load balancer
 	for i := range existingLBs {
@@ -628,7 +593,8 @@ func (az *Cloud) getServiceLoadBalancer(service *v1.Service, clusterName string,
 		if isInternalLoadBalancer(&existingLB) != isInternal {
 			continue
 		}
-		status, fipConfig, err := az.getServiceLoadBalancerStatus(service, &existingLB)
+		var fipConfig *network.FrontendIPConfiguration
+		status, fipConfig, err = az.getServiceLoadBalancerStatus(service, &existingLB, pips)
 		if err != nil {
 			return nil, nil, false, err
 		}
@@ -636,6 +602,7 @@ func (az *Cloud) getServiceLoadBalancer(service *v1.Service, clusterName string,
 			// service is not on this load balancer
 			continue
 		}
+		klog.V(4).Infof("getServiceLoadBalancer(%s, %s, %v): current lb ip: %s", service.Name, clusterName, wantLb, status.Ingress[0].IP)
 
 		// select another load balancer instead of returning
 		// the current one if the change is needed
@@ -661,7 +628,7 @@ func (az *Cloud) getServiceLoadBalancer(service *v1.Service, clusterName string,
 			return nil, nil, false, err
 		}
 
-		return selectedLB, nil, exists, err
+		return selectedLB, status, exists, err
 	}
 
 	// create a default LB with meta data if not present
@@ -761,19 +728,19 @@ func (az *Cloud) selectLoadBalancer(clusterName string, service *v1.Service, exi
 	return selectedLB, existsLb, nil
 }
 
-func (az *Cloud) getServiceLoadBalancerStatus(service *v1.Service, lb *network.LoadBalancer) (status *v1.LoadBalancerStatus, fipConfig *network.FrontendIPConfiguration, err error) {
+func (az *Cloud) getServiceLoadBalancerStatus(service *v1.Service, lb *network.LoadBalancer, pips *[]network.PublicIPAddress) (status *v1.LoadBalancerStatus, fipConfig *network.FrontendIPConfiguration, err error) {
 	if lb == nil {
 		klog.V(10).Info("getServiceLoadBalancerStatus: lb is nil")
 		return nil, nil, nil
 	}
-	if lb.FrontendIPConfigurations == nil || *lb.FrontendIPConfigurations == nil {
+	if lb.FrontendIPConfigurations == nil || len(*lb.FrontendIPConfigurations) == 0 {
 		klog.V(10).Info("getServiceLoadBalancerStatus: lb.FrontendIPConfigurations is nil")
 		return nil, nil, nil
 	}
 	isInternal := requiresInternalLoadBalancer(service)
 	serviceName := getServiceName(service)
 	for _, ipConfiguration := range *lb.FrontendIPConfigurations {
-		owns, isPrimaryService, err := az.serviceOwnsFrontendIP(ipConfiguration, service)
+		owns, isPrimaryService, err := az.serviceOwnsFrontendIP(ipConfiguration, service, pips)
 		if err != nil {
 			return nil, nil, fmt.Errorf("get(%s): lb(%s) - failed to filter frontend IP configs with error: %w", serviceName, to.String(lb.Name), err)
 		}
@@ -795,7 +762,7 @@ func (az *Cloud) getServiceLoadBalancerStatus(service *v1.Service, lb *network.L
 				if err != nil {
 					return nil, nil, fmt.Errorf("get(%s): lb(%s) - failed to get LB PublicIPAddress Name from ID(%s)", serviceName, *lb.Name, *pipID)
 				}
-				pip, existsPip, err := az.getPublicIPAddress(az.getPublicIPAddressResourceGroup(service), pipName)
+				pip, existsPip, err := az.getPublicIPAddress(az.getPublicIPAddressResourceGroup(service), pipName, azcache.CacheReadTypeDefault)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -827,11 +794,14 @@ func (az *Cloud) getServiceLoadBalancerStatus(service *v1.Service, lb *network.L
 	return nil, nil, nil
 }
 
-func (az *Cloud) determinePublicIPName(clusterName string, service *v1.Service) (string, bool, error) {
+func (az *Cloud) determinePublicIPName(clusterName string, service *v1.Service, pips *[]network.PublicIPAddress) (string, bool, error) {
 	var shouldPIPExisted bool
+
 	if name, found := service.Annotations[consts.ServiceAnnotationPIPName]; found && name != "" {
-		shouldPIPExisted = true
-		return name, shouldPIPExisted, nil
+		return name, true, nil
+	}
+	if ipPrefix, ok := service.Annotations[consts.ServiceAnnotationPIPPrefixID]; ok && ipPrefix != "" {
+		return az.getPublicIPName(clusterName, service), false, nil
 	}
 
 	pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
@@ -845,7 +815,7 @@ func (az *Cloud) determinePublicIPName(clusterName string, service *v1.Service) 
 
 	// For the services with loadBalancerIP set, an existing public IP is required, primary
 	// or secondary, or a public IP not found error would be reported.
-	pip, err := az.findMatchedPIPByLoadBalancerIP(service, loadBalancerIP, pipResourceGroup)
+	pip, err := az.findMatchedPIPByLoadBalancerIP(service, loadBalancerIP, pipResourceGroup, pips)
 	if err != nil {
 		return "", shouldPIPExisted, err
 	}
@@ -857,13 +827,15 @@ func (az *Cloud) determinePublicIPName(clusterName string, service *v1.Service) 
 	return "", shouldPIPExisted, fmt.Errorf("user supplied IP Address %s was not found in resource group %s", loadBalancerIP, pipResourceGroup)
 }
 
-func (az *Cloud) findMatchedPIPByLoadBalancerIP(service *v1.Service, loadBalancerIP, pipResourceGroup string) (*network.PublicIPAddress, error) {
-	pips, err := az.ListPIP(service, pipResourceGroup)
-	if err != nil {
-		return nil, err
+func (az *Cloud) findMatchedPIPByLoadBalancerIP(service *v1.Service, loadBalancerIP, pipResourceGroup string, pips *[]network.PublicIPAddress) (*network.PublicIPAddress, error) {
+	if pips == nil {
+		pipList, err := az.ListPIP(service, pipResourceGroup)
+		if err != nil {
+			return nil, err
+		}
+		pips = &pipList
 	}
-
-	for _, pip := range pips {
+	for _, pip := range *pips {
 		if pip.PublicIPAddressPropertiesFormat.IPAddress != nil &&
 			*pip.PublicIPAddressPropertiesFormat.IPAddress == loadBalancerIP {
 			return &pip, nil
@@ -923,7 +895,7 @@ func (az *Cloud) findServiceIPAddress(ctx context.Context, clusterName string, s
 
 func (az *Cloud) ensurePublicIPExists(service *v1.Service, pipName string, domainNameLabel, clusterName string, shouldPIPExisted, foundDNSLabelAnnotation bool) (*network.PublicIPAddress, error) {
 	pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
-	pip, existsPip, err := az.getPublicIPAddress(pipResourceGroup, pipName)
+	pip, existsPip, err := az.getPublicIPAddress(pipResourceGroup, pipName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		return nil, err
 	}
@@ -1009,6 +981,9 @@ func (az *Cloud) ensurePublicIPExists(service *v1.Service, pipName string, domai
 		if az.useStandardLoadBalancer() {
 			pip.Sku = &network.PublicIPAddressSku{
 				Name: network.PublicIPAddressSkuNameStandard,
+			}
+			if pipPrefixName, ok := service.Annotations[consts.ServiceAnnotationPIPPrefixID]; ok && pipPrefixName != "" {
+				pip.PublicIPPrefix = &network.SubResource{ID: to.StringPtr(pipPrefixName)}
 			}
 
 			// skip adding zone info since edge zones doesn't support multiple availability zones.
@@ -1271,33 +1246,8 @@ func getDomainNameLabel(pip *network.PublicIPAddress) string {
 	return to.String(pip.PublicIPAddressPropertiesFormat.DNSSettings.DomainNameLabel)
 }
 
-func getIdleTimeout(s *v1.Service) (*int32, error) {
-	const (
-		min = 4
-		max = 30
-	)
-
-	val, ok := s.Annotations[consts.ServiceAnnotationLoadBalancerIdleTimeout]
-	if !ok {
-		// Return a nil here as this will set the value to the azure default
-		return nil, nil
-	}
-
-	errInvalidTimeout := fmt.Errorf("idle timeout value must be a whole number representing minutes between %d and %d", min, max)
-	toInt, err := strconv.ParseInt(val, 10, 32)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing idle timeout value: %w: %v", err, errInvalidTimeout)
-	}
-	to32 := int32(toInt)
-
-	if to32 < min || to32 > max {
-		return nil, errInvalidTimeout
-	}
-	return &to32, nil
-}
-
-func (az *Cloud) isFrontendIPChanged(clusterName string, config network.FrontendIPConfiguration, service *v1.Service, lbFrontendIPConfigName string) (bool, error) {
-	isServiceOwnsFrontendIP, isPrimaryService, err := az.serviceOwnsFrontendIP(config, service)
+func (az *Cloud) isFrontendIPChanged(clusterName string, config network.FrontendIPConfiguration, service *v1.Service, lbFrontendIPConfigName string, pips *[]network.PublicIPAddress) (bool, error) {
+	isServiceOwnsFrontendIP, isPrimaryService, err := az.serviceOwnsFrontendIP(config, service, pips)
 	if err != nil {
 		return false, err
 	}
@@ -1320,7 +1270,7 @@ func (az *Cloud) isFrontendIPChanged(clusterName string, config network.Frontend
 			if !existsSubnet {
 				return false, fmt.Errorf("failed to get subnet")
 			}
-			if config.Subnet != nil && !strings.EqualFold(to.String(config.Subnet.Name), to.String(subnet.Name)) {
+			if config.Subnet != nil && !strings.EqualFold(to.String(config.Subnet.ID), to.String(subnet.ID)) {
 				return true, nil
 			}
 		}
@@ -1329,12 +1279,12 @@ func (az *Cloud) isFrontendIPChanged(clusterName string, config network.Frontend
 		}
 		return config.PrivateIPAllocationMethod != network.IPAllocationMethodStatic || !strings.EqualFold(loadBalancerIP, to.String(config.PrivateIPAddress)), nil
 	}
-	pipName, _, err := az.determinePublicIPName(clusterName, service)
+	pipName, _, err := az.determinePublicIPName(clusterName, service, pips)
 	if err != nil {
 		return false, err
 	}
 	pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
-	pip, existsPip, err := az.getPublicIPAddress(pipResourceGroup, pipName)
+	pip, existsPip, err := az.getPublicIPAddress(pipResourceGroup, pipName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		return false, err
 	}
@@ -1458,9 +1408,10 @@ func findMatchedOutboundRuleFIPConfig(fipConfigID *string, outboundRuleFIPConfig
 func (az *Cloud) findFrontendIPConfigOfService(
 	fipConfigs *[]network.FrontendIPConfiguration,
 	service *v1.Service,
+	pips *[]network.PublicIPAddress,
 ) (*network.FrontendIPConfiguration, bool, error) {
 	for _, config := range *fipConfigs {
-		owns, isPrimaryService, err := az.serviceOwnsFrontendIP(config, service)
+		owns, isPrimaryService, err := az.serviceOwnsFrontendIP(config, service, pips)
 		if err != nil {
 			return nil, false, err
 		}
@@ -1477,7 +1428,6 @@ func (az *Cloud) findFrontendIPConfigOfService(
 // This entails adding rules/probes for expected Ports and removing stale rules/ports.
 // nodes only used if wantLb is true
 func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, nodes []*v1.Node, wantLb bool) (*network.LoadBalancer, error) {
-	isInternal := requiresInternalLoadBalancer(service)
 	isBackendPoolPreConfigured := az.isBackendPoolPreConfigured(service)
 	serviceName := getServiceName(service)
 	klog.V(2).Infof("reconcileLoadBalancer for service(%s) - wantLb(%t): started", serviceName, wantLb)
@@ -1488,11 +1438,12 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 		return nil, err
 	}
 
-	lb, _, _, err := az.getServiceLoadBalancer(service, clusterName, nodes, wantLb, existingLBs)
+	lb, lbStatus, _, err := az.getServiceLoadBalancer(service, clusterName, nodes, wantLb, existingLBs)
 	if err != nil {
 		klog.Errorf("reconcileLoadBalancer: failed to get load balancer for service %q, error: %v", serviceName, err)
 		return nil, err
 	}
+
 	lbName := *lb.Name
 	lbResourceGroup := az.getLoadBalancerResourceGroup()
 	lbBackendPoolID := az.getBackendPoolID(lbName, az.getLoadBalancerResourceGroup(), getBackendPoolName(clusterName, service))
@@ -1500,11 +1451,6 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 	defaultLBFrontendIPConfigName := az.getDefaultFrontendIPConfigName(service)
 	defaultLBFrontendIPConfigID := az.getFrontendIPConfigID(lbName, lbResourceGroup, defaultLBFrontendIPConfigName)
 	dirtyLb := false
-
-	lbIdleTimeout, err := getIdleTimeout(service)
-	if wantLb && err != nil {
-		return nil, err
-	}
 
 	// reconcile the load balancer's backend pool configuration.
 	if wantLb {
@@ -1519,7 +1465,7 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 	}
 
 	// reconcile the load balancer's frontend IP configurations.
-	ownedFIPConfig, changed, err := az.reconcileFrontendIPConfigs(clusterName, service, lb, wantLb, defaultLBFrontendIPConfigName)
+	ownedFIPConfig, toDeleteConfigs, changed, err := az.reconcileFrontendIPConfigs(clusterName, service, lb, lbStatus, wantLb, defaultLBFrontendIPConfigName)
 	if err != nil {
 		return lb, err
 	}
@@ -1543,9 +1489,13 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 		}
 	}
 
-	expectedProbes, expectedRules, err := az.getExpectedLBRules(service, wantLb, defaultLBFrontendIPConfigID, lbBackendPoolID, lbName, lbIdleTimeout)
-	if err != nil {
-		return nil, err
+	var expectedProbes []network.Probe
+	var expectedRules []network.LoadBalancingRule
+	if wantLb {
+		expectedProbes, expectedRules, err = az.getExpectedLBRules(service, defaultLBFrontendIPConfigID, lbBackendPoolID, lbName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if changed := az.reconcileLBProbes(lb, service, serviceName, wantLb, expectedProbes); changed {
@@ -1564,6 +1514,22 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 	// We only care about if there is any change in the LB, which means dirtyLB
 	// If it is not exist, and no change to that, we don't CreateOrUpdate LB
 	if dirtyLb {
+		if len(toDeleteConfigs) > 0 {
+			for i := range toDeleteConfigs {
+				fipConfigToDel := toDeleteConfigs[i]
+				err := az.reconcilePrivateLinkService(clusterName, service, &fipConfigToDel, false /* wantPLS */)
+				if err != nil {
+					klog.Errorf(
+						"reconcileLoadBalancer for service(%s): lb(%s) - failed to clean up PrivateLinkService for frontEnd(%s): %v",
+						serviceName,
+						lbName,
+						to.String(fipConfigToDel.Name),
+						err,
+					)
+				}
+			}
+		}
+
 		if lb.FrontendIPConfigurations == nil || len(*lb.FrontendIPConfigurations) == 0 {
 			err := az.cleanOrphanedLoadBalancer(lb, existingLBs, service, clusterName)
 			if err != nil {
@@ -1574,22 +1540,20 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 			klog.V(2).Infof("reconcileLoadBalancer: reconcileLoadBalancer for service(%s): lb(%s) - updating", serviceName, lbName)
 			err := az.CreateOrUpdateLB(service, *lb)
 			if err != nil {
-				klog.Errorf("reconcileLoadBalancer for service(%s) abort backoff: lb(%s) - updating", serviceName, lbName)
+				klog.Errorf("reconcileLoadBalancer for service(%s) abort backoff: lb(%s) - updating: %s", serviceName, lbName, err.Error())
 				return nil, err
 			}
 
-			if isInternal {
-				// Refresh updated lb which will be used later in other places.
-				newLB, exist, err := az.getAzureLoadBalancer(lbName, azcache.CacheReadTypeDefault)
-				if err != nil {
-					klog.Errorf("reconcileLoadBalancer for service(%s): getAzureLoadBalancer(%s) failed: %v", serviceName, lbName, err)
-					return nil, err
-				}
-				if !exist {
-					return nil, fmt.Errorf("load balancer %q not found", lbName)
-				}
-				lb = &newLB
+			// Refresh updated lb which will be used later in other places.
+			newLB, exist, err := az.getAzureLoadBalancer(lbName, azcache.CacheReadTypeDefault)
+			if err != nil {
+				klog.Errorf("reconcileLoadBalancer for service(%s): getAzureLoadBalancer(%s) failed: %v", serviceName, lbName, err)
+				return nil, err
 			}
+			if !exist {
+				return nil, fmt.Errorf("load balancer %q not found", lbName)
+			}
+			lb = &newLB
 		}
 	}
 
@@ -1707,29 +1671,32 @@ func (az *Cloud) reconcileLBRules(lb *network.LoadBalancer, service *v1.Service,
 	return dirtyRules
 }
 
-func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Service, lb *network.LoadBalancer, wantLb bool, defaultLBFrontendIPConfigName string) (*network.FrontendIPConfiguration, bool, error) {
+func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Service, lb *network.LoadBalancer, status *v1.LoadBalancerStatus, wantLb bool, defaultLBFrontendIPConfigName string) (*network.FrontendIPConfiguration, []network.FrontendIPConfiguration, bool, error) {
 	var err error
 	lbName := *lb.Name
 	serviceName := getServiceName(service)
 	isInternal := requiresInternalLoadBalancer(service)
 	dirtyConfigs := false
 	var newConfigs []network.FrontendIPConfiguration
+	var toDeleteConfigs []network.FrontendIPConfiguration
 	if lb.FrontendIPConfigurations != nil {
 		newConfigs = *lb.FrontendIPConfigurations
 	}
 
+	// Save pip list so it can be reused in loop
+	var pips *[]network.PublicIPAddress
 	var ownedFIPConfig *network.FrontendIPConfiguration
 	if !wantLb {
 		for i := len(newConfigs) - 1; i >= 0; i-- {
 			config := newConfigs[i]
-			isServiceOwnsFrontendIP, _, err := az.serviceOwnsFrontendIP(config, service)
+			isServiceOwnsFrontendIP, _, err := az.serviceOwnsFrontendIP(config, service, pips)
 			if err != nil {
-				return nil, false, err
+				return nil, toDeleteConfigs, false, err
 			}
 			if isServiceOwnsFrontendIP {
 				unsafe, err := az.isFrontendIPConfigUnsafeToDelete(lb, service, config.ID)
 				if err != nil {
-					return nil, false, err
+					return nil, toDeleteConfigs, false, err
 				}
 
 				// If the frontend IP configuration is not being referenced by:
@@ -1747,28 +1714,42 @@ func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Serv
 						klog.V(2).Infof("reconcileLoadBalancer for service (%s)(%t): nil name of lb frontendconfig", serviceName, wantLb)
 					}
 
+					toDeleteConfigs = append(toDeleteConfigs, newConfigs[i])
 					newConfigs = append(newConfigs[:i], newConfigs[i+1:]...)
 					dirtyConfigs = true
 				}
 			}
 		}
 	} else {
+		var (
+			previousZone *[]string
+			isFipChanged bool
+		)
 		for i := len(newConfigs) - 1; i >= 0; i-- {
 			config := newConfigs[i]
-			isFipChanged, err := az.isFrontendIPChanged(clusterName, config, service, defaultLBFrontendIPConfigName)
+			isServiceOwnsFrontendIP, _, _ := az.serviceOwnsFrontendIP(config, service, pips)
+			if !isServiceOwnsFrontendIP {
+				klog.V(4).Infof("reconcileFrontendIPConfigs for service (%s): the frontend IP configuration %s does not belong to the service", serviceName, to.String(config.Name))
+				continue
+			}
+			klog.V(4).Infof("reconcileFrontendIPConfigs for service (%s): checking owned frontend IP cofiguration %s", serviceName, to.String(config.Name))
+			isFipChanged, err = az.isFrontendIPChanged(clusterName, config, service, defaultLBFrontendIPConfigName, pips)
 			if err != nil {
-				return nil, false, err
+				return nil, toDeleteConfigs, false, err
 			}
 			if isFipChanged {
 				klog.V(2).Infof("reconcileLoadBalancer for service (%s)(%t): lb frontendconfig(%s) - dropping", serviceName, wantLb, *config.Name)
+				toDeleteConfigs = append(toDeleteConfigs, newConfigs[i])
 				newConfigs = append(newConfigs[:i], newConfigs[i+1:]...)
 				dirtyConfigs = true
+				previousZone = config.Zones
 			}
+			break
 		}
 
-		ownedFIPConfig, _, err = az.findFrontendIPConfigOfService(&newConfigs, service)
+		ownedFIPConfig, _, err = az.findFrontendIPConfigOfService(&newConfigs, service, pips)
 		if err != nil {
-			return nil, false, err
+			return nil, toDeleteConfigs, false, err
 		}
 
 		if ownedFIPConfig == nil {
@@ -1783,11 +1764,11 @@ func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Serv
 				}
 				subnet, existsSubnet, err := az.getSubnet(az.VnetName, *subnetName)
 				if err != nil {
-					return nil, false, err
+					return nil, toDeleteConfigs, false, err
 				}
 
 				if !existsSubnet {
-					return nil, false, fmt.Errorf("ensure(%s): lb(%s) - failed to get subnet: %s/%s", serviceName, lbName, az.VnetName, az.SubnetName)
+					return nil, toDeleteConfigs, false, fmt.Errorf("ensure(%s): lb(%s) - failed to get subnet: %s/%s", serviceName, lbName, az.VnetName, az.SubnetName)
 				}
 
 				configProperties := network.FrontendIPConfigurationPropertiesFormat{
@@ -1802,21 +1783,26 @@ func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Serv
 				if loadBalancerIP != "" {
 					configProperties.PrivateIPAllocationMethod = network.IPAllocationMethodStatic
 					configProperties.PrivateIPAddress = &loadBalancerIP
+				} else if status != nil && len(status.Ingress) > 0 {
+					klog.V(4).Infof("reconcileFrontendIPConfigs for service (%s): keep the original private IP %s", serviceName, status.Ingress[0].IP)
+					configProperties.PrivateIPAllocationMethod = network.IPAllocationMethodStatic
+					configProperties.PrivateIPAddress = to.StringPtr(status.Ingress[0].IP)
 				} else {
 					// We'll need to call GetLoadBalancer later to retrieve allocated IP.
+					klog.V(4).Infof("reconcileFrontendIPConfigs for service (%s): dynamically allocate the private IP", serviceName)
 					configProperties.PrivateIPAllocationMethod = network.IPAllocationMethodDynamic
 				}
 
 				fipConfigurationProperties = &configProperties
 			} else {
-				pipName, shouldPIPExisted, err := az.determinePublicIPName(clusterName, service)
+				pipName, shouldPIPExisted, err := az.determinePublicIPName(clusterName, service, pips)
 				if err != nil {
-					return nil, false, err
+					return nil, toDeleteConfigs, false, err
 				}
 				domainNameLabel, found := getPublicIPDomainNameLabel(service)
 				pip, err := az.ensurePublicIPExists(service, pipName, domainNameLabel, clusterName, shouldPIPExisted, found)
 				if err != nil {
-					return nil, false, err
+					return nil, toDeleteConfigs, false, err
 				}
 				fipConfigurationProperties = &network.FrontendIPConfigurationPropertiesFormat{
 					PublicIPAddress: &network.PublicIPAddress{ID: pip.ID},
@@ -1829,14 +1815,11 @@ func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Serv
 				FrontendIPConfigurationPropertiesFormat: fipConfigurationProperties,
 			}
 
-			// only add zone information for new internal frontend IP configurations for standard load balancer not deployed to an edge zone.
-			location := az.Location
-			zones, err := az.getRegionZonesBackoff(location)
-			if err != nil {
-				return nil, false, err
-			}
-			if isInternal && az.useStandardLoadBalancer() && len(zones) > 0 && !az.HasExtendedLocation() {
-				newConfig.Zones = &zones
+			if isInternal {
+				if err := az.getFrontendZones(&newConfig, previousZone, isFipChanged, serviceName, defaultLBFrontendIPConfigName); err != nil {
+					klog.Errorf("reconcileLoadBalancer for service (%s)(%t): failed to getFrontendZones: %s", serviceName, wantLb, err.Error())
+					return nil, toDeleteConfigs, false, err
+				}
 			}
 			newConfigs = append(newConfigs, newConfig)
 			klog.V(2).Infof("reconcileLoadBalancer for service (%s)(%t): lb frontendconfig(%s) - adding", serviceName, wantLb, defaultLBFrontendIPConfigName)
@@ -1848,7 +1831,34 @@ func (az *Cloud) reconcileFrontendIPConfigs(clusterName string, service *v1.Serv
 		lb.FrontendIPConfigurations = &newConfigs
 	}
 
-	return ownedFIPConfig, dirtyConfigs, err
+	return ownedFIPConfig, toDeleteConfigs, dirtyConfigs, err
+}
+
+func (az *Cloud) getFrontendZones(
+	fipConfig *network.FrontendIPConfiguration,
+	previousZone *[]string,
+	isFipChanged bool,
+	serviceName, defaultLBFrontendIPConfigName string) error {
+	if !isFipChanged { // fetch zone information from API for new frontends
+		// only add zone information for new internal frontend IP configurations for standard load balancer not deployed to an edge zone.
+		location := az.Location
+		zones, err := az.getRegionZonesBackoff(location)
+		if err != nil {
+			return err
+		}
+		if az.useStandardLoadBalancer() && len(zones) > 0 && !az.HasExtendedLocation() {
+			fipConfig.Zones = &zones
+		}
+	} else {
+		if previousZone == nil { // keep the existing zone information for existing frontends
+			klog.V(2).Infof("getFrontendZones for service (%s): lb frontendconfig(%s): setting zone to nil", serviceName, defaultLBFrontendIPConfigName)
+		} else {
+			zoneStr := strings.Join(*previousZone, ",")
+			klog.V(2).Infof("getFrontendZones for service (%s): lb frontendconfig(%s): setting zone to %s", serviceName, defaultLBFrontendIPConfigName, zoneStr)
+		}
+		fipConfig.Zones = previousZone
+	}
+	return nil
 }
 
 // checkLoadBalancerResourcesConflicts checks if the service is consuming
@@ -1952,160 +1962,317 @@ func lbRuleConflictsWithPort(rule network.LoadBalancingRule, frontendIPConfigID 
 		*rule.FrontendPort == port.Port
 }
 
-func parseHealthProbeProtocolAndPath(service *v1.Service) (string, string) {
-	var protocol, path string
-	if v, ok := service.Annotations[consts.ServiceAnnotationLoadBalancerHealthProbeProtocol]; ok {
-		protocol = v
-	} else {
-		return protocol, path
+// buildHealthProbeRulesForPort
+// for following sku: basic loadbalancer vs standard load balancer
+// for following protocols: TCP HTTP HTTPS(SLB only)
+func (az *Cloud) buildHealthProbeRulesForPort(annotations map[string]string, port v1.ServicePort, lbrule string) (*network.Probe, error) {
+	if port.Protocol == v1.ProtocolUDP || port.Protocol == v1.ProtocolSCTP {
+		return nil, nil
 	}
-	// ignore the request path if using TCP
-	if strings.EqualFold(protocol, string(network.ProbeProtocolHTTP)) ||
-		strings.EqualFold(protocol, string(network.ProbeProtocolHTTPS)) {
-		if v, ok := service.Annotations[consts.ServiceAnnotationLoadBalancerHealthProbeRequestPath]; ok {
-			path = v
+	// protocol should be tcp, because sctp is handled in outer loop
+
+	properties := &network.ProbePropertiesFormat{}
+	var err error
+	if port.AppProtocol == nil {
+		if port.AppProtocol, err = consts.GetAttributeValueInSvcAnnotation(annotations, consts.ServiceAnnotationLoadBalancerHealthProbeProtocol); err != nil {
+			return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.ServiceAnnotationLoadBalancerHealthProbeProtocol, err)
+		}
+		if port.AppProtocol == nil {
+			port.AppProtocol = to.StringPtr(string(network.ProtocolTCP))
 		}
 	}
-	return protocol, path
+	protocol := strings.TrimSpace(*port.AppProtocol)
+	switch {
+	case strings.EqualFold(protocol, string(network.ProtocolTCP)):
+		properties.Protocol = network.ProbeProtocolTCP
+	case strings.EqualFold(protocol, string(network.ProtocolHTTPS)):
+		//HTTPS probe is only supported in standard loadbalancer
+		//For backward compatibility,when unsupported protocol is used, fall back to tcp protocol in basic lb mode instead
+		if !az.useStandardLoadBalancer() {
+			properties.Protocol = network.ProbeProtocolTCP
+		} else {
+			properties.Protocol = network.ProbeProtocolHTTPS
+		}
+	case strings.EqualFold(protocol, string(network.ProtocolHTTP)):
+		properties.Protocol = network.ProbeProtocolHTTP
+	default:
+		//For backward compatibility,when unsupported protocol is used, fall back to tcp protocol in basic lb mode instead
+		properties.Protocol = network.ProbeProtocolTCP
+	}
+
+	if strings.EqualFold(string(properties.Protocol), string(network.ProtocolHTTPS)) || strings.EqualFold(string(properties.Protocol), string(network.ProtocolHTTP)) {
+		// get request path ,only used with http/https probe
+		path, err := consts.GetHealthProbeConfigOfPortFromK8sSvcAnnotation(annotations, port.Port, consts.HealthProbeParamsRequestPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.BuildHealthProbeAnnotationKeyForPort(port.Port, consts.HealthProbeParamsRequestPath), err)
+		}
+		if path == nil {
+			if path, err = consts.GetAttributeValueInSvcAnnotation(annotations, consts.ServiceAnnotationLoadBalancerHealthProbeRequestPath); err != nil {
+				return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.ServiceAnnotationLoadBalancerHealthProbeRequestPath, err)
+			}
+		}
+		if path == nil {
+			path = to.StringPtr(consts.HealthProbeDefaultRequestPath)
+		}
+		properties.RequestPath = path
+	}
+	// get number of probes
+	var numOfProbeValidator = func(val *int32) error {
+		//minimum number of unhealthy responses is 2. ref: https://docs.microsoft.com/en-us/rest/api/load-balancer/load-balancers/create-or-update#probe
+		const (
+			MinimumNumOfProbe = 2
+		)
+		if *val < MinimumNumOfProbe {
+			return fmt.Errorf("the minimum value of %s is %d", consts.HealthProbeParamsNumOfProbe, MinimumNumOfProbe)
+		}
+		return nil
+	}
+	numberOfProbes, err := consts.GetInt32HealthProbeConfigOfPortFromK8sSvcAnnotation(annotations, port.Port, consts.HealthProbeParamsNumOfProbe, numOfProbeValidator)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.BuildHealthProbeAnnotationKeyForPort(port.Port, consts.HealthProbeParamsNumOfProbe), err)
+	}
+	if numberOfProbes == nil {
+		if numberOfProbes, err = consts.Getint32ValueFromK8sSvcAnnotation(annotations, consts.ServiceAnnotationLoadBalancerHealthProbeNumOfProbe, numOfProbeValidator); err != nil {
+			return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.ServiceAnnotationLoadBalancerHealthProbeNumOfProbe, err)
+		}
+	}
+
+	// if numberOfProbes is not set, set it to default instead ref: https://docs.microsoft.com/en-us/rest/api/load-balancer/load-balancers/create-or-update#probe
+	if numberOfProbes == nil {
+		numberOfProbes = to.Int32Ptr(consts.HealthProbeDefaultNumOfProbe)
+	}
+
+	// get probe interval in seconds
+	var probeIntervalValidator = func(val *int32) error {
+		//minimum probe interval in seconds is 5. ref: https://docs.microsoft.com/en-us/rest/api/load-balancer/load-balancers/create-or-update#probe
+		const (
+			MinimumProbeIntervalInSecond = 5
+		)
+		if *val < 5 {
+			return fmt.Errorf("the minimum value of %s is %d", consts.HealthProbeParamsProbeInterval, MinimumProbeIntervalInSecond)
+		}
+		return nil
+	}
+	probeInterval, err := consts.GetInt32HealthProbeConfigOfPortFromK8sSvcAnnotation(annotations, port.Port, consts.HealthProbeParamsProbeInterval, probeIntervalValidator)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse annotation %s:%w", consts.BuildHealthProbeAnnotationKeyForPort(port.Port, consts.HealthProbeParamsProbeInterval), err)
+	}
+	if probeInterval == nil {
+		if probeInterval, err = consts.Getint32ValueFromK8sSvcAnnotation(annotations, consts.ServiceAnnotationLoadBalancerHealthProbeInterval, probeIntervalValidator); err != nil {
+			return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.ServiceAnnotationLoadBalancerHealthProbeInterval, err)
+		}
+	}
+	// if probeInterval is not set, set it to default instead ref: https://docs.microsoft.com/en-us/rest/api/load-balancer/load-balancers/create-or-update#probe
+	if probeInterval == nil {
+		probeInterval = to.Int32Ptr(consts.HealthProbeDefaultProbeInterval)
+	}
+
+	// total probe should be less than 120 seconds ref: https://docs.microsoft.com/en-us/rest/api/load-balancer/load-balancers/create-or-update#probe
+	if (*probeInterval)*(*numberOfProbes) >= 120 {
+		return nil, fmt.Errorf("total probe should be less than 120, please adjust interval and number of probe accordingly")
+	}
+	properties.IntervalInSeconds = probeInterval
+	properties.NumberOfProbes = numberOfProbes
+	properties.Port = &port.NodePort
+	probe := &network.Probe{
+		Name:                  &lbrule,
+		ProbePropertiesFormat: properties,
+	}
+	return probe, nil
 }
 
+// buildLBRules
+// for following sku: basic loadbalancer vs standard load balancer
+// for following scenario: internal vs external
 func (az *Cloud) getExpectedLBRules(
 	service *v1.Service,
-	wantLb bool,
 	lbFrontendIPConfigID string,
 	lbBackendPoolID string,
-	lbName string,
-	lbIdleTimeout *int32) ([]network.Probe, []network.LoadBalancingRule, error) {
+	lbName string) ([]network.Probe, []network.LoadBalancingRule, error) {
 
-	var ports []v1.ServicePort
-	if wantLb {
-		ports = service.Spec.Ports
-	} else {
-		ports = []v1.ServicePort{}
-	}
-
-	var enableTCPReset *bool
-	if az.useStandardLoadBalancer() {
-		enableTCPReset = to.BoolPtr(true)
-	}
-
-	var expectedProbes []network.Probe
 	var expectedRules []network.LoadBalancingRule
-	highAvailabilityPortsEnabled := false
-	for _, port := range ports {
-		if !requiresInternalLoadBalancer(service) && port.Protocol == v1.ProtocolSCTP {
-			return nil, nil, fmt.Errorf("SCTP is only supported on internal LoadBalancer")
-		}
+	var expectedProbes []network.Probe
 
-		if highAvailabilityPortsEnabled {
-			// Since the port is always 0 when enabling HA, only one rule should be configured.
-			break
-		}
+	// support podPresence health check when External Traffic Policy is local
+	// take precedence over user defined probe configuration
+	// healthcheck proxy server serves http requests
+	// https://github.com/kubernetes/kubernetes/blob/7c013c3f64db33cf19f38bb2fc8d9182e42b0b7b/pkg/proxy/healthcheck/service_health.go#L236
+	var nodeEndpointHealthprobe *network.Probe
+	if servicehelpers.NeedsHealthCheck(service) {
+		podPresencePath, podPresencePort := servicehelpers.GetServiceHealthCheckPathPort(service)
+		lbRuleName := az.getLoadBalancerRuleName(service, v1.ProtocolTCP, podPresencePort)
 
-		lbRuleName := az.getLoadBalancerRuleName(service, port.Protocol, port.Port)
-		klog.V(2).Infof("getExpectedLBRules lb name (%s) rule name (%s)", lbName, lbRuleName)
-
-		transportProto, _, probeProto, err := getProtocolsFromKubernetesProtocol(port.Protocol)
-		if err != nil {
-			return expectedProbes, expectedRules, err
-		}
-
-		probeProtocol, requestPath := parseHealthProbeProtocolAndPath(service)
-		if servicehelpers.NeedsHealthCheck(service) {
-			podPresencePath, podPresencePort := servicehelpers.GetServiceHealthCheckPathPort(service)
-			if probeProtocol == "" {
-				probeProtocol = string(network.ProbeProtocolHTTP)
-			}
-
-			needRequestPath := strings.EqualFold(probeProtocol, string(network.ProbeProtocolHTTP)) || strings.EqualFold(probeProtocol, string(network.ProbeProtocolHTTPS))
-			if requestPath == "" && needRequestPath {
-				requestPath = podPresencePath
-			}
-
-			expectedProbes = append(expectedProbes, network.Probe{
-				Name: &lbRuleName,
-				ProbePropertiesFormat: &network.ProbePropertiesFormat{
-					RequestPath:       to.StringPtr(requestPath),
-					Protocol:          network.ProbeProtocol(probeProtocol),
-					Port:              to.Int32Ptr(podPresencePort),
-					IntervalInSeconds: to.Int32Ptr(5),
-					NumberOfProbes:    to.Int32Ptr(2),
-				},
-			})
-		} else if port.Protocol != v1.ProtocolUDP && port.Protocol != v1.ProtocolSCTP {
-			// we only add the expected probe if we're doing TCP
-			if probeProtocol == "" {
-				probeProtocol = string(*probeProto)
-			}
-			var actualPath *string
-			if !strings.EqualFold(probeProtocol, string(network.ProbeProtocolTCP)) {
-				if requestPath != "" {
-					actualPath = to.StringPtr(requestPath)
-				} else {
-					actualPath = to.StringPtr("/healthz")
-				}
-			}
-			expectedProbes = append(expectedProbes, network.Probe{
-				Name: &lbRuleName,
-				ProbePropertiesFormat: &network.ProbePropertiesFormat{
-					Protocol:          network.ProbeProtocol(probeProtocol),
-					RequestPath:       actualPath,
-					Port:              to.Int32Ptr(port.NodePort),
-					IntervalInSeconds: to.Int32Ptr(5),
-					NumberOfProbes:    to.Int32Ptr(2),
-				},
-			})
-		}
-
-		loadDistribution := network.LoadDistributionDefault
-		if service.Spec.SessionAffinity == v1.ServiceAffinityClientIP {
-			loadDistribution = network.LoadDistributionSourceIP
-		}
-
-		expectedRule := network.LoadBalancingRule{
+		nodeEndpointHealthprobe = &network.Probe{
 			Name: &lbRuleName,
-			LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
-				Protocol: *transportProto,
-				FrontendIPConfiguration: &network.SubResource{
-					ID: to.StringPtr(lbFrontendIPConfigID),
-				},
-				BackendAddressPool: &network.SubResource{
-					ID: to.StringPtr(lbBackendPoolID),
-				},
-				LoadDistribution:    loadDistribution,
-				FrontendPort:        to.Int32Ptr(port.Port),
-				BackendPort:         to.Int32Ptr(port.Port),
-				DisableOutboundSnat: to.BoolPtr(az.disableLoadBalancerOutboundSNAT()),
-				EnableTCPReset:      enableTCPReset,
-				EnableFloatingIP:    to.BoolPtr(true),
+			ProbePropertiesFormat: &network.ProbePropertiesFormat{
+				RequestPath:       to.StringPtr(podPresencePath),
+				Protocol:          network.ProbeProtocolHTTP,
+				Port:              to.Int32Ptr(podPresencePort),
+				IntervalInSeconds: to.Int32Ptr(consts.HealthProbeDefaultProbeInterval),
+				NumberOfProbes:    to.Int32Ptr(consts.HealthProbeDefaultNumOfProbe),
 			},
 		}
+		expectedProbes = append(expectedProbes, *nodeEndpointHealthprobe)
+	}
 
-		if port.Protocol == v1.ProtocolTCP {
-			expectedRule.LoadBalancingRulePropertiesFormat.IdleTimeoutInMinutes = lbIdleTimeout
+	// In HA mode, lb forward traffic of all port to backend
+	// HA mode is only supported on standard loadbalancer SKU in internal mode
+	if consts.IsK8sServiceUsingInternalLoadBalancer(service) &&
+		az.useStandardLoadBalancer() &&
+		consts.IsK8sServiceHasHAModeEnabled(service) {
+
+		lbRuleName := az.getloadbalancerHAmodeRuleName(service)
+		klog.V(2).Infof("getExpectedLBRules lb name (%s) rule name (%s)", lbName, lbRuleName)
+
+		props, err := az.getExpectedHAModeLoadBalancingRuleProperties(service, lbFrontendIPConfigID, lbBackendPoolID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error generate lb rule for ha mod loadbalancer. err: %w", err)
 		}
-
-		if requiresInternalLoadBalancer(service) &&
-			strings.EqualFold(az.LoadBalancerSku, consts.LoadBalancerSkuStandard) &&
-			(strings.EqualFold(service.Annotations[consts.ServiceAnnotationLoadBalancerEnableHighAvailabilityPorts], consts.TrueAnnotationValue) || port.Protocol == v1.ProtocolSCTP) {
-			expectedRule.FrontendPort = to.Int32Ptr(0)
-			expectedRule.BackendPort = to.Int32Ptr(0)
-			expectedRule.Protocol = network.TransportProtocolAll
-			highAvailabilityPortsEnabled = true
-		}
-
-		// we didn't construct the probe objects for UDP or SCTP because they're not allowed on Azure.
-		// However, when externalTrafficPolicy is Local, Kubernetes HTTP health check would be used for probing.
-		if servicehelpers.NeedsHealthCheck(service) || (port.Protocol != v1.ProtocolUDP && port.Protocol != v1.ProtocolSCTP) {
-			expectedRule.Probe = &network.SubResource{
-				ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), lbRuleName)),
+		//Here we need to find one health probe rule for the HA lb rule.
+		if nodeEndpointHealthprobe == nil {
+			// use user customized health probe rule if any
+			for _, port := range service.Spec.Ports {
+				portprobe, err := az.buildHealthProbeRulesForPort(service.Annotations, port, lbRuleName)
+				if err != nil {
+					klog.V(2).ErrorS(err, "error occurred when buildHealthProbeRulesForPort", "service", service.Name, "namespace", service.Namespace,
+						"rule-name", lbRuleName, "port", port.Port)
+					//ignore error because we only need one correct rule
+				}
+				if portprobe != nil {
+					expectedProbes = append(expectedProbes, *portprobe)
+					props.Probe = &network.SubResource{
+						ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), *portprobe.Name)),
+					}
+					break
+				}
+			}
+		} else {
+			props.Probe = &network.SubResource{
+				ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), *nodeEndpointHealthprobe.Name)),
 			}
 		}
 
-		expectedRules = append(expectedRules, expectedRule)
+		expectedRules = append(expectedRules, network.LoadBalancingRule{
+			Name:                              &lbRuleName,
+			LoadBalancingRulePropertiesFormat: props,
+		})
+		// end of HA mode handling
+	} else {
+		// generate lb rule for each port defined in svc object
+
+		for _, port := range service.Spec.Ports {
+			lbRuleName := az.getLoadBalancerRuleName(service, port.Protocol, port.Port)
+			klog.V(2).Infof("getExpectedLBRules lb name (%s) rule name (%s)", lbName, lbRuleName)
+
+			if port.Protocol == v1.ProtocolSCTP && !(az.useStandardLoadBalancer() && consts.IsK8sServiceUsingInternalLoadBalancer(service)) {
+				return expectedProbes, expectedRules, fmt.Errorf("SCTP is only supported on standard loadbalancer in internal mode")
+			}
+
+			transportProto, _, _, err := getProtocolsFromKubernetesProtocol(port.Protocol)
+			if err != nil {
+				return expectedProbes, expectedRules, fmt.Errorf("failed to parse transport protocol: %w", err)
+			}
+			props, err := az.getExpectedLoadBalancingRulePropertiesForPort(service, lbFrontendIPConfigID, lbBackendPoolID, port, *transportProto)
+			if err != nil {
+				return expectedProbes, expectedRules, fmt.Errorf("error generate lb rule for ha mod loadbalancer. err: %w", err)
+			}
+
+			if nodeEndpointHealthprobe == nil {
+				portprobe, err := az.buildHealthProbeRulesForPort(service.Annotations, port, lbRuleName)
+				if err != nil {
+					klog.V(2).ErrorS(err, "error occurred when buildHealthProbeRulesForPort", "service", service.Name, "namespace", service.Namespace,
+						"rule-name", lbRuleName, "port", port.Port)
+					return expectedProbes, expectedRules, err
+				}
+				if portprobe != nil {
+					expectedProbes = append(expectedProbes, *portprobe)
+					props.Probe = &network.SubResource{
+						ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), *portprobe.Name)),
+					}
+				}
+			} else {
+				props.Probe = &network.SubResource{
+					ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), *nodeEndpointHealthprobe.Name)),
+				}
+			}
+			expectedRules = append(expectedRules, network.LoadBalancingRule{
+				Name:                              &lbRuleName,
+				LoadBalancingRulePropertiesFormat: props,
+			})
+
+		}
 	}
 
 	return expectedProbes, expectedRules, nil
+}
+
+//getDefaultLoadBalancingRulePropertiesFormat returns the loadbalancing rule for one port
+func (az *Cloud) getExpectedLoadBalancingRulePropertiesForPort(
+	service *v1.Service,
+	lbFrontendIPConfigID string,
+	lbBackendPoolID string, servicePort v1.ServicePort, transportProto network.TransportProtocol) (*network.LoadBalancingRulePropertiesFormat, error) {
+	var err error
+
+	loadDistribution := network.LoadDistributionDefault
+	if service.Spec.SessionAffinity == v1.ServiceAffinityClientIP {
+		loadDistribution = network.LoadDistributionSourceIP
+	}
+
+	var lbIdleTimeout *int32
+	if lbIdleTimeout, err = consts.Getint32ValueFromK8sSvcAnnotation(service.Annotations, consts.ServiceAnnotationLoadBalancerIdleTimeout, func(val *int32) error {
+		const (
+			min = 4
+			max = 30
+		)
+		if *val < min || *val > max {
+			return fmt.Errorf("idle timeout value must be a whole number representing minutes between %d and %d, actual value: %d", min, max, *val)
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error parsing idle timeout key: %s, err: %w", consts.ServiceAnnotationLoadBalancerIdleTimeout, err)
+	} else if lbIdleTimeout == nil {
+		lbIdleTimeout = to.Int32Ptr(4)
+	}
+
+	props := &network.LoadBalancingRulePropertiesFormat{
+		Protocol:            transportProto,
+		FrontendPort:        to.Int32Ptr(servicePort.Port),
+		BackendPort:         to.Int32Ptr(servicePort.Port),
+		DisableOutboundSnat: to.BoolPtr(az.disableLoadBalancerOutboundSNAT()),
+		EnableFloatingIP:    to.BoolPtr(true),
+		LoadDistribution:    loadDistribution,
+		FrontendIPConfiguration: &network.SubResource{
+			ID: to.StringPtr(lbFrontendIPConfigID),
+		},
+		BackendAddressPool: &network.SubResource{
+			ID: to.StringPtr(lbBackendPoolID),
+		},
+		IdleTimeoutInMinutes: lbIdleTimeout,
+	}
+	if strings.EqualFold(string(transportProto), string(network.TransportProtocolTCP)) && az.useStandardLoadBalancer() {
+		props.EnableTCPReset = to.BoolPtr(true)
+	}
+
+	// Azure ILB does not support secondary IPs as floating IPs on the LB. Therefore, floating IP needs to be turned
+	// off and the rule should point to the nodeIP:nodePort.
+	if consts.IsK8sServiceInternalIPv6(service) {
+		props.BackendPort = to.Int32Ptr(servicePort.NodePort)
+		props.EnableFloatingIP = to.BoolPtr(false)
+	}
+	return props, nil
+}
+
+//getExpectedHAModeLoadBalancingRuleProperties build load balancing rule for lb in HA mode
+func (az *Cloud) getExpectedHAModeLoadBalancingRuleProperties(
+	service *v1.Service,
+	lbFrontendIPConfigID string,
+	lbBackendPoolID string) (*network.LoadBalancingRulePropertiesFormat, error) {
+	props, err := az.getExpectedLoadBalancingRulePropertiesForPort(service, lbFrontendIPConfigID, lbBackendPoolID, v1.ServicePort{}, network.TransportProtocolAll)
+	if err != nil {
+		return nil, fmt.Errorf("error generate lb rule for ha mod loadbalancer. err: %w", err)
+	}
+	props.EnableTCPReset = to.BoolPtr(true)
+	return props, nil
 }
 
 // This reconciles the Network Security Group similar to how the LB is reconciled.
@@ -2161,7 +2328,7 @@ func (az *Cloud) reconcileSecurityGroup(clusterName string, service *v1.Service,
 
 	var sourceAddressPrefixes []string
 	if (sourceRanges == nil || servicehelpers.IsAllowAll(sourceRanges)) && len(serviceTags) == 0 {
-		if !requiresInternalLoadBalancer(service) {
+		if !requiresInternalLoadBalancer(service) || len(service.Spec.LoadBalancerSourceRanges) > 0 {
 			sourceAddressPrefixes = []string{"Internet"}
 		}
 	} else {
@@ -2628,8 +2795,15 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 		shouldPIPExisted bool
 	)
 
+	pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
+
+	pips, err := az.ListPIP(service, pipResourceGroup)
+	if err != nil {
+		return nil, err
+	}
+
 	if !isInternal && wantLb {
-		desiredPipName, shouldPIPExisted, err = az.determinePublicIPName(clusterName, service)
+		desiredPipName, shouldPIPExisted, err = az.determinePublicIPName(clusterName, service, &pips)
 		if err != nil {
 			return nil, err
 		}
@@ -2643,14 +2817,8 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 		lb = &loadBalancer
 	}
 
-	pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
-
-	pips, err := az.ListPIP(service, pipResourceGroup)
-	if err != nil {
-		return nil, err
-	}
-
-	discoveredDesiredPublicIP, pipsToBeDeleted, deletedDesiredPublicIP, pipsToBeUpdated, err := az.getPublicIPUpdates(clusterName, service, pips, wantLb, isInternal, desiredPipName, serviceName, serviceIPTagRequest, shouldPIPExisted)
+	discoveredDesiredPublicIP, pipsToBeDeleted, deletedDesiredPublicIP, pipsToBeUpdated, err := az.getPublicIPUpdates(
+		clusterName, service, pips, wantLb, isInternal, desiredPipName, serviceName, serviceIPTagRequest, shouldPIPExisted)
 	if err != nil {
 		return nil, err
 	}
@@ -2693,7 +2861,17 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 	return nil, nil
 }
 
-func (az *Cloud) getPublicIPUpdates(clusterName string, service *v1.Service, pips []network.PublicIPAddress, wantLb bool, isInternal bool, desiredPipName string, serviceName string, serviceIPTagRequest serviceIPTagRequest, serviceAnnotationRequestsNamedPublicIP bool) (bool, []*network.PublicIPAddress, bool, []*network.PublicIPAddress, error) {
+func (az *Cloud) getPublicIPUpdates(
+	clusterName string,
+	service *v1.Service,
+	pips []network.PublicIPAddress,
+	wantLb bool,
+	isInternal bool,
+	desiredPipName string,
+	serviceName string,
+	serviceIPTagRequest serviceIPTagRequest,
+	serviceAnnotationRequestsNamedPublicIP bool,
+) (bool, []*network.PublicIPAddress, bool, []*network.PublicIPAddress, error) {
 	var (
 		err                       error
 		discoveredDesiredPublicIP bool
@@ -2836,7 +3014,12 @@ func (az *Cloud) safeDeletePublicIP(service *v1.Service, pipResourceGroup string
 
 func findProbe(probes []network.Probe, probe network.Probe) bool {
 	for _, existingProbe := range probes {
-		if strings.EqualFold(to.String(existingProbe.Name), to.String(probe.Name)) && to.Int32(existingProbe.Port) == to.Int32(probe.Port) {
+		if strings.EqualFold(to.String(existingProbe.Name), to.String(probe.Name)) &&
+			to.Int32(existingProbe.Port) == to.Int32(probe.Port) &&
+			strings.EqualFold(string(existingProbe.Protocol), string(probe.Protocol)) &&
+			strings.EqualFold(to.String(existingProbe.RequestPath), to.String(probe.RequestPath)) &&
+			to.Int32(existingProbe.IntervalInSeconds) == to.Int32(probe.IntervalInSeconds) &&
+			to.Int32(existingProbe.NumberOfProbes) == to.Int32(probe.NumberOfProbes) {
 			return true
 		}
 	}
@@ -2860,14 +3043,22 @@ func equalLoadBalancingRulePropertiesFormat(s *network.LoadBalancingRuleProperti
 		return false
 	}
 
-	properties := reflect.DeepEqual(s.Protocol, t.Protocol) &&
-		reflect.DeepEqual(s.FrontendIPConfiguration, t.FrontendIPConfiguration) &&
+	properties := reflect.DeepEqual(s.Protocol, t.Protocol)
+	if !properties {
+		return false
+	}
+
+	if reflect.DeepEqual(s.Protocol, network.TransportProtocolTCP) {
+		properties = properties && reflect.DeepEqual(to.Bool(s.EnableTCPReset), to.Bool(t.EnableTCPReset))
+	}
+
+	properties = properties && reflect.DeepEqual(s.FrontendIPConfiguration, t.FrontendIPConfiguration) &&
 		reflect.DeepEqual(s.BackendAddressPool, t.BackendAddressPool) &&
 		reflect.DeepEqual(s.LoadDistribution, t.LoadDistribution) &&
 		reflect.DeepEqual(s.FrontendPort, t.FrontendPort) &&
 		reflect.DeepEqual(s.BackendPort, t.BackendPort) &&
+		reflect.DeepEqual(s.Probe, t.Probe) &&
 		reflect.DeepEqual(s.EnableFloatingIP, t.EnableFloatingIP) &&
-		reflect.DeepEqual(to.Bool(s.EnableTCPReset), to.Bool(t.EnableTCPReset)) &&
 		reflect.DeepEqual(to.Bool(s.DisableOutboundSnat), to.Bool(t.DisableOutboundSnat))
 
 	if wantLB && s.IdleTimeoutInMinutes != nil && t.IdleTimeoutInMinutes != nil {
@@ -2901,7 +3092,7 @@ func findSecurityRule(rules []network.SecurityRule, rule network.SecurityRule) b
 			if !strings.EqualFold(to.String(existingRule.DestinationAddressPrefix), to.String(rule.DestinationAddressPrefix)) {
 				continue
 			}
-			if !reflect.DeepEqual(to.StringSlice(existingRule.DestinationAddressPrefixes), to.StringSlice(rule.DestinationAddressPrefixes)) {
+			if !slices.Equal(to.StringSlice(existingRule.DestinationAddressPrefixes), to.StringSlice(rule.DestinationAddressPrefixes)) {
 				continue
 			}
 		}

@@ -37,20 +37,20 @@ const (
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
 	// Create creates a StorageAccount.
-	Create(ctx context.Context, resourceGroupName string, accountName string, parameters storage.AccountCreateParameters) *retry.Error
+	Create(ctx context.Context, subsID, resourceGroupName, accountName string, parameters storage.AccountCreateParameters) *retry.Error
 
 	// Update updates a StorageAccount.
-	Update(ctx context.Context, resourceGroupName string, accountName string, parameters storage.AccountUpdateParameters) *retry.Error
+	Update(ctx context.Context, subsID, resourceGroupName, accountName string, parameters storage.AccountUpdateParameters) *retry.Error
 
 	// Delete deletes a StorageAccount by name.
-	Delete(ctx context.Context, resourceGroupName string, accountName string) *retry.Error
+	Delete(ctx context.Context, subsID, resourceGroupName, accountName string) *retry.Error
 
 	// ListKeys get a list of storage account keys.
-	ListKeys(ctx context.Context, resourceGroupName string, accountName string) (storage.AccountListKeysResult, *retry.Error)
+	ListKeys(ctx context.Context, subsID, resourceGroupName, accountName string) (storage.AccountListKeysResult, *retry.Error)
 
 	// ListByResourceGroup get a list storage accounts by resourceGroup.
-	ListByResourceGroup(ctx context.Context, resourceGroupName string) ([]storage.Account, *retry.Error)
+	ListByResourceGroup(ctx context.Context, subsID, resourceGroupName string) ([]storage.Account, *retry.Error)
 
 	// GetProperties gets properties of the StorageAccount.
-	GetProperties(ctx context.Context, resourceGroupName string, accountName string) (result storage.Account, rerr *retry.Error)
+	GetProperties(ctx context.Context, subsID, resourceGroupName, accountName string) (result storage.Account, rerr *retry.Error)
 }

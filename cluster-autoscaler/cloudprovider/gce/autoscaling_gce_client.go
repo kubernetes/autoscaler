@@ -55,6 +55,10 @@ const (
 	// permissions error
 	ErrorCodePermissions = "PERMISSIONS_ERROR"
 
+	// ErrorCodeVmExternalIpAccessPolicyConstraint is an error code in InstanceErrorInfo if the user
+	// is facing errors caused by vmExternalIpAccess policy constraint misconfiguration.
+	ErrorCodeVmExternalIpAccessPolicyConstraint = "VM_EXTERNAL_IP_ACCESS_POLICY_CONSTRAINT"
+
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
 )
@@ -230,7 +234,11 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 			klog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				if op.Error != nil {
-					return fmt.Errorf("error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+					errBytes, err := op.Error.MarshalJSON()
+					if err != nil {
+						errBytes = []byte(fmt.Sprintf("operation failed, but error couldn't be recovered: %v", err))
+					}
+					return fmt.Errorf("error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, errBytes)
 				}
 
 				return nil
@@ -306,6 +314,9 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 				} else if isPermissionsError(instanceError.Code) {
 					errorInfo.ErrorClass = cloudprovider.OtherErrorClass
 					errorInfo.ErrorCode = ErrorCodePermissions
+				} else if isVmExternalIpAccessPolicyConstraintError(instanceError) {
+					errorInfo.ErrorClass = cloudprovider.OtherErrorClass
+					errorInfo.ErrorCode = ErrorCodeVmExternalIpAccessPolicyConstraint
 				} else if isInstanceNotRunningYet(gceInstance) {
 					if !errorFound {
 						// do not override error code with OTHER
@@ -367,6 +378,11 @@ func isIPSpaceExhaustedErrorCode(errorCode string) bool {
 
 func isPermissionsError(errorCode string) bool {
 	return strings.Contains(errorCode, "PERMISSIONS_ERROR")
+}
+
+func isVmExternalIpAccessPolicyConstraintError(err *gce.ManagedInstanceLastAttemptErrorsErrors) bool {
+	regexProjectPolicyConstraint := regexp.MustCompile(`Constraint constraints/compute.vmExternalIpAccess violated for project`)
+	return strings.Contains(err.Code, "CONDITION_NOT_MET") && regexProjectPolicyConstraint.MatchString(err.Message)
 }
 
 func isInstanceNotRunningYet(gceInstance *gce.ManagedInstance) bool {

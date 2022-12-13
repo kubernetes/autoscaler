@@ -23,7 +23,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +39,7 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -87,7 +86,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		statefulSet:           factory.Apps().V1().StatefulSets().Informer(),
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
-		cronJob:               factory.Batch().V1beta1().CronJobs().Informer(),
+		cronJob:               factory.Batch().V1().CronJobs().Informer(),
 	}
 
 	for kind, informer := range informersMap {
@@ -165,7 +164,7 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
 	case (*batchv1.Job):
 		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
-	case (*batchv1beta1.CronJob):
+	case (*batchv1.CronJob):
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.JobTemplate.Spec.Template.Labels))
 	case (*corev1.ReplicationController):
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))

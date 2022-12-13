@@ -39,6 +39,8 @@ type ClusterSnapshot interface {
 	RemovePod(namespace string, podName string, nodeName string) error
 	// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
 	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
+	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
+	IsPVCUsedByPods(key string) bool
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
 	// Forking already forked snapshot is not allowed and will result with an error.

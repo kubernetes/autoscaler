@@ -53,6 +53,7 @@ const (
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
 	failedMachinePrefix           = "failed-machine-"
+	machineTemplateKind           = "MachineTemplate"
 	machineDeploymentKind         = "MachineDeployment"
 	machineSetKind                = "MachineSet"
 	machineKind                   = "Machine"
@@ -80,6 +81,10 @@ type machineController struct {
 	machineDeploymentsAvailable bool
 	accessLock                  sync.Mutex
 	autoDiscoverySpecs          []*clusterAPIAutoDiscoveryConfig
+	// stopChannel is used for running the shared informers, and for starting
+	// informers associated with infrastructure machine templates that are
+	// discovered during operation.
+	stopChannel <-chan struct{}
 }
 
 func indexMachineByProviderID(obj interface{}) ([]string, error) {
@@ -170,9 +175,9 @@ func (c *machineController) findMachineSetOwner(machineSet *unstructured.Unstruc
 
 // run starts shared informers and waits for the informer cache to
 // synchronize.
-func (c *machineController) run(stopCh <-chan struct{}) error {
-	c.workloadInformerFactory.Start(stopCh)
-	c.managementInformerFactory.Start(stopCh)
+func (c *machineController) run() error {
+	c.workloadInformerFactory.Start(c.stopChannel)
+	c.managementInformerFactory.Start(c.stopChannel)
 
 	syncFuncs := []cache.InformerSynced{
 		c.nodeInformer.HasSynced,
@@ -184,7 +189,7 @@ func (c *machineController) run(stopCh <-chan struct{}) error {
 	}
 
 	klog.V(4).Infof("waiting for caches to sync")
-	if !cache.WaitForCacheSync(stopCh, syncFuncs...) {
+	if !cache.WaitForCacheSync(c.stopChannel, syncFuncs...) {
 		return fmt.Errorf("syncing caches failed")
 	}
 
@@ -327,6 +332,7 @@ func newMachineController(
 	managementDiscoveryClient discovery.DiscoveryInterface,
 	managementScaleClient scale.ScalesGetter,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
+	stopChannel chan struct{},
 ) (*machineController, error) {
 	workloadInformerFactory := kubeinformers.NewSharedInformerFactory(workloadClient, 0)
 
@@ -409,6 +415,7 @@ func newMachineController(
 		machineResource:             gvrMachine,
 		machineDeploymentResource:   gvrMachineDeployment,
 		machineDeploymentsAvailable: machineDeploymentAvailable,
+		stopChannel:                 stopChannel,
 	}, nil
 }
 
@@ -707,4 +714,31 @@ func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstruct
 	}
 
 	return false
+}
+
+// Get an infrastructure machine template given its GVR, name, and namespace.
+func (c *machineController) getInfrastructureResource(resource schema.GroupVersionResource, name string, namespace string) (*unstructured.Unstructured, error) {
+	// get an informer for this type, this will create the informer if it does not exist
+	informer := c.managementInformerFactory.ForResource(resource)
+	// since this may be a new informer, we need to restart the informer factory
+	c.managementInformerFactory.Start(c.stopChannel)
+	// wait for the informer to sync
+	klog.V(4).Infof("waiting for cache sync on infrastructure resource")
+	if !cache.WaitForCacheSync(c.stopChannel, informer.Informer().HasSynced) {
+		return nil, fmt.Errorf("syncing cache on infrastructure resource failed")
+	}
+	// use the informer to get the object we want, this will use the informer cache if possible
+	obj, err := informer.Lister().ByNamespace(namespace).Get(name)
+	if err != nil {
+		klog.V(4).Infof("Unable to read infrastructure reference from informer, error: %v", err)
+		return nil, err
+	}
+
+	infra, ok := obj.(*unstructured.Unstructured)
+	if !ok {
+		err := fmt.Errorf("Unable to convert infrastructure reference for %s/%s", namespace, name)
+		klog.V(4).Infof("%v", err)
+		return nil, err
+	}
+	return infra, err
 }

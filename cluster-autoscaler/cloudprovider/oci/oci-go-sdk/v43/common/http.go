@@ -631,8 +631,10 @@ func structToRequestPart(request *http.Request, val reflect.Value) (err error) {
 // HTTPRequestMarshaller marshals a structure to an http request using tag values in the struct
 // The marshaller tag should like the following
 // type A struct {
-// 		 ANumber string `contributesTo="query" name="number"`
-//		 TheBody `contributesTo="body"`
+//
+//	ANumber string `contributesTo="query" name="number"`
+//	TheBody `contributesTo="body"`
+//
 // }
 // where the contributesTo tag can be: header, path, query, body
 // and the 'name' tag is the name of the value used in the http request(not applicable for path)
@@ -1008,8 +1010,9 @@ func responseToStruct(response *http.Response, val *reflect.Value, unmarshaler P
 
 // UnmarshalResponse hydrates the fields of a struct with the values of a http response, guided
 // by the field tags. The directive tag is "presentIn" and it can be either
-//  - "header": Will look for the header tagged as "name" in the headers of the struct and set it value to that
-//  - "body": It will try to marshal the body from a json string to a struct tagged with 'presentIn: "body"'.
+//   - "header": Will look for the header tagged as "name" in the headers of the struct and set it value to that
+//   - "body": It will try to marshal the body from a json string to a struct tagged with 'presentIn: "body"'.
+//
 // Further this method will consume the body it should be safe to close it after this function
 // Notice the current implementation only supports native types:int, strings, floats, bool as the field types
 func UnmarshalResponse(httpResponse *http.Response, responseStruct interface{}) (err error) {

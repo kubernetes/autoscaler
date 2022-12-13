@@ -11,7 +11,7 @@ import (
 
 // GetVcnDnsResolverAssociationRequest wrapper for the GetVcnDnsResolverAssociation operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetVcnDnsResolverAssociation.go.html to see an example of how to use GetVcnDnsResolverAssociationRequest.
 type GetVcnDnsResolverAssociationRequest struct {

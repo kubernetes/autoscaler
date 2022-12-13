@@ -19,7 +19,7 @@ package snapshotclient
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
@@ -37,14 +37,14 @@ const (
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
 	// Get gets a Snapshot.
-	Get(ctx context.Context, resourceGroupName string, snapshotName string) (compute.Snapshot, *retry.Error)
+	Get(ctx context.Context, subsID, resourceGroupName, snapshotName string) (compute.Snapshot, *retry.Error)
 
 	// Delete deletes a Snapshot by name.
-	Delete(ctx context.Context, resourceGroupName string, snapshotName string) *retry.Error
+	Delete(ctx context.Context, subsID, resourceGroupName, snapshotName string) *retry.Error
 
 	// ListByResourceGroup get a list snapshots by resourceGroup.
-	ListByResourceGroup(ctx context.Context, resourceGroupName string) ([]compute.Snapshot, *retry.Error)
+	ListByResourceGroup(ctx context.Context, subsID, resourceGroupName string) ([]compute.Snapshot, *retry.Error)
 
 	// CreateOrUpdate creates or updates a Snapshot.
-	CreateOrUpdate(ctx context.Context, resourceGroupName string, snapshotName string, snapshot compute.Snapshot) *retry.Error
+	CreateOrUpdate(ctx context.Context, subsID, resourceGroupName, snapshotName string, snapshot compute.Snapshot) *retry.Error
 }
