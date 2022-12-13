@@ -199,6 +199,8 @@ extraEnvSecrets: {}
 
 # envFromConfigMap -- ConfigMap name to use as envFrom.
 envFromConfigMap: ""
+
+# envFromConfigMapOptional -- Whether or not the ConfigMap in envFrom is optional
 envFromConfigMapOptional: true
 
 # envFromSecret -- Secret name to use as envFrom.
