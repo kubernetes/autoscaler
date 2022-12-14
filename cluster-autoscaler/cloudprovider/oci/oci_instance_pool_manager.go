@@ -77,6 +77,7 @@ type InstancePoolManagerImpl struct {
 	// caches the instance pool and instance summary objects received from OCI.
 	// All interactions with OCI's API should go through the poolCache.
 	instancePoolCache *instancePoolCache
+	kubeClient        kubernetes.Interface
 }
 
 // CreateInstancePoolManager constructs the InstancePoolManager object.
@@ -118,6 +119,9 @@ func CreateInstancePoolManager(cloudConfigPath string, discoveryOpts cloudprovid
 		} else {
 			cloudConfig.Global.RefreshInterval = defaultRefreshInterval
 		}
+	}
+	if os.Getenv(ociUseNonPoolMemberAnnotationEnvVar) == "true" {
+		cloudConfig.Global.UseNonMemberAnnotation = true
 	}
 
 	clientConfig := common.CustomClientConfiguration{
@@ -175,6 +179,7 @@ func CreateInstancePoolManager(cloudConfigPath string, discoveryOpts cloudprovid
 		staticInstancePools: map[string]*InstancePoolNodeGroup{},
 		shapeGetter:         createShapeGetter(ShapeClientImpl{computeMgmtClient: computeMgmtClient, computeClient: computeClient}),
 		instancePoolCache:   newInstancePoolCache(&computeMgmtClient, &computeClient, &networkClient),
+		kubeClient:          kubeClient,
 	}
 
 	// Contains all the specs from the args that give us the pools.
@@ -324,40 +329,42 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 // GetInstancePoolForInstance returns InstancePool to which the given instance belongs. If
 // PoolID is not set on the specified OciRef, we will look for a match.
 func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails OciRef) (*InstancePoolNodeGroup, error) {
+	if m.cfg.Global.UseNonMemberAnnotation && instanceDetails.PoolID == ociInstancePoolIDNonPoolMember {
+		// Instance is not part of a configured pool. Return early and avoid additional API calls.
+		klog.V(4).Infof(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
+			ociInstancePoolIDNonPoolMember)
+		return nil, errInstanceInstancePoolNotFound
+	}
 
 	if instanceDetails.CompartmentID == "" {
 		// cfg.Global.CompartmentID would be set to tenancy OCID at runtime if compartment was not set.
 		instanceDetails.CompartmentID = m.cfg.Global.CompartmentID
 	}
 
-	if instanceDetails.AvailabilityDomain != "" && instanceDetails.InstanceID != "" && instanceDetails.PoolID != "" &&
-		instanceDetails.PrivateIPAddress != "" && instanceDetails.Shape != "" {
-		// It's possible that this instance belongs to an instance pool that was not specified via --nodes argument.
-		return m.staticInstancePools[instanceDetails.PoolID], nil
+	if ip, ok := m.staticInstancePools[instanceDetails.PoolID]; ok {
+		return ip, nil
 	}
-
-	// Details are missing from this instance.
-	// Try to resolve them, though it may not be a member of an instance-pool we manage.
-	resolvedInstanceDetails, err := m.instancePoolCache.findInstanceByDetails(instanceDetails)
-	if err != nil {
+	// This instance is not in the cache.
+	// Try to resolve the pool ID and other details, though it may not be a member of an instance-pool we manage.
+	foundInstanceDetails, err := m.instancePoolCache.findInstanceByDetails(instanceDetails)
+	if err != nil || foundInstanceDetails == nil || foundInstanceDetails.PoolID == "" {
+		if m.cfg.Global.UseNonMemberAnnotation && err == errInstanceInstancePoolNotFound {
+			_ = annotateNode(m.kubeClient, instanceDetails.Name, ociInstancePoolIDAnnotation, ociInstancePoolIDNonPoolMember)
+		}
 		return nil, err
-	} else if resolvedInstanceDetails == nil {
-		return nil, nil
 	}
-
-	kubeClient := m.staticInstancePools[resolvedInstanceDetails.PoolID].kubeClient
 
 	// Optionally annotate & label the node so that it does not need to be searched for in subsequent iterations.
-	_ = annotateNode(kubeClient, resolvedInstanceDetails.Name, ociInstanceIDAnnotation, resolvedInstanceDetails.InstanceID)
-	_ = annotateNode(kubeClient, resolvedInstanceDetails.Name, ociInstancePoolIDAnnotation, resolvedInstanceDetails.PoolID)
-	_ = annotateNode(kubeClient, resolvedInstanceDetails.Name, ociAnnotationCompartmentID, resolvedInstanceDetails.CompartmentID)
-	_ = labelNode(kubeClient, resolvedInstanceDetails.Name, apiv1.LabelTopologyZone, resolvedInstanceDetails.AvailabilityDomain)
-	_ = labelNode(kubeClient, resolvedInstanceDetails.Name, apiv1.LabelFailureDomainBetaZone, resolvedInstanceDetails.AvailabilityDomain)
-	_ = labelNode(kubeClient, resolvedInstanceDetails.Name, apiv1.LabelInstanceType, resolvedInstanceDetails.Shape)
-	_ = labelNode(kubeClient, resolvedInstanceDetails.Name, apiv1.LabelInstanceTypeStable, resolvedInstanceDetails.Shape)
-	_ = setNodeProviderID(kubeClient, resolvedInstanceDetails.Name, resolvedInstanceDetails.InstanceID)
+	_ = annotateNode(m.kubeClient, foundInstanceDetails.Name, ociInstanceIDAnnotation, foundInstanceDetails.InstanceID)
+	_ = annotateNode(m.kubeClient, foundInstanceDetails.Name, ociInstancePoolIDAnnotation, foundInstanceDetails.PoolID)
+	_ = annotateNode(m.kubeClient, foundInstanceDetails.Name, ociAnnotationCompartmentID, foundInstanceDetails.CompartmentID)
+	_ = labelNode(m.kubeClient, foundInstanceDetails.Name, apiv1.LabelTopologyZone, foundInstanceDetails.AvailabilityDomain)
+	_ = labelNode(m.kubeClient, foundInstanceDetails.Name, apiv1.LabelFailureDomainBetaZone, foundInstanceDetails.AvailabilityDomain)
+	_ = labelNode(m.kubeClient, foundInstanceDetails.Name, apiv1.LabelInstanceType, foundInstanceDetails.Shape)
+	_ = labelNode(m.kubeClient, foundInstanceDetails.Name, apiv1.LabelInstanceTypeStable, foundInstanceDetails.Shape)
+	_ = setNodeProviderID(m.kubeClient, foundInstanceDetails.Name, foundInstanceDetails.InstanceID)
 
-	return m.staticInstancePools[resolvedInstanceDetails.PoolID], nil
+	return m.staticInstancePools[foundInstanceDetails.PoolID], nil
 }
 
 // GetInstancePoolTemplateNode returns a template node for the InstancePool.

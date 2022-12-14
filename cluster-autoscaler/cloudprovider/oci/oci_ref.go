@@ -35,14 +35,36 @@ type OciRef struct {
 func nodeToOciRef(n *apiv1.Node) (OciRef, error) {
 	return OciRef{
 		Name:               n.ObjectMeta.Name,
-		AvailabilityDomain: n.Labels[apiv1.LabelZoneFailureDomain],
+		AvailabilityDomain: getNodeAZ(n),
 		CompartmentID:      n.Annotations[ociAnnotationCompartmentID],
 		InstanceID:         getNodeInstanceID(n),
 		PoolID:             getNodeInstancePoolID(n),
 		PrivateIPAddress:   getNodeInternalAddress(n),
 		PublicIPAddress:    getNodeExternalAddress(n),
-		Shape:              n.Labels[apiv1.LabelInstanceType],
+		Shape:              getNodeShape(n),
 	}, nil
+}
+
+// getNodeShape returns the shape of the node instance if set as a label or an empty string if is not found.
+func getNodeShape(node *apiv1.Node) string {
+	// First check for the deprecated label
+	if shape, ok := node.Labels[apiv1.LabelInstanceType]; ok {
+		return shape
+	} else if shape, ok := node.Labels[apiv1.LabelInstanceTypeStable]; ok {
+		return shape
+	}
+	return ""
+}
+
+// getNodeAZ returns the availability domain/zone of the node instance if set as a label or an empty string if is not found.
+func getNodeAZ(node *apiv1.Node) string {
+	// First check for the deprecated label
+	if az, ok := node.Labels[apiv1.LabelZoneFailureDomain]; ok {
+		return az
+	} else if az, ok := node.Labels[apiv1.LabelTopologyZone]; ok {
+		return az
+	}
+	return ""
 }
 
 // getNodeInternalAddress returns the first private address of the node and an empty string if none are found.

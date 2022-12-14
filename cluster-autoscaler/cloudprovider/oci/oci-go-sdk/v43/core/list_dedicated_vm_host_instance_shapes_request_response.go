@@ -11,7 +11,7 @@ import (
 
 // ListDedicatedVmHostInstanceShapesRequest wrapper for the ListDedicatedVmHostInstanceShapes operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListDedicatedVmHostInstanceShapes.go.html to see an example of how to use ListDedicatedVmHostInstanceShapesRequest.
 type ListDedicatedVmHostInstanceShapesRequest struct {

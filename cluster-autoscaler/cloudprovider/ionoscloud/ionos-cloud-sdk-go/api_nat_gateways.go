@@ -1907,13 +1907,13 @@ func (r ApiDatacentersNatgatewaysPostRequest) Execute() (NatGateway, *APIRespons
 }
 
 /*
- * DatacentersNatgatewaysPost Create NAT Gateways
- * Create a NAT Gateway within the data center.
+  - DatacentersNatgatewaysPost Create NAT Gateways
+  - Create a NAT Gateway within the data center.
 
 This operation is restricted to contract owner, admin, and users with 'createInternetAccess' privileges.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param datacenterId The unique ID of the data center.
- * @return ApiDatacentersNatgatewaysPostRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param datacenterId The unique ID of the data center.
+  - @return ApiDatacentersNatgatewaysPostRequest
 */
 func (a *NATGatewaysApiService) DatacentersNatgatewaysPost(ctx _context.Context, datacenterId string) ApiDatacentersNatgatewaysPostRequest {
 	return ApiDatacentersNatgatewaysPostRequest{

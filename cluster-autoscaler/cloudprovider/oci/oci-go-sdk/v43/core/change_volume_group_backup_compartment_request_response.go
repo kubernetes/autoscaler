@@ -11,7 +11,7 @@ import (
 
 // ChangeVolumeGroupBackupCompartmentRequest wrapper for the ChangeVolumeGroupBackupCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeVolumeGroupBackupCompartment.go.html to see an example of how to use ChangeVolumeGroupBackupCompartmentRequest.
 type ChangeVolumeGroupBackupCompartmentRequest struct {

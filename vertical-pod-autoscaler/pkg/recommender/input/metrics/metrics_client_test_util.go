@@ -84,7 +84,7 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
 	fakeMetricsGetter.AddReactor("list", "pods", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
 	})
-	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1(), "")
+	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1(), "", "fake")
 }
 
 func (tc *metricsClientTestCase) getFakePodMetricsList() *metricsapi.PodMetricsList {

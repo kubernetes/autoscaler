@@ -30,10 +30,11 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
+	podsecurity "k8s.io/pod-security-admission/api"
 
-	"github.com/onsi/ginkgo"
+	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
 
@@ -119,6 +120,7 @@ func getVpaObserver(vpaClientSet vpa_clientset.Interface) *observer {
 
 var _ = RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("with missing VPA objects are garbage collected", func() {
 		ns := f.Namespace.Name
@@ -147,6 +149,7 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 
 var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("serves recommendation for CronJob", func() {
 		ginkgo.By("Setting up hamster CronJob")
@@ -171,6 +174,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 
 var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	var (
 		vpaCRD       *vpa_types.VerticalPodAutoscaler
@@ -241,6 +245,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 
 var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	var (
 		vpaClientSet vpa_clientset.Interface
@@ -321,6 +326,7 @@ func createVpaCRDWithMinMaxAllowed(f *framework.Framework, minAllowed, maxAllowe
 
 var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	var vpaClientSet vpa_clientset.Interface
 

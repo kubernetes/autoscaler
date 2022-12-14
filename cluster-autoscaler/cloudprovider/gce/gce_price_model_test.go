@@ -18,6 +18,7 @@ package gce
 
 import (
 	"math"
+	"strconv"
 	"testing"
 	"time"
 
@@ -38,7 +39,8 @@ func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64
 		Zone:    "us-central1-b"},
 		instanceType,
 		nodeName,
-		OperatingSystemLinux)
+		OperatingSystemLinux,
+		DefaultArch)
 	assert.NoError(t, err)
 	if isPreemptible {
 		labels[preemptibleLabel] = "true"
@@ -57,6 +59,26 @@ func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64
 	return node
 }
 
+// testNodeEphemeralStorage builds node that includes information about ephemeral storage in annotations.
+func testNodeEphemeralStorage(t *testing.T, nodeName string, isEphemeralStorageLocalSsd bool, localSsdCount int, bootDiskType string, bootDiskSize int, isSpot bool) *apiv1.Node {
+	node := testNode(t, nodeName, "", 8000, 30*units.GiB, "", 0, false, isSpot)
+	if isEphemeralStorageLocalSsd {
+		AddEphemeralStorageToNode(node, int64(localSsdCount)*LocalSSDDiskSizeInGiB)
+	} else {
+		AddEphemeralStorageToNode(node, int64(bootDiskSize))
+	}
+	if isEphemeralStorageLocalSsd {
+		node.Labels[ephemeralStorageLocalSsdLabel] = "true"
+	}
+	node.Annotations = make(map[string]string)
+	if localSsdCount > 0 {
+		node.Annotations[LocalSsdCountAnnotation] = strconv.Itoa(localSsdCount)
+	}
+	node.Annotations[BootDiskSizeAnnotation] = strconv.Itoa(bootDiskSize)
+	node.Annotations[BootDiskTypeAnnotation] = bootDiskType
+	return node
+}
+
 // this test is meant to cover all the branches in pricing logic, not all possible types of instances
 func TestGetNodePrice(t *testing.T) {
 	// tests assert that price(cheaperNode) < priceComparisonCoefficient * price(expensiveNode)
@@ -64,6 +86,7 @@ func TestGetNodePrice(t *testing.T) {
 		cheaperNode                *apiv1.Node
 		expensiveNode              *apiv1.Node
 		priceComparisonCoefficient float64
+		expanderSupport            bool
 	}{
 		// instance types
 		"e2 is cheaper than n1": {
@@ -171,11 +194,30 @@ func TestGetNodePrice(t *testing.T) {
 			expensiveNode:              testNode(t, "known", "n1-custom", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1.001,
 		},
+		// Ephemeral storage support
+		"ephemeral storage support: less local SSD count is cheaper": {
+			cheaperNode:                testNodeEphemeralStorage(t, "cheapNode", true, 2, "pd-standard", 100, false),
+			expensiveNode:              testNodeEphemeralStorage(t, "expensiveNode", true, 4, "pd-standard", 100, false),
+			priceComparisonCoefficient: 1,
+			expanderSupport:            true,
+		},
+		"ephemeral storage support: local SSD cheaper than boot disk": {
+			cheaperNode:                testNodeEphemeralStorage(t, "cheapNode", true, 1, "pd-standard", 100, true),
+			expensiveNode:              testNodeEphemeralStorage(t, "expensiveNode", false, 0, "pd-ssd", 100, false),
+			priceComparisonCoefficient: 1,
+			expanderSupport:            true,
+		},
+		"ephemeral storage support: node with cheaper boot disk option is cheaper": {
+			cheaperNode:                testNodeEphemeralStorage(t, "cheapNode", false, 0, "pd-standard", 100, false),
+			expensiveNode:              testNodeEphemeralStorage(t, "expensiveNode", false, 0, "pd-ssd", 100, false),
+			priceComparisonCoefficient: 1,
+			expanderSupport:            true,
+		},
 	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			model := &GcePriceModel{}
+			model := NewGcePriceModel(NewGcePriceInfo(), tc.expanderSupport)
 			now := time.Now()
 
 			price1, err := model.NodePrice(tc.cheaperNode, now, now.Add(time.Hour))
@@ -190,16 +232,20 @@ func TestGetNodePrice(t *testing.T) {
 }
 
 func TestGetPodPrice(t *testing.T) {
-	pod1 := BuildTestPod("a1", 100, 500*units.MiB)
-	pod2 := BuildTestPod("a2", 2*100, 2*500*units.MiB)
+	pod1 := BuildTestPodWithEphemeralStorage("a1", 100, 500*units.MiB, 100*units.GiB)
+	pod2 := BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 2*100*units.GiB)
+	pod3 := BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 100*units.GiB)
 
-	model := &GcePriceModel{}
+	model := NewGcePriceModel(NewGcePriceInfo(), true)
 	now := time.Now()
 
 	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	price2, err := model.PodPrice(pod2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
+	price3, err := model.PodPrice(pod3, now, now.Add(time.Hour))
+	assert.NoError(t, err)
 	// 2 times bigger pod should cost twice as much.
 	assert.True(t, math.Abs(price1*2-price2) < 0.001)
+	assert.True(t, price2 > price3)
 }

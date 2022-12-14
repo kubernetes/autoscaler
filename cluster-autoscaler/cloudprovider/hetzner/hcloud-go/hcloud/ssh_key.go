@@ -97,6 +97,7 @@ type SSHKeyListOpts struct {
 	ListOpts
 	Name        string
 	Fingerprint string
+	Sort        []string
 }
 
 func (l SSHKeyListOpts) values() url.Values {
@@ -106,6 +107,9 @@ func (l SSHKeyListOpts) values() url.Values {
 	}
 	if l.Fingerprint != "" {
 		vals.Add("fingerprint", l.Fingerprint)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }
@@ -142,7 +146,7 @@ func (c *SSHKeyClient) All(ctx context.Context) ([]*SSHKey, error) {
 func (c *SSHKeyClient) AllWithOpts(ctx context.Context, opts SSHKeyListOpts) ([]*SSHKey, error) {
 	allSSHKeys := []*SSHKey{}
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		sshKeys, resp, err := c.List(ctx, opts)
 		if err != nil {

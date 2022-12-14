@@ -302,7 +302,8 @@ var annotationsToSkip = map[string]bool{
 
 // skipCopyAnnotation returns true if we should skip copying the annotation with the given annotation key
 // TODO: How to decide which annotations should / should not be copied?
-//       See https://github.com/kubernetes/kubernetes/pull/20035#issuecomment-179558615
+//
+//	See https://github.com/kubernetes/kubernetes/pull/20035#issuecomment-179558615
 func skipCopyAnnotation(key string) bool {
 	return annotationsToSkip[key]
 }
@@ -595,9 +596,9 @@ func ListPods(deployment *apps.Deployment, rsList []*apps.ReplicaSet, getPodList
 
 // EqualIgnoreHash returns true if two given podTemplateSpec are equal, ignoring the diff in value of Labels[pod-template-hash]
 // We ignore pod-template-hash because:
-// 1. The hash result would be different upon podTemplateSpec API changes
-//    (e.g. the addition of a new field will cause the hash code to change)
-// 2. The deployment template won't have hash labels
+//  1. The hash result would be different upon podTemplateSpec API changes
+//     (e.g. the addition of a new field will cause the hash code to change)
+//  2. The deployment template won't have hash labels
 func EqualIgnoreHash(template1, template2 *v1.PodTemplateSpec) bool {
 	t1Copy := template1.DeepCopy()
 	t2Copy := template2.DeepCopy()
@@ -900,7 +901,8 @@ func GetDeploymentsForReplicaSet(deploymentLister appslisters.DeploymentLister, 
 	for _, d := range dList {
 		selector, err := metav1.LabelSelectorAsSelector(d.Spec.Selector)
 		if err != nil {
-			return nil, fmt.Errorf("invalid label selector: %v", err)
+			// This object has an invalid selector, it does not match the replicaset
+			continue
 		}
 		// If a deployment with a nil or empty selector creeps in, it should match nothing, not everything.
 		if selector.Empty() || !selector.Matches(labels.Set(rs.Labels)) {

@@ -24,7 +24,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingapi "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -40,7 +39,7 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 )
 
 type wellKnownController string
@@ -129,7 +128,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		statefulSet:           factory.Apps().V1().StatefulSets().Informer(),
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
-		cronJob:               factory.Batch().V1beta1().CronJobs().Informer(),
+		cronJob:               factory.Batch().V1().CronJobs().Informer(),
 	}
 
 	for kind, informer := range informersMap {
@@ -191,7 +190,7 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*batchv1.Job):
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*batchv1beta1.CronJob):
+	case (*batchv1.CronJob):
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*corev1.ReplicationController):
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil

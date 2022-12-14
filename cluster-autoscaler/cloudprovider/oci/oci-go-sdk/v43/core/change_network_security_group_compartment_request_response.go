@@ -11,7 +11,7 @@ import (
 
 // ChangeNetworkSecurityGroupCompartmentRequest wrapper for the ChangeNetworkSecurityGroupCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeNetworkSecurityGroupCompartment.go.html to see an example of how to use ChangeNetworkSecurityGroupCompartmentRequest.
 type ChangeNetworkSecurityGroupCompartmentRequest struct {

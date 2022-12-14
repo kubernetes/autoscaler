@@ -25,7 +25,7 @@ import (
 type PredicateErrorType int
 
 const (
-	// NotSchedulablePredicateError means that one of the filters retuned that pod does not fit a node
+	// NotSchedulablePredicateError means that one of the filters returned that pod does not fit a node
 	NotSchedulablePredicateError PredicateErrorType = iota
 	// InternalPredicateError denotes internal unexpected error while calling PredicateChecker
 	InternalPredicateError

@@ -1,0 +1,2793 @@
+{
+  "metadata": {
+    "apiVersion": "2021-08-17",
+    "endpointPrefix": "gamesparks",
+    "jsonVersion": "1.1",
+    "protocol": "rest-json",
+    "serviceFullName": "GameSparks",
+    "serviceId": "GameSparks",
+    "signatureVersion": "v4",
+    "signingName": "gamesparks",
+    "uid": "gamesparks-2021-08-17"
+  },
+  "operations": {
+    "CreateGame": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ConflictException"
+        },
+        {
+          "shape": "InternalServerException"
+        },
+        {
+          "shape": "ServiceQuotaExceededException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/game",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "CreateGameRequest"
+      },
+      "name": "CreateGame",
+      "output": {
+        "shape": "CreateGameResult"
+      }
+    },
+    "CreateSnapshot": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ConflictException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/game/{GameName}/snapshot",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "CreateSnapshotRequest"
+      },
+      "name": "CreateSnapshot",
+      "output": {
+        "shape": "CreateSnapshotResult"
+      }
+    },
+    "CreateStage": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ConflictException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/game/{GameName}/stage",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "CreateStageRequest"
+      },
+      "name": "CreateStage",
+      "output": {
+        "shape": "CreateStageResult"
+      }
+    },
+    "DeleteGame": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ConflictException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/game/{GameName}",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "DeleteGameRequest"
+      },
+      "name": "DeleteGame",
+      "output": {
+        "shape": "DeleteGameResult"
+      }
+    },
+    "DeleteStage": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ConflictException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/game/{GameName}/stage/{StageName}",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "DeleteStageRequest"
+      },
+      "name": "DeleteStage",
+      "output": {
+        "shape": "DeleteStageResult"
+      }
+    },
+    "DisconnectPlayer": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/runtime/game/{GameName}/stage/{StageName}/player/{PlayerId}/disconnect",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "DisconnectPlayerRequest"
+      },
+      "name": "DisconnectPlayer",
+      "output": {
+        "shape": "DisconnectPlayerResult"
+      }
+    },
+    "ExportSnapshot": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/snapshot/{SnapshotId}/export",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ExportSnapshotRequest"
+      },
+      "name": "ExportSnapshot",
+      "output": {
+        "shape": "ExportSnapshotResult"
+      }
+    },
+    "GetExtension": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/extension/{Namespace}/{Name}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetExtensionRequest"
+      },
+      "name": "GetExtension",
+      "output": {
+        "shape": "GetExtensionResult"
+      }
+    },
+    "GetExtensionVersion": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/extension/{Namespace}/{Name}/version/{ExtensionVersion}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetExtensionVersionRequest"
+      },
+      "name": "GetExtensionVersion",
+      "output": {
+        "shape": "GetExtensionVersionResult"
+      }
+    },
+    "GetGame": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetGameRequest"
+      },
+      "name": "GetGame",
+      "output": {
+        "shape": "GetGameResult"
+      }
+    },
+    "GetGameConfiguration": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/configuration",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetGameConfigurationRequest"
+      },
+      "name": "GetGameConfiguration",
+      "output": {
+        "shape": "GetGameConfigurationResult"
+      }
+    },
+    "GetGeneratedCodeJob": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/snapshot/{SnapshotId}/generated-sdk-code-job/{JobId}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetGeneratedCodeJobRequest"
+      },
+      "name": "GetGeneratedCodeJob",
+      "output": {
+        "shape": "GetGeneratedCodeJobResult"
+      }
+    },
+    "GetPlayerConnectionStatus": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/runtime/game/{GameName}/stage/{StageName}/player/{PlayerId}/connection",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetPlayerConnectionStatusRequest"
+      },
+      "name": "GetPlayerConnectionStatus",
+      "output": {
+        "shape": "GetPlayerConnectionStatusResult"
+      }
+    },
+    "GetSnapshot": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/snapshot/{SnapshotId}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetSnapshotRequest"
+      },
+      "name": "GetSnapshot",
+      "output": {
+        "shape": "GetSnapshotResult"
+      }
+    },
+    "GetStage": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/stage/{StageName}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetStageRequest"
+      },
+      "name": "GetStage",
+      "output": {
+        "shape": "GetStageResult"
+      }
+    },
+    "GetStageDeployment": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/stage/{StageName}/deployment",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "GetStageDeploymentRequest"
+      },
+      "name": "GetStageDeployment",
+      "output": {
+        "shape": "GetStageDeploymentResult"
+      }
+    },
+    "ImportGameConfiguration": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        },
+        {
+          "shape": "ServiceQuotaExceededException"
+        }
+      ],
+      "http": {
+        "method": "PUT",
+        "requestUri": "/game/{GameName}/configuration",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "ImportGameConfigurationRequest"
+      },
+      "name": "ImportGameConfiguration",
+      "output": {
+        "shape": "ImportGameConfigurationResult"
+      }
+    },
+    "ListExtensionVersions": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/extension/{Namespace}/{Name}/version",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListExtensionVersionsRequest"
+      },
+      "name": "ListExtensionVersions",
+      "output": {
+        "shape": "ListExtensionVersionsResult"
+      }
+    },
+    "ListExtensions": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/extension",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListExtensionsRequest"
+      },
+      "name": "ListExtensions",
+      "output": {
+        "shape": "ListExtensionsResult"
+      }
+    },
+    "ListGames": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListGamesRequest"
+      },
+      "name": "ListGames",
+      "output": {
+        "shape": "ListGamesResult"
+      }
+    },
+    "ListGeneratedCodeJobs": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/snapshot/{SnapshotId}/generated-sdk-code-jobs",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListGeneratedCodeJobsRequest"
+      },
+      "name": "ListGeneratedCodeJobs",
+      "output": {
+        "shape": "ListGeneratedCodeJobsResult"
+      }
+    },
+    "ListSnapshots": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/snapshot",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListSnapshotsRequest"
+      },
+      "name": "ListSnapshots",
+      "output": {
+        "shape": "ListSnapshotsResult"
+      }
+    },
+    "ListStageDeployments": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/stage/{StageName}/deployments",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListStageDeploymentsRequest"
+      },
+      "name": "ListStageDeployments",
+      "output": {
+        "shape": "ListStageDeploymentsResult"
+      }
+    },
+    "ListStages": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/game/{GameName}/stage",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListStagesRequest"
+      },
+      "name": "ListStages",
+      "output": {
+        "shape": "ListStagesResult"
+      }
+    },
+    "ListTagsForResource": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "requestUri": "/tags/{ResourceArn}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListTagsForResourceRequest"
+      },
+      "name": "ListTagsForResource",
+      "output": {
+        "shape": "ListTagsForResourceResult"
+      }
+    },
+    "StartGeneratedCodeJob": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/game/{GameName}/snapshot/{SnapshotId}/generated-sdk-code-job",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "StartGeneratedCodeJobRequest"
+      },
+      "name": "StartGeneratedCodeJob",
+      "output": {
+        "shape": "StartGeneratedCodeJobResult"
+      }
+    },
+    "StartStageDeployment": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ConflictException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/game/{GameName}/stage/{StageName}/deployment",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "StartStageDeploymentRequest"
+      },
+      "name": "StartStageDeployment",
+      "output": {
+        "shape": "StartStageDeploymentResult"
+      }
+    },
+    "TagResource": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "POST",
+        "requestUri": "/tags/{ResourceArn}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "TagResourceRequest"
+      },
+      "name": "TagResource",
+      "output": {
+        "shape": "TagResourceResult"
+      }
+    },
+    "UntagResource": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/tags/{ResourceArn}",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "UntagResourceRequest"
+      },
+      "name": "UntagResource",
+      "output": {
+        "shape": "UntagResourceResult"
+      }
+    },
+    "UpdateGame": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "PATCH",
+        "requestUri": "/game/{GameName}",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "UpdateGameRequest"
+      },
+      "name": "UpdateGame",
+      "output": {
+        "shape": "UpdateGameResult"
+      }
+    },
+    "UpdateGameConfiguration": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        },
+        {
+          "shape": "ServiceQuotaExceededException"
+        }
+      ],
+      "http": {
+        "method": "PATCH",
+        "requestUri": "/game/{GameName}/configuration",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "UpdateGameConfigurationRequest"
+      },
+      "name": "UpdateGameConfiguration",
+      "output": {
+        "shape": "UpdateGameConfigurationResult"
+      }
+    },
+    "UpdateSnapshot": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "PATCH",
+        "requestUri": "/game/{GameName}/snapshot/{SnapshotId}",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "UpdateSnapshotRequest"
+      },
+      "name": "UpdateSnapshot",
+      "output": {
+        "shape": "UpdateSnapshotResult"
+      }
+    },
+    "UpdateStage": {
+      "errors": [
+        {
+          "shape": "ValidationException"
+        },
+        {
+          "shape": "AccessDeniedException"
+        },
+        {
+          "shape": "ThrottlingException"
+        },
+        {
+          "shape": "ResourceNotFoundException"
+        },
+        {
+          "shape": "InternalServerException"
+        }
+      ],
+      "http": {
+        "method": "PATCH",
+        "requestUri": "/game/{GameName}/stage/{StageName}",
+        "responseCode": 200
+      },
+      "idempotent": true,
+      "input": {
+        "shape": "UpdateStageRequest"
+      },
+      "name": "UpdateStage",
+      "output": {
+        "shape": "UpdateStageResult"
+      }
+    }
+  },
+  "shapes": {
+    "ARN": {
+      "max": 2048,
+      "min": 20,
+      "pattern": "^[A-Za-z0-9:_/-]+$",
+      "type": "string"
+    },
+    "AccessDeniedException": {
+      "error": {
+        "httpStatusCode": 403,
+        "senderFault": true
+      },
+      "exception": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    },
+    "ByteSize": {
+      "min": 0,
+      "type": "integer"
+    },
+    "ClientToken": {
+      "max": 126,
+      "min": 33,
+      "type": "string"
+    },
+    "ConflictException": {
+      "error": {
+        "httpStatusCode": 409,
+        "senderFault": true
+      },
+      "exception": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    },
+    "Connection": {
+      "members": {
+        "Created": {
+          "shape": "DateTime"
+        },
+        "Id": {
+          "shape": "ConnectionId"
+        }
+      },
+      "type": "structure"
+    },
+    "ConnectionId": {
+      "max": 36,
+      "min": 1,
+      "type": "string"
+    },
+    "ConnectionIdList": {
+      "member": {
+        "shape": "ConnectionId"
+      },
+      "type": "list"
+    },
+    "ConnectionList": {
+      "member": {
+        "shape": "Connection"
+      },
+      "type": "list"
+    },
+    "CreateGameRequest": {
+      "members": {
+        "ClientToken": {
+          "shape": "ClientToken"
+        },
+        "Description": {
+          "shape": "GameDescription"
+        },
+        "GameName": {
+          "shape": "GameName"
+        },
+        "Tags": {
+          "shape": "TagMap"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "CreateGameResult": {
+      "members": {
+        "Game": {
+          "shape": "GameDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "CreateSnapshotRequest": {
+      "members": {
+        "Description": {
+          "shape": "SnapshotDescription"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "CreateSnapshotResult": {
+      "members": {
+        "Snapshot": {
+          "shape": "SnapshotDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "CreateStageRequest": {
+      "members": {
+        "ClientToken": {
+          "shape": "ClientToken"
+        },
+        "Description": {
+          "shape": "StageDescription"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "Role": {
+          "shape": "RoleARN"
+        },
+        "StageName": {
+          "shape": "StageName"
+        },
+        "Tags": {
+          "shape": "TagMap"
+        }
+      },
+      "required": [
+        "GameName",
+        "Role",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "CreateStageResult": {
+      "members": {
+        "Stage": {
+          "shape": "StageDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "DateTime": {
+      "timestampFormat": "iso8601",
+      "type": "timestamp"
+    },
+    "DeleteGameRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "DeleteGameResult": {
+      "members": {},
+      "type": "structure"
+    },
+    "DeleteStageRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "DeleteStageResult": {
+      "members": {},
+      "type": "structure"
+    },
+    "DeploymentAction": {
+      "enum": [
+        "DEPLOY",
+        "UNDEPLOY"
+      ],
+      "type": "string"
+    },
+    "DeploymentId": {
+      "max": 128,
+      "min": 1,
+      "pattern": "^\\S(.*\\S)?$",
+      "type": "string"
+    },
+    "DeploymentResult": {
+      "members": {
+        "Message": {
+          "shape": "Message"
+        },
+        "ResultCode": {
+          "shape": "ResultCode"
+        }
+      },
+      "type": "structure"
+    },
+    "DeploymentState": {
+      "enum": [
+        "PENDING",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "type": "string"
+    },
+    "DisconnectPlayerRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "PlayerId": {
+          "location": "uri",
+          "locationName": "PlayerId",
+          "shape": "PlayerId"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "PlayerId",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "DisconnectPlayerResult": {
+      "members": {
+        "DisconnectFailures": {
+          "shape": "ConnectionIdList"
+        },
+        "DisconnectSuccesses": {
+          "shape": "ConnectionIdList"
+        }
+      },
+      "type": "structure"
+    },
+    "ExceptionMessage": {
+      "type": "string"
+    },
+    "ExportSnapshotRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "SnapshotId": {
+          "location": "uri",
+          "locationName": "SnapshotId",
+          "shape": "SnapshotId"
+        }
+      },
+      "required": [
+        "GameName",
+        "SnapshotId"
+      ],
+      "type": "structure"
+    },
+    "ExportSnapshotResult": {
+      "members": {
+        "S3Url": {
+          "shape": "S3PresignedUrl"
+        }
+      },
+      "type": "structure"
+    },
+    "ExtensionDescription": {
+      "max": 250,
+      "min": 0,
+      "pattern": "^\\S(.*\\S)?$|^$",
+      "type": "string"
+    },
+    "ExtensionDetails": {
+      "members": {
+        "Description": {
+          "shape": "ExtensionDescription"
+        },
+        "Name": {
+          "shape": "ExtensionName"
+        },
+        "Namespace": {
+          "shape": "ExtensionNamespace"
+        }
+      },
+      "type": "structure"
+    },
+    "ExtensionDetailsList": {
+      "member": {
+        "shape": "ExtensionDetails"
+      },
+      "type": "list"
+    },
+    "ExtensionName": {
+      "max": 36,
+      "min": 1,
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "type": "string"
+    },
+    "ExtensionNamespace": {
+      "max": 36,
+      "min": 1,
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "type": "string"
+    },
+    "ExtensionVersion": {
+      "max": 20,
+      "min": 0,
+      "type": "string"
+    },
+    "ExtensionVersionDetails": {
+      "members": {
+        "Name": {
+          "shape": "ExtensionName"
+        },
+        "Namespace": {
+          "shape": "ExtensionNamespace"
+        },
+        "Schema": {
+          "shape": "ExtensionVersionSchema"
+        },
+        "Version": {
+          "shape": "ExtensionVersion"
+        }
+      },
+      "type": "structure"
+    },
+    "ExtensionVersionDetailsList": {
+      "member": {
+        "shape": "ExtensionVersionDetails"
+      },
+      "type": "list"
+    },
+    "ExtensionVersionSchema": {
+      "max": 2048,
+      "min": 0,
+      "type": "string"
+    },
+    "GameConfigurationDetails": {
+      "members": {
+        "Created": {
+          "shape": "DateTime"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        },
+        "Sections": {
+          "shape": "Sections"
+        }
+      },
+      "type": "structure"
+    },
+    "GameDescription": {
+      "max": 250,
+      "min": 0,
+      "pattern": "^\\S(.*\\S)?$|^$",
+      "type": "string"
+    },
+    "GameDetails": {
+      "members": {
+        "Arn": {
+          "shape": "ARN"
+        },
+        "Created": {
+          "shape": "DateTime"
+        },
+        "Description": {
+          "shape": "GameDescription"
+        },
+        "EnableTerminationProtection": {
+          "shape": "GameTerminationProtection"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        },
+        "Name": {
+          "shape": "GameName"
+        },
+        "State": {
+          "shape": "GameState"
+        },
+        "Tags": {
+          "shape": "TagMap"
+        }
+      },
+      "type": "structure"
+    },
+    "GameKey": {
+      "max": 44,
+      "min": 1,
+      "type": "string"
+    },
+    "GameName": {
+      "max": 36,
+      "min": 1,
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "type": "string"
+    },
+    "GameSdkVersion": {
+      "max": 10,
+      "min": 5,
+      "pattern": "^(\\d|[1-9]\\d*)\\.(\\d|[0-9]\\d*)\\.(\\d|[0-9]\\d*)$",
+      "type": "string"
+    },
+    "GameState": {
+      "enum": [
+        "ACTIVE",
+        "DELETING"
+      ],
+      "type": "string"
+    },
+    "GameSummary": {
+      "members": {
+        "Description": {
+          "shape": "GameDescription"
+        },
+        "Name": {
+          "shape": "GameName"
+        },
+        "State": {
+          "shape": "GameState"
+        },
+        "Tags": {
+          "shape": "TagMap"
+        }
+      },
+      "type": "structure"
+    },
+    "GameSummaryList": {
+      "member": {
+        "shape": "GameSummary"
+      },
+      "type": "list"
+    },
+    "GameTerminationProtection": {
+      "type": "boolean"
+    },
+    "GeneratedCodeJobDescription": {
+      "max": 250,
+      "min": 0,
+      "pattern": "^\\S(.*\\S)?$|^$",
+      "type": "string"
+    },
+    "GeneratedCodeJobDetails": {
+      "members": {
+        "Description": {
+          "shape": "GeneratedCodeJobDescription"
+        },
+        "ExpirationTime": {
+          "shape": "DateTime"
+        },
+        "GeneratedCodeJobId": {
+          "shape": "GeneratedCodeJobId"
+        },
+        "S3Url": {
+          "shape": "S3PresignedUrl"
+        },
+        "Status": {
+          "shape": "GeneratedCodeJobState"
+        }
+      },
+      "type": "structure"
+    },
+    "GeneratedCodeJobDetailsList": {
+      "member": {
+        "shape": "GeneratedCodeJobDetails"
+      },
+      "type": "list"
+    },
+    "GeneratedCodeJobId": {
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+      "type": "string"
+    },
+    "GeneratedCodeJobState": {
+      "enum": [
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED",
+        "PENDING"
+      ],
+      "type": "string"
+    },
+    "Generator": {
+      "members": {
+        "GameSdkVersion": {
+          "shape": "GameSdkVersion"
+        },
+        "Language": {
+          "shape": "Language"
+        },
+        "TargetPlatform": {
+          "shape": "TargetPlatform"
+        }
+      },
+      "type": "structure"
+    },
+    "GetExtensionRequest": {
+      "members": {
+        "Name": {
+          "location": "uri",
+          "locationName": "Name",
+          "shape": "ExtensionName"
+        },
+        "Namespace": {
+          "location": "uri",
+          "locationName": "Namespace",
+          "shape": "ExtensionNamespace"
+        }
+      },
+      "required": [
+        "Name",
+        "Namespace"
+      ],
+      "type": "structure"
+    },
+    "GetExtensionResult": {
+      "members": {
+        "Extension": {
+          "shape": "ExtensionDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetExtensionVersionRequest": {
+      "members": {
+        "ExtensionVersion": {
+          "location": "uri",
+          "locationName": "ExtensionVersion",
+          "shape": "ExtensionVersion"
+        },
+        "Name": {
+          "location": "uri",
+          "locationName": "Name",
+          "shape": "ExtensionName"
+        },
+        "Namespace": {
+          "location": "uri",
+          "locationName": "Namespace",
+          "shape": "ExtensionNamespace"
+        }
+      },
+      "required": [
+        "ExtensionVersion",
+        "Name",
+        "Namespace"
+      ],
+      "type": "structure"
+    },
+    "GetExtensionVersionResult": {
+      "members": {
+        "ExtensionVersion": {
+          "shape": "ExtensionVersionDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetGameConfigurationRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "Sections": {
+          "location": "querystring",
+          "locationName": "Sections",
+          "shape": "SectionList"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "GetGameConfigurationResult": {
+      "members": {
+        "GameConfiguration": {
+          "shape": "GameConfigurationDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetGameRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "GetGameResult": {
+      "members": {
+        "Game": {
+          "shape": "GameDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetGeneratedCodeJobRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "JobId": {
+          "location": "uri",
+          "locationName": "JobId",
+          "shape": "GeneratedCodeJobId"
+        },
+        "SnapshotId": {
+          "location": "uri",
+          "locationName": "SnapshotId",
+          "shape": "SnapshotId"
+        }
+      },
+      "required": [
+        "GameName",
+        "JobId",
+        "SnapshotId"
+      ],
+      "type": "structure"
+    },
+    "GetGeneratedCodeJobResult": {
+      "members": {
+        "GeneratedCodeJob": {
+          "shape": "GeneratedCodeJobDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetPlayerConnectionStatusRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "PlayerId": {
+          "location": "uri",
+          "locationName": "PlayerId",
+          "shape": "PlayerId"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "PlayerId",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "GetPlayerConnectionStatusResult": {
+      "members": {
+        "Connections": {
+          "shape": "ConnectionList"
+        }
+      },
+      "type": "structure"
+    },
+    "GetSnapshotRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "Sections": {
+          "location": "querystring",
+          "locationName": "Sections",
+          "shape": "SectionList"
+        },
+        "SnapshotId": {
+          "location": "uri",
+          "locationName": "SnapshotId",
+          "shape": "SnapshotId"
+        }
+      },
+      "required": [
+        "GameName",
+        "SnapshotId"
+      ],
+      "type": "structure"
+    },
+    "GetSnapshotResult": {
+      "members": {
+        "Snapshot": {
+          "shape": "SnapshotDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetStageDeploymentRequest": {
+      "members": {
+        "DeploymentId": {
+          "location": "querystring",
+          "locationName": "DeploymentId",
+          "shape": "DeploymentId"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "GetStageDeploymentResult": {
+      "members": {
+        "StageDeployment": {
+          "shape": "StageDeploymentDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "GetStageRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "GetStageResult": {
+      "members": {
+        "Stage": {
+          "shape": "StageDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "ImportGameConfigurationRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "ImportSource": {
+          "shape": "ImportGameConfigurationSource"
+        }
+      },
+      "required": [
+        "GameName",
+        "ImportSource"
+      ],
+      "type": "structure"
+    },
+    "ImportGameConfigurationResult": {
+      "members": {
+        "GameConfiguration": {
+          "shape": "GameConfigurationDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "ImportGameConfigurationSource": {
+      "members": {
+        "File": {
+          "shape": "RawGameConfigurationData"
+        }
+      },
+      "required": [
+        "File"
+      ],
+      "type": "structure"
+    },
+    "InternalServerException": {
+      "error": {
+        "httpStatusCode": 500
+      },
+      "exception": true,
+      "fault": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    },
+    "Language": {
+      "max": 16,
+      "min": 1,
+      "pattern": "^[a-zA-Z_]+$",
+      "type": "string"
+    },
+    "ListExtensionVersionsRequest": {
+      "members": {
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "Name": {
+          "location": "uri",
+          "locationName": "Name",
+          "shape": "ExtensionName"
+        },
+        "Namespace": {
+          "location": "uri",
+          "locationName": "Namespace",
+          "shape": "ExtensionNamespace"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        }
+      },
+      "required": [
+        "Name",
+        "Namespace"
+      ],
+      "type": "structure"
+    },
+    "ListExtensionVersionsResult": {
+      "members": {
+        "ExtensionVersions": {
+          "shape": "ExtensionVersionDetailsList"
+        },
+        "NextToken": {
+          "shape": "NextToken"
+        }
+      },
+      "type": "structure"
+    },
+    "ListExtensionsRequest": {
+      "members": {
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        }
+      },
+      "type": "structure"
+    },
+    "ListExtensionsResult": {
+      "members": {
+        "Extensions": {
+          "shape": "ExtensionDetailsList"
+        },
+        "NextToken": {
+          "shape": "NextToken"
+        }
+      },
+      "type": "structure"
+    },
+    "ListGamesRequest": {
+      "members": {
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        }
+      },
+      "type": "structure"
+    },
+    "ListGamesResult": {
+      "members": {
+        "Games": {
+          "shape": "GameSummaryList"
+        },
+        "NextToken": {
+          "shape": "NextToken"
+        }
+      },
+      "type": "structure"
+    },
+    "ListGeneratedCodeJobsRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        },
+        "SnapshotId": {
+          "location": "uri",
+          "locationName": "SnapshotId",
+          "shape": "SnapshotId"
+        }
+      },
+      "required": [
+        "GameName",
+        "SnapshotId"
+      ],
+      "type": "structure"
+    },
+    "ListGeneratedCodeJobsResult": {
+      "members": {
+        "GeneratedCodeJobs": {
+          "shape": "GeneratedCodeJobDetailsList"
+        },
+        "NextToken": {
+          "shape": "NextToken"
+        }
+      },
+      "type": "structure"
+    },
+    "ListSnapshotsRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "ListSnapshotsResult": {
+      "members": {
+        "NextToken": {
+          "shape": "NextToken"
+        },
+        "Snapshots": {
+          "shape": "SnapshotSummaryList"
+        }
+      },
+      "type": "structure"
+    },
+    "ListStageDeploymentsRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "ListStageDeploymentsResult": {
+      "members": {
+        "NextToken": {
+          "shape": "NextToken"
+        },
+        "StageDeployments": {
+          "shape": "StageDeploymentList"
+        }
+      },
+      "type": "structure"
+    },
+    "ListStagesRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "MaxResults": {
+          "location": "querystring",
+          "locationName": "MaxResults",
+          "shape": "MaxResults"
+        },
+        "NextToken": {
+          "location": "querystring",
+          "locationName": "NextToken",
+          "shape": "NextToken"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "ListStagesResult": {
+      "members": {
+        "NextToken": {
+          "shape": "NextToken"
+        },
+        "Stages": {
+          "shape": "StageSummaryList"
+        }
+      },
+      "type": "structure"
+    },
+    "ListTagsForResourceRequest": {
+      "members": {
+        "ResourceArn": {
+          "location": "uri",
+          "locationName": "ResourceArn",
+          "shape": "ResourceArn"
+        }
+      },
+      "required": [
+        "ResourceArn"
+      ],
+      "type": "structure"
+    },
+    "ListTagsForResourceResult": {
+      "members": {
+        "tags": {
+          "shape": "TagMap"
+        }
+      },
+      "type": "structure"
+    },
+    "LogGroupName": {
+      "max": 512,
+      "min": 1,
+      "type": "string"
+    },
+    "MaxResults": {
+      "box": true,
+      "max": 100,
+      "min": 1,
+      "type": "integer"
+    },
+    "Message": {
+      "type": "string"
+    },
+    "NextToken": {
+      "max": 1024,
+      "min": 1,
+      "pattern": "^\\S(.*\\S)?$",
+      "type": "string"
+    },
+    "Operation": {
+      "enum": [
+        "ADD",
+        "REMOVE",
+        "REPLACE"
+      ],
+      "type": "string"
+    },
+    "Path": {
+      "max": 500,
+      "min": 1,
+      "pattern": "^\\/.*[^\\/]$",
+      "type": "string"
+    },
+    "PlayerId": {
+      "max": 44,
+      "min": 1,
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "type": "string"
+    },
+    "RawGameConfigurationData": {
+      "max": 1024000,
+      "min": 10,
+      "type": "blob"
+    },
+    "ResourceArn": {
+      "max": 2048,
+      "min": 20,
+      "pattern": "^arn:aws:gamesparks:",
+      "type": "string"
+    },
+    "ResourceNotFoundException": {
+      "error": {
+        "httpStatusCode": 404,
+        "senderFault": true
+      },
+      "exception": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    },
+    "ResultCode": {
+      "enum": [
+        "SUCCESS",
+        "INVALID_ROLE_FAILURE",
+        "UNSPECIFIED_FAILURE"
+      ],
+      "type": "string"
+    },
+    "RoleARN": {
+      "max": 2048,
+      "min": 20,
+      "pattern": "^arn:(aws[a-zA-Z-]*)?:iam::\\d{12}:role/.+$",
+      "type": "string"
+    },
+    "S3PresignedUrl": {
+      "max": 2048,
+      "min": 10,
+      "pattern": "^https:\\/\\/(.*)\\.s3(.*)\\.amazonaws\\.com\\/(.*)$",
+      "type": "string"
+    },
+    "Section": {
+      "members": {
+        "Name": {
+          "shape": "SectionName"
+        },
+        "Size": {
+          "shape": "ByteSize"
+        }
+      },
+      "type": "structure"
+    },
+    "SectionList": {
+      "max": 100,
+      "member": {
+        "shape": "SectionName"
+      },
+      "min": 1,
+      "type": "list"
+    },
+    "SectionModification": {
+      "members": {
+        "Operation": {
+          "shape": "Operation"
+        },
+        "Path": {
+          "shape": "Path"
+        },
+        "Section": {
+          "shape": "SectionName"
+        }
+      },
+      "required": [
+        "Operation",
+        "Path",
+        "Section"
+      ],
+      "type": "structure"
+    },
+    "SectionModificationList": {
+      "max": 100,
+      "member": {
+        "shape": "SectionModification"
+      },
+      "min": 1,
+      "type": "list"
+    },
+    "SectionName": {
+      "max": 36,
+      "min": 1,
+      "pattern": "^[a-zA-Z0-9.]+$",
+      "type": "string"
+    },
+    "Sections": {
+      "key": {
+        "shape": "SectionName"
+      },
+      "type": "map",
+      "value": {
+        "shape": "Section"
+      }
+    },
+    "ServiceQuotaExceededException": {
+      "error": {
+        "httpStatusCode": 402,
+        "senderFault": true
+      },
+      "exception": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    },
+    "SnapshotDescription": {
+      "max": 250,
+      "min": 0,
+      "pattern": "^\\S(.*\\S)?$|^$",
+      "type": "string"
+    },
+    "SnapshotDetails": {
+      "members": {
+        "Created": {
+          "shape": "DateTime"
+        },
+        "Description": {
+          "shape": "SnapshotDescription"
+        },
+        "Id": {
+          "shape": "SnapshotId"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        },
+        "Sections": {
+          "shape": "Sections"
+        }
+      },
+      "type": "structure"
+    },
+    "SnapshotId": {
+      "max": 36,
+      "min": 33,
+      "pattern": "^Snapshot_\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3,6}Z$",
+      "type": "string"
+    },
+    "SnapshotSummary": {
+      "members": {
+        "Created": {
+          "shape": "DateTime"
+        },
+        "Description": {
+          "shape": "SnapshotDescription"
+        },
+        "Id": {
+          "shape": "SnapshotId"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        }
+      },
+      "type": "structure"
+    },
+    "SnapshotSummaryList": {
+      "member": {
+        "shape": "SnapshotSummary"
+      },
+      "type": "list"
+    },
+    "StageDeploymentDetails": {
+      "members": {
+        "Created": {
+          "shape": "DateTime"
+        },
+        "DeploymentAction": {
+          "shape": "DeploymentAction"
+        },
+        "DeploymentId": {
+          "shape": "DeploymentId"
+        },
+        "DeploymentResult": {
+          "shape": "DeploymentResult"
+        },
+        "DeploymentState": {
+          "shape": "DeploymentState"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        },
+        "SnapshotId": {
+          "shape": "SnapshotId"
+        }
+      },
+      "type": "structure"
+    },
+    "StageDeploymentList": {
+      "member": {
+        "shape": "StageDeploymentSummary"
+      },
+      "type": "list"
+    },
+    "StageDeploymentSummary": {
+      "members": {
+        "DeploymentAction": {
+          "shape": "DeploymentAction"
+        },
+        "DeploymentId": {
+          "shape": "DeploymentId"
+        },
+        "DeploymentResult": {
+          "shape": "DeploymentResult"
+        },
+        "DeploymentState": {
+          "shape": "DeploymentState"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        },
+        "SnapshotId": {
+          "shape": "SnapshotId"
+        }
+      },
+      "type": "structure"
+    },
+    "StageDescription": {
+      "max": 250,
+      "min": 0,
+      "pattern": "^\\S(.*\\S)?$|^$",
+      "type": "string"
+    },
+    "StageDetails": {
+      "members": {
+        "Arn": {
+          "shape": "ARN"
+        },
+        "Created": {
+          "shape": "DateTime"
+        },
+        "Description": {
+          "shape": "StageDescription"
+        },
+        "GameKey": {
+          "shape": "GameKey"
+        },
+        "LastUpdated": {
+          "shape": "DateTime"
+        },
+        "LogGroup": {
+          "shape": "LogGroupName"
+        },
+        "Name": {
+          "shape": "StageName"
+        },
+        "Role": {
+          "shape": "RoleARN"
+        },
+        "State": {
+          "shape": "StageState"
+        },
+        "Tags": {
+          "shape": "TagMap"
+        }
+      },
+      "type": "structure"
+    },
+    "StageName": {
+      "max": 36,
+      "min": 1,
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "type": "string"
+    },
+    "StageState": {
+      "enum": [
+        "ACTIVE",
+        "DELETING"
+      ],
+      "type": "string"
+    },
+    "StageSummary": {
+      "members": {
+        "Description": {
+          "shape": "StageDescription"
+        },
+        "GameKey": {
+          "shape": "GameKey"
+        },
+        "Name": {
+          "shape": "StageName"
+        },
+        "State": {
+          "shape": "StageState"
+        },
+        "Tags": {
+          "shape": "TagMap"
+        }
+      },
+      "type": "structure"
+    },
+    "StageSummaryList": {
+      "member": {
+        "shape": "StageSummary"
+      },
+      "type": "list"
+    },
+    "StartGeneratedCodeJobRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "Generator": {
+          "shape": "Generator"
+        },
+        "SnapshotId": {
+          "location": "uri",
+          "locationName": "SnapshotId",
+          "shape": "SnapshotId"
+        }
+      },
+      "required": [
+        "GameName",
+        "Generator",
+        "SnapshotId"
+      ],
+      "type": "structure"
+    },
+    "StartGeneratedCodeJobResult": {
+      "members": {
+        "GeneratedCodeJobId": {
+          "shape": "GeneratedCodeJobId"
+        }
+      },
+      "type": "structure"
+    },
+    "StartStageDeploymentRequest": {
+      "members": {
+        "ClientToken": {
+          "shape": "ClientToken"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "SnapshotId": {
+          "shape": "SnapshotId"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "SnapshotId",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "StartStageDeploymentResult": {
+      "members": {
+        "StageDeployment": {
+          "shape": "StageDeploymentDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "TagKey": {
+      "max": 128,
+      "min": 1,
+      "pattern": "^(?!aws:)[a-zA-Z+-=._:/]+$",
+      "type": "string"
+    },
+    "TagKeyList": {
+      "max": 50,
+      "member": {
+        "shape": "TagKey"
+      },
+      "min": 1,
+      "type": "list"
+    },
+    "TagMap": {
+      "key": {
+        "shape": "TagKey"
+      },
+      "max": 50,
+      "min": 1,
+      "type": "map",
+      "value": {
+        "shape": "TagValue"
+      }
+    },
+    "TagResourceRequest": {
+      "members": {
+        "ResourceArn": {
+          "location": "uri",
+          "locationName": "ResourceArn",
+          "shape": "ResourceArn"
+        },
+        "tags": {
+          "shape": "TagMap"
+        }
+      },
+      "required": [
+        "ResourceArn",
+        "tags"
+      ],
+      "type": "structure"
+    },
+    "TagResourceResult": {
+      "members": {},
+      "type": "structure"
+    },
+    "TagValue": {
+      "max": 256,
+      "min": 0,
+      "pattern": "^[\\s\\w+-=\\.:/@]*$",
+      "type": "string"
+    },
+    "TargetPlatform": {
+      "max": 16,
+      "min": 1,
+      "pattern": "^[a-zA-Z]+$",
+      "type": "string"
+    },
+    "ThrottlingException": {
+      "error": {
+        "httpStatusCode": 429,
+        "senderFault": true
+      },
+      "exception": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    },
+    "UntagResourceRequest": {
+      "members": {
+        "ResourceArn": {
+          "location": "uri",
+          "locationName": "ResourceArn",
+          "shape": "ResourceArn"
+        },
+        "tagKeys": {
+          "location": "querystring",
+          "locationName": "tagKeys",
+          "shape": "TagKeyList"
+        }
+      },
+      "required": [
+        "ResourceArn",
+        "tagKeys"
+      ],
+      "type": "structure"
+    },
+    "UntagResourceResult": {
+      "members": {},
+      "type": "structure"
+    },
+    "UpdateGameConfigurationRequest": {
+      "members": {
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "Modifications": {
+          "shape": "SectionModificationList"
+        }
+      },
+      "required": [
+        "GameName",
+        "Modifications"
+      ],
+      "type": "structure"
+    },
+    "UpdateGameConfigurationResult": {
+      "members": {
+        "GameConfiguration": {
+          "shape": "GameConfigurationDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "UpdateGameRequest": {
+      "members": {
+        "Description": {
+          "shape": "GameDescription"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        }
+      },
+      "required": [
+        "GameName"
+      ],
+      "type": "structure"
+    },
+    "UpdateGameResult": {
+      "members": {
+        "Game": {
+          "shape": "GameDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "UpdateSnapshotRequest": {
+      "members": {
+        "Description": {
+          "shape": "SnapshotDescription"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "SnapshotId": {
+          "location": "uri",
+          "locationName": "SnapshotId",
+          "shape": "SnapshotId"
+        }
+      },
+      "required": [
+        "GameName",
+        "SnapshotId"
+      ],
+      "type": "structure"
+    },
+    "UpdateSnapshotResult": {
+      "members": {
+        "Snapshot": {
+          "shape": "SnapshotDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "UpdateStageRequest": {
+      "members": {
+        "Description": {
+          "shape": "StageDescription"
+        },
+        "GameName": {
+          "location": "uri",
+          "locationName": "GameName",
+          "shape": "GameName"
+        },
+        "Role": {
+          "shape": "RoleARN"
+        },
+        "StageName": {
+          "location": "uri",
+          "locationName": "StageName",
+          "shape": "StageName"
+        }
+      },
+      "required": [
+        "GameName",
+        "StageName"
+      ],
+      "type": "structure"
+    },
+    "UpdateStageResult": {
+      "members": {
+        "Stage": {
+          "shape": "StageDetails"
+        }
+      },
+      "type": "structure"
+    },
+    "ValidationException": {
+      "error": {
+        "httpStatusCode": 400,
+        "senderFault": true
+      },
+      "exception": true,
+      "members": {
+        "Message": {
+          "shape": "ExceptionMessage"
+        }
+      },
+      "type": "structure"
+    }
+  },
+  "version": "2.0"
+}

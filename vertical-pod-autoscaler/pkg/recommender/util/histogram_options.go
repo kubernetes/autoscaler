@@ -54,8 +54,10 @@ func NewLinearHistogramOptions(
 // histogram with exponentially growing bucket boundaries. The first bucket
 // covers the range [0..firstBucketSize). Bucket with index n has size equal to firstBucketSize * ratio^n.
 // It follows that the bucket with index n >= 1 starts at:
-//     firstBucketSize * (1 + ratio + ratio^2 + ... + ratio^(n-1)) =
-//     firstBucketSize * (ratio^n - 1) / (ratio - 1).
+//
+//	firstBucketSize * (1 + ratio + ratio^2 + ... + ratio^(n-1)) =
+//	firstBucketSize * (ratio^n - 1) / (ratio - 1).
+//
 // The last bucket start is larger or equal to maxValue.
 // Requires maxValue > 0, firstBucketSize > 0, ratio > 1, epsilon > 0.
 func NewExponentialHistogramOptions(
@@ -113,7 +115,8 @@ func (o *exponentialHistogramOptions) NumBuckets() int {
 
 // Returns the index of the bucket for given value. This is the inverse function to
 // GetBucketStart(), which yields the following formula for the bucket index:
-//    bucket(value) = floor(log(value/firstBucketSize*(ratio-1)+1) / log(ratio))
+//
+//	bucket(value) = floor(log(value/firstBucketSize*(ratio-1)+1) / log(ratio))
 func (o *exponentialHistogramOptions) FindBucket(value float64) int {
 	if value < o.firstBucketSize {
 		return 0
@@ -126,7 +129,8 @@ func (o *exponentialHistogramOptions) FindBucket(value float64) int {
 }
 
 // Returns the start of the bucket with given index, according to the formula:
-//    bucketStart(bucket) = firstBucketSize * (ratio^bucket - 1) / (ratio - 1).
+//
+//	bucketStart(bucket) = firstBucketSize * (ratio^bucket - 1) / (ratio - 1).
 func (o *exponentialHistogramOptions) GetBucketStart(bucket int) float64 {
 	if bucket < 0 || bucket >= o.numBuckets {
 		panic(fmt.Sprintf("index %d out of range [0..%d]", bucket, o.numBuckets-1))

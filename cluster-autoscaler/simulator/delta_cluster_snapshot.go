@@ -26,6 +26,7 @@ import (
 // DeltaClusterSnapshot is an implementation of ClusterSnapshot optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
 //
 // Complexity of some notable operations:
+//
 //	fork - O(1)
 //	revert - O(1)
 //	commit - O(n)
@@ -34,16 +35,17 @@ import (
 //	list node infos - O(n), cached
 //
 // Watch out for:
+//
 //	node deletions, pod additions & deletions - invalidates cache of current snapshot
 //		(when forked affects delta, but not base.)
 //	pod affinity - causes scheduler framework to list pods with non-empty selector,
 //		so basic caching doesn't help.
-//
 type DeltaClusterSnapshot struct {
 	data *internalDeltaSnapshotData
 }
 
 type deltaSnapshotNodeLister DeltaClusterSnapshot
+type deltaSnapshotStorageLister DeltaClusterSnapshot
 
 type internalDeltaSnapshotData struct {
 	baseData *internalDeltaSnapshotData
@@ -55,6 +57,7 @@ type internalDeltaSnapshotData struct {
 	nodeInfoList                     []*schedulerframework.NodeInfo
 	havePodsWithAffinity             []*schedulerframework.NodeInfo
 	havePodsWithRequiredAntiAffinity []*schedulerframework.NodeInfo
+	pvcNamespaceMap                  map[string]int
 }
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
@@ -178,6 +181,8 @@ func (data *internalDeltaSnapshotData) clearCaches() {
 func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.havePodsWithAffinity = nil
 	data.havePodsWithRequiredAntiAffinity = nil
+	// TODO: update the cache when adding/removing pods instead of invalidating the whole cache
+	data.pvcNamespaceMap = nil
 }
 
 func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
@@ -271,6 +276,21 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 	return nil
 }
 
+func (data *internalDeltaSnapshotData) isPVCUsedByPods(key string) bool {
+	if data.pvcNamespaceMap != nil {
+		return data.pvcNamespaceMap[key] > 0
+	}
+	nodeInfos := data.getNodeInfoList()
+	pvcNamespaceMap := make(map[string]int)
+	for _, v := range nodeInfos {
+		for k, i := range v.PVCRefCounts {
+			pvcNamespaceMap[k] += i
+		}
+	}
+	data.pvcNamespaceMap = pvcNamespaceMap
+	return data.pvcNamespaceMap[key] > 0
+}
+
 func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 	forkedData := newInternalDeltaSnapshotData()
 	forkedData.baseData = data
@@ -349,6 +369,11 @@ func (snapshot *deltaSnapshotNodeLister) Get(nodeName string) (*schedulerframewo
 	return (*DeltaClusterSnapshot)(snapshot).getNodeInfo(nodeName)
 }
 
+// IsPVCUsedByPods returns if PVC is used by pods
+func (snapshot *deltaSnapshotStorageLister) IsPVCUsedByPods(key string) bool {
+	return (*DeltaClusterSnapshot)(snapshot).IsPVCUsedByPods(key)
+}
+
 func (snapshot *DeltaClusterSnapshot) getNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error) {
 	data := snapshot.data
 	node, found := data.getNodeInfo(nodeName)
@@ -361,6 +386,11 @@ func (snapshot *DeltaClusterSnapshot) getNodeInfo(nodeName string) (*schedulerfr
 // NodeInfos returns node lister.
 func (snapshot *DeltaClusterSnapshot) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*deltaSnapshotNodeLister)(snapshot)
+}
+
+// StorageInfos returns storage lister
+func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageInfoLister {
+	return (*deltaSnapshotStorageLister)(snapshot)
 }
 
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
@@ -406,6 +436,11 @@ func (snapshot *DeltaClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) er
 // RemovePod removes pod from the snapshot.
 func (snapshot *DeltaClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
 	return snapshot.data.removePod(namespace, podName, nodeName)
+}
+
+// IsPVCUsedByPods returns if the pvc is used by any pod
+func (snapshot *DeltaClusterSnapshot) IsPVCUsedByPods(key string) bool {
+	return snapshot.data.isPVCUsedByPods(key)
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()

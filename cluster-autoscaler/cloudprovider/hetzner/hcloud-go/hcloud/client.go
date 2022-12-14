@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -31,6 +32,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"golang.org/x/net/http/httpguts"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/internal/instrumentation"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
@@ -64,19 +68,22 @@ func ExponentialBackoff(b float64, d time.Duration) BackoffFunc {
 
 // Client is a client for the Hetzner Cloud API.
 type Client struct {
-	endpoint           string
-	token              string
-	pollInterval       time.Duration
-	backoffFunc        BackoffFunc
-	httpClient         *http.Client
-	applicationName    string
-	applicationVersion string
-	userAgent          string
-	debugWriter        io.Writer
+	endpoint                string
+	token                   string
+	tokenValid              bool
+	pollInterval            time.Duration
+	backoffFunc             BackoffFunc
+	httpClient              *http.Client
+	applicationName         string
+	applicationVersion      string
+	userAgent               string
+	debugWriter             io.Writer
+	instrumentationRegistry *prometheus.Registry
 
 	Action           ActionClient
 	Certificate      CertificateClient
 	Datacenter       DatacenterClient
+	Firewall         FirewallClient
 	FloatingIP       FloatingIPClient
 	Image            ImageClient
 	ISO              ISOClient
@@ -89,6 +96,9 @@ type Client struct {
 	ServerType       ServerTypeClient
 	SSHKey           SSHKeyClient
 	Volume           VolumeClient
+	PlacementGroup   PlacementGroupClient
+	RDNS             RDNSClient
+	PrimaryIP        PrimaryIPClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -105,6 +115,7 @@ func WithEndpoint(endpoint string) ClientOption {
 func WithToken(token string) ClientOption {
 	return func(client *Client) {
 		client.token = token
+		client.tokenValid = httpguts.ValidHeaderFieldValue(token)
 	}
 }
 
@@ -148,10 +159,18 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
+// WithInstrumentation configures a Client to collect metrics about the performed HTTP requests.
+func WithInstrumentation(registry *prometheus.Registry) ClientOption {
+	return func(client *Client) {
+		client.instrumentationRegistry = registry
+	}
+}
+
 // NewClient creates a new client.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
 		endpoint:     Endpoint,
+		tokenValid:   true,
 		httpClient:   &http.Client{},
 		backoffFunc:  ExponentialBackoff(2, 500*time.Millisecond),
 		pollInterval: 500 * time.Millisecond,
@@ -162,6 +181,10 @@ func NewClient(options ...ClientOption) *Client {
 	}
 
 	client.buildUserAgent()
+	if client.instrumentationRegistry != nil {
+		i := instrumentation.New("api", client.instrumentationRegistry)
+		client.httpClient.Transport = i.InstrumentedRoundTripper()
+	}
 
 	client.Action = ActionClient{client: client}
 	client.Datacenter = DatacenterClient{client: client}
@@ -178,6 +201,10 @@ func NewClient(options ...ClientOption) *Client {
 	client.LoadBalancer = LoadBalancerClient{client: client}
 	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
 	client.Certificate = CertificateClient{client: client}
+	client.Firewall = FirewallClient{client: client}
+	client.PlacementGroup = PlacementGroupClient{client: client}
+	client.RDNS = RDNSClient{client: client}
+	client.PrimaryIP = PrimaryIPClient{client: client}
 
 	return client
 }
@@ -191,9 +218,13 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 		return nil, err
 	}
 	req.Header.Set("User-Agent", c.userAgent)
-	if c.token != "" {
+
+	if !c.tokenValid {
+		return nil, errors.New("Authorization token contains invalid characters")
+	} else if c.token != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	}
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -220,8 +251,7 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 		}
 
 		if c.debugWriter != nil {
-			// To get the response body we need to read it before the request was actually send. https://github.com/golang/go/issues/29792
-			dumpReq, err := httputil.DumpRequestOut(r, true)
+			dumpReq, err := dumpRequest(r)
 			if err != nil {
 				return nil, err
 			}
@@ -257,12 +287,10 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 			err = errorFromResponse(resp, body)
 			if err == nil {
 				err = fmt.Errorf("hcloud: server responded with status code %d", resp.StatusCode)
-			} else {
-				if isRetryable(err) {
-					c.backoff(retries)
-					retries++
-					continue
-				}
+			} else if isRetryable(err) {
+				c.backoff(retries)
+				retries++
+				continue
 			}
 			return response, err
 		}
@@ -290,17 +318,17 @@ func (c *Client) backoff(retries int) {
 	time.Sleep(c.backoffFunc(retries))
 }
 
-func (c *Client) all(f func(int) (*Response, error)) (*Response, error) {
+func (c *Client) all(f func(int) (*Response, error)) error {
 	var (
 		page = 1
 	)
 	for {
 		resp, err := f(page)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if resp.Meta.Pagination == nil || resp.Meta.Pagination.NextPage == 0 {
-			return resp, nil
+			return nil
 		}
 		page = resp.Meta.Pagination.NextPage
 	}
@@ -315,6 +343,25 @@ func (c *Client) buildUserAgent() {
 	default:
 		c.userAgent = UserAgent
 	}
+}
+
+func dumpRequest(r *http.Request) ([]byte, error) {
+	// Duplicate the request, so we can redact the auth header
+	rDuplicate := r.Clone(context.Background())
+	rDuplicate.Header.Set("Authorization", "REDACTED")
+
+	// To get the request body we need to read it before the request was actually sent.
+	// See https://github.com/golang/go/issues/29792
+	dumpReq, err := httputil.DumpRequestOut(rDuplicate, true)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set original request body to the duplicate created by DumpRequestOut. The request body is not duplicated
+	// by .Clone() and instead just referenced, so it would be completely read otherwise.
+	r.Body = rDuplicate.Body
+
+	return dumpReq, nil
 }
 
 func errorFromResponse(resp *http.Response, body []byte) error {

@@ -26,10 +26,13 @@ import (
 type Pricing struct {
 	Image             ImagePricing
 	FloatingIP        FloatingIPPricing
+	FloatingIPs       []FloatingIPTypePricing
+	PrimaryIPs        []PrimaryIPPricing
 	Traffic           TrafficPricing
 	ServerBackup      ServerBackupPricing
 	ServerTypes       []ServerTypePricing
 	LoadBalancerTypes []LoadBalancerTypePricing
+	Volume            VolumePricing
 }
 
 // Price represents a price. Net amount, gross amount, as well as VAT rate are
@@ -42,6 +45,14 @@ type Price struct {
 	Gross    string
 }
 
+// PrimaryIPPrice represents a price. Net amount and gross amount are
+// specified as strings and it is the user's responsibility to convert them to
+// appropriate types for calculations.
+type PrimaryIPPrice struct {
+	Net   string
+	Gross string
+}
+
 // ImagePricing provides pricing information for imaegs.
 type ImagePricing struct {
 	PerGBMonth Price
@@ -52,9 +63,41 @@ type FloatingIPPricing struct {
 	Monthly Price
 }
 
+// FloatingIPTypePricing provides pricing information for Floating IPs per Type.
+type FloatingIPTypePricing struct {
+	Type     FloatingIPType
+	Pricings []FloatingIPTypeLocationPricing
+}
+
+// PrimaryIPTypePricing defines the schema of pricing information for a primary IP
+// type at a datacenter.
+type PrimaryIPTypePricing struct {
+	Datacenter string
+	Hourly     PrimaryIPPrice
+	Monthly    PrimaryIPPrice
+}
+
+// PrimaryIPTypePricing provides pricing information for PrimaryIPs
+type PrimaryIPPricing struct {
+	Type     string
+	Pricings []PrimaryIPTypePricing
+}
+
+// FloatingIPTypeLocationPricing provides pricing information for a Floating IP type
+// at a location.
+type FloatingIPTypeLocationPricing struct {
+	Location *Location
+	Monthly  Price
+}
+
 // TrafficPricing provides pricing information for traffic.
 type TrafficPricing struct {
 	PerTB Price
+}
+
+// VolumePricing provides pricing information for a Volume.
+type VolumePricing struct {
+	PerGBMonthly Price
 }
 
 // ServerBackupPricing provides pricing information for server backups.

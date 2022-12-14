@@ -48,8 +48,10 @@ type scaleCacheEntry struct {
 // - `Insert` the response you got into the cache.
 // When you create a `controllerCacheStorage` you should start two go routines:
 // - One for refreshing cache entries, which calls `GetKeysToRefresh` then for
-//   each key makes query to the API server and calls `Refresh` to update
-//  content of the cache.
+//
+//	 each key makes query to the API server and calls `Refresh` to update
+//	content of the cache.
+//
 // - Second for removing stale entries which periodically calls `RemoveExpired`
 // Each entry is refreshed after duration
 // `validityTime` * (1 + `jitterFactor`)

@@ -72,7 +72,7 @@ func (m *imagecapabilityschemadescriptor) UnmarshalPolymorphicJSON(data []byte) 
 	}
 }
 
-//GetSource returns Source
+// GetSource returns Source
 func (m imagecapabilityschemadescriptor) GetSource() ImageCapabilitySchemaDescriptorSourceEnum {
 	return m.Source
 }

@@ -77,17 +77,17 @@ func (pp EnvRptPathProvider) ResourceID() (*string, error) {
 	return rpID, nil
 }
 
-//DefaultRptPathProvider path provider makes sure the behavior happens with the correct fallback.
+// DefaultRptPathProvider path provider makes sure the behavior happens with the correct fallback.
 //
-//For the path,
-//Use the contents of the OCI_RESOURCE_PRINCIPAL_RPT_PATH environment variable, if set.
-//Otherwise, use the current path: "/20180711/resourcePrincipalToken/{id}"
+// For the path,
+// Use the contents of the OCI_RESOURCE_PRINCIPAL_RPT_PATH environment variable, if set.
+// Otherwise, use the current path: "/20180711/resourcePrincipalToken/{id}"
 //
-//For the resource id,
-//Use the contents of the OCI_RESOURCE_PRINCIPAL_RPT_ID environment variable, if set.
-//Otherwise, use IMDS to get the instance id
+// For the resource id,
+// Use the contents of the OCI_RESOURCE_PRINCIPAL_RPT_ID environment variable, if set.
+// Otherwise, use IMDS to get the instance id
 //
-//This path provider is used when the caller doesn't provide a specific path provider to the resource principals signer
+// This path provider is used when the caller doesn't provide a specific path provider to the resource principals signer
 type DefaultRptPathProvider struct {
 	path       string
 	resourceID string

@@ -11,7 +11,7 @@ import (
 
 // GetDrgRouteTableRequest wrapper for the GetDrgRouteTable operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetDrgRouteTable.go.html to see an example of how to use GetDrgRouteTableRequest.
 type GetDrgRouteTableRequest struct {

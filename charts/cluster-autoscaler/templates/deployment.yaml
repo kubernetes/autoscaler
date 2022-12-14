@@ -63,6 +63,9 @@ spec:
             {{- if .Values.autoDiscovery.clusterName }}
             - --node-group-auto-discovery=asg:tag={{ tpl (join "," .Values.autoDiscovery.tags) . }}
             {{- end }}
+            {{- if .Values.cloudConfigPath }}
+            - --cloud-config={{ .Values.cloudConfigPath }}
+            {{- end }}
           {{- else if eq .Values.cloudProvider "gce" }}
           {{- if .Values.autoscalingGroupsnamePrefix }}
             {{- range .Values.autoscalingGroupsnamePrefix }}
@@ -90,6 +93,10 @@ spec:
             - --cloud-config={{ .Values.clusterAPICloudConfigPath }}
             {{- else if eq .Values.clusterAPIMode "single-kubeconfig"}}
             - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
+            {{- end }}
+          {{- else if eq .Values.cloudProvider "azure" }}
+            {{- if .Values.autoDiscovery.clusterName }}
+            - --node-group-auto-discovery=label:cluster-autoscaler-enabled=true,cluster-autoscaler-name={{ .Values.autoDiscovery.clusterName }}
             {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "magnum" }}

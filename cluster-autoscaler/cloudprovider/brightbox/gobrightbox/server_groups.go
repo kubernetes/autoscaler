@@ -131,7 +131,7 @@ func (c *Client) RemoveServersFromServerGroup(identifier string, serverIds []str
 
 // MoveServersToServerGroup atomically moves servers from one group to another.
 //
-// The src parameter specifies the group to which the servers currently belong
+// # The src parameter specifies the group to which the servers currently belong
 //
 // The dst parameter specifies the group to which you want to move the servers.
 //

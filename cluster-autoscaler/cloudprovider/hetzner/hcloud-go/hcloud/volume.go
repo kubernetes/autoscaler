@@ -108,6 +108,7 @@ type VolumeListOpts struct {
 	ListOpts
 	Name   string
 	Status []VolumeStatus
+	Sort   []string
 }
 
 func (l VolumeListOpts) values() url.Values {
@@ -117,6 +118,9 @@ func (l VolumeListOpts) values() url.Values {
 	}
 	for _, status := range l.Status {
 		vals.Add("status", string(status))
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }
@@ -153,7 +157,7 @@ func (c *VolumeClient) All(ctx context.Context) ([]*Volume, error) {
 func (c *VolumeClient) AllWithOpts(ctx context.Context, opts VolumeListOpts) ([]*Volume, error) {
 	allVolumes := []*Volume{}
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		volumes, resp, err := c.List(ctx, opts)
 		if err != nil {

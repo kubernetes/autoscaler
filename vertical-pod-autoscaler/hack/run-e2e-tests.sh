@@ -48,13 +48,9 @@ case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    # Setting --e2e-verify-service-account=false is a workaround for framework timing out while waiting
-    # for service account to be created (even though the service account get created immediately).
-    # https://github.com/kubernetes/autoscaler/issues/4764
-    # TODO: remove the flag once the problem is fixed
-    go test -mod vendor ./v1beta2/*go -v --test.timeout=60m --args --ginkgo.v=true --e2e-verify-service-account=false --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    go test -mod vendor ./v1beta2/*go -v --test.timeout=60m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     V1BETA2_RESULT=$?
-    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --e2e-verify-service-account=false --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     V1_RESULT=$?
     popd
     echo v1beta2 test result: ${V1BETA2_RESULT}

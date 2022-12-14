@@ -29,8 +29,9 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/kubernetes/test/e2e/framework"
+	podsecurity "k8s.io/pod-security-admission/api"
 
-	"github.com/onsi/ginkgo"
+	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
 
@@ -60,6 +61,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	// This schedules AfterEach block that needs to run after the AfterEach above and
 	// BeforeEach that needs to run before the BeforeEach below - thus the order of these matters.
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name
@@ -131,6 +133,7 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 	const replicas = 3
 
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name

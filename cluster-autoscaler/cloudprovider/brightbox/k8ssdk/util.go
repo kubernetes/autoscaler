@@ -54,7 +54,7 @@ func MapZoneHandleToRegion(zoneHandle string) (string, error) {
 
 // getEnvVarWithDefault retrieves the value of the environment variable
 // named by the key. If the variable is not present, return the default
-//value instead.
+// value instead.
 func getenvWithDefault(key string, defaultValue string) string {
 	if val, exists := os.LookupEnv(key); exists {
 		return val
@@ -62,7 +62,7 @@ func getenvWithDefault(key string, defaultValue string) string {
 	return defaultValue
 }
 
-//get a list of inserts and deletes that changes oldList into newList
+// get a list of inserts and deletes that changes oldList into newList
 func getSyncLists(oldList []string, newList []string) ([]string, []string) {
 	sort.Strings(oldList)
 	sort.Strings(newList)

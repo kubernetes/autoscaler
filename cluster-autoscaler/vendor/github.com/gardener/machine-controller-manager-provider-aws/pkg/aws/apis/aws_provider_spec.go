@@ -167,6 +167,13 @@ type AWSEbsBlockDeviceSpec struct {
 	// Do not specify it in requests to create gp2, st1, sc1, or standard volumes.
 	Iops int64 `json:"iops,omitempty"`
 
+	// The throughput that the volume supports, in MiB/s.
+	//
+	// This parameter is valid only for gp3 volumes.
+	//
+	// Valid Range: The range as of 16th Aug 2022 is from 125 MiB/s to 1000 MiB/s. For more info refer (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+	Throughput *int64 `json:"throughput,omitempty"`
+
 	// Identifier (key ID, key alias, ID ARN, or alias ARN) for a customer managed
 	// CMK under which the EBS volume is encrypted.
 	//

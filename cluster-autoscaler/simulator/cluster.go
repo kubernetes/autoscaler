@@ -23,14 +23,11 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	policyv1 "k8s.io/api/policy/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
@@ -98,29 +95,32 @@ const (
 	UnexpectedError
 )
 
-// UtilizationInfo contains utilization information for a node.
-type UtilizationInfo struct {
-	CpuUtil float64
-	MemUtil float64
-	GpuUtil float64
-	// Resource name of highest utilization resource
-	ResourceName apiv1.ResourceName
-	// Max(CpuUtil, MemUtil) or GpuUtils
-	Utilization float64
+// RemovalSimulator is a helper object for simulating node removal scenarios.
+type RemovalSimulator struct {
+	listers          kube_util.ListerRegistry
+	clusterSnapshot  ClusterSnapshot
+	predicateChecker PredicateChecker
+	usageTracker     *UsageTracker
 }
 
-// FindNodesToRemove finds nodes that can be removed. Returns also an information about good
-// rescheduling location for each of the pods.
-func FindNodesToRemove(
+// NewRemovalSimulator returns a new RemovalSimulator.
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, usageTracker *UsageTracker) *RemovalSimulator {
+	return &RemovalSimulator{
+		listers:          listers,
+		clusterSnapshot:  clusterSnapshot,
+		predicateChecker: predicateChecker,
+		usageTracker:     usageTracker,
+	}
+}
+
+// FindNodesToRemove finds nodes that can be removed. Returns also an
+// information about good rescheduling location for each of the pods.
+func (r *RemovalSimulator) FindNodesToRemove(
 	candidates []string,
 	destinations []string,
-	listers kube_util.ListerRegistry,
-	clusterSnapshot ClusterSnapshot,
-	predicateChecker PredicateChecker,
 	oldHints map[string]string,
-	usageTracker *UsageTracker,
 	timestamp time.Time,
-	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
+	pdbs []*policyv1.PodDisruptionBudget,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*UnremovableNode, 0)
@@ -132,52 +132,66 @@ func FindNodesToRemove(
 	}
 
 	for _, nodeName := range candidates {
-		nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
-		if err != nil {
-			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
-		}
-		klog.V(2).Infof("%s for removal", nodeName)
-
-		if _, found := destinationMap[nodeName]; !found {
-			klog.V(2).Infof("nodeInfo for %s not found", nodeName)
-			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
-			continue
-		}
-
-		podsToRemove, daemonSetPods, blockingPod, err := DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods,
-			*skipNodesWithLocalStorage, listers, int32(*minReplicaCount), podDisruptionBudgets, timestamp)
-		if err != nil {
-			klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
-			if blockingPod != nil {
-				unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod})
-			} else {
-				unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
-			}
-			continue
-		}
-
-		findProblems := findPlaceFor(nodeName, podsToRemove, destinationMap, clusterSnapshot,
-			predicateChecker, oldHints, newHints, usageTracker, timestamp)
-		if findProblems == nil {
-			result = append(result, NodeToBeRemoved{
-				Node:             nodeInfo.Node(),
-				PodsToReschedule: podsToRemove,
-				DaemonSetPods:    daemonSetPods,
-			})
-			klog.V(2).Infof("node %s may be removed", nodeName)
-		} else {
-			klog.V(2).Infof("node %s is not suitable for removal: %v", nodeName, findProblems)
-			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods})
+		rn, urn := r.CheckNodeRemoval(nodeName, destinationMap, oldHints, newHints, timestamp, pdbs)
+		if rn != nil {
+			result = append(result, *rn)
+		} else if urn != nil {
+			unremovable = append(unremovable, urn)
 		}
 	}
 	return result, unremovable, newHints, nil
 }
 
+// CheckNodeRemoval checks whether a specific node can be removed. Depending on
+// the outcome, exactly one of (NodeToBeRemoved, UnremovableNode) will be
+// populated in the return value, the other will be nil.
+func (r *RemovalSimulator) CheckNodeRemoval(
+	nodeName string,
+	destinationMap map[string]bool,
+	oldHints map[string]string,
+	newHints map[string]string,
+	timestamp time.Time,
+	pdbs []*policyv1.PodDisruptionBudget,
+) (*NodeToBeRemoved, *UnremovableNode) {
+	nodeInfo, err := r.clusterSnapshot.NodeInfos().Get(nodeName)
+	if err != nil {
+		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+	}
+	klog.V(2).Infof("%s for removal", nodeName)
+
+	if _, found := destinationMap[nodeName]; !found {
+		klog.V(2).Infof("nodeInfo for %s not found", nodeName)
+		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
+	}
+
+	podsToRemove, daemonSetPods, blockingPod, err := DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods,
+		*skipNodesWithLocalStorage, r.listers, int32(*minReplicaCount), pdbs, timestamp)
+	if err != nil {
+		klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
+		if blockingPod != nil {
+			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod}
+		}
+		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
+	}
+
+	err = r.findPlaceFor(nodeName, podsToRemove, destinationMap, oldHints, newHints, timestamp)
+	if err != nil {
+		klog.V(2).Infof("node %s is not suitable for removal: %v", nodeName, err)
+		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods}
+	}
+	klog.V(2).Infof("node %s may be removed", nodeName)
+	return &NodeToBeRemoved{
+		Node:             nodeInfo.Node(),
+		PodsToReschedule: podsToRemove,
+		DaemonSetPods:    daemonSetPods,
+	}, nil
+}
+
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
-func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string, timestamp time.Time) []string {
+func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp time.Time) []string {
 	result := make([]string, 0)
 	for _, node := range candidates {
-		nodeInfo, err := snapshot.NodeInfos().Get(node)
+		nodeInfo, err := r.clusterSnapshot.NodeInfos().Get(node)
 		if err != nil {
 			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
 			continue
@@ -191,99 +205,14 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string, times
 	return result
 }
 
-// CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) or gpu utilization
-// based on if the node has GPU or not. Per resource utilization is the sum of requests for it divided by allocatable.
-// It also returns the individual cpu, memory and gpu utilization.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuLabel string, currentTime time.Time) (utilInfo UtilizationInfo, err error) {
-	if gpu.NodeHasGpu(gpuLabel, node) {
-		gpuUtil, err := calculateUtilizationOfResource(node, nodeInfo, gpu.ResourceNvidiaGPU, skipDaemonSetPods, skipMirrorPods, currentTime)
-		if err != nil {
-			klog.V(3).Infof("node %s has unready GPU", node.Name)
-			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
-			return UtilizationInfo{GpuUtil: 0, ResourceName: gpu.ResourceNvidiaGPU, Utilization: 0}, nil
-		}
+func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
+	oldHints map[string]string, newHints map[string]string, timestamp time.Time) error {
 
-		// Skips cpu and memory utilization calculation for node with GPU.
-		return UtilizationInfo{GpuUtil: gpuUtil, ResourceName: gpu.ResourceNvidiaGPU, Utilization: gpuUtil}, nil
-	}
-
-	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
-	if err != nil {
-		return UtilizationInfo{}, err
-	}
-	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods, currentTime)
-	if err != nil {
-		return UtilizationInfo{}, err
-	}
-
-	utilization := UtilizationInfo{CpuUtil: cpu, MemUtil: mem}
-
-	if cpu > mem {
-		utilization.ResourceName = apiv1.ResourceCPU
-		utilization.Utilization = cpu
-	} else {
-		utilization.ResourceName = apiv1.ResourceMemory
-		utilization.Utilization = mem
-	}
-
-	return utilization, nil
-}
-
-func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool, currentTime time.Time) (float64, error) {
-	nodeAllocatable, found := node.Status.Allocatable[resourceName]
-	if !found {
-		return 0, fmt.Errorf("failed to get %v from %s", resourceName, node.Name)
-	}
-	if nodeAllocatable.MilliValue() == 0 {
-		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)
-	}
-	podsRequest := resource.MustParse("0")
-
-	// if skipDaemonSetPods = True, DaemonSet pods resourses will be subtracted
-	// from the node allocatable and won't be added to pods requests
-	// the same with the Mirror pod.
-	daemonSetAndMirrorPodsUtilization := resource.MustParse("0")
-	for _, podInfo := range nodeInfo.Pods {
-		// factor daemonset pods out of the utilization calculations
-		if skipDaemonSetPods && pod_util.IsDaemonSetPod(podInfo.Pod) {
-			for _, container := range podInfo.Pod.Spec.Containers {
-				if resourceValue, found := container.Resources.Requests[resourceName]; found {
-					daemonSetAndMirrorPodsUtilization.Add(resourceValue)
-				}
-			}
-			continue
-		}
-		// factor mirror pods out of the utilization calculations
-		if skipMirrorPods && pod_util.IsMirrorPod(podInfo.Pod) {
-			for _, container := range podInfo.Pod.Spec.Containers {
-				if resourceValue, found := container.Resources.Requests[resourceName]; found {
-					daemonSetAndMirrorPodsUtilization.Add(resourceValue)
-				}
-			}
-			continue
-		}
-		// ignore Pods that should be terminated
-		if drain.IsPodLongTerminating(podInfo.Pod, currentTime) {
-			continue
-		}
-		for _, container := range podInfo.Pod.Spec.Containers {
-			if resourceValue, found := container.Resources.Requests[resourceName]; found {
-				podsRequest.Add(resourceValue)
-			}
-		}
-	}
-	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()-daemonSetAndMirrorPodsUtilization.MilliValue()), nil
-}
-
-func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
-	clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
-	timestamp time.Time) error {
-
-	if err := clusterSnapshot.Fork(); err != nil {
+	if err := r.clusterSnapshot.Fork(); err != nil {
 		return err
 	}
 	defer func() {
-		err := clusterSnapshot.Revert()
+		err := r.clusterSnapshot.Revert()
 		if err != nil {
 			klog.Fatalf("Got error when calling ClusterSnapshot.Revert(); %v", err)
 		}
@@ -301,7 +230,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 	// remove pods from clusterSnapshot first
 	for _, pod := range pods {
-		if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
+		if err := r.clusterSnapshot.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
 			// just log error
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}
@@ -318,9 +247,9 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && isCandidateNode(hintedNode) {
-			if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
+			if err := r.predicateChecker.CheckPredicates(r.clusterSnapshot, pod, hintedNode); err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
-				if err := clusterSnapshot.AddPod(pod, hintedNode); err != nil {
+				if err := r.clusterSnapshot.AddPod(pod, hintedNode); err != nil {
 					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, hintedNode, err)
 				}
 				newHints[podKey(pod)] = hintedNode
@@ -330,12 +259,12 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 		}
 
 		if !foundPlace {
-			newNodeName, err := predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+			newNodeName, err := r.predicateChecker.FitsAnyNodeMatching(r.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
 				return isCandidateNode(nodeInfo.Node().Name)
 			})
 			if err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)
-				if err := clusterSnapshot.AddPod(pod, newNodeName); err != nil {
+				if err := r.clusterSnapshot.AddPod(pod, newNodeName); err != nil {
 					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, newNodeName, err)
 				}
 				newHints[podKey(pod)] = newNodeName
@@ -345,7 +274,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 			}
 		}
 
-		usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
+		r.usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
 	}
 	return nil
 }

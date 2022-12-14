@@ -27,13 +27,15 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/kubernetes/test/e2e/framework"
+	podsecurity "k8s.io/pod-security-admission/api"
 
-	"github.com/onsi/ginkgo"
+	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
 
 var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("evicts pods when Admission Controller status available", func() {
 		const statusUpdateInterval = 10 * time.Second

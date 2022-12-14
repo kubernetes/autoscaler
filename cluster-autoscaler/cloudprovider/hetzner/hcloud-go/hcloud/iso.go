@@ -98,12 +98,16 @@ func (c *ISOClient) Get(ctx context.Context, idOrName string) (*ISO, *Response, 
 type ISOListOpts struct {
 	ListOpts
 	Name string
+	Sort []string
 }
 
 func (l ISOListOpts) values() url.Values {
 	vals := l.ListOpts.values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }
@@ -138,7 +142,7 @@ func (c *ISOClient) All(ctx context.Context) ([]*ISO, error) {
 	opts := ISOListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		isos, resp, err := c.List(ctx, opts)
 		if err != nil {

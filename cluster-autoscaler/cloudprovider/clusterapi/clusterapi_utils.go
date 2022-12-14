@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -30,6 +31,12 @@ const (
 	deprecatedNodeGroupMinSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
 	deprecatedNodeGroupMaxSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
 	deprecatedClusterNameLabel              = "cluster.k8s.io/cluster-name"
+
+	cpuKey      = "capacity.cluster-autoscaler.kubernetes.io/cpu"
+	memoryKey   = "capacity.cluster-autoscaler.kubernetes.io/memory"
+	gpuTypeKey  = "capacity.cluster-autoscaler.kubernetes.io/gpu-type"
+	gpuCountKey = "capacity.cluster-autoscaler.kubernetes.io/gpu-count"
+	maxPodsKey  = "capacity.cluster-autoscaler.kubernetes.io/maxPods"
 )
 
 var (
@@ -72,6 +79,7 @@ var (
 	// variable, they are initialized here.
 	nodeGroupMinSizeAnnotationKey = getNodeGroupMinSizeAnnotationKey()
 	nodeGroupMaxSizeAnnotationKey = getNodeGroupMaxSizeAnnotationKey()
+	zeroQuantity                  = resource.MustParse("0")
 )
 
 type normalizedProviderID string
@@ -82,9 +90,6 @@ type normalizedProviderID string
 // value is not of type int.
 func minSize(annotations map[string]string) (int, error) {
 	val, found := annotations[nodeGroupMinSizeAnnotationKey]
-	if !found {
-		val, found = annotations[deprecatedNodeGroupMinSizeAnnotationKey]
-	}
 	if !found {
 		return 0, errMissingMinAnnotation
 	}
@@ -101,9 +106,6 @@ func minSize(annotations map[string]string) (int, error) {
 // value is not of type int.
 func maxSize(annotations map[string]string) (int, error) {
 	val, found := annotations[nodeGroupMaxSizeAnnotationKey]
-	if !found {
-		val, found = annotations[deprecatedNodeGroupMaxSizeAnnotationKey]
-	}
 	if !found {
 		return 0, errMissingMaxAnnotation
 	}
@@ -169,6 +171,61 @@ func normalizedProviderString(s string) normalizedProviderID {
 	return normalizedProviderID(split[len(split)-1])
 }
 
+func scaleFromZeroAnnotationsEnabled(annotations map[string]string) bool {
+	cpu := annotations[cpuKey]
+	mem := annotations[memoryKey]
+
+	if cpu != "" && mem != "" {
+		return true
+	}
+	return false
+}
+
+func parseKey(annotations map[string]string, key string) (resource.Quantity, error) {
+	if val, exists := annotations[key]; exists && val != "" {
+		return resource.ParseQuantity(val)
+	}
+	return zeroQuantity.DeepCopy(), nil
+}
+
+func parseIntKey(annotations map[string]string, key string) (resource.Quantity, error) {
+	if val, exists := annotations[key]; exists && val != "" {
+		valInt, err := strconv.ParseInt(val, 10, 0)
+		if err != nil {
+			return zeroQuantity.DeepCopy(), fmt.Errorf("value %q from annotation %q expected to be an integer: %v", val, key, err)
+		}
+		return *resource.NewQuantity(valInt, resource.DecimalSI), nil
+	}
+	return zeroQuantity.DeepCopy(), nil
+}
+
+func parseCPUCapacity(annotations map[string]string) (resource.Quantity, error) {
+	return parseKey(annotations, cpuKey)
+}
+
+func parseMemoryCapacity(annotations map[string]string) (resource.Quantity, error) {
+	return parseKey(annotations, memoryKey)
+}
+
+func parseGPUCount(annotations map[string]string) (resource.Quantity, error) {
+	return parseIntKey(annotations, gpuCountKey)
+}
+
+// The GPU type is not currently considered by the autoscaler when planning
+// expansion, but most likely will be in the future. This method is being added
+// in expectation of that arrival.
+// see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/utils/gpu/gpu.go
+func parseGPUType(annotations map[string]string) string {
+	if val, found := annotations[gpuTypeKey]; found {
+		return val
+	}
+	return ""
+}
+
+func parseMaxPodsCapacity(annotations map[string]string) (resource.Quantity, error) {
+	return parseIntKey(annotations, maxPodsKey)
+}
+
 func clusterNameFromResource(r *unstructured.Unstructured) string {
 	// Use Spec.ClusterName if defined (only available on v1alpha3+ types)
 	clusterName, found, err := unstructured.NestedString(r.Object, "spec", "clusterName")
@@ -183,19 +240,6 @@ func clusterNameFromResource(r *unstructured.Unstructured) string {
 	// Fallback to value of clusterNameLabel
 	if clusterName, ok := r.GetLabels()[clusterNameLabel]; ok {
 		return clusterName
-	}
-
-	// fallback for backward compatibility for deprecatedClusterNameLabel
-	if clusterName, ok := r.GetLabels()[deprecatedClusterNameLabel]; ok {
-		return clusterName
-	}
-
-	// fallback for cluster-api v1alpha1 cluster linking
-	templateLabels, found, err := unstructured.NestedStringMap(r.UnstructuredContent(), "spec", "template", "metadata", "labels")
-	if found {
-		if clusterName, ok := templateLabels[deprecatedClusterNameLabel]; ok {
-			return clusterName
-		}
 	}
 
 	return ""

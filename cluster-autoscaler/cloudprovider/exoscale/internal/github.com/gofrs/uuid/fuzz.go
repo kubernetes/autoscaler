@@ -89,15 +89,15 @@ package uuid
 //
 // To run:
 //
-//     $ go get github.com/dvyukov/go-fuzz/...
-//     $ cd $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/uuid
-//     $ go-fuzz-build k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/uuid
-//     $ go-fuzz -bin=uuid-fuzz.zip -workdir=./testdata
+//	$ go get github.com/dvyukov/go-fuzz/...
+//	$ cd $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/uuid
+//	$ go-fuzz-build k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/uuid
+//	$ go-fuzz -bin=uuid-fuzz.zip -workdir=./testdata
 //
 // If you make significant changes to FromString / UnmarshalText and add
 // new cases to fromStringTests (in codec_test.go), please run
 //
-//    $ go test -seed_fuzz_corpus
+//	$ go test -seed_fuzz_corpus
 //
 // to seed the corpus with the new interesting inputs, then run the fuzzer.
 func Fuzz(data []byte) int {

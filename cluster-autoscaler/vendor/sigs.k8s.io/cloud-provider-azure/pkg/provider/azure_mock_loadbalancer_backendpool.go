@@ -19,7 +19,7 @@ package provider
 import (
 	reflect "reflect"
 
-	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	gomock "github.com/golang/mock/gomock"
 
 	v1 "k8s.io/api/core/v1"

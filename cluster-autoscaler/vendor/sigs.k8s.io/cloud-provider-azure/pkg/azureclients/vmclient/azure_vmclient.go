@@ -18,12 +18,11 @@ package vmclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -38,6 +37,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const vmResourceType = "Microsoft.Compute/virtualMachines"
 
 // Client implements VirtualMachine client Interface.
 type Client struct {
@@ -121,12 +122,12 @@ func (c *Client) getVM(ctx context.Context, resourceGroupName string, VMName str
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Compute/virtualMachines",
+		vmResourceType,
 		VMName,
 	)
 	result := compute.VirtualMachine{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, string(expand))
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, string(expand))
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.get.request", resourceID, rerr.Error())
@@ -179,16 +180,13 @@ func (c *Client) List(ctx context.Context, resourceGroupName string) ([]compute.
 
 // listVM gets a list of VirtualMachines in the resourceGroupName.
 func (c *Client) listVM(ctx context.Context, resourceGroupName string) ([]compute.VirtualMachine, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName),
-	)
+	resourceID := armclient.GetResourceListID(c.subscriptionID, resourceGroupName, vmResourceType)
 
 	result := make([]compute.VirtualMachine, 0)
 	page := &VirtualMachineListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.list.request", resourceID, rerr.Error())
@@ -270,7 +268,7 @@ func (c *Client) UpdateAsync(ctx context.Context, resourceGroupName string, VMNa
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Compute/virtualMachines",
+		vmResourceType,
 		VMName,
 	)
 
@@ -294,12 +292,13 @@ func (c *Client) WaitForUpdateResult(ctx context.Context, future *azure.Future, 
 	response, err := c.armClient.WaitForAsyncOperationResult(ctx, future, "VMWaitForUpdateResult")
 	mc.Observe(retry.NewErrorOrNil(false, err))
 
-	if response != nil && response.StatusCode != http.StatusNoContent {
-		_, rerr := c.updateResponder(response)
-		if rerr != nil {
-			klog.V(5).Infof("Received error: %s", "vm.put.respond", rerr.Error())
-			return rerr
+	if err != nil {
+		if response != nil {
+			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', response code %d", err.Error(), response.StatusCode)
+		} else {
+			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', no response", err.Error())
 		}
+		return retry.GetError(response, err)
 	}
 	return nil
 }
@@ -309,7 +308,7 @@ func (c *Client) updateVM(ctx context.Context, resourceGroupName string, VMName 
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Compute/virtualMachines",
+		vmResourceType,
 		VMName,
 	)
 
@@ -470,7 +469,7 @@ func (c *Client) createOrUpdateVM(ctx context.Context, resourceGroupName string,
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Compute/virtualMachines",
+		vmResourceType,
 		VMName,
 	)
 
@@ -539,9 +538,9 @@ func (c *Client) deleteVM(ctx context.Context, resourceGroupName string, VMName 
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Compute/virtualMachines",
+		vmResourceType,
 		VMName,
 	)
 
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }

@@ -21,9 +21,10 @@ import (
 // Vnic in a VCN. Compare NSGs with SecurityList,
 // which provide virtual firewall rules to all the VNICs in a *subnet*.
 // A network security group consists of two items:
-//   * The set of Vnic that all have the same security rule needs (for
+//   - The set of Vnic that all have the same security rule needs (for
 //     example, a group of Compute instances all running the same application)
-//   * A set of NSG SecurityRule that apply to the VNICs in the group
+//   - A set of NSG SecurityRule that apply to the VNICs in the group
+//
 // After creating an NSG, you can add VNICs and security rules to it. For example, when you create
 // an instance, you can specify one or more NSGs to add the instance to (see
 // CreateVnicDetails). Or you can add an existing
@@ -39,9 +40,10 @@ import (
 // **Important:** Oracle Cloud Infrastructure Compute service images automatically include firewall rules (for example,
 // Linux iptables, Windows firewall). If there are issues with some type of access to an instance,
 // make sure all of the following are set correctly:
-//   * Any security rules in any NSGs the instance's VNIC belongs to
-//   * Any SecurityList associated with the instance's subnet
-//   * The instance's OS firewall rules
+//   - Any security rules in any NSGs the instance's VNIC belongs to
+//   - Any SecurityList associated with the instance's subnet
+//   - The instance's OS firewall rules
+//
 // To use any of the API operations, you must be authorized in an IAM policy. If you're not authorized,
 // talk to an administrator. If you're an administrator who needs to write policies to give users access, see
 // Getting Started with Policies (https://docs.cloud.oracle.com/iaas/Content/Identity/Concepts/policygetstarted.htm).

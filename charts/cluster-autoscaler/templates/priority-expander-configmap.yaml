@@ -16,7 +16,10 @@ data:
 {{- if kindIs "string" .Values.expanderPriorities }}
 {{ .Values.expanderPriorities | indent 4 }}
 {{- else }}
-{{ toYaml .Values.expanderPriorities | indent 4 }}
+{{- range $k,$v := .Values.expanderPriorities }}
+    {{ $k | int }}:
+      {{- toYaml $v | nindent 6 }}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

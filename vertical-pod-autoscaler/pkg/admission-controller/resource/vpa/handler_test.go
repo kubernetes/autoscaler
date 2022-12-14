@@ -281,7 +281,7 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			err := validateVPA(&tc.vpa, tc.isCreate)
+			err := ValidateVPA(&tc.vpa, tc.isCreate)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
 			} else {

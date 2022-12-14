@@ -20,6 +20,8 @@ package fake
 
 import (
 	"context"
+	json "encoding/json"
+	"fmt"
 
 	v1beta1 "k8s.io/api/extensions/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +29,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	extensionsv1beta1 "k8s.io/client-go/applyconfigurations/extensions/v1beta1"
 	testing "k8s.io/client-go/testing"
 )
 
@@ -102,10 +105,22 @@ func (c *FakeNetworkPolicies) Update(ctx context.Context, networkPolicy *v1beta1
 	return obj.(*v1beta1.NetworkPolicy), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeNetworkPolicies) UpdateStatus(ctx context.Context, networkPolicy *v1beta1.NetworkPolicy, opts v1.UpdateOptions) (*v1beta1.NetworkPolicy, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(networkpoliciesResource, "status", c.ns, networkPolicy), &v1beta1.NetworkPolicy{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1beta1.NetworkPolicy), err
+}
+
 // Delete takes name of the networkPolicy and deletes it. Returns an error if one occurs.
 func (c *FakeNetworkPolicies) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(networkpoliciesResource, c.ns, name), &v1beta1.NetworkPolicy{})
+		Invokes(testing.NewDeleteActionWithOptions(networkpoliciesResource, c.ns, name, opts), &v1beta1.NetworkPolicy{})
 
 	return err
 }
@@ -122,6 +137,51 @@ func (c *FakeNetworkPolicies) DeleteCollection(ctx context.Context, opts v1.Dele
 func (c *FakeNetworkPolicies) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.NetworkPolicy, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(networkpoliciesResource, c.ns, name, pt, data, subresources...), &v1beta1.NetworkPolicy{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1beta1.NetworkPolicy), err
+}
+
+// Apply takes the given apply declarative configuration, applies it and returns the applied networkPolicy.
+func (c *FakeNetworkPolicies) Apply(ctx context.Context, networkPolicy *extensionsv1beta1.NetworkPolicyApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.NetworkPolicy, err error) {
+	if networkPolicy == nil {
+		return nil, fmt.Errorf("networkPolicy provided to Apply must not be nil")
+	}
+	data, err := json.Marshal(networkPolicy)
+	if err != nil {
+		return nil, err
+	}
+	name := networkPolicy.Name
+	if name == nil {
+		return nil, fmt.Errorf("networkPolicy.Name must be provided to Apply")
+	}
+	obj, err := c.Fake.
+		Invokes(testing.NewPatchSubresourceAction(networkpoliciesResource, c.ns, *name, types.ApplyPatchType, data), &v1beta1.NetworkPolicy{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1beta1.NetworkPolicy), err
+}
+
+// ApplyStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+func (c *FakeNetworkPolicies) ApplyStatus(ctx context.Context, networkPolicy *extensionsv1beta1.NetworkPolicyApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.NetworkPolicy, err error) {
+	if networkPolicy == nil {
+		return nil, fmt.Errorf("networkPolicy provided to Apply must not be nil")
+	}
+	data, err := json.Marshal(networkPolicy)
+	if err != nil {
+		return nil, err
+	}
+	name := networkPolicy.Name
+	if name == nil {
+		return nil, fmt.Errorf("networkPolicy.Name must be provided to Apply")
+	}
+	obj, err := c.Fake.
+		Invokes(testing.NewPatchSubresourceAction(networkpoliciesResource, c.ns, *name, types.ApplyPatchType, data, "status"), &v1beta1.NetworkPolicy{})
 
 	if obj == nil {
 		return nil, err

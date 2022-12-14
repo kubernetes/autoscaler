@@ -54,6 +54,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privatednsclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privatednszonegroupclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privateendpointclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privatelinkserviceclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/publicipclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/routeclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/routetableclient"
@@ -70,6 +71,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/zoneclient"
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	nodemanager "sigs.k8s.io/cloud-provider-azure/pkg/nodemanager"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
 	// ensure the newly added package from azure-sdk-for-go is in vendor/
@@ -225,8 +227,12 @@ type Config struct {
 	NsgCacheTTLInSeconds int `json:"nsgCacheTTLInSeconds,omitempty" yaml:"nsgCacheTTLInSeconds,omitempty"`
 	// RouteTableCacheTTLInSeconds sets the cache TTL for route table
 	RouteTableCacheTTLInSeconds int `json:"routeTableCacheTTLInSeconds,omitempty" yaml:"routeTableCacheTTLInSeconds,omitempty"`
+	// PlsCacheTTLInSeconds sets the cache TTL for private link service resource
+	PlsCacheTTLInSeconds int `json:"plsCacheTTLInSeconds,omitempty" yaml:"plsCacheTTLInSeconds,omitempty"`
 	// AvailabilitySetsCacheTTLInSeconds sets the cache TTL for VMAS
 	AvailabilitySetsCacheTTLInSeconds int `json:"availabilitySetsCacheTTLInSeconds,omitempty" yaml:"availabilitySetsCacheTTLInSeconds,omitempty"`
+	// PublicIPCacheTTLInSeconds sets the cache TTL for public ip
+	PublicIPCacheTTLInSeconds int `json:"publicIPCacheTTLInSeconds,omitempty" yaml:"publicIPCacheTTLInSeconds,omitempty"`
 	// RouteUpdateWaitingInSeconds is the delay time for waiting route updates to take effect. This waiting delay is added
 	// because the routes are not taken effect when the async route updating operation returns success. Default is 30 seconds.
 	RouteUpdateWaitingInSeconds int `json:"routeUpdateWaitingInSeconds,omitempty" yaml:"routeUpdateWaitingInSeconds,omitempty"`
@@ -241,6 +247,8 @@ type Config struct {
 	// PutVMSSVMBatchSize defines how many requests the client send concurrently when putting the VMSS VMs.
 	// If it is smaller than or equal to zero, the request will be sent one by one in sequence (default).
 	PutVMSSVMBatchSize int `json:"putVMSSVMBatchSize" yaml:"putVMSSVMBatchSize"`
+	// PrivateLinkServiceResourceGroup determines the specific resource group of the private link services user want to use
+	PrivateLinkServiceResourceGroup string `json:"privateLinkServiceResourceGroup,omitempty" yaml:"privateLinkServiceResourceGroup,omitempty"`
 }
 
 type InitSecretConfig struct {
@@ -290,6 +298,7 @@ type Cloud struct {
 	privatednsclient                privatednsclient.Interface
 	privatednszonegroupclient       privatednszonegroupclient.Interface
 	virtualNetworkLinksClient       virtualnetworklinksclient.Interface
+	PrivateLinkServiceClient        privatelinkserviceclient.Interface
 
 	ResourceRequestBackoff  wait.Backoff
 	Metadata                *InstanceMetadataService
@@ -335,6 +344,9 @@ type Cloud struct {
 	lbCache  *azcache.TimedCache
 	nsgCache *azcache.TimedCache
 	rtCache  *azcache.TimedCache
+	pipCache *azcache.TimedCache
+	// use LB frontEndIpConfiguration ID as the key and search for PLS attached to the frontEnd
+	plsCache *azcache.TimedCache
 
 	*ManagedDiskController
 	*controllerCommon
@@ -481,6 +493,10 @@ func (az *Cloud) InitializeCloudFromConfig(config *Config, fromSecret, callFromC
 
 	if config.SecurityGroupResourceGroup == "" {
 		config.SecurityGroupResourceGroup = config.ResourceGroup
+	}
+
+	if config.PrivateLinkServiceResourceGroup == "" {
+		config.PrivateLinkServiceResourceGroup = config.ResourceGroup
 	}
 
 	if config.VMType == "" {
@@ -666,6 +682,16 @@ func (az *Cloud) initCaches() (err error) {
 		return err
 	}
 
+	az.pipCache, err = az.newPIPCache()
+	if err != nil {
+		return err
+	}
+
+	az.plsCache, err = az.newPLSCache()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -824,6 +850,7 @@ func (az *Cloud) configAzureClients(
 	az.privatednsclient = privatednsclient.New(azClientConfig)
 	az.privatednszonegroupclient = privatednszonegroupclient.New(azClientConfig)
 	az.virtualNetworkLinksClient = virtualnetworklinksclient.New(azClientConfig)
+	az.PrivateLinkServiceClient = privatelinkserviceclient.New(azClientConfig)
 
 	if az.ZoneClient == nil {
 		az.ZoneClient = zoneclient.New(zoneClientConfig)
@@ -1036,16 +1063,20 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 			delete(az.nodeResourceGroups, prevNode.ObjectMeta.Name)
 		}
 
-		// Remove from unmanagedNodes cache.
 		managed, ok := prevNode.ObjectMeta.Labels[consts.ManagedByAzureLabel]
-		if ok && strings.EqualFold(managed, consts.NotManagedByAzureLabelValue) {
+		isNodeManagedByCloudProvider := !ok || !strings.EqualFold(managed, consts.NotManagedByAzureLabelValue)
+
+		klog.Infof("managed=%v, ok=%v, isNodeManagedByCloudProvider=%v",
+			managed, ok, isNodeManagedByCloudProvider)
+
+		// Remove from unmanagedNodes cache
+		if !isNodeManagedByCloudProvider {
 			az.unmanagedNodes.Delete(prevNode.ObjectMeta.Name)
-			az.excludeLoadBalancerNodes.Delete(prevNode.ObjectMeta.Name)
 		}
 
-		// Remove from excludeLoadBalancerNodes cache.
-		if _, hasExcludeBalancerLabel := prevNode.ObjectMeta.Labels[v1.LabelNodeExcludeBalancers]; hasExcludeBalancerLabel {
-			az.excludeLoadBalancerNodes.Delete(prevNode.ObjectMeta.Name)
+		// if the node is being deleted from the cluster, exclude it from load balancers
+		if newNode == nil {
+			az.excludeLoadBalancerNodes.Insert(prevNode.ObjectMeta.Name)
 		}
 
 		// Remove from nodePrivateIPs cache.
@@ -1074,17 +1105,35 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 			az.nodeResourceGroups[newNode.ObjectMeta.Name] = strings.ToLower(newRG)
 		}
 
-		// Add to unmanagedNodes cache.
+		_, hasExcludeBalancerLabel := newNode.ObjectMeta.Labels[v1.LabelNodeExcludeBalancers]
 		managed, ok := newNode.ObjectMeta.Labels[consts.ManagedByAzureLabel]
-		if ok && strings.EqualFold(managed, consts.NotManagedByAzureLabelValue) {
+		isNodeManagedByCloudProvider := !ok || !strings.EqualFold(managed, consts.NotManagedByAzureLabelValue)
+
+		// Update unmanagedNodes cache
+		if !isNodeManagedByCloudProvider {
 			az.unmanagedNodes.Insert(newNode.ObjectMeta.Name)
-			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
 		}
 
-		// Add to excludeLoadBalancerNodes cache.
-		if _, hasExcludeBalancerLabel := newNode.ObjectMeta.Labels[v1.LabelNodeExcludeBalancers]; hasExcludeBalancerLabel {
-			klog.V(4).Infof("adding node %s from the exclude-from-lb list because the label %s is found", newNode.Name, v1.LabelNodeExcludeBalancers)
+		// Update excludeLoadBalancerNodes cache
+		switch {
+		case !isNodeManagedByCloudProvider:
 			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
+
+		case hasExcludeBalancerLabel:
+			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
+
+		case !isNodeReady(newNode) && nodemanager.GetCloudTaint(newNode.Spec.Taints) == nil:
+			// If not in ready state and not a newly created node, add to excludeLoadBalancerNodes cache.
+			// New nodes (tainted with "node.cloudprovider.kubernetes.io/uninitialized") should not be
+			// excluded from load balancers regardless of their state, so as to reduce the number of
+			// VMSS API calls and not provoke VMScaleSetActiveModelsCountLimitReached.
+			// (https://github.com/kubernetes-sigs/cloud-provider-azure/issues/851)
+			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
+
+		default:
+			// Nodes not falling into the three cases above are valid backends and
+			// should not appear in excludeLoadBalancerNodes cache.
+			az.excludeLoadBalancerNodes.Delete(newNode.ObjectMeta.Name)
 		}
 
 		// Add to nodePrivateIPs cache
@@ -1219,4 +1268,13 @@ func (az *Cloud) ShouldNodeExcludedFromLoadBalancer(nodeName string) (bool, erro
 	}
 
 	return az.excludeLoadBalancerNodes.Has(nodeName), nil
+}
+
+func isNodeReady(node *v1.Node) bool {
+	for _, cond := range node.Status.Conditions {
+		if cond.Type == v1.NodeReady && cond.Status == v1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }

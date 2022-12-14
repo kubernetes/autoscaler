@@ -18,6 +18,10 @@ package azure
 
 import (
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -25,12 +29,6 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 	"testing"
-
-	compute20190701 "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 )
 
 func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
@@ -573,7 +571,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	assert.NotEmpty(t, nodeInfo.Pods)
 
 	t.Run("Checking dynamic workflow", func(t *testing.T) {
-		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2
@@ -587,7 +585,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	})
 
 	t.Run("Checking static workflow if dynamic fails", func(t *testing.T) {
-		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
 		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
@@ -604,7 +602,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	})
 
 	t.Run("Fails to find vmss instance information using static and dynamic workflow, instance not supported", func(t *testing.T) {
-		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
 		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
