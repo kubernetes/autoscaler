@@ -53,6 +53,7 @@ import (
 	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
+	"k8s.io/utils/integer"
 
 	klog "k8s.io/klog/v2"
 )
@@ -320,7 +321,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
 		maxNodesCount += nodeGroup.MaxSize()
 	}
-	metrics.UpdateMaxNodesCount(maxNodesCount)
+	if a.MaxNodesTotal > 0 {
+		metrics.UpdateMaxNodesCount(integer.IntMin(a.MaxNodesTotal, maxNodesCount))
+	} else {
+		metrics.UpdateMaxNodesCount(maxNodesCount)
+	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 	// Initialize cluster state to ClusterSnapshot
 	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
