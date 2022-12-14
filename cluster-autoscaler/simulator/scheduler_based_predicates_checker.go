@@ -77,6 +77,33 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	return checker, nil
 }
 
+func isNodeForScyllaPod(pod *apiv1.Pod, nodeInfo *schedulerframework.NodeInfo) bool {
+	if pod.Labels["app"] == "scylla" && nodeInfo.Node().Labels["purpose"] == "scylla" {
+		nodeSelectorTerm := pod.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms[0]
+		for _, matchExpression := range nodeSelectorTerm.MatchExpressions {
+			if matchExpression.Key == "nodegroup" && matchExpression.Values[0] == nodeInfo.Node().Labels["nodegroup"] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (p *SchedulerBasedPredicateChecker) bypassFilterPlugin(
+	pod *apiv1.Pod,
+	nodeInfo *schedulerframework.NodeInfo,
+	curFilterName string,
+	bypassFilterName string,
+	check func(*apiv1.Pod, *schedulerframework.NodeInfo) bool) bool {
+
+	// this is not the filter we want to bypass
+	if curFilterName != bypassFilterName {
+		return false
+	}
+
+	return check(pod, nodeInfo)
+}
+
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
 func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error) {
 	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*schedulerframework.NodeInfo) bool {
@@ -126,7 +153,10 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot Clu
 
 		filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
 		ok := true
-		for _, filterStatus := range filterStatuses {
+		for filterName, filterStatus := range filterStatuses {
+                        if p.bypassFilterPlugin(pod, nodeInfo, filterName, "VolumeBinding", isNodeForScyllaPod) {
+				continue
+			}
 			if !filterStatus.IsSuccess() {
 				ok = false
 				break
@@ -167,6 +197,10 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot Cluster
 
 	filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
 	for filterName, filterStatus := range filterStatuses {
+                if p.bypassFilterPlugin(pod, nodeInfo, filterName, "VolumeBinding", isNodeForScyllaPod) {
+			continue
+		}
+
 		if !filterStatus.IsSuccess() {
 			if filterStatus.IsUnschedulable() {
 				return NewPredicateError(
