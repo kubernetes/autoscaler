@@ -127,6 +127,11 @@ func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	return ali.manager.GetAsgForInstance(instanceId)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (ali *aliCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (ali *aliCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented

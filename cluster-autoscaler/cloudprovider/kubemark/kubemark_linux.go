@@ -139,6 +139,11 @@ func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloud
 	return nil, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (kubemark *KubemarkCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
 func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, error) {

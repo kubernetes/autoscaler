@@ -81,6 +81,11 @@ func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	return nil, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (v *vultrCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
 func (v *vultrCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {

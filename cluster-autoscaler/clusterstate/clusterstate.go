@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstate
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -121,6 +122,7 @@ type ClusterStateRegistry struct {
 	acceptableRanges                   map[string]AcceptableRange
 	incorrectNodeGroupSizes            map[string]IncorrectNodeGroupSize
 	unregisteredNodes                  map[string]UnregisteredNode
+	deletedNodes                       map[string]struct{}
 	candidatesForScaleDown             map[string][]string
 	backoff                            backoff.Backoff
 	lastStatus                         *api.ClusterAutoscalerStatus
@@ -153,6 +155,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		acceptableRanges:                make(map[string]AcceptableRange),
 		incorrectNodeGroupSizes:         make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:               make(map[string]UnregisteredNode),
+		deletedNodes:                    make(map[string]struct{}),
 		candidatesForScaleDown:          make(map[string][]string),
 		backoff:                         backoff,
 		lastStatus:                      emptyStatus,
@@ -295,6 +298,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
+	cloudProviderNodesRemoved := csr.getCloudProviderDeletedNodes(nodes)
 	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime)
 
 	csr.Lock()
@@ -306,6 +310,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	csr.cloudProviderNodeInstances = cloudProviderNodeInstances
 
 	csr.updateUnregisteredNodes(notRegistered)
+	csr.updateCloudProviderDeletedNodes(cloudProviderNodesRemoved)
 	csr.updateReadinessStats(currentTime)
 
 	// update acceptable ranges based on requests from last loop and targetSizes
@@ -541,7 +546,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 
 	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
 		current.Registered++
-		if deletetaint.HasToBeDeletedTaint(node) {
+		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted++
 		} else if nr.Ready {
 			current.Ready++
@@ -667,6 +672,14 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 		result = append(result, unregistered)
 	}
 	return result
+}
+
+func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []*apiv1.Node) {
+	result := make(map[string]struct{}, len(deletedNodes))
+	for _, deleted := range deletedNodes {
+		result[deleted.Name] = struct{}{}
+	}
+	csr.deletedNodes = result
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
@@ -956,6 +969,28 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 		}
 	}
 	return notRegistered
+}
+
+// Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
+func (csr *ClusterStateRegistry) getCloudProviderDeletedNodes(allNodes []*apiv1.Node) []*apiv1.Node {
+	nodesRemoved := make([]*apiv1.Node, 0)
+	for _, node := range allNodes {
+		if !csr.hasCloudProviderInstance(node) {
+			nodesRemoved = append(nodesRemoved, node)
+		}
+	}
+	return nodesRemoved
+}
+
+func (csr *ClusterStateRegistry) hasCloudProviderInstance(node *apiv1.Node) bool {
+	exists, err := csr.cloudProvider.HasInstance(node)
+	if err == nil {
+		return exists
+	}
+	if !errors.Is(err, cloudprovider.ErrNotImplemented) {
+		klog.Warningf("Failed to check cloud provider has instance for %s: %v", node.Name, err)
+	}
+	return !deletetaint.HasToBeDeletedTaint(node)
 }
 
 // GetAutoscaledNodesCount calculates and returns the actual and the target number of nodes

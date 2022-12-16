@@ -99,6 +99,11 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	return group, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
 func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {

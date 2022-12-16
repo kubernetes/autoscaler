@@ -172,6 +172,11 @@ func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloud
 	return nil, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (provider *RancherCloudProvider) HasInstance(node *corev1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
 func (provider *RancherCloudProvider) GetAvailableMachineTypes() ([]string, error) {
