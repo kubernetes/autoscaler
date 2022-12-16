@@ -95,13 +95,47 @@ may be left unimplemented. Those functions provide additional functionality, but
 are not critical. To leave a function unimplemented just have it return
 cloudprovider.ErrNotImplemented.
 
+## Cloudprovider maintenance requirements
+
+In order to allow code changes to Cluster Autoscaler that would require
+non-trivial changes in cloudproviders this policy introduces _Cloudprovider
+maintenance request_ (CMR) mechanism.
+
+ * CMR will be issued via a github issue tagging all
+   cloudprovider owners and describing the problem being solved and the changes
+   requested.
+ * CMR will clearly state the minor version in which the changes are expected
+   (ex. 1.26).
+ * CMR will need to be discussed on sig-autoscaling meeting and approved by
+   sig leads before being issued. It will also be announced on sig-autoscaling
+   slack channel and highlited in sig-autoscaling meeting notes.
+ * A CMR may be issued no later then [enhancements
+   freeze](https://github.com/kubernetes/sig-release/blob/master/releases/release_phases.md#enhancements-freeze)
+   of a given Kubernetes minor version.
+
+Cloudprovider owners will be required to address CMR or request an exception via
+the CMR github issue. A failure to take any action will result in cloudprovider
+being considered abandoned and marking it as deprecated as described below.
+
+### Empty maintenance request
+
+If no CMRs are issued in a given minor release, core maintainers will issue an
+_empty CMR_. The purpose of an empty CMR is to verify that cloudprovider owners
+are still actively maintaining their integration. The only action required for
+an empty CMR is replying on the github issue. Only one owner from each
+cloudprovider needs to reply on the issue.
+
+Empty CMR follows the same rules as any other CMR. In particular it needs to be
+issued by enhancements freeze.
+
 ### Cloudprovider deprecation and deletion
 
-If cloudprovider owners abandon their integration, the particular
+If cloudprovider owners fail to take actions described above, the particular
 integration will be marked as deprecated in the next CA minor release. A
 deprecated cloudprovider will be completely removed after 1 year as per
 [Kubernetes deprecation
 policy](https://kubernetes.io/docs/reference/using-api/deprecation-policy/#deprecating-a-feature-or-behavior).
 
 A deprecated cloudprovider may become maintained again if the owners become
-active again or new owners step up.
+active again or new owners step up. In order to regain maintained status any
+outstanding CMRs will need to be addressed.
