@@ -96,6 +96,11 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 	return ng, err
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (ocp *OciCloudProvider) HasInstance(n *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
 func (ocp *OciCloudProvider) Pricing() (cloudprovider.PricingModel, caerrors.AutoscalerError) {
