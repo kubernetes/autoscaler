@@ -1309,10 +1309,8 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 			config: testCaseConfig{
 				expectedErr: nil,
 				nodeLabels: map[string]string{
-					"kubernetes.io/os":        "linux",
-					"beta.kubernetes.io/os":   "linux",
-					"kubernetes.io/arch":      "amd64",
-					"beta.kubernetes.io/arch": "amd64",
+					"kubernetes.io/os":   "linux",
+					"kubernetes.io/arch": "amd64",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
 					corev1.ResourceCPU:        2,
@@ -1321,11 +1319,9 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					gpuapis.ResourceNvidiaGPU: 1,
 				},
 				expectedNodeLabels: map[string]string{
-					"kubernetes.io/os":        "linux",
-					"beta.kubernetes.io/os":   "linux",
-					"kubernetes.io/arch":      "amd64",
-					"beta.kubernetes.io/arch": "amd64",
-					"kubernetes.io/hostname":  "random value",
+					"kubernetes.io/os":       "linux",
+					"kubernetes.io/arch":     "amd64",
+					"kubernetes.io/hostname": "random value",
 				},
 			},
 		},
@@ -1340,9 +1336,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				expectedErr:  nil,
 				nodeLabels: map[string]string{
 					"kubernetes.io/os":                 "windows",
-					"beta.kubernetes.io/os":            "windows",
 					"kubernetes.io/arch":               "arm64",
-					"beta.kubernetes.io/arch":          "arm64",
 					"node.kubernetes.io/instance-type": "instance1",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
@@ -1353,9 +1347,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				expectedNodeLabels: map[string]string{
 					"kubernetes.io/hostname":           "random value",
 					"kubernetes.io/os":                 "windows",
-					"beta.kubernetes.io/os":            "windows",
 					"kubernetes.io/arch":               "arm64",
-					"beta.kubernetes.io/arch":          "arm64",
 					"node.kubernetes.io/instance-type": "instance1",
 				},
 			},

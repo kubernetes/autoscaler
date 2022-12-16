@@ -25,7 +25,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -370,10 +369,8 @@ func buildGenericLabels(nodeName string) map[string]string {
 	// TODO revisit this function and add an explanation about what these
 	// labels are used for, or remove them if not necessary
 	m := make(map[string]string)
-	m[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	m[corev1.LabelArchStable] = cloudprovider.DefaultArch
 
-	m[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 	m[corev1.LabelOSStable] = cloudprovider.DefaultOS
 
 	m[corev1.LabelHostname] = nodeName
@@ -387,10 +384,8 @@ func extractNodeLabels(node *corev1.Node) map[string]string {
 		return m
 	}
 
-	setLabelIfNotEmpty(m, node.Labels, kubeletapis.LabelArch)
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelArchStable)
 
-	setLabelIfNotEmpty(m, node.Labels, kubeletapis.LabelOS)
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelOSStable)
 
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelInstanceType)

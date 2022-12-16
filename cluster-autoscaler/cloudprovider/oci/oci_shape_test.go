@@ -4,7 +4,6 @@ import (
 	"context"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"reflect"
 	"strings"
 	"testing"
@@ -182,9 +181,7 @@ func TestBuildGenericLabels(t *testing.T) {
 	availabilityDomain := "US-ASHBURN-1"
 
 	expected := map[string]string{
-		kubeletapis.LabelArch:              cloudprovider.DefaultArch,
 		apiv1.LabelArchStable:              cloudprovider.DefaultArch,
-		kubeletapis.LabelOS:                cloudprovider.DefaultOS,
 		apiv1.LabelOSStable:                cloudprovider.DefaultOS,
 		apiv1.LabelZoneRegion:              "phx",
 		apiv1.LabelZoneRegionStable:        "phx",

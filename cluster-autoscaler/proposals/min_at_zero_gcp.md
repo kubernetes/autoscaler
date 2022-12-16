@@ -126,9 +126,9 @@ The basic set of labels in GKE is relatively simple.
 
 ```
 labels:
-      beta.kubernetes.io/arch: amd64
+      kubernetes.io/arch: amd64
       beta.kubernetes.io/instance-type: n1-standard-1
-      beta.kubernetes.io/os: linux
+      kubernetes.io/os: linux
       cloud.google.com/gke-nodepool: default-pool
       failure-domain.beta.kubernetes.io/region: us-central1
       failure-domain.beta.kubernetes.io/zone: us-central1-a
