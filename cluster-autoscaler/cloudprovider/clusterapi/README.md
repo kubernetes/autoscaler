@@ -5,6 +5,29 @@ the [cluster-api project](https://github.com/kubernetes-sigs/cluster-api) to
 manage the provisioning and de-provisioning of nodes within a Kubernetes
 cluster.
 
+## Table of Contents:
+<!-- TOC BEGIN -->
+* [Kubernetes Version](#kubernetes-version)
+* [Starting the Autoscaler](#starting-the-autoscaler)
+* [Configuring node group auto discovery](#configuring-node-group-auto-discovery)
+* [Connecting cluster-autoscaler to Cluster API management and workload Clusters](#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters)
+  * [Autoscaler running in a joined cluster using service account credentials](#autoscaler-running-in-a-joined-cluster-using-service-account-credentials)
+  * [Autoscaler running in workload cluster using service account credentials, with separate management cluster](#autoscaler-running-in-workload-cluster-using-service-account-credentials-with-separate-management-cluster)
+  * [Autoscaler running in management cluster using service account credentials, with separate workload cluster](#autoscaler-running-in-management-cluster-using-service-account-credentials-with-separate-workload-cluster)
+  * [Autoscaler running anywhere, with separate kubeconfigs for management and workload clusters](#autoscaler-running-anywhere-with-separate-kubeconfigs-for-management-and-workload-clusters)
+  * [Autoscaler running anywhere, with a common kubeconfig for management and workload clusters](#autoscaler-running-anywhere-with-a-common-kubeconfig-for-management-and-workload-clusters)
+* [Enabling Autoscaling](#enabling-autoscaling)
+  * [Scale from zero support](#scale-from-zero-support)
+    * [RBAC changes for scaling from zero](#rbac-changes-for-scaling-from-zero)
+    * [Pre-defined labels and taints on nodes scaled from zero](#pre-defined-labels-and-taints-on-nodes-scaled-from-zero)
+* [Specifying a Custom Resource Group](#specifying-a-custom-resource-group)
+* [Specifying a Custom Resource Version](#specifying-a-custom-resource-version)
+* [Sample manifest](#sample-manifest)
+  * [A note on permissions](#a-note-on-permissions)
+* [Autoscaling with ClusterClass and Managed Topologies](#autoscaling-with-clusterclass-and-managed-topologies)
+* [Special note on GPU instances](#special-note-on-gpu-instances)
+<!-- TOC END -->
+
 ## Kubernetes Version
 
 The cluster-api provider requires Kubernetes v1.16 or greater to run the
