@@ -26,6 +26,7 @@ cluster.
   * [A note on permissions](#a-note-on-permissions)
 * [Autoscaling with ClusterClass and Managed Topologies](#autoscaling-with-clusterclass-and-managed-topologies)
 * [Special note on GPU instances](#special-note-on-gpu-instances)
+* [Special note on balancing similar node groups](#special-note-on-balancing-similar-node-groups)
 <!-- TOC END -->
 
 ## Kubernetes Version
@@ -359,3 +360,60 @@ CAPI cloudprovider, the label format is as follows:
 `cluster-api/accelerator=<gpu-type>`
 
 `<gpu-type>` is arbitrary.
+
+## Special note on balancing similar node groups
+
+The Cluster Autoscaler feature to enable balancing similar node groups
+(activated with the `--balance-similar-node-groups` flag) is a powerful and
+popular feature. When enabled, the Cluster Autoscaler will attempt to create
+new nodes by adding them in a manner that balances the creation between
+similar node groups. With Cluster API, these node groups correspond directly
+to the scalable resources associated (usually MachineDeployments and MachineSets)
+with the nodes in question. In order for the nodes of these scalable resources
+to be considered similar by the Cluster Autoscaler, they must have the same
+capacity, labels, and taints for the nodes which will be created from them.
+
+To help assist the Cluster Autoscaler in determining which node groups are
+similar, the command line flags `--balancing-ignore-label` and
+`--balancing-label` are provided. For an expanded discussion about balancing
+similar node groups and the options which are available, please see the
+[Cluster Autoscaler FAQ](../../FAQ.md).
+
+Because Cluster API can address many different cloud providers, it is important
+to configure the balancing labels to ignore provider-specific labels which
+are used for carrying zonal information on Kubernetes nodes. The Cluster
+Autoscaler implementation for Cluster API does not assume any labels (aside from
+the [well-known Kubernetes labels](https://kubernetes.io/docs/reference/labels-annotations-taints/))
+to be ignored when running. Users must configure their Cluster Autoscaler deployment
+to ignore labels which might be different between nodes, but which do not
+otherwise affect node behavior or size (for example when two MachineDeployments
+are the same except for their deployment zones). The Cluster API community has
+decided not to carry cloud provider specific labels in the Cluster Autoscaler
+to reduce the possibility for labels to clash between providers. Additionally,
+the community has agreed to promote documentation and the use of the `--balancing-ignore-label`
+flag as the preferred method of deployment to reduce the extended need for
+maintenance on the Cluster Autoscaler when new providers are added or updated.
+For further context around this decision, please see the
+[Cluster API Deep Dive into Cluster Autoscaler Node Group Balancing discussion from 2022-09-12](https://www.youtube.com/watch?v=jbhca_9oPuQ&t=5s).
+
+The following table shows some of the most common labels used by cloud providers
+to designate regional or zonal information on Kubernetes nodes. It is shared
+here as a reference for users who might be deploying on these infrastructures.
+
+| Cloud Provider | Label to ignore | Notes |
+| --- | --- | --- |
+| Alibaba Cloud | `topology.diskplugin.csi.alibabacloud.com/zone` | Used by the Alibaba Cloud CSI driver as a target for persistent volume node affinity |
+| AWS | `alpha.eksctl.io/instance-id` | Used by `eksctl` to identify instances |
+| AWS | `alpha.eksctl.io/nodegroup-name` | Used by `eksctl` to identify node group names |
+| AWS | `eks.amazonaws.com/nodegroup` | Used by EKS to identify node groups |
+| AWS | `k8s.amazonaws.com/eniConfig` | Used by the AWS CNI for custom networking |
+| AWS | `lifecycle` | Used by AWS as a label for spot instances |
+| AWS | `topology.ebs.csi.aws.com/zone` | Used by the AWS EBS CSI driver as a target for persistent volume node affinity |
+| Azure | `topology.disk.csi.azure.com/zone` | Used as the topology key by the Azure Disk CSI driver |
+| Azure | `agentpool` | Legacy label used to specify to which Azure node pool a particular node belongs |
+| Azure | `kubernetes.azure.com/agentpool` | Used by AKS to identify to which node pool a particular node belongs |
+| GCE | `topology.gke.io/zone` | Used to specify the zone of the node |
+| IBM Cloud | `ibm-cloud.kubernetes.io/worker-id` | Used by the IBM Cloud Cloud Controller Manager to identify the node |
+| IBM Cloud | `vpc-block-csi-driver-labels` | Used by the IBM Cloud CSI driver as a target for persistent volume node affinity |
+| IBM Cloud | `ibm-cloud.kubernetes.io/vpc-instance-id` | Used when a VPC is in use on IBM Cloud |
+
