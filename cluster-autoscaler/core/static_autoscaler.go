@@ -321,11 +321,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
 		maxNodesCount += nodeGroup.MaxSize()
 	}
+
 	if a.MaxNodesTotal > 0 {
-		metrics.UpdateMaxNodesCount(integer.IntMin(a.MaxNodesTotal, maxNodesCount))
+		a.MaxNodesTotal = integer.IntMin(a.MaxNodesTotal, maxNodesCount)
 	} else {
-		metrics.UpdateMaxNodesCount(maxNodesCount)
+		a.MaxNodesTotal = maxNodesCount
 	}
+	metrics.UpdateMaxNodesCount(a.MaxNodesTotal)
+
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 	// Initialize cluster state to ClusterSnapshot
 	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
