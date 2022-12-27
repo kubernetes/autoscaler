@@ -90,14 +90,6 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
 	}
-	if opts.PredicateChecker == nil {
-		predicateCheckerStopChannel := make(chan struct{})
-		predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
-		if err != nil {
-			return err
-		}
-		opts.PredicateChecker = predicateChecker
-	}
 	if opts.ClusterSnapshot == nil {
 		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
 	}
