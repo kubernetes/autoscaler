@@ -159,7 +159,10 @@ spec:
                 secretKeyRef:
                   key: ClusterName
                   name: {{ template "cluster-autoscaler.fullname" . }}
-            {{- if .Values.azureUseManagedIdentityExtension }}
+            {{- if .Values.azureUseWorkloadIdentityExtension }}
+            - name: ARM_USE_WORKLOAD_IDENTITY_EXTENSION
+              value: "true"
+            {{- else if .Values.azureUseManagedIdentityExtension }}
             - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
               value: "true"
             {{- else }}
