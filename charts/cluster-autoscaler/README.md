@@ -250,6 +250,34 @@ In order to accomplish this, you will first need to create a new IAM role with t
 
 Once you have the IAM role configured, you would then need to `--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
 
+### Azure - Using azure workload identity
+
+You can use the project [Azure workload identity](https://github.com/Azure/azure-workload-identity), to automatically configure the correct setup for your pods to used federated identity with Azure.
+You can also set the correct settings yourself instead of relying on this project.
+For example the following configuration will configure the Autoscaler to use your federated identity:
+
+```yaml
+azureUseWorkloadIdentityExtension: true
+extraEnv:
+  AZURE_CLIENT_ID: USER ASSIGNED IDENTITY CLIENT ID
+  AZURE_TENANT_ID: USER ASSIGNED IDENTITY TENANT ID
+  AZURE_FEDERATED_TOKEN_FILE: /var/run/secrets/tokens/azure-identity-token
+  AZURE_AUTHORITY_HOST: https://login.microsoftonline.com/
+extraVolumes:
+- name: azure-identity-token
+  projected:
+    defaultMode: 420
+    sources:
+    - serviceAccountToken:
+        audience: api://AzureADTokenExchange
+        expirationSeconds: 3600
+        path: azure-identity-token
+extraVolumeMounts:
+- mountPath: /var/run/secrets/tokens
+  name: azure-identity-token
+  readOnly: true
+```
+
 ## Troubleshooting
 
 The chart will succeed even if the container arguments are incorrect. A few minutes after starting
@@ -303,7 +331,8 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
-| azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. |
+| azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
+| azureUseWorkloadIdentityExtension | bool | `false` | Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureVMType | string | `"AKS"` | Azure VM type. |
 | cloudConfigPath | string | `""` | Configuration file for cloud provider. |
 | cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. |
