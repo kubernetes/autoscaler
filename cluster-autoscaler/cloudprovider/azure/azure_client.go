@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
@@ -162,6 +163,18 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 		return nil, fmt.Errorf("creating the OAuth config: %v", err)
 	}
 
+	if config.UseWorkloadIdentityExtension {
+		klog.V(2).Infoln("azure: using workload identity extension to retrieve access token")
+		jwt, err := os.ReadFile(config.AADFederatedTokenFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read a file with a federated token: %v", err)
+		}
+		token, err := adal.NewServicePrincipalTokenFromFederatedToken(*oauthConfig, config.AADClientID, string(jwt), env.ResourceManagerEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create a workload identity token: %v", err)
+		}
+		return token, nil
+	}
 	if config.UseManagedIdentityExtension {
 		klog.V(2).Infoln("azure: using managed identity extension to retrieve access token")
 		msiEndpoint, err := adal.GetMSIVMEndpoint()
