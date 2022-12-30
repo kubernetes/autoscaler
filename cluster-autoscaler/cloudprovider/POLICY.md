@@ -74,13 +74,14 @@ in-tree cloudprovider follows the following rules:
     * It is required that both reviewers and approvers sections of OWNERS file
       are non-empty.
     * This can create a chicken and egg problem, where adding a cloudprovider
-    requires being a member of Kubernetes org and becoming a member of the
-    organization requires a history of code contributions. For this reason it
-    is allowed for the OWNERS file to temporarily contain
-    commented out github handles. There is an expectation that at least some of
-    the owners will ultimately join Kubernetes organization (by following the
-    [process](https://github.com/kubernetes/community/blob/master/community-membership.md))
-    so that they can approve PRs to their cloudprovider.
+      requires being a member of Kubernetes org and becoming a member of the
+      organization requires a history of code contributions. For this reason it
+      is allowed for the OWNERS file to temporarily contain commented out github
+      handles. There is an expectation that at least some of the owners will
+      join Kubernetes organization (by following the
+      [process](https://github.com/kubernetes/community/blob/master/community-membership.md))
+      within one release cycly, so that they can approve PRs to their
+      cloudprovider.
   * Cloudprovider shouldn't introduce new dependencies (such as clients/SDKs)
     to top-level go.mod vendor, unless those dependencies are already imported
     by kubernetes/kubernetes repository and the same version of the library is
@@ -112,6 +113,8 @@ maintenance request_ (CMR) mechanism.
  * A CMR may be issued no later then [enhancements
    freeze](https://github.com/kubernetes/sig-release/blob/master/releases/release_phases.md#enhancements-freeze)
    of a given Kubernetes minor version.
+ * If a given cloud provider was added more than one release cycle ago and there
+   are no valid OWNERS, CMR should request OWNERS file update.
 
 Cloudprovider owners will be required to address CMR or request an exception via
 the CMR github issue. A failure to take any action will result in cloudprovider
