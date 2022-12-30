@@ -91,6 +91,8 @@ var (
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile          = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
+	kubeClientBurst         = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client.")
+	kubeClientQPS           = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client.")
 	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	namespace               = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	enforceNodeGroupMinSize = flag.Bool("enforce-node-group-min-size", false, "Should CA scale up the node group to the configured min size if needed.")
@@ -291,6 +293,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		BalancingExtraIgnoredLabels:        *balancingIgnoreLabelsFlag,
 		BalancingLabels:                    *balancingLabelsFlag,
 		KubeConfigPath:                     *kubeConfigFile,
+		KubeClientBurst:                    *kubeClientBurst,
+		KubeClientQPS:                      *kubeClientQPS,
 		NodeDeletionDelayTimeout:           *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList:           *awsUseStaticInstanceList,
 		ConcurrentGceRefreshes:             *concurrentGceRefreshes,
@@ -363,7 +367,12 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
-	kubeClient := createKubeClient(getKubeConfig())
+
+	kubeClientConfig := getKubeConfig()
+	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
+	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
+	kubeClient := createKubeClient(kubeClientConfig)
+
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
 	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(kubeClient, make(chan struct{}))
