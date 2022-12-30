@@ -5,3 +5,5 @@ reviewers:
 emeritus_approvers:
 - bskiba # 2022-09-30
 - wojtek-t # 2022-09-30
+labels:
+- addon-resizer
