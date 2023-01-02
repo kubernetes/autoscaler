@@ -140,7 +140,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 			podlistprocessor.NewFilterOutSchedulablePodListProcessor(context.PredicateChecker),
 		),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
-		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
+		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
 		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},

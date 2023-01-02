@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -70,8 +71,8 @@ func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context
 func (n *NoOpNodeGroupSetProcessor) CleanUp() {}
 
 // NewDefaultNodeGroupSetProcessor creates an instance of NodeGroupSetProcessor.
-func NewDefaultNodeGroupSetProcessor(ignoredLabels []string) NodeGroupSetProcessor {
+func NewDefaultNodeGroupSetProcessor(ignoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeGroupSetProcessor {
 	return &BalancingNodeGroupSetProcessor{
-		Comparator: CreateGenericNodeInfoComparator(ignoredLabels),
+		Comparator: CreateGenericNodeInfoComparator(ignoredLabels, ratioOpts),
 	}
 }

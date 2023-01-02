@@ -46,6 +46,33 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 }
 
+const (
+	// DefaultMaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between groups in the same NodeGroupSet
+	DefaultMaxAllocatableDifferenceRatio = 0.05
+	// DefaultMaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
+	DefaultMaxFreeDifferenceRatio = 0.05
+	// DefaultMaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory
+	DefaultMaxCapacityMemoryDifferenceRatio = 0.015
+)
+
+// NodeGroupDifferenceRatios contains various ratios used to determine if two NodeGroups are similar and makes scaling decisions
+type NodeGroupDifferenceRatios struct {
+	// MaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between groups in the same NodeGroupSet
+	MaxAllocatableDifferenceRatio float64
+	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods) can differ between groups in the same NodeGroupSet
+	MaxFreeDifferenceRatio float64
+	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between groups in the same NodeGroupSetAutoscalingOptions
+	MaxCapacityMemoryDifferenceRatio float64
+}
+
+func NewDefaultNodeGroupDifferenceRatios() NodeGroupDifferenceRatios {
+	return NodeGroupDifferenceRatios{
+		MaxAllocatableDifferenceRatio:    DefaultMaxAllocatableDifferenceRatio,
+		MaxFreeDifferenceRatio:           DefaultMaxFreeDifferenceRatio,
+		MaxCapacityMemoryDifferenceRatio: DefaultMaxCapacityMemoryDifferenceRatio,
+	}
+}
+
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
 	// NodeGroupDefaults are default values for per NodeGroup options.
@@ -213,4 +240,6 @@ type AutoscalingOptions struct {
 	NodeDeleteDelayAfterTaint time.Duration
 	// ParallelDrain is whether CA can drain nodes in parallel.
 	ParallelDrain bool
+	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
+	NodeGroupSetRatios NodeGroupDifferenceRatios
 }
