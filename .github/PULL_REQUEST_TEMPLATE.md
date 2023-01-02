@@ -1,9 +1,3 @@
-#### Which component this PR applies to?
-
-<!--
-Which autoscaling component hosted in this repository (cluster-autoscaler, vertical-pod-autoscaler, addon-resizer, helm charts) this PR applies to?
--->
-
 #### What type of PR is this?
 
 <!--
