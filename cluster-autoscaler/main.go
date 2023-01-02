@@ -213,6 +213,9 @@ var (
 	nodeDeleteDelayAfterTaint          = flag.Duration("node-delete-delay-after-taint", 5*time.Second, "How long to wait before deleting a node after tainting it")
 	scaleDownSimulationTimeout         = flag.Duration("scale-down-simulation-timeout", 5*time.Minute, "How long should we run scale down simulation.")
 	parallelDrain                      = flag.Bool("parallel-drain", false, "Whether to allow parallel drain of nodes.")
+	maxCapacityMemoryDifferenceRatio   = flag.Float64("memory-difference-ratio", config.DefaultMaxCapacityMemoryDifferenceRatio, "Maximum difference in memory capacity between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's memory capacity.")
+	maxFreeDifferenceRatio             = flag.Float64("max-free-difference-ratio", config.DefaultMaxFreeDifferenceRatio, "Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource.")
+	maxAllocatableDifferenceRatio      = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -314,6 +317,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeDeleteDelayAfterTaint:          *nodeDeleteDelayAfterTaint,
 		ScaleDownSimulationTimeout:         *scaleDownSimulationTimeout,
 		ParallelDrain:                      *parallelDrain,
+		NodeGroupSetRatios: config.NodeGroupDifferenceRatios{
+			MaxCapacityMemoryDifferenceRatio: *maxCapacityMemoryDifferenceRatio,
+			MaxAllocatableDifferenceRatio:    *maxAllocatableDifferenceRatio,
+			MaxFreeDifferenceRatio:           *maxFreeDifferenceRatio,
+		},
 	}
 }
 
@@ -395,7 +403,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
 			nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
 		}
-		nodeInfoComparator = nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels)
+		nodeInfoComparator = nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels, autoscalingOptions.NodeGroupSetRatios)
 	}
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
