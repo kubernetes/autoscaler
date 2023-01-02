@@ -869,7 +869,7 @@ This limitation was solved with
 introduced as beta in Kubernetes 1.11 and planned for GA in 1.13.
 To allow CA to take advantage of topological scheduling, use separate node groups per zone.
 This way CA knows exactly which node group will create nodes in the required zone rather than relying on the cloud provider choosing a zone for a new node in a multi-zone node group.
-When using separate node groups per zone, the `--balance-similar-node-groups` flag will keep nodes balanced across zones for workloads that dont require topological scheduling.
+When using separate node groups per zone, the `--balance-similar-node-groups` flag will keep nodes balanced across zones for workloads that don't require topological scheduling.
 
 ### CA doesn’t work, but it used to work yesterday. Why?
 
