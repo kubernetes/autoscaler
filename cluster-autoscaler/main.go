@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 
 	"github.com/spf13/pflag"
 
@@ -365,12 +366,18 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	kubeClient := createKubeClient(getKubeConfig())
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
+	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(kubeClient, make(chan struct{}))
+	if err != nil {
+		return nil, err
+	}
+
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
 		KubeClient:           kubeClient,
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
+		PredicateChecker:     predicateChecker,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors()
