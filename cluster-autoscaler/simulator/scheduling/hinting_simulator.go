@@ -21,9 +21,9 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
-	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -59,22 +59,23 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 	similarPods := NewSimilarPodsScheduling()
 
 	var statuses []Status
+	loggingQuota := klogx.PodsLoggingQuota()
 	for _, pod := range pods {
-		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
+		klogx.V(5).UpTo(loggingQuota).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 		nodeName, err := s.findNodeWithHints(clusterSnapshot, pod, isNodeAcceptable)
 		if err != nil {
 			return nil, 0, err
 		}
 
 		if nodeName == "" {
-			nodeName, err = s.findNode(similarPods, clusterSnapshot, pod, isNodeAcceptable)
+			nodeName, err = s.findNode(similarPods, clusterSnapshot, pod, loggingQuota, isNodeAcceptable)
 			if err != nil {
 				return nil, 0, err
 			}
 		}
 
 		if nodeName != "" {
-			klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodeName)
+			klogx.V(4).UpTo(loggingQuota).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodeName)
 			if err := clusterSnapshot.AddPod(pod, nodeName); err != nil {
 				return nil, 0, fmt.Errorf("simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, nodeName, err)
 			}
@@ -83,6 +84,7 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 			break
 		}
 	}
+	klogx.V(4).Over(loggingQuota).Infof("There were also %v other logs from HintingSimulator.TrySchedulePods func that were capped.", -loggingQuota.Left())
 	return statuses, similarPods.OverflowingControllerCount(), nil
 }
 
@@ -105,15 +107,15 @@ func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.Clu
 	return "", nil
 }
 
-func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) (string, error) {
+func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) (string, error) {
 	if similarPods.IsSimilarUnschedulable(pod) {
-		klog.V(4).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
+		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
 		return "", nil
 	}
 
 	newNodeName, err := s.predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, isNodeAcceptable)
 	if err != nil {
-		klog.V(4).Infof("failed to find place for %s/%s: %v", pod.Namespace, pod.Name, err)
+		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s: %v", pod.Namespace, pod.Name, err)
 		similarPods.SetUnschedulable(pod)
 		return "", nil
 	}
