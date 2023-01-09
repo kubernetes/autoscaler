@@ -133,13 +133,16 @@ func (b *brightboxCloudProvider) Refresh() error {
 			continue
 		}
 		klog.V(4).Infof("Group %q: Node defaults found in %q. Adding to node group list", configMap.Data["server_group"], configMap.Id)
-		newNodeGroup := makeNodeGroupFromAPIDetails(
+		newNodeGroup, err := makeNodeGroupFromAPIDetails(
 			defaultServerName(configMap.Name),
 			mapData,
 			minSize,
 			maxSize,
 			b.Cloud,
 		)
+		if err != nil {
+			return err
+		}
 		group, err := b.GetServerGroup(newNodeGroup.Id())
 		if err != nil {
 			return err
