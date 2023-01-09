@@ -8,26 +8,29 @@ Builder](https://github.com/brightbox/kubernetes-cluster)
 
 # How Autoscaler works on Brightbox Cloud
 
-The autoscaler looks for [Server
-Groups](https://www.brightbox.com/docs/guides/cli/server-groups/) named
-after the cluster-name option passed to the autoscaler (--cluster-name).
+The autoscaler looks for the first [Config
+Map](https://api.gb1.brightbox.com/1.0/index.html) with a name that has
+a suffix the same as the `cluster-name` option passed to the autoscaler
+(`--cluster-name`).
 
-A group named with a suffix of the cluster-name
-(e.g. k8s-worker.k8s-test.cluster.local) is a candidate to be a scaling
-group. The autoscaler will then check the description to see if it is
-a pair of integers separated by a colon (e.g. 1:4). If it finds those
-numbers then they will become the minimum and maximum server size for
-that group, and autoscaler will attempt to scale the group between those sizes.
+The config map data consist of a colon separated key-value pairs. The
+key and the value are treated as strings.
 
-The type of server, the image used  and the target zone will be
-dynamically determined from the existing members. If these differ, or
-there are no existing servers, autoscaler will log an error and will not
-scale that group.
+```
+server_group: grp-sda44
+min: 1
+max: 4
+default_group: grp-y6cai
+additional_groups: grp-abcde,grp-testy,grp-winga
+image: img-testy
+zone: zon-testy
+user_data: <base64 encoded userdata>
+```
 
-A group named precisely the same as the cluster-name
-(e.g. k8s-test.cluster.local) is considered to be the default cluster
-group and all autoscaled servers created are placed within it as well
-as the scaling group.
+The `server_group`, `min` and `max` items are required. All the rest
+are optional. Additional Groups should be comma separated without spaces.
+
+The names of the autocreated servers are derived from the name of the config map.
 
 The Brightbox Cloud provider only supports auto-discovery mode using
 this pattern. `node-group-auto-discovery` and `nodes` options are
@@ -94,7 +97,8 @@ to use.
 
 ## Checking the environment
 
-You can check the brightbox-credentials secret by running the `check-env` job from the examples directory.
+You can check the brightbox-credentials secret by running the `check-env`
+job from the examples directory.
 
 ```
 $ kubectl apply -f examples/check-env.yaml
@@ -134,7 +138,8 @@ the master nodes. This avoids it accidentally killing itself.
 
 ## Viewing the cluster-autoscaler options
 
-Cluster autoscaler has many options that can be adjusted to better fit the needs of your application. To view them run
+Cluster autoscaler has many options that can be adjusted to better fit
+the needs of your application. To view them run
 
 ```
 $ kubectl create job ca-options --image=brightbox/cluster-autoscaler-brightbox:dev -- ./cluster-autoscaler -h
@@ -154,9 +159,10 @@ Extract the repository to a machine running docker and then run the make command
 $ make build
 ```
 
-This builds an autoscaler containing only the Brightbox Cloud provider, tagged as `brightbox/cluster-autoscaler-brightbox:dev`. To build any other version add a TAG variable
+This builds an autoscaler containing only the Brightbox Cloud provider,
+tagged as `brightbox/cluster-autoscaler-brightbox:dev`. To build any
+other version add a TAG variable
 
 ```
 make build TAG=1.1x
 ```
-
