@@ -354,8 +354,11 @@ func makeNodeGroupFromAPIDetails(
 	minSize int,
 	maxSize int,
 	cloudclient *k8ssdk.Cloud,
-) *brightboxNodeGroup {
+) (*brightboxNodeGroup, error) {
 	klog.V(4).Info("makeNodeGroupFromApiDetails")
+	if mapData["server_group"] == "" {
+		return nil, cloudprovider.ErrIllegalConfiguration
+	}
 	userData := mapData["user_data"]
 	options := &brightbox.ServerOptions{
 		Image:        mapData["image"],
@@ -363,7 +366,7 @@ func makeNodeGroupFromAPIDetails(
 		ServerType:   mapData["type"],
 		Zone:         mapData["zone"],
 		UserData:     &userData,
-		ServerGroups: []string{mapData["default_group"], mapData["server_group"]},
+		ServerGroups: mergeServerGroups(mapData),
 	}
 	result := brightboxNodeGroup{
 		id:            mapData["server_group"],
@@ -373,7 +376,27 @@ func makeNodeGroupFromAPIDetails(
 		Cloud:         cloudclient,
 	}
 	klog.V(4).Info(result.Debug())
-	return &result
+	return &result, nil
+}
+
+func mergeServerGroups(data map[string]string) []string {
+	uniqueMap := map[string]bool{}
+	addFromSplit(uniqueMap, data["server_group"])
+	addFromSplit(uniqueMap, data["default_group"])
+	addFromSplit(uniqueMap, data["additional_groups"])
+	result := make([]string, 0, len(uniqueMap))
+	for key := range uniqueMap {
+		result = append(result, key)
+	}
+	return result
+}
+
+func addFromSplit(uniqueMap map[string]bool, source string) {
+	for _, element := range strings.Split(source, ",") {
+		if element != "" {
+			uniqueMap[element] = true
+		}
+	}
 }
 
 func (ng *brightboxNodeGroup) createServers(amount int) error {
