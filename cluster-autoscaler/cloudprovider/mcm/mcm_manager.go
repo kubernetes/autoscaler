@@ -563,7 +563,7 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 			break
 		}
 
-		klog.Infof("Machine %s of md %s marked with priority 1 successfully", machine.Name, md.Name)
+		klog.Infof("Machine %s of machineDeployment %s marked with priority 1 successfully", machine.Name, md.Name)
 	}
 
 	for {
