@@ -82,6 +82,13 @@ const (
 	machineGroup = "machine.sapcloud.io"
 	// machineGroup is the API version used to identify machine API group objects
 	machineVersion = "v1alpha1"
+	// machineDeploymentProgressing tells that deployment is progressing. Progress for a MachineDeployment is considered when a new machine set is created or adopted, and when new machines scale up or old machines scale down.
+	// Progress is not estimated for paused MachineDeployments. It is also updated if progressDeadlineSeconds is not specified(treated as infinite deadline), in which case it would never be updated to "false".
+	machineDeploymentProgressing v1alpha1.MachineDeploymentConditionType = "Progressing"
+	// newISAvailableReason is the reason in "Progressing" condition when machineDeployment rollout is complete
+	newISAvailableReason = "NewMachineSetAvailable"
+	// conditionTrue means the given condition status is true
+	conditionTrue v1alpha1.ConditionStatus = "True"
 )
 
 var (
@@ -248,9 +255,7 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 }
 
 // TODO: In general, any controller checking this needs to be dynamic so
-//
-//	users don't have to restart their controller manager if they change the apiserver.
-//
+// users don't have to restart their controller manager if they change the apiserver.
 // Until we get there, the structure here needs to be exposed for the construction of a proper ControllerContext.
 func getAvailableResources(clientBuilder CoreClientBuilder) (map[schema.GroupVersionResource]bool, error) {
 	var discoveryClient discovery.DiscoveryInterface
@@ -395,6 +400,25 @@ func (m *McmManager) GetMachineDeploymentSize(machinedeployment *MachineDeployme
 	return int64(md.Spec.Replicas), nil
 }
 
+func isRollingUpdateFinished(md *v1alpha1.MachineDeployment) bool {
+	found := false
+	for _, cond := range md.Status.Conditions {
+		switch {
+		case cond.Type == machineDeploymentProgressing && cond.Status == conditionTrue && cond.Reason == newISAvailableReason:
+			return true
+		case cond.Type == machineDeploymentProgressing:
+			found = true
+			break
+		}
+	}
+	if !found {
+		// no "Progressing" condition means the deployment has not undergone any rolling update yet
+		return true
+	}
+
+	return false
+}
+
 // SetMachineDeploymentSize sets the desired size for the Machinedeployment.
 func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployment, size int64) error {
 
@@ -409,6 +433,11 @@ func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployme
 			// Timeout occurred
 			klog.Errorf("Unable to fetch MachineDeployment object %s, Error: %s", machinedeployment.Name, err)
 			return err
+		}
+
+		// don't scale down during rolling update, as that could remove ready node with workload
+		if md.Spec.Replicas >= int32(size) && !isRollingUpdateFinished(md) {
+			return fmt.Errorf("MachineDeployment %s is under rolling update , cannot reduce replica count", md.Name)
 		}
 
 		clone := md.DeepCopy()
@@ -431,9 +460,23 @@ func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployme
 	return nil
 }
 
+func (m *McmManager) getMachineDeploymentObjUntilDeadline(mdName string, retryDeadline time.Time) (*v1alpha1.MachineDeployment, error) {
+	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(mdName)
+	if err != nil && time.Now().Before(retryDeadline) {
+		klog.Warningf("Unable to fetch MachineDeployment object %s, Error: %s", mdName, err)
+		time.Sleep(conflictRetryInterval)
+		return nil, nil
+	} else if err != nil {
+		// Timeout occurred
+		klog.Errorf("Unable to fetch MachineDeployment object %s, Error: %s", mdName, err)
+		return nil, err
+	}
+
+	return md, nil
+}
+
 // DeleteMachines deletes the Machines and also reduces the desired replicas of the Machinedeplyoment in parallel.
 func (m *McmManager) DeleteMachines(machines []*Ref) error {
-
 	var (
 		mdclone             *v1alpha1.MachineDeployment
 		terminatingMachines []*v1alpha1.Machine
@@ -454,6 +497,23 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 		}
 		if machinedeployment.Name != commonMachineDeployment.Name {
 			return fmt.Errorf("Cannot delete machines which don't belong to the same MachineDeployment")
+		}
+	}
+
+	var md *v1alpha1.MachineDeployment
+	retryDeadline := time.Now().Add(maxRetryDeadline)
+	for {
+		md, err = m.getMachineDeploymentObjUntilDeadline(commonMachineDeployment.Name, retryDeadline)
+		if err != nil {
+			return err
+		} else if md == nil {
+			continue
+		}
+
+		if !isRollingUpdateFinished(md) {
+			return fmt.Errorf("MachineDeployment %s is under rolling update , cannot reduce replica count", md.Name)
+		} else {
+			break
 		}
 	}
 
@@ -502,21 +562,11 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 			// Break out of loop when update succeeds
 			break
 		}
+
+		klog.Infof("Machine %s of md %s marked with priority 1 successfully", machine.Name, md.Name)
 	}
 
-	retryDeadline := time.Now().Add(maxRetryDeadline)
 	for {
-		md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(commonMachineDeployment.Name)
-		if err != nil && time.Now().Before(retryDeadline) {
-			klog.Warningf("Unable to fetch MachineDeployment object %s, Error: %s", commonMachineDeployment.Name, err)
-			time.Sleep(conflictRetryInterval)
-			continue
-		} else if err != nil {
-			// Timeout occurred
-			klog.Errorf("Unable to fetch MachineDeployment object %s, Error: %s", commonMachineDeployment.Name, err)
-			return err
-		}
-
 		mdclone = md.DeepCopy()
 		if (int(mdclone.Spec.Replicas) - len(machines)) < 0 {
 			return fmt.Errorf("Unable to delete machine in MachineDeployment object %s , machine replicas are < 0 ", commonMachineDeployment.Name)

@@ -319,6 +319,10 @@ func (machinedeployment *MachineDeployment) DecreaseTargetSize(delta int) error 
 	if err != nil {
 		return err
 	}
+	if int(size+int64(delta)) < machinedeployment.minSize {
+		klog.Warningf("Cannot go below min size= %d for machineDeployment %s, requested target size= %d , applied target size= %d", machinedeployment.minSize, machinedeployment.Name, size+int64(delta), machinedeployment.minSize)
+		return machinedeployment.mcmManager.SetMachineDeploymentSize(machinedeployment, int64(machinedeployment.minSize))
+	}
 	return machinedeployment.mcmManager.SetMachineDeploymentSize(machinedeployment, size+int64(delta))
 }
 
