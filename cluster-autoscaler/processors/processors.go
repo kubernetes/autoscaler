@@ -17,6 +17,7 @@ limitations under the License.
 package processors
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
@@ -65,9 +66,13 @@ type AutoscalingProcessors struct {
 // DefaultProcessors returns default set of processors.
 func DefaultProcessors() *AutoscalingProcessors {
 	return &AutoscalingProcessors{
-		PodListProcessor:           pods.NewDefaultPodListProcessor(),
-		NodeGroupListProcessor:     nodegroups.NewDefaultNodeGroupListProcessor(),
-		NodeGroupSetProcessor:      nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
+		PodListProcessor:       pods.NewDefaultPodListProcessor(),
+		NodeGroupListProcessor: nodegroups.NewDefaultNodeGroupListProcessor(),
+		NodeGroupSetProcessor: nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{
+			MaxAllocatableDifferenceRatio:    config.DefaultMaxAllocatableDifferenceRatio,
+			MaxCapacityMemoryDifferenceRatio: config.DefaultMaxCapacityMemoryDifferenceRatio,
+			MaxFreeDifferenceRatio:           config.DefaultMaxFreeDifferenceRatio,
+		}),
 		ScaleUpStatusProcessor:     status.NewDefaultScaleUpStatusProcessor(),
 		ScaleDownNodeProcessor:     nodes.NewPreFilteringScaleDownNodeProcessor(),
 		ScaleDownSetProcessor:      nodes.NewPostFilteringScaleDownNodeProcessor(),
