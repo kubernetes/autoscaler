@@ -284,13 +284,15 @@ func TestSetSizeAndReplicas(t *testing.T) {
 func TestAnnotations(t *testing.T) {
 	cpuQuantity := resource.MustParse("2")
 	memQuantity := resource.MustParse("1024Mi")
+	diskQuantity := resource.MustParse("100Gi")
 	gpuQuantity := resource.MustParse("1")
 	maxPodsQuantity := resource.MustParse("42")
 	annotations := map[string]string{
-		cpuKey:      cpuQuantity.String(),
-		memoryKey:   memQuantity.String(),
-		gpuCountKey: gpuQuantity.String(),
-		maxPodsKey:  maxPodsQuantity.String(),
+		cpuKey:          cpuQuantity.String(),
+		memoryKey:       memQuantity.String(),
+		diskCapacityKey: diskQuantity.String(),
+		gpuCountKey:     gpuQuantity.String(),
+		maxPodsKey:      maxPodsQuantity.String(),
 	}
 
 	test := func(t *testing.T, testConfig *testConfig, testResource *unstructured.Unstructured) {
@@ -312,6 +314,12 @@ func TestAnnotations(t *testing.T) {
 			t.Fatal(err)
 		} else if memQuantity.Cmp(mem) != 0 {
 			t.Errorf("expected %v, got %v", memQuantity, mem)
+		}
+
+		if disk, err := sr.InstanceEphemeralDiskCapacityAnnotation(); err != nil {
+			t.Fatal(err)
+		} else if diskQuantity.Cmp(disk) != 0 {
+			t.Errorf("expected %v, got %v", diskQuantity, disk)
 		}
 
 		if gpu, err := sr.InstanceGPUCapacityAnnotation(); err != nil {
