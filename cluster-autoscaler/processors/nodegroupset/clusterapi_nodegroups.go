@@ -17,13 +17,14 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // CreateClusterAPINodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they match usual conditions checked by IsCloudProviderNodeInfoSimilar,
 // even if they have different infrastructure provider-specific labels.
-func CreateClusterAPINodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
+func CreateClusterAPINodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	capiIgnoredLabels := map[string]bool{
 		"topology.ebs.csi.aws.com/zone":                 true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
 		"topology.diskplugin.csi.alibabacloud.com/zone": true, // this is a label used by the Alibaba Cloud CSI driver as a target for Persistent Volume Node Affinity
@@ -41,6 +42,6 @@ func CreateClusterAPINodeInfoComparator(extraIgnoredLabels []string) NodeInfoCom
 	}
 
 	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		return IsCloudProviderNodeInfoSimilar(n1, n2, capiIgnoredLabels)
+		return IsCloudProviderNodeInfoSimilar(n1, n2, capiIgnoredLabels, ratioOpts)
 	}
 }
