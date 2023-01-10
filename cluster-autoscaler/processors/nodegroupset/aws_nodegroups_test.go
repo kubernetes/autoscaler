@@ -19,12 +19,13 @@ package nodegroupset
 import (
 	"testing"
 
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestIsAwsNodeInfoSimilar(t *testing.T) {
-	comparator := CreateAwsNodeInfoComparator([]string{})
+	comparator := CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})
 	node1 := BuildTestNode("node1", 1000, 2000)
 	node2 := BuildTestNode("node2", 1000, 2000)
 
@@ -176,6 +177,6 @@ func TestIsAwsNodeInfoSimilar(t *testing.T) {
 func TestFindSimilarNodeGroupsAwsBasic(t *testing.T) {
 	context := &context.AutoscalingContext{}
 	ni1, ni2, ni3 := buildBasicNodeGroups(context)
-	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAwsNodeInfoComparator([]string{})}
+	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
 	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
 }
