@@ -401,22 +401,16 @@ func (m *McmManager) GetMachineDeploymentSize(machinedeployment *MachineDeployme
 }
 
 func isRollingUpdateFinished(md *v1alpha1.MachineDeployment) bool {
-	found := false
 	for _, cond := range md.Status.Conditions {
 		switch {
 		case cond.Type == machineDeploymentProgressing && cond.Status == conditionTrue && cond.Reason == newISAvailableReason:
 			return true
 		case cond.Type == machineDeploymentProgressing:
-			found = true
-			break
+			return false
 		}
 	}
-	if !found {
-		// no "Progressing" condition means the deployment has not undergone any rolling update yet
-		return true
-	}
-
-	return false
+	// no "Progressing" condition means the deployment has not undergone any rolling update yet
+	return true
 }
 
 // SetMachineDeploymentSize sets the desired size for the Machinedeployment.
