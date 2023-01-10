@@ -65,6 +65,7 @@ type NodeGroupDifferenceRatios struct {
 	MaxCapacityMemoryDifferenceRatio float64
 }
 
+// NewDefaultNodeGroupDifferenceRatios returns default NodeGroupDifferenceRatios values
 func NewDefaultNodeGroupDifferenceRatios() NodeGroupDifferenceRatios {
 	return NodeGroupDifferenceRatios{
 		MaxAllocatableDifferenceRatio:    DefaultMaxAllocatableDifferenceRatio,
