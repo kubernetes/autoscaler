@@ -75,6 +75,7 @@ func testNamedDescribeAutoScalingGroupsOutput(groupName string, desiredCap int64
 		instances = append(instances, &autoscaling.Instance{
 			InstanceId:       aws.String(id),
 			AvailabilityZone: aws.String("us-east-1a"),
+			LifecycleState:   aws.String(autoscaling.LifecycleStateInService),
 		})
 	}
 	return &autoscaling.DescribeAutoScalingGroupsOutput{
