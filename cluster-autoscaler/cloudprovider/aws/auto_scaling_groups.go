@@ -101,8 +101,15 @@ func newASGCache(awsService *awsWrapper, explicitSpecs []string, autoDiscoverySp
 var getInstanceTypeForAsg = func(m *asgCache, group *asg) (string, error) {
 	if obj, found, _ := m.asgInstanceTypeCache.GetByKey(group.AwsRef.Name); found {
 		return obj.(instanceTypeCachedObject).instanceType, nil
-	} else if result, err := m.awsService.getInstanceTypesForAsgs([]*asg{group}); err == nil {
-		return result[group.AwsRef.Name], nil
+	}
+
+	result, err := m.awsService.getInstanceTypesForAsgs([]*asg{group})
+	if err != nil {
+		return "", fmt.Errorf("could not get instance type for %s: %w", group.AwsRef.Name, err)
+	}
+
+	if instanceType, ok := result[group.AwsRef.Name]; ok {
+		return instanceType, nil
 	}
 
 	return "", fmt.Errorf("could not find instance type for %s", group.AwsRef.Name)
