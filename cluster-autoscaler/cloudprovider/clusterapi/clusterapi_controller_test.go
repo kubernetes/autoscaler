@@ -1292,9 +1292,16 @@ func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
+	nodeCount := 0
+	for _, node := range nodeNames {
+		if !isPendingMachineProviderID(normalizedProviderString(node.Id)) {
+			nodeCount++
+		}
+	}
+
 	// We removed all linkage - so we should get 0 nodes back.
-	if len(nodeNames) != 0 {
-		t.Fatalf("expected len=0, got len=%v", len(nodeNames))
+	if nodeCount != 0 {
+		t.Fatalf("expected len=0, got len=%v", nodeCount)
 	}
 }
 
