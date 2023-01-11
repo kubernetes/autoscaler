@@ -705,9 +705,13 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 	}
 
 	for asgName, cfgName := range launchConfigsToQuery {
+		if instanceType, ok := launchConfigs[cfgName]; !ok || instanceType == "" {
+			klog.Warningf("Could not fetch %q launch configuration for ASG %q", cfgName, asgName)
+			continue
+		}
 		results[asgName] = launchConfigs[cfgName]
 	}
-	klog.V(4).Infof("Successfully queried %d launch configurations", len(launchConfigsToQuery))
+	klog.V(4).Infof("Successfully queried %d launch configurations", len(launchConfigs))
 
 	// Have to query LaunchTemplates one-at-a-time, since there's no way to query <lt, version> pairs in bulk
 	for asgName, lt := range launchTemplatesToQuery {
