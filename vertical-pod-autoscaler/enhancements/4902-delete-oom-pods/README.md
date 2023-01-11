@@ -1,3 +1,7 @@
+**WARNING**
+:warning: We no longer intend to implemnt this KEP. Instead we recommend using
+[Unhealthy Pod Eviction Policy for PDBs](https://github.com/kubernetes/enhancements/blob/master/keps/sig-apps/3017-pod-healthy-policy-for-pdb/README.md).
+
 # KEP-4902: Delete OOM Pods
 
 <!-- toc -->
