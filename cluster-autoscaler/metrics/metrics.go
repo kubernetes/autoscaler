@@ -97,6 +97,8 @@ const (
 	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
 	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
+	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
+	Estimate                   FunctionLabel = "scaleUp:estimate"
 	FindUnneeded               FunctionLabel = "findUnneeded"
 	UpdateState                FunctionLabel = "updateClusterState"
 	FilterOutSchedulable       FunctionLabel = "filterOutSchedulable"
