@@ -8,6 +8,10 @@ autoscaler:
           'inject-commit-hash'
         inject_effective_version: true
       publish:
+        oci-builder: docker-buildx
+        platforms:
+        - linux/amd64
+        - linux/arm64
         dockerimages:
           cluster-autoscaler:
             inputs:
@@ -17,13 +21,12 @@ autoscaler:
                 build: ~
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/cluster-autoscaler'
-            dockerfile: 'Dockerfile.amd64'
-            dir: 'cluster-autoscaler'
+            dockerfile: './cluster-autoscaler/Dockerfile'
     steps:
       test:
-        image: 'golang:1.18.3'
+        image: 'golang:1.19.5'
       build:
-        image: 'golang:1.18.3'
+        image: 'golang:1.19.5'
         output_dir: 'binary'
   jobs:
     head-update:
