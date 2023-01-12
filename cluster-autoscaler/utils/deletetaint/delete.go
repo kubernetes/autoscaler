@@ -18,6 +18,7 @@ package deletetaint
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -25,6 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
@@ -37,6 +39,12 @@ const (
 	// DeletionCandidateTaint is a taint used to mark unneeded node as preferably unschedulable.
 	DeletionCandidateTaint = "DeletionCandidateOfClusterAutoscaler"
 )
+
+type patchStruct struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
 
 // Mutable only in unit tests
 var (
@@ -89,7 +97,20 @@ func addTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 			}
 			return nil
 		}
-		_, err = client.CoreV1().Nodes().Update(context.TODO(), freshNode, metav1.UpdateOptions{})
+
+		// update all taints, so we do not have to deal with adding to possibly nil taints or taint already existing
+		// patching to avoid overwriting changes that other cluster members might have done in the meantime
+		patch := []patchStruct{
+			{Op: "replace", Path: "/spec/tolerations", Value: freshNode.Spec.Taints},
+			{Op: "replace", Path: "/spec/unschedulable", Value: freshNode.Spec.Unschedulable},
+		}
+		patchJson, err := json.Marshal(patch)
+		if err != nil {
+			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+			return err
+		}
+
+		_, err = client.CoreV1().Nodes().Patch(context.TODO(), freshNode.Name, types.JSONPatchType, patchJson, metav1.PatchOptions{})
 		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
 			refresh = true
 			time.Sleep(conflictRetryInterval)
