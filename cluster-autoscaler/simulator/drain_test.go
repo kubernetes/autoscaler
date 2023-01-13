@@ -42,9 +42,10 @@ func TestGetPodsToMove(t *testing.T) {
 		},
 	}
 	deleteOptions := NodeDeleteOptions{
-		SkipNodesWithSystemPods:   true,
-		SkipNodesWithLocalStorage: true,
-		MinReplicaCount:           0,
+		SkipNodesWithSystemPods:           true,
+		SkipNodesWithLocalStorage:         true,
+		MinReplicaCount:                   0,
+		SkipNodesWithCustomControllerPods: true,
 	}
 	_, _, blockingPod, err := GetPodsToMove(schedulerframework.NewNodeInfo(pod1), deleteOptions, nil, nil, testTime)
 	assert.Error(t, err)

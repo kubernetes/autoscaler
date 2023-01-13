@@ -35,6 +35,8 @@ type NodeDeleteOptions struct {
 	SkipNodesWithSystemPods bool
 	// SkipNodesWithLocalStorage tells if nodes with pods with local storage, e.g. EmptyDir or HostPath, should be deleted
 	SkipNodesWithLocalStorage bool
+	// SkipNodesWithCustomControllerPods tells if nodes with custom-controller owned pods should be skipped from deletion (skip if 'true')
+	SkipNodesWithCustomControllerPods bool
 	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
 	// to allow their pods deletion in scale down
 	MinReplicaCount int
@@ -57,6 +59,7 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDele
 		pdbs,
 		deleteOptions.SkipNodesWithSystemPods,
 		deleteOptions.SkipNodesWithLocalStorage,
+		deleteOptions.SkipNodesWithCustomControllerPods,
 		listers,
 		int32(deleteOptions.MinReplicaCount),
 		timestamp)
