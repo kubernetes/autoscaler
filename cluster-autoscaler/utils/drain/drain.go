@@ -83,7 +83,6 @@ func GetPodsForDeletionOnNodeDrain(
 
 	pods = []*apiv1.Pod{}
 	daemonSetPods = []*apiv1.Pod{}
-	checkReferences := listers != nil
 	// filter kube-system PDBs to avoid doing it for every kube-system pod
 	kubeSystemPDBs := make([]*policyv1.PodDisruptionBudget, 0)
 	for _, pdb := range pdbs {
