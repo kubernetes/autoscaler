@@ -22,7 +22,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -106,35 +105,16 @@ func GetPodsForDeletionOnNodeDrain(
 			continue
 		}
 
-		isDaemonSetPod := false
 		replicated := false
 		safeToEvict := hasSafeToEvictAnnotation(pod)
 		terminal := isPodTerminal(pod)
 
 		controllerRef := ControllerRef(pod)
-		refKind := ""
 		if controllerRef != nil {
-			refKind = controllerRef.Kind
+			replicated = true
 		}
-
-		// For now, owner controller must be in the same namespace as the pod
-		// so OwnerReference doesn't have its own Namespace field
-		controllerNamespace := pod.Namespace
 
 		if pod_util.IsDaemonSetPod(pod) {
-			isDaemonSetPod = true
-			// don't have listener for other DaemonSet kind
-			// TODO: we should use a generic client for checking the reference.
-			if checkReferences && refKind == "DaemonSet" {
-				_, err := listers.DaemonSetLister().DaemonSets(controllerNamespace).Get(controllerRef.Name)
-				if apierrors.IsNotFound(err) {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("daemonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
-				} else if err != nil {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: UnexpectedError}, fmt.Errorf("error when trying to get daemonset for %s/%s , err: %v", pod.Namespace, pod.Name, err)
-				}
-			}
-		}
-		if isDaemonSetPod {
 			daemonSetPods = append(daemonSetPods, pod)
 			continue
 		}
