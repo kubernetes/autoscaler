@@ -17,20 +17,31 @@ limitations under the License.
 package kubernetes
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/dynamic"
+	dynamiclister "k8s.io/client-go/dynamic/dynamiclister"
 	client "k8s.io/client-go/kubernetes"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	v1policylister "k8s.io/client-go/listers/policy/v1"
 	"k8s.io/client-go/tools/cache"
+	klog "k8s.io/klog/v2"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
 )
 
@@ -46,6 +57,10 @@ type ListerRegistry interface {
 	JobLister() v1batchlister.JobLister
 	ReplicaSetLister() v1appslister.ReplicaSetLister
 	StatefulSetLister() v1appslister.StatefulSetLister
+	GetDynamicClient() *dynamic.DynamicClient
+	GetDynamicLister(schema.GroupVersionResource, string) dynamiclister.Lister
+	GetStopCh() <-chan struct{}
+	GetDynamicListerMap() map[string]dynamiclister.Lister
 }
 
 type listerRegistryImpl struct {
@@ -59,6 +74,9 @@ type listerRegistryImpl struct {
 	jobLister                   v1batchlister.JobLister
 	replicaSetLister            v1appslister.ReplicaSetLister
 	statefulSetLister           v1appslister.StatefulSetLister
+	genericListerMap            map[string]dynamiclister.Lister
+	stopCh                      <-chan struct{}
+	dynamicClient               *dynamic.DynamicClient
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
@@ -66,7 +84,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod Po
 	unschedulablePod PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
 	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
-	statefulSetLister v1appslister.StatefulSetLister) ListerRegistry {
+	statefulSetLister v1appslister.StatefulSetLister, dynamicClient *dynamic.DynamicClient, stopChannel <-chan struct{}) ListerRegistry {
 	return listerRegistryImpl{
 		allNodeLister:               allNode,
 		readyNodeLister:             readyNode,
@@ -78,11 +96,14 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod Po
 		jobLister:                   jobLister,
 		replicaSetLister:            replicaSetLister,
 		statefulSetLister:           statefulSetLister,
+		genericListerMap:            map[string]dynamiclister.Lister{},
+		stopCh:                      stopChannel,
+		dynamicClient:               dynamicClient,
 	}
 }
 
 // NewListerRegistryWithDefaultListers returns a registry filled with listers of the default implementations
-func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChannel <-chan struct{}) ListerRegistry {
+func NewListerRegistryWithDefaultListers(kubeClient client.Interface, dynamicClient *dynamic.DynamicClient, stopChannel <-chan struct{}) ListerRegistry {
 	unschedulablePodLister := NewUnschedulablePodLister(kubeClient, stopChannel)
 	scheduledPodLister := NewScheduledPodLister(kubeClient, stopChannel)
 	readyNodeLister := NewReadyNodeLister(kubeClient, stopChannel)
@@ -95,7 +116,83 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChanne
 	statefulSetLister := NewStatefulSetLister(kubeClient, stopChannel)
 	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
 		unschedulablePodLister, podDisruptionBudgetLister, daemonSetLister,
-		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister)
+		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister, dynamicClient, stopChannel)
+}
+
+// GetDynamicClient returns the dynamic client for this registry
+func (r listerRegistryImpl) GetDynamicClient() *dynamic.DynamicClient {
+	return r.dynamicClient
+}
+
+// GetStopCh returns the stop channel for stopping all the reflectors in the registry
+func (r listerRegistryImpl) GetStopCh() <-chan struct{} {
+	return r.stopCh
+}
+
+// GetDynamicListerMap returns the map of generic listers
+func (r listerRegistryImpl) GetDynamicListerMap() map[string]dynamiclister.Lister {
+	return r.genericListerMap
+}
+
+// GetDynamicLister returns the lister for a particular GVR
+func (r listerRegistryImpl) GetDynamicLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
+	dListerMap := r.GetDynamicListerMap()
+	key := fmt.Sprintf("%s_%s_%s_%s", gvr.Group, gvr.Version, gvr.Resource, namespace)
+	if dListerMap[key] != nil {
+		return dListerMap[key]
+	}
+
+	var lister func(ctx context.Context, opts metav1.ListOptions) (*unstructured.UnstructuredList, error)
+	var watcher func(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+
+	dClient := r.GetDynamicClient()
+	stopChannel := r.GetStopCh()
+
+	if namespace == apiv1.NamespaceAll {
+		lister = dClient.Resource(gvr).List
+		watcher = dClient.Resource(gvr).Watch
+	} else {
+		// For lister limited to a particular namespace
+		lister = dClient.Resource(gvr).Namespace(namespace).List
+		watcher = dClient.Resource(gvr).Namespace(namespace).Watch
+	}
+
+	// NewNamespaceKeyedIndexerAndReflector can be
+	// used for both namespace and cluster scoped resources
+	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(&cache.ListWatch{
+		ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
+			return lister(context.Background(), options)
+		},
+		WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
+			return watcher(context.Background(), options)
+		},
+	}, unstructured.Unstructured{}, time.Hour)
+	l := dynamiclister.New(store, gvr)
+
+	// Run reflector in the background so that we get new updates from the api-server
+	go reflector.Run(stopChannel)
+
+	// Wait for reflector to sync the cache for the first time
+	// TODO: check if there's a better way to do this (listing all the nodes seems wasteful)
+	// Note: Based on the docs WaitForNamedCacheSync seems to be used to check if an informer has synced
+	// but the function is generic enough so we can use
+	// it for reflectors as well
+	synced := cache.WaitForNamedCacheSync(fmt.Sprintf("generic-%s-lister", gvr.Resource), stopChannel, func() bool {
+		no, err := l.List(labels.Everything())
+		if err != nil {
+			klog.Error("err", err)
+		}
+		return len(no) > 0
+	})
+	if !synced {
+		klog.Error("couldn't sync cache")
+	}
+
+	// make the lister available in the listers map through GetDynamicListerMap (maps are passed by reference)
+	// for the next time something requests a lister for the same GVR and namespace
+	dListerMap[key] = l
+
+	return l
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry

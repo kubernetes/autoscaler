@@ -54,6 +54,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"k8s.io/client-go/dynamic"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -380,6 +381,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
 	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
 	kubeClient := createKubeClient(kubeClientConfig)
+	dynamicClient := dynamic.NewForConfigOrDie(kubeClientConfig)
 
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
@@ -395,6 +397,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
 		PredicateChecker:     predicateChecker,
+		DynamicClient:        dynamicClient,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors()

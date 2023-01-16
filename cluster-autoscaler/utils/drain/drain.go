@@ -18,12 +18,14 @@ package drain
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
@@ -116,6 +118,23 @@ func GetPodsForDeletionOnNodeDrain(
 		if pod_util.IsDaemonSetPod(pod) {
 			daemonSetPods = append(daemonSetPods, pod)
 			continue
+		} else if controllerRef != nil {
+			gv := strings.Split(controllerRef.APIVersion, "/")
+			// controllerRef doesn't have a namespace by design
+			// The controller/owner is either in the same namespace as the pod
+			// or it's assumed to be a cluster-scoped resource
+			// The assumption in the code below is that the controllerRef/owner of
+			// a pod resource will always be in the same namespace
+			// TODO: find a better way to handle this
+			l := listers.GetDynamicLister(schema.GroupVersionResource{
+				Group:    gv[0],
+				Version:  gv[1],
+				Resource: controllerRef.Kind,
+			}, pod.GetNamespace())
+
+			if _, err := l.Get(controllerRef.Name); err == nil {
+				replicated = true
+			}
 		}
 
 		if !safeToEvict && !terminal {
