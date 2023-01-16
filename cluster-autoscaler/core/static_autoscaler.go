@@ -321,14 +321,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
 		maxNodesCount += nodeGroup.MaxSize()
 	}
-
 	if a.MaxNodesTotal > 0 {
-		a.MaxNodesTotal = integer.IntMin(a.MaxNodesTotal, maxNodesCount)
+		a.MaxNodes = integer.IntMin(a.MaxNodesTotal, maxNodesCount)
 	} else {
-		a.MaxNodesTotal = maxNodesCount
+		a.MaxNodes = maxNodesCount
 	}
-	metrics.UpdateMaxNodesCount(a.MaxNodesTotal)
-
+	metrics.UpdateMaxNodesCount(a.MaxNodes)
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 	// Initialize cluster state to ClusterSnapshot
 	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
@@ -512,7 +510,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
-	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
+	} else if a.MaxNodes > 0 && len(readyNodes) >= a.MaxNodes {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
 	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {

@@ -57,6 +57,8 @@ type AutoscalingContext struct {
 	DebuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	// ScaleDownActuator is the interface for draining and deleting nodes
 	ScaleDownActuator scaledown.Actuator
+	// MaxNodes the maximum number of nodes in the whole cluster when MaxNodesTotal is zero
+	MaxNodes int
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,

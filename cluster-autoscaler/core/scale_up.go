@@ -148,10 +148,10 @@ func isNodeGroupResourceExceeded(ctx *context.AutoscalingContext, resourceManage
 }
 
 func getCappedNewNodeCount(context *context.AutoscalingContext, newNodeCount, currentNodeCount int) (int, errors.AutoscalerError) {
-	if context.MaxNodesTotal > 0 && newNodeCount+currentNodeCount > context.MaxNodesTotal {
-		klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
-		newNodeCount = context.MaxNodesTotal - currentNodeCount
-		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
+	if context.MaxNodes > 0 && newNodeCount+currentNodeCount > context.MaxNodes {
+		klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodes)
+		newNodeCount = context.MaxNodes - currentNodeCount
+		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodes)
 		if newNodeCount < 1 {
 			return newNodeCount, errors.NewAutoscalerError(errors.TransientError, "max node total count already reached")
 		}
