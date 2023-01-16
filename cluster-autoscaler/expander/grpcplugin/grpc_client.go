@@ -31,7 +31,10 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-const gRPCTimeout = 5 * time.Second
+const (
+	gRPCTimeout        = 5 * time.Second
+	gRPCMaxRecvMsgSize = 128 << 20
+)
 
 type grpcclientstrategy struct {
 	grpcClient protos.ExpanderClient
@@ -47,8 +50,6 @@ func NewFilter(expanderCert string, expanderUrl string) expander.Filter {
 }
 
 func createGRPCClient(expanderCert string, expanderUrl string) protos.ExpanderClient {
-	var dialOpt grpc.DialOption
-
 	if expanderCert == "" {
 		log.Fatalf("GRPC Expander Cert not specified, insecure connections not allowed")
 		return nil
@@ -58,9 +59,12 @@ func createGRPCClient(expanderCert string, expanderUrl string) protos.ExpanderCl
 		log.Fatalf("Failed to create TLS credentials %v", err)
 		return nil
 	}
-	dialOpt = grpc.WithTransportCredentials(creds)
-	klog.V(2).Infof("Dialing: %s with dialopt: %v", expanderUrl, dialOpt)
-	conn, err := grpc.Dial(expanderUrl, dialOpt)
+	dialOpts := []grpc.DialOption{
+		grpc.WithTransportCredentials(creds),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(gRPCMaxRecvMsgSize)),
+	}
+	klog.V(2).Infof("Dialing: %s with dialopt: %v", expanderUrl, dialOpts)
+	conn, err := grpc.Dial(expanderUrl, dialOpts...)
 	if err != nil {
 		log.Fatalf("Fail to dial server: %v", err)
 		return nil
@@ -84,7 +88,7 @@ func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nod
 	defer cancel()
 	bestOptionsResponse, err := g.grpcClient.BestOptions(ctx, &protos.BestOptionsRequest{Options: grpcOptionsSlice, NodeMap: grpcNodeMap})
 	if err != nil {
-		klog.V(4).Info("GRPC call timed out, no options filtered")
+		klog.V(4).Infof("GRPC call failed, no options filtered: %v", err)
 		return expansionOptions
 	}
 
