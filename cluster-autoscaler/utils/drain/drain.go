@@ -133,7 +133,7 @@ func GetPodsForDeletionOnNodeDrain(
 			if _, err := l.Get(controllerRef.Name); err == nil {
 				replicated = true
 			} else {
-				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("%s controller for %s/%s is not available, err: %v", strings.ToLower(refKind), pod.Namespace, pod.Name, err)
+				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("owner %s for %s/%s is not available, err: %v", refKind, pod.Namespace, pod.Name, err)
 			}
 		}
 
