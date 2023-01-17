@@ -110,15 +110,13 @@ func GetPodsForDeletionOnNodeDrain(
 		safeToEvict := hasSafeToEvictAnnotation(pod)
 		terminal := isPodTerminal(pod)
 
+		refKind := ""
 		controllerRef := ControllerRef(pod)
 		if controllerRef != nil {
-			replicated = true
+			refKind = controllerRef.Kind
 		}
 
-		if pod_util.IsDaemonSetPod(pod) {
-			daemonSetPods = append(daemonSetPods, pod)
-			continue
-		} else if controllerRef != nil {
+		if refKind != "" {
 			gv := strings.Split(controllerRef.APIVersion, "/")
 			// controllerRef doesn't have a namespace by design
 			// The controller/owner is either in the same namespace as the pod
@@ -126,7 +124,7 @@ func GetPodsForDeletionOnNodeDrain(
 			// The assumption in the code below is that the controllerRef/owner of
 			// a pod resource will always be in the same namespace
 			// TODO: find a better way to handle this
-			l := listers.GetDynamicLister(schema.GroupVersionResource{
+			l := listers.GenericListerFactory().GetLister(schema.GroupVersionResource{
 				Group:    gv[0],
 				Version:  gv[1],
 				Resource: controllerRef.Kind,
@@ -134,7 +132,14 @@ func GetPodsForDeletionOnNodeDrain(
 
 			if _, err := l.Get(controllerRef.Name); err == nil {
 				replicated = true
+			} else {
+				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("%s controller for %s/%s is not available, err: %v", strings.ToLower(refKind), pod.Namespace, pod.Name, err)
 			}
+		}
+
+		if pod_util.IsDaemonSetPod(pod) {
+			daemonSetPods = append(daemonSetPods, pod)
+			continue
 		}
 
 		if !safeToEvict && !terminal {
