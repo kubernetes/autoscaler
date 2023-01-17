@@ -57,10 +57,13 @@ type ListerRegistry interface {
 	JobLister() v1batchlister.JobLister
 	ReplicaSetLister() v1appslister.ReplicaSetLister
 	StatefulSetLister() v1appslister.StatefulSetLister
-	GetDynamicClient() *dynamic.DynamicClient
-	GetDynamicLister(schema.GroupVersionResource, string) dynamiclister.Lister
-	GetStopCh() <-chan struct{}
-	GetDynamicListerMap() map[string]dynamiclister.Lister
+	GenericListerFactory() *GenericListerFactory
+}
+
+type GenericListerFactory struct {
+	stopCh        <-chan struct{}
+	listersMap    map[string]dynamiclister.Lister
+	dynamicClient *dynamic.DynamicClient
 }
 
 type listerRegistryImpl struct {
@@ -77,6 +80,67 @@ type listerRegistryImpl struct {
 	genericListerMap            map[string]dynamiclister.Lister
 	stopCh                      <-chan struct{}
 	dynamicClient               *dynamic.DynamicClient
+}
+
+// GetDynamicLister returns the lister for a particular GVR
+func (g *GenericListerFactory) GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
+	key := fmt.Sprintf("%s_%s_%s_%s", gvr.Group, gvr.Version, gvr.Resource, namespace)
+	if g.listersMap[key] != nil {
+		return g.listersMap[key]
+	}
+
+	var lister func(ctx context.Context, opts metav1.ListOptions) (*unstructured.UnstructuredList, error)
+	var watcher func(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+
+	if namespace == apiv1.NamespaceAll {
+		lister = g.dynamicClient.Resource(gvr).List
+		watcher = g.dynamicClient.Resource(gvr).Watch
+	} else {
+		// For lister limited to a particular namespace
+		lister = g.dynamicClient.Resource(gvr).Namespace(namespace).List
+		watcher = g.dynamicClient.Resource(gvr).Namespace(namespace).Watch
+	}
+
+	// NewNamespaceKeyedIndexerAndReflector can be
+	// used for both namespace and cluster scoped resources
+	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(&cache.ListWatch{
+		ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
+			return lister(context.Background(), options)
+		},
+		WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
+			return watcher(context.Background(), options)
+		},
+	}, unstructured.Unstructured{}, time.Hour)
+	l := dynamiclister.New(store, gvr)
+
+	// Run reflector in the background so that we get new updates from the api-server
+	go reflector.Run(g.stopCh)
+
+	// Wait for reflector to sync the cache for the first time
+	// TODO: check if there's a better way to do this (listing all the nodes seems wasteful)
+	// Note: Based on the docs WaitForNamedCacheSync seems to be used to check if an informer has synced
+	// but the function is generic enough so we can use
+	// it for reflectors as well
+	synced := cache.WaitForNamedCacheSync(fmt.Sprintf("generic-%s-lister", gvr.Resource), g.stopCh, func() bool {
+		no, err := l.List(labels.Everything())
+		if err != nil {
+			klog.Error("err", err)
+		}
+		return len(no) > 0
+	})
+	if !synced {
+		// don't return an error but don't add
+		// this lister to listers map
+		// so that another attempt is made
+		// to create the lister and sync cache
+		klog.Error("couldn't sync cache")
+	} else {
+		// make the lister available in the listers map through GetDynamicListerMap (maps are passed by reference)
+		// for the next time something requests a lister for the same GVR and namespace
+		g.listersMap[key] = l
+	}
+
+	return l
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
@@ -119,80 +183,14 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, dynamicCli
 		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister, dynamicClient, stopChannel)
 }
 
-// GetDynamicClient returns the dynamic client for this registry
-func (r listerRegistryImpl) GetDynamicClient() *dynamic.DynamicClient {
-	return r.dynamicClient
-}
-
-// GetStopCh returns the stop channel for stopping all the reflectors in the registry
-func (r listerRegistryImpl) GetStopCh() <-chan struct{} {
-	return r.stopCh
-}
-
-// GetDynamicListerMap returns the map of generic listers
-func (r listerRegistryImpl) GetDynamicListerMap() map[string]dynamiclister.Lister {
-	return r.genericListerMap
-}
-
-// GetDynamicLister returns the lister for a particular GVR
-func (r listerRegistryImpl) GetDynamicLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
-	dListerMap := r.GetDynamicListerMap()
-	key := fmt.Sprintf("%s_%s_%s_%s", gvr.Group, gvr.Version, gvr.Resource, namespace)
-	if dListerMap[key] != nil {
-		return dListerMap[key]
+// GenericListerFactory returns the factory to
+// create lister for a particular GVR
+func (r listerRegistryImpl) GenericListerFactory() *GenericListerFactory {
+	return &GenericListerFactory{
+		stopCh:        r.stopCh,
+		listersMap:    make(map[string]dynamiclister.Lister),
+		dynamicClient: r.dynamicClient,
 	}
-
-	var lister func(ctx context.Context, opts metav1.ListOptions) (*unstructured.UnstructuredList, error)
-	var watcher func(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-
-	dClient := r.GetDynamicClient()
-	stopChannel := r.GetStopCh()
-
-	if namespace == apiv1.NamespaceAll {
-		lister = dClient.Resource(gvr).List
-		watcher = dClient.Resource(gvr).Watch
-	} else {
-		// For lister limited to a particular namespace
-		lister = dClient.Resource(gvr).Namespace(namespace).List
-		watcher = dClient.Resource(gvr).Namespace(namespace).Watch
-	}
-
-	// NewNamespaceKeyedIndexerAndReflector can be
-	// used for both namespace and cluster scoped resources
-	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(&cache.ListWatch{
-		ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
-			return lister(context.Background(), options)
-		},
-		WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
-			return watcher(context.Background(), options)
-		},
-	}, unstructured.Unstructured{}, time.Hour)
-	l := dynamiclister.New(store, gvr)
-
-	// Run reflector in the background so that we get new updates from the api-server
-	go reflector.Run(stopChannel)
-
-	// Wait for reflector to sync the cache for the first time
-	// TODO: check if there's a better way to do this (listing all the nodes seems wasteful)
-	// Note: Based on the docs WaitForNamedCacheSync seems to be used to check if an informer has synced
-	// but the function is generic enough so we can use
-	// it for reflectors as well
-	synced := cache.WaitForNamedCacheSync(fmt.Sprintf("generic-%s-lister", gvr.Resource), stopChannel, func() bool {
-		no, err := l.List(labels.Everything())
-		if err != nil {
-			klog.Error("err", err)
-		}
-		return len(no) > 0
-	})
-	if !synced {
-		klog.Error("couldn't sync cache")
-	}
-
-	// make the lister available in the listers map through GetDynamicListerMap (maps are passed by reference)
-	// for the next time something requests a lister for the same GVR and namespace
-	dListerMap[key] = l
-
-	return l
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
