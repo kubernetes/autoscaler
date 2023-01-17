@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
 
@@ -61,6 +62,8 @@ type AutoscalingProcessors struct {
 	CustomResourcesProcessor customresources.CustomResourcesProcessor
 	// ActionableClusterProcessor is interface defining whether the cluster is in an actionable state
 	ActionableClusterProcessor actionablecluster.ActionableClusterProcessor
+	// ScaleDownCandidatesNotifier  is used to Update and Register new scale down candidates observer.
+	ScaleDownCandidatesNotifier *scaledowncandidates.ObserversList
 }
 
 // DefaultProcessors returns default set of processors.
@@ -73,17 +76,18 @@ func DefaultProcessors() *AutoscalingProcessors {
 			MaxCapacityMemoryDifferenceRatio: config.DefaultMaxCapacityMemoryDifferenceRatio,
 			MaxFreeDifferenceRatio:           config.DefaultMaxFreeDifferenceRatio,
 		}),
-		ScaleUpStatusProcessor:     status.NewDefaultScaleUpStatusProcessor(),
-		ScaleDownNodeProcessor:     nodes.NewPreFilteringScaleDownNodeProcessor(),
-		ScaleDownSetProcessor:      nodes.NewPostFilteringScaleDownNodeProcessor(),
-		ScaleDownStatusProcessor:   status.NewDefaultScaleDownStatusProcessor(),
-		AutoscalingStatusProcessor: status.NewDefaultAutoscalingStatusProcessor(),
-		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
-		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
-		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
-		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
-		ActionableClusterProcessor: actionablecluster.NewDefaultActionableClusterProcessor(),
-		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
+		ScaleUpStatusProcessor:      status.NewDefaultScaleUpStatusProcessor(),
+		ScaleDownNodeProcessor:      nodes.NewPreFilteringScaleDownNodeProcessor(),
+		ScaleDownSetProcessor:       nodes.NewPostFilteringScaleDownNodeProcessor(),
+		ScaleDownStatusProcessor:    status.NewDefaultScaleDownStatusProcessor(),
+		AutoscalingStatusProcessor:  status.NewDefaultAutoscalingStatusProcessor(),
+		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
+		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
+		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
+		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
+		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 	}
 }
 

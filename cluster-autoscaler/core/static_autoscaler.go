@@ -163,6 +163,7 @@ func NewStaticAutoscaler(
 	}
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
+	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 
 	deleteOptions := simulator.NodeDeleteOptions{
 		SkipNodesWithSystemPods:   opts.SkipNodesWithSystemPods,
@@ -571,7 +572,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, actuationStatus, pdbs, currentTime)
 		// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
 		unneededNodes := a.scaleDownPlanner.UnneededNodes()
-		a.clusterStateRegistry.UpdateScaleDownCandidates(unneededNodes, currentTime)
+		a.processors.ScaleDownCandidatesNotifier.Update(unneededNodes, currentTime)
 		metrics.UpdateUnneededNodesCount(len(unneededNodes))
 		if typedErr != nil {
 			scaleDownStatus.Result = scaledownstatus.ScaleDownError
