@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -111,9 +112,11 @@ func GetPodsForDeletionOnNodeDrain(
 		terminal := isPodTerminal(pod)
 
 		refKind := ""
+		controllerName := ""
 		controllerRef := ControllerRef(pod)
 		if controllerRef != nil {
 			refKind = controllerRef.Kind
+			controllerName = controllerRef.Name
 		}
 
 		if refKind != "" {
@@ -131,9 +134,12 @@ func GetPodsForDeletionOnNodeDrain(
 			}, pod.GetNamespace())
 
 			if _, err := l.Get(controllerRef.Name); err == nil {
+				klog.V(4).Infof("pod %s/%s is replicated by %s '%s'", pod.Namespace, pod.Name, refKind, controllerName)
 				replicated = true
 			} else {
-				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("owner %s for %s/%s is not available, err: %v", refKind, pod.Namespace, pod.Name, err)
+				notAvailableErr := fmt.Errorf("owner %s '%s' for %s/%s is not available, err: %v", refKind, controllerName, pod.Namespace, pod.Name, err)
+				klog.V(4).Info(notAvailableErr)
+				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, notAvailableErr
 			}
 		}
 
