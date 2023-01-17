@@ -49,6 +49,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -403,6 +404,11 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		podlistprocessor.NewCurrentlyDrainedNodesPodListProcessor(),
 		podlistprocessor.NewFilterOutSchedulablePodListProcessor(opts.PredicateChecker),
 	)
+	if autoscalingOptions.ParallelDrain {
+		sdProcessor := nodes.NewScaleDownCandidatesSortingProcessor()
+		opts.Processors.ScaleDownNodeProcessor = sdProcessor
+		opts.Processors.ScaleDownCandidatesNotifier.Register(sdProcessor)
+	}
 
 	var nodeInfoComparator nodegroupset.NodeInfoComparator
 	if len(autoscalingOptions.BalancingLabels) > 0 {
