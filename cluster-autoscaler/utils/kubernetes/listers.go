@@ -60,6 +60,8 @@ type ListerRegistry interface {
 	GenericListerFactory() *GenericListerFactory
 }
 
+// GenericListerFactory is a factory for creating
+// listers for a new GVRs identified during runtime
 type GenericListerFactory struct {
 	stopCh        <-chan struct{}
 	listersMap    map[string]dynamiclister.Lister
@@ -82,7 +84,7 @@ type listerRegistryImpl struct {
 	dynamicClient               *dynamic.DynamicClient
 }
 
-// GetDynamicLister returns the lister for a particular GVR
+// GetLister returns the lister for a particular GVR
 func (g *GenericListerFactory) GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
 	key := fmt.Sprintf("%s_%s_%s_%s", gvr.Group, gvr.Version, gvr.Resource, namespace)
 	if g.listersMap[key] != nil {
