@@ -57,12 +57,17 @@ type ListerRegistry interface {
 	JobLister() v1batchlister.JobLister
 	ReplicaSetLister() v1appslister.ReplicaSetLister
 	StatefulSetLister() v1appslister.StatefulSetLister
-	GenericListerFactory() *GenericListerFactory
+	GenericListerFactory() GenericListerFactory
 }
 
 // GenericListerFactory is a factory for creating
 // listers for a new GVRs identified during runtime
-type GenericListerFactory struct {
+
+type GenericListerFactory interface {
+	GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister
+}
+
+type genericListerFactoryImpl struct {
 	stopCh        <-chan struct{}
 	listersMap    map[string]dynamiclister.Lister
 	dynamicClient *dynamic.DynamicClient
@@ -79,13 +84,11 @@ type listerRegistryImpl struct {
 	jobLister                   v1batchlister.JobLister
 	replicaSetLister            v1appslister.ReplicaSetLister
 	statefulSetLister           v1appslister.StatefulSetLister
-	genericListerMap            map[string]dynamiclister.Lister
-	stopCh                      <-chan struct{}
-	dynamicClient               *dynamic.DynamicClient
+	genericListerFactory        GenericListerFactory
 }
 
 // GetLister returns the lister for a particular GVR
-func (g *GenericListerFactory) GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
+func (g *genericListerFactoryImpl) GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
 	key := fmt.Sprintf("%s_%s_%s_%s", gvr.Group, gvr.Version, gvr.Resource, namespace)
 	if g.listersMap[key] != nil {
 		return g.listersMap[key]
@@ -150,7 +153,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod Po
 	unschedulablePod PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
 	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
-	statefulSetLister v1appslister.StatefulSetLister, dynamicClient *dynamic.DynamicClient, stopChannel <-chan struct{}) ListerRegistry {
+	statefulSetLister v1appslister.StatefulSetLister, genericListerFactory GenericListerFactory) ListerRegistry {
 	return listerRegistryImpl{
 		allNodeLister:               allNode,
 		readyNodeLister:             readyNode,
@@ -162,9 +165,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod Po
 		jobLister:                   jobLister,
 		replicaSetLister:            replicaSetLister,
 		statefulSetLister:           statefulSetLister,
-		genericListerMap:            map[string]dynamiclister.Lister{},
-		stopCh:                      stopChannel,
-		dynamicClient:               dynamicClient,
+		genericListerFactory:        genericListerFactory,
 	}
 }
 
@@ -180,19 +181,16 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, dynamicCli
 	jobLister := NewJobLister(kubeClient, stopChannel)
 	replicaSetLister := NewReplicaSetLister(kubeClient, stopChannel)
 	statefulSetLister := NewStatefulSetLister(kubeClient, stopChannel)
+	genericListerFactory := NewGenericListerFactory(dynamicClient, stopChannel)
 	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
 		unschedulablePodLister, podDisruptionBudgetLister, daemonSetLister,
-		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister, dynamicClient, stopChannel)
+		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister, genericListerFactory)
 }
 
 // GenericListerFactory returns the factory to
 // create lister for a particular GVR
-func (r listerRegistryImpl) GenericListerFactory() *GenericListerFactory {
-	return &GenericListerFactory{
-		stopCh:        r.stopCh,
-		listersMap:    make(map[string]dynamiclister.Lister),
-		dynamicClient: r.dynamicClient,
-	}
+func (r listerRegistryImpl) GenericListerFactory() GenericListerFactory {
+	return r.genericListerFactory
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
@@ -464,4 +462,14 @@ func NewConfigMapListerForNamespace(kubeClient client.Interface, stopchannel <-c
 	lister := v1lister.NewConfigMapLister(store)
 	go reflector.Run(stopchannel)
 	return lister
+}
+
+// NewGenericListerFactory returns the factory to
+// create lister for a particular GVR
+func NewGenericListerFactory(dClient *dynamic.DynamicClient, stopchannel <-chan struct{}) GenericListerFactory {
+	return &genericListerFactoryImpl{
+		stopCh:        stopchannel,
+		listersMap:    make(map[string]dynamiclister.Lister),
+		dynamicClient: dClient,
+	}
 }
