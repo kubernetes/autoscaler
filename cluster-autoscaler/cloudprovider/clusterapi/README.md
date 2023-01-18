@@ -361,6 +361,16 @@ CAPI cloudprovider, the label format is as follows:
 
 `<gpu-type>` is arbitrary.
 
+It is important to note that if you are using the `--gpu-total` flag to limit the number
+of GPU resources in your cluster that the `<gpu-type>` value must match
+between the command line flag and the node labels. Setting these values incorrectly
+can lead to the autoscaler creating too many GPU resources.
+
+For example, if you are using the autoscaler command line flag
+`--gpu-total=gfx-hardware:1:2` to limit the number of `gfx-hardware` resources
+to a minimum of 1 and maximum of 2, then you should use the kubelet node label flag
+`--node-labels=cluster-api/accelerator=gfx-hardware`.
+
 ## Special note on balancing similar node groups
 
 The Cluster Autoscaler feature to enable balancing similar node groups
