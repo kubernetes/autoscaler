@@ -52,6 +52,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/utils/integer"
 )
 
 var defaultOptions = config.AutoscalingOptions{
@@ -532,7 +533,17 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleTestConfig) *ScaleTestResul
 		t:                  t,
 	}
 	context.ExpanderStrategy = expander
+	maxNodesCount := 0
+	for _, group := range provider.NodeGroups() {
+		maxNodesCount += group.MaxSize()
+		fmt.Println(maxNodesCount)
+	}
 
+	if config.Options.MaxNodesTotal > 0 {
+		context.MaxNodes = integer.IntMin(config.Options.MaxNodesTotal, maxNodesCount)
+	} else {
+		context.MaxNodes = maxNodesCount
+	}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
