@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
@@ -644,7 +645,18 @@ func TestDrain(t *testing.T) {
 		ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
 		assert.NoError(t, err)
 
-		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
+		stopCh := make(<-chan struct{})
+		allResources := []runtime.Object{&ds, &job, &statefulset}
+		for _, rc := range test.rcs {
+			allResources = append(allResources, rc)
+		}
+		for _, replicaset := range test.replicaSets {
+			allResources = append(allResources, replicaset)
+		}
+
+		genericListerFactory := kube_util.NewTestGenericListerFactory(stopCh, allResources...)
+
+		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister, genericListerFactory)
 
 		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, registry, 0, testTime)
 

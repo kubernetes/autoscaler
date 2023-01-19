@@ -23,6 +23,10 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	dynamiclister "k8s.io/client-go/dynamic/dynamiclister"
+	fakedynamic "k8s.io/client-go/dynamic/fake"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -32,6 +36,13 @@ import (
 // TestPodLister is used in tests involving listers
 type TestPodLister struct {
 	pods []*apiv1.Pod
+}
+
+// TestGenericListerFactory is used in tests involving generic listers
+type TestGenericListerFactory struct {
+	dynamicClient *fakedynamic.FakeDynamicClient
+	stopCh        <-chan struct{}
+	listersMap    map[string]dynamiclister.Lister
 }
 
 // List returns all pods in test lister.
@@ -159,4 +170,27 @@ func NewTestConfigMapLister(cms []*apiv1.ConfigMap) (v1lister.ConfigMapLister, e
 		}
 	}
 	return v1lister.NewConfigMapLister(store), nil
+}
+
+// NewTestGenericListerFactory returns a fake generic lister factory for generic listers
+// for use in tests
+func NewTestGenericListerFactory(stopCh <-chan struct{}, objects ...runtime.Object) GenericListerFactory {
+	scheme := runtime.NewScheme()
+	for _, obj := range objects {
+
+		scheme.AddKnownTypeWithName(obj.GetObjectKind().GroupVersionKind(), obj)
+	}
+
+	fakeDynamicClient := fakedynamic.NewSimpleDynamicClient(scheme, objects...)
+
+	return &TestGenericListerFactory{
+		dynamicClient: fakeDynamicClient,
+		stopCh:        stopCh,
+		listersMap:    map[string]dynamiclister.Lister{},
+	}
+}
+
+// GetLister returns the lister for a particular GVR
+func (g *TestGenericListerFactory) GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
+	return NewGenericLister(g.dynamicClient, g.listersMap, g.stopCh, gvr, namespace)
 }
