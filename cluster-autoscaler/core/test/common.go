@@ -45,6 +45,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -143,15 +144,16 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
-		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},
-		ScaleDownStatusProcessor:   &status.NoOpScaleDownStatusProcessor{},
-		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
-		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
-		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
-		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
-		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
-		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
-		ActionableClusterProcessor: actionablecluster.NewDefaultActionableClusterProcessor(),
+		ScaleUpStatusProcessor:      &status.EventingScaleUpStatusProcessor{},
+		ScaleDownStatusProcessor:    &status.NoOpScaleDownStatusProcessor{},
+		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
+		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
+		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
+		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
+		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
+		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 	}
 }
 
