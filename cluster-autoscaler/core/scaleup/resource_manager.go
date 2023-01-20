@@ -249,7 +249,7 @@ func (m *ResourceManager) customResourcesTotal(ctx *context.AutoscalingContext, 
 		if currentSize > 0 {
 			resourceTargets, err := m.crp.GetNodeResourceTargets(ctx, nodeInfo.Node(), nodeGroup)
 			if err != nil {
-				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get target gpu for node group %v: ", nodeGroup.Id())
+				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get custom resource target for node group %v: ", nodeGroup.Id())
 			}
 
 			for _, resourceTarget := range resourceTargets {
@@ -264,7 +264,7 @@ func (m *ResourceManager) customResourcesTotal(ctx *context.AutoscalingContext, 
 	for _, node := range nodesFromNotAutoscaledGroups {
 		resourceTargets, err := m.crp.GetNodeResourceTargets(ctx, node, nil)
 		if err != nil {
-			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get target gpu for node gpus count for node %v: ", node.Name)
+			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to get custom resource target for node %v: ", node.Name)
 		}
 
 		for _, resourceTarget := range resourceTargets {
