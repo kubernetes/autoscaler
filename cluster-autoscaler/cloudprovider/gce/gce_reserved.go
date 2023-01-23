@@ -87,7 +87,7 @@ type GceReserved struct{}
 
 // CalculateKernelReserved computes how much memory Linux kernel will reserve.
 // TODO(jkaniuk): account for crashkernel reservation on RHEL / CentOS
-func (r *GceReserved) CalculateKernelReserved(m MigOsInfo, physicalMemory int64, nodeVersion string) int64 {
+func (r *GceReserved) CalculateKernelReserved(m MigOsInfo, physicalMemory int64) int64 {
 	os := m.Os()
 	osDistribution := m.OsDistribution()
 	arch := m.Arch()
@@ -270,7 +270,7 @@ func EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(diskCount int64, osDist
 }
 
 // CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold
-func (r *GceReserved) CalculateOSReservedEphemeralStorage(m MigOsInfo, diskSize int64, nodeVersion string) int64 {
+func (r *GceReserved) CalculateOSReservedEphemeralStorage(m MigOsInfo, diskSize int64) int64 {
 	osDistribution := m.OsDistribution()
 	arch := m.Arch()
 	switch osDistribution {
