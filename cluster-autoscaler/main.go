@@ -400,10 +400,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts.Processors = ca_processors.DefaultProcessors()
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime)
-	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(
-		podlistprocessor.NewCurrentlyDrainedNodesPodListProcessor(),
-		podlistprocessor.NewFilterOutSchedulablePodListProcessor(opts.PredicateChecker),
-	)
+	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
 	if autoscalingOptions.ParallelDrain {
 		sdProcessor := nodes.NewScaleDownCandidatesSortingProcessor()
 		opts.Processors.ScaleDownNodeProcessor = sdProcessor
