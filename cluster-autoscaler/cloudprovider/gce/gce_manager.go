@@ -589,7 +589,11 @@ func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, template, machineType.CPU, machineType.Memory, nil, m.reserved)
+	migOsInfo, err := m.templates.MigOsInfo(mig.Id(), template)
+	if err != nil {
+		return nil, err
+	}
+	return m.templates.BuildNodeFromTemplate(mig, migOsInfo, template, machineType.CPU, machineType.Memory, nil, m.reserved)
 }
 
 // parseMIGAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs

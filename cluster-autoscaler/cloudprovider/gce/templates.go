@@ -71,8 +71,8 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture,
-	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator, extendedResources apiv1.ResourceList) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(m MigOsInfo, cpu int64, mem int64, accelerators []*gce.AcceleratorConfig,
+	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, r OsReservedCalculator, extendedResources apiv1.ResourceList) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -81,7 +81,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	}
 
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - r.CalculateKernelReserved(mem, os, osDistribution, arch, version)
+	memTotal := mem - r.CalculateKernelReserved(m, mem)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
@@ -91,9 +91,9 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	if ephemeralStorage > 0 {
 		var storageTotal int64
 		if ephemeralStorageLocalSSDCount > 0 {
-			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, osDistribution)
+			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, m.OsDistribution())
 		} else {
-			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, arch, version)
+			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(m, ephemeralStorage)
 		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
@@ -160,8 +160,31 @@ func getKubeEnvValueFromTemplateMetadata(template *gce.InstanceTemplate) (string
 	return "", nil
 }
 
+// MigOsInfo return os detailes information that stored in template.
+func (t *GceTemplateBuilder) MigOsInfo(migId string, template *gce.InstanceTemplate) (MigOsInfo, error) {
+	kubeEnvValue, err := getKubeEnvValueFromTemplateMetadata(template)
+	if err != nil {
+		return nil, fmt.Errorf("could not obtain kube-env from template metadata; %v", err)
+	}
+	os := extractOperatingSystemFromKubeEnv(kubeEnvValue)
+	if os == OperatingSystemUnknown {
+		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
+	}
+
+	osDistribution := extractOperatingSystemDistributionFromKubeEnv(kubeEnvValue)
+	if osDistribution == OperatingSystemDistributionUnknown {
+		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
+	}
+	arch, err := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		arch = DefaultArch
+		klog.Errorf("Couldn't extract architecture from kube-env for MIG %q, falling back to %q. Error: %v", migId, arch, err)
+	}
+	return NewMigOsInfo(os, osDistribution, arch), nil
+}
+
 // BuildNodeFromTemplate builds node from provided GCE template.
-func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64, pods *int64, reserved OsReservedCalculator) (*apiv1.Node, error) {
+func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo, template *gce.InstanceTemplate, cpu int64, mem int64, pods *int64, reserved OsReservedCalculator) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
 		return nil, fmt.Errorf("instance template %s has no properties", template.Name)
@@ -179,22 +202,6 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		Name:     nodeName,
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
-	}
-
-	// This call is safe even if kubeEnvValue is empty
-	os := extractOperatingSystemFromKubeEnv(kubeEnvValue)
-	if os == OperatingSystemUnknown {
-		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
-	}
-
-	osDistribution := extractOperatingSystemDistributionFromKubeEnv(kubeEnvValue)
-	if osDistribution == OperatingSystemDistributionUnknown {
-		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
-	}
-	arch, err := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
-	if err != nil {
-		arch = DefaultArch
-		klog.Errorf("Couldn't extract architecture from kube-env for MIG %q, falling back to %q. Error: %v", mig.Id(), arch, err)
 	}
 
 	addBootDiskAnnotations(&node, template.Properties)
@@ -225,7 +232,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		klog.Errorf("could not fetch extended resources from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, mig.Version(), reserved, extendedResources)
+	capacity, err := t.BuildCapacity(migOsInfo, cpu, mem, template.Properties.GuestAccelerators, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, reserved, extendedResources)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +276,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
-	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName, os, arch)
+	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName, migOsInfo.Os(), migOsInfo.Arch())
 	if err != nil {
 		return nil, err
 	}
