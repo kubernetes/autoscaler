@@ -143,7 +143,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, ctx.PredicateChecker, ignoredTaints)
+		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, ignoredTaints)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue

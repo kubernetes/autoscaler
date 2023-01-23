@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,36 +38,34 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
 	ds1 := newDaemonSet("ds1", "0.1", "100M", nil)
 	ds2 := newDaemonSet("ds2", "0.1", "100M", map[string]string{"foo": "bar"})
 	ds3 := newDaemonSet("ds1", "4", "4000M", nil)
 
 	{
-		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1, ds2}, predicateChecker)
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1, ds2})
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(daemonSets))
 		assert.True(t, strings.HasPrefix(daemonSets[0].Name, "ds1"))
 	}
 	{
-		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1}, predicateChecker)
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1})
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(daemonSets))
 	}
 	{
-		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds2}, predicateChecker)
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds2})
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(daemonSets))
 	}
 	{
-		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds3}, predicateChecker)
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds3})
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(daemonSets))
 	}
 	{
-		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{}, predicateChecker)
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{})
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(daemonSets))
 	}
