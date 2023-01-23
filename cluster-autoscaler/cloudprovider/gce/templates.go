@@ -72,7 +72,7 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
 func (t *GceTemplateBuilder) BuildCapacity(m MigOsInfo, cpu int64, mem int64, accelerators []*gce.AcceleratorConfig,
-	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator, extendedResources apiv1.ResourceList) (apiv1.ResourceList, error) {
+	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, r OsReservedCalculator, extendedResources apiv1.ResourceList) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -81,7 +81,7 @@ func (t *GceTemplateBuilder) BuildCapacity(m MigOsInfo, cpu int64, mem int64, ac
 	}
 
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - r.CalculateKernelReserved(m, mem, version)
+	memTotal := mem - r.CalculateKernelReserved(m, mem)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
@@ -93,7 +93,7 @@ func (t *GceTemplateBuilder) BuildCapacity(m MigOsInfo, cpu int64, mem int64, ac
 		if ephemeralStorageLocalSSDCount > 0 {
 			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, m.OsDistribution())
 		} else {
-			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(m, ephemeralStorage, version)
+			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(m, ephemeralStorage)
 		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
@@ -232,7 +232,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 		klog.Errorf("could not fetch extended resources from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(migOsInfo, cpu, mem, template.Properties.GuestAccelerators, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, mig.Version(), reserved, extendedResources)
+	capacity, err := t.BuildCapacity(migOsInfo, cpu, mem, template.Properties.GuestAccelerators, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, reserved, extendedResources)
 	if err != nil {
 		return nil, err
 	}
