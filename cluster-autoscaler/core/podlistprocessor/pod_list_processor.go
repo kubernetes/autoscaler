@@ -19,33 +19,40 @@ package podlistprocessor
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 )
 
 type defaultPodListProcessor struct {
-	currentlyDrainedNodes *currentlyDrainedNodesPodListProcessor
-	filterOutSchedulable  *filterOutSchedulablePodListProcessor
+	processors []pods.PodListProcessor
 }
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(currentlyDrainedNodes *currentlyDrainedNodesPodListProcessor, filterOutSchedulable *filterOutSchedulablePodListProcessor) *defaultPodListProcessor {
+func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *defaultPodListProcessor {
 	return &defaultPodListProcessor{
-		currentlyDrainedNodes: currentlyDrainedNodes,
-		filterOutSchedulable:  filterOutSchedulable,
+		processors: []pods.PodListProcessor{
+			NewCurrentlyDrainedNodesPodListProcessor(),
+			NewFilterOutSchedulablePodListProcessor(predicateChecker),
+			NewFilterOutDaemonSetPodListProcessor(),
+		},
 	}
 }
 
 // Process runs sub-processors sequentially
 func (p *defaultPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	unschedulablePods, err := p.currentlyDrainedNodes.Process(ctx, unschedulablePods)
-	if err != nil {
-		return nil, err
+	var err error
+	for _, processor := range p.processors {
+		unschedulablePods, err = processor.Process(ctx, unschedulablePods)
+		if err != nil {
+			return nil, err
+		}
 	}
-
-	return p.filterOutSchedulable.Process(ctx, unschedulablePods)
+	return unschedulablePods, nil
 }
 
 func (p *defaultPodListProcessor) CleanUp() {
-	p.currentlyDrainedNodes.CleanUp()
-	p.filterOutSchedulable.CleanUp()
+	for _, processor := range p.processors {
+		processor.CleanUp()
+	}
 }
