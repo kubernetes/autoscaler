@@ -1,7 +1,16 @@
 autoscaler:
   template: 'default'
   base_definition:
-    repo: ~
+    repo:
+      source_labels:
+      - name: 'cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1'
+        value:
+          policy: 'scan'
+          path_config:
+            exclude_paths:
+              - '.*/aws-sdk-go/.*'
+              - '^vendor/.*'
+              - '.*/vendor/.*'
     traits:
       version:
         preprocess:
