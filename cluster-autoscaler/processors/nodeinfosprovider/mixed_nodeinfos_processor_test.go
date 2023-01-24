@@ -85,7 +85,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl).Process(&ctx, []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil, now)
+	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 5, len(res))
 	info, found := res["ng1"]
@@ -112,7 +112,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	res, err = NewMixedTemplateNodeInfoProvider(&cacheTtl).Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nil, now)
+	res, err = NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -171,7 +171,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	niProcessor := NewMixedTemplateNodeInfoProvider(&cacheTtl)
+	niProcessor := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
 	res, err := niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil, now)
 	assert.NoError(t, err)
 	// Check results
@@ -263,7 +263,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	tni := schedulerframework.NewNodeInfo()
 	tni.SetNode(tn)
 	// Cache expire time is set.
-	niProcessor1 := NewMixedTemplateNodeInfoProvider(&cacheTtl)
+	niProcessor1 := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
 	niProcessor1.nodeInfoCache = map[string]cacheItem{
 		"ng1": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
 		"ng2": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
@@ -277,7 +277,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	assert.Equal(t, 1, len(niProcessor1.nodeInfoCache))
 
 	// Cache expire time isn't set.
-	niProcessor2 := NewMixedTemplateNodeInfoProvider(nil)
+	niProcessor2 := NewMixedTemplateNodeInfoProvider(nil, false)
 	niProcessor2.nodeInfoCache = map[string]cacheItem{
 		"ng1": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
 		"ng2": {NodeInfo: tni, added: now.Add(-2 * time.Second)},

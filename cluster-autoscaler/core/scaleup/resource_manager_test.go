@@ -68,7 +68,7 @@ func TestDeltaForNode(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
 		rm := NewResourceManager(processors.CustomResourcesProcessor)
 		delta, err := rm.DeltaForNode(&ctx, nodeInfos[ng.Name], group)
@@ -109,7 +109,7 @@ func TestResourcesLeft(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
 		rm := NewResourceManager(processors.CustomResourcesProcessor)
 		left, err := rm.ResourcesLeft(&ctx, nodeInfos, nodes)
@@ -160,7 +160,7 @@ func TestApplyResourcesLimits(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
+		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
 		rm := NewResourceManager(processors.CustomResourcesProcessor)
 		newCount, err := rm.ApplyResourcesLimits(&ctx, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
@@ -225,7 +225,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*corev1.Node{n1}
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
+	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
 	rm := NewResourceManager(processors.CustomResourcesProcessor)
 
