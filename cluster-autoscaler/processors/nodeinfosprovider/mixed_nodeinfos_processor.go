@@ -44,20 +44,22 @@ type cacheItem struct {
 
 // MixedTemplateNodeInfoProvider build nodeInfos from the cluster's nodes and node groups.
 type MixedTemplateNodeInfoProvider struct {
-	nodeInfoCache map[string]cacheItem
-	ttl           time.Duration
+	nodeInfoCache   map[string]cacheItem
+	ttl             time.Duration
+	forceDaemonSets bool
 }
 
 // NewMixedTemplateNodeInfoProvider returns a NodeInfoProvider processor building
 // NodeInfos from real-world nodes when available, otherwise from node groups templates.
-func NewMixedTemplateNodeInfoProvider(t *time.Duration) *MixedTemplateNodeInfoProvider {
+func NewMixedTemplateNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *MixedTemplateNodeInfoProvider {
 	ttl := maxCacheExpireTime
 	if t != nil {
 		ttl = *t
 	}
 	return &MixedTemplateNodeInfoProvider{
-		nodeInfoCache: make(map[string]cacheItem),
-		ttl:           ttl,
+		nodeInfoCache:   make(map[string]cacheItem),
+		ttl:             ttl,
+		forceDaemonSets: forceDaemonSets,
 	}
 }
 
@@ -93,10 +95,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes)
-			if err != nil {
-				return false, "", err
-			}
+			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
 			sanitizedNodeInfo, err := utils.SanitizeNodeInfo(nodeInfo, id, ignoredTaints)
 			if err != nil {
 				return false, "", err
