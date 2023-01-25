@@ -79,9 +79,13 @@ type podStateProvider interface {
 //
 // kubeClient - used to fetch PV and PVC objects from the API server
 // loopSleepDuration - the amount of time the populator loop sleeps between
-//     successive executions
+//
+//	successive executions
+//
 // podManager - the kubelet podManager that is the source of truth for the pods
-//     that exist on this host
+//
+//	that exist on this host
+//
 // desiredStateOfWorld - the cache to populate
 func NewDesiredStateOfWorldPopulator(
 	kubeClient clientset.Interface,
@@ -196,10 +200,18 @@ func (dswp *desiredStateOfWorldPopulator) findAndAddNewPods() {
 	}
 
 	for _, pod := range dswp.podManager.GetPods() {
-		if dswp.podStateProvider.ShouldPodContainersBeTerminating(pod.UID) {
+		// Keep consistency of adding pod during reconstruction
+		if dswp.hasAddedPods && dswp.podStateProvider.ShouldPodContainersBeTerminating(pod.UID) {
 			// Do not (re)add volumes for pods that can't also be starting containers
 			continue
 		}
+
+		if !dswp.hasAddedPods && dswp.podStateProvider.ShouldPodRuntimeBeRemoved(pod.UID) {
+			// When kubelet restarts, we need to add pods to dsw if there is a possibility
+			// that the container may still be running
+			continue
+		}
+
 		dswp.processPodVolumes(pod, mountedVolumesForPod)
 	}
 }
@@ -251,7 +263,6 @@ func (dswp *desiredStateOfWorldPopulator) findAndRemoveDeletedPods() {
 			continue
 		}
 		klog.V(4).InfoS("Removing volume from desired state", "pod", klog.KObj(volumeToMount.Pod), "podUID", volumeToMount.Pod.UID, "volumeName", volumeToMountSpecName)
-
 		dswp.desiredStateOfWorld.DeletePodFromVolume(
 			volumeToMount.PodName, volumeToMount.VolumeName)
 		dswp.deleteProcessedPod(volumeToMount.PodName)
@@ -343,10 +354,14 @@ func (dswp *desiredStateOfWorldPopulator) checkVolumeFSResize(
 	volumeSpec *volume.Spec,
 	uniquePodName volumetypes.UniquePodName,
 	mountedVolumesForPod map[volumetypes.UniquePodName]map[string]cache.MountedVolume) {
-	if podVolume.PersistentVolumeClaim == nil || pvc == nil {
+
+	// if a volumeSpec does not have PV or has InlineVolumeSpecForCSIMigration set or pvc is nil
+	// we can't resize the volume and hence resizing should be skipped.
+	if volumeSpec.PersistentVolume == nil || volumeSpec.InlineVolumeSpecForCSIMigration || pvc == nil {
 		// Only PVC supports resize operation.
 		return
 	}
+
 	uniqueVolumeName, exist := getUniqueVolumeName(uniquePodName, podVolume.Name, mountedVolumesForPod)
 	if !exist {
 		// Volume not exist in ASW, we assume it hasn't been mounted yet. If it needs resize,

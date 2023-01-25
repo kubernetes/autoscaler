@@ -25,9 +25,9 @@ import (
 	cadvisorapi "github.com/google/cadvisor/info/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	"k8s.io/klog/v2"
 
-	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	"k8s.io/kubernetes/pkg/kubelet/cm/containermap"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/state"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/topology"
@@ -86,7 +86,7 @@ type Manager interface {
 	// among this and other resource controllers.
 	GetPodTopologyHints(pod *v1.Pod) map[string][]topologymanager.TopologyHint
 
-	// GetAllocatableCPUs returns the assignable (not allocated) CPUs
+	// GetAllocatableCPUs returns the total set of CPUs available for allocation.
 	GetAllocatableCPUs() cpuset.CPUSet
 
 	// GetCPUAffinity returns cpuset which includes cpus from shared pools
@@ -388,6 +388,16 @@ func (m *manager) removeStaleState() {
 			}
 		}
 	}
+
+	m.containerMap.Visit(func(podUID, containerName, containerID string) {
+		if _, ok := activeContainers[podUID][containerName]; !ok {
+			klog.ErrorS(nil, "RemoveStaleState: removing container", "podUID", podUID, "containerName", containerName)
+			err := m.policyRemoveContainerByRef(podUID, containerName)
+			if err != nil {
+				klog.ErrorS(err, "RemoveStaleState: failed to remove container", "podUID", podUID, "containerName", containerName)
+			}
+		}
+	})
 }
 
 func (m *manager) reconcileState() (success []reconciledContainer, failure []reconciledContainer) {
