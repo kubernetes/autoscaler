@@ -1531,14 +1531,12 @@ func validateStorageOSPersistentVolumeSource(storageos *core.StorageOSPersistent
 
 // validatePVSecretReference check whether provided SecretReference object is valid in terms of secret name and namespace.
 
-func validatePVSecretReference(secretRef *core.SecretReference, allowDNSSubDomainSecretName bool, fldPath *field.Path) field.ErrorList {
+func validatePVSecretReference(secretRef *core.SecretReference, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 	if len(secretRef.Name) == 0 {
 		allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
-	} else if allowDNSSubDomainSecretName {
-		allErrs = append(allErrs, ValidateDNS1123Subdomain(secretRef.Name, fldPath.Child("name"))...)
 	} else {
-		allErrs = append(allErrs, ValidateDNS1123Label(secretRef.Name, fldPath.Child("name"))...)
+		allErrs = append(allErrs, ValidateDNS1123Subdomain(secretRef.Name, fldPath.Child("name"))...)
 	}
 
 	if len(secretRef.Namespace) == 0 {
@@ -1567,7 +1565,7 @@ func ValidateCSIDriverName(driverName string, fldPath *field.Path) field.ErrorLi
 	return allErrs
 }
 
-func validateCSIPersistentVolumeSource(csi *core.CSIPersistentVolumeSource, allowDNSSubDomainSecretName bool, fldPath *field.Path) field.ErrorList {
+func validateCSIPersistentVolumeSource(csi *core.CSIPersistentVolumeSource, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, ValidateCSIDriverName(csi.Driver, fldPath.Child("driver"))...)
@@ -1576,16 +1574,16 @@ func validateCSIPersistentVolumeSource(csi *core.CSIPersistentVolumeSource, allo
 		allErrs = append(allErrs, field.Required(fldPath.Child("volumeHandle"), ""))
 	}
 	if csi.ControllerPublishSecretRef != nil {
-		allErrs = append(allErrs, validatePVSecretReference(csi.ControllerPublishSecretRef, allowDNSSubDomainSecretName, fldPath.Child("controllerPublishSecretRef"))...)
+		allErrs = append(allErrs, validatePVSecretReference(csi.ControllerPublishSecretRef, fldPath.Child("controllerPublishSecretRef"))...)
 	}
 	if csi.ControllerExpandSecretRef != nil {
-		allErrs = append(allErrs, validatePVSecretReference(csi.ControllerExpandSecretRef, allowDNSSubDomainSecretName, fldPath.Child("controllerExpandSecretRef"))...)
+		allErrs = append(allErrs, validatePVSecretReference(csi.ControllerExpandSecretRef, fldPath.Child("controllerExpandSecretRef"))...)
 	}
 	if csi.NodePublishSecretRef != nil {
-		allErrs = append(allErrs, validatePVSecretReference(csi.NodePublishSecretRef, allowDNSSubDomainSecretName, fldPath.Child("nodePublishSecretRef"))...)
+		allErrs = append(allErrs, validatePVSecretReference(csi.NodePublishSecretRef, fldPath.Child("nodePublishSecretRef"))...)
 	}
 	if csi.NodeExpandSecretRef != nil {
-		allErrs = append(allErrs, validatePVSecretReference(csi.NodeExpandSecretRef, allowDNSSubDomainSecretName, fldPath.Child("nodeExpandSecretRef"))...)
+		allErrs = append(allErrs, validatePVSecretReference(csi.NodeExpandSecretRef, fldPath.Child("nodeExpandSecretRef"))...)
 	}
 	return allErrs
 }
@@ -1647,8 +1645,6 @@ var allowedTemplateObjectMetaFields = map[string]bool{
 type PersistentVolumeSpecValidationOptions struct {
 	// Allow spec to contain the "ReadWiteOncePod" access mode
 	AllowReadWriteOncePod bool
-	// Allow the secretRef Name field to be of DNSSubDomain Format
-	AllowDNSSubDomainSecretName bool
 }
 
 // ValidatePersistentVolumeName checks that a name is appropriate for a
@@ -1663,8 +1659,7 @@ var supportedVolumeModes = sets.NewString(string(core.PersistentVolumeBlock), st
 
 func ValidationOptionsForPersistentVolume(pv, oldPv *core.PersistentVolume) PersistentVolumeSpecValidationOptions {
 	opts := PersistentVolumeSpecValidationOptions{
-		AllowReadWriteOncePod:       utilfeature.DefaultFeatureGate.Enabled(features.ReadWriteOncePod),
-		AllowDNSSubDomainSecretName: false,
+		AllowReadWriteOncePod: utilfeature.DefaultFeatureGate.Enabled(features.ReadWriteOncePod),
 	}
 	if oldPv == nil {
 		// If there's no old PV, use the options based solely on feature enablement
@@ -1674,19 +1669,7 @@ func ValidationOptionsForPersistentVolume(pv, oldPv *core.PersistentVolume) Pers
 		// If the old object allowed "ReadWriteOncePod", continue to allow it in the new object
 		opts.AllowReadWriteOncePod = true
 	}
-	if oldCSI := oldPv.Spec.CSI; oldCSI != nil {
-		opts.AllowDNSSubDomainSecretName =
-			secretRefRequiresSubdomainSecretName(oldCSI.ControllerExpandSecretRef) ||
-				secretRefRequiresSubdomainSecretName(oldCSI.ControllerPublishSecretRef) ||
-				secretRefRequiresSubdomainSecretName(oldCSI.NodeStageSecretRef) ||
-				secretRefRequiresSubdomainSecretName(oldCSI.NodePublishSecretRef)
-	}
 	return opts
-}
-
-func secretRefRequiresSubdomainSecretName(secretRef *core.SecretReference) bool {
-	// ref and name were specified and name didn't fit within label validation
-	return secretRef != nil && len(secretRef.Name) > 0 && len(validation.IsDNS1123Label(secretRef.Name)) > 0
 }
 
 func ValidatePersistentVolumeSpec(pvSpec *core.PersistentVolumeSpec, pvName string, validateInlinePersistentVolumeSpec bool, fldPath *field.Path, opts PersistentVolumeSpecValidationOptions) field.ErrorList {
@@ -1943,7 +1926,7 @@ func ValidatePersistentVolumeSpec(pvSpec *core.PersistentVolumeSpec, pvName stri
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("csi"), "may not specify more than 1 volume type"))
 		} else {
 			numVolumes++
-			allErrs = append(allErrs, validateCSIPersistentVolumeSource(pvSpec.CSI, opts.AllowDNSSubDomainSecretName, fldPath.Child("csi"))...)
+			allErrs = append(allErrs, validateCSIPersistentVolumeSource(pvSpec.CSI, fldPath.Child("csi"))...)
 		}
 	}
 
@@ -3654,6 +3637,8 @@ type PodValidationOptions struct {
 	AllowIndivisibleHugePagesValues bool
 	// Allow more DNSSearchPaths and longer DNSSearchListChars
 	AllowExpandedDNSConfig bool
+	// Allow invalid topologySpreadConstraint labelSelector for backward compatibility
+	AllowInvalidTopologySpreadConstraintLabelSelector bool
 }
 
 // validatePodMetadataAndSpec tests if required fields in the pod.metadata and pod.spec are set,
@@ -3759,7 +3744,7 @@ func ValidatePodSpec(spec *core.PodSpec, podMeta *metav1.ObjectMeta, fldPath *fi
 	allErrs = append(allErrs, validatePodDNSConfig(spec.DNSConfig, &spec.DNSPolicy, fldPath.Child("dnsConfig"), opts)...)
 	allErrs = append(allErrs, validateReadinessGates(spec.ReadinessGates, fldPath.Child("readinessGates"))...)
 	allErrs = append(allErrs, validateSchedulingGates(spec.SchedulingGates, fldPath.Child("schedulingGates"))...)
-	allErrs = append(allErrs, validateTopologySpreadConstraints(spec.TopologySpreadConstraints, fldPath.Child("topologySpreadConstraints"))...)
+	allErrs = append(allErrs, validateTopologySpreadConstraints(spec.TopologySpreadConstraints, fldPath.Child("topologySpreadConstraints"), opts)...)
 	allErrs = append(allErrs, validateWindowsHostProcessPod(spec, fldPath)...)
 	allErrs = append(allErrs, validateHostUsers(spec, fldPath)...)
 	if len(spec.ServiceAccountName) > 0 {
@@ -4688,6 +4673,11 @@ func ValidatePodEphemeralContainersUpdate(newPod, oldPod *core.Pod, opts PodVali
 	allErrs = append(allErrs, validatePodMetadataAndSpec(newPod, opts)...)
 	allErrs = append(allErrs, ValidatePodSpecificAnnotationUpdates(newPod, oldPod, fldPath.Child("annotations"), opts)...)
 
+	// static pods don't support ephemeral containers #113935
+	if _, ok := oldPod.Annotations[core.MirrorPodAnnotationKey]; ok {
+		return field.ErrorList{field.Forbidden(field.NewPath(""), "static pods do not support ephemeral containers")}
+	}
+
 	// Part 2: Validate that the changes between oldPod.Spec.EphemeralContainers and
 	// newPod.Spec.EphemeralContainers are allowed.
 	//
@@ -4744,7 +4734,7 @@ var supportedSessionAffinityType = sets.NewString(string(core.ServiceAffinityCli
 var supportedServiceType = sets.NewString(string(core.ServiceTypeClusterIP), string(core.ServiceTypeNodePort),
 	string(core.ServiceTypeLoadBalancer), string(core.ServiceTypeExternalName))
 
-var supportedServiceInternalTrafficPolicy = sets.NewString(string(core.ServiceInternalTrafficPolicyCluster), string(core.ServiceExternalTrafficPolicyTypeLocal))
+var supportedServiceInternalTrafficPolicy = sets.NewString(string(core.ServiceInternalTrafficPolicyCluster), string(core.ServiceExternalTrafficPolicyLocal))
 
 var supportedServiceIPFamily = sets.NewString(string(core.IPv4Protocol), string(core.IPv6Protocol))
 var supportedServiceIPFamilyPolicy = sets.NewString(string(core.IPFamilyPolicySingleStack), string(core.IPFamilyPolicyPreferDualStack), string(core.IPFamilyPolicyRequireDualStack))
@@ -4976,8 +4966,8 @@ func needsExternalTrafficPolicy(svc *core.Service) bool {
 }
 
 var validExternalTrafficPolicies = sets.NewString(
-	string(core.ServiceExternalTrafficPolicyTypeCluster),
-	string(core.ServiceExternalTrafficPolicyTypeLocal))
+	string(core.ServiceExternalTrafficPolicyCluster),
+	string(core.ServiceExternalTrafficPolicyLocal))
 
 func validateServiceExternalTrafficPolicy(service *core.Service) field.ErrorList {
 	allErrs := field.ErrorList{}
@@ -5812,7 +5802,6 @@ func ValidateSecret(secret *core.Secret) field.ErrorList {
 		if _, exists := secret.Data[core.TLSPrivateKeyKey]; !exists {
 			allErrs = append(allErrs, field.Required(dataPath.Key(core.TLSPrivateKeyKey), ""))
 		}
-	// TODO: Verify that the key matches the cert.
 	default:
 		// no-op
 	}
@@ -5947,9 +5936,9 @@ func ValidateResourceRequirements(requirements *core.ResourceRequirements, podCl
 		if exists {
 			// For non overcommitable resources, not only requests can't exceed limits, they also can't be lower, i.e. must be equal.
 			if quantity.Cmp(limitQuantity) != 0 && !helper.IsOvercommitAllowed(resourceName) {
-				allErrs = append(allErrs, field.Invalid(reqPath, quantity.String(), fmt.Sprintf("must be equal to %s limit", resourceName)))
+				allErrs = append(allErrs, field.Invalid(reqPath, quantity.String(), fmt.Sprintf("must be equal to %s limit of %s", resourceName, limitQuantity.String())))
 			} else if quantity.Cmp(limitQuantity) > 0 {
-				allErrs = append(allErrs, field.Invalid(reqPath, quantity.String(), fmt.Sprintf("must be less than or equal to %s limit", resourceName)))
+				allErrs = append(allErrs, field.Invalid(reqPath, quantity.String(), fmt.Sprintf("must be less than or equal to %s limit of %s", resourceName, limitQuantity.String())))
 			}
 		} else if !helper.IsOvercommitAllowed(resourceName) {
 			allErrs = append(allErrs, field.Required(limPath, "Limit must be set for non overcommitable resources"))
@@ -6742,7 +6731,7 @@ var (
 )
 
 // validateTopologySpreadConstraints validates given TopologySpreadConstraints.
-func validateTopologySpreadConstraints(constraints []core.TopologySpreadConstraint, fldPath *field.Path) field.ErrorList {
+func validateTopologySpreadConstraints(constraints []core.TopologySpreadConstraint, fldPath *field.Path, opts PodValidationOptions) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	for i, constraint := range constraints {
@@ -6768,6 +6757,9 @@ func validateTopologySpreadConstraints(constraints []core.TopologySpreadConstrai
 			allErrs = append(allErrs, err)
 		}
 		allErrs = append(allErrs, validateMatchLabelKeys(subFldPath.Child("matchLabelKeys"), constraint.MatchLabelKeys, constraint.LabelSelector)...)
+		if !opts.AllowInvalidTopologySpreadConstraintLabelSelector {
+			allErrs = append(allErrs, unversionedvalidation.ValidateLabelSelector(constraint.LabelSelector, unversionedvalidation.LabelSelectorValidationOptions{AllowInvalidLabelValueInSelector: false}, subFldPath.Child("labelSelector"))...)
+		}
 	}
 
 	return allErrs
