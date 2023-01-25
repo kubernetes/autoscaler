@@ -34,6 +34,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/cryptobyte"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -126,6 +127,7 @@ type Config struct {
 
 	EnableIndex     bool
 	EnableProfiling bool
+	DebugSocketPath string
 	EnableDiscovery bool
 
 	// Requires generic profiling enabled
@@ -155,8 +157,10 @@ type Config struct {
 
 	// BuildHandlerChainFunc allows you to build custom handler chains by decorating the apiHandler.
 	BuildHandlerChainFunc func(apiHandler http.Handler, c *Config) (secure http.Handler)
-	// HandlerChainWaitGroup allows you to wait for all chain handlers exit after the server shutdown.
-	HandlerChainWaitGroup *utilwaitgroup.SafeWaitGroup
+	// NonLongRunningRequestWaitGroup allows you to wait for all chain
+	// handlers associated with non long-running requests
+	// to complete while the server is shuting down.
+	NonLongRunningRequestWaitGroup *utilwaitgroup.SafeWaitGroup
 	// DiscoveryAddresses is used to build the IPs pass to discovery. If nil, the ExternalAddress is
 	// always reported
 	DiscoveryAddresses discovery.Addresses
@@ -342,31 +346,48 @@ func NewConfig(codecs serializer.CodecFactory) *Config {
 			klog.Fatalf("error getting hostname for apiserver identity: %v", err)
 		}
 
-		hash := sha256.Sum256([]byte(hostname))
-		id = "kube-apiserver-" + strings.ToLower(base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(hash[:16]))
+		// Since the hash needs to be unique across each kube-apiserver and aggregated apiservers,
+		// the hash used for the identity should include both the hostname and the identity value.
+		// TODO: receive the identity value as a parameter once the apiserver identity lease controller
+		// post start hook is moved to generic apiserver.
+		b := cryptobyte.NewBuilder(nil)
+		b.AddUint16LengthPrefixed(func(b *cryptobyte.Builder) {
+			b.AddBytes([]byte(hostname))
+		})
+		b.AddUint16LengthPrefixed(func(b *cryptobyte.Builder) {
+			b.AddBytes([]byte("kube-apiserver"))
+		})
+		hashData, err := b.Bytes()
+		if err != nil {
+			klog.Fatalf("error building hash data for apiserver identity: %v", err)
+		}
+
+		hash := sha256.Sum256(hashData)
+		id = "apiserver-" + strings.ToLower(base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(hash[:16]))
 	}
 	lifecycleSignals := newLifecycleSignals()
 
 	return &Config{
-		Serializer:                  codecs,
-		BuildHandlerChainFunc:       DefaultBuildHandlerChain,
-		HandlerChainWaitGroup:       new(utilwaitgroup.SafeWaitGroup),
-		LegacyAPIGroupPrefixes:      sets.NewString(DefaultLegacyAPIPrefix),
-		DisabledPostStartHooks:      sets.NewString(),
-		PostStartHooks:              map[string]PostStartHookConfigEntry{},
-		HealthzChecks:               append([]healthz.HealthChecker{}, defaultHealthChecks...),
-		ReadyzChecks:                append([]healthz.HealthChecker{}, defaultHealthChecks...),
-		LivezChecks:                 append([]healthz.HealthChecker{}, defaultHealthChecks...),
-		EnableIndex:                 true,
-		EnableDiscovery:             true,
-		EnableProfiling:             true,
-		EnableMetrics:               true,
-		MaxRequestsInFlight:         400,
-		MaxMutatingRequestsInFlight: 200,
-		RequestTimeout:              time.Duration(60) * time.Second,
-		MinRequestTimeout:           1800,
-		LivezGracePeriod:            time.Duration(0),
-		ShutdownDelayDuration:       time.Duration(0),
+		Serializer:                     codecs,
+		BuildHandlerChainFunc:          DefaultBuildHandlerChain,
+		NonLongRunningRequestWaitGroup: new(utilwaitgroup.SafeWaitGroup),
+		LegacyAPIGroupPrefixes:         sets.NewString(DefaultLegacyAPIPrefix),
+		DisabledPostStartHooks:         sets.NewString(),
+		PostStartHooks:                 map[string]PostStartHookConfigEntry{},
+		HealthzChecks:                  append([]healthz.HealthChecker{}, defaultHealthChecks...),
+		ReadyzChecks:                   append([]healthz.HealthChecker{}, defaultHealthChecks...),
+		LivezChecks:                    append([]healthz.HealthChecker{}, defaultHealthChecks...),
+		EnableIndex:                    true,
+		EnableDiscovery:                true,
+		EnableProfiling:                true,
+		DebugSocketPath:                "",
+		EnableMetrics:                  true,
+		MaxRequestsInFlight:            400,
+		MaxMutatingRequestsInFlight:    200,
+		RequestTimeout:                 time.Duration(60) * time.Second,
+		MinRequestTimeout:              1800,
+		LivezGracePeriod:               time.Duration(0),
+		ShutdownDelayDuration:          time.Duration(0),
 		// 1.5MB is the default client request size in bytes
 		// the etcd server should accept. See
 		// https://github.com/etcd-io/etcd/blob/release-3.4/embed/config.go#L56.
@@ -631,20 +652,26 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget) (*G
 		return c.BuildHandlerChainFunc(handler, c.Config)
 	}
 
+	var debugSocket *routes.DebugSocket
+	if c.DebugSocketPath != "" {
+		debugSocket = routes.NewDebugSocket(c.DebugSocketPath)
+	}
+
 	apiServerHandler := NewAPIServerHandler(name, c.Serializer, handlerChainBuilder, delegationTarget.UnprotectedHandler())
 
 	s := &GenericAPIServer{
-		discoveryAddresses:         c.DiscoveryAddresses,
-		LoopbackClientConfig:       c.LoopbackClientConfig,
-		legacyAPIGroupPrefixes:     c.LegacyAPIGroupPrefixes,
-		admissionControl:           c.AdmissionControl,
-		Serializer:                 c.Serializer,
-		AuditBackend:               c.AuditBackend,
-		Authorizer:                 c.Authorization.Authorizer,
-		delegationTarget:           delegationTarget,
-		EquivalentResourceRegistry: c.EquivalentResourceRegistry,
-		HandlerChainWaitGroup:      c.HandlerChainWaitGroup,
-		Handler:                    apiServerHandler,
+		discoveryAddresses:             c.DiscoveryAddresses,
+		LoopbackClientConfig:           c.LoopbackClientConfig,
+		legacyAPIGroupPrefixes:         c.LegacyAPIGroupPrefixes,
+		admissionControl:               c.AdmissionControl,
+		Serializer:                     c.Serializer,
+		AuditBackend:                   c.AuditBackend,
+		Authorizer:                     c.Authorization.Authorizer,
+		delegationTarget:               delegationTarget,
+		EquivalentResourceRegistry:     c.EquivalentResourceRegistry,
+		NonLongRunningRequestWaitGroup: c.NonLongRunningRequestWaitGroup,
+		Handler:                        apiServerHandler,
+		UnprotectedDebugSocket:         debugSocket,
 
 		listedPathProvider: apiServerHandler,
 
@@ -879,7 +906,7 @@ func DefaultBuildHandlerChain(apiHandler http.Handler, c *Config) http.Handler {
 
 	handler = genericapifilters.WithRequestDeadline(handler, c.AuditBackend, c.AuditPolicyRuleEvaluator,
 		c.LongRunningFunc, c.Serializer, c.RequestTimeout)
-	handler = genericfilters.WithWaitGroup(handler, c.LongRunningFunc, c.HandlerChainWaitGroup)
+	handler = genericfilters.WithWaitGroup(handler, c.LongRunningFunc, c.NonLongRunningRequestWaitGroup)
 	if c.SecureServing != nil && !c.SecureServing.DisableHTTP2 && c.GoawayChance > 0 {
 		handler = genericfilters.WithProbabilisticGoaway(handler, c.GoawayChance)
 	}
@@ -913,6 +940,13 @@ func installAPI(s *GenericAPIServer, c *Config) {
 		}
 		// so far, only logging related endpoints are considered valid to add for these debug flags.
 		routes.DebugFlags{}.Install(s.Handler.NonGoRestfulMux, "v", routes.StringFlagPutHandler(logs.GlogSetter))
+	}
+	if s.UnprotectedDebugSocket != nil {
+		s.UnprotectedDebugSocket.InstallProfiling()
+		s.UnprotectedDebugSocket.InstallDebugFlag("v", routes.StringFlagPutHandler(logs.GlogSetter))
+		if c.EnableContentionProfiling {
+			goruntime.SetBlockProfileRate(1)
+		}
 	}
 
 	if c.EnableMetrics {

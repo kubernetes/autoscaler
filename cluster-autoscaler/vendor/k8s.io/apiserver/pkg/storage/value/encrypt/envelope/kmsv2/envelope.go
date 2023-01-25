@@ -35,6 +35,7 @@ import (
 	kmstypes "k8s.io/apiserver/pkg/storage/value/encrypt/envelope/kmsv2/v2alpha1"
 	"k8s.io/apiserver/pkg/storage/value/encrypt/envelope/metrics"
 	"k8s.io/klog/v2"
+	kmsservice "k8s.io/kms/service"
 	"k8s.io/utils/lru"
 )
 
@@ -49,18 +50,12 @@ const (
 	encryptedDEKMaxSize = 1 * 1024 // 1 kB
 )
 
-// Service allows encrypting and decrypting data using an external Key Management Service.
-type Service interface {
-	// Decrypt a given bytearray to obtain the original data as bytes.
-	Decrypt(ctx context.Context, uid string, req *DecryptRequest) ([]byte, error)
-	// Encrypt bytes to a ciphertext.
-	Encrypt(ctx context.Context, uid string, data []byte) (*EncryptResponse, error)
-	// Status returns the status of the KMS.
-	Status(ctx context.Context) (*StatusResponse, error)
-}
+type KeyIDGetterFunc func(context.Context) (keyID string, err error)
 
 type envelopeTransformer struct {
-	envelopeService Service
+	envelopeService kmsservice.Service
+
+	keyIDGetter KeyIDGetterFunc
 
 	// transformers is a thread-safe LRU cache which caches decrypted DEKs indexed by their encrypted form.
 	transformers *lru.Cache
@@ -72,32 +67,11 @@ type envelopeTransformer struct {
 	cacheEnabled bool
 }
 
-// EncryptResponse is the response from the Envelope service when encrypting data.
-type EncryptResponse struct {
-	Ciphertext  []byte
-	KeyID       string
-	Annotations map[string][]byte
-}
-
-// DecryptRequest is the request to the Envelope service when decrypting data.
-type DecryptRequest struct {
-	Ciphertext  []byte
-	KeyID       string
-	Annotations map[string][]byte
-}
-
-// StatusResponse is the response from the Envelope service when getting the status of the service.
-type StatusResponse struct {
-	Version string
-	Healthz string
-	KeyID   string
-}
-
 // NewEnvelopeTransformer returns a transformer which implements a KEK-DEK based envelope encryption scheme.
 // It uses envelopeService to encrypt and decrypt DEKs. Respective DEKs (in encrypted form) are prepended to
 // the data items they encrypt. A cache (of size cacheSize) is maintained to store the most recently
 // used decrypted DEKs in memory.
-func NewEnvelopeTransformer(envelopeService Service, cacheSize int, baseTransformerFunc func(cipher.Block) value.Transformer) value.Transformer {
+func NewEnvelopeTransformer(envelopeService kmsservice.Service, keyIDGetter KeyIDGetterFunc, cacheSize int, baseTransformerFunc func(cipher.Block) value.Transformer) value.Transformer {
 	var cache *lru.Cache
 
 	if cacheSize > 0 {
@@ -108,6 +82,7 @@ func NewEnvelopeTransformer(envelopeService Service, cacheSize int, baseTransfor
 
 	return &envelopeTransformer{
 		envelopeService:     envelopeService,
+		keyIDGetter:         keyIDGetter,
 		transformers:        cache,
 		baseTransformerFunc: baseTransformerFunc,
 		cacheEnabled:        cacheSize > 0,
@@ -133,7 +108,7 @@ func (t *envelopeTransformer) TransformFromStorage(ctx context.Context, data []b
 		}
 		uid := string(uuid.NewUUID())
 		klog.V(6).InfoS("Decrypting content using envelope service", "uid", uid, "key", string(dataCtx.AuthenticatedData()))
-		key, err := t.envelopeService.Decrypt(ctx, uid, &DecryptRequest{
+		key, err := t.envelopeService.Decrypt(ctx, uid, &kmsservice.DecryptRequest{
 			Ciphertext:  encryptedObject.EncryptedDEK,
 			KeyID:       encryptedObject.KeyID,
 			Annotations: encryptedObject.Annotations,
@@ -148,7 +123,21 @@ func (t *envelopeTransformer) TransformFromStorage(ctx context.Context, data []b
 		}
 	}
 
-	return transformer.TransformFromStorage(ctx, encryptedObject.EncryptedData, dataCtx)
+	out, stale, err := transformer.TransformFromStorage(ctx, encryptedObject.EncryptedData, dataCtx)
+	if err != nil {
+		return nil, false, err
+	}
+	if stale {
+		return out, stale, nil
+	}
+
+	// Check keyID freshness in addition to data staleness
+	keyID, err := t.keyIDGetter(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+	return out, encryptedObject.KeyID != keyID, nil
+
 }
 
 // TransformToStorage encrypts data to be written to disk using envelope encryption.
@@ -160,7 +149,7 @@ func (t *envelopeTransformer) TransformToStorage(ctx context.Context, data []byt
 	}
 
 	uid := string(uuid.NewUUID())
-	klog.V(6).InfoS("Encrypting content using envelope service", "uid", uid, "key", string(dataCtx.AuthenticatedData()))
+	klog.V(6).InfoS("encrypting content using envelope service", "uid", uid, "key", string(dataCtx.AuthenticatedData()))
 	resp, err := t.envelopeService.Encrypt(ctx, uid, newKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encrypt DEK, error: %w", err)
@@ -181,6 +170,12 @@ func (t *envelopeTransformer) TransformToStorage(ctx context.Context, data []byt
 		EncryptedDEK:  resp.Ciphertext,
 		EncryptedData: result,
 		Annotations:   resp.Annotations,
+	}
+
+	// Check keyID freshness and write to log if key IDs are different
+	statusKeyID, err := t.keyIDGetter(ctx)
+	if err == nil && encObject.KeyID != statusKeyID {
+		klog.V(2).InfoS("observed different key IDs when encrypting content using kms v2 envelope service", "uid", uid, "objectKeyID", encObject.KeyID, "statusKeyID", statusKeyID)
 	}
 
 	// Serialize the EncryptedObject to a byte array.
@@ -261,7 +256,7 @@ func validateEncryptedObject(o *kmstypes.EncryptedObject) error {
 	if err := validateEncryptedDEK(o.EncryptedDEK); err != nil {
 		return fmt.Errorf("failed to validate encrypted DEK: %w", err)
 	}
-	if err := validateKeyID(o.KeyID); err != nil {
+	if err := ValidateKeyID(o.KeyID); err != nil {
 		return fmt.Errorf("failed to validate key id: %w", err)
 	}
 	if err := validateAnnotations(o.Annotations); err != nil {
@@ -301,10 +296,10 @@ func validateAnnotations(annotations map[string][]byte) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-// validateKeyID tests the following:
+// ValidateKeyID tests the following:
 // 1. The keyID is not empty.
 // 2. The size of keyID is less than 1 kB.
-func validateKeyID(keyID string) error {
+func ValidateKeyID(keyID string) error {
 	if len(keyID) == 0 {
 		return fmt.Errorf("keyID is empty")
 	}
