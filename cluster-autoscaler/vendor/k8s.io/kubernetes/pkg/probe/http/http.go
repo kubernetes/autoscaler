@@ -36,8 +36,7 @@ const (
 
 // New creates Prober that will skip TLS verification while probing.
 // followNonLocalRedirects configures whether the prober should follow redirects to a different hostname.
-//
-//	If disabled, redirects to other hosts will trigger a warning result.
+// If disabled, redirects to other hosts will trigger a warning result.
 func New(followNonLocalRedirects bool) Prober {
 	tlsConfig := &tls.Config{InsecureSkipVerify: true}
 	return NewWithTLSConfig(tlsConfig, followNonLocalRedirects)
@@ -45,8 +44,7 @@ func New(followNonLocalRedirects bool) Prober {
 
 // NewWithTLSConfig takes tls config as parameter.
 // followNonLocalRedirects configures whether the prober should follow redirects to a different hostname.
-//
-//	If disabled, redirects to other hosts will trigger a warning result.
+// If disabled, redirects to other hosts will trigger a warning result.
 func NewWithTLSConfig(config *tls.Config, followNonLocalRedirects bool) Prober {
 	// We do not want the probe use node's local proxy set.
 	transport := utilnet.SetTransportDefaults(
@@ -55,7 +53,11 @@ func NewWithTLSConfig(config *tls.Config, followNonLocalRedirects bool) Prober {
 			DisableKeepAlives:  true,
 			Proxy:              http.ProxyURL(nil),
 			DisableCompression: true, // removes Accept-Encoding header
+			// DialContext creates unencrypted TCP connections
+			// and is also used by the transport for HTTPS connection
+			DialContext: probe.ProbeDialer().DialContext,
 		})
+
 	return httpProber{transport, followNonLocalRedirects}
 }
 

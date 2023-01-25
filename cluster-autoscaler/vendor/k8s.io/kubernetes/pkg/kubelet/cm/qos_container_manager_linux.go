@@ -98,7 +98,7 @@ func (m *qosContainerManagerImpl) Start(getNodeAllocatable func() v1.ResourceLis
 		// the BestEffort QoS class has a statically configured minShares value
 		if qosClass == v1.PodQOSBestEffort {
 			minShares := uint64(MinShares)
-			resourceParameters.CpuShares = &minShares
+			resourceParameters.CPUShares = &minShares
 		}
 
 		// containerConfig object stores the cgroup specifications
@@ -184,11 +184,11 @@ func (m *qosContainerManagerImpl) setCPUCgroupConfig(configs map[v1.PodQOSClass]
 
 	// make sure best effort is always 2 shares
 	bestEffortCPUShares := uint64(MinShares)
-	configs[v1.PodQOSBestEffort].ResourceParameters.CpuShares = &bestEffortCPUShares
+	configs[v1.PodQOSBestEffort].ResourceParameters.CPUShares = &bestEffortCPUShares
 
 	// set burstable shares based on current observe state
 	burstableCPUShares := MilliCPUToShares(burstablePodCPURequest)
-	configs[v1.PodQOSBurstable].ResourceParameters.CpuShares = &burstableCPUShares
+	configs[v1.PodQOSBurstable].ResourceParameters.CPUShares = &burstableCPUShares
 	return nil
 }
 
@@ -290,7 +290,7 @@ func (m *qosContainerManagerImpl) setMemoryQoS(configs map[v1.PodQOSClass]*Cgrou
 			configs[v1.PodQOSBurstable].ResourceParameters.Unified = make(map[string]string)
 		}
 		configs[v1.PodQOSBurstable].ResourceParameters.Unified[MemoryMin] = strconv.FormatInt(burstableMin, 10)
-		klog.V(4).InfoS("MemoryQoS config for qos", "qos", v1.PodQOSBurstable, "memory.min", burstableMin)
+		klog.V(4).InfoS("MemoryQoS config for qos", "qos", v1.PodQOSBurstable, "memoryMin", burstableMin)
 	}
 
 	if guaranteedMin > 0 {
@@ -298,7 +298,7 @@ func (m *qosContainerManagerImpl) setMemoryQoS(configs map[v1.PodQOSClass]*Cgrou
 			configs[v1.PodQOSGuaranteed].ResourceParameters.Unified = make(map[string]string)
 		}
 		configs[v1.PodQOSGuaranteed].ResourceParameters.Unified[MemoryMin] = strconv.FormatInt(guaranteedMin, 10)
-		klog.V(4).InfoS("MemoryQoS config for qos", "qos", v1.PodQOSGuaranteed, "memory.min", guaranteedMin)
+		klog.V(4).InfoS("MemoryQoS config for qos", "qos", v1.PodQOSGuaranteed, "memoryMin", guaranteedMin)
 	}
 }
 
