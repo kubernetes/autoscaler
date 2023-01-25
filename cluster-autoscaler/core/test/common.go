@@ -136,10 +136,7 @@ func ExtractPodNames(pods []*apiv1.Pod) []string {
 // NewTestProcessors returns a set of simple processors for use in tests.
 func NewTestProcessors(context *context.AutoscalingContext) *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
-		PodListProcessor: podlistprocessor.NewDefaultPodListProcessor(
-			podlistprocessor.NewCurrentlyDrainedNodesPodListProcessor(),
-			podlistprocessor.NewFilterOutSchedulablePodListProcessor(context.PredicateChecker),
-		),
+		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(context.PredicateChecker),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
