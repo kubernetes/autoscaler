@@ -48,6 +48,15 @@ func (e *listWorkEstimator) estimate(r *http.Request, flowSchemaName, priorityLe
 		return WorkEstimate{InitialSeats: maximumSeats}
 	}
 
+	if requestInfo.Name != "" {
+		// Requests with metadata.name specified are usually executed as get
+		// requests in storage layer so their width should be 1.
+		// Example of such list requests:
+		// /apis/certificates.k8s.io/v1/certificatesigningrequests?fieldSelector=metadata.name%3Dcsr-xxs4m
+		// /api/v1/namespaces/test/configmaps?fieldSelector=metadata.name%3Dbig-deployment-1&limit=500&resourceVersion=0
+		return WorkEstimate{InitialSeats: minimumSeats}
+	}
+
 	query := r.URL.Query()
 	listOptions := metav1.ListOptions{}
 	if err := metav1.Convert_url_Values_To_v1_ListOptions(&query, &listOptions, nil); err != nil {
@@ -132,7 +141,8 @@ func key(requestInfo *apirequest.RequestInfo) string {
 }
 
 // NOTICE: Keep in sync with shouldDelegateList function in
-//  staging/src/k8s.io/apiserver/pkg/storage/cacher/cacher.go
+//
+//	staging/src/k8s.io/apiserver/pkg/storage/cacher/cacher.go
 func shouldListFromStorage(query url.Values, opts *metav1.ListOptions) bool {
 	resourceVersion := opts.ResourceVersion
 	pagingEnabled := utilfeature.DefaultFeatureGate.Enabled(features.APIListChunking)

@@ -125,16 +125,20 @@ type Evaluator struct {
 
 // Preempt returns a PostFilterResult carrying suggested nominatedNodeName, along with a Status.
 // The semantics of returned <PostFilterResult, Status> varies on different scenarios:
-// - <nil, Error>. This denotes it's a transient/rare error that may be self-healed in future cycles.
-// - <nil, Unschedulable>. This status is mostly as expected like the preemptor is waiting for the
-//   victims to be fully terminated.
-// - In both cases above, a nil PostFilterResult is returned to keep the pod's nominatedNodeName unchanged.
 //
-// - <non-nil PostFilterResult, Unschedulable>. It indicates the pod cannot be scheduled even with preemption.
-//   In this case, a non-nil PostFilterResult is returned and result.NominatingMode instructs how to deal with
-//   the nominatedNodeName.
-// - <non-nil PostFilterResult}, Success>. It's the regular happy path
-//   and the non-empty nominatedNodeName will be applied to the preemptor pod.
+//   - <nil, Error>. This denotes it's a transient/rare error that may be self-healed in future cycles.
+//
+//   - <nil, Unschedulable>. This status is mostly as expected like the preemptor is waiting for the
+//     victims to be fully terminated.
+//
+//   - In both cases above, a nil PostFilterResult is returned to keep the pod's nominatedNodeName unchanged.
+//
+//   - <non-nil PostFilterResult, Unschedulable>. It indicates the pod cannot be scheduled even with preemption.
+//     In this case, a non-nil PostFilterResult is returned and result.NominatingMode instructs how to deal with
+//     the nominatedNodeName.
+//
+//   - <non-nil PostFilterResult}, Success>. It's the regular happy path
+//     and the non-empty nominatedNodeName will be applied to the preemptor pod.
 func (ev *Evaluator) Preempt(ctx context.Context, pod *v1.Pod, m framework.NodeToStatusMap) (*framework.PostFilterResult, *framework.Status) {
 	// 0) Fetch the latest version of <pod>.
 	// It's safe to directly fetch pod here. Because the informer cache has already been
@@ -340,8 +344,7 @@ func (ev *Evaluator) prepareCandidate(c Candidate, pod *v1.Pod, pluginName strin
 			klog.ErrorS(err, "Preempting pod", "pod", klog.KObj(victim), "preemptor", klog.KObj(pod))
 			return framework.AsStatus(err)
 		}
-		fh.EventRecorder().Eventf(victim, pod, v1.EventTypeNormal, "Preempted", "Preempting", "Preempted by %v/%v on node %v",
-			pod.Namespace, pod.Name, c.Name())
+		fh.EventRecorder().Eventf(victim, pod, v1.EventTypeNormal, "Preempted", "Preempting", "Preempted by a pod on node %v", c.Name())
 	}
 	metrics.PreemptionVictims.Observe(float64(len(c.Victims().Pods)))
 
@@ -549,6 +552,7 @@ func (ev *Evaluator) DryRunPreemption(ctx context.Context, pod *v1.Pod, potentia
 	nonViolatingCandidates := newCandidateList(numCandidates)
 	violatingCandidates := newCandidateList(numCandidates)
 	parallelCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	nodeStatuses := make(framework.NodeToStatusMap)
 	var statusesLock sync.Mutex
 	var errs []error
