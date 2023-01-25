@@ -126,15 +126,8 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 			continue
 		}
 
-		filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
-		ok := true
-		for _, filterStatus := range filterStatuses {
-			if !filterStatus.IsSuccess() {
-				ok = false
-				break
-			}
-		}
-		if ok {
+		filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+		if filterStatus.IsSuccess() {
 			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
 			return nodeInfo.Node().Name, nil
 		}
@@ -167,24 +160,26 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 			emptyString)
 	}
 
-	filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
-	for filterName, filterStatus := range filterStatuses {
-		if !filterStatus.IsSuccess() {
-			if filterStatus.IsUnschedulable() {
-				return NewPredicateError(
-					NotSchedulablePredicateError,
-					filterName,
-					filterStatus.Message(),
-					filterStatus.Reasons(),
-					p.buildDebugInfo(filterName, nodeInfo))
-			}
+	filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+
+	if !filterStatus.IsSuccess() {
+		filterName := filterStatus.FailedPlugin()
+		filterMessage := filterStatus.Message()
+		filterReasons := filterStatus.Reasons()
+		if filterStatus.IsUnschedulable() {
 			return NewPredicateError(
-				InternalPredicateError,
+				NotSchedulablePredicateError,
 				filterName,
-				filterStatus.Message(),
-				filterStatus.Reasons(),
+				filterMessage,
+				filterReasons,
 				p.buildDebugInfo(filterName, nodeInfo))
 		}
+		return NewPredicateError(
+			InternalPredicateError,
+			filterName,
+			filterMessage,
+			filterReasons,
+			p.buildDebugInfo(filterName, nodeInfo))
 	}
 	return nil
 }
