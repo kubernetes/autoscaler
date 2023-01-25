@@ -359,24 +359,32 @@ func makeNodeGroupFromAPIDetails(
 	if mapData["server_group"] == "" {
 		return nil, cloudprovider.ErrIllegalConfiguration
 	}
+	ng := brightboxNodeGroup{
+		id:      mapData["server_group"],
+		minSize: minSize,
+		maxSize: maxSize,
+		Cloud:   cloudclient,
+	}
+	imageID := mapData["image"]
+	if !(len(imageID) == 9 && strings.HasPrefix(imageID, "img-")) {
+		image, err := ng.GetImageByName(imageID)
+		if err != nil || image == nil {
+			return nil, cloudprovider.ErrIllegalConfiguration
+		}
+		imageID = image.Id
+	}
 	userData := mapData["user_data"]
 	options := &brightbox.ServerOptions{
-		Image:        mapData["image"],
+		Image:        imageID,
 		Name:         &name,
 		ServerType:   mapData["type"],
 		Zone:         mapData["zone"],
 		UserData:     &userData,
 		ServerGroups: mergeServerGroups(mapData),
 	}
-	result := brightboxNodeGroup{
-		id:            mapData["server_group"],
-		minSize:       minSize,
-		maxSize:       maxSize,
-		serverOptions: options,
-		Cloud:         cloudclient,
-	}
-	klog.V(4).Info(result.Debug())
-	return &result, nil
+	ng.serverOptions = options
+	klog.V(4).Info(ng.Debug())
+	return &ng, nil
 }
 
 func mergeServerGroups(data map[string]string) []string {
@@ -458,4 +466,15 @@ func (ng *brightboxNodeGroup) isMissing(serverID string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// filter returns a new slice with all elements from the from the
+// input elements for which the provided predicate function returns true.
+func filter[T any](input []T, pred func(T) bool) (output []T) {
+	for _, v := range input {
+		if pred(v) {
+			output = append(output, v)
+		}
+	}
+	return output
 }
