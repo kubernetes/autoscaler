@@ -101,6 +101,11 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	return mig, err
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (gce *GceCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return gce.pricingModel, nil
@@ -177,7 +182,6 @@ type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
-	Version() string
 }
 
 type gceMig struct {
@@ -186,11 +190,6 @@ type gceMig struct {
 	gceManager GceManager
 	minSize    int
 	maxSize    int
-}
-
-// Version return the Mig version.
-func (mig *gceMig) Version() string {
-	return ""
 }
 
 // GceRef returns Mig's GceRef

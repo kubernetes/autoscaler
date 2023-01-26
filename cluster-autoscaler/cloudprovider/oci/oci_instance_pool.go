@@ -35,6 +35,9 @@ const (
 	instanceIDLabelSuffix        = "instance-id_suffix"
 	ociInstancePoolIDAnnotation  = "oci.oraclecloud.com/instancepool-id"
 	ociInstancePoolResourceIdent = "instancepool"
+	ociInstancePoolLaunchOp      = "LaunchInstancesInPool"
+	instanceStateUnfulfilled     = "Unfulfilled"
+	instanceIDUnfulfilled        = "instance_placeholder"
 
 	// Overload ociInstancePoolIDAnnotation to indicate a kubernetes node doesn't belong to any OCI Instance Pool.
 	ociInstancePoolIDNonPoolMember = "non_pool_member"

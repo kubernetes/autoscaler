@@ -26,11 +26,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unneeded"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -254,7 +254,7 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 }
 
 // NodesToDelete selects the nodes to delete for scale down.
-func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDisruptionBudget) (empty, drain []*apiv1.Node, res status.ScaleDownResult, err errors.AutoscalerError) {
+func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDisruptionBudget) (_, drain []*apiv1.Node, res status.ScaleDownResult, err errors.AutoscalerError) {
 	_, drained := sd.nodeDeletionTracker.DeletionsInProgress()
 	if len(drained) > 0 {
 		return nil, nil, status.ScaleDownInProgress, nil
@@ -288,10 +288,10 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 	}
 	candidateNames := make([]string, 0, len(empty)+len(nonEmpty))
 	for _, n := range empty {
-		candidateNames = append(candidateNames, n.Name)
+		candidateNames = append(candidateNames, n.Node.Name)
 	}
 	for _, n := range nonEmpty {
-		candidateNames = append(candidateNames, n.Name)
+		candidateNames = append(candidateNames, n.Node.Name)
 	}
 
 	if len(candidateNames) == 0 {

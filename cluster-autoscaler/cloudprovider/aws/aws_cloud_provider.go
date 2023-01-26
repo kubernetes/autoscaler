@@ -120,6 +120,11 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	}, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (aws *awsCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
@@ -362,14 +367,19 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error)
 
 // BuildAWS builds AWS cloud provider, manager etc.
 func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	var config io.ReadCloser
+	var cfg io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
-		config, err = os.Open(opts.CloudConfig)
+		cfg, err = os.Open(opts.CloudConfig)
 		if err != nil {
 			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
 		}
-		defer config.Close()
+		defer cfg.Close()
+	}
+
+	sdkProvider, err := createAWSSDKProvider(cfg)
+	if err != nil {
+		klog.Fatalf("Failed to create AWS SDK Provider: %v", err)
 	}
 
 	// Generate EC2 list
@@ -377,12 +387,7 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if opts.AWSUseStaticInstanceList {
 		klog.Warningf("Using static EC2 Instance Types, this list could be outdated. Last update time: %s", lastUpdateTime)
 	} else {
-		region, err := GetCurrentAwsRegion()
-		if err != nil {
-			klog.Fatalf("Failed to get AWS Region: %v", err)
-		}
-
-		generatedInstanceTypes, err := GenerateEC2InstanceTypes(region)
+		generatedInstanceTypes, err := GenerateEC2InstanceTypes(sdkProvider.session)
 		if err != nil {
 			klog.Errorf("Failed to generate AWS EC2 Instance Types: %v, falling back to static list with last update time: %s", err, lastUpdateTime)
 		}
@@ -409,7 +414,7 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		klog.Infof("Successfully load %d EC2 Instance Types %s", len(keys), keys)
 	}
 
-	manager, err := CreateAwsManager(config, do, instanceTypes)
+	manager, err := CreateAwsManager(sdkProvider, do, instanceTypes)
 	if err != nil {
 		klog.Fatalf("Failed to create AWS Manager: %v", err)
 	}

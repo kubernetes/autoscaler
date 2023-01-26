@@ -40,7 +40,7 @@ func (*thresholdBasedEstimationLimiter) EndEstimation() {}
 
 func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 	if tbel.maxNodes > 0 && tbel.nodes >= tbel.maxNodes {
-		klog.V(4).Infof("Capping binpacking after exceeding threshold of %i nodes", tbel.maxNodes)
+		klog.V(4).Infof("Capping binpacking after exceeding threshold of %d nodes", tbel.maxNodes)
 		return false
 	}
 	timeDefined := tbel.maxDuration > 0 && tbel.start != time.Time{}

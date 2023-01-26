@@ -123,6 +123,11 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (hcp *huaweicloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available. Not implemented.
 func (hcp *huaweicloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented

@@ -46,6 +46,34 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 }
 
+const (
+	// DefaultMaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between groups in the same NodeGroupSet
+	DefaultMaxAllocatableDifferenceRatio = 0.05
+	// DefaultMaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
+	DefaultMaxFreeDifferenceRatio = 0.05
+	// DefaultMaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory
+	DefaultMaxCapacityMemoryDifferenceRatio = 0.015
+)
+
+// NodeGroupDifferenceRatios contains various ratios used to determine if two NodeGroups are similar and makes scaling decisions
+type NodeGroupDifferenceRatios struct {
+	// MaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between groups in the same NodeGroupSet
+	MaxAllocatableDifferenceRatio float64
+	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods) can differ between groups in the same NodeGroupSet
+	MaxFreeDifferenceRatio float64
+	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between groups in the same NodeGroupSetAutoscalingOptions
+	MaxCapacityMemoryDifferenceRatio float64
+}
+
+// NewDefaultNodeGroupDifferenceRatios returns default NodeGroupDifferenceRatios values
+func NewDefaultNodeGroupDifferenceRatios() NodeGroupDifferenceRatios {
+	return NodeGroupDifferenceRatios{
+		MaxAllocatableDifferenceRatio:    DefaultMaxAllocatableDifferenceRatio,
+		MaxFreeDifferenceRatio:           DefaultMaxFreeDifferenceRatio,
+		MaxCapacityMemoryDifferenceRatio: DefaultMaxCapacityMemoryDifferenceRatio,
+	}
+}
+
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
 	// NodeGroupDefaults are default values for per NodeGroup options.
@@ -96,6 +124,8 @@ type AutoscalingOptions struct {
 	CloudProviderName string
 	// NodeGroups is the list of node groups a.k.a autoscaling targets
 	NodeGroups []string
+	// EnforceNodeGroupMinSize is used to allow CA to scale up the node group to the configured min size if needed.
+	EnforceNodeGroupMinSize bool
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
@@ -117,6 +147,9 @@ type AutoscalingOptions struct {
 	// The formula to calculate additional candidates number is following:
 	// max(#nodes * ScaleDownCandidatesPoolRatio, ScaleDownCandidatesPoolMinCount)
 	ScaleDownCandidatesPoolMinCount int
+	// ScaleDownSimulationTimeout defines the maximum time that can be
+	// spent on scale down simulation.
+	ScaleDownSimulationTimeout time.Duration
 	// NodeDeletionDelayTimeout is maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
@@ -163,6 +196,10 @@ type AutoscalingOptions struct {
 	ConcurrentGceRefreshes int
 	// Path to kube configuration if available
 	KubeConfigPath string
+	// Burst setting for kubernetes client
+	KubeClientBurst int
+	// QPS setting for kubernetes client
+	KubeClientQPS float64
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
@@ -206,4 +243,8 @@ type AutoscalingOptions struct {
 	MinReplicaCount int
 	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
 	NodeDeleteDelayAfterTaint time.Duration
+	// ParallelDrain is whether CA can drain nodes in parallel.
+	ParallelDrain bool
+	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
+	NodeGroupSetRatios NodeGroupDifferenceRatios
 }
