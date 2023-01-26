@@ -50,7 +50,7 @@ import (
 	core "k8s.io/client-go/testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
@@ -1290,7 +1290,7 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 		SkipNodesWithLocalStorage: true,
 		MinReplicaCount:           0,
 	}
-	sd := NewScaleDown(ctx, NewTestProcessors(), ndt, deleteOptions)
+	sd := NewScaleDown(ctx, NewTestProcessors(ctx), ndt, deleteOptions)
 	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions)
 	return NewScaleDownWrapper(sd, actuator)
 }

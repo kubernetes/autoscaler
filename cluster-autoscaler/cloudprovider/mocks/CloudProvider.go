@@ -177,6 +177,29 @@ func (_m *CloudProvider) NodeGroupForNode(_a0 *v1.Node) (cloudprovider.NodeGroup
 	return r0, r1
 }
 
+// HasInstance provides a mock function with given fields:
+func (_m *CloudProvider) HasInstance(_a0 *v1.Node) (bool, error) {
+	ret := _m.Called(_a0)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*v1.Node) bool); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(bool)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*v1.Node) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NodeGroups provides a mock function with given fields:
 func (_m *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	ret := _m.Called()

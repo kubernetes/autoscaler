@@ -28,6 +28,7 @@ this document:
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
+  * [How can I increase the information that the CA is logging?](#how-can-i-increase-the-information-that-the-ca-is-logging)
   * [How can I see all the events from Cluster Autoscaler?](#how-can-i-see-all-events-from-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
@@ -104,7 +105,7 @@ __Or__ you have overridden this behaviour with one of the relevant flags. [See b
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
-See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases)
+See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases).
 
 ### Is Cluster Autoscaler an Alpha, Beta or GA product?
 
@@ -233,7 +234,7 @@ More about Pod Priority and Preemption:
 
 Cluster Autoscaler terminates the underlying instance in a cloud-provider-dependent manner.
 
-It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://v1-19.docs.kubernetes.io/docs/reference/command-line-tools-reference/cloud-controller-manager/).
+It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://kubernetes.io/docs/concepts/architecture/cloud-controller/).
 
 
 ****************
@@ -735,6 +736,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `kubeconfig` | Path to kubeconfig file with authorization and API Server location information | ""
 | `cloud-config` | The path to the cloud provider configuration file.  Empty string for no configuration file | ""
 | `namespace` | Namespace in which cluster-autoscaler run | "kube-system"
+| `scale-up-node-group-to-min-size-enabled` | Should CA scale up the node group to the configured min size if needed | false
 | `scale-down-enabled` | Should CA scale down the cluster | true
 | `scale-down-delay-after-add` | How long after scale up that scale down evaluation resumes | 10 minutes
 | `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes, defaults to scan-interval | scan-interval
@@ -867,7 +869,7 @@ This limitation was solved with
 introduced as beta in Kubernetes 1.11 and planned for GA in 1.13.
 To allow CA to take advantage of topological scheduling, use separate node groups per zone.
 This way CA knows exactly which node group will create nodes in the required zone rather than relying on the cloud provider choosing a zone for a new node in a multi-zone node group.
-When using separate node groups per zone, the `--balance-similar-node-groups` flag will keep nodes balanced across zones for workloads that dont require topological scheduling.
+When using separate node groups per zone, the `--balance-similar-node-groups` flag will keep nodes balanced across zones for workloads that don't require topological scheduling.
 
 ### CA doesn’t work, but it used to work yesterday. Why?
 
@@ -906,6 +908,23 @@ There are three options:
       nodes),
     * on nodes,
     * on kube-system/cluster-autoscaler-status config map.
+
+### How can I increase the information that the CA is logging?
+
+By default, the Cluster Autoscaler will be conservative about the log messages that it emits.
+This is primarily due to performance degradations in scenarios where clusters have a large
+number of nodes (> 100). In these cases excess log messages will lead to the log storage
+filling more quickly, and in some cases (eg clusters with >1000 nodes) the processing
+performance of the Cluster Autoscaler can be impacted.
+
+The `--v` flag controls how verbose the Cluster Autoscaler will be when running. In most
+cases using a value of `--v=0` or `--v=1` will be sufficient to monitor its activity.
+If you would like to have more information, especially about the scaling decisions made
+by the Cluster Autoscaler, then setting a value of `--v=4` is recommended. If you are
+debugging connection issues between the Cluster Autoscaler and the Kubernetes API server,
+or infrastructure endpoints, then setting a value of `--v=9` will show all the individual
+HTTP calls made. Be aware that using verbosity levels higher than `--v=1` will generate
+an increased amount of logs, prepare your deployments and storage accordingly.
 
 ### What events are emitted by CA?
 
@@ -948,7 +967,14 @@ Events:
 ```
 ### My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?
 
-Cluster Autoscaler will not scale the cluster beyond these limits, but does not enforce them. If your cluster is below the minimum number of nodes configured for Cluster Autoscaler, it will be scaled up *only* in presence of unschedulable pods.
+Cluster Autoscaler will not scale the cluster beyond these limits, but some other external factors could make this happen. Here are some common scenarios.
+* Existing nodes were deleted from K8s and the cloud provider, which could cause the cluster fell below the minimum number of nodes.
+* New nodes were added directly to the cloud provider, which could cause the cluster exceeded the maximum number of nodes.
+* Cluster Autoscaler was turned on in the middle of the cluster lifecycle, and the initial number of nodes might beyond these limits.
+
+By default, Cluster Autoscaler does not enforce the node group size. If your cluster is below the minimum number of nodes configured for CA, it will be scaled up *only* in presence of unschedulable pods. On the other hand, if your cluster is above the minimum number of nodes configured for CA, it will be scaled down *only* if it has unneeded nodes.
+
+Starting with CA 1.26.0, a new flag `--enforce-node-group-min-size` was introduced to enforce the node group minimum size. For node groups with fewer nodes than the configuration, CA will scale them up to the minimum number of nodes. To enable this feature, please set it to `true` in the command.
 
 ### What happens in scale-up when I have no more quota in the cloud provider?
 

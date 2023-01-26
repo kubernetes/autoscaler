@@ -76,14 +76,9 @@ func (e *BinpackingNodeEstimator) Estimate(
 	newNodeNames := make(map[string]bool)
 	newNodesWithPods := make(map[string]bool)
 
-	if err := e.clusterSnapshot.Fork(); err != nil {
-		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
-		return 0, nil
-	}
+	e.clusterSnapshot.Fork()
 	defer func() {
-		if err := e.clusterSnapshot.Revert(); err != nil {
-			klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
-		}
+		e.clusterSnapshot.Revert()
 	}()
 
 	newNodeNameIndex := 0

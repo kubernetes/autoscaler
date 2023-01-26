@@ -111,20 +111,31 @@ func TestCanDisrupt(t *testing.T) {
 		pdbs            []*policyv1.PodDisruptionBudget
 		pdbsDisruptions [2]int32
 		canDisrupt      bool
+		inParallel      bool
 	}{
 		{
 			name:       "No pdbs",
 			podsLabel1: 2,
 			podsLabel2: 1,
 			canDisrupt: true,
+			inParallel: true,
 		},
 		{
 			name:            "Not enough pod disruption budgets",
 			podsLabel1:      2,
 			podsLabel2:      1,
 			pdbs:            []*policyv1.PodDisruptionBudget{pdb1, pdb2},
-			pdbsDisruptions: [2]int32{1, 2},
+			pdbsDisruptions: [2]int32{1, 0},
 			canDisrupt:      false,
+			inParallel:      false,
+		},
+		{
+			name:            "Pod disruption budgets is at risk",
+			podsLabel1:      2,
+			podsLabel2:      1,
+			pdbs:            []*policyv1.PodDisruptionBudget{pdb1, pdb2},
+			pdbsDisruptions: [2]int32{1, 2},
+			canDisrupt:      true,
 		},
 		{
 			name:            "Enough pod disruption budgets",
@@ -133,6 +144,7 @@ func TestCanDisrupt(t *testing.T) {
 			pdbs:            []*policyv1.PodDisruptionBudget{pdb1, pdb2},
 			pdbsDisruptions: [2]int32{2, 4},
 			canDisrupt:      true,
+			inParallel:      true,
 		},
 		{
 			name:            "Pod covered with both PDBs can be moved",
@@ -142,30 +154,32 @@ func TestCanDisrupt(t *testing.T) {
 			pdbs:            []*policyv1.PodDisruptionBudget{pdb1, pdb2},
 			pdbsDisruptions: [2]int32{1, 1},
 			canDisrupt:      true,
+			inParallel:      true,
 		},
 		{
-			name:            "Pod covered with both PDBs can't be moved",
+			name:            "Pod covered with both PDBs, is risky",
 			podsLabel1:      2,
 			podsLabel2:      2,
 			podsBothLabels:  1,
 			pdbs:            []*policyv1.PodDisruptionBudget{pdb1, pdb2},
 			pdbsDisruptions: [2]int32{2, 1},
-			canDisrupt:      false,
+			canDisrupt:      true,
+			inParallel:      false,
 		},
 	}
 	for _, test := range testCases {
 		pdb1.Status.DisruptionsAllowed = test.pdbsDisruptions[0]
 		pdb2.Status.DisruptionsAllowed = test.pdbsDisruptions[1]
-		pdbRemainingDisruptions := NewPdbRemainingDisruptions(test.pdbs)
+		pdbRemainingDisruptions, _ := NewPdbRemainingDisruptions(test.pdbs)
 		pods := makePodsWithLabel(label1, test.podsLabel1)
 		pods2 := makePodsWithLabel(label2, test.podsLabel2-test.podsBothLabels)
 		if test.podsBothLabels > 0 {
 			addLabelToPods(pods[:test.podsBothLabels], label2)
 		}
 		pods = append(pods, pods2...)
-		got, _ := pdbRemainingDisruptions.CanDisrupt(pods)
-		if got != test.canDisrupt {
-			t.Errorf("%s: CanDisrupt() return %v, want %v", test.name, got, test.canDisrupt)
+		gotDisrupt, inParallel, _ := pdbRemainingDisruptions.CanDisrupt(pods)
+		if gotDisrupt != test.canDisrupt || inParallel != test.inParallel {
+			t.Errorf("%s: CanDisrupt() return %v, %v, want %v, %v", test.name, gotDisrupt, inParallel, test.canDisrupt, test.inParallel)
 		}
 	}
 }
@@ -180,7 +194,6 @@ func TestUpdate(t *testing.T) {
 		updatedPdbs            []*policyv1.PodDisruptionBudget
 		pdbsDisruptions        [2]int32
 		updatedPdbsDisruptions [2]int32
-		err                    bool
 	}{
 		{
 			name:                   "Pod covered with both PDBs",
@@ -204,7 +217,7 @@ func TestUpdate(t *testing.T) {
 	for _, test := range testCases {
 		pdb1.Status.DisruptionsAllowed = test.pdbsDisruptions[0]
 		pdb2.Status.DisruptionsAllowed = test.pdbsDisruptions[1]
-		pdbRemainingDisruptions := NewPdbRemainingDisruptions(test.pdbs)
+		pdbRemainingDisruptions, _ := NewPdbRemainingDisruptions(test.pdbs)
 		pods := makePodsWithLabel(label1, test.podsLabel1)
 		pods2 := makePodsWithLabel(label2, test.podsLabel2-test.podsBothLabels)
 		if test.podsBothLabels > 0 {
@@ -214,11 +227,8 @@ func TestUpdate(t *testing.T) {
 
 		pdb1Copy.Status.DisruptionsAllowed = test.updatedPdbsDisruptions[0]
 		pdb2Copy.Status.DisruptionsAllowed = test.updatedPdbsDisruptions[1]
-		want := NewPdbRemainingDisruptions(test.updatedPdbs)
-		err := pdbRemainingDisruptions.Update(pods)
-		if err != nil && test.err == false {
-			t.Errorf("%s: Update() return err %v, want nil", test.name, err)
-		}
+		want, _ := NewPdbRemainingDisruptions(test.updatedPdbs)
+		pdbRemainingDisruptions.Update(pods)
 		if diff := cmp.Diff(want.pdbs, pdbRemainingDisruptions.pdbs); diff != "" {
 			t.Errorf("Update() diff (-want +got):\n%s", diff)
 		}

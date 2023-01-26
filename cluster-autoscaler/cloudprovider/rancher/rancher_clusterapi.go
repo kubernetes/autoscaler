@@ -31,6 +31,7 @@ const (
 	machinePhaseDeleting          = "Deleting"
 	machineDeploymentNameLabelKey = clusterAPIGroup + "/deployment-name"
 	machineResourceName           = "machines"
+	machineNodeAnnotationKey      = "cluster.x-k8s.io/machine"
 )
 
 func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, apiGroup string) (string, error) {

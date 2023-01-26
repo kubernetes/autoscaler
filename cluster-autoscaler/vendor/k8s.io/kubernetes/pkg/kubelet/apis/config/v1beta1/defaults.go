@@ -208,9 +208,6 @@ func SetDefaults_KubeletConfiguration(obj *kubeletconfigv1beta1.KubeletConfigura
 	if obj.SerializeImagePulls == nil {
 		obj.SerializeImagePulls = utilpointer.BoolPtr(true)
 	}
-	if obj.EvictionHard == nil {
-		obj.EvictionHard = DefaultEvictionHard
-	}
 	if obj.EvictionPressureTransitionPeriod == zeroDuration {
 		obj.EvictionPressureTransitionPeriod = metav1.Duration{Duration: 5 * time.Minute}
 	}
@@ -266,5 +263,8 @@ func SetDefaults_KubeletConfiguration(obj *kubeletconfigv1beta1.KubeletConfigura
 	}
 	if obj.LocalStorageCapacityIsolation == nil {
 		obj.LocalStorageCapacityIsolation = utilpointer.BoolPtr(true)
+	}
+	if obj.ContainerRuntimeEndpoint == "" {
+		obj.ContainerRuntimeEndpoint = "unix:///run/containerd/containerd.sock"
 	}
 }
