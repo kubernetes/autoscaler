@@ -19,10 +19,11 @@ package azure
 import (
 	"context"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"k8s.io/klog/v2"
 	"regexp"
 	"strings"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"k8s.io/klog/v2"
 )
 
 // GetVMSSTypeStatically uses static list of vmss generated at azure_instance_types.go to fetch vmss instance information.

@@ -15,4 +15,4 @@ limitations under the License.
 */
 
 // Package auth provides a general library to authorize Azure ARM clients.
-package auth // import "sigs.k8s.io/cloud-provider-azure/pkg/auth"
+package config // import "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"

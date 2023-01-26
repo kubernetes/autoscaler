@@ -23,6 +23,7 @@ import (
 	"net/http"
 
 	"k8s.io/klog/v2"
+
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
@@ -72,6 +73,7 @@ type ComputeMetadata struct {
 	ResourceGroup          string `json:"resourceGroupName,omitempty"`
 	VMScaleSetName         string `json:"vmScaleSetName,omitempty"`
 	SubscriptionID         string `json:"subscriptionId,omitempty"`
+	ResourceID             string `json:"resourceId,omitempty"`
 }
 
 // InstanceMetadata represents instance information.

@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/klog/v2"
@@ -52,11 +52,18 @@ type AccountOptions struct {
 	IsHnsEnabled                            *bool
 	EnableNfsV3                             *bool
 	AllowBlobPublicAccess                   *bool
+	RequireInfrastructureEncryption         *bool
+	AllowSharedKeyAccess                    *bool
+	IsMultichannelEnabled                   *bool
+	KeyName                                 *string
+	KeyVersion                              *string
+	KeyVaultURI                             *string
 	Tags                                    map[string]string
 	VirtualNetworkResourceIDs               []string
 	VNetResourceGroup                       string
 	VNetName                                string
 	SubnetName                              string
+	AccessTier                              string
 	MatchTags                               bool
 }
 
@@ -198,15 +205,21 @@ func (az *Cloud) EnsureStorageAccount(ctx context.Context, accountOptions *Accou
 	}
 
 	if accountOptions.CreatePrivateEndpoint {
-		// Create DNS zone first, this could make sure driver has write permission on vnetResourceGroup
-		if err := az.createPrivateDNSZone(ctx, vnetResourceGroup); err != nil {
-			return "", "", fmt.Errorf("Failed to create private DNS zone(%s) in resourceGroup(%s), error: %v", PrivateDNSZoneName, vnetResourceGroup, err)
+		if _, err := az.privatednsclient.Get(ctx, vnetResourceGroup, PrivateDNSZoneName); err != nil {
+			klog.V(2).Infof("get private dns zone %s returned with %v", PrivateDNSZoneName, err.Error())
+			// Create DNS zone first, this could make sure driver has write permission on vnetResourceGroup
+			if err := az.createPrivateDNSZone(ctx, vnetResourceGroup); err != nil {
+				return "", "", fmt.Errorf("create private DNS zone(%s) in resourceGroup(%s): %w", PrivateDNSZoneName, vnetResourceGroup, err)
+			}
 		}
 
 		// Create virtual link to the private DNS zone
 		vNetLinkName := accountName + "-vnetlink"
-		if err := az.createVNetLink(ctx, vNetLinkName, vnetResourceGroup, vnetName); err != nil {
-			return "", "", fmt.Errorf("Failed to create virtual link for vnet(%s) and DNS Zone(%s) in resourceGroup(%s), error: %v", vnetName, PrivateDNSZoneName, vnetResourceGroup, err)
+		if _, err := az.virtualNetworkLinksClient.Get(ctx, vnetResourceGroup, PrivateDNSZoneName, vNetLinkName); err != nil {
+			klog.V(2).Infof("get virtual link for vnet(%s) and DNS Zone(%s) returned with %v", vnetName, PrivateDNSZoneName, err.Error())
+			if err := az.createVNetLink(ctx, vNetLinkName, vnetResourceGroup, vnetName); err != nil {
+				return "", "", fmt.Errorf("create virtual link for vnet(%s) and DNS Zone(%s) in resourceGroup(%s): %w", vnetName, PrivateDNSZoneName, vnetResourceGroup, err)
+			}
 		}
 	}
 
@@ -273,6 +286,36 @@ func (az *Cloud) EnsureStorageAccount(ctx context.Context, accountOptions *Accou
 			klog.V(2).Infof("set AllowBlobPublicAccess(%v) for storage account(%s)", *accountOptions.AllowBlobPublicAccess, accountName)
 			cp.AccountPropertiesCreateParameters.AllowBlobPublicAccess = accountOptions.AllowBlobPublicAccess
 		}
+		if accountOptions.RequireInfrastructureEncryption != nil {
+			klog.V(2).Infof("set RequireInfrastructureEncryption(%v) for storage account(%s)", *accountOptions.RequireInfrastructureEncryption, accountName)
+			cp.AccountPropertiesCreateParameters.Encryption = &storage.Encryption{
+				RequireInfrastructureEncryption: accountOptions.RequireInfrastructureEncryption,
+				KeySource:                       storage.KeySourceMicrosoftStorage,
+				Services: &storage.EncryptionServices{
+					File: &storage.EncryptionService{Enabled: to.BoolPtr(true)},
+					Blob: &storage.EncryptionService{Enabled: to.BoolPtr(true)},
+				},
+			}
+		}
+		if accountOptions.AllowSharedKeyAccess != nil {
+			klog.V(2).Infof("set Allow SharedKeyAccess (%v) for storage account (%s)", *accountOptions.AllowSharedKeyAccess, accountName)
+			cp.AccountPropertiesCreateParameters.AllowSharedKeyAccess = accountOptions.AllowSharedKeyAccess
+		}
+		if accountOptions.KeyVaultURI != nil {
+			klog.V(2).Infof("set KeyVault(%v) for storage account(%s)", accountOptions.KeyVaultURI, accountName)
+			cp.AccountPropertiesCreateParameters.Encryption = &storage.Encryption{
+				KeyVaultProperties: &storage.KeyVaultProperties{
+					KeyName:     accountOptions.KeyName,
+					KeyVersion:  accountOptions.KeyVersion,
+					KeyVaultURI: accountOptions.KeyVaultURI,
+				},
+				KeySource: storage.KeySourceMicrosoftKeyvault,
+				Services: &storage.EncryptionServices{
+					File: &storage.EncryptionService{Enabled: to.BoolPtr(true)},
+					Blob: &storage.EncryptionService{Enabled: to.BoolPtr(true)},
+				},
+			}
+		}
 		if az.StorageAccountClient == nil {
 			return "", "", fmt.Errorf("StorageAccountClient is nil")
 		}
@@ -281,19 +324,32 @@ func (az *Cloud) EnsureStorageAccount(ctx context.Context, accountOptions *Accou
 			return "", "", fmt.Errorf("failed to create storage account %s, error: %v", accountName, rerr)
 		}
 
-		if accountOptions.DisableFileServiceDeleteRetentionPolicy {
-			klog.V(2).Infof("disable DisableFileServiceDeleteRetentionPolicy on account(%s), resource group(%s)", accountName, resourceGroup)
-			prop, err := az.FileClient.GetServiceProperties(resourceGroup, accountName)
+		if accountOptions.DisableFileServiceDeleteRetentionPolicy || to.Bool(accountOptions.IsMultichannelEnabled) {
+			prop, err := az.FileClient.WithSubscriptionID(subsID).GetServiceProperties(ctx, resourceGroup, accountName)
 			if err != nil {
 				return "", "", err
 			}
 			if prop.FileServicePropertiesProperties == nil {
-				return "", "", fmt.Errorf("FileServicePropertiesProperties of account(%s), resource group(%s) is nil", accountName, resourceGroup)
+				return "", "", fmt.Errorf("FileServicePropertiesProperties of account(%s), subscription(%s), resource group(%s) is nil", accountName, subsID, resourceGroup)
 			}
-			prop.FileServicePropertiesProperties.ShareDeleteRetentionPolicy = &storage.DeleteRetentionPolicy{Enabled: to.BoolPtr(false)}
-			if _, err := az.FileClient.SetServiceProperties(resourceGroup, accountName, prop); err != nil {
+			prop.FileServicePropertiesProperties.ProtocolSettings = nil
+			prop.FileServicePropertiesProperties.Cors = nil
+			if accountOptions.DisableFileServiceDeleteRetentionPolicy {
+				klog.V(2).Infof("disable FileServiceDeleteRetentionPolicy on account(%s), subscription(%s), resource group(%s)", accountName, subsID, resourceGroup)
+				prop.FileServicePropertiesProperties.ShareDeleteRetentionPolicy = &storage.DeleteRetentionPolicy{Enabled: to.BoolPtr(false)}
+			}
+			if to.Bool(accountOptions.IsMultichannelEnabled) {
+				klog.V(2).Infof("enable SMB Multichannel setting on account(%s), subscription(%s), resource group(%s)", accountName, subsID, resourceGroup)
+				prop.FileServicePropertiesProperties.ProtocolSettings = &storage.ProtocolSettings{Smb: &storage.SmbSetting{Multichannel: &storage.Multichannel{Enabled: to.BoolPtr(true)}}}
+			}
+			if _, err := az.FileClient.WithSubscriptionID(subsID).SetServiceProperties(ctx, resourceGroup, accountName, prop); err != nil {
 				return "", "", err
 			}
+		}
+
+		if accountOptions.AccessTier != "" {
+			klog.V(2).Infof("set AccessTier(%s) on account(%s), subscription(%s), resource group(%s)", accountOptions.AccessTier, accountName, subsID, resourceGroup)
+			cp.AccountPropertiesCreateParameters.AccessTier = storage.AccessTier(accountOptions.AccessTier)
 		}
 
 		if accountOptions.CreatePrivateEndpoint {
@@ -306,13 +362,13 @@ func (az *Cloud) EnsureStorageAccount(ctx context.Context, accountOptions *Accou
 			// Create private endpoint
 			privateEndpointName := accountName + "-pvtendpoint"
 			if err := az.createPrivateEndpoint(ctx, accountName, storageAccount.ID, privateEndpointName, vnetResourceGroup, vnetName, subnetName, location); err != nil {
-				return "", "", fmt.Errorf("Failed to create private endpoint for storage account(%s), resourceGroup(%s), error: %v", accountName, vnetResourceGroup, err)
+				return "", "", fmt.Errorf("create private endpoint for storage account(%s), resourceGroup(%s): %w", accountName, vnetResourceGroup, err)
 			}
 
 			// Create dns zone group
 			dnsZoneGroupName := accountName + "-dnszonegroup"
 			if err := az.createPrivateDNSZoneGroup(ctx, dnsZoneGroupName, privateEndpointName, vnetResourceGroup, vnetName); err != nil {
-				return "", "", fmt.Errorf("Failed to create private DNS zone group - privateEndpoint(%s), vNetName(%s), resourceGroup(%s), error: %v", privateEndpointName, vnetName, vnetResourceGroup, err)
+				return "", "", fmt.Errorf("create private DNS zone group - privateEndpoint(%s), vNetName(%s), resourceGroup(%s): %w", privateEndpointName, vnetName, vnetResourceGroup, err)
 			}
 		}
 	}
