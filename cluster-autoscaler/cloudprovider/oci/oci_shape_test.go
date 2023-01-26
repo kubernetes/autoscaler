@@ -4,7 +4,6 @@ import (
 	"context"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"reflect"
 	"strings"
 	"testing"
@@ -117,7 +116,7 @@ func TestGetShape(t *testing.T) {
 }
 
 func TestGetInstancePoolTemplateNode(t *testing.T) {
-	instancePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
+	instancePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient, workRequestsClient)
 	instancePoolCache.poolCache["ocid1.instancepool.oc1.phx.aaaaaaaa1"] = &core.InstancePool{
 		Id:             common.String("ocid1.instancepool.oc1.phx.aaaaaaaa1"),
 		CompartmentId:  common.String("ocid1.compartment.oc1..aaaaaaaa1"),
@@ -182,9 +181,7 @@ func TestBuildGenericLabels(t *testing.T) {
 	availabilityDomain := "US-ASHBURN-1"
 
 	expected := map[string]string{
-		kubeletapis.LabelArch:              cloudprovider.DefaultArch,
 		apiv1.LabelArchStable:              cloudprovider.DefaultArch,
-		kubeletapis.LabelOS:                cloudprovider.DefaultOS,
 		apiv1.LabelOSStable:                cloudprovider.DefaultOS,
 		apiv1.LabelZoneRegion:              "phx",
 		apiv1.LabelZoneRegionStable:        "phx",

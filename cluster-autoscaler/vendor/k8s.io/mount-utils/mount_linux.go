@@ -23,7 +23,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/moby/sys/mountinfo"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -33,6 +32,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/moby/sys/mountinfo"
 
 	"k8s.io/klog/v2"
 	utilexec "k8s.io/utils/exec"
@@ -382,7 +383,7 @@ func (mounter *Mounter) Unmount(target string) error {
 // UnmountWithForce unmounts given target but will retry unmounting with force option
 // after given timeout.
 func (mounter *Mounter) UnmountWithForce(target string, umountTimeout time.Duration) error {
-	err := tryUnmount(target, umountTimeout)
+	err := tryUnmount(mounter, target, umountTimeout)
 	if err != nil {
 		if err == context.DeadlineExceeded {
 			klog.V(2).Infof("Timed out waiting for unmount of %s, trying with -f", target)
@@ -422,8 +423,8 @@ func (mounter *Mounter) IsLikelyNotMountPoint(file string) (bool, error) {
 	return true, nil
 }
 
-// canSafelySkipMountPointCheck relies on the detected behavior of umount when given a target that is not a mount point.
-func (mounter *Mounter) canSafelySkipMountPointCheck() bool {
+// CanSafelySkipMountPointCheck relies on the detected behavior of umount when given a target that is not a mount point.
+func (mounter *Mounter) CanSafelySkipMountPointCheck() bool {
 	return mounter.withSafeNotMountedBehavior
 }
 
@@ -463,13 +464,15 @@ func (mounter *SafeFormatAndMount) checkAndRepairFilesystem(source string) error
 			return NewMountError(HasFilesystemErrors, "'fsck' found errors on device %s but could not correct them: %s", source, string(out))
 		case isExitError && ee.ExitStatus() > fsckErrorsUncorrected:
 			klog.Infof("`fsck` error %s", string(out))
+		default:
+			klog.Warningf("fsck on device %s failed with error %v, output: %v", source, err, string(out))
 		}
 	}
 	return nil
 }
 
 // formatAndMount uses unix utils to format and mount the given disk
-func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
+func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string, formatOptions []string) error {
 	readOnly := false
 	for _, option := range options {
 		if option == "ro" {
@@ -521,6 +524,7 @@ func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target
 				source,
 			}
 		}
+		args = append(formatOptions, args...)
 
 		klog.Infof("Disk %q appears to be unformatted, attempting to format as type: %q with options: %v", source, fstype, args)
 		output, err := mounter.Exec.Command("mkfs."+fstype, args...).CombinedOutput()
@@ -771,7 +775,7 @@ func (mounter *Mounter) IsMountPoint(file string) (bool, error) {
 }
 
 // tryUnmount calls plain "umount" and waits for unmountTimeout for it to finish.
-func tryUnmount(path string, unmountTimeout time.Duration) error {
+func tryUnmount(mounter *Mounter, path string, unmountTimeout time.Duration) error {
 	klog.V(4).Infof("Unmounting %s", path)
 	ctx, cancel := context.WithTimeout(context.Background(), unmountTimeout)
 	defer cancel()
@@ -786,6 +790,10 @@ func tryUnmount(path string, unmountTimeout time.Duration) error {
 	}
 
 	if cmderr != nil {
+		if mounter.withSafeNotMountedBehavior && strings.Contains(string(out), errNotMounted) {
+			klog.V(4).Infof("ignoring 'not mounted' error for %s", path)
+			return nil
+		}
 		return fmt.Errorf("unmount failed: %v\nUnmounting arguments: %s\nOutput: %s", cmderr, path, string(out))
 	}
 	return nil

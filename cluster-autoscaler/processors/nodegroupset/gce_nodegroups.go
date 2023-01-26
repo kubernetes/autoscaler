@@ -17,13 +17,14 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // CreateGceNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they match usual conditions checked by IsCloudProviderNodeInfoSimilar,
 // even if they have different GCE-specific labels.
-func CreateGceNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
+func CreateGceNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	gceIgnoredLabels := map[string]bool{
 		"topology.gke.io/zone": true,
 	}
@@ -37,6 +38,6 @@ func CreateGceNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator
 	}
 
 	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		return IsCloudProviderNodeInfoSimilar(n1, n2, gceIgnoredLabels)
+		return IsCloudProviderNodeInfoSimilar(n1, n2, gceIgnoredLabels, ratioOpts)
 	}
 }

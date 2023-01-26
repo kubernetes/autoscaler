@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 
 	"github.com/spf13/pflag"
 
@@ -41,13 +42,14 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
-	"k8s.io/autoscaler/cluster-autoscaler/core/filteroutschedulable"
+	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -86,14 +88,17 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
-	clusterName            = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
-	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
-	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
-	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
-	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
-	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
-	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
+	clusterName             = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
+	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
+	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
+	kubeConfigFile          = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
+	kubeClientBurst         = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client.")
+	kubeClientQPS           = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client.")
+	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
+	namespace               = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
+	enforceNodeGroupMinSize = flag.Bool("enforce-node-group-min-size", false, "Should CA scale up the node group to the configured min size if needed.")
+	scaleDownEnabled        = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
+	scaleDownDelayAfterAdd  = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
 	scaleDownDelayAfterDelete = flag.Duration("scale-down-delay-after-delete", 0,
 		"How long after node deletion that scale down evaluation resumes, defaults to scanInterval")
@@ -210,6 +215,11 @@ var (
 	skipNodesWithLocalStorage          = flag.Bool("skip-nodes-with-local-storage", true, "If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 	minReplicaCount                    = flag.Int("min-replica-count", 0, "Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 	nodeDeleteDelayAfterTaint          = flag.Duration("node-delete-delay-after-taint", 5*time.Second, "How long to wait before deleting a node after tainting it")
+	scaleDownSimulationTimeout         = flag.Duration("scale-down-simulation-timeout", 5*time.Minute, "How long should we run scale down simulation.")
+	parallelDrain                      = flag.Bool("parallel-drain", false, "Whether to allow parallel drain of nodes.")
+	maxCapacityMemoryDifferenceRatio   = flag.Float64("memory-difference-ratio", config.DefaultMaxCapacityMemoryDifferenceRatio, "Maximum difference in memory capacity between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's memory capacity.")
+	maxFreeDifferenceRatio             = flag.Float64("max-free-difference-ratio", config.DefaultMaxFreeDifferenceRatio, "Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource.")
+	maxAllocatableDifferenceRatio      = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -228,6 +238,9 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
+	}
+	if *maxDrainParallelismFlag > 1 && !*parallelDrain {
+		klog.Fatalf("Invalid configuration, could not use --max-drain-parallelism > 1 if --parallel-drain is false")
 	}
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -261,6 +274,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MinMemoryTotal:                     minMemoryTotal,
 		GpuTotal:                           parsedGpuTotal,
 		NodeGroups:                         *nodeGroupsFlag,
+		EnforceNodeGroupMinSize:            *enforceNodeGroupMinSize,
 		ScaleDownDelayAfterAdd:             *scaleDownDelayAfterAdd,
 		ScaleDownDelayAfterDelete:          *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:         *scaleDownDelayAfterFailure,
@@ -283,6 +297,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		BalancingExtraIgnoredLabels:        *balancingIgnoreLabelsFlag,
 		BalancingLabels:                    *balancingLabelsFlag,
 		KubeConfigPath:                     *kubeConfigFile,
+		KubeClientBurst:                    *kubeClientBurst,
+		KubeClientQPS:                      *kubeClientQPS,
 		NodeDeletionDelayTimeout:           *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList:           *awsUseStaticInstanceList,
 		ConcurrentGceRefreshes:             *concurrentGceRefreshes,
@@ -305,6 +321,13 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		SkipNodesWithLocalStorage:          *skipNodesWithLocalStorage,
 		MinReplicaCount:                    *minReplicaCount,
 		NodeDeleteDelayAfterTaint:          *nodeDeleteDelayAfterTaint,
+		ScaleDownSimulationTimeout:         *scaleDownSimulationTimeout,
+		ParallelDrain:                      *parallelDrain,
+		NodeGroupSetRatios: config.NodeGroupDifferenceRatios{
+			MaxCapacityMemoryDifferenceRatio: *maxCapacityMemoryDifferenceRatio,
+			MaxAllocatableDifferenceRatio:    *maxAllocatableDifferenceRatio,
+			MaxFreeDifferenceRatio:           *maxFreeDifferenceRatio,
+		},
 	}
 }
 
@@ -353,8 +376,18 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
-	kubeClient := createKubeClient(getKubeConfig())
+
+	kubeClientConfig := getKubeConfig()
+	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
+	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
+	kubeClient := createKubeClient(kubeClientConfig)
+
 	eventsKubeClient := createKubeClient(getKubeConfig())
+
+	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(kubeClient, make(chan struct{}))
+	if err != nil {
+		return nil, err
+	}
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
@@ -362,11 +395,17 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		KubeClient:           kubeClient,
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
+		PredicateChecker:     predicateChecker,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors()
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime)
-	opts.Processors.PodListProcessor = filteroutschedulable.NewFilterOutSchedulablePodListProcessor()
+	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+	if autoscalingOptions.ParallelDrain {
+		sdProcessor := nodes.NewScaleDownCandidatesSortingProcessor()
+		opts.Processors.ScaleDownNodeProcessor = sdProcessor
+		opts.Processors.ScaleDownCandidatesNotifier.Register(sdProcessor)
+	}
 
 	var nodeInfoComparator nodegroupset.NodeInfoComparator
 	if len(autoscalingOptions.BalancingLabels) > 0 {
@@ -380,10 +419,8 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
 			nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
 			opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewAnnotationNodeInfoProvider(nodeInfoCacheExpireTime)
-		} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
-			nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
 		}
-		nodeInfoComparator = nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels)
+		nodeInfoComparator = nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels, autoscalingOptions.NodeGroupSetRatios)
 	}
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
@@ -392,7 +429,6 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	// These metrics should be published only once.
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
-	metrics.UpdateMaxNodesCount(autoscalingOptions.MaxNodesTotal)
 	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 

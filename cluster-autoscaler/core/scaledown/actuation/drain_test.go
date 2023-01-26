@@ -19,13 +19,13 @@ package actuation
 import (
 	"fmt"
 	"sort"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
-
 	apiv1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -441,8 +441,8 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	}
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
-
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	r := evRegister{}
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, evictionRegister: &r}
 	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{})
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
@@ -462,6 +462,7 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	assert.False(t, evictionResults["p2"].WasEvictionSuccessful())
 	assert.True(t, evictionResults["p3"].WasEvictionSuccessful())
 	assert.False(t, evictionResults["p4"].WasEvictionSuccessful())
+	assert.Contains(t, r.pods, p1, p3)
 }
 
 func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
@@ -633,4 +634,15 @@ func dsPod(name string, evictable bool) *apiv1.Pod {
 		pod.Annotations = map[string]string{daemonset.EnableDsEvictionKey: "true"}
 	}
 	return pod
+}
+
+type evRegister struct {
+	sync.Mutex
+	pods []*apiv1.Pod
+}
+
+func (eR *evRegister) RegisterEviction(pod *apiv1.Pod) {
+	eR.Lock()
+	defer eR.Unlock()
+	eR.pods = append(eR.pods, pod)
 }

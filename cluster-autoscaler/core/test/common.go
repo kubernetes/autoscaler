@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/filteroutschedulable"
+	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
@@ -45,6 +45,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -133,22 +134,23 @@ func ExtractPodNames(pods []*apiv1.Pod) []string {
 }
 
 // NewTestProcessors returns a set of simple processors for use in tests.
-func NewTestProcessors() *processors.AutoscalingProcessors {
+func NewTestProcessors(context *context.AutoscalingContext) *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
-		PodListProcessor:       filteroutschedulable.NewFilterOutSchedulablePodListProcessor(),
+		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(context.PredicateChecker),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
-		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
+		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
-		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},
-		ScaleDownStatusProcessor:   &status.NoOpScaleDownStatusProcessor{},
-		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
-		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
-		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
-		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
-		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
-		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
-		ActionableClusterProcessor: actionablecluster.NewDefaultActionableClusterProcessor(),
+		ScaleUpStatusProcessor:      &status.EventingScaleUpStatusProcessor{},
+		ScaleDownStatusProcessor:    &status.NoOpScaleDownStatusProcessor{},
+		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
+		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
+		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
+		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
+		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
+		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 	}
 }
 

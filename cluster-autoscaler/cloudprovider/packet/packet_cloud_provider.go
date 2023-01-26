@@ -120,6 +120,11 @@ func (pcp *packetCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 	return nil, fmt.Errorf("Could not find group for node: %s", node.Spec.ProviderID)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (pcp *packetCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (pcp *packetCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return &PacketPriceModel{}, nil

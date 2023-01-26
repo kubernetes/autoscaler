@@ -108,7 +108,8 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 	for idx, tc := range testCases {
 		r := &GceReserved{}
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
-			reserved := r.CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux, tc.osDistribution, tc.arch, "")
+			m := NewMigOsInfo(OperatingSystemLinux, tc.osDistribution, tc.arch)
+			reserved := r.CalculateKernelReserved(m, tc.physicalMemory)
 			if tc.osDistribution == OperatingSystemDistributionUbuntu {
 				assert.Equal(t, tc.reservedMemory+int64(math.Min(correctionConstant*float64(tc.physicalMemory), maximumCorrectionValue)+ubuntuSpecificOffset), reserved)
 			} else if tc.osDistribution == OperatingSystemDistributionCOS {

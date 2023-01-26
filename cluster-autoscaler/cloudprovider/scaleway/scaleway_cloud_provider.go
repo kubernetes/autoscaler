@@ -162,6 +162,11 @@ func (scw *scalewayCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	return scw.nodeGroupForNode(node)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (scw *scalewayCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	ng, err := scw.nodeGroupForNode(node)
 	if err != nil {
