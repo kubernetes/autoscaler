@@ -72,7 +72,6 @@ To create a valid configuration, follow instructions for your cloud provider:
 * [GCE](#gce)
 * [Azure AKS](#azure-aks)
 * [OpenStack Magnum](#openstack-magnum)
-* [OCI OKE](#oci-oke)
 
 ### AWS - Using auto-discovery of tagged instance groups
 
@@ -215,64 +214,13 @@ $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 `cloudProvider: clusterapi` must be set, and then one or more of
 - `autoDiscovery.clusterName`
 - or `autoDiscovery.labels`
-  See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details
+See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details
 
 Additional config parameters available, see the `values.yaml` for more details
 `clusterAPIMode`
 `clusterAPIKubeconfigSecret`
 `clusterAPIWorkloadKubeconfigPath`
 `clusterAPICloudConfigPath`
-
-### OCI OKE
-
-Set `cloudProvider: oci-oke`
-
-Extra args needed to setup in `values.yaml` for OCI OKE:
-```
-extraArgs:
-  logtostderr: true
-  stderrthreshold: info
-  v: 4
-  max-node-provision-time: 25m
-  scale-down-delay-after-add: 10m
-  scale-down-unneeded-time 10m
-  unremovable-node-recheck-timeout: 5m
-  balancing-ignore-label: displayName
-  balancing-ignore-label: hostname
-  balancing-ignore-label: internal_addr
-  balancing-ignore-label: oci.oraclecloud.com/fault-domain
-```
-
-In order autoscaling to work is needed auth with either instance_principal or via private key to OCI.
-
-#### Instance Principal
-Configure env variables
-```
-extraEnv:
-  - name: OCI_USE_INSTANCE_PRINCIPAL
-    value: "true"
-  - name: OCI_REGION
-    value: "us-phoenix-1"
-```
-#### API key-based authentication
-Configure env variables and volumes for API key
-```
-extraEnv:
-  - name: OCI_USE_INSTANCE_PRINCIPAL
-    value: "false"
-```
-And volume mounts
-```
-extraVolumeSecrets:
-  oci-config-vol:
-    name: oci-config-vol
-    mountPath: /root/.oci"
-    items:
-      - key: config
-        path: config
-      - key: api_key.pem
-        path: api_key.pem
-```
 
 ## Uninstalling the Chart
 
