@@ -304,6 +304,22 @@ Please note the usage of the following arguments to override default names and p
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
 
+
+### Custom memory bump-up after OOMKill
+After an OOMKill event was observed, VPA increases the memory recommendation based on the observed memory usage in the event according to this formula: `recommendation = memory-usage-in-oomkill-event + max(oom-min-bump-up-bytes, memory-usage-in-oomkill-event * oom-bump-up-ratio)`. 
+You can configure the minimum bump-up as well as the multiplier by specifying startup arguments for the recommender:
+`oom-bump-up-ratio` specifies the memory bump up ratio when OOM occurred, default is `1.2`. This means, memory will be increased by 20% after an OOMKill event.
+`oom-min-bump-up-bytes` specifies minimal increase of memory after observing OOM. Defaults to `100 * 1024 * 1024` (=100MiB)
+
+Usage in recommender deployment
+```
+  containers:
+  - name: recommender
+    args:
+      - --oom-bump-up-ratio=2.0
+      - --oom-min-bump-up-bytes=524288000
+```
+
 ### Using CPU management with static policy
 
 If you are using the [CPU management with static policy](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy) for some containers,
@@ -314,7 +330,7 @@ The annotation format is the following:
 ```
 vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
 ```
- 
+
 # Known limitations
 
 * Whenever VPA updates the pod resources, the pod is recreated, which causes all
