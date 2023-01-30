@@ -66,7 +66,7 @@ const (
 
 var (
 	resourceConsumerImage = imageutils.GetE2EImage(imageutils.ResourceConsumer)
-	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "8000"}
+	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "50000"}
 )
 
 var (
@@ -443,8 +443,8 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 		Timeout:     timeoutRC,
 		Replicas:    replicas,
 		Annotations: make(map[string]string),
-		MemRequest:  1024 * 1024 * 1024,
-		MemLimit:    1024 * 1024 * 1024,
+		MemRequest:  1024 * 1024 * 300,
+		MemLimit:    1024 * 1024 * 500,
 	}
 
 	dpConfig := testutils.DeploymentConfig{

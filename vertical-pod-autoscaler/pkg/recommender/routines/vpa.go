@@ -31,7 +31,7 @@ func GetContainerNameToAggregateStateMap(vpa *model.Vpa) model.ContainerNameToAg
 		containerResourcePolicy := api_utils.GetContainerResourcePolicy(containerName, vpa.ResourcePolicy)
 		autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode != nil &&
 			*containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
-		if !autoscalingDisabled && aggregatedContainerState.TotalSamplesCount > 0 {
+		if !autoscalingDisabled {
 			aggregatedContainerState.UpdateFromPolicy(containerResourcePolicy)
 			filteredContainerNameToAggregateStateMap[containerName] = aggregatedContainerState
 		}
