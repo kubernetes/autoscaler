@@ -160,6 +160,48 @@ func TestIncreaseSize(t *testing.T) {
 	assert.Equal(t, 5, targetSize)
 }
 
+func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager := newTestAzureManager(t)
+	vmssName := "vmss-failed-upscale"
+
+	expectedScaleSets := newTestVMSSList(3, "vmss-failed-upscale", "eastus")
+	expectedVMSSVMs := newTestVMSSVMList(3)
+	expectedVMSSVMs[2].ProvisioningState = to.StringPtr(string(compute.ProvisioningStateFailed))
+
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil)
+	mockVMSSClient.EXPECT().CreateOrUpdateAsync(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(nil, nil)
+	mockVMSSClient.EXPECT().WaitForCreateOrUpdateResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "vmss-failed-upscale", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+	manager.explicitlyConfigured["vmss-failed-upscale"] = true
+	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
+	assert.True(t, registered)
+	manager.Refresh()
+
+	provider, err := BuildAzureCloudProvider(manager, nil)
+	assert.NoError(t, err)
+
+	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	assert.True(t, ok)
+
+	// Increase size by one, but the new node fails provisioning
+	err = scaleSet.IncreaseSize(1)
+	assert.NoError(t, err)
+
+	nodes, err := scaleSet.Nodes()
+	assert.NoError(t, err)
+
+	assert.Equal(t, 3, len(nodes))
+	assert.Equal(t, cloudprovider.InstanceCreating, nodes[2].Status.State)
+	assert.Equal(t, cloudprovider.OutOfResourcesErrorClass, nodes[2].Status.ErrorInfo.ErrorClass)
+}
+
 func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
