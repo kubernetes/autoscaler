@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+// +k8s:deepcopy-gen=package,register
 
-// VerticalPodAutoscalerVersion is the version of VPA.
-const VerticalPodAutoscalerVersion = "0.13.0"
+// Package v1alpha1 contains definitions of GKE Autoscaler related objects.
+// +groupName=balancer.x-k8s.io
+package v1alpha1

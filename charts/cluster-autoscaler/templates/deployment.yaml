@@ -77,6 +77,12 @@ spec:
             - --node-group-auto-discovery=mig:namePrefix={{ .name }},min={{ .minSize }},max={{ .maxSize }}
             {{- end }}
           {{- end }}
+          {{- if eq .Values.cloudProvider "oci-oke" }}
+            {{- if .Values.cloudConfigPath }}
+            - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
+            - --balance-similar-node-groups
+            {{- end }}
+          {{- end }}
           {{- else if eq .Values.cloudProvider "magnum" }}
             {{- if .Values.autoDiscovery.clusterName }}
             - --cluster-name={{ .Values.autoDiscovery.clusterName }}

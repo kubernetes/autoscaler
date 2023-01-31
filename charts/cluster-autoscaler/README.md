@@ -216,7 +216,7 @@ $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 - or `autoDiscovery.labels`
 See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details
 
-Additional config parameters avaible, see the `values.yaml` for more details
+Additional config parameters available, see the `values.yaml` for more details
 `clusterAPIMode`
 `clusterAPIKubeconfigSecret`
 `clusterAPIWorkloadKubeconfigPath`
