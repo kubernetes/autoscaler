@@ -3,7 +3,7 @@
 affinity: {}
 
 autoDiscovery:
-  # cloudProviders `aws`, `gce`, `azure`, `magnum` and `clusterapi` are supported by auto-discovery at this time
+  # cloudProviders `aws`, `gce`, `azure`, `magnum` and `clusterapi` `oci-oke` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
 
   # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
