@@ -18,7 +18,6 @@ package drain
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -120,7 +119,12 @@ func GetPodsForDeletionOnNodeDrain(
 		}
 
 		if refKind != "" {
-			gv := strings.Split(controllerRef.APIVersion, "/")
+
+			gv, err := schema.ParseGroupVersion(controllerRef.APIVersion)
+			if err != nil {
+				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: UnexpectedError}, fmt.Errorf("%s/%s pod's owner %s/%s has invalid group version: %v", pod.Namespace, pod.Name, refKind, controllerName, err)
+			}
+
 			// controllerRef doesn't have a namespace by design
 			// The controller/owner is either in the same namespace as the pod
 			// or it's assumed to be a cluster-scoped resource
@@ -128,8 +132,8 @@ func GetPodsForDeletionOnNodeDrain(
 			// a pod resource will always be in the same namespace
 			// TODO: find a better way to handle this
 			l := listers.GenericListerFactory().GetLister(schema.GroupVersionResource{
-				Group:    gv[0],
-				Version:  gv[1],
+				Group:    gv.Group,
+				Version:  gv.Version,
 				Resource: controllerRef.Kind,
 			}, pod.GetNamespace())
 
