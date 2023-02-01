@@ -131,10 +131,10 @@ func GetPodsForDeletionOnNodeDrain(
 			// The assumption in the code below is that the controllerRef/owner of
 			// a pod resource will always be in the same namespace
 			// TODO: find a better way to handle this
-			l := listers.GenericListerFactory().GetLister(schema.GroupVersionResource{
-				Group:    gv.Group,
-				Version:  gv.Version,
-				Resource: controllerRef.Kind,
+			l := listers.GenericListerFactory().GetLister(schema.GroupVersionKind{
+				Group:   gv.Group,
+				Version: gv.Version,
+				Kind:    controllerRef.Kind,
 			}, pod.GetNamespace())
 
 			if _, err := l.Get(controllerRef.Name); err == nil {

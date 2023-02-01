@@ -63,13 +63,14 @@ type ListerRegistry interface {
 // GenericListerFactory is a factory for creating
 // listers for a new GVRs identified during runtime
 type GenericListerFactory interface {
-	GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister
+	GetLister(gvr schema.GroupVersionKind, namespace string) dynamiclister.Lister
 }
 
 type genericListerFactoryImpl struct {
 	stopCh        <-chan struct{}
 	listersMap    map[string]dynamiclister.Lister
 	dynamicClient *dynamic.DynamicClient
+	crdLister     dynamiclister.Lister
 }
 
 type listerRegistryImpl struct {
@@ -87,8 +88,23 @@ type listerRegistryImpl struct {
 }
 
 // GetLister returns the lister for a particular GVR
-func (g *genericListerFactoryImpl) GetLister(gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
-	return NewGenericLister(g.dynamicClient, g.listersMap, g.stopCh, gvr, namespace)
+func (g *genericListerFactoryImpl) GetLister(gvr schema.GroupVersionKind, namespace string) dynamiclister.Lister {
+	crd, err := g.crdLister.Get(fmt.Sprintf("%s/%s", gvr.Group, gvr.Kind))
+	if err != nil {
+		fmt.Println(fmt.Errorf("crd not found: %v", err))
+	}
+
+	resource, found, err := unstructured.NestedString(crd.Object, "spec", "names", "plural")
+	if !found {
+		fmt.Println(fmt.Errorf("couldn't find the field 'spec.names.plural' on the CRD '%s'", crd.GetName()))
+	}
+	if err != nil {
+		fmt.Errorf("error retrieving the field `spec.names.plural` on the CRD '%s': %v", crd.GetName(), err)
+	}
+
+	return NewGenericLister(g.dynamicClient, g.listersMap, g.stopCh, schema.GroupVersionResource{Group: gvr.Group,
+		Version:  gvr.Version,
+		Resource: resource}, namespace)
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
@@ -229,6 +245,89 @@ func NewUnschedulablePodInNamespaceLister(kubeClient client.Interface, namespace
 	return &UnschedulablePodLister{
 		podLister: podLister,
 	}
+}
+
+// NewDynamicCRDLister returns a lister providing CRDs with key `<api-group>/<Kind>` instead of `<namespace>/<name>` for
+// easy querying based on Kind
+func NewDynamicCRDLister(dClient *dynamic.DynamicClient, stopChannel <-chan struct{}) dynamiclister.Lister {
+
+	var lister func(ctx context.Context, opts metav1.ListOptions) (*unstructured.UnstructuredList, error)
+	var watcher func(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+
+	gvr := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+
+	lister = dClient.Resource(gvr).List
+	watcher = dClient.Resource(gvr).Watch
+	store := cache.NewIndexer( /* Key Func*/ func(obj interface{}) (string, error) {
+		uo := obj.(*unstructured.Unstructured)
+		o := uo.Object
+		group, found, err := unstructured.NestedString(o, "spec", "group")
+		if !found {
+			fmt.Printf("didn't find value on %v", uo.GetName())
+		}
+		if err != nil {
+			fmt.Printf("err: %v", err)
+		}
+
+		names, found, err := unstructured.NestedStringMap(o, "spec", "names")
+		if !found {
+			fmt.Printf("didn't find value on %v", uo.GetName())
+		}
+		if err != nil {
+			fmt.Printf("err: %v", err)
+		}
+
+		// Key is <group>/<Kind> as opposed to <namespace>/name
+		// This is so that you can find CRD just using Kind and API Group
+		// instead of knowing the name
+		return group + "/" + names["kind"], nil
+	}, cache.Indexers{"group": /* Index Func */ func(obj interface{}) ([]string, error) {
+		uo := obj.(*unstructured.Unstructured)
+		o := uo.Object
+		group, found, err := unstructured.NestedString(o, "spec", "group")
+		if !found {
+			fmt.Printf("didn't find value on %v", uo.GetName())
+		}
+		if err != nil {
+			return []string{""}, fmt.Errorf("err: %v", err)
+		}
+		/* Index by APi Group of the CRD */
+		return []string{group}, nil
+	}})
+
+	lw := &cache.ListWatch{
+		ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
+			return lister(context.Background(), options)
+		},
+		WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
+			return watcher(context.Background(), options)
+		},
+	}
+
+	reflector := cache.NewReflector(lw, unstructured.Unstructured{}, store, time.Hour)
+
+	crdLister := dynamiclister.New(store, gvr)
+
+	// Run reflector in the background so that we get new updates from the api-server
+	go reflector.Run(stopChannel)
+
+	// Wait for reflector to sync the cache for the first time
+	// TODO: check if there's a better way to do this (listing all the nodes seems wasteful)
+	// Note: Based on the docs WaitForNamedCacheSync seems to be used to check if an informer has synced
+	// but the function is generic enough so we can use
+	// it for reflectors as well
+	synced := cache.WaitForNamedCacheSync(fmt.Sprintf("generic-%s-lister", gvr.Resource), stopChannel, func() bool {
+		no, err := crdLister.List(labels.Everything())
+		if err != nil {
+			klog.Error("err", err)
+		}
+		return len(no) > 0
+	})
+	if !synced {
+		klog.Error("couldn't sync cache")
+	}
+
+	return crdLister
 }
 
 // ScheduledPodLister lists scheduled pods.
@@ -413,6 +512,7 @@ func NewGenericListerFactory(dynamicClient *dynamic.DynamicClient, stopCh <-chan
 		dynamicClient: dynamicClient,
 		stopCh:        stopCh,
 		listersMap:    make(map[string]dynamiclister.Lister),
+		crdLister:     NewDynamicCRDLister(dynamicClient, stopCh),
 	}
 }
 
