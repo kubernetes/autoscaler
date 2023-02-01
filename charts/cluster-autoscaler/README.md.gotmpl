@@ -251,6 +251,34 @@ In order to accomplish this, you will first need to create a new IAM role with t
 
 Once you have the IAM role configured, you would then need to `--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
 
+### Azure - Using azure workload identity
+
+You can use the project [Azure workload identity](https://github.com/Azure/azure-workload-identity), to automatically configure the correct setup for your pods to used federated identity with Azure.
+You can also set the correct settings yourself instead of relying on this project.
+For example the following configuration will configure the Autoscaler to use your federated identity:
+
+```yaml
+azureUseWorkloadIdentityExtension: true
+extraEnv:
+  AZURE_CLIENT_ID: USER ASSIGNED IDENTITY CLIENT ID
+  AZURE_TENANT_ID: USER ASSIGNED IDENTITY TENANT ID
+  AZURE_FEDERATED_TOKEN_FILE: /var/run/secrets/tokens/azure-identity-token
+  AZURE_AUTHORITY_HOST: https://login.microsoftonline.com/
+extraVolumes:
+- name: azure-identity-token
+  projected:
+    defaultMode: 420
+    sources:
+    - serviceAccountToken:
+        audience: api://AzureADTokenExchange
+        expirationSeconds: 3600
+        path: azure-identity-token
+extraVolumeMounts:
+- mountPath: /var/run/secrets/tokens
+  name: azure-identity-token
+  readOnly: true
+```
+
 ## Troubleshooting
 
 The chart will succeed even if the container arguments are incorrect. A few minutes after starting

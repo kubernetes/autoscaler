@@ -97,12 +97,14 @@ type Config struct {
 
 	// Settings for a service principal.
 
-	AADClientID                 string `json:"aadClientId" yaml:"aadClientId"`
-	AADClientSecret             string `json:"aadClientSecret" yaml:"aadClientSecret"`
-	AADClientCertPath           string `json:"aadClientCertPath" yaml:"aadClientCertPath"`
-	AADClientCertPassword       string `json:"aadClientCertPassword" yaml:"aadClientCertPassword"`
-	UseManagedIdentityExtension bool   `json:"useManagedIdentityExtension" yaml:"useManagedIdentityExtension"`
-	UserAssignedIdentityID      string `json:"userAssignedIdentityID" yaml:"userAssignedIdentityID"`
+	AADClientID                  string `json:"aadClientId" yaml:"aadClientId"`
+	AADClientSecret              string `json:"aadClientSecret" yaml:"aadClientSecret"`
+	AADClientCertPath            string `json:"aadClientCertPath" yaml:"aadClientCertPath"`
+	AADClientCertPassword        string `json:"aadClientCertPassword" yaml:"aadClientCertPassword"`
+	AADFederatedTokenFile        string `json:"aadFederatedTokenFile" yaml:"aadFederatedTokenFile"`
+	UseManagedIdentityExtension  bool   `json:"useManagedIdentityExtension" yaml:"useManagedIdentityExtension"`
+	UseWorkloadIdentityExtension bool   `json:"useWorkloadIdentityExtension" yaml:"useWorkloadIdentityExtension"`
+	UserAssignedIdentityID       string `json:"userAssignedIdentityID" yaml:"userAssignedIdentityID"`
 
 	// Configs only for standard vmType (agent pools).
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
@@ -155,7 +157,14 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Location = os.Getenv("LOCATION")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
+		if tenantId := os.Getenv("AZURE_TENANT_ID"); tenantId != "" {
+			cfg.TenantID = tenantId
+		}
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
+		if clientId := os.Getenv("AZURE_CLIENT_ID"); clientId != "" {
+			cfg.AADClientID = clientId
+		}
+		cfg.AADFederatedTokenFile = os.Getenv("AZURE_FEDERATED_TOKEN_FILE")
 		cfg.AADClientSecret = os.Getenv("ARM_CLIENT_SECRET")
 		cfg.VMType = strings.ToLower(os.Getenv("ARM_VM_TYPE"))
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
@@ -176,6 +185,18 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			if err != nil {
 				return nil, err
 			}
+		}
+
+		useWorkloadIdentityExtensionFromEnv := os.Getenv("ARM_USE_WORKLOAD_IDENTITY_EXTENSION")
+		if len(useWorkloadIdentityExtensionFromEnv) > 0 {
+			cfg.UseWorkloadIdentityExtension, err = strconv.ParseBool(useWorkloadIdentityExtensionFromEnv)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if cfg.UseManagedIdentityExtension && cfg.UseWorkloadIdentityExtension {
+			return nil, errors.New("you can not combine both managed identity and workload identity as an authentication mechanism")
 		}
 
 		userAssignedIdentityIDFromEnv := os.Getenv("ARM_USER_ASSIGNED_IDENTITY_ID")
