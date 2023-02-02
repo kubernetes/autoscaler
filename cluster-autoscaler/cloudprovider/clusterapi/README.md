@@ -207,9 +207,9 @@ you must specify the CPU and memory annotations, these annotations should
 match the expected capacity of the nodes created from the infrastructure.
 
 For example, if my MachineDeployment will create nodes that have "16000m" CPU,
-"128G" memory, 2 NVidia GPUs, and can support 200 max pods, the folllowing
-annotations will instruct the autoscaler how to expand the node group from
-zero replicas:
+"128G" memory, "100Gi" ephemeral disk storage, 2 NVidia GPUs, and can support
+200 max pods, the following annotations will instruct the autoscaler how to
+expand the node group from zero replicas:
 
 ```yaml
 apiVersion: cluster.x-k8s.io/v1alpha4
@@ -220,6 +220,7 @@ metadata:
     cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
     capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
     capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk: "100Gi"
     capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
     capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
     capacity.cluster-autoscaler.kubernetes.io/maxPods: "200"
