@@ -53,6 +53,7 @@ const (
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
 	failedMachinePrefix           = "failed-machine-"
+	pendingMachinePrefix          = "pending-machine-"
 	machineTemplateKind           = "MachineTemplate"
 	machineDeploymentKind         = "MachineDeployment"
 	machineSetKind                = "MachineSet"
@@ -252,6 +253,9 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 	if isFailedMachineProviderID(providerID) {
 		return c.findMachine(machineKeyFromFailedProviderID(providerID))
 	}
+	if isPendingMachineProviderID(providerID) {
+		return c.findMachine(machineKeyFromPendingMachineProviderID(providerID))
+	}
 
 	// If the machine object has no providerID--maybe actuator
 	// does not set this value (e.g., OpenStack)--then first
@@ -268,6 +272,15 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 
 	machineID, _ := node.Annotations[machineAnnotationKey]
 	return c.findMachine(machineID)
+}
+
+func isPendingMachineProviderID(providerID normalizedProviderID) bool {
+	return strings.HasPrefix(string(providerID), pendingMachinePrefix)
+}
+
+func machineKeyFromPendingMachineProviderID(providerID normalizedProviderID) string {
+	namespaceName := strings.TrimPrefix(string(providerID), pendingMachinePrefix)
+	return strings.Replace(namespaceName, "_", "/", 1)
 }
 
 func isFailedMachineProviderID(providerID normalizedProviderID) bool {
@@ -498,6 +511,7 @@ func (c *machineController) scalableResourceProviderIDs(scalableResource *unstru
 
 		if !found {
 			klog.V(4).Infof("Status.NodeRef of machine %q is currently nil", machine.GetName())
+			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", pendingMachinePrefix, machine.GetNamespace(), machine.GetName()))
 			continue
 		}
 
