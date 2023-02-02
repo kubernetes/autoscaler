@@ -31,6 +31,7 @@ import (
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
 
+	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
@@ -261,22 +262,6 @@ func getNodePrivateIPAddresses(node *v1.Node) []string {
 	return addresses
 }
 
-func isLBBackendPoolTypeIPConfig(service *v1.Service, lb *network.LoadBalancer, clusterName string) bool {
-	if lb == nil || lb.LoadBalancerPropertiesFormat == nil || lb.BackendAddressPools == nil {
-		klog.V(4).Infof("isLBBackendPoolTypeIPConfig: no backend pools in the LB %s", to.String(lb.Name))
-		return false
-	}
-	lbBackendPoolName := getBackendPoolName(clusterName, service)
-	for _, bp := range *lb.BackendAddressPools {
-		if strings.EqualFold(to.String(bp.Name), lbBackendPoolName) {
-			return bp.BackendAddressPoolPropertiesFormat != nil &&
-				bp.BackendIPConfigurations != nil &&
-				len(*bp.BackendIPConfigurations) != 0
-		}
-	}
-	return false
-}
-
 func getBoolValueFromServiceAnnotations(service *v1.Service, key string) bool {
 	if l, found := service.Annotations[key]; found {
 		return strings.EqualFold(strings.TrimSpace(l), consts.TrueAnnotationValue)
@@ -299,4 +284,57 @@ func sameContentInSlices(s1 []string, s2 []string) bool {
 		map1[s]--
 	}
 	return true
+}
+
+func removeDuplicatedSecurityRules(rules []network.SecurityRule) []network.SecurityRule {
+	ruleNames := make(map[string]bool)
+	for i := len(rules) - 1; i >= 0; i-- {
+		if _, ok := ruleNames[to.String(rules[i].Name)]; ok {
+			klog.Warningf("Found duplicated rule %s, will be removed.", to.String(rules[i].Name))
+			rules = append(rules[:i], rules[i+1:]...)
+		}
+		ruleNames[to.String(rules[i].Name)] = true
+	}
+	return rules
+}
+
+func getVMSSVMCacheKey(resourceGroup, vmssName string) string {
+	cacheKey := strings.ToLower(fmt.Sprintf("%s/%s", resourceGroup, vmssName))
+	return cacheKey
+}
+
+// isNodeInVMSSVMCache check whether nodeName is in vmssVMCache
+func isNodeInVMSSVMCache(nodeName string, vmssVMCache *azcache.TimedCache) bool {
+	if vmssVMCache == nil {
+		return false
+	}
+
+	var isInCache bool
+
+	vmssVMCache.Lock.Lock()
+	defer vmssVMCache.Lock.Unlock()
+
+	for _, entry := range vmssVMCache.Store.List() {
+		if entry != nil {
+			e := entry.(*azcache.AzureCacheEntry)
+			e.Lock.Lock()
+			data := e.Data
+			if data != nil {
+				data.(*sync.Map).Range(func(vmName, _ interface{}) bool {
+					if vmName != nil && vmName.(string) == nodeName {
+						isInCache = true
+						return false
+					}
+					return true
+				})
+			}
+			e.Lock.Unlock()
+		}
+
+		if isInCache {
+			break
+		}
+	}
+
+	return isInCache
 }

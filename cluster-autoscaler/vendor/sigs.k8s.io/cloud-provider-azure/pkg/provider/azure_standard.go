@@ -30,7 +30,7 @@ import (
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -55,15 +55,6 @@ var (
 	vmIDRE             = regexp.MustCompile(`(?i)/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)`)
 	vmasIDRE           = regexp.MustCompile(`/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/availabilitySets/(.+)`)
 )
-
-// getStandardMachineID returns the full identifier of a virtual machine.
-func (az *Cloud) getStandardMachineID(subscriptionID, resourceGroup, machineName string) string {
-	return fmt.Sprintf(
-		consts.MachineIDTemplate,
-		subscriptionID,
-		strings.ToLower(resourceGroup),
-		machineName)
-}
 
 // returns the full identifier of an availabilitySet
 func (az *Cloud) getAvailabilitySetID(resourceGroup, availabilitySetName string) string {
@@ -106,7 +97,7 @@ func (az *Cloud) getLoadBalancerProbeID(lbName, rgName, lbRuleName string) strin
 
 // getNetworkResourceSubscriptionID returns the subscription id which hosts network resources
 func (az *Cloud) getNetworkResourceSubscriptionID() string {
-	if az.Config.UsesNetworkResourceInDifferentTenantOrSubscription() {
+	if az.Config.UsesNetworkResourceInDifferentSubscription() {
 		return az.NetworkResourceSubscriptionID
 	}
 	return az.SubscriptionID
@@ -265,8 +256,8 @@ func isInternalLoadBalancer(lb *network.LoadBalancer) bool {
 // SingleStack -v4 (pre v1.16) => BackendPool name == clusterName
 // SingleStack -v6 => BackendPool name == <clusterName>-IPv6 (all cluster bootstrap uses this name)
 // DualStack
-//	=> IPv4 BackendPool name == clusterName
-//  => IPv6 BackendPool name == <clusterName>-IPv6
+// => IPv4 BackendPool name == clusterName
+// => IPv6 BackendPool name == <clusterName>-IPv6
 // This means:
 // clusters moving from IPv4 to dualstack will require no changes
 // clusters moving from IPv6 to dualstack will require no changes as the IPv4 backend pool will created with <clusterName>
@@ -352,7 +343,7 @@ func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, serv
 		return true, isPrimaryService, nil
 	}
 
-	loadBalancerIP := service.Spec.LoadBalancerIP
+	loadBalancerIP := getServiceLoadBalancerIP(service)
 	if loadBalancerIP == "" {
 		// it is a must that the secondary services set the loadBalancer IP
 		return false, isPrimaryService, nil
@@ -434,7 +425,7 @@ outer:
 
 var polyTable = crc32.MakeTable(crc32.Koopman)
 
-//MakeCRC32 : convert string to CRC32 format
+// MakeCRC32 : convert string to CRC32 format
 func MakeCRC32(str string) string {
 	crc := crc32.New(polyTable)
 	_, _ = crc.Write([]byte(str))
@@ -449,9 +440,9 @@ type availabilitySet struct {
 	vmasCache *azcache.TimedCache
 }
 
-type availabilitySetEntry struct {
-	vmas          *compute.AvailabilitySet
-	resourceGroup string
+type AvailabilitySetEntry struct {
+	VMAS          *compute.AvailabilitySet
+	ResourceGroup string
 }
 
 func (as *availabilitySet) newVMASCache() (*azcache.TimedCache, error) {
@@ -476,9 +467,9 @@ func (as *availabilitySet) newVMASCache() (*azcache.TimedCache, error) {
 					klog.Warning("failed to get the name of the VMAS")
 					continue
 				}
-				localCache.Store(to.String(vmas.Name), &availabilitySetEntry{
-					vmas:          &vmas,
-					resourceGroup: resourceGroup,
+				localCache.Store(to.String(vmas.Name), &AvailabilitySetEntry{
+					VMAS:          &vmas,
+					ResourceGroup: resourceGroup,
 				})
 			}
 		}
@@ -534,9 +525,9 @@ func (as *availabilitySet) GetInstanceIDByNodeName(name string) (string, error) 
 	}
 
 	resourceID := *machine.ID
-	convertedResourceID, err := convertResourceGroupNameToLower(resourceID)
+	convertedResourceID, err := ConvertResourceGroupNameToLower(resourceID)
 	if err != nil {
-		klog.Errorf("convertResourceGroupNameToLower failed with error: %v", err)
+		klog.Errorf("ConvertResourceGroupNameToLower failed with error: %v", err)
 		return "", err
 	}
 	return convertedResourceID, nil
@@ -1048,10 +1039,10 @@ func (as *availabilitySet) EnsureHostsInPool(service *v1.Service, nodes []*v1.No
 }
 
 // EnsureBackendPoolDeleted ensures the loadBalancer backendAddressPools deleted from the specified nodes.
-func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backendPoolID, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) error {
+func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backendPoolID, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) (bool, error) {
 	// Returns nil if backend address pools already deleted.
 	if backendAddressPools == nil {
-		return nil
+		return false, nil
 	}
 
 	mc := metrics.NewMetricContext("services", "vmas_ensure_backend_pool_deleted", as.ResourceGroup, as.SubscriptionID, getServiceName(service))
@@ -1076,6 +1067,7 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 	}
 	nicUpdaters := make([]func() error, 0)
 	allErrs := make([]error, 0)
+	var nicUpdated bool
 	for i := range ipConfigurationIDs {
 		ipConfigurationID := ipConfigurationIDs[i]
 		nodeName, _, err := as.GetNodeNameByIPConfigurationID(ipConfigurationID)
@@ -1093,15 +1085,15 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 		if err != nil {
 			if errors.Is(err, errNotInVMSet) {
 				klog.V(3).Infof("EnsureBackendPoolDeleted skips node %s because it is not in the vmSet %s", nodeName, vmSetName)
-				return nil
+				return false, nil
 			}
 
 			klog.Errorf("error: az.EnsureBackendPoolDeleted(%s), az.VMSet.GetPrimaryInterface.Get(%s, %s), err=%v", nodeName, vmName, vmSetName, err)
-			return err
+			return false, err
 		}
 		vmasName, err := getAvailabilitySetNameByID(vmasID)
 		if err != nil {
-			return fmt.Errorf("EnsureBackendPoolDeleted: failed to parse the VMAS ID %s: %w", vmasID, err)
+			return false, fmt.Errorf("EnsureBackendPoolDeleted: failed to parse the VMAS ID %s: %w", vmasID, err)
 		}
 		// Only remove nodes belonging to specified vmSet to basic LB backends.
 		if !strings.EqualFold(vmasName, vmSetName) {
@@ -1111,7 +1103,7 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 
 		if nic.ProvisioningState == consts.NicFailedState {
 			klog.Warningf("EnsureBackendPoolDeleted skips node %s because its primary nic %s is in Failed state", nodeName, *nic.Name)
-			return nil
+			return false, nil
 		}
 
 		if nic.InterfacePropertiesFormat != nil && nic.InterfacePropertiesFormat.IPConfigurations != nil {
@@ -1143,21 +1135,22 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 					klog.Errorf("EnsureBackendPoolDeleted CreateOrUpdate for NIC(%s, %s) failed with error %v", as.resourceGroup, to.String(nic.Name), rerr.Error())
 					return rerr.Error()
 				}
+				nicUpdated = true
 				return nil
 			})
 		}
 	}
 	errs := utilerrors.AggregateGoroutines(nicUpdaters...)
 	if errs != nil {
-		return utilerrors.Flatten(errs)
+		return nicUpdated, utilerrors.Flatten(errs)
 	}
 	// Fail if there are other errors.
 	if len(allErrs) > 0 {
-		return utilerrors.Flatten(utilerrors.NewAggregate(allErrs))
+		return nicUpdated, utilerrors.Flatten(utilerrors.NewAggregate(allErrs))
 	}
 
 	isOperationSucceeded = true
-	return nil
+	return nicUpdated, nil
 }
 
 func getAvailabilitySetNameByID(asID string) (string, error) {
@@ -1230,7 +1223,7 @@ func (as *availabilitySet) GetNodeNameByIPConfigurationID(ipConfigurationID stri
 
 	asName, err := getAvailabilitySetNameByID(asID)
 	if err != nil {
-		return "", "", fmt.Errorf("cannot get the availability set name by the availability set ID %s: %v", asID, err)
+		return "", "", fmt.Errorf("cannot get the availability set name by the availability set ID %s: %w", asID, err)
 	}
 	return vmName, strings.ToLower(asName), nil
 }
@@ -1249,8 +1242,8 @@ func (as *availabilitySet) getAvailabilitySetByNodeName(nodeName string, crt azc
 
 	var result *compute.AvailabilitySet
 	vmasList.Range(func(_, value interface{}) bool {
-		vmasEntry := value.(*availabilitySetEntry)
-		vmas := vmasEntry.vmas
+		vmasEntry := value.(*AvailabilitySetEntry)
+		vmas := vmasEntry.VMAS
 		if vmas != nil && vmas.AvailabilitySetProperties != nil && vmas.VirtualMachines != nil {
 			for _, vmIDRef := range *vmas.VirtualMachines {
 				if vmIDRef.ID != nil {
@@ -1316,7 +1309,7 @@ func (as *availabilitySet) GetNodeCIDRMasksByProviderID(providerID string) (int,
 	return ipv4Mask, ipv6Mask, nil
 }
 
-//EnsureBackendPoolDeletedFromVMSets ensures the loadBalancer backendAddressPools deleted from the specified VMAS
+// EnsureBackendPoolDeletedFromVMSets ensures the loadBalancer backendAddressPools deleted from the specified VMAS
 func (as *availabilitySet) EnsureBackendPoolDeletedFromVMSets(vmasNamesMap map[string]bool, backendPoolID string) error {
 	return nil
 }
