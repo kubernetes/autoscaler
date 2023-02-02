@@ -26,7 +26,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	compute "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	compute "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	azure "github.com/Azure/go-autorest/autorest/azure"
 	gomock "github.com/golang/mock/gomock"
 	retry "sigs.k8s.io/cloud-provider-azure/pkg/retry"
