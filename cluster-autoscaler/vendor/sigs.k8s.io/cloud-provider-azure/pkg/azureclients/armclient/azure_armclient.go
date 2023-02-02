@@ -18,24 +18,41 @@ package armclient
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"html"
+	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
 	"unicode"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
-
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-
+	"github.com/Azure/go-autorest/tracing"
 	"k8s.io/klog/v2"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 	"sigs.k8s.io/cloud-provider-azure/pkg/version"
 )
+
+// there is one sender per TLS renegotiation type, i.e. count of tls.RenegotiationSupport enums
+
+type defaultSender struct {
+	sender autorest.Sender
+	init   *sync.Once
+}
+
+// each type of sender will be created on demand in sender()
+var defaultSenders defaultSender
+
+func init() {
+	defaultSenders.init = &sync.Once{}
+}
 
 var _ Interface = &Client{}
 
@@ -47,10 +64,57 @@ type Client struct {
 	regionalEndpoint string
 }
 
+func sender() autorest.Sender {
+	// note that we can't init defaultSenders in init() since it will
+	// execute before calling code has had a chance to enable tracing
+	defaultSenders.init.Do(func() {
+		// copied from http.DefaultTransport with a TLS minimum version.
+		transport := &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second, // the same as default transport
+				KeepAlive: 30 * time.Second, // the same as default transport
+			}).DialContext,
+			ForceAttemptHTTP2:     true,             // always attempt HTTP/2 even though custom dialer is provided
+			MaxIdleConns:          100,              // Zero means no limit, the same as default transport
+			MaxIdleConnsPerHost:   100,              // Default is 2, ref:https://cs.opensource.google/go/go/+/go1.18.4:src/net/http/transport.go;l=58
+			IdleConnTimeout:       90 * time.Second, // the same as default transport
+			TLSHandshakeTimeout:   10 * time.Second, // the same as default transport
+			ExpectContinueTimeout: 1 * time.Second,  // the same as default transport
+			TLSClientConfig: &tls.Config{
+				MinVersion:    tls.VersionTLS12,     //force to use TLS 1.2
+				Renegotiation: tls.RenegotiateNever, // the same as default transport https://pkg.go.dev/crypto/tls#RenegotiationSupport
+			},
+		}
+		var roundTripper http.RoundTripper = transport
+		if tracing.IsEnabled() {
+			roundTripper = tracing.NewTransport(transport)
+		}
+		j, _ := cookiejar.New(nil)
+		defaultSenders.sender = &http.Client{Jar: j, Transport: roundTripper}
+
+		// In go-autorest SDK https://github.com/Azure/go-autorest/blob/master/autorest/sender.go#L258-L287,
+		// if ARM returns http.StatusTooManyRequests, the sender doesn't increase the retry attempt count,
+		// hence the Azure clients will keep retrying forever until it get a status code other than 429.
+		// So we explicitly removes http.StatusTooManyRequests from autorest.StatusCodesForRetry.
+		// Refer https://github.com/Azure/go-autorest/issues/398.
+		// TODO(feiskyer): Use autorest.SendDecorator to customize the retry policy when new Azure SDK is available.
+		statusCodesForRetry := make([]int, 0)
+		for _, code := range autorest.StatusCodesForRetry {
+			if code != http.StatusTooManyRequests {
+				statusCodesForRetry = append(statusCodesForRetry, code)
+			}
+		}
+		autorest.StatusCodesForRetry = statusCodesForRetry
+	})
+	return defaultSenders.sender
+}
+
 // New creates a ARM client
 func New(authorizer autorest.Authorizer, clientConfig azureclients.ClientConfig, baseURI, apiVersion string, sendDecoraters ...autorest.SendDecorator) *Client {
 	restClient := autorest.NewClientWithUserAgent(clientConfig.UserAgent)
 	restClient.Authorizer = authorizer
+	restClient.Sender = sender()
 
 	if clientConfig.UserAgent == "" {
 		restClient.UserAgent = GetUserAgent(restClient)
@@ -94,7 +158,6 @@ func New(authorizer autorest.Authorizer, clientConfig azureclients.ClientConfig,
 	client.client.Sender = autorest.DecorateSender(client.client,
 		autorest.DoCloseIfError(),
 		retry.DoExponentialBackoffRetry(backoff),
-		DoHackRegionalRetryDecorator(client),
 		DoDumpRequest(10),
 	)
 
@@ -248,7 +311,7 @@ func (c *Client) SendAsync(ctx context.Context, request *http.Request) (*azure.F
 	return &future, asyncResponse, nil
 }
 
-// GetResource get a resource by resource ID
+// GetResourceWithExpandQuery get a resource by resource ID with expand
 func (c *Client) GetResourceWithExpandQuery(ctx context.Context, resourceID, expand string) (*http.Response, *retry.Error) {
 	var decorators []autorest.PrepareDecorator
 	if expand != "" {
@@ -257,6 +320,35 @@ func (c *Client) GetResourceWithExpandQuery(ctx context.Context, resourceID, exp
 		}
 		decorators = append(decorators, autorest.WithQueryParameters(queryParameters))
 	}
+	return c.GetResource(ctx, resourceID, decorators...)
+}
+
+// GetResourceWithExpandAPIVersionQuery get a resource by resource ID with expand and API version.
+func (c *Client) GetResourceWithExpandAPIVersionQuery(ctx context.Context, resourceID, expand, apiVersion string) (*http.Response, *retry.Error) {
+	decorators := []autorest.PrepareDecorator{
+		withAPIVersion(apiVersion),
+	}
+	if expand != "" {
+		decorators = append(decorators, autorest.WithQueryParameters(map[string]interface{}{
+			"$expand": autorest.Encode("query", expand),
+		}))
+	}
+
+	return c.GetResource(ctx, resourceID, decorators...)
+}
+
+// GetResourceWithQueries get a resource by resource ID with queries.
+func (c *Client) GetResourceWithQueries(ctx context.Context, resourceID string, queries map[string]interface{}) (*http.Response, *retry.Error) {
+
+	queryParameters := make(map[string]interface{})
+	for queryKey, queryValue := range queries {
+		queryParameters[queryKey] = autorest.Encode("query", queryValue)
+	}
+
+	decorators := []autorest.PrepareDecorator{
+		autorest.WithQueryParameters(queryParameters),
+	}
+
 	return c.GetResource(ctx, resourceID, decorators...)
 }
 
@@ -271,7 +363,7 @@ func (c *Client) GetResource(ctx context.Context, resourceID string, decorators 
 		return nil, retry.NewError(false, err)
 	}
 
-	return c.Send(ctx, request)
+	return c.Send(ctx, request, DoHackRegionalRetryForGET(c))
 }
 
 // PutResource puts a resource by resource ID

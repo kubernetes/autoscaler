@@ -112,13 +112,6 @@ func (c *Client) Get(ctx context.Context, resourceGroupName string, managedClust
 
 // getManagedCluster gets a ManagedCluster.
 func (c *Client) getManagedCluster(ctx context.Context, resourceGroupName string, managedClusterName string) (containerservice.ManagedCluster, *retry.Error) {
-	// telemetryDecorator := armclient.WithMetricsDecoratorWrapper("managed_clusters", "get", resourceGroupName, c.subscriptionID, "", func(mc *metrics.MetricContext) []autorest.SendDecorator {
-	// 	return []autorest.SendDecorator{
-	// 		armclient.NewErrorCounterDecorator(mc),
-	// 		armclient.NewRateLimitDecorater(c.rateLimiterReader, mc),
-	// 		armclient.NewThrottledDecorater(mc),
-	// 	}
-	// })
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,

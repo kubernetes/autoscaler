@@ -17,16 +17,20 @@ limitations under the License.
 package fileclient
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"context"
+
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 )
 
 // Interface is the client interface for creating file shares, interface for test injection.
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
-	CreateFileShare(resourceGroupName, accountName string, shareOptions *ShareOptions) error
-	DeleteFileShare(resourceGroupName, accountName, name string) error
-	ResizeFileShare(resourceGroupName, accountName, name string, sizeGiB int) error
-	GetFileShare(resourceGroupName, accountName, name string) (storage.FileShare, error)
-	GetServiceProperties(resourceGroupName, accountName string) (storage.FileServiceProperties, error)
-	SetServiceProperties(resourceGroupName, accountName string, parameters storage.FileServiceProperties) (storage.FileServiceProperties, error)
+	CreateFileShare(ctx context.Context, resourceGroupName, accountName string, shareOptions *ShareOptions, expand string) (storage.FileShare, error)
+	DeleteFileShare(ctx context.Context, resourceGroupName, accountName, name, xMsSnapshot string) error
+	ResizeFileShare(ctx context.Context, resourceGroupName, accountName, name string, sizeGiB int) error
+	GetFileShare(ctx context.Context, resourceGroupName, accountName, name, xMsSnapshot string) (storage.FileShare, error)
+	ListFileShare(ctx context.Context, resourceGroupName, accountName, filter, expand string) ([]storage.FileShareItem, error)
+	GetServiceProperties(ctx context.Context, resourceGroupName, accountName string) (storage.FileServiceProperties, error)
+	SetServiceProperties(ctx context.Context, resourceGroupName, accountName string, parameters storage.FileServiceProperties) (storage.FileServiceProperties, error)
+	WithSubscriptionID(subscriptionID string) Interface
 }

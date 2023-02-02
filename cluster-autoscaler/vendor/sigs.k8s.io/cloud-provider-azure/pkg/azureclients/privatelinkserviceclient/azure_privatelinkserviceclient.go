@@ -214,7 +214,7 @@ func (c *Client) getPLS(ctx context.Context, resourceGroupName string, privateLi
 	return result, nil
 }
 
-/// List gets a list of PrivateLinkServices in the resource group.
+// List gets a list of PrivateLinkServices in the resource group.
 func (c *Client) List(ctx context.Context, resourceGroupName string) ([]network.PrivateLinkService, *retry.Error) {
 	mc := metrics.NewMetricContext("private_link_services", "list", resourceGroupName, c.subscriptionID, "")
 
