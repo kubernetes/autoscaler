@@ -359,8 +359,8 @@ func TestUnreadyLongAfterCreation(t *testing.T) {
 	}, fakeLogRecorder, newBackoff())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Unready)
-	assert.Equal(t, 0, clusterstate.GetClusterReadiness().NotStarted)
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Unready))
+	assert.Equal(t, 0, len(clusterstate.GetClusterReadiness().NotStarted))
 	upcoming := clusterstate.GetUpcomingNodes()
 	assert.Equal(t, 0, upcoming["ng1"])
 }
@@ -390,22 +390,22 @@ func TestNotStarted(t *testing.T) {
 	}, fakeLogRecorder, newBackoff())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().NotStarted)
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Ready)
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().NotStarted))
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Ready))
 
 	// node ng2_1 moves condition to ready
 	SetNodeReadyState(ng2_1, true, now.Add(-4*time.Minute))
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().NotStarted)
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Ready)
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().NotStarted))
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Ready))
 
 	// node ng2_1 no longer has the taint
 	RemoveNodeNotReadyTaint(ng2_1)
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, clusterstate.GetClusterReadiness().NotStarted)
-	assert.Equal(t, 2, clusterstate.GetClusterReadiness().Ready)
+	assert.Equal(t, 0, len(clusterstate.GetClusterReadiness().NotStarted))
+	assert.Equal(t, 2, len(clusterstate.GetClusterReadiness().Ready))
 }
 
 func TestExpiredScaleUp(t *testing.T) {
@@ -686,7 +686,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(GetCloudProviderDeletedNodeNames(clusterstate)))
 	assert.Equal(t, "ng1-2", GetCloudProviderDeletedNodeNames(clusterstate)[0])
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Deleted)
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Deleted))
 
 	// The node is removed from Kubernetes
 	now.Add(time.Minute)
@@ -719,7 +719,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(GetCloudProviderDeletedNodeNames(clusterstate)))
 	assert.Equal(t, "ng1-3", GetCloudProviderDeletedNodeNames(clusterstate)[0])
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Deleted)
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Deleted))
 
 	// Confirm that previously identified deleted Cloud Provider nodes are still included
 	// until it is removed from Kubernetes
@@ -729,7 +729,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(GetCloudProviderDeletedNodeNames(clusterstate)))
 	assert.Equal(t, "ng1-3", GetCloudProviderDeletedNodeNames(clusterstate)[0])
-	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Deleted)
+	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Deleted))
 
 	// The node is removed from Kubernetes
 	now.Add(time.Minute)
