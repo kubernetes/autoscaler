@@ -17,6 +17,7 @@ There are the following steps of the release process:
 
 ## Open issue to track the release
 
+Open a new issue to track the release, use the [vpa_release](https://github.com/kubernetes/autoscaler/issues/new?&template=vpa_release.md) template.
 We use the issue to communicate what is state of the release.
 
 ## Update VPA version const
@@ -104,15 +105,15 @@ we've been using them since `vertical-pod-autoscaler-0.1` and tags with the
 other pattern start only with `vertical-pod-autoscaler/v0.9.0` so we should make
 sure nothing we care about will break if we do.
 
-1.  [ ] Update the yaml files to point to the [*vpa-version*]. Merge this change
-    into branch vpa-release-0.X and optionally into master if 0.X is the latest
-    minor release.
+1.  [ ] Update information about newest version and K8s compatibility in
+    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation)
+    and the yaml files:
 
     ```sh
-    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment.yaml ./hack/vpa-process-yaml.sh
+    sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
     ```
-
-    Example PR: https://github.com/kubernetes/autoscaler/pull/3548
+   Merge this change into branch vpa-release-0.X and optionally into master if 0.X is the latest minor release (example
+   PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
 
 1.  [ ] Tag the commit with version const change
 
@@ -132,9 +133,6 @@ sure nothing we care about will break if we do.
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
     press `Edit release`, complete release title and release notes, tick the
     `This is a pre-release` box and press `Publish release`.
-
-1.  [ ] Update information about newest version and K8s compatibility in
-    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md#installation).
 
 ## Permissions
 
