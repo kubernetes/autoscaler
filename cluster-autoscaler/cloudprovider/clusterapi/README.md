@@ -255,10 +255,22 @@ rules:
 
 #### Pre-defined labels and taints on nodes scaled from zero
 
-The Cluster API provider currently does not support the addition of pre-defined
-labels and taints for node groups that are scaling from zero. This work is on-going
-and will be included in a future release once the API for specifying those
-labels and taints has been accepted by the community.
+To provide labels or taint information for scale from zero, the optional
+capacity annotations may be supplied as a comma separated list, as 
+demonstrated in the example below:
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: MachineDeployment
+metadata:
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
+    capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
+    capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    capacity.cluster-autoscaler.kubernetes.io/labels: "key1=value1,key2=value2"
+    capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
+```
 
 ## Specifying a Custom Resource Group
 
