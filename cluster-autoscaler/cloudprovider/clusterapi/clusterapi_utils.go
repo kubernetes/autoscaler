@@ -34,6 +34,8 @@ const (
 	gpuTypeKey      = "capacity.cluster-autoscaler.kubernetes.io/gpu-type"
 	gpuCountKey     = "capacity.cluster-autoscaler.kubernetes.io/gpu-count"
 	maxPodsKey      = "capacity.cluster-autoscaler.kubernetes.io/maxPods"
+	taintsKey       = "capacity.cluster-autoscaler.kubernetes.io/taints"
+	labelsKey       = "capacity.cluster-autoscaler.kubernetes.io/labels"
 )
 
 var (
