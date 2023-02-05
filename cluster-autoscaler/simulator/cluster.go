@@ -61,6 +61,8 @@ const (
 	NoReason UnremovableReason = iota
 	// ScaleDownDisabledAnnotation - node can't be removed because it has a "scale down disabled" annotation.
 	ScaleDownDisabledAnnotation
+	// ScaleDownUnreadyDisabled - node can't be removed because it is unready and scale down is disabled for unready nodes.
+	ScaleDownUnreadyDisabled
 	// NotAutoscaled - node can't be removed because it doesn't belong to an autoscaled node group.
 	NotAutoscaled
 	// NotUnneededLongEnough - node can't be removed because it wasn't unneeded for long enough.
