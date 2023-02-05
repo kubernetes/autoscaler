@@ -128,6 +128,8 @@ type AutoscalingOptions struct {
 	EnforceNodeGroupMinSize bool
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
+	// ScaleDownUnreadyEnabled is used to allow CA to scale down unready nodes of the cluster
+	ScaleDownUnreadyEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
 	ScaleDownDelayAfterAdd time.Duration
 	// ScaleDownDelayAfterDelete sets the duration between scale down attempts if scale down removes one or more nodes
