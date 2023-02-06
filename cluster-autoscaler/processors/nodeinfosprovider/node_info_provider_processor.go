@@ -37,6 +37,6 @@ type TemplateNodeInfoProvider interface {
 }
 
 // NewDefaultTemplateNodeInfoProvider returns a default TemplateNodeInfoProvider.
-func NewDefaultTemplateNodeInfoProvider(time *time.Duration) TemplateNodeInfoProvider {
-	return NewMixedTemplateNodeInfoProvider(time)
+func NewDefaultTemplateNodeInfoProvider(time *time.Duration, forceDaemonSets bool) TemplateNodeInfoProvider {
+	return NewMixedTemplateNodeInfoProvider(time, forceDaemonSets)
 }
