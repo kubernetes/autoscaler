@@ -17,14 +17,16 @@ limitations under the License.
 package provider
 
 import (
+	"context"
 	"fmt"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 
 	"github.com/golang/mock/gomock"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/record"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/auth"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient/mockinterfaceclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/loadbalancerclient/mockloadbalancerclient"
@@ -52,7 +54,7 @@ func NewTestScaleSet(ctrl *gomock.Controller) (*ScaleSet, error) {
 
 func newTestScaleSetWithState(ctrl *gomock.Controller) (*ScaleSet, error) {
 	cloud := GetTestCloud(ctrl)
-	ss, err := newScaleSet(cloud)
+	ss, err := newScaleSet(context.Background(), cloud)
 	if err != nil {
 		return nil, err
 	}
@@ -60,11 +62,21 @@ func newTestScaleSetWithState(ctrl *gomock.Controller) (*ScaleSet, error) {
 	return ss.(*ScaleSet), nil
 }
 
+func NewTestFlexScaleSet(ctrl *gomock.Controller) (*FlexScaleSet, error) {
+	cloud := GetTestCloud(ctrl)
+	fs, err := newFlexScaleSet(context.Background(), cloud)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.(*FlexScaleSet), nil
+}
+
 // GetTestCloud returns a fake azure cloud for unit tests in Azure related CSI drivers
 func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 	az = &Cloud{
 		Config: Config{
-			AzureAuthConfig: auth.AzureAuthConfig{
+			AzureAuthConfig: config.AzureAuthConfig{
 				TenantID:       "tenant",
 				SubscriptionID: "subscription",
 			},

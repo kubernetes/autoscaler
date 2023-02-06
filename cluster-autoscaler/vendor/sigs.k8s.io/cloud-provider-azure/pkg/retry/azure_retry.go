@@ -164,18 +164,29 @@ func doBackoffRetry(s autorest.Sender, r *http.Request, backoff Backoff) (resp *
 			return
 		}
 		resp, err = s.Do(rr.Request())
-		rerr := GetErrorWithRetriableHTTPStatusCodes(resp, err, backoff.RetriableHTTPStatusCodes)
+		rerr := GetError(resp, err)
 		// Abort retries in the following scenarios:
 		// 1) request succeed
-		// 2) request is not retriable
-		// 3) request has been throttled
-		// 4) request contains non-retriable errors
-		// 5) request has completed all the retry steps
+		// 2) request has been throttled
+		// 3) request is not retriable or contains non-retriable errors
+		// 4) request has completed all the retry steps
 		if rerr == nil {
 			return resp, nil
 		}
 
-		if !rerr.Retriable || rerr.IsThrottled() || backoff.isNonRetriableError(rerr) || backoff.Steps == 1 {
+		if rerr.IsThrottled() {
+			return resp, rerr.RawError
+		}
+
+		if !rerr.Retriable {
+			if IsInHTTPStatusCodeSet(rerr, backoff.RetriableHTTPStatusCodes) || isInErrorsSet(rerr, backoff.NonRetriableErrors) {
+				rerr.Retriable = true
+			} else {
+				return resp, rerr.RawError
+			}
+		}
+
+		if backoff.Steps == 1 {
 			return resp, rerr.RawError
 		}
 
@@ -185,8 +196,11 @@ func doBackoffRetry(s autorest.Sender, r *http.Request, backoff Backoff) (resp *
 			}
 			return resp, rerr.RawError
 		}
-
-		klog.V(3).Infof("Backoff retrying %s %q with error %v", r.Method, html.EscapeString(r.URL.String()), rerr)
+		drainErr := autorest.DrainResponseBody(resp)
+		if drainErr != nil {
+			klog.V(3).ErrorS(drainErr, "Failed to drain response body")
+		}
+		klog.V(3).Infof("Backoff retrying %s %q with error %v", r.Method, html.EscapeString(r.URL.String()), err)
 	}
 
 	return resp, err
@@ -201,5 +215,19 @@ func delayForBackOff(backoff *Backoff, cancel <-chan struct{}) bool {
 		return true
 	case <-cancel:
 		return false
+	}
+}
+
+// DoFilterOutNonRetriableError decorator works with autorest.DoRetryForAttempts
+func DoFilterOutNonRetriableError(shouldRetry func(rerr *Error) bool) autorest.SendDecorator {
+	return func(s autorest.Sender) autorest.Sender {
+		return autorest.SenderFunc(func(r *http.Request) (*http.Response, error) {
+			resp, err := s.Do(r)
+			rerr := GetError(resp, err)
+			if rerr != nil && shouldRetry != nil && shouldRetry(rerr) {
+				return resp, rerr.RawError
+			}
+			return resp, nil
+		})
 	}
 }
