@@ -28,7 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +43,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 	SetNodeReadyState(regularNode, true, time.Time{})
 
 	justDeletedNode := BuildTestNode("justDeleted", 1000, 10)
-	justDeletedNode.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-30, 10)}}
+	justDeletedNode.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-30, 10)}}
 	SetNodeReadyState(justDeletedNode, true, time.Time{})
 
 	noScaleDownNode := BuildTestNode("noScaleDown", 1000, 10)

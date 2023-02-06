@@ -29,8 +29,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -994,7 +994,7 @@ func (csr *ClusterStateRegistry) hasCloudProviderInstance(node *apiv1.Node) bool
 	if !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		klog.Warningf("Failed to check cloud provider has instance for %s: %v", node.Name, err)
 	}
-	return !deletetaint.HasToBeDeletedTaint(node)
+	return !taints.HasToBeDeletedTaint(node)
 }
 
 // GetAutoscaledNodesCount calculates and returns the actual and the target number of nodes

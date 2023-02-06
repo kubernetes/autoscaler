@@ -26,8 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/klog/v2"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -177,6 +177,6 @@ func nodeScaleDownReason(node *apiv1.Node, drain bool) metrics.NodeScaleDownReas
 
 // IsNodeBeingDeleted returns true iff a given node is being deleted.
 func IsNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
-	deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
+	deleteTime, _ := taints.GetToBeDeletedTime(node)
 	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
