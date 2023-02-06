@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -49,10 +50,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 	"k8s.io/utils/integer"
 
@@ -229,11 +228,11 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	if allNodes, err := a.AllNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
-		deletetaint.CleanAllToBeDeleted(allNodes,
+		taints.CleanAllToBeDeleted(allNodes,
 			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
-			deletetaint.CleanAllDeletionCandidates(allNodes,
+			taints.CleanAllDeletionCandidates(allNodes,
 				a.AutoscalingContext.ClientSet, a.Recorder)
 		}
 	}
