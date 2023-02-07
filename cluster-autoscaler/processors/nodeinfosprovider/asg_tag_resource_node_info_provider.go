@@ -33,9 +33,9 @@ type AsgTagResourceNodeInfoProvider struct {
 }
 
 // NewAsgTagResourceNodeInfoProvider returns AsgTagResourceNodeInfoProvider.
-func NewAsgTagResourceNodeInfoProvider(t *time.Duration) *AsgTagResourceNodeInfoProvider {
+func NewAsgTagResourceNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *AsgTagResourceNodeInfoProvider {
 	return &AsgTagResourceNodeInfoProvider{
-		mixedTemplateNodeInfoProvider: NewMixedTemplateNodeInfoProvider(t),
+		mixedTemplateNodeInfoProvider: NewMixedTemplateNodeInfoProvider(t, forceDaemonSets),
 	}
 }
 
