@@ -87,6 +87,10 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage"),
 			Value: aws.String("20G"),
 		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/resources/custom-resource"),
+			Value: aws.String("5"),
+		},
 	}
 
 	labels := extractAllocatableResourcesFromAsg(tags)
@@ -96,6 +100,7 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
 	expectedEphemeralStorage := resource.MustParse("20G")
 	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
+	assert.Equal(t, resource.NewQuantity(5, resource.DecimalSI).String(), labels["custom-resource"].String())
 }
 
 func TestGetAsgOptions(t *testing.T) {
@@ -364,6 +369,8 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	// Node with custom resource
 	ephemeralStorageKey := "ephemeral-storage"
 	ephemeralStorageValue := int64(20)
+	customResourceKey := "custom-resource"
+	customResourceValue := int64(5)
 	vpcIPKey := "vpc.amazonaws.com/PrivateIPv4Address"
 	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
@@ -372,12 +379,19 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/resources/%s", ephemeralStorageKey)),
 				Value: aws.String(strconv.FormatInt(ephemeralStorageValue, 10)),
 			},
+			{
+				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/resources/%s", customResourceKey)),
+				Value: aws.String(strconv.FormatInt(customResourceValue, 10)),
+			},
 		},
 	})
 	assert.NoError(t, observedErr)
 	esValue, esExist := observedNode.Status.Capacity[apiv1.ResourceName(ephemeralStorageKey)]
 	assert.True(t, esExist)
 	assert.Equal(t, int64(20), esValue.Value())
+	crValue, crExist := observedNode.Status.Capacity[apiv1.ResourceName(customResourceKey)]
+	assert.True(t, crExist)
+	assert.Equal(t, int64(5), crValue.Value())
 	_, ipExist := observedNode.Status.Capacity[apiv1.ResourceName(vpcIPKey)]
 	assert.False(t, ipExist)
 

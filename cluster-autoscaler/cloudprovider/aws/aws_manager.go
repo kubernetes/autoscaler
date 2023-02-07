@@ -273,6 +273,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	}
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
+	klog.V(5).Infof("Extracted resources from ASG tags %v", resourcesFromTags)
 	for resourceName, val := range resourcesFromTags {
 		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
 	}
