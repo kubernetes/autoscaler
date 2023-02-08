@@ -361,8 +361,9 @@ func TestUnreadyLongAfterCreation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetClusterReadiness().Unready))
 	assert.Equal(t, 0, len(clusterstate.GetClusterReadiness().NotStarted))
-	upcoming := clusterstate.GetUpcomingNodes()
+	upcoming, upcomingRegistered := clusterstate.GetUpcomingNodes()
 	assert.Equal(t, 0, upcoming["ng1"])
+	assert.Empty(t, upcomingRegistered["ng1"])
 }
 
 func TestNotStarted(t *testing.T) {
@@ -524,12 +525,17 @@ func TestUpcomingNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 
-	upcomingNodes := clusterstate.GetUpcomingNodes()
+	upcomingNodes, upcomingRegistered := clusterstate.GetUpcomingNodes()
 	assert.Equal(t, 6, upcomingNodes["ng1"])
+	assert.Empty(t, upcomingRegistered["ng1"]) // Only unregistered.
 	assert.Equal(t, 1, upcomingNodes["ng2"])
+	assert.Empty(t, upcomingRegistered["ng2"]) // Only unregistered.
 	assert.Equal(t, 2, upcomingNodes["ng3"])
+	assert.Equal(t, []string{"ng3-1"}, upcomingRegistered["ng3"]) // 1 registered, 1 unregistered.
 	assert.NotContains(t, upcomingNodes, "ng4")
+	assert.NotContains(t, upcomingRegistered, "ng4")
 	assert.Equal(t, 0, upcomingNodes["ng5"])
+	assert.Empty(t, upcomingRegistered["ng5"])
 }
 
 func TestTaintBasedNodeDeletion(t *testing.T) {
@@ -566,8 +572,9 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 
-	upcomingNodes := clusterstate.GetUpcomingNodes()
+	upcomingNodes, upcomingRegistered := clusterstate.GetUpcomingNodes()
 	assert.Equal(t, 1, upcomingNodes["ng1"])
+	assert.Empty(t, upcomingRegistered["ng1"]) // Only unregistered.
 }
 
 func TestIncorrectSize(t *testing.T) {
@@ -624,8 +631,9 @@ func TestUnregisteredNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetUnregisteredNodes()))
 	assert.Equal(t, "ng1-2", clusterstate.GetUnregisteredNodes()[0].Node.Name)
-	upcomingNodes := clusterstate.GetUpcomingNodes()
+	upcomingNodes, upcomingRegistered := clusterstate.GetUpcomingNodes()
 	assert.Equal(t, 1, upcomingNodes["ng1"])
+	assert.Empty(t, upcomingRegistered["ng1"]) // Unregistered only.
 
 	// The node didn't come up in MaxNodeProvisionTime, it should no longer be
 	// counted as upcoming (but it is still an unregistered node)
@@ -633,8 +641,9 @@ func TestUnregisteredNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetUnregisteredNodes()))
 	assert.Equal(t, "ng1-2", clusterstate.GetUnregisteredNodes()[0].Node.Name)
-	upcomingNodes = clusterstate.GetUpcomingNodes()
+	upcomingNodes, upcomingRegistered = clusterstate.GetUpcomingNodes()
 	assert.Equal(t, 0, len(upcomingNodes))
+	assert.Empty(t, upcomingRegistered["ng1"])
 
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, time.Now().Add(time.Minute))
 	assert.NoError(t, err)

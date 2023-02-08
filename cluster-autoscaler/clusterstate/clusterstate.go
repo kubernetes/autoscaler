@@ -916,12 +916,14 @@ func (csr *ClusterStateRegistry) GetIncorrectNodeGroupSize(nodeGroupName string)
 }
 
 // GetUpcomingNodes returns how many new nodes will be added shortly to the node groups or should become ready soon.
-// The function may overestimate the number of nodes.
-func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
+// The function may overestimate the number of nodes. The second return value contains the names of upcoming nodes
+// that are already registered in the cluster.
+func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]int, registeredNodeNames map[string][]string) {
 	csr.Lock()
 	defer csr.Unlock()
 
-	result := make(map[string]int)
+	upcomingCounts = map[string]int{}
+	registeredNodeNames = map[string][]string{}
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
 		readiness := csr.perNodeGroupReadiness[id]
@@ -932,9 +934,14 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 			// Negative value is unlikely but theoretically possible.
 			continue
 		}
-		result[id] = newNodes
+		upcomingCounts[id] = newNodes
+		// newNodes should include instances that have registered with k8s but aren't ready yet, instances that came up on the cloud provider side
+		// but haven't registered with k8s yet, and instances that haven't even come up on the cloud provider side yet (but are reflected in the target
+		// size). The first category is categorized as NotStarted in readiness, the other two aren't registered with k8s, so they shouldn't be
+		// included.
+		registeredNodeNames[id] = readiness.NotStarted
 	}
-	return result
+	return upcomingCounts, registeredNodeNames
 }
 
 // getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
