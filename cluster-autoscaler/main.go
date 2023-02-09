@@ -381,7 +381,8 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
 	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
 	kubeClient := createKubeClient(kubeClientConfig)
-	dynamicClient := dynamic.NewForConfigOrDie(kubeClientConfig)
+	// re-use kubeClient's REST client
+	dynamicClient := dynamic.New(kubeClient.Discovery().RESTClient())
 
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
