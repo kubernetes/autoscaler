@@ -24,6 +24,7 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -50,6 +51,7 @@ type AutoscalerOptions struct {
 	Processors             *ca_processors.AutoscalingProcessors
 	Backoff                backoff.Backoff
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
+	RemainingPdbTracker    pdb.RemainingPdbTracker
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -79,7 +81,8 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
 		opts.Backoff,
-		opts.DebuggingSnapshotter), nil
+		opts.DebuggingSnapshotter,
+		opts.RemainingPdbTracker), nil
 }
 
 // Initialize default options if not provided.
@@ -92,6 +95,9 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	}
 	if opts.ClusterSnapshot == nil {
 		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
+	}
+	if opts.RemainingPdbTracker == nil {
+		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 	if opts.CloudProvider == nil {
 		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
