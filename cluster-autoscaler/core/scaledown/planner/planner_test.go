@@ -448,7 +448,7 @@ func TestUpdateClusterState(t *testing.T) {
 			p := New(&context, NewTestProcessors(&context), deleteOptions)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
-			assert.NoError(t, p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, nil, time.Now()))
+			assert.NoError(t, p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
 			wantUnneeded := asMap(tc.wantUnneeded)
 			for _, n := range tc.nodes {
 				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), n.Name)
