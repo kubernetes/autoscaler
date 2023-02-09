@@ -57,22 +57,8 @@ type ListerRegistry interface {
 	JobLister() v1batchlister.JobLister
 	ReplicaSetLister() v1appslister.ReplicaSetLister
 	StatefulSetLister() v1appslister.StatefulSetLister
-	// GenericListerFactory() GenericListerFactory
 	GetLister(gvr schema.GroupVersionKind, namespace string) dynamiclister.Lister
 }
-
-// // GenericListerFactory is a factory for creating
-// // listers for a new GVRs identified during runtime
-// type GenericListerFactory interface {
-// 	GetLister(gvr schema.GroupVersionKind, namespace string) dynamiclister.Lister
-// }
-
-// type genericListerFactoryImpl struct {
-// 	stopCh        <-chan struct{}
-// 	listersMap    map[string]dynamiclister.Lister
-// 	dynamicClient *dynamic.DynamicClient
-// 	crdLister     dynamiclister.Lister
-// }
 
 type listerRegistryImpl struct {
 	allNodeLister               NodeLister
@@ -85,34 +71,13 @@ type listerRegistryImpl struct {
 	jobLister                   v1batchlister.JobLister
 	replicaSetLister            v1appslister.ReplicaSetLister
 	statefulSetLister           v1appslister.StatefulSetLister
-	// genericListerFactory        GenericListerFactory
-	stopCh        <-chan struct{}
-	listersMap    map[string]dynamiclister.Lister
-	dynamicClient *dynamic.DynamicClient
+	stopCh                      <-chan struct{}
+	listersMap                  map[string]dynamiclister.Lister
+	dynamicClient               *dynamic.DynamicClient
 	// Only used to find plural names for resource Kinds
 	// by looking up the CRD's `spec.names.plural` field
 	crdLister dynamiclister.Lister
 }
-
-// // GetLister returns the lister for a particular GVR
-// func (g *genericListerFactoryImpl) GetLister(gvr schema.GroupVersionKind, namespace string) dynamiclister.Lister {
-// 	crd, err := g.crdLister.Get(fmt.Sprintf("%s/%s", gvr.Group, gvr.Kind))
-// 	if err != nil {
-// 		fmt.Println(fmt.Errorf("crd not found: %v", err))
-// 	}
-
-// 	resource, found, err := unstructured.NestedString(crd.Object, "spec", "names", "plural")
-// 	if !found {
-// 		fmt.Println(fmt.Errorf("couldn't find the field 'spec.names.plural' on the CRD '%s'", crd.GetName()))
-// 	}
-// 	if err != nil {
-// 		fmt.Errorf("error retrieving the field `spec.names.plural` on the CRD '%s': %v", crd.GetName(), err)
-// 	}
-
-// 	return NewGenericLister(g.dynamicClient, g.listersMap, g.stopCh, schema.GroupVersionResource{Group: gvr.Group,
-// 		Version:  gvr.Version,
-// 		Resource: resource}, namespace)
-// }
 
 // GetLister returns the lister for a particular GVR
 func (g listerRegistryImpl) GetLister(gvr schema.GroupVersionKind, namespace string) dynamiclister.Lister {
@@ -189,12 +154,6 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, dynamicCli
 		crdLister,
 	)
 }
-
-// // GenericListerFactory returns the factory to
-// // create lister for a particular GVR
-// func (r listerRegistryImpl) GenericListerFactory() GenericListerFactory {
-// 	return r.genericListerFactory
-// }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
 func (r listerRegistryImpl) AllNodeLister() NodeLister {
@@ -356,7 +315,6 @@ func NewDynamicCRDLister(dClient *dynamic.DynamicClient, stopChannel <-chan stru
 	go reflector.Run(stopChannel)
 
 	// Wait for reflector to sync the cache for the first time
-	// TODO: check if there's a better way to do this (listing all the nodes seems wasteful)
 	// Note: Based on the docs WaitForNamedCacheSync seems to be used to check if an informer has synced
 	// but the function is generic enough so we can use
 	// it for reflectors as well
@@ -550,16 +508,6 @@ func NewConfigMapListerForNamespace(kubeClient client.Interface, stopchannel <-c
 	return lister
 }
 
-// // NewGenericListerFactory initializes a new generic lister factory
-// func NewGenericListerFactory(dynamicClient *dynamic.DynamicClient, stopCh <-chan struct{}) GenericListerFactory {
-// 	return &genericListerFactoryImpl{
-// 		dynamicClient: dynamicClient,
-// 		stopCh:        stopCh,
-// 		listersMap:    make(map[string]dynamiclister.Lister),
-// 		crdLister:     NewDynamicCRDLister(dynamicClient, stopCh),
-// 	}
-// }
-
 // NewGenericLister is a helper which returns a generic lister given the right gvr and namespace
 // This is meant to be a more generic version of GetLister()
 func NewGenericLister(dClient dynamic.Interface, listersMap map[string]dynamiclister.Lister, stopCh <-chan struct{}, gvr schema.GroupVersionResource, namespace string) dynamiclister.Lister {
@@ -596,7 +544,6 @@ func NewGenericLister(dClient dynamic.Interface, listersMap map[string]dynamicli
 	go reflector.Run(stopCh)
 
 	// Wait for reflector to sync the cache for the first time
-	// TODO: check if there's a better way to do this (listing all the nodes seems wasteful)
 	// Note: Based on the docs WaitForNamedCacheSync seems to be used to check if an informer has synced
 	// but the function is generic enough so we can use
 	// it for reflectors as well
