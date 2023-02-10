@@ -441,7 +441,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: reserve-resources
-        image: k8s.gcr.io/pause
+        image: registry.k8s.io/pause
         resources:
           requests:
             cpu: "200m"
@@ -464,7 +464,7 @@ spec:
         app: overprovisioning-autoscaler
     spec:
       containers:
-        - image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
+        - image: registry.k8s.io/cluster-proportional-autoscaler-amd64:1.8.1
           name: autoscaler
           command:
             - /cluster-proportional-autoscaler

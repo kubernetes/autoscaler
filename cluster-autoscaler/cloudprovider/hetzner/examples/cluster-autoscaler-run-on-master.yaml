@@ -152,7 +152,7 @@ spec:
                   - key: node-role.kubernetes.io/master
                     operator: Exists
       containers:
-        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:latest  # or your custom image
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:latest  # or your custom image
           name: cluster-autoscaler
           resources:
             limits:
