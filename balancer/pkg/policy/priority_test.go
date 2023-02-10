@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaling/balancer/pkg/pods"
+	"k8s.io/autoscaler/balancer/pkg/pods"
 )
 
 func TestDistributeByPriority(t *testing.T) {
