@@ -178,8 +178,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 	podEquivalenceGroups := buildPodEquivalenceGroups(unschedulablePods)
 
+	upcomingCounts, _ := clusterStateRegistry.GetUpcomingNodes()
 	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
-	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
+	for nodeGroup, numberOfNodes := range upcomingCounts {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
 			return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
