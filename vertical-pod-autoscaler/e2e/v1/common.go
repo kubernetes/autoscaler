@@ -144,7 +144,7 @@ func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
 		defaultHamsterReplicas,                     /*replicas*/
 		hamsterLabels,                              /*podLabels*/
 		GetHamsterContainerNameByIndex(0),          /*imageName*/
-		"registry.k8s.io/ubuntu-slim:0.1",               /*image*/
+		"registry.k8s.io/ubuntu-slim:0.1",          /*image*/
 		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
