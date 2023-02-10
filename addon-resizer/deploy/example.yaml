@@ -41,7 +41,7 @@ spec:
     spec:
       serviceAccountName: pod-nanny
       containers:
-        - image: k8s.gcr.io/autoscaling/addon-resizer:1.8.14
+        - image: registry.k8s.io/autoscaling/addon-resizer:1.8.14
           imagePullPolicy: Always
           name: pod-nanny
           resources:

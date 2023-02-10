@@ -234,7 +234,7 @@ fullnameOverride: ""
 
 image:
   # image.repository -- Image repository
-  repository: k8s.gcr.io/autoscaling/cluster-autoscaler
+  repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
   tag: v1.23.0
   # image.pullPolicy -- Image pull policy
