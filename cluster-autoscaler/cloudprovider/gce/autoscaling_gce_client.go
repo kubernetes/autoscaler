@@ -202,13 +202,10 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 	return client.waitForOp(op, migRef.Project, migRef.Zone, false)
 }
 
-func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName string, delta int64, existingInstances []string) error {
+func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName string, delta int64, existingInstanceProviderIds []string) error {
 	registerRequest("instance_group_managers", "create_instances")
 	req := gce.InstanceGroupManagersCreateInstancesRequest{}
-	instanceNames := map[string]bool{}
-	for _, inst := range existingInstances {
-		instanceNames[inst] = true
-	}
+	instanceNames := instanceIdsToNamesMap(existingInstanceProviderIds)
 	req.Instances = make([]*gce.PerInstanceConfig, 0, delta)
 	for i := int64(0); i < delta; i++ {
 		newInstanceName := generateInstanceName(baseName, instanceNames)
@@ -220,6 +217,20 @@ func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName st
 		return err
 	}
 	return client.waitForOp(op, migRef.Project, migRef.Zone, false)
+}
+
+func instanceIdsToNamesMap(instanceProviderIds []string) map[string]bool {
+	instanceNames := make(map[string]bool, len(instanceProviderIds))
+	for _, inst := range instanceProviderIds {
+		ref, err := GceRefFromProviderId(inst)
+		if err != nil {
+			klog.Warningf("Failed to extract instance name from %q: %v", inst, err)
+		} else {
+			inst = ref.Name
+		}
+		instanceNames[inst] = true
+	}
+	return instanceNames
 }
 
 func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string, isDeletion bool) error {
