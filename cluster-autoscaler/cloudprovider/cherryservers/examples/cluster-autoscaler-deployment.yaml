@@ -32,7 +32,7 @@ spec:
       serviceAccountName: cluster-autoscaler
       containers:
         - name: cluster-autoscaler
-          image: k8s.gcr.io/autoscaling/cluster-autoscaler:latest
+          image: registry.k8s.io/autoscaling/cluster-autoscaler:latest
           imagePullPolicy: Always
           env:
             - name: BOOTSTRAP_TOKEN_ID

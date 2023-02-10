@@ -188,7 +188,7 @@ spec:
                 secretKeyRef:
                   key: Deployment
                   name: cluster-autoscaler-azure
-          image: k8s.gcr.io/autoscaling/cluster-autoscaler:{{ ca_version }}
+          image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
           imagePullPolicy: Always
           name: cluster-autoscaler
           resources:
