@@ -75,7 +75,7 @@ Return the appropriate apiVersion for podsecuritypolicy.
 {{- else -}}
 {{- print "policy/v1beta1" -}}
 {{- end -}}
-{{- end -}
+{{- end -}}
 
 {{/*
 Return the appropriate apiVersion for podDisruptionBudget.
