@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	proc "k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 
@@ -40,6 +41,7 @@ func NewFilteringPodListProcessor() *filteringPodListProcessor {
 			NewTransformDataNodes(),
 		},
 		filters: []proc.PodListProcessor{
+			podlistprocessor.NewCurrentlyDrainedNodesPodListProcessor(),
 			NewFilterOutLongPending(),
 			NewFilterOutSchedulablePodListProcessor(),
 		},
