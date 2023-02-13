@@ -4,3 +4,5 @@ approvers:
 reviewers:
 - mwielgus
 - kgolab
+labels:
+- balancer
