@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -82,6 +83,12 @@ func (aws *awsCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
 func (aws *awsCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (aws *awsCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(aws, node)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
