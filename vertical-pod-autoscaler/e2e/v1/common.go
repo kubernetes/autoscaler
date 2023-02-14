@@ -144,7 +144,7 @@ func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
 		defaultHamsterReplicas,                     /*replicas*/
 		hamsterLabels,                              /*podLabels*/
 		GetHamsterContainerNameByIndex(0),          /*imageName*/
-		"k8s.gcr.io/ubuntu-slim:0.1",               /*image*/
+		"registry.k8s.io/ubuntu-slim:0.1",          /*image*/
 		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
@@ -278,7 +278,7 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 
 	return apiv1.Container{
 		Name:  "hamster",
-		Image: "k8s.gcr.io/ubuntu-slim:0.1",
+		Image: "registry.k8s.io/ubuntu-slim:0.1",
 		Resources: apiv1.ResourceRequirements{
 			Requests: apiv1.ResourceList{
 				apiv1.ResourceCPU:    cpuQuantity,
