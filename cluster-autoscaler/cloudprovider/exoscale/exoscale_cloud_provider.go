@@ -25,6 +25,7 @@ import (
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 var _ cloudprovider.CloudProvider = (*exoscaleCloudProvider)(nil)
@@ -174,6 +175,12 @@ func (e *exoscaleCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
 func (e *exoscaleCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return nil
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (e *exoscaleCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(e, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
