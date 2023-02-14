@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -118,7 +117,8 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		return simulator.ScaleDownDisabledAnnotation, nil
 	}
 
-	utilInfo, err := utilization.Calculate(nodeInfo, context.IgnoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, context.CloudProvider.GPULabel(), timestamp)
+	gpuConfig := context.CloudProvider.GetNodeGpuConfig(node)
+	utilInfo, err := utilization.Calculate(nodeInfo, context.IgnoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, gpuConfig, timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 	}
@@ -154,7 +154,8 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 func (c *Checker) isNodeBelowUtilizationThreshold(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
 	var err error
-	if gpu.NodeHasGpu(context.CloudProvider.GPULabel(), node) {
+	gpuConfig := context.CloudProvider.GetNodeGpuConfig(node)
+	if gpuConfig != nil {
 		threshold, err = c.thresholdGetter.GetScaleDownGpuUtilizationThreshold(context, nodeGroup)
 		if err != nil {
 			return false, err

@@ -86,7 +86,7 @@ const (
 	RancherProviderName = "rancher"
 )
 
-// GpuConfig contains the label, type and the resource name for an accelerator (e.g. gpu)
+// GpuConfig contains the label, type and the resource name for a GPU.
 type GpuConfig struct {
 	Label        string
 	Type         string
