@@ -65,6 +65,12 @@ func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes() map[string]struct{
 	return availableGPUTypes
 }
 
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (kubemark *KubemarkCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(kubemark, node)
+}
+
 // NodeGroups returns all node groups configured for this cloud provider.
 func (kubemark *KubemarkCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return []cloudprovider.NodeGroup{}
