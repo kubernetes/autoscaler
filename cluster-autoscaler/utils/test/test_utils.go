@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kube_types "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -238,6 +239,20 @@ func AddGpuLabelToNode(node *apiv1.Node) {
 // GetGPULabel return GPULabel on the node. This is only used in unit tests.
 func GetGPULabel() string {
 	return gpuLabel
+}
+
+// GetGpuConfigFromNode returns the GPU of the node if it has one. This is only used in unit tests.
+func GetGpuConfigFromNode(node *apiv1.Node) *cloudprovider.GpuConfig {
+	gpuType, hasGpuLabel := node.Labels[gpuLabel]
+	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[resourceNvidiaGPU]
+	if hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero()) {
+		return &cloudprovider.GpuConfig{
+			Label:        gpuLabel,
+			Type:         gpuType,
+			ResourceName: resourceNvidiaGPU,
+		}
+	}
+	return nil
 }
 
 // SetNodeReadyState sets node ready state to either ConditionTrue or ConditionFalse.

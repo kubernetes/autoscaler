@@ -118,3 +118,13 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 	}
 	return false
 }
+
+// GetNodeGPUFromCloudProvider returns the GPU the node has. Returned GPU has the GPU label of the
+// passed in cloud provider. If the node doesn't have a GPU, returns nil.
+func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
+	gpuLabel := provider.GPULabel()
+	if NodeHasGpu(gpuLabel, node) {
+		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ResourceName: ResourceNvidiaGPU}
+	}
+	return nil
+}

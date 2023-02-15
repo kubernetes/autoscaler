@@ -86,6 +86,13 @@ const (
 	RancherProviderName = "rancher"
 )
 
+// GpuConfig contains the label, type and the resource name for a GPU.
+type GpuConfig struct {
+	Label        string
+	Type         string
+	ResourceName apiv1.ResourceName
+}
+
 // CloudProvider contains configuration info and functions for interacting with
 // cloud provider (GCE, AWS, etc).
 type CloudProvider interface {
@@ -126,6 +133,10 @@ type CloudProvider interface {
 
 	// GetAvailableGPUTypes return all available GPU types cloud provider supports.
 	GetAvailableGPUTypes() map[string]struct{}
+
+	// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+	// any GPUs, it returns nil.
+	GetNodeGpuConfig(*apiv1.Node) *GpuConfig
 
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
