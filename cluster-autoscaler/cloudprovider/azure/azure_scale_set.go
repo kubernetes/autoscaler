@@ -305,6 +305,30 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 	return vmList, nil
 }
 
+// GetScaleSetVms returns list of nodes for flexible scale set.
+func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *retry.Error) {
+	klog.V(4).Infof("GetFlexibleScaleSetVms: starts")
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
+	defer cancel()
+
+	vmssInfo, err := scaleSet.getVMSSFromCache()
+
+	if err != nil {
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		var rerr = &retry.Error{
+			RawError: err,
+		}
+		return nil, rerr
+	}
+	vmList, rerr := scaleSet.manager.azClient.virtualMachinesClient.ListVmssFlexVMsWithoutInstanceView(ctx, *vmssInfo.ID)
+	klog.V(4).Infof("GetFlexibleScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
+	if rerr != nil {
+		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, rerr)
+		return nil, rerr
+	}
+	return vmList, nil
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
@@ -511,20 +535,47 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
 	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 
-	vms, rerr := scaleSet.GetScaleSetVms()
-	if rerr != nil {
-		if isAzureRequestsThrottled(rerr) {
-			// Log a warning and update the instance refresh time so that it would retry after cache expiration
-			klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
-			scaleSet.lastInstanceRefresh = lastRefresh
-			return scaleSet.instanceCache, nil
-		}
-		return nil, rerr.Error()
+	set, err := scaleSet.getVMSSFromCache()
+
+	if err != nil {
+		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
+		return nil, err
 	}
 
-	scaleSet.instanceCache = buildInstanceCache(vms)
-	scaleSet.lastInstanceRefresh = lastRefresh
-	klog.V(4).Infof("Nodes: returns")
+	if set.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Uniform {
+		vms, rerr := scaleSet.GetScaleSetVms()
+		if rerr != nil {
+			if isAzureRequestsThrottled(rerr) {
+				// Log a warning and update the instance refresh time so that it would retry after cache expiration
+				klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
+				scaleSet.lastInstanceRefresh = lastRefresh
+				return scaleSet.instanceCache, nil
+			}
+			return nil, rerr.Error()
+		}
+
+		scaleSet.instanceCache = buildInstanceCache(vms)
+		scaleSet.lastInstanceRefresh = lastRefresh
+		klog.V(4).Infof("Nodes: returns")
+
+	} else {
+		vms, rerr := scaleSet.GetFlexibleScaleSetVms()
+		if rerr != nil {
+			if isAzureRequestsThrottled(rerr) {
+				// Log a warning and update the instance refresh time so that it would retry after cache expiration
+				klog.Warningf("GetFlexibleScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
+				scaleSet.lastInstanceRefresh = lastRefresh
+				return scaleSet.instanceCache, nil
+			}
+			return nil, rerr.Error()
+		}
+
+		scaleSet.instanceCache = buildInstanceCacheForFlexVms(vms)
+		scaleSet.lastInstanceRefresh = lastRefresh
+		klog.V(4).Infof("Nodes: returns")
+
+	}
+
 	return scaleSet.instanceCache, nil
 }
 
@@ -549,6 +600,33 @@ func buildInstanceCache(vms []compute.VirtualMachineScaleSetVM) []cloudprovider.
 		instances = append(instances, cloudprovider.Instance{
 			Id:     "azure://" + resourceID,
 			Status: instanceStatusFromVM(vm),
+		})
+	}
+
+	return instances
+}
+
+// Note that the GetFlexibleScaleSetVms() results is not used directly because for the List endpoint,
+// their resource ID format is not consistent with Get endpoint
+func buildInstanceCacheForFlexVms(vms []compute.VirtualMachine) []cloudprovider.Instance {
+	instances := []cloudprovider.Instance{}
+
+	for _, vm := range vms {
+		// The resource ID is empty string, which indicates the instance may be in deleting state.
+		if len(*vm.ID) == 0 {
+			continue
+		}
+
+		resourceID, err := convertResourceGroupNameToLower(*vm.ID)
+		if err != nil {
+			// This shouldn't happen. Log a warning message for tracking.
+			klog.Warningf("buildInstanceCache.convertResourceGroupNameToLower failed with error: %v", err)
+			continue
+		}
+
+		instances = append(instances, cloudprovider.Instance{
+			Id:     "azure://" + resourceID,
+			Status: instanceStatusFromFlexVM(vm),
 		})
 	}
 
@@ -580,6 +658,25 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 
 // instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus
 func instanceStatusFromVM(vm compute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
+	if vm.ProvisioningState == nil {
+		return nil
+	}
+
+	status := &cloudprovider.InstanceStatus{}
+	switch *vm.ProvisioningState {
+	case string(compute.ProvisioningStateDeleting):
+		status.State = cloudprovider.InstanceDeleting
+	case string(compute.ProvisioningStateCreating):
+		status.State = cloudprovider.InstanceCreating
+	default:
+		status.State = cloudprovider.InstanceRunning
+	}
+
+	return status
+}
+
+// instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus
+func instanceStatusFromFlexVM(vm compute.VirtualMachine) *cloudprovider.InstanceStatus {
 	if vm.ProvisioningState == nil {
 		return nil
 	}
