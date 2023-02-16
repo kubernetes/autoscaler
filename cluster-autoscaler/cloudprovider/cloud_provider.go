@@ -72,6 +72,8 @@ const (
 	LinodeProviderName = "linode"
 	// ScalewayProviderName gets the provider name of scaleway
 	ScalewayProviderName = "scaleway"
+	// VolcengineProviderName gets the provider name of volcengine
+	VolcengineProviderName = "volcengine"
 	// VultrProviderName gets the provider name of vultr
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
