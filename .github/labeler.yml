@@ -1,0 +1,4 @@
+#This module configures the GitHub labeler to apply the "pci" label to all pci related changes automatically requiring an independent PR review. 
+
+pci:
+- vertical-pod-autoscaler/**/* #Directory that must comply with PCI change management
