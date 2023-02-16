@@ -261,7 +261,7 @@ func HasLocalStorage(pod *apiv1.Pod) bool {
 }
 
 func isLocalVolume(volume *apiv1.Volume) bool {
-	return volume.HostPath != nil || volume.EmptyDir != nil
+	return volume.HostPath != nil || (volume.EmptyDir != nil && volume.EmptyDir.Medium != apiv1.StorageMediumMemory)
 }
 
 // This only checks if a matching PDB exist and therefore if it makes sense to attempt drain simulation,
