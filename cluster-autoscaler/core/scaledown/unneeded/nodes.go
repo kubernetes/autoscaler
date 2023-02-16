@@ -185,7 +185,6 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, 
 	if reason := verifyMinSize(node.Name, nodeGroup, nodeGroupSize, as); reason != simulator.NoReason {
 		return reason
 	}
-	nodeGroupSize[nodeGroup.Id()]--
 
 	resourceDelta, err := n.limitsFinder.DeltaForNode(context, node, nodeGroup, resourcesWithLimits)
 	if err != nil {
@@ -209,6 +208,7 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, 
 		return simulator.MinimalResourceLimitExceeded
 	}
 
+	nodeGroupSize[nodeGroup.Id()]--
 	return simulator.NoReason
 }
 
