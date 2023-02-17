@@ -1053,7 +1053,7 @@ func TestAuthError(t *testing.T) {
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(nil, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 
-	aerr := executeScaleUp(&context, clusterStateRegistry, info, "", time.Now())
+	aerr := executeScaleUp(&context, clusterStateRegistry, info, "", "", time.Now())
 	assert.Error(t, aerr)
 
 	req, err := http.NewRequest("GET", "/", nil)
