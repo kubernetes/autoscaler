@@ -1413,8 +1413,6 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				} else {
 					t.Errorf("Expected node label %q to exist in node", key)
 				}
-				if value != config.expectedNodeLabels[key] {
-				}
 			}
 		}
 	}
