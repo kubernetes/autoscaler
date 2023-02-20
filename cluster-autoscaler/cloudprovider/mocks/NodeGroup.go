@@ -111,6 +111,20 @@ func (_m *NodeGroup) Delete() error {
 	return r0
 }
 
+// MarkNodesForDeletion provides a mock function with given fields: _a0
+func (_m *NodeGroup) MarkNodesForDeletion(_a0 []*v1.Node) error {
+	ret := _m.Called(_a0)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]*v1.Node) error); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeleteNodes provides a mock function with given fields: _a0
 func (_m *NodeGroup) DeleteNodes(_a0 []*v1.Node) error {
 	ret := _m.Called(_a0)

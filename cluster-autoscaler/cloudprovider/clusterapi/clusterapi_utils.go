@@ -63,9 +63,14 @@ var (
 	errInvalidMaxAnnotation = errors.New("invalid max annotation")
 
 	// machineDeleteAnnotationKey is the annotation used by cluster-api to indicate
-	// that a machine should be deleted. Because this key can be affected by the
+	// that a machine should be preferred for deletion. Because this key can be affected by the
 	// CAPI_GROUP env variable, it is initialized here.
 	machineDeleteAnnotationKey = getMachineDeleteAnnotationKey()
+
+	// markMachineForDelete is the annotation used by cluster-api to indicate
+	// that a machine should be deleted ASAP. Because this key can be affected by the
+	// CAPI_GROUP env variable, it is initialized here.
+	markMachineForDeleteAnnotationKey = getMarkMachineForDeleteAnnotationKey()
 
 	// machineAnnotationKey is the annotation used by the cluster-api on Node objects
 	// to specify the name of the related Machine object. Because this can be affected
@@ -265,10 +270,21 @@ func getNodeGroupMaxSizeAnnotationKey() string {
 }
 
 // getMachineDeleteAnnotationKey returns the key that is used by cluster-api for marking
-// machines to be deleted. This function is needed because the user can change the default
+// machines to be preferred for deletion during scaling events.
+// This function is needed because the user can change the default
 // group name by using the CAPI_GROUP environment variable.
 func getMachineDeleteAnnotationKey() string {
 	key := fmt.Sprintf("%s/delete-machine", getCAPIGroup())
+	return key
+}
+
+// getMarkMachineForDeleteAnnotationKey returns the key that is used by cluster-api for marking
+// machines to be deleted as soon as possible by cluster-api without a scaling event occurring.
+// This function is needed because the user can change the default group name by using the CAPI_GROUP
+// environment variable. A new annotation was needed to avoid breaking compatibility with the existing
+// delete-machine annotation that only marks nodes as "preferred" for deletion during scaling events.
+func getMarkMachineForDeleteAnnotationKey() string {
+	key := fmt.Sprintf("%s/machine-marked-for-delete", getCAPIGroup())
 	return key
 }
 

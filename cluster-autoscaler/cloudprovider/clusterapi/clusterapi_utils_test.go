@@ -876,6 +876,11 @@ func Test_getKeyHelpers(t *testing.T) {
 			testfunc: getMachineDeleteAnnotationKey,
 		},
 		{
+			name:     "test group, mark machine for delete annotation key",
+			expected: fmt.Sprintf("%s/machine-marked-for-delete", testgroup),
+			testfunc: getMarkMachineForDeleteAnnotationKey,
+		},
+		{
 			name:     "test group, machine annotation key",
 			expected: fmt.Sprintf("%s/machine", testgroup),
 			testfunc: getMachineAnnotationKey,

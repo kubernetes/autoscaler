@@ -93,6 +93,13 @@ func (asg *asg) Belongs(node *apiv1.Node) (bool, error) {
 	return false, fmt.Errorf("Unable to find node %s in cluster", node.Name)
 }
 
+// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+// Error is returned either on failure or if the given node doesn't belong to this node group.
+func (asg *asg) MarkNodesForDeletion(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (asg *asg) DeleteNodes(nodes []*apiv1.Node) error {
 	if asg.cluster.WorkerCount-len(nodes) < asg.MinSize() {

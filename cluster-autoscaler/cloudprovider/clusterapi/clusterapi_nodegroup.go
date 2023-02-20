@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -88,6 +89,46 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 	return ng.scalableResource.SetSize(size + delta)
 }
 
+// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+// Error is returned on failure.
+func (ng *nodegroup) MarkNodesForDeletion(nodes []*corev1.Node) error {
+	ng.machineController.accessLock.Lock()
+	defer ng.machineController.accessLock.Unlock()
+
+	// Annotate the corresponding machine that it is a suitable candidate for deletion.
+	// Fail fast on any error.
+	for _, node := range nodes {
+		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+		if err != nil {
+			return err
+		}
+		if machine == nil {
+			return fmt.Errorf("unknown machine for node %q", node.Spec.ProviderID)
+		}
+
+		machine = machine.DeepCopy()
+
+		if !machine.GetDeletionTimestamp().IsZero() {
+			// The machine for this node is already being deleted
+			continue
+		}
+
+		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
+		if err != nil {
+			return err
+		}
+
+		klog.V(4).Infof("Marking machine for deletion: %v", machine.GetName())
+
+		if err := nodeGroup.scalableResource.MarkMachineForImmediateDeletion(machine); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // DeleteNodes deletes nodes from this node group. Error is returned
 // either on failure or if the given node doesn't belong to this node
 // group. This function should wait until node group size is updated.
@@ -101,7 +142,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		return err
 	}
 
-	// if we are at minSize already we wail early.
+	// if we are at minSize already we fail early.
 	if int(replicas) <= ng.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
@@ -153,7 +194,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			return err
 		}
 
-		if err := nodeGroup.scalableResource.MarkMachineForDeletion(machine); err != nil {
+		if err := nodeGroup.scalableResource.MarkMachineForPreferredDeletion(machine); err != nil {
 			return err
 		}
 

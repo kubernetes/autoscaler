@@ -105,6 +105,13 @@ func (ng *nodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return instances, nil
 }
 
+// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+// Error is returned either on failure or if the given node doesn't belong to this node group.
+func (ng *nodeGroup) MarkNodesForDeletion(nodes []*corev1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the specified nodes from the node group.
 func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
 	if ng.replicas-len(toDelete) < ng.MinSize() {

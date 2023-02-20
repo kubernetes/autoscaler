@@ -269,6 +269,13 @@ func (agentPool *AKSAgentPool) IncreaseSize(delta int) error {
 	return agentPool.SetSize(targetSize, false)
 }
 
+// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+// Error is returned either on failure or if the given node doesn't belong to this node group.
+func (agentPool *AKSAgentPool) MarkNodesForDeletion(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // deleteNodesInternal calls the underlying vm service to delete the node.
 // It should be called within lock protected.
 func (agentPool *AKSAgentPool) deleteNodesInternal(providerIDs []string) (deleted int, err error) {

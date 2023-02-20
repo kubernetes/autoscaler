@@ -176,7 +176,14 @@ type NodeGroup interface {
 	// node group size is updated. Implementation required.
 	IncreaseSize(delta int) error
 
-	// DeleteNodes deletes nodes from this node group. Error is returned either on
+	// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+	// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+	// Error is returned either on failure or if the given node doesn't belong to this node group.
+	// Implementation required.
+	MarkNodesForDeletion([]*apiv1.Node) error
+
+	// DeleteNodes deletes nodes from this node group and shrinks the node
+	// group target size by the number of deleted nodes. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated. Implementation required.
 	DeleteNodes([]*apiv1.Node) error

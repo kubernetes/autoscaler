@@ -18,6 +18,7 @@ package oci
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -88,6 +89,13 @@ func (ip *InstancePoolNodeGroup) IncreaseSize(delta int) error {
 	}
 
 	return ip.manager.SetInstancePoolSize(*ip, size+delta)
+}
+
+// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+// Error is returned either on failure or if the given node doesn't belong to this node group.
+func (ip *InstancePoolNodeGroup) MarkNodesForDeletion(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this instance-pool. Error is returned either on

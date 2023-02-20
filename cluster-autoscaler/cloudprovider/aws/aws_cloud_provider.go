@@ -289,6 +289,13 @@ func (ng *AwsNodeGroup) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
+// MarkNodesForDeletion notifies the cloud provider that the provided nodes need to be deleted.
+// The cloud provider is expected to handle deletion of the marked nodes gracefully.
+// Error is returned either on failure or if the given node doesn't belong to this node group.
+func (ng *AwsNodeGroup) MarkNodesForDeletion(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (ng *AwsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	size := ng.asg.curSize
