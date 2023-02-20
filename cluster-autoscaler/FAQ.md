@@ -441,7 +441,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: reserve-resources
-        image: registry.k8s.io/pause
+        image: registry.k8s.io/pause:3.9
         resources:
           requests:
             cpu: "200m"
