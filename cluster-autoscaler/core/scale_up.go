@@ -209,7 +209,6 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 
 	now := time.Now()
-	gpuLabel := context.CloudProvider.GPULabel()
 	availableGPUTypes := context.CloudProvider.GetAvailableGPUTypes()
 	expansionOptions := make(map[string]expander.Option, 0)
 	skippedNodeGroups := map[string]status.Reasons{}
@@ -405,7 +404,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 		klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 		for _, info := range scaleUpInfos {
-			typedErr := executeScaleUp(context, clusterStateRegistry, info, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil), now)
+			gpuConfig := context.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
+			gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
+			typedErr := executeScaleUp(context, clusterStateRegistry, info, gpuResourceName, gpuType, now)
 			if typedErr != nil {
 				return scaleUpError(
 					&status.ScaleUpStatus{
@@ -444,7 +445,6 @@ func ScaleUpToNodeGroupMinSize(context *context.AutoscalingContext, processors *
 	nodes []*apiv1.Node, nodeInfos map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	now := time.Now()
 	nodeGroups := context.CloudProvider.NodeGroups()
-	gpuLabel := context.CloudProvider.GPULabel()
 	availableGPUTypes := context.CloudProvider.GetAvailableGPUTypes()
 	scaleUpInfos := make([]nodegroupset.ScaleUpInfo, 0)
 
@@ -521,9 +521,9 @@ func ScaleUpToNodeGroupMinSize(context *context.AutoscalingContext, processors *
 			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to get node info for node group %s", info.Group.Id())
 			continue
 		}
-
-		gpuType := gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil)
-		if err := executeScaleUp(context, clusterStateRegistry, info, gpuType, now); err != nil {
+		gpuConfig := context.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
+		gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
+		if err := executeScaleUp(context, clusterStateRegistry, info, gpuResourceName, gpuType, now); err != nil {
 			return scaleUpError(
 				&status.ScaleUpStatus{
 					FailedResizeNodeGroups: []cloudprovider.NodeGroup{info.Group},
@@ -605,7 +605,7 @@ func filterNodeGroupsByPods(
 	return result
 }
 
-func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, info nodegroupset.ScaleUpInfo, gpuType string, now time.Time) errors.AutoscalerError {
+func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, info nodegroupset.ScaleUpInfo, gpuResourceName, gpuType string, now time.Time) errors.AutoscalerError {
 	klog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
@@ -620,7 +620,7 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 		info.Group,
 		increase,
 		time.Now())
-	metrics.RegisterScaleUp(increase, gpuType)
+	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	return nil
