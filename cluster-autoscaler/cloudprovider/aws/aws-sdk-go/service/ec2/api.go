@@ -163607,6 +163607,18 @@ const (
 	// InstanceTypeInf124xlarge is a InstanceType enum value
 	InstanceTypeInf124xlarge = "inf1.24xlarge"
 
+	// InstanceTypeInf2Xlarge is a InstanceType enum value
+	InstanceTypeInf2Xlarge = "inf2.xlarge"
+
+	// InstanceTypeInf28xlarge is a InstanceType enum value
+	InstanceTypeInf28xlarge = "inf2.8xlarge"
+
+	// InstanceTypeInf224xlarge is a InstanceType enum value
+	InstanceTypeInf224xlarge = "inf2.24xlarge"
+
+	// InstanceTypeInf248xlarge is a InstanceType enum value
+	InstanceTypeInf248xlarge = "inf2.48xlarge"
+
 	// InstanceTypeIs4genMedium is a InstanceType enum value
 	InstanceTypeIs4genMedium = "is4gen.medium"
 
