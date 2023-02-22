@@ -22,6 +22,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -287,12 +289,15 @@ func TestAnnotations(t *testing.T) {
 	diskQuantity := resource.MustParse("100Gi")
 	gpuQuantity := resource.MustParse("1")
 	maxPodsQuantity := resource.MustParse("42")
+	expectedTaints := []v1.Taint{{Key: "key1", Effect: v1.TaintEffectNoSchedule, Value: "value1"}, {Key: "key2", Effect: v1.TaintEffectNoExecute, Value: "value2"}}
 	annotations := map[string]string{
 		cpuKey:          cpuQuantity.String(),
 		memoryKey:       memQuantity.String(),
 		diskCapacityKey: diskQuantity.String(),
 		gpuCountKey:     gpuQuantity.String(),
 		maxPodsKey:      maxPodsQuantity.String(),
+		taintsKey:       "key1=value1:NoSchedule,key2=value2:NoExecute",
+		labelsKey:       "key3=value3,key4=value4,key5=value5",
 	}
 
 	test := func(t *testing.T, testConfig *testConfig, testResource *unstructured.Unstructured) {
@@ -333,6 +338,15 @@ func TestAnnotations(t *testing.T) {
 		} else if maxPodsQuantity.Cmp(maxPods) != 0 {
 			t.Errorf("expected %v, got %v", maxPodsQuantity, maxPods)
 		}
+
+		taints := sr.Taints()
+		assert.Equal(t, expectedTaints, taints)
+
+		labels := sr.Labels()
+		assert.Len(t, labels, 3)
+		assert.Equal(t, "value3", labels["key3"])
+		assert.Equal(t, "value4", labels["key4"])
+		assert.Equal(t, "value5", labels["key5"])
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
