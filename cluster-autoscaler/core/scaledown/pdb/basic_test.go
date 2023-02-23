@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -102,7 +103,7 @@ var (
 	}
 )
 
-func TestCanDisrupt(t *testing.T) {
+func TestBasicCanRemovePods(t *testing.T) {
 	testCases := []struct {
 		name            string
 		podsLabel1      int
@@ -170,21 +171,22 @@ func TestCanDisrupt(t *testing.T) {
 	for _, test := range testCases {
 		pdb1.Status.DisruptionsAllowed = test.pdbsDisruptions[0]
 		pdb2.Status.DisruptionsAllowed = test.pdbsDisruptions[1]
-		pdbRemainingDisruptions, _ := NewPdbRemainingDisruptions(test.pdbs)
+		tracker := NewBasicRemainingPdbTracker()
+		assert.NoError(t, tracker.SetPdbs(test.pdbs))
 		pods := makePodsWithLabel(label1, test.podsLabel1)
 		pods2 := makePodsWithLabel(label2, test.podsLabel2-test.podsBothLabels)
 		if test.podsBothLabels > 0 {
 			addLabelToPods(pods[:test.podsBothLabels], label2)
 		}
 		pods = append(pods, pods2...)
-		gotDisrupt, inParallel, _ := pdbRemainingDisruptions.CanDisrupt(pods)
+		gotDisrupt, inParallel, _ := tracker.CanRemovePods(pods)
 		if gotDisrupt != test.canDisrupt || inParallel != test.inParallel {
 			t.Errorf("%s: CanDisrupt() return %v, %v, want %v, %v", test.name, gotDisrupt, inParallel, test.canDisrupt, test.inParallel)
 		}
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestBasicRemovePods(t *testing.T) {
 	testCases := []struct {
 		name                   string
 		podsLabel1             int
@@ -217,7 +219,8 @@ func TestUpdate(t *testing.T) {
 	for _, test := range testCases {
 		pdb1.Status.DisruptionsAllowed = test.pdbsDisruptions[0]
 		pdb2.Status.DisruptionsAllowed = test.pdbsDisruptions[1]
-		pdbRemainingDisruptions, _ := NewPdbRemainingDisruptions(test.pdbs)
+		tracker := NewBasicRemainingPdbTracker()
+		assert.NoError(t, tracker.SetPdbs(test.pdbs))
 		pods := makePodsWithLabel(label1, test.podsLabel1)
 		pods2 := makePodsWithLabel(label2, test.podsLabel2-test.podsBothLabels)
 		if test.podsBothLabels > 0 {
@@ -227,9 +230,10 @@ func TestUpdate(t *testing.T) {
 
 		pdb1Copy.Status.DisruptionsAllowed = test.updatedPdbsDisruptions[0]
 		pdb2Copy.Status.DisruptionsAllowed = test.updatedPdbsDisruptions[1]
-		want, _ := NewPdbRemainingDisruptions(test.updatedPdbs)
-		pdbRemainingDisruptions.Update(pods)
-		if diff := cmp.Diff(want.pdbs, pdbRemainingDisruptions.pdbs); diff != "" {
+		wantTracker := NewBasicRemainingPdbTracker()
+		assert.NoError(t, wantTracker.SetPdbs(test.updatedPdbs))
+		tracker.RemovePods(pods)
+		if diff := cmp.Diff(wantTracker.GetPdbs(), tracker.GetPdbs()); diff != "" {
 			t.Errorf("Update() diff (-want +got):\n%s", diff)
 		}
 	}
