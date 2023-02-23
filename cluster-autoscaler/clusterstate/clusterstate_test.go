@@ -29,7 +29,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
@@ -505,7 +505,7 @@ func TestUpcomingNodes(t *testing.T) {
 	SetNodeReadyState(ng5_2, true, now.Add(-time.Minute))
 	ng5_2.Spec.Taints = []apiv1.Taint{
 		{
-			Key:    deletetaint.ToBeDeletedTaint,
+			Key:    taints.ToBeDeletedTaint,
 			Value:  fmt.Sprint(time.Now().Unix()),
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
@@ -552,7 +552,7 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 	SetNodeReadyState(ng1_2, true, now.Add(-time.Minute))
 	ng1_2.Spec.Taints = []apiv1.Taint{
 		{
-			Key:    deletetaint.ToBeDeletedTaint,
+			Key:    taints.ToBeDeletedTaint,
 			Value:  fmt.Sprint(time.Now().Unix()),
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
