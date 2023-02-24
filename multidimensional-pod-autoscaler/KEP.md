@@ -92,7 +92,7 @@ Manual fine-tuning the timing or frequency to do vertical/horizontal scaling and
 ### Goals
 
 - Design and implement a holistic framework with a set of controllers to achieve multi-dimensional pod autoscaling (MPA).
-- Separate the decision actuation from recommendations for both horizontal and vertical autoscaling.
+- Separate the decision actuation from recommendations for both horizontal and vertical autoscaling, which enables users to replace the default recommender with their customized recommender.
 - Re-use existing HPA and VPA libraries as much as possible in MPA.
 
 ### Non-Goals
@@ -125,7 +125,7 @@ Our proposed MPA framework consists of three controllers (i.e., a recommender, a
 
 [multidimensional Pod scaling service]: https://cloud.google.com/kubernetes-engine/docs/how-to/multidimensional-pod-autoscaling
 
-**Metric Server API.** The Metric Server API serves both default metrics or custom metrics associated with any Kubernetes objects. Custom metrics could be the application latency, throughput, or any other application-specific metrics. HPA already consumes metrics from such [a variety of metric APIs] (e.g., `metrics.k8s.io` API for resource metrics provided by metrics-server, `custom.metrics.k8s.io` API for custom metrics provided by "adapter" API servers provided by metrics solution vendors, and the `external.metrics.k8s.io` API for external metrics provided by the custom metrics adapters as well. A popular choice for the metrics collector is Prometheus. The metrics are then used by the MPA Recommender for making autoscaling decisions.
+**Metrics APIs.** The Metrics APIs serve both default metrics or custom metrics associated with any Kubernetes objects. Custom metrics could be the application latency, throughput, or any other application-specific metrics. HPA already consumes metrics from such [a variety of metric APIs] (e.g., `metrics.k8s.io` API for resource metrics provided by metrics-server, `custom.metrics.k8s.io` API for custom metrics provided by "adapter" API servers provided by metrics solution vendors, and the `external.metrics.k8s.io` API for external metrics provided by the custom metrics adapters as well. A popular choice for the metrics collector is Prometheus. The metrics are then used by the MPA Recommender for making autoscaling decisions.
 
 [a variety of metric APIs]: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis
 
@@ -141,7 +141,7 @@ To actuate the decisions without losing availability, we plan to (1) evict pods 
 We use a web-hooked admission controller to manage vertical scaling because if the actuator directly updates the vertical scaling configurations through deployment, it will potentially overload etcd (as vertical scaling might be quite frequent).
 MPA Admission Controller intercepts Pod creation requests and rewrites the request by applying recommended resources to the Pod spec.
 We do not use the web-hooked admission controller to manage the horizontal scaling as it could slow down the pod creation process.
-In the future when the in-place vertical resizing is enabled, we can remove the web-hooked admission controller and only have the updater.
+In the future when the [in-place vertical resizing](https://github.com/kubernetes/enhancements/issues/1287) is enabled, we can remove the web-hooked admission controller and only have the updater.
 
 [<img src="./kep-imgs/mpa-action-actuation.png" width="400"/>](./kep-imgs/mpa-action-actuation.png "MPA Action Actuation")
 
@@ -377,6 +377,26 @@ previous answers based on experience in the field.
 -->
 
 #### Will enabling / using this feature result in any new API calls?
+No, replacing HPA/VPA with MPA only translates the way how recommendations are generated (separation of recommendation from actuation).
+The original API calls used by HPA/VPA are reused by MPA and no new API calls are used by MPA.
+
+#### Will enabling / using this feature result in introducing new API types?
+Yes, MPA introduces a new Custom Resource `MultidimPodAutoscaler`, similar to `VerticalPodAutoscaler`.
+
+#### Will enabling / using this feature result in any new calls to the cloud provider?
+No.
+
+#### Will enabling / using this feature result in increasing size or count of the existing API objects?
+No. It will not affect any existing API objects.
+
+#### Will enabling / using this feature result in increasing time taken by any operations covered by existing SLIs/SLOs?
+No. To the best of our knowledge, it will not cause any increasing time of [existing SLIs/SLOs](https://github.com/kubernetes/community/blob/master/sig-scalability/slos/slos.md).
+
+#### Will enabling / using this feature result in non-negligible increase of resource usage (CPU, RAM, disk, IO, ...) in any components?
+No.
+
+#### Can enabling / using this feature result in resource exhaustion of some node resources (PIDs, sockets, inodes, etc.)?
+No.
 
 <!--
 Describe them, providing:
