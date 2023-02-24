@@ -263,6 +263,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Times(2) // 1 to get pods + 1 per nodegroup when building nodeInfo map
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 
 	context.MaxNodesTotal = 10
@@ -463,6 +464,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	allNodeLister.SetNodes([]*apiv1.Node{n1})
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onNodeGroupCreateMock.On("Create", "autoprovisioned-TN2").Return(nil).Once()
 	onScaleUpMock.On("ScaleUp", "autoprovisioned-TN2", 1).Return(nil).Once()
@@ -614,6 +616,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice() // 1 to get pods + 1 per nodegroup when building nodeInfo map
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 
 	err = autoscaler.RunOnce(later.Add(time.Hour))
@@ -761,6 +764,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1, p2, p3}, nil).Times(2) // 1 to get pods + 1 when building nodeInfo map
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p4, p5, p6}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng2", 1).Return(nil).Once()
 
 	err = autoscaler.RunOnce(time.Now())
@@ -892,6 +896,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p3, p4}, nil).Times(2) // 1 to get pods + 1 when building nodeInfo map
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	err = autoscaler.RunOnce(time.Now())
 	assert.NoError(t, err)
@@ -991,6 +996,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p2, p3}, nil).Times(2) // 1 to get pods + 1 when building nodeInfo map
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	err = autoscaler.RunOnce(time.Now())
 	assert.NoError(t, err)
@@ -1280,7 +1286,7 @@ type candidateTrackingFakePlanner struct {
 	lastCandidateNodes map[string]bool
 }
 
-func (f *candidateTrackingFakePlanner) UpdateClusterState(podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, pdb []*policyv1.PodDisruptionBudget, currentTime time.Time) errors.AutoscalerError {
+func (f *candidateTrackingFakePlanner) UpdateClusterState(podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, currentTime time.Time) errors.AutoscalerError {
 	f.lastCandidateNodes = map[string]bool{}
 	for _, node := range scaleDownCandidates {
 		f.lastCandidateNodes[node.Name] = true
