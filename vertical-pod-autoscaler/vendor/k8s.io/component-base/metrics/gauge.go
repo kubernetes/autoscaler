@@ -46,7 +46,7 @@ func NewGauge(opts *GaugeOpts) *Gauge {
 
 	kc := &Gauge{
 		GaugeOpts:  opts,
-		lazyMetric: lazyMetric{stabilityLevel: opts.StabilityLevel},
+		lazyMetric: lazyMetric{},
 	}
 	kc.setPrometheusGauge(noop)
 	kc.lazyInit(kc, BuildFQName(opts.Namespace, opts.Subsystem, opts.Name))
@@ -115,7 +115,7 @@ func NewGaugeVec(opts *GaugeOpts, labels []string) *GaugeVec {
 		GaugeVec:       noopGaugeVec,
 		GaugeOpts:      opts,
 		originalLabels: labels,
-		lazyMetric:     lazyMetric{stabilityLevel: opts.StabilityLevel},
+		lazyMetric:     lazyMetric{},
 	}
 	cv.lazyInit(cv, fqName)
 	return cv

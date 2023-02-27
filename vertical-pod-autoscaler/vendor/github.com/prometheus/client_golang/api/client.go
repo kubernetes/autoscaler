@@ -17,7 +17,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"errors"
 	"net"
 	"net/http"
 	"net/url"
@@ -41,10 +40,6 @@ type Config struct {
 	// The address of the Prometheus to connect to.
 	Address string
 
-	// Client is used by the Client to drive HTTP requests. If not provided,
-	// a new one based on the provided RoundTripper (or DefaultRoundTripper) will be used.
-	Client *http.Client
-
 	// RoundTripper is used by the Client to drive HTTP requests. If not
 	// provided, DefaultRoundTripper will be used.
 	RoundTripper http.RoundTripper
@@ -55,22 +50,6 @@ func (cfg *Config) roundTripper() http.RoundTripper {
 		return DefaultRoundTripper
 	}
 	return cfg.RoundTripper
-}
-
-func (cfg *Config) client() http.Client {
-	if cfg.Client == nil {
-		return http.Client{
-			Transport: cfg.roundTripper(),
-		}
-	}
-	return *cfg.Client
-}
-
-func (cfg *Config) validate() error {
-	if cfg.Client != nil && cfg.RoundTripper != nil {
-		return errors.New("api.Config.RoundTripper and api.Config.Client are mutually exclusive")
-	}
-	return nil
 }
 
 // Client is the interface for an API client.
@@ -89,13 +68,9 @@ func NewClient(cfg Config) (Client, error) {
 	}
 	u.Path = strings.TrimRight(u.Path, "/")
 
-	if err := cfg.validate(); err != nil {
-		return nil, err
-	}
-
 	return &httpClient{
 		endpoint: u,
-		client:   cfg.client(),
+		client:   http.Client{Transport: cfg.roundTripper()},
 	}, nil
 }
 
@@ -109,7 +84,7 @@ func (c *httpClient) URL(ep string, args map[string]string) *url.URL {
 
 	for arg, val := range args {
 		arg = ":" + arg
-		p = strings.ReplaceAll(p, arg, val)
+		p = strings.Replace(p, arg, val, -1)
 	}
 
 	u := *c.endpoint

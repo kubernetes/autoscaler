@@ -18,8 +18,6 @@ import (
 	"encoding/json"
 
 	"github.com/go-openapi/swag"
-	"k8s.io/kube-openapi/pkg/internal"
-	jsonv2 "k8s.io/kube-openapi/pkg/internal/third_party/go-json-experiment/json"
 )
 
 // PathItemProps the path item specific properties
@@ -48,10 +46,6 @@ type PathItem struct {
 
 // UnmarshalJSON hydrates this items instance with the data from JSON
 func (p *PathItem) UnmarshalJSON(data []byte) error {
-	if internal.UseOptimizedJSONUnmarshaling {
-		return jsonv2.Unmarshal(data, p)
-	}
-
 	if err := json.Unmarshal(data, &p.Refable); err != nil {
 		return err
 	}
@@ -59,31 +53,6 @@ func (p *PathItem) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	return json.Unmarshal(data, &p.PathItemProps)
-}
-
-func (p *PathItem) UnmarshalNextJSON(opts jsonv2.UnmarshalOptions, dec *jsonv2.Decoder) error {
-	var x struct {
-		Extensions
-		PathItemProps
-	}
-
-	if err := opts.UnmarshalNext(dec, &x); err != nil {
-		return err
-	}
-
-	p.Extensions = x.Extensions
-	p.PathItemProps = x.PathItemProps
-
-	if err := p.Refable.Ref.fromMap(p.Extensions); err != nil {
-		return err
-	}
-
-	p.Extensions.sanitize()
-	if len(p.Extensions) == 0 {
-		p.Extensions = nil
-	}
-
-	return nil
 }
 
 // MarshalJSON converts this items object to JSON

@@ -35,7 +35,8 @@ type Interface interface {
 	MetricsV1beta1() metricsv1beta1.MetricsV1beta1Interface
 }
 
-// Clientset contains the clients for groups.
+// Clientset contains the clients for groups. Each group has exactly one
+// version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
 	metricsV1alpha1 *metricsv1alpha1.MetricsV1alpha1Client

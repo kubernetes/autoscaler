@@ -55,7 +55,6 @@ func ConfigToExecCluster(config *Config) (*clientauthenticationapi.Cluster, erro
 		InsecureSkipTLSVerify:    config.Insecure,
 		CertificateAuthorityData: caData,
 		ProxyURL:                 proxyURL,
-		DisableCompression:       config.DisableCompression,
 		Config:                   config.ExecProvider.Config,
 	}, nil
 }
@@ -80,7 +79,6 @@ func ExecClusterToConfig(cluster *clientauthenticationapi.Cluster) (*Config, err
 			ServerName: cluster.TLSServerName,
 			CAData:     cluster.CertificateAuthorityData,
 		},
-		Proxy:              proxy,
-		DisableCompression: cluster.DisableCompression,
+		Proxy: proxy,
 	}, nil
 }
