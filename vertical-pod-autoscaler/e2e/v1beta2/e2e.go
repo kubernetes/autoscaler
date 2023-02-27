@@ -38,7 +38,6 @@ import (
 	"k8s.io/component-base/logs"
 	"k8s.io/component-base/version"
 	"k8s.io/kubernetes/test/e2e/framework"
-	e2edebug "k8s.io/kubernetes/test/e2e/framework/debug"
 	e2ekubectl "k8s.io/kubernetes/test/e2e/framework/kubectl"
 	"k8s.io/kubernetes/test/e2e/framework/manifest"
 	e2emetrics "k8s.io/kubernetes/test/e2e/framework/metrics"
@@ -216,7 +215,7 @@ func setupSuite() {
 	// In large clusters we may get to this point but still have a bunch
 	// of nodes without Routes created. Since this would make a node
 	// unschedulable, we need to wait until all of them are schedulable.
-	framework.ExpectNoError(e2enode.WaitForAllNodesSchedulable(c, framework.TestContext.NodeSchedulableTimeout))
+	framework.ExpectNoError(framework.WaitForAllNodesSchedulable(c, framework.TestContext.NodeSchedulableTimeout))
 
 	// If NumNodes is not specified then auto-detect how many are scheduleable and not tainted
 	if framework.TestContext.CloudConfig.NumNodes == framework.DefaultNumNodes {
@@ -235,7 +234,7 @@ func setupSuite() {
 	// wasting the whole run), we allow for some not-ready pods (with the
 	// number equal to the number of allowed not-ready nodes).
 	if err := e2epod.WaitForPodsRunningReady(c, metav1.NamespaceSystem, int32(framework.TestContext.MinStartupPods), int32(framework.TestContext.AllowedNotReadyNodes), podStartupTimeout, map[string]string{}); err != nil {
-		e2edebug.DumpAllNamespaceInfo(c, metav1.NamespaceSystem)
+		framework.DumpAllNamespaceInfo(c, metav1.NamespaceSystem)
 		e2ekubectl.LogFailedContainers(c, metav1.NamespaceSystem, framework.Logf)
 		runKubernetesServiceTestContainer(c, metav1.NamespaceDefault)
 		framework.Failf("Error waiting for all pods to be running and ready: %v", err)
@@ -259,7 +258,7 @@ func setupSuite() {
 	}
 
 	if framework.TestContext.NodeKiller.Enabled {
-		nodeKiller := e2enode.NewNodeKiller(framework.TestContext.NodeKiller, c, framework.TestContext.Provider)
+		nodeKiller := framework.NewNodeKiller(framework.TestContext.NodeKiller, c, framework.TestContext.Provider)
 		go nodeKiller.Run(framework.TestContext.NodeKiller.NodeKillerStopCh)
 	}
 }
@@ -291,6 +290,7 @@ func setupSuitePerGinkgoNode() {
 func CleanupSuite() {
 	// Run on all Ginkgo nodes
 	framework.Logf("Running AfterSuite actions on all nodes")
+	framework.RunCleanupActions()
 }
 
 // AfterSuiteActions are actions that are run on ginkgo's SynchronizedAfterSuite
