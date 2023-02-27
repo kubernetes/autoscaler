@@ -36,11 +36,11 @@ type mutatingWebhookConfigurationManager struct {
 	configuration *atomic.Value
 	lister        admissionregistrationlisters.MutatingWebhookConfigurationLister
 	hasSynced     func() bool
-	// initialConfigurationSynced tracks if
+	// initialConfigurationSynced stores a boolean value, which tracks if
 	// the existing webhook configs have been synced (honored) by the
 	// manager at startup-- the informer has synced and either has no items
 	// or has finished executing updateConfiguration() once.
-	initialConfigurationSynced *atomic.Bool
+	initialConfigurationSynced *atomic.Value
 }
 
 var _ generic.Source = &mutatingWebhookConfigurationManager{}
@@ -51,7 +51,7 @@ func NewMutatingWebhookConfigurationManager(f informers.SharedInformerFactory) g
 		configuration:              &atomic.Value{},
 		lister:                     informer.Lister(),
 		hasSynced:                  informer.Informer().HasSynced,
-		initialConfigurationSynced: &atomic.Bool{},
+		initialConfigurationSynced: &atomic.Value{},
 	}
 
 	// Start with an empty list
@@ -80,7 +80,7 @@ func (m *mutatingWebhookConfigurationManager) HasSynced() bool {
 	if !m.hasSynced() {
 		return false
 	}
-	if m.initialConfigurationSynced.Load() {
+	if m.initialConfigurationSynced.Load().(bool) {
 		// the informer has synced and configuration has been updated
 		return true
 	}

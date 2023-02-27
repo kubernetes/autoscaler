@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"golang.org/x/term"
@@ -58,7 +59,7 @@ func (a *PromptingAuthLoader) LoadAuth(path string) (*clientauth.Info, error) {
 		if err != nil {
 			return &auth, err
 		}
-		err = os.WriteFile(path, data, 0600)
+		err = ioutil.WriteFile(path, data, 0600)
 		return &auth, err
 	}
 	authPtr, err := clientauth.LoadFromFile(path)

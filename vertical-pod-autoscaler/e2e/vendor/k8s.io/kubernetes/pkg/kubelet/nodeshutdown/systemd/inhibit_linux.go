@@ -21,6 +21,7 @@ package systemd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -192,7 +193,7 @@ InhibitDelayMaxSec=%.0f
 `, inhibitDelayMax.Seconds())
 
 	logindOverridePath := filepath.Join(logindConfigDirectory, kubeletLogindConf)
-	if err := os.WriteFile(logindOverridePath, []byte(inhibitOverride), 0644); err != nil {
+	if err := ioutil.WriteFile(logindOverridePath, []byte(inhibitOverride), 0644); err != nil {
 		return fmt.Errorf("failed writing logind shutdown inhibit override file %v: %w", logindOverridePath, err)
 	}
 

@@ -91,16 +91,15 @@ func validateOwnerReference(ownerReference metav1.OwnerReference, fldPath *field
 // ValidateOwnerReferences validates that a set of owner references are correctly defined.
 func ValidateOwnerReferences(ownerReferences []metav1.OwnerReference, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
-	firstControllerName := ""
+	controllerName := ""
 	for _, ref := range ownerReferences {
 		allErrs = append(allErrs, validateOwnerReference(ref, fldPath)...)
 		if ref.Controller != nil && *ref.Controller {
-			curControllerName := ref.Kind + "/" + ref.Name
-			if firstControllerName != "" {
+			if controllerName != "" {
 				allErrs = append(allErrs, field.Invalid(fldPath, ownerReferences,
-					fmt.Sprintf("Only one reference can have Controller set to true. Found \"true\" in references for %v and %v", firstControllerName, curControllerName)))
+					fmt.Sprintf("Only one reference can have Controller set to true. Found \"true\" in references for %v and %v", controllerName, ref.Name)))
 			} else {
-				firstControllerName = curControllerName
+				controllerName = ref.Name
 			}
 		}
 	}

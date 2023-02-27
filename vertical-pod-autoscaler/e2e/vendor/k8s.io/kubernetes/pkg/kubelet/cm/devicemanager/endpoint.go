@@ -50,7 +50,7 @@ type endpointImpl struct {
 // This is to be used during normal device plugin registration.
 func newEndpointImpl(p plugin.DevicePlugin) *endpointImpl {
 	return &endpointImpl{
-		api:          p.API(),
+		api:          p.Api(),
 		resourceName: p.Resource(),
 	}
 }

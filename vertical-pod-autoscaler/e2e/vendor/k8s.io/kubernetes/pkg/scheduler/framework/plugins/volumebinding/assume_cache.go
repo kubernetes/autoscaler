@@ -206,7 +206,7 @@ func (c *assumeCache) delete(obj interface{}) {
 		return
 	}
 
-	name, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+	name, err := cache.MetaNamespaceKeyFunc(obj)
 	if err != nil {
 		klog.ErrorS(&errObjectName{err}, "Failed to delete")
 		return

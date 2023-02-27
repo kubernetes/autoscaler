@@ -57,7 +57,7 @@ var _ = SIGDescribe("PodOSRejection [NodeConformance]", func() {
 					NodeName: linuxNode.Name, // Set the node to an node which doesn't support
 				},
 			}
-			pod = e2epod.NewPodClient(f).Create(pod)
+			pod = f.PodClient().Create(pod)
 			// Check the pod is still not running
 			err = e2epod.WaitForPodFailedReason(f.ClientSet, pod, "PodOSNotSupported", f.Timeouts.PodStartShort)
 			framework.ExpectNoError(err)

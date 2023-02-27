@@ -26,7 +26,6 @@ import (
 
 	errorsutil "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
@@ -48,12 +47,11 @@ type cacheEntry struct {
 type memCacheClient struct {
 	delegate discovery.DiscoveryInterface
 
-	lock                        sync.RWMutex
-	groupToServerResources      map[string]*cacheEntry
-	groupList                   *metav1.APIGroupList
-	cacheValid                  bool
-	openapiClient               openapi.Client
-	receivedAggregatedDiscovery bool
+	lock                   sync.RWMutex
+	groupToServerResources map[string]*cacheEntry
+	groupList              *metav1.APIGroupList
+	cacheValid             bool
+	openapiClient          openapi.Client
 }
 
 // Error Constants
@@ -117,39 +115,15 @@ func (d *memCacheClient) ServerGroupsAndResources() ([]*metav1.APIGroup, []*meta
 	return discovery.ServerGroupsAndResources(d)
 }
 
-// GroupsAndMaybeResources returns the list of APIGroups, and possibly the map of group/version
-// to resources. The returned groups will never be nil, but the resources map can be nil
-// if there are no cached resources.
-func (d *memCacheClient) GroupsAndMaybeResources() (*metav1.APIGroupList, map[schema.GroupVersion]*metav1.APIResourceList, error) {
+func (d *memCacheClient) ServerGroups() (*metav1.APIGroupList, error) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
-
 	if !d.cacheValid {
 		if err := d.refreshLocked(); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
-	// Build the resourceList from the cache?
-	var resourcesMap map[schema.GroupVersion]*metav1.APIResourceList
-	if d.receivedAggregatedDiscovery && len(d.groupToServerResources) > 0 {
-		resourcesMap = map[schema.GroupVersion]*metav1.APIResourceList{}
-		for gv, cacheEntry := range d.groupToServerResources {
-			groupVersion, err := schema.ParseGroupVersion(gv)
-			if err != nil {
-				return nil, nil, fmt.Errorf("failed to parse group version (%v): %v", gv, err)
-			}
-			resourcesMap[groupVersion] = cacheEntry.resourceList
-		}
-	}
-	return d.groupList, resourcesMap, nil
-}
-
-func (d *memCacheClient) ServerGroups() (*metav1.APIGroupList, error) {
-	groups, _, err := d.GroupsAndMaybeResources()
-	if err != nil {
-		return nil, err
-	}
-	return groups, nil
+	return d.groupList, nil
 }
 
 func (d *memCacheClient) RESTClient() restclient.Interface {
@@ -202,10 +176,6 @@ func (d *memCacheClient) Invalidate() {
 	d.groupToServerResources = nil
 	d.groupList = nil
 	d.openapiClient = nil
-	d.receivedAggregatedDiscovery = false
-	if ad, ok := d.delegate.(discovery.CachedDiscoveryInterface); ok {
-		ad.Invalidate()
-	}
 }
 
 // refreshLocked refreshes the state of cache. The caller must hold d.lock for
@@ -214,26 +184,7 @@ func (d *memCacheClient) refreshLocked() error {
 	// TODO: Could this multiplicative set of calls be replaced by a single call
 	// to ServerResources? If it's possible for more than one resulting
 	// APIResourceList to have the same GroupVersion, the lists would need merged.
-	var gl *metav1.APIGroupList
-	var err error
-
-	if ad, ok := d.delegate.(discovery.AggregatedDiscoveryInterface); ok {
-		var resources map[schema.GroupVersion]*metav1.APIResourceList
-		gl, resources, err = ad.GroupsAndMaybeResources()
-		if resources != nil && err == nil {
-			// Cache the resources.
-			d.groupToServerResources = map[string]*cacheEntry{}
-			d.groupList = gl
-			for gv, resources := range resources {
-				d.groupToServerResources[gv.String()] = &cacheEntry{resources, nil}
-			}
-			d.receivedAggregatedDiscovery = true
-			d.cacheValid = true
-			return nil
-		}
-	} else {
-		gl, err = d.delegate.ServerGroups()
-	}
+	gl, err := d.delegate.ServerGroups()
 	if err != nil || len(gl.Groups) == 0 {
 		utilruntime.HandleError(fmt.Errorf("couldn't get current server API group list: %v", err))
 		return err
@@ -279,12 +230,6 @@ func (d *memCacheClient) serverResourcesForGroupVersion(groupVersion string) (*m
 	return r, nil
 }
 
-// WithLegacy returns current memory-cached discovery client;
-// current client does not support legacy-only discovery.
-func (d *memCacheClient) WithLegacy() discovery.DiscoveryInterface {
-	return d
-}
-
 // NewMemCacheClient creates a new CachedDiscoveryInterface which caches
 // discovery information in memory and will stay up-to-date if Invalidate is
 // called with regularity.
@@ -292,8 +237,7 @@ func (d *memCacheClient) WithLegacy() discovery.DiscoveryInterface {
 // NOTE: The client will NOT resort to live lookups on cache misses.
 func NewMemCacheClient(delegate discovery.DiscoveryInterface) discovery.CachedDiscoveryInterface {
 	return &memCacheClient{
-		delegate:                    delegate,
-		groupToServerResources:      map[string]*cacheEntry{},
-		receivedAggregatedDiscovery: false,
+		delegate:               delegate,
+		groupToServerResources: map[string]*cacheEntry{},
 	}
 }

@@ -15,10 +15,14 @@
 /*
 Package propagation contains OpenTelemetry context propagators.
 
+This package is currently in a pre-GA phase. Backwards incompatible changes
+may be introduced in subsequent minor version releases as we work to track the
+evolving OpenTelemetry specification and user feedback.
+
 OpenTelemetry propagators are used to extract and inject context data from and
 into messages exchanged by applications. The propagator supported by this
 package is the W3C Trace Context encoding
 (https://www.w3.org/TR/trace-context/), and W3C Baggage
-(https://www.w3.org/TR/baggage/).
+(https://w3c.github.io/baggage/).
 */
 package propagation // import "go.opentelemetry.io/otel/propagation"

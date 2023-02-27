@@ -42,8 +42,7 @@ const (
  * involves explicitly acknowledging support for the metric across multiple releases, in accordance with
  * the metric stability policy.
  */
-
-var StorageOperationMetric = metrics.NewHistogramVec(
+var storageOperationMetric = metrics.NewHistogramVec(
 	&metrics.HistogramOpts{
 		Name:           "storage_operation_duration_seconds",
 		Help:           "Storage operation duration",
@@ -81,7 +80,7 @@ func init() {
 func registerMetrics() {
 	// legacyregistry is the internal k8s wrapper around the prometheus
 	// global registry, used specifically for metric stability enforcement
-	legacyregistry.MustRegister(StorageOperationMetric)
+	legacyregistry.MustRegister(storageOperationMetric)
 	legacyregistry.MustRegister(storageOperationEndToEndLatencyMetric)
 	legacyregistry.MustRegister(csiOperationsLatencyMetric)
 }
@@ -102,7 +101,7 @@ func OperationCompleteHook(plugin, operationName string) func(types.CompleteFunc
 		if c.Migrated != nil {
 			migrated = *c.Migrated
 		}
-		StorageOperationMetric.WithLabelValues(plugin, operationName, status, strconv.FormatBool(migrated)).Observe(timeTaken)
+		storageOperationMetric.WithLabelValues(plugin, operationName, status, strconv.FormatBool(migrated)).Observe(timeTaken)
 	}
 	return opComplete
 }

@@ -18,7 +18,6 @@ package cpumanager
 
 import (
 	"k8s.io/api/core/v1"
-
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/state"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
 	"k8s.io/kubernetes/pkg/kubelet/cm/topologymanager"
@@ -40,6 +39,6 @@ type Policy interface {
 	// and is consulted to achieve NUMA aware resource alignment per Pod
 	// among this and other resource controllers.
 	GetPodTopologyHints(s state.State, pod *v1.Pod) map[string][]topologymanager.TopologyHint
-	// GetAllocatableCPUs returns the total set of CPUs available for allocation.
+	// GetAllocatableCPUs returns the assignable (not allocated) CPUs
 	GetAllocatableCPUs(m state.State) cpuset.CPUSet
 }

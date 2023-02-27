@@ -19,7 +19,6 @@ package initializer
 import (
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/apiserver/pkg/authorization/authorizer"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/component-base/featuregate"
@@ -27,7 +26,6 @@ import (
 
 type pluginInitializer struct {
 	externalClient    kubernetes.Interface
-	dynamicClient     dynamic.Interface
 	externalInformers informers.SharedInformerFactory
 	authorizer        authorizer.Authorizer
 	featureGates      featuregate.FeatureGate
@@ -39,7 +37,6 @@ type pluginInitializer struct {
 // during compilation when they update a level.
 func New(
 	extClientset kubernetes.Interface,
-	dynamicClient dynamic.Interface,
 	extInformers informers.SharedInformerFactory,
 	authz authorizer.Authorizer,
 	featureGates featuregate.FeatureGate,
@@ -47,7 +44,6 @@ func New(
 ) pluginInitializer {
 	return pluginInitializer{
 		externalClient:    extClientset,
-		dynamicClient:     dynamicClient,
 		externalInformers: extInformers,
 		authorizer:        authz,
 		featureGates:      featureGates,
@@ -70,10 +66,6 @@ func (i pluginInitializer) Initialize(plugin admission.Interface) {
 
 	if wants, ok := plugin.(WantsExternalKubeClientSet); ok {
 		wants.SetExternalKubeClientSet(i.externalClient)
-	}
-
-	if wants, ok := plugin.(WantsDynamicClient); ok {
-		wants.SetDynamicClient(i.dynamicClient)
 	}
 
 	if wants, ok := plugin.(WantsExternalKubeInformerFactory); ok {

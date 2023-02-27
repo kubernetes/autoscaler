@@ -114,8 +114,7 @@ func evalSymlink(path string) (string, error) {
 		}
 	}
 	// This command will give the target path of a given symlink
-	// The -Force parameter will allow Get-Item to also evaluate hidden folders, like AppData.
-	cmd := fmt.Sprintf("(Get-Item -Force -LiteralPath %q).Target", upperpath)
+	cmd := fmt.Sprintf("(Get-Item -LiteralPath %q).Target", upperpath)
 	output, err := exec.Command("powershell", "/c", cmd).CombinedOutput()
 	if err != nil {
 		return "", err
@@ -126,7 +125,7 @@ func evalSymlink(path string) (string, error) {
 		klog.V(4).Infof("Path '%s' has a target %s. Return its original form.", path, linkedPath)
 		return path, nil
 	}
-	// If the target is not an absolute path, join iit with the current upperpath
+	// If the target is not an absoluate path, join iit with the current upperpath
 	if !filepath.IsAbs(linkedPath) {
 		linkedPath = filepath.Join(getUpperPath(upperpath), linkedPath)
 	}

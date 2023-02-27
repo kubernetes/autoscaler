@@ -68,9 +68,6 @@ type HostUtils interface {
 	GetSELinuxSupport(pathname string) (bool, error)
 	// GetMode returns permissions of the path.
 	GetMode(pathname string) (os.FileMode, error)
-	// GetSELinuxMountContext returns value of -o context=XYZ mount option on
-	// given mount point.
-	GetSELinuxMountContext(pathname string) (string, error)
 }
 
 // Compile-time check to ensure all HostUtil implementations satisfy

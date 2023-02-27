@@ -67,14 +67,12 @@ func (sf structFilter) filter(p cmp.Path) bool {
 // fieldTree represents a set of dot-separated identifiers.
 //
 // For example, inserting the following selectors:
-//
 //	Foo
 //	Foo.Bar.Baz
 //	Foo.Buzz
 //	Nuka.Cola.Quantum
 //
 // Results in a tree of the form:
-//
 //	{sub: {
 //		"Foo": {ok: true, sub: {
 //			"Bar": {sub: {

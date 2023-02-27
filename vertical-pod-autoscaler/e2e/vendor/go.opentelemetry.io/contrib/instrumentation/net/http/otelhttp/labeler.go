@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package otelhttp // import "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+package otelhttp
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func (l *Labeler) Add(ls ...attribute.KeyValue) {
 	l.attributes = append(l.attributes, ls...)
 }
 
-// Get returns a copy of the attributes added to the Labeler.
+// Labels returns a copy of the attributes added to the Labeler.
 func (l *Labeler) Get() []attribute.KeyValue {
 	l.mu.Lock()
 	defer l.mu.Unlock()

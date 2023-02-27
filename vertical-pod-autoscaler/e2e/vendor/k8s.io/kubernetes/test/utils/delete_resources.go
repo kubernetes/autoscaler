@@ -32,7 +32,7 @@ import (
 	extensionsinternal "k8s.io/kubernetes/pkg/apis/extensions"
 )
 
-func DeleteResource(c clientset.Interface, kind schema.GroupKind, namespace, name string, options metav1.DeleteOptions) error {
+func deleteResource(c clientset.Interface, kind schema.GroupKind, namespace, name string, options metav1.DeleteOptions) error {
 	switch kind {
 	case api.Kind("Pod"):
 		return c.CoreV1().Pods(namespace).Delete(context.TODO(), name, options)
@@ -59,7 +59,7 @@ func DeleteResource(c clientset.Interface, kind schema.GroupKind, namespace, nam
 
 func DeleteResourceWithRetries(c clientset.Interface, kind schema.GroupKind, namespace, name string, options metav1.DeleteOptions) error {
 	deleteFunc := func() (bool, error) {
-		err := DeleteResource(c, kind, namespace, name, options)
+		err := deleteResource(c, kind, namespace, name, options)
 		if err == nil || apierrors.IsNotFound(err) {
 			return true, nil
 		}

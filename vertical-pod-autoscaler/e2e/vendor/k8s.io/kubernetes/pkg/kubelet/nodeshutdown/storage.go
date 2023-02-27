@@ -19,6 +19,7 @@ package nodeshutdown
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -66,7 +67,7 @@ type state struct {
 
 // atomicWrite atomically writes data to a file specified by filename.
 func atomicWrite(filename string, data []byte, perm os.FileMode) error {
-	f, err := os.CreateTemp(filepath.Dir(filename), ".tmp-"+filepath.Base(filename))
+	f, err := ioutil.TempFile(filepath.Dir(filename), ".tmp-"+filepath.Base(filename))
 	if err != nil {
 		return err
 	}

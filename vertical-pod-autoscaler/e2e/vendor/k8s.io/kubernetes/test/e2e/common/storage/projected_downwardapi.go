@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
-	e2epodoutput "k8s.io/kubernetes/test/e2e/framework/pod/output"
 	e2eskipper "k8s.io/kubernetes/test/e2e/framework/skipper"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	admissionapi "k8s.io/pod-security-admission/api"
@@ -40,9 +39,9 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 
 	// How long to wait for a log pod to be displayed
 	const podLogTimeout = 2 * time.Minute
-	var podClient *e2epod.PodClient
+	var podClient *framework.PodClient
 	ginkgo.BeforeEach(func() {
-		podClient = e2epod.NewPodClient(f)
+		podClient = f.PodClient()
 	})
 
 	/*
@@ -54,7 +53,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumePodForSimpleTest(podName, "/etc/podinfo/podname")
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			fmt.Sprintf("%s\n", podName),
 		})
 	})
@@ -70,7 +69,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		defaultMode := int32(0400)
 		pod := projectedDownwardAPIVolumePodForModeTest(podName, "/etc/podinfo/podname", nil, &defaultMode)
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			"mode of file \"/etc/podinfo/podname\": -r--------",
 		})
 	})
@@ -86,7 +85,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		mode := int32(0400)
 		pod := projectedDownwardAPIVolumePodForModeTest(podName, "/etc/podinfo/podname", &mode, nil)
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			"mode of file \"/etc/podinfo/podname\": -r--------",
 		})
 	})
@@ -101,7 +100,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 			FSGroup: &gid,
 		}
 		setPodNonRootUser(pod)
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			fmt.Sprintf("%s\n", podName),
 		})
 	})
@@ -117,7 +116,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 			FSGroup: &gid,
 		}
 		setPodNonRootUser(pod)
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			"mode of file \"/etc/podinfo/podname\": -r--r-----",
 		})
 	})
@@ -194,7 +193,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumeForContainerResources(podName, "/etc/podinfo/cpu_limit")
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			fmt.Sprintf("2\n"),
 		})
 	})
@@ -208,7 +207,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumeForContainerResources(podName, "/etc/podinfo/memory_limit")
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			fmt.Sprintf("67108864\n"),
 		})
 	})
@@ -222,7 +221,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumeForContainerResources(podName, "/etc/podinfo/cpu_request")
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			fmt.Sprintf("1\n"),
 		})
 	})
@@ -236,7 +235,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumeForContainerResources(podName, "/etc/podinfo/memory_request")
 
-		e2epodoutput.TestContainerOutput(f, "downward API volume plugin", pod, 0, []string{
+		f.TestContainerOutput("downward API volume plugin", pod, 0, []string{
 			fmt.Sprintf("33554432\n"),
 		})
 	})
@@ -250,7 +249,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumeForDefaultContainerResources(podName, "/etc/podinfo/cpu_limit")
 
-		e2epodoutput.TestContainerOutputRegexp(f, "downward API volume plugin", pod, 0, []string{"[1-9]"})
+		f.TestContainerOutputRegexp("downward API volume plugin", pod, 0, []string{"[1-9]"})
 	})
 
 	/*
@@ -262,7 +261,7 @@ var _ = SIGDescribe("Projected downwardAPI", func() {
 		podName := "downwardapi-volume-" + string(uuid.NewUUID())
 		pod := downwardAPIVolumeForDefaultContainerResources(podName, "/etc/podinfo/memory_limit")
 
-		e2epodoutput.TestContainerOutputRegexp(f, "downward API volume plugin", pod, 0, []string{"[1-9]"})
+		f.TestContainerOutputRegexp("downward API volume plugin", pod, 0, []string{"[1-9]"})
 	})
 })
 

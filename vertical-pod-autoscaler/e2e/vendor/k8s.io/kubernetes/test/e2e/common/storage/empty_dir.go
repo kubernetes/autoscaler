@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
-	e2epodoutput "k8s.io/kubernetes/test/e2e/framework/pod/output"
 	e2eskipper "k8s.io/kubernetes/test/e2e/framework/skipper"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	admissionapi "k8s.io/pod-security-admission/api"
@@ -221,8 +220,8 @@ var _ = SIGDescribe("EmptyDir volumes", func() {
 	/*
 		Release: v1.15
 		Testname: EmptyDir, Shared volumes between containers
-		Description: A Pod created with an 'emptyDir' Volume, should share volumes between the containeres in the pod. The two busybox image containers should share the volumes mounted to the pod.
-		The main container should wait until the sub container drops a file, and main container access the shared data.
+		Description: A Pod created with an 'emptyDir' Volume, should share volumes between the containeres in the pod. The two busybox image containers shoud share the volumes mounted to the pod.
+		The main container shoud wait until the sub container drops a file, and main container acess the shared data.
 	*/
 	framework.ConformanceIt("pod should support shared volumes between containers", func() {
 		var (
@@ -283,11 +282,11 @@ var _ = SIGDescribe("EmptyDir volumes", func() {
 		}
 
 		ginkgo.By("Creating Pod")
-		e2epod.NewPodClient(f).Create(pod)
+		f.PodClient().Create(pod)
 		e2epod.WaitForPodNameRunningInNamespace(f.ClientSet, pod.Name, f.Namespace.Name)
 
 		ginkgo.By("Reading file content from the nginx-container")
-		result := e2epod.ExecShellInContainer(f, pod.Name, busyBoxMainContainerName, fmt.Sprintf("cat %s", busyBoxMainVolumeFilePath))
+		result := f.ExecShellInContainer(pod.Name, busyBoxMainContainerName, fmt.Sprintf("cat %s", busyBoxMainVolumeFilePath))
 		framework.ExpectEqual(result, message, "failed to match expected string %s with %s", message, resultString)
 	})
 
@@ -343,18 +342,18 @@ var _ = SIGDescribe("EmptyDir volumes", func() {
 
 		var err error
 		ginkgo.By("Creating Pod")
-		pod = e2epod.NewPodClient(f).CreateSync(pod)
+		pod = f.PodClient().CreateSync(pod)
 
 		ginkgo.By("Waiting for the pod running")
 		err = e2epod.WaitForPodNameRunningInNamespace(f.ClientSet, pod.Name, f.Namespace.Name)
 		framework.ExpectNoError(err, "failed to deploy pod %s", pod.Name)
 
 		ginkgo.By("Getting the pod")
-		pod, err = e2epod.NewPodClient(f).Get(context.TODO(), pod.Name, metav1.GetOptions{})
+		pod, err = f.PodClient().Get(context.TODO(), pod.Name, metav1.GetOptions{})
 		framework.ExpectNoError(err, "failed to get pod %s", pod.Name)
 
 		ginkgo.By("Reading empty dir size")
-		result := e2epod.ExecShellInContainer(f, pod.Name, busyBoxMainContainerName, fmt.Sprintf("df | grep %s | awk '{print $2}'", busyBoxMainVolumeMountPath))
+		result := f.ExecShellInContainer(pod.Name, busyBoxMainContainerName, fmt.Sprintf("df | grep %s | awk '{print $2}'", busyBoxMainVolumeMountPath))
 		framework.ExpectEqual(result, expectedResult, "failed to match expected string %s with %s", expectedResult, result)
 	})
 })
@@ -391,7 +390,7 @@ func doTestSetgidFSGroup(f *framework.Framework, uid int64, medium v1.StorageMed
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTestSubPathFSGroup(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -424,7 +423,7 @@ func doTestSubPathFSGroup(f *framework.Framework, uid int64, medium v1.StorageMe
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTestVolumeModeFSGroup(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -449,7 +448,7 @@ func doTestVolumeModeFSGroup(f *framework.Framework, uid int64, medium v1.Storag
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTest0644FSGroup(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -477,7 +476,7 @@ func doTest0644FSGroup(f *framework.Framework, uid int64, medium v1.StorageMediu
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTestVolumeMode(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -499,7 +498,7 @@ func doTestVolumeMode(f *framework.Framework, uid int64, medium v1.StorageMedium
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTest0644(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -524,7 +523,7 @@ func doTest0644(f *framework.Framework, uid int64, medium v1.StorageMedium) {
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTest0666(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -549,7 +548,7 @@ func doTest0666(f *framework.Framework, uid int64, medium v1.StorageMedium) {
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func doTest0777(f *framework.Framework, uid int64, medium v1.StorageMedium) {
@@ -574,7 +573,7 @@ func doTest0777(f *framework.Framework, uid int64, medium v1.StorageMedium) {
 	if medium == v1.StorageMediumMemory {
 		out = append(out, "mount type of \"/test-volume\": tmpfs")
 	}
-	e2epodoutput.TestContainerOutput(f, msg, pod, 0, out)
+	f.TestContainerOutput(msg, pod, 0, out)
 }
 
 func formatMedium(medium v1.StorageMedium) string {

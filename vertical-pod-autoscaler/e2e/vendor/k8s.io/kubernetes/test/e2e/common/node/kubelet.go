@@ -37,9 +37,9 @@ import (
 var _ = SIGDescribe("Kubelet", func() {
 	f := framework.NewDefaultFramework("kubelet-test")
 	f.NamespacePodSecurityEnforceLevel = admissionapi.LevelBaseline
-	var podClient *e2epod.PodClient
+	var podClient *framework.PodClient
 	ginkgo.BeforeEach(func() {
-		podClient = e2epod.NewPodClient(f)
+		podClient = f.PodClient()
 	})
 	ginkgo.Context("when scheduling a busybox command in a pod", func() {
 		podName := "busybox-scheduling-" + string(uuid.NewUUID())

@@ -20,8 +20,7 @@ package v1beta1
 
 import (
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
-	v1 "k8s.io/client-go/applyconfigurations/admissionregistration/v1"
-	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
+	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
 // MutatingWebhookApplyConfiguration represents an declarative configuration of the MutatingWebhook type for use
@@ -29,11 +28,11 @@ import (
 type MutatingWebhookApplyConfiguration struct {
 	Name                    *string                                              `json:"name,omitempty"`
 	ClientConfig            *WebhookClientConfigApplyConfiguration               `json:"clientConfig,omitempty"`
-	Rules                   []v1.RuleWithOperationsApplyConfiguration            `json:"rules,omitempty"`
+	Rules                   []RuleWithOperationsApplyConfiguration               `json:"rules,omitempty"`
 	FailurePolicy           *admissionregistrationv1beta1.FailurePolicyType      `json:"failurePolicy,omitempty"`
 	MatchPolicy             *admissionregistrationv1beta1.MatchPolicyType        `json:"matchPolicy,omitempty"`
-	NamespaceSelector       *metav1.LabelSelectorApplyConfiguration              `json:"namespaceSelector,omitempty"`
-	ObjectSelector          *metav1.LabelSelectorApplyConfiguration              `json:"objectSelector,omitempty"`
+	NamespaceSelector       *v1.LabelSelectorApplyConfiguration                  `json:"namespaceSelector,omitempty"`
+	ObjectSelector          *v1.LabelSelectorApplyConfiguration                  `json:"objectSelector,omitempty"`
 	SideEffects             *admissionregistrationv1beta1.SideEffectClass        `json:"sideEffects,omitempty"`
 	TimeoutSeconds          *int32                                               `json:"timeoutSeconds,omitempty"`
 	AdmissionReviewVersions []string                                             `json:"admissionReviewVersions,omitempty"`
@@ -65,7 +64,7 @@ func (b *MutatingWebhookApplyConfiguration) WithClientConfig(value *WebhookClien
 // WithRules adds the given value to the Rules field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Rules field.
-func (b *MutatingWebhookApplyConfiguration) WithRules(values ...*v1.RuleWithOperationsApplyConfiguration) *MutatingWebhookApplyConfiguration {
+func (b *MutatingWebhookApplyConfiguration) WithRules(values ...*RuleWithOperationsApplyConfiguration) *MutatingWebhookApplyConfiguration {
 	for i := range values {
 		if values[i] == nil {
 			panic("nil value passed to WithRules")
@@ -94,7 +93,7 @@ func (b *MutatingWebhookApplyConfiguration) WithMatchPolicy(value admissionregis
 // WithNamespaceSelector sets the NamespaceSelector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the NamespaceSelector field is set to the value of the last call.
-func (b *MutatingWebhookApplyConfiguration) WithNamespaceSelector(value *metav1.LabelSelectorApplyConfiguration) *MutatingWebhookApplyConfiguration {
+func (b *MutatingWebhookApplyConfiguration) WithNamespaceSelector(value *v1.LabelSelectorApplyConfiguration) *MutatingWebhookApplyConfiguration {
 	b.NamespaceSelector = value
 	return b
 }
@@ -102,7 +101,7 @@ func (b *MutatingWebhookApplyConfiguration) WithNamespaceSelector(value *metav1.
 // WithObjectSelector sets the ObjectSelector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ObjectSelector field is set to the value of the last call.
-func (b *MutatingWebhookApplyConfiguration) WithObjectSelector(value *metav1.LabelSelectorApplyConfiguration) *MutatingWebhookApplyConfiguration {
+func (b *MutatingWebhookApplyConfiguration) WithObjectSelector(value *v1.LabelSelectorApplyConfiguration) *MutatingWebhookApplyConfiguration {
 	b.ObjectSelector = value
 	return b
 }

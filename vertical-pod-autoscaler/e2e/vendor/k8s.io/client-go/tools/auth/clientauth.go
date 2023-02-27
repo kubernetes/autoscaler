@@ -32,7 +32,7 @@ Having a defined format allows:
 
 The file format is json, marshalled from a struct authcfg.Info.
 
-Client libraries in other languages should use the same format.
+Clinet libraries in other languages should use the same format.
 
 It is not intended to store general preferences, such as default
 namespace, output options, etc.  CLIs (such as kubectl) and UIs should
@@ -65,6 +65,7 @@ package auth
 // TODO: need a way to rotate Tokens.  Therefore, need a way for client object to be reset when the authcfg is updated.
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 
 	restclient "k8s.io/client-go/rest"
@@ -89,7 +90,7 @@ func LoadFromFile(path string) (*Info, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, err
 	}
-	data, err := os.ReadFile(path)
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

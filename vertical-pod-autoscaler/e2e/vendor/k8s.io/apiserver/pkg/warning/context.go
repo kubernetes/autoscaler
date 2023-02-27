@@ -24,7 +24,7 @@ import (
 type key int
 
 const (
-	// warningRecorderKey is the context key for the warning recorder.
+	// auditAnnotationsKey is the context key for the audit annotations.
 	warningRecorderKey key = iota
 )
 
@@ -41,7 +41,6 @@ type Recorder interface {
 func WithWarningRecorder(ctx context.Context, recorder Recorder) context.Context {
 	return context.WithValue(ctx, warningRecorderKey, recorder)
 }
-
 func warningRecorderFrom(ctx context.Context) (Recorder, bool) {
 	recorder, ok := ctx.Value(warningRecorderKey).(Recorder)
 	return recorder, ok

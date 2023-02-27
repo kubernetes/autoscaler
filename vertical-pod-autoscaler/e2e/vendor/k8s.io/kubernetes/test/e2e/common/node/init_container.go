@@ -39,7 +39,6 @@ import (
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 	"k8s.io/kubernetes/pkg/client/conditions"
 	"k8s.io/kubernetes/test/e2e/framework"
-	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	admissionapi "k8s.io/pod-security-admission/api"
 )
@@ -161,9 +160,9 @@ func initContainersInvariants(pod *v1.Pod) error {
 var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 	f := framework.NewDefaultFramework("init-container")
 	f.NamespacePodSecurityEnforceLevel = admissionapi.LevelBaseline
-	var podClient *e2epod.PodClient
+	var podClient *framework.PodClient
 	ginkgo.BeforeEach(func() {
-		podClient = e2epod.NewPodClient(f)
+		podClient = f.PodClient()
 	})
 
 	/*

@@ -30,7 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	appsvalidation "k8s.io/kubernetes/pkg/apis/apps/validation"
-	"k8s.io/kubernetes/pkg/apis/core"
+	core "k8s.io/kubernetes/pkg/apis/core"
 	apivalidation "k8s.io/kubernetes/pkg/apis/core/validation"
 	"k8s.io/kubernetes/pkg/apis/policy"
 )
@@ -44,25 +44,16 @@ const (
 	seccompAllowedProfilesAnnotationKey = "seccomp.security.alpha.kubernetes.io/allowedProfileNames"
 )
 
-var supportedUnhealthyPodEvictionPolicies = sets.NewString(
-	string(policy.IfHealthyBudget),
-	string(policy.AlwaysAllow),
-)
-
-type PodDisruptionBudgetValidationOptions struct {
-	AllowInvalidLabelValueInSelector bool
-}
-
 // ValidatePodDisruptionBudget validates a PodDisruptionBudget and returns an ErrorList
 // with any errors.
-func ValidatePodDisruptionBudget(pdb *policy.PodDisruptionBudget, opts PodDisruptionBudgetValidationOptions) field.ErrorList {
-	allErrs := ValidatePodDisruptionBudgetSpec(pdb.Spec, opts, field.NewPath("spec"))
+func ValidatePodDisruptionBudget(pdb *policy.PodDisruptionBudget) field.ErrorList {
+	allErrs := ValidatePodDisruptionBudgetSpec(pdb.Spec, field.NewPath("spec"))
 	return allErrs
 }
 
 // ValidatePodDisruptionBudgetSpec validates a PodDisruptionBudgetSpec and returns an ErrorList
 // with any errors.
-func ValidatePodDisruptionBudgetSpec(spec policy.PodDisruptionBudgetSpec, opts PodDisruptionBudgetValidationOptions, fldPath *field.Path) field.ErrorList {
+func ValidatePodDisruptionBudgetSpec(spec policy.PodDisruptionBudgetSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if spec.MinAvailable != nil && spec.MaxUnavailable != nil {
@@ -79,13 +70,7 @@ func ValidatePodDisruptionBudgetSpec(spec policy.PodDisruptionBudgetSpec, opts P
 		allErrs = append(allErrs, appsvalidation.IsNotMoreThan100Percent(*spec.MaxUnavailable, fldPath.Child("maxUnavailable"))...)
 	}
 
-	labelSelectorValidationOptions := unversionedvalidation.LabelSelectorValidationOptions{AllowInvalidLabelValueInSelector: opts.AllowInvalidLabelValueInSelector}
-
-	allErrs = append(allErrs, unversionedvalidation.ValidateLabelSelector(spec.Selector, labelSelectorValidationOptions, fldPath.Child("selector"))...)
-
-	if spec.UnhealthyPodEvictionPolicy != nil && !supportedUnhealthyPodEvictionPolicies.Has(string(*spec.UnhealthyPodEvictionPolicy)) {
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("unhealthyPodEvictionPolicy"), *spec.UnhealthyPodEvictionPolicy, supportedUnhealthyPodEvictionPolicies.List()))
-	}
+	allErrs = append(allErrs, unversionedvalidation.ValidateLabelSelector(spec.Selector, fldPath.Child("selector"))...)
 
 	return allErrs
 }

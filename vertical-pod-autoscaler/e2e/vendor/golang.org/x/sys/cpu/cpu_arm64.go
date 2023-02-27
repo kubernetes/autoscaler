@@ -6,10 +6,7 @@ package cpu
 
 import "runtime"
 
-// cacheLineSize is used to prevent false sharing of cache lines.
-// We choose 128 because Apple Silicon, a.k.a. M1, has 128-byte cache line size.
-// It doesn't cost much and is much more future-proof.
-const cacheLineSize = 128
+const cacheLineSize = 64
 
 func initOptions() {
 	options = []option{
@@ -44,10 +41,13 @@ func archInit() {
 	switch runtime.GOOS {
 	case "freebsd":
 		readARM64Registers()
-	case "linux", "netbsd", "openbsd":
+	case "linux", "netbsd":
 		doinit()
 	default:
-		// Many platforms don't seem to allow reading these registers.
+		// Most platforms don't seem to allow reading these registers.
+		//
+		// OpenBSD:
+		// See https://golang.org/issue/31746
 		setMinimalFeatures()
 	}
 }
