@@ -19,19 +19,15 @@ package cached
 import (
 	"sync"
 
+	openapi_v3 "github.com/google/gnostic/openapiv3"
 	"k8s.io/client-go/openapi"
 )
 
 type groupversion struct {
 	delegate openapi.GroupVersion
-
-	lock sync.Mutex
-	docs map[string]docInfo
-}
-
-type docInfo struct {
-	data []byte
-	err  error
+	once     sync.Once
+	doc      *openapi_v3.Document
+	err      error
 }
 
 func newGroupVersion(delegate openapi.GroupVersion) *groupversion {
@@ -40,19 +36,10 @@ func newGroupVersion(delegate openapi.GroupVersion) *groupversion {
 	}
 }
 
-func (g *groupversion) Schema(contentType string) ([]byte, error) {
-	g.lock.Lock()
-	defer g.lock.Unlock()
+func (g *groupversion) Schema() (*openapi_v3.Document, error) {
+	g.once.Do(func() {
+		g.doc, g.err = g.delegate.Schema()
+	})
 
-	cachedInfo, ok := g.docs[contentType]
-	if !ok {
-		if g.docs == nil {
-			g.docs = make(map[string]docInfo)
-		}
-
-		cachedInfo.data, cachedInfo.err = g.delegate.Schema(contentType)
-		g.docs[contentType] = cachedInfo
-	}
-
-	return cachedInfo.data, cachedInfo.err
+	return g.doc, g.err
 }

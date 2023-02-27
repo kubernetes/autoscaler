@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -284,8 +283,8 @@ type Options struct {
 	Handlers request.Handlers
 
 	// Allows specifying a custom endpoint to be used by the EC2 IMDS client
-	// when making requests to the EC2 IMDS API. The endpoint value should
-	// include the URI scheme. If the scheme is not present it will be defaulted to http.
+	// when making requests to the EC2 IMDS API. The must endpoint value must
+	// include protocol prefix.
 	//
 	// If unset, will the EC2 IMDS client will use its default endpoint.
 	//
@@ -299,16 +298,6 @@ type Options struct {
 	//
 	//   AWS_EC2_METADATA_SERVICE_ENDPOINT=http://[::1]
 	EC2IMDSEndpoint string
-
-	// Specifies the EC2 Instance Metadata Service default endpoint selection mode (IPv4 or IPv6)
-	//
-	// AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE=IPv6
-	EC2IMDSEndpointMode endpoints.EC2IMDSEndpointModeState
-
-	// Specifies options for creating credential providers.
-	// These are only used if the aws.Config does not already
-	// include credentials.
-	CredentialsProviderOptions *CredentialsProviderOptions
 }
 
 // NewSessionWithOptions returns a new Session created from SDK defaults, config files,
@@ -386,23 +375,19 @@ func Must(sess *Session, err error) *Session {
 
 // Wraps the endpoint resolver with a resolver that will return a custom
 // endpoint for EC2 IMDS.
-func wrapEC2IMDSEndpoint(resolver endpoints.Resolver, endpoint string, mode endpoints.EC2IMDSEndpointModeState) endpoints.Resolver {
+func wrapEC2IMDSEndpoint(resolver endpoints.Resolver, endpoint string) endpoints.Resolver {
 	return endpoints.ResolverFunc(
 		func(service, region string, opts ...func(*endpoints.Options)) (
 			endpoints.ResolvedEndpoint, error,
 		) {
-			if service == ec2MetadataServiceID && len(endpoint) > 0 {
+			if service == ec2MetadataServiceID {
 				return endpoints.ResolvedEndpoint{
 					URL:           endpoint,
 					SigningName:   ec2MetadataServiceID,
 					SigningRegion: region,
 				}, nil
-			} else if service == ec2MetadataServiceID {
-				opts = append(opts, func(o *endpoints.Options) {
-					o.EC2MetadataEndpointMode = mode
-				})
 			}
-			return resolver.EndpointFor(service, region, opts...)
+			return resolver.EndpointFor(service, region)
 		})
 }
 
@@ -419,8 +404,8 @@ func deprecatedNewSession(envCfg envConfig, cfgs ...*aws.Config) *Session {
 		cfg.EndpointResolver = endpoints.DefaultResolver()
 	}
 
-	if !(len(envCfg.EC2IMDSEndpoint) == 0 && envCfg.EC2IMDSEndpointMode == endpoints.EC2IMDSEndpointModeStateUnset) {
-		cfg.EndpointResolver = wrapEC2IMDSEndpoint(cfg.EndpointResolver, envCfg.EC2IMDSEndpoint, envCfg.EC2IMDSEndpointMode)
+	if len(envCfg.EC2IMDSEndpoint) != 0 {
+		cfg.EndpointResolver = wrapEC2IMDSEndpoint(cfg.EndpointResolver, envCfg.EC2IMDSEndpoint)
 	}
 
 	cfg.Credentials = defaults.CredChain(cfg, handlers)
@@ -752,32 +737,12 @@ func mergeConfigSrcs(cfg, userCfg *aws.Config,
 		endpoints.LegacyS3UsEast1Endpoint,
 	})
 
-	var ec2IMDSEndpoint string
-	for _, v := range []string{
-		sessOpts.EC2IMDSEndpoint,
-		envCfg.EC2IMDSEndpoint,
-		sharedCfg.EC2IMDSEndpoint,
-	} {
-		if len(v) != 0 {
-			ec2IMDSEndpoint = v
-			break
-		}
+	ec2IMDSEndpoint := sessOpts.EC2IMDSEndpoint
+	if len(ec2IMDSEndpoint) == 0 {
+		ec2IMDSEndpoint = envCfg.EC2IMDSEndpoint
 	}
-
-	var endpointMode endpoints.EC2IMDSEndpointModeState
-	for _, v := range []endpoints.EC2IMDSEndpointModeState{
-		sessOpts.EC2IMDSEndpointMode,
-		envCfg.EC2IMDSEndpointMode,
-		sharedCfg.EC2IMDSEndpointMode,
-	} {
-		if v != endpoints.EC2IMDSEndpointModeStateUnset {
-			endpointMode = v
-			break
-		}
-	}
-
-	if len(ec2IMDSEndpoint) != 0 || endpointMode != endpoints.EC2IMDSEndpointModeStateUnset {
-		cfg.EndpointResolver = wrapEC2IMDSEndpoint(cfg.EndpointResolver, ec2IMDSEndpoint, endpointMode)
+	if len(ec2IMDSEndpoint) != 0 {
+		cfg.EndpointResolver = wrapEC2IMDSEndpoint(cfg.EndpointResolver, ec2IMDSEndpoint)
 	}
 
 	// Configure credentials if not already set by the user when creating the
@@ -796,20 +761,6 @@ func mergeConfigSrcs(cfg, userCfg *aws.Config,
 	}
 	if cfg.S3UseARNRegion == nil {
 		cfg.S3UseARNRegion = &sharedCfg.S3UseARNRegion
-	}
-
-	for _, v := range []endpoints.DualStackEndpointState{userCfg.UseDualStackEndpoint, envCfg.UseDualStackEndpoint, sharedCfg.UseDualStackEndpoint} {
-		if v != endpoints.DualStackEndpointStateUnset {
-			cfg.UseDualStackEndpoint = v
-			break
-		}
-	}
-
-	for _, v := range []endpoints.FIPSEndpointState{userCfg.UseFIPSEndpoint, envCfg.UseFIPSEndpoint, sharedCfg.UseFIPSEndpoint} {
-		if v != endpoints.FIPSEndpointStateUnset {
-			cfg.UseFIPSEndpoint = v
-			break
-		}
 	}
 
 	return nil
@@ -865,10 +816,8 @@ func (s *Session) Copy(cfgs ...*aws.Config) *Session {
 func (s *Session) ClientConfig(service string, cfgs ...*aws.Config) client.Config {
 	s = s.Copy(cfgs...)
 
-	resolvedRegion := normalizeRegion(s.Config)
-
 	region := aws.StringValue(s.Config.Region)
-	resolved, err := s.resolveEndpoint(service, region, resolvedRegion, s.Config)
+	resolved, err := s.resolveEndpoint(service, region, s.Config)
 	if err != nil {
 		s.Handlers.Validate.PushBack(func(r *request.Request) {
 			if len(r.ClientInfo.Endpoint) != 0 {
@@ -889,13 +838,12 @@ func (s *Session) ClientConfig(service string, cfgs ...*aws.Config) client.Confi
 		SigningRegion:      resolved.SigningRegion,
 		SigningNameDerived: resolved.SigningNameDerived,
 		SigningName:        resolved.SigningName,
-		ResolvedRegion:     resolvedRegion,
 	}
 }
 
 const ec2MetadataServiceID = "ec2metadata"
 
-func (s *Session) resolveEndpoint(service, region, resolvedRegion string, cfg *aws.Config) (endpoints.ResolvedEndpoint, error) {
+func (s *Session) resolveEndpoint(service, region string, cfg *aws.Config) (endpoints.ResolvedEndpoint, error) {
 
 	if ep := aws.StringValue(cfg.Endpoint); len(ep) != 0 {
 		return endpoints.ResolvedEndpoint{
@@ -907,12 +855,7 @@ func (s *Session) resolveEndpoint(service, region, resolvedRegion string, cfg *a
 	resolved, err := cfg.EndpointResolver.EndpointFor(service, region,
 		func(opt *endpoints.Options) {
 			opt.DisableSSL = aws.BoolValue(cfg.DisableSSL)
-
 			opt.UseDualStack = aws.BoolValue(cfg.UseDualStack)
-			opt.UseDualStackEndpoint = cfg.UseDualStackEndpoint
-
-			opt.UseFIPSEndpoint = cfg.UseFIPSEndpoint
-
 			// Support for STSRegionalEndpoint where the STSRegionalEndpoint is
 			// provided in envConfig or sharedConfig with envConfig getting
 			// precedence.
@@ -926,11 +869,6 @@ func (s *Session) resolveEndpoint(service, region, resolvedRegion string, cfg *a
 			// Support the condition where the service is modeled but its
 			// endpoint metadata is not available.
 			opt.ResolveUnknownService = true
-
-			opt.ResolvedRegion = resolvedRegion
-
-			opt.Logger = cfg.Logger
-			opt.LogDeprecated = cfg.LogLevel.Matches(aws.LogDebugWithDeprecated)
 		},
 	)
 	if err != nil {
@@ -946,8 +884,6 @@ func (s *Session) resolveEndpoint(service, region, resolvedRegion string, cfg *a
 func (s *Session) ClientConfigNoResolveEndpoint(cfgs ...*aws.Config) client.Config {
 	s = s.Copy(cfgs...)
 
-	resolvedRegion := normalizeRegion(s.Config)
-
 	var resolved endpoints.ResolvedEndpoint
 	if ep := aws.StringValue(s.Config.Endpoint); len(ep) > 0 {
 		resolved.URL = endpoints.AddScheme(ep, aws.BoolValue(s.Config.DisableSSL))
@@ -961,7 +897,6 @@ func (s *Session) ClientConfigNoResolveEndpoint(cfgs ...*aws.Config) client.Conf
 		SigningRegion:      resolved.SigningRegion,
 		SigningNameDerived: resolved.SigningNameDerived,
 		SigningName:        resolved.SigningName,
-		ResolvedRegion:     resolvedRegion,
 	}
 }
 
@@ -974,24 +909,4 @@ func (s *Session) logDeprecatedNewSessionError(msg string, err error, cfgs []*aw
 	s.Handlers.Validate.PushBack(func(r *request.Request) {
 		r.Error = err
 	})
-}
-
-// normalizeRegion resolves / normalizes the configured region (converts pseudo fips regions), and modifies the provided
-// config to have the equivalent options for resolution and returns the resolved region name.
-func normalizeRegion(cfg *aws.Config) (resolved string) {
-	const fipsInfix = "-fips-"
-	const fipsPrefix = "-fips"
-	const fipsSuffix = "fips-"
-
-	region := aws.StringValue(cfg.Region)
-
-	if strings.Contains(region, fipsInfix) ||
-		strings.Contains(region, fipsPrefix) ||
-		strings.Contains(region, fipsSuffix) {
-		resolved = strings.Replace(strings.Replace(strings.Replace(
-			region, fipsInfix, "-", -1), fipsPrefix, "", -1), fipsSuffix, "", -1)
-		cfg.UseFIPSEndpoint = endpoints.FIPSEndpointStateEnabled
-	}
-
-	return resolved
 }

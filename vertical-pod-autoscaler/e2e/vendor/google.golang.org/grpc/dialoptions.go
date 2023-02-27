@@ -35,15 +35,6 @@ import (
 	"google.golang.org/grpc/stats"
 )
 
-func init() {
-	internal.AddExtraDialOptions = func(opt ...DialOption) {
-		extraDialOptions = append(extraDialOptions, opt...)
-	}
-	internal.ClearExtraDialOptions = func() {
-		extraDialOptions = nil
-	}
-}
-
 // dialOptions configure a Dial call. dialOptions are set by the DialOption
 // values passed to Dial.
 type dialOptions struct {
@@ -79,12 +70,10 @@ type DialOption interface {
 	apply(*dialOptions)
 }
 
-var extraDialOptions []DialOption
-
 // EmptyDialOption does not alter the dial configuration. It can be embedded in
 // another structure to build custom dial options.
 //
-// # Experimental
+// Experimental
 //
 // Notice: This type is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -275,7 +264,7 @@ func WithBlock() DialOption {
 // the context.DeadlineExceeded error.
 // Implies WithBlock()
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -304,7 +293,7 @@ func WithInsecure() DialOption {
 // WithNoProxy returns a DialOption which disables the use of proxies for this
 // ClientConn. This is ignored if WithDialer or WithContextDialer are used.
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -335,7 +324,7 @@ func WithPerRPCCredentials(creds credentials.PerRPCCredentials) DialOption {
 // the ClientConn.WithCreds. This should not be used together with
 // WithTransportCredentials.
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -391,13 +380,7 @@ func WithDialer(f func(string, time.Duration) (net.Conn, error)) DialOption {
 // all the RPCs and underlying network connections in this ClientConn.
 func WithStatsHandler(h stats.Handler) DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
-		if h == nil {
-			logger.Error("ignoring nil parameter in grpc.WithStatsHandler ClientOption")
-			// Do not allow a nil stats handler, which would otherwise cause
-			// panics.
-			return
-		}
-		o.copts.StatsHandlers = append(o.copts.StatsHandlers, h)
+		o.copts.StatsHandler = h
 	})
 }
 
@@ -409,7 +392,7 @@ func WithStatsHandler(h stats.Handler) DialOption {
 // FailOnNonTempDialError only affects the initial dial, and does not do
 // anything useful unless you are also using WithBlock().
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -489,7 +472,7 @@ func WithAuthority(a string) DialOption {
 // current ClientConn's parent. This function is used in nested channel creation
 // (e.g. grpclb dial).
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -534,6 +517,9 @@ func WithDefaultServiceConfig(s string) DialOption {
 // service config enables them.  This does not impact transparent retries, which
 // will happen automatically if no data is written to the wire or if the RPC is
 // unprocessed by the remote server.
+//
+// Retry support is currently enabled by default, but may be disabled by
+// setting the environment variable "GRPC_GO_RETRY" to "off".
 func WithDisableRetry() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
 		o.disableRetry = true
@@ -551,7 +537,7 @@ func WithMaxHeaderListSize(s uint32) DialOption {
 // WithDisableHealthCheck disables the LB channel health checking for all
 // SubConns of this ClientConn.
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.
@@ -598,7 +584,7 @@ func withMinConnectDeadline(f func() time.Duration) DialOption {
 // resolver.Register.  They will be matched against the scheme used for the
 // current Dial only, and will take precedence over the global registry.
 //
-// # Experimental
+// Experimental
 //
 // Notice: This API is EXPERIMENTAL and may be changed or removed in a
 // later release.

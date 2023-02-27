@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package otelhttp // import "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+package otelhttp
 
 import (
 	"io"
@@ -24,10 +24,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/instrument/syncfloat64"
-	"go.opentelemetry.io/otel/metric/instrument/syncint64"
 	"go.opentelemetry.io/otel/propagation"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/semconv"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -44,15 +42,13 @@ type Handler struct {
 	tracer            trace.Tracer
 	meter             metric.Meter
 	propagators       propagation.TextMapPropagator
-	spanStartOptions  []trace.SpanStartOption
+	spanStartOptions  []trace.SpanOption
 	readEvent         bool
 	writeEvent        bool
 	filters           []Filter
 	spanNameFormatter func(string, *http.Request) string
-	counters          map[string]syncint64.Counter
-	valueRecorders    map[string]syncfloat64.Histogram
-	publicEndpoint    bool
-	publicEndpointFn  func(*http.Request) bool
+	counters          map[string]metric.Int64Counter
+	valueRecorders    map[string]metric.Int64ValueRecorder
 }
 
 func defaultHandlerFormatter(operation string, _ *http.Request) string {
@@ -88,8 +84,6 @@ func (h *Handler) configure(c *config) {
 	h.writeEvent = c.WriteEvent
 	h.filters = c.Filters
 	h.spanNameFormatter = c.SpanNameFormatter
-	h.publicEndpoint = c.PublicEndpoint
-	h.publicEndpointFn = c.PublicEndpointFn
 }
 
 func handleErr(err error) {
@@ -99,16 +93,16 @@ func handleErr(err error) {
 }
 
 func (h *Handler) createMeasures() {
-	h.counters = make(map[string]syncint64.Counter)
-	h.valueRecorders = make(map[string]syncfloat64.Histogram)
+	h.counters = make(map[string]metric.Int64Counter)
+	h.valueRecorders = make(map[string]metric.Int64ValueRecorder)
 
-	requestBytesCounter, err := h.meter.SyncInt64().Counter(RequestContentLength)
+	requestBytesCounter, err := h.meter.NewInt64Counter(RequestContentLength)
 	handleErr(err)
 
-	responseBytesCounter, err := h.meter.SyncInt64().Counter(ResponseContentLength)
+	responseBytesCounter, err := h.meter.NewInt64Counter(ResponseContentLength)
 	handleErr(err)
 
-	serverLatencyMeasure, err := h.meter.SyncFloat64().Histogram(ServerLatency)
+	serverLatencyMeasure, err := h.meter.NewInt64ValueRecorder(ServerLatency)
 	handleErr(err)
 
 	h.counters[RequestContentLength] = requestBytesCounter
@@ -116,7 +110,7 @@ func (h *Handler) createMeasures() {
 	h.valueRecorders[ServerLatency] = serverLatencyMeasure
 }
 
-// ServeHTTP serves HTTP requests (http.Handler).
+// ServeHTTP serves HTTP requests (http.Handler)
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestStartTime := time.Now()
 	for _, f := range h.filters {
@@ -127,33 +121,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ctx := h.propagators.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
-	opts := h.spanStartOptions
-	if h.publicEndpoint || (h.publicEndpointFn != nil && h.publicEndpointFn(r.WithContext(ctx))) {
-		opts = append(opts, trace.WithNewRoot())
-		// Linking incoming span context if any for public endpoint.
-		if s := trace.SpanContextFromContext(ctx); s.IsValid() && s.IsRemote() {
-			opts = append(opts, trace.WithLinks(trace.Link{SpanContext: s}))
-		}
-	}
-
-	opts = append([]trace.SpanStartOption{
+	opts := append([]trace.SpanOption{
 		trace.WithAttributes(semconv.NetAttributesFromHTTPRequest("tcp", r)...),
 		trace.WithAttributes(semconv.EndUserAttributesFromHTTPRequest(r)...),
 		trace.WithAttributes(semconv.HTTPServerAttributesFromHTTPRequest(h.operation, "", r)...),
-	}, opts...) // start with the configured options
+	}, h.spanStartOptions...) // start with the configured options
 
-	tracer := h.tracer
-
-	if tracer == nil {
-		if span := trace.SpanFromContext(r.Context()); span.SpanContext().IsValid() {
-			tracer = newTracer(span.TracerProvider())
-		} else {
-			tracer = newTracer(otel.GetTracerProvider())
-		}
-	}
-
-	ctx, span := tracer.Start(ctx, h.spanNameFormatter(h.operation, r), opts...)
+	ctx := h.propagators.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
+	ctx, span := h.tracer.Start(ctx, h.spanNameFormatter(h.operation, r), opts...)
 	defer span.End()
 
 	readRecordFunc := func(int64) {}
@@ -165,8 +140,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var bw bodyWrapper
 	// if request body is nil we don't want to mutate the body as it will affect
-	// the identity of it in an unforeseeable way because we assert ReadCloser
-	// fulfills a certain interface and it is indeed nil.
+	// the identity of it in a unforeseeable way because we assert ReadCloser
+	// fullfills a certain interface and it is indeed nil.
 	if r.Body != nil {
 		bw.ReadCloser = r.Body
 		bw.record = readRecordFunc
@@ -210,8 +185,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.counters[RequestContentLength].Add(ctx, bw.read, attributes...)
 	h.counters[ResponseContentLength].Add(ctx, rww.written, attributes...)
 
-	// Use floating point division here for higher precision (instead of Millisecond method).
-	elapsedTime := float64(time.Since(requestStartTime)) / float64(time.Millisecond)
+	elapsedTime := time.Since(requestStartTime).Microseconds()
 
 	h.valueRecorders[ServerLatency].Record(ctx, elapsedTime, attributes...)
 }
@@ -232,7 +206,7 @@ func setAfterServeAttributes(span trace.Span, read, wrote int64, statusCode int,
 	}
 	if statusCode > 0 {
 		attributes = append(attributes, semconv.HTTPAttributesFromHTTPStatusCode(statusCode)...)
-		span.SetStatus(semconv.SpanStatusFromHTTPStatusCodeAndSpanKind(statusCode, trace.SpanKindServer))
+		span.SetStatus(semconv.SpanStatusFromHTTPStatusCode(statusCode))
 	}
 	if werr != nil && werr != io.EOF {
 		attributes = append(attributes, WriteErrorKey.String(werr.Error()))

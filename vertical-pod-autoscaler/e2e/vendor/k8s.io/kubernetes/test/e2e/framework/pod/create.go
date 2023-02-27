@@ -28,11 +28,6 @@ import (
 	imageutils "k8s.io/kubernetes/test/utils/image"
 )
 
-const (
-	VolumeMountPathTemplate = "/mnt/volume%d"
-	VolumeMountPath1        = "/mnt/volume1"
-)
-
 // Config is a struct containing all arguments for creating a pod.
 // SELinux testing requires to pass HostIPC and HostPID as boolean arguments.
 type Config struct {
@@ -227,11 +222,10 @@ func setVolumes(podSpec *v1.PodSpec, pvcs []*v1.PersistentVolumeClaim, inlineVol
 	volumeIndex := 0
 	for _, pvclaim := range pvcs {
 		volumename := fmt.Sprintf("volume%v", volumeIndex+1)
-		volumeMountPath := fmt.Sprintf(VolumeMountPathTemplate, volumeIndex+1)
 		if pvclaim.Spec.VolumeMode != nil && *pvclaim.Spec.VolumeMode == v1.PersistentVolumeBlock {
-			volumeDevices = append(volumeDevices, v1.VolumeDevice{Name: volumename, DevicePath: volumeMountPath})
+			volumeDevices = append(volumeDevices, v1.VolumeDevice{Name: volumename, DevicePath: "/mnt/" + volumename})
 		} else {
-			volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumename, MountPath: volumeMountPath})
+			volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumename, MountPath: "/mnt/" + volumename})
 		}
 		volumes[volumeIndex] = v1.Volume{
 			Name: volumename,
@@ -246,9 +240,8 @@ func setVolumes(podSpec *v1.PodSpec, pvcs []*v1.PersistentVolumeClaim, inlineVol
 	}
 	for _, src := range inlineVolumeSources {
 		volumename := fmt.Sprintf("volume%v", volumeIndex+1)
-		volumeMountPath := fmt.Sprintf(VolumeMountPathTemplate, volumeIndex+1)
 		// In-line volumes can be only filesystem, not block.
-		volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumename, MountPath: volumeMountPath})
+		volumeMounts = append(volumeMounts, v1.VolumeMount{Name: volumename, MountPath: "/mnt/" + volumename})
 		volumes[volumeIndex] = v1.Volume{Name: volumename, VolumeSource: *src}
 		volumeIndex++
 	}

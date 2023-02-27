@@ -26,9 +26,10 @@ import (
 
 // TODO: Reconcile custom types in kubelet/types and this subpackage
 
-// HTTPDoer encapsulates http.Do functionality
-type HTTPDoer interface {
-	Do(req *http.Request) (*http.Response, error)
+// HTTPGetter is an interface representing the ability to perform HTTP GET requests.
+type HTTPGetter interface {
+	// Get issues a GET to the specified URL.
+	Get(url string) (*http.Response, error)
 }
 
 // Timestamp wraps around time.Time and offers utilities to format and parse

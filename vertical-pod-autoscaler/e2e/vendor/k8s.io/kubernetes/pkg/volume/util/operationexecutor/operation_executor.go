@@ -150,7 +150,7 @@ type OperationExecutor interface {
 	// ExpandInUseVolume will resize volume's file system to expected size without unmounting the volume.
 	ExpandInUseVolume(volumeToMount VolumeToMount, actualStateOfWorld ActualStateOfWorldMounterUpdater, currentSize resource.Quantity) error
 	// ReconstructVolumeOperation construct a new volumeSpec and returns it created by plugin
-	ReconstructVolumeOperation(volumeMode v1.PersistentVolumeMode, plugin volume.VolumePlugin, mapperPlugin volume.BlockVolumePlugin, uid types.UID, podName volumetypes.UniquePodName, volumeSpecName string, volumePath string, pluginName string) (volume.ReconstructedVolume, error)
+	ReconstructVolumeOperation(volumeMode v1.PersistentVolumeMode, plugin volume.VolumePlugin, mapperPlugin volume.BlockVolumePlugin, uid types.UID, podName volumetypes.UniquePodName, volumeSpecName string, volumePath string, pluginName string) (*volume.Spec, error)
 	// CheckVolumeExistenceOperation checks volume existence
 	CheckVolumeExistenceOperation(volumeSpec *volume.Spec, mountPath, volumeName string, mounter mount.Interface, uniqueVolumeName v1.UniqueVolumeName, podName volumetypes.UniquePodName, podUID types.UID, attachable volume.AttachableVolumePlugin) (bool, error)
 }
@@ -1061,17 +1061,17 @@ func (oe *operationExecutor) ReconstructVolumeOperation(
 	podName volumetypes.UniquePodName,
 	volumeSpecName string,
 	volumePath string,
-	pluginName string) (volume.ReconstructedVolume, error) {
+	pluginName string) (*volume.Spec, error) {
 
 	// Filesystem Volume case
 	if volumeMode == v1.PersistentVolumeFilesystem {
 		// Create volumeSpec from mount path
 		klog.V(5).Infof("Starting operationExecutor.ReconstructVolume for file volume on pod %q", podName)
-		reconstructed, err := plugin.ConstructVolumeSpec(volumeSpecName, volumePath)
+		volumeSpec, err := plugin.ConstructVolumeSpec(volumeSpecName, volumePath)
 		if err != nil {
-			return volume.ReconstructedVolume{}, err
+			return nil, err
 		}
-		return reconstructed, nil
+		return volumeSpec, nil
 	}
 
 	// Block Volume case
@@ -1083,11 +1083,9 @@ func (oe *operationExecutor) ReconstructVolumeOperation(
 	// ex. volumePath: pods/{podUid}}/{DefaultKubeletVolumeDevicesDirName}/{escapeQualifiedPluginName}/{volumeName}
 	volumeSpec, err := mapperPlugin.ConstructBlockVolumeSpec(uid, volumeSpecName, volumePath)
 	if err != nil {
-		return volume.ReconstructedVolume{}, err
+		return nil, err
 	}
-	return volume.ReconstructedVolume{
-		Spec: volumeSpec,
-	}, nil
+	return volumeSpec, nil
 }
 
 // CheckVolumeExistenceOperation checks mount path directory if volume still exists

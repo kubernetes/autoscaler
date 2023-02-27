@@ -20,6 +20,7 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 )
 
@@ -99,6 +100,7 @@ func (c *ExpirationCache) getOrExpire(key string) (interface{}, bool) {
 		return nil, false
 	}
 	if c.expirationPolicy.IsExpired(timestampedItem) {
+		klog.V(4).Infof("Entry %v: %+v has expired", key, timestampedItem.Obj)
 		c.cacheStorage.Delete(key)
 		return nil, false
 	}

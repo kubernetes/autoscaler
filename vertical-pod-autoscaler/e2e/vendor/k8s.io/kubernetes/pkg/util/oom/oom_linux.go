@@ -21,6 +21,7 @@ package oom
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -65,7 +66,7 @@ func applyOOMScoreAdj(pid int, oomScoreAdj int) error {
 	klog.V(4).Infof("attempting to set %q to %q", oomScoreAdjPath, value)
 	var err error
 	for i := 0; i < maxTries; i++ {
-		err = os.WriteFile(oomScoreAdjPath, []byte(value), 0700)
+		err = ioutil.WriteFile(oomScoreAdjPath, []byte(value), 0700)
 		if err != nil {
 			if os.IsNotExist(err) {
 				klog.V(2).Infof("%q does not exist", oomScoreAdjPath)

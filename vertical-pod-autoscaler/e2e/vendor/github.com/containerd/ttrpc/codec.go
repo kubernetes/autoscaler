@@ -17,9 +17,8 @@
 package ttrpc
 
 import (
-	"fmt"
-
 	"github.com/gogo/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 type codec struct{}
@@ -29,7 +28,7 @@ func (c codec) Marshal(msg interface{}) ([]byte, error) {
 	case proto.Message:
 		return proto.Marshal(v)
 	default:
-		return nil, fmt.Errorf("ttrpc: cannot marshal unknown type: %T", msg)
+		return nil, errors.Errorf("ttrpc: cannot marshal unknown type: %T", msg)
 	}
 }
 
@@ -38,6 +37,6 @@ func (c codec) Unmarshal(p []byte, msg interface{}) error {
 	case proto.Message:
 		return proto.Unmarshal(p, v)
 	default:
-		return fmt.Errorf("ttrpc: cannot unmarshal into unknown type: %T", msg)
+		return errors.Errorf("ttrpc: cannot unmarshal into unknown type: %T", msg)
 	}
 }

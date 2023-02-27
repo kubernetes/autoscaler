@@ -6,10 +6,6 @@
 .project
 .settings/**
 
-# Idea files
-.idea/**
-.idea/
-
 # Emacs save files
 *~
 

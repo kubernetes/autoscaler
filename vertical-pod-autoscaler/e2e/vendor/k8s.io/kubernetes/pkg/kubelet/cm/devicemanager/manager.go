@@ -33,7 +33,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	errorsutil "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/kubelet/checkpointmanager"
 	"k8s.io/kubernetes/pkg/kubelet/checkpointmanager/errors"
 	"k8s.io/kubernetes/pkg/kubelet/cm/devicemanager/checkpoint"
@@ -163,8 +165,6 @@ func newManagerImpl(socketPath string, topology []cadvisorapi.Node, topologyAffi
 	return manager, nil
 }
 
-// CleanupPluginDirectory is to remove all existing unix sockets
-// from /var/lib/kubelet/device-plugins on Device Plugin Manager start
 func (m *ManagerImpl) CleanupPluginDirectory(dir string) error {
 	d, err := os.Open(dir)
 	if err != nil {
@@ -202,10 +202,8 @@ func (m *ManagerImpl) CleanupPluginDirectory(dir string) error {
 	return errorsutil.NewAggregate(errs)
 }
 
-// PluginConnected is to connect a plugin to a new endpoint.
-// This is done as part of device plugin registration.
 func (m *ManagerImpl) PluginConnected(resourceName string, p plugin.DevicePlugin) error {
-	options, err := p.API().GetDevicePluginOptions(context.Background(), &pluginapi.Empty{})
+	options, err := p.Api().GetDevicePluginOptions(context.Background(), &pluginapi.Empty{})
 	if err != nil {
 		return fmt.Errorf("failed to get device plugin options: %v", err)
 	}
@@ -219,8 +217,6 @@ func (m *ManagerImpl) PluginConnected(resourceName string, p plugin.DevicePlugin
 	return nil
 }
 
-// PluginDisconnected is to disconnect a plugin from an endpoint.
-// This is done as part of device plugin deregistration.
 func (m *ManagerImpl) PluginDisconnected(resourceName string) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -233,10 +229,6 @@ func (m *ManagerImpl) PluginDisconnected(resourceName string) {
 	m.endpoints[resourceName].e.setStopTime(time.Now())
 }
 
-// PluginListAndWatchReceiver receives ListAndWatchResponse from a device plugin
-// and ensures that an upto date state (e.g. number of devices and device health)
-// is captured. Also, registered device and device to container allocation
-// information is checkpointed to the disk.
 func (m *ManagerImpl) PluginListAndWatchReceiver(resourceName string, resp *pluginapi.ListAndWatchResponse) {
 	var devices []pluginapi.Device
 	for _, d := range resp.Devices {
@@ -572,14 +564,14 @@ func (m *ManagerImpl) devicesToAllocate(podUID, contName, resource string, requi
 		return false
 	}
 
-	// Needs to allocate additional devices.
-	if m.allocatedDevices[resource] == nil {
-		m.allocatedDevices[resource] = sets.NewString()
-	}
-
 	// Allocates from reusableDevices list first.
 	if allocateRemainingFrom(reusableDevices) {
 		return allocated, nil
+	}
+
+	// Needs to allocate additional devices.
+	if m.allocatedDevices[resource] == nil {
+		m.allocatedDevices[resource] = sets.NewString()
 	}
 
 	// Gets Devices in use.
@@ -1013,11 +1005,14 @@ func (m *ManagerImpl) GetDevices(podUID, containerName string) ResourceDeviceIns
 // depending on whether the node has been recreated. Absence of the checkpoint file strongly indicates the node
 // has been recreated.
 func (m *ManagerImpl) ShouldResetExtendedResourceCapacity() bool {
-	checkpoints, err := m.checkpointManager.ListCheckpoints()
-	if err != nil {
-		return false
+	if utilfeature.DefaultFeatureGate.Enabled(features.DevicePlugins) {
+		checkpoints, err := m.checkpointManager.ListCheckpoints()
+		if err != nil {
+			return false
+		}
+		return len(checkpoints) == 0
 	}
-	return len(checkpoints) == 0
+	return false
 }
 
 func (m *ManagerImpl) setPodPendingAdmission(pod *v1.Pod) {

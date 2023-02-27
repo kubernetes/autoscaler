@@ -20,11 +20,14 @@ limitations under the License.
 package kuberuntime
 
 import (
+	"fmt"
 	"runtime"
 
 	v1 "k8s.io/api/core/v1"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/features"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/securitycontext"
 )
@@ -123,6 +126,9 @@ func (m *kubeGenericRuntimeManager) generateWindowsContainerConfig(container *v1
 	}
 
 	if securitycontext.HasWindowsHostProcessRequest(pod, container) {
+		if !utilfeature.DefaultFeatureGate.Enabled(features.WindowsHostProcessContainers) {
+			return nil, fmt.Errorf("pod contains HostProcess containers but feature 'WindowsHostProcessContainers' is not enabled")
+		}
 		wc.SecurityContext.HostProcess = true
 	}
 

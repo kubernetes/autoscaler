@@ -53,7 +53,6 @@ func pluginsNames(p *configv1.Plugins) []string {
 		p.Bind,
 		p.PostBind,
 		p.Permit,
-		p.PreEnqueue,
 		p.QueueSort,
 	}
 	n := sets.NewString()
@@ -103,7 +102,7 @@ func setDefaults_KubeSchedulerProfile(prof *configv1.KubeSchedulerProfile) {
 // SetDefaults_KubeSchedulerConfiguration sets additional defaults
 func SetDefaults_KubeSchedulerConfiguration(obj *configv1.KubeSchedulerConfiguration) {
 	if obj.Parallelism == nil {
-		obj.Parallelism = pointer.Int32(16)
+		obj.Parallelism = pointer.Int32Ptr(16)
 	}
 
 	if len(obj.Profiles) == 0 {
@@ -112,7 +111,7 @@ func SetDefaults_KubeSchedulerConfiguration(obj *configv1.KubeSchedulerConfigura
 	// Only apply a default scheduler name when there is a single profile.
 	// Validation will ensure that every profile has a non-empty unique name.
 	if len(obj.Profiles) == 1 && obj.Profiles[0].SchedulerName == nil {
-		obj.Profiles[0].SchedulerName = pointer.String(v1.DefaultSchedulerName)
+		obj.Profiles[0].SchedulerName = pointer.StringPtr(v1.DefaultSchedulerName)
 	}
 
 	// Add the default set of plugins and apply the configuration.
@@ -122,7 +121,8 @@ func SetDefaults_KubeSchedulerConfiguration(obj *configv1.KubeSchedulerConfigura
 	}
 
 	if obj.PercentageOfNodesToScore == nil {
-		obj.PercentageOfNodesToScore = pointer.Int32(config.DefaultPercentageOfNodesToScore)
+		percentageOfNodesToScore := int32(config.DefaultPercentageOfNodesToScore)
+		obj.PercentageOfNodesToScore = &percentageOfNodesToScore
 	}
 
 	if len(obj.LeaderElection.ResourceLock) == 0 {
@@ -173,22 +173,22 @@ func SetDefaults_KubeSchedulerConfiguration(obj *configv1.KubeSchedulerConfigura
 
 func SetDefaults_DefaultPreemptionArgs(obj *configv1.DefaultPreemptionArgs) {
 	if obj.MinCandidateNodesPercentage == nil {
-		obj.MinCandidateNodesPercentage = pointer.Int32(10)
+		obj.MinCandidateNodesPercentage = pointer.Int32Ptr(10)
 	}
 	if obj.MinCandidateNodesAbsolute == nil {
-		obj.MinCandidateNodesAbsolute = pointer.Int32(100)
+		obj.MinCandidateNodesAbsolute = pointer.Int32Ptr(100)
 	}
 }
 
 func SetDefaults_InterPodAffinityArgs(obj *configv1.InterPodAffinityArgs) {
 	if obj.HardPodAffinityWeight == nil {
-		obj.HardPodAffinityWeight = pointer.Int32(1)
+		obj.HardPodAffinityWeight = pointer.Int32Ptr(1)
 	}
 }
 
 func SetDefaults_VolumeBindingArgs(obj *configv1.VolumeBindingArgs) {
 	if obj.BindTimeoutSeconds == nil {
-		obj.BindTimeoutSeconds = pointer.Int64(600)
+		obj.BindTimeoutSeconds = pointer.Int64Ptr(600)
 	}
 	if len(obj.Shape) == 0 && feature.DefaultFeatureGate.Enabled(features.VolumeCapacityPriority) {
 		obj.Shape = []configv1.UtilizationShapePoint{

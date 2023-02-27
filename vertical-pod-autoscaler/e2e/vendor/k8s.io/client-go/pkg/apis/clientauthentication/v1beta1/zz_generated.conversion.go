@@ -86,7 +86,6 @@ func autoConvert_v1beta1_Cluster_To_clientauthentication_Cluster(in *Cluster, ou
 	out.InsecureSkipTLSVerify = in.InsecureSkipTLSVerify
 	out.CertificateAuthorityData = *(*[]byte)(unsafe.Pointer(&in.CertificateAuthorityData))
 	out.ProxyURL = in.ProxyURL
-	out.DisableCompression = in.DisableCompression
 	if err := runtime.Convert_runtime_RawExtension_To_runtime_Object(&in.Config, &out.Config, s); err != nil {
 		return err
 	}
@@ -104,7 +103,6 @@ func autoConvert_clientauthentication_Cluster_To_v1beta1_Cluster(in *clientauthe
 	out.InsecureSkipTLSVerify = in.InsecureSkipTLSVerify
 	out.CertificateAuthorityData = *(*[]byte)(unsafe.Pointer(&in.CertificateAuthorityData))
 	out.ProxyURL = in.ProxyURL
-	out.DisableCompression = in.DisableCompression
 	if err := runtime.Convert_runtime_Object_To_runtime_RawExtension(&in.Config, &out.Config, s); err != nil {
 		return err
 	}

@@ -31,7 +31,6 @@ import (
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
-	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 	"k8s.io/kubernetes/pkg/apis/scheduling"
 	"k8s.io/kubernetes/pkg/features"
 	kubeletconfig "k8s.io/kubernetes/pkg/kubelet/apis/config"
@@ -381,14 +380,6 @@ func (m *managerImpl) processShutdownEvent() error {
 					}
 					status.Message = nodeShutdownMessage
 					status.Reason = nodeShutdownReason
-					if utilfeature.DefaultFeatureGate.Enabled(features.PodDisruptionConditions) {
-						podutil.UpdatePodCondition(status, &v1.PodCondition{
-							Type:    v1.DisruptionTarget,
-							Status:  v1.ConditionTrue,
-							Reason:  v1.PodReasonTerminationByKubelet,
-							Message: nodeShutdownMessage,
-						})
-					}
 				}); err != nil {
 					m.logger.V(1).Info("Shutdown manager failed killing pod", "pod", klog.KObj(pod), "err", err)
 				} else {

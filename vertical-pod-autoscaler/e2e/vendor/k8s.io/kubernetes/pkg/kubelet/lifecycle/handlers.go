@@ -17,29 +17,20 @@ limitations under the License.
 package lifecycle
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/features"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
-	"k8s.io/kubernetes/pkg/kubelet/metrics"
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/kubelet/util/format"
-	httpprobe "k8s.io/kubernetes/pkg/probe/http"
 	"k8s.io/kubernetes/pkg/security/apparmor"
+	utilio "k8s.io/utils/io"
 )
 
 const (
@@ -47,42 +38,39 @@ const (
 )
 
 type handlerRunner struct {
-	httpDoer         kubetypes.HTTPDoer
+	httpGetter       kubetypes.HTTPGetter
 	commandRunner    kubecontainer.CommandRunner
 	containerManager podStatusProvider
-	eventRecorder    record.EventRecorder
 }
 
 type podStatusProvider interface {
-	GetPodStatus(ctx context.Context, uid types.UID, name, namespace string) (*kubecontainer.PodStatus, error)
+	GetPodStatus(uid types.UID, name, namespace string) (*kubecontainer.PodStatus, error)
 }
 
 // NewHandlerRunner returns a configured lifecycle handler for a container.
-func NewHandlerRunner(httpDoer kubetypes.HTTPDoer, commandRunner kubecontainer.CommandRunner, containerManager podStatusProvider, eventRecorder record.EventRecorder) kubecontainer.HandlerRunner {
+func NewHandlerRunner(httpGetter kubetypes.HTTPGetter, commandRunner kubecontainer.CommandRunner, containerManager podStatusProvider) kubecontainer.HandlerRunner {
 	return &handlerRunner{
-		httpDoer:         httpDoer,
+		httpGetter:       httpGetter,
 		commandRunner:    commandRunner,
 		containerManager: containerManager,
-		eventRecorder:    eventRecorder,
 	}
 }
 
-func (hr *handlerRunner) Run(ctx context.Context, containerID kubecontainer.ContainerID, pod *v1.Pod, container *v1.Container, handler *v1.LifecycleHandler) (string, error) {
+func (hr *handlerRunner) Run(containerID kubecontainer.ContainerID, pod *v1.Pod, container *v1.Container, handler *v1.LifecycleHandler) (string, error) {
 	switch {
 	case handler.Exec != nil:
 		var msg string
 		// TODO(tallclair): Pass a proper timeout value.
-		output, err := hr.commandRunner.RunInContainer(ctx, containerID, handler.Exec.Command, 0)
+		output, err := hr.commandRunner.RunInContainer(containerID, handler.Exec.Command, 0)
 		if err != nil {
 			msg = fmt.Sprintf("Exec lifecycle hook (%v) for Container %q in Pod %q failed - error: %v, message: %q", handler.Exec.Command, container.Name, format.Pod(pod), err, string(output))
 			klog.V(1).ErrorS(err, "Exec lifecycle hook for Container in Pod failed", "execCommand", handler.Exec.Command, "containerName", container.Name, "pod", klog.KObj(pod), "message", string(output))
 		}
 		return msg, err
 	case handler.HTTPGet != nil:
-		err := hr.runHTTPHandler(ctx, pod, container, handler, hr.eventRecorder)
-		var msg string
+		msg, err := hr.runHTTPHandler(pod, container, handler)
 		if err != nil {
-			msg = fmt.Sprintf("HTTP lifecycle hook (%s) for Container %q in Pod %q failed - error: %v", handler.HTTPGet.Path, container.Name, format.Pod(pod), err)
+			msg = fmt.Sprintf("HTTP lifecycle hook (%s) for Container %q in Pod %q failed - error: %v, message: %q", handler.HTTPGet.Path, container.Name, format.Pod(pod), err, msg)
 			klog.V(1).ErrorS(err, "HTTP lifecycle hook for Container in Pod failed", "path", handler.HTTPGet.Path, "containerName", container.Name, "pod", klog.KObj(pod))
 		}
 		return msg, err
@@ -117,53 +105,19 @@ func resolvePort(portReference intstr.IntOrString, container *v1.Container) (int
 	return -1, fmt.Errorf("couldn't find port: %v in %v", portReference, container)
 }
 
-func (hr *handlerRunner) runHTTPHandler(ctx context.Context, pod *v1.Pod, container *v1.Container, handler *v1.LifecycleHandler, eventRecorder record.EventRecorder) error {
+func (hr *handlerRunner) runHTTPHandler(pod *v1.Pod, container *v1.Container, handler *v1.LifecycleHandler) (string, error) {
 	host := handler.HTTPGet.Host
-	podIP := host
 	if len(host) == 0 {
-		status, err := hr.containerManager.GetPodStatus(ctx, pod.UID, pod.Name, pod.Namespace)
+		status, err := hr.containerManager.GetPodStatus(pod.UID, pod.Name, pod.Namespace)
 		if err != nil {
 			klog.ErrorS(err, "Unable to get pod info, event handlers may be invalid.", "pod", klog.KObj(pod))
-			return err
+			return "", err
 		}
 		if len(status.IPs) == 0 {
-			return fmt.Errorf("failed to find networking container: %v", status)
+			return "", fmt.Errorf("failed to find networking container: %v", status)
 		}
 		host = status.IPs[0]
-		podIP = host
 	}
-
-	if utilfeature.DefaultFeatureGate.Enabled(features.ConsistentHTTPGetHandlers) {
-		req, err := httpprobe.NewRequestForHTTPGetAction(handler.HTTPGet, container, podIP, "lifecycle")
-		if err != nil {
-			return err
-		}
-		resp, err := hr.httpDoer.Do(req)
-		discardHTTPRespBody(resp)
-
-		if isHTTPResponseError(err) {
-			klog.V(1).ErrorS(err, "HTTPS request to lifecycle hook got HTTP response, retrying with HTTP.", "pod", klog.KObj(pod), "host", req.URL.Host)
-
-			req := req.Clone(context.Background())
-			req.URL.Scheme = "http"
-			req.Header.Del("Authorization")
-			resp, httpErr := hr.httpDoer.Do(req)
-
-			// clear err since the fallback succeeded
-			if httpErr == nil {
-				metrics.LifecycleHandlerHTTPFallbacks.Inc()
-				if eventRecorder != nil {
-					// report the fallback with an event
-					eventRecorder.Event(pod, v1.EventTypeWarning, "LifecycleHTTPFallback", fmt.Sprintf("request to HTTPS lifecycle hook %s got HTTP response, retry with HTTP succeeded", req.URL.Host))
-				}
-				err = nil
-			}
-			discardHTTPRespBody(resp)
-		}
-		return err
-	}
-
-	// Deprecated code path.
 	var port int
 	if handler.HTTPGet.Port.Type == intstr.String && len(handler.HTTPGet.Port.StrVal) == 0 {
 		port = 80
@@ -171,34 +125,24 @@ func (hr *handlerRunner) runHTTPHandler(ctx context.Context, pod *v1.Pod, contai
 		var err error
 		port, err = resolvePort(handler.HTTPGet.Port, container)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
-
 	url := fmt.Sprintf("http://%s/%s", net.JoinHostPort(host, strconv.Itoa(port)), handler.HTTPGet.Path)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := hr.httpDoer.Do(req)
-
-	discardHTTPRespBody(resp)
-	return err
+	resp, err := hr.httpGetter.Get(url)
+	return getHTTPRespBody(resp), err
 }
 
-func discardHTTPRespBody(resp *http.Response) {
+func getHTTPRespBody(resp *http.Response) string {
 	if resp == nil {
-		return
+		return ""
 	}
-
-	// Ensure the response body is fully read and closed
-	// before we reconnect, so that we reuse the same TCP
-	// connection.
 	defer resp.Body.Close()
-
-	if resp.ContentLength <= maxRespBodyLength {
-		io.Copy(io.Discard, &io.LimitedReader{R: resp.Body, N: maxRespBodyLength})
+	bytes, err := utilio.ReadAtMost(resp.Body, maxRespBodyLength)
+	if err == nil || err == utilio.ErrLimitReached {
+		return string(bytes)
 	}
+	return ""
 }
 
 // NewAppArmorAdmitHandler returns a PodAdmitHandler which is used to evaluate
@@ -228,15 +172,4 @@ func (a *appArmorAdmitHandler) Admit(attrs *PodAdmitAttributes) PodAdmitResult {
 		Reason:  "AppArmor",
 		Message: fmt.Sprintf("Cannot enforce AppArmor: %v", err),
 	}
-}
-
-func isHTTPResponseError(err error) bool {
-	if err == nil {
-		return false
-	}
-	urlErr := &url.Error{}
-	if !errors.As(err, &urlErr) {
-		return false
-	}
-	return strings.Contains(urlErr.Err.Error(), "server gave HTTP response to HTTPS client")
 }

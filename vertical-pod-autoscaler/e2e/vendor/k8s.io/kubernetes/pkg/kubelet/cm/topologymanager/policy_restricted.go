@@ -26,8 +26,8 @@ var _ Policy = &restrictedPolicy{}
 const PolicyRestricted string = "restricted"
 
 // NewRestrictedPolicy returns restricted policy.
-func NewRestrictedPolicy(numaInfo *NUMAInfo, opts PolicyOptions) Policy {
-	return &restrictedPolicy{bestEffortPolicy{numaInfo: numaInfo, opts: opts}}
+func NewRestrictedPolicy(numaNodes []int) Policy {
+	return &restrictedPolicy{bestEffortPolicy{numaNodes: numaNodes}}
 }
 
 func (p *restrictedPolicy) Name() string {
@@ -40,8 +40,7 @@ func (p *restrictedPolicy) canAdmitPodResult(hint *TopologyHint) bool {
 
 func (p *restrictedPolicy) Merge(providersHints []map[string][]TopologyHint) (TopologyHint, bool) {
 	filteredHints := filterProvidersHints(providersHints)
-	merger := NewHintMerger(p.numaInfo, filteredHints, p.Name(), p.opts)
-	bestHint := merger.Merge()
-	admit := p.canAdmitPodResult(&bestHint)
-	return bestHint, admit
+	hint := mergeFilteredHints(p.numaNodes, filteredHints)
+	admit := p.canAdmitPodResult(&hint)
+	return hint, admit
 }

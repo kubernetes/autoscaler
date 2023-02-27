@@ -98,15 +98,9 @@ type Scheduler struct {
 	nextStartNodeIndex int
 }
 
-func (s *Scheduler) applyDefaultHandlers() {
-	s.SchedulePod = s.schedulePod
-	s.FailureHandler = s.handleSchedulingFailure
-}
-
 type schedulerOptions struct {
-	componentConfigVersion string
-	kubeConfig             *restclient.Config
-	// Overridden by profile level percentageOfNodesToScore if set in v1.
+	componentConfigVersion            string
+	kubeConfig                        *restclient.Config
 	percentageOfNodesToScore          int32
 	podInitialBackoffSeconds          int64
 	podMaxBackoffSeconds              int64
@@ -132,11 +126,6 @@ type ScheduleResult struct {
 	EvaluatedNodes int
 	// The number of nodes out of the evaluated ones that fit the pod.
 	FeasibleNodes int
-
-	// The reason records the failure in scheduling cycle.
-	reason string
-	// The nominating info for scheduling cycle.
-	nominatingInfo *framework.NominatingInfo
 }
 
 // WithComponentConfigVersion sets the component config version to the
@@ -172,13 +161,10 @@ func WithParallelism(threads int32) Option {
 	}
 }
 
-// WithPercentageOfNodesToScore sets percentageOfNodesToScore for Scheduler.
-// The default value of 0 will use an adaptive percentage: 50 - (num of nodes)/125.
-func WithPercentageOfNodesToScore(percentageOfNodesToScore *int32) Option {
+// WithPercentageOfNodesToScore sets percentageOfNodesToScore for Scheduler, the default value is 50
+func WithPercentageOfNodesToScore(percentageOfNodesToScore int32) Option {
 	return func(o *schedulerOptions) {
-		if percentageOfNodesToScore != nil {
-			o.percentageOfNodesToScore = *percentageOfNodesToScore
-		}
+		o.percentageOfNodesToScore = percentageOfNodesToScore
 	}
 }
 
@@ -309,10 +295,6 @@ func New(client clientset.Interface,
 		return nil, errors.New("at least one profile is required")
 	}
 
-	preEnqueuePluginMap := make(map[string][]framework.PreEnqueuePlugin)
-	for profileName, profile := range profiles {
-		preEnqueuePluginMap[profileName] = profile.PreEnqueuePlugins()
-	}
 	podQueue := internalqueue.NewSchedulingQueue(
 		profiles[options.profiles[0].SchedulerName].QueueSortFunc(),
 		informerFactory,
@@ -321,7 +303,6 @@ func New(client clientset.Interface,
 		internalqueue.WithPodNominator(nominator),
 		internalqueue.WithClusterEventMap(clusterEventMap),
 		internalqueue.WithPodMaxInUnschedulablePodsDuration(options.podMaxInUnschedulablePodsDuration),
-		internalqueue.WithPreEnqueuePluginMap(preEnqueuePluginMap),
 	)
 
 	schedulerCache := internalcache.New(durationToExpireAssumedPod, stopEverything)
@@ -330,18 +311,17 @@ func New(client clientset.Interface,
 	debugger := cachedebugger.New(nodeLister, podLister, schedulerCache, podQueue)
 	debugger.ListenForSignal(stopEverything)
 
-	sched := &Scheduler{
-		Cache:                    schedulerCache,
-		client:                   client,
-		nodeInfoSnapshot:         snapshot,
-		percentageOfNodesToScore: options.percentageOfNodesToScore,
-		Extenders:                extenders,
-		NextPod:                  internalqueue.MakeNextPodFunc(podQueue),
-		StopEverything:           stopEverything,
-		SchedulingQueue:          podQueue,
-		Profiles:                 profiles,
-	}
-	sched.applyDefaultHandlers()
+	sched := newScheduler(
+		schedulerCache,
+		extenders,
+		internalqueue.MakeNextPodFunc(podQueue),
+		stopEverything,
+		podQueue,
+		profiles,
+		client,
+		snapshot,
+		options.percentageOfNodesToScore,
+	)
 
 	addAllEventHandlers(sched, informerFactory, dynInformerFactory, unionedGVKs(clusterEventMap))
 
@@ -430,7 +410,34 @@ func buildExtenders(extenders []schedulerapi.Extender, profiles []schedulerapi.K
 	return fExtenders, nil
 }
 
-type FailureHandlerFn func(ctx context.Context, fwk framework.Framework, podInfo *framework.QueuedPodInfo, err error, reason string, nominatingInfo *framework.NominatingInfo, start time.Time)
+type FailureHandlerFn func(ctx context.Context, fwk framework.Framework, podInfo *framework.QueuedPodInfo, err error, reason string, nominatingInfo *framework.NominatingInfo)
+
+// newScheduler creates a Scheduler object.
+func newScheduler(
+	cache internalcache.Cache,
+	extenders []framework.Extender,
+	nextPod func() *framework.QueuedPodInfo,
+	stopEverything <-chan struct{},
+	schedulingQueue internalqueue.SchedulingQueue,
+	profiles profile.Map,
+	client clientset.Interface,
+	nodeInfoSnapshot *internalcache.Snapshot,
+	percentageOfNodesToScore int32) *Scheduler {
+	sched := Scheduler{
+		Cache:                    cache,
+		Extenders:                extenders,
+		NextPod:                  nextPod,
+		StopEverything:           stopEverything,
+		SchedulingQueue:          schedulingQueue,
+		Profiles:                 profiles,
+		client:                   client,
+		nodeInfoSnapshot:         nodeInfoSnapshot,
+		percentageOfNodesToScore: percentageOfNodesToScore,
+	}
+	sched.SchedulePod = sched.schedulePod
+	sched.FailureHandler = sched.handleSchedulingFailure
+	return &sched
+}
 
 func unionedGVKs(m map[framework.ClusterEvent]sets.String) map[framework.GVK]framework.ActionType {
 	gvkMap := make(map[framework.GVK]framework.ActionType)

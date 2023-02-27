@@ -24,7 +24,9 @@ import (
 )
 
 const (
-	KubeletSubsystem = "kubelet"
+	kubeletCredentialProviderPluginErrorsKey   = "kubelet_credential_provider_plugin_errors"
+	kubeletCredentialProviderPluginDurationKey = "kubelet_credential_provider_plugin_duration"
+	KubeletSubsystem                           = "kubelet"
 )
 
 var (
@@ -33,7 +35,7 @@ var (
 	kubeletCredentialProviderPluginErrors = metrics.NewCounterVec(
 		&metrics.CounterOpts{
 			Subsystem:      KubeletSubsystem,
-			Name:           "credential_provider_plugin_errors",
+			Name:           kubeletCredentialProviderPluginErrorsKey,
 			Help:           "Number of errors from credential provider plugin",
 			StabilityLevel: metrics.ALPHA,
 		},
@@ -43,7 +45,7 @@ var (
 	kubeletCredentialProviderPluginDuration = metrics.NewHistogramVec(
 		&metrics.HistogramOpts{
 			Subsystem:      KubeletSubsystem,
-			Name:           "credential_provider_plugin_duration",
+			Name:           kubeletCredentialProviderPluginDurationKey,
 			Help:           "Duration of execution in seconds for credential provider plugin",
 			Buckets:        metrics.DefBuckets,
 			StabilityLevel: metrics.ALPHA,
@@ -57,5 +59,6 @@ func registerMetrics() {
 	registerOnce.Do(func() {
 		legacyregistry.MustRegister(kubeletCredentialProviderPluginErrors)
 		legacyregistry.MustRegister(kubeletCredentialProviderPluginDuration)
+
 	})
 }

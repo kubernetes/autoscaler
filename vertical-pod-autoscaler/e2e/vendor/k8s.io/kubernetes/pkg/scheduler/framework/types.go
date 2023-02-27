@@ -64,8 +64,7 @@ const (
 	Node                  GVK = "Node"
 	PersistentVolume      GVK = "PersistentVolume"
 	PersistentVolumeClaim GVK = "PersistentVolumeClaim"
-	PodScheduling         GVK = "PodScheduling"
-	ResourceClaim         GVK = "ResourceClaim"
+	Service               GVK = "Service"
 	StorageClass          GVK = "storage.k8s.io/StorageClass"
 	CSINode               GVK = "storage.k8s.io/CSINode"
 	CSIDriver             GVK = "storage.k8s.io/CSIDriver"
@@ -104,8 +103,6 @@ type QueuedPodInfo struct {
 	InitialAttemptTimestamp time.Time
 	// If a Pod failed in a scheduling cycle, record the plugin names it failed by.
 	UnschedulablePlugins sets.String
-	// Whether the Pod is scheduling gated (by PreEnqueuePlugins) or not.
-	Gated bool
 }
 
 // DeepCopy returns a deep copy of the QueuedPodInfo object.
@@ -115,8 +112,6 @@ func (pqi *QueuedPodInfo) DeepCopy() *QueuedPodInfo {
 		Timestamp:               pqi.Timestamp,
 		Attempts:                pqi.Attempts,
 		InitialAttemptTimestamp: pqi.InitialAttemptTimestamp,
-		UnschedulablePlugins:    pqi.UnschedulablePlugins.Clone(),
-		Gated:                   pqi.Gated,
 	}
 }
 
@@ -129,6 +124,7 @@ type PodInfo struct {
 	RequiredAntiAffinityTerms  []AffinityTerm
 	PreferredAffinityTerms     []WeightedAffinityTerm
 	PreferredAntiAffinityTerms []WeightedAffinityTerm
+	ParseError                 error
 }
 
 // DeepCopy returns a deep copy of the PodInfo object.
@@ -139,17 +135,18 @@ func (pi *PodInfo) DeepCopy() *PodInfo {
 		RequiredAntiAffinityTerms:  pi.RequiredAntiAffinityTerms,
 		PreferredAffinityTerms:     pi.PreferredAffinityTerms,
 		PreferredAntiAffinityTerms: pi.PreferredAntiAffinityTerms,
+		ParseError:                 pi.ParseError,
 	}
 }
 
 // Update creates a full new PodInfo by default. And only updates the pod when the PodInfo
 // has been instantiated and the passed pod is the exact same one as the original pod.
-func (pi *PodInfo) Update(pod *v1.Pod) error {
+func (pi *PodInfo) Update(pod *v1.Pod) {
 	if pod != nil && pi.Pod != nil && pi.Pod.UID == pod.UID {
 		// PodInfo includes immutable information, and so it is safe to update the pod in place if it is
 		// the exact same pod
 		pi.Pod = pod
-		return nil
+		return
 	}
 	var preferredAffinityTerms []v1.WeightedPodAffinityTerm
 	var preferredAntiAffinityTerms []v1.WeightedPodAffinityTerm
@@ -187,7 +184,7 @@ func (pi *PodInfo) Update(pod *v1.Pod) error {
 	pi.RequiredAntiAffinityTerms = requiredAntiAffinityTerms
 	pi.PreferredAffinityTerms = weightedAffinityTerms
 	pi.PreferredAntiAffinityTerms = weightedAntiAffinityTerms
-	return utilerrors.NewAggregate(parseErrs)
+	pi.ParseError = utilerrors.NewAggregate(parseErrs)
 }
 
 // AffinityTerm is a processed version of v1.PodAffinityTerm.
@@ -216,9 +213,7 @@ type WeightedAffinityTerm struct {
 type Diagnosis struct {
 	NodeToStatusMap      NodeToStatusMap
 	UnschedulablePlugins sets.String
-	// PreFilterMsg records the messages returned from PreFilter plugins.
-	PreFilterMsg string
-	// PostFilterMsg records the messages returned from PostFilter plugins.
+	// PostFilterMsg records the messages returned from PostFilterPlugins.
 	PostFilterMsg string
 }
 
@@ -229,15 +224,10 @@ type FitError struct {
 	Diagnosis   Diagnosis
 }
 
-const (
-	// NoNodeAvailableMsg is used to format message when no nodes available.
-	NoNodeAvailableMsg = "0/%v nodes are available"
-	// SeparatorFormat is used to separate PreFilterMsg, FilterMsg and PostFilterMsg.
-	SeparatorFormat = " %v."
-)
+// NoNodeAvailableMsg is used to format message when no nodes available.
+const NoNodeAvailableMsg = "0/%v nodes are available"
 
-// Error returns detailed information of why the pod failed to fit on each node.
-// A message format is "0/X nodes are available: <PreFilterMsg>. <FilterMsg>. <PostFilterMsg>."
+// Error returns detailed information of why the pod failed to fit on each node
 func (f *FitError) Error() string {
 	reasons := make(map[string]int)
 	for _, status := range f.Diagnosis.NodeToStatusMap {
@@ -246,12 +236,6 @@ func (f *FitError) Error() string {
 		}
 	}
 
-	reasonMsg := fmt.Sprintf(NoNodeAvailableMsg+":", f.NumAllNodes)
-	// Add the messages from PreFilter plugins to reasonMsg.
-	preFilterMsg := f.Diagnosis.PreFilterMsg
-	if preFilterMsg != "" {
-		reasonMsg += fmt.Sprintf(SeparatorFormat, preFilterMsg)
-	}
 	sortReasonsHistogram := func() []string {
 		var reasonStrings []string
 		for k, v := range reasons {
@@ -260,14 +244,10 @@ func (f *FitError) Error() string {
 		sort.Strings(reasonStrings)
 		return reasonStrings
 	}
-	sortedFilterMsg := sortReasonsHistogram()
-	if len(sortedFilterMsg) != 0 {
-		reasonMsg += fmt.Sprintf(SeparatorFormat, strings.Join(sortedFilterMsg, ", "))
-	}
-	// Add the messages from PostFilter plugins to reasonMsg.
+	reasonMsg := fmt.Sprintf(NoNodeAvailableMsg+": %v.", f.NumAllNodes, strings.Join(sortReasonsHistogram(), ", "))
 	postFilterMsg := f.Diagnosis.PostFilterMsg
 	if postFilterMsg != "" {
-		reasonMsg += fmt.Sprintf(SeparatorFormat, postFilterMsg)
+		reasonMsg += " " + postFilterMsg
 	}
 	return reasonMsg
 }
@@ -325,10 +305,10 @@ func getWeightedAffinityTerms(pod *v1.Pod, v1Terms []v1.WeightedPodAffinityTerm)
 }
 
 // NewPodInfo returns a new PodInfo.
-func NewPodInfo(pod *v1.Pod) (*PodInfo, error) {
+func NewPodInfo(pod *v1.Pod) *PodInfo {
 	pInfo := &PodInfo{}
-	err := pInfo.Update(pod)
-	return pInfo, err
+	pInfo.Update(pod)
+	return pInfo
 }
 
 func getPodAffinityTerms(affinity *v1.Affinity) (terms []v1.PodAffinityTerm) {
@@ -337,9 +317,9 @@ func getPodAffinityTerms(affinity *v1.Affinity) (terms []v1.PodAffinityTerm) {
 			terms = affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution
 		}
 		// TODO: Uncomment this block when implement RequiredDuringSchedulingRequiredDuringExecution.
-		// if len(affinity.PodAffinity.RequiredDuringSchedulingRequiredDuringExecution) != 0 {
+		//if len(affinity.PodAffinity.RequiredDuringSchedulingRequiredDuringExecution) != 0 {
 		//	terms = append(terms, affinity.PodAffinity.RequiredDuringSchedulingRequiredDuringExecution...)
-		// }
+		//}
 	}
 	return terms
 }
@@ -350,9 +330,9 @@ func getPodAntiAffinityTerms(affinity *v1.Affinity) (terms []v1.PodAffinityTerm)
 			terms = affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution
 		}
 		// TODO: Uncomment this block when implement RequiredDuringSchedulingRequiredDuringExecution.
-		// if len(affinity.PodAntiAffinity.RequiredDuringSchedulingRequiredDuringExecution) != 0 {
+		//if len(affinity.PodAntiAffinity.RequiredDuringSchedulingRequiredDuringExecution) != 0 {
 		//	terms = append(terms, affinity.PodAntiAffinity.RequiredDuringSchedulingRequiredDuringExecution...)
-		// }
+		//}
 	}
 	return terms
 }
@@ -601,6 +581,18 @@ func (n *NodeInfo) String() string {
 // AddPodInfo adds pod information to this NodeInfo.
 // Consider using this instead of AddPod if a PodInfo is already computed.
 func (n *NodeInfo) AddPodInfo(podInfo *PodInfo) {
+	res, non0CPU, non0Mem := calculateResource(podInfo.Pod)
+	n.Requested.MilliCPU += res.MilliCPU
+	n.Requested.Memory += res.Memory
+	n.Requested.EphemeralStorage += res.EphemeralStorage
+	if n.Requested.ScalarResources == nil && len(res.ScalarResources) > 0 {
+		n.Requested.ScalarResources = map[v1.ResourceName]int64{}
+	}
+	for rName, rQuant := range res.ScalarResources {
+		n.Requested.ScalarResources[rName] += rQuant
+	}
+	n.NonZeroRequested.MilliCPU += non0CPU
+	n.NonZeroRequested.Memory += non0Mem
 	n.Pods = append(n.Pods, podInfo)
 	if podWithAffinity(podInfo.Pod) {
 		n.PodsWithAffinity = append(n.PodsWithAffinity, podInfo)
@@ -608,15 +600,17 @@ func (n *NodeInfo) AddPodInfo(podInfo *PodInfo) {
 	if podWithRequiredAntiAffinity(podInfo.Pod) {
 		n.PodsWithRequiredAntiAffinity = append(n.PodsWithRequiredAntiAffinity, podInfo)
 	}
-	n.update(podInfo.Pod, 1)
+
+	// Consume ports when pods added.
+	n.updateUsedPorts(podInfo.Pod, true)
+	n.updatePVCRefCounts(podInfo.Pod, true)
+
+	n.Generation = nextGeneration()
 }
 
 // AddPod is a wrapper around AddPodInfo.
 func (n *NodeInfo) AddPod(pod *v1.Pod) {
-	// ignore this err since apiserver doesn't properly validate affinity terms
-	// and we can't fix the validation for backwards compatibility.
-	podInfo, _ := NewPodInfo(pod)
-	n.AddPodInfo(podInfo)
+	n.AddPodInfo(NewPodInfo(pod))
 }
 
 func podWithAffinity(p *v1.Pod) bool {
@@ -670,36 +664,31 @@ func (n *NodeInfo) RemovePod(pod *v1.Pod) error {
 			// delete the element
 			n.Pods[i] = n.Pods[len(n.Pods)-1]
 			n.Pods = n.Pods[:len(n.Pods)-1]
+			// reduce the resource data
+			res, non0CPU, non0Mem := calculateResource(pod)
 
-			n.update(pod, -1)
+			n.Requested.MilliCPU -= res.MilliCPU
+			n.Requested.Memory -= res.Memory
+			n.Requested.EphemeralStorage -= res.EphemeralStorage
+			if len(res.ScalarResources) > 0 && n.Requested.ScalarResources == nil {
+				n.Requested.ScalarResources = map[v1.ResourceName]int64{}
+			}
+			for rName, rQuant := range res.ScalarResources {
+				n.Requested.ScalarResources[rName] -= rQuant
+			}
+			n.NonZeroRequested.MilliCPU -= non0CPU
+			n.NonZeroRequested.Memory -= non0Mem
+
+			// Release ports when remove Pods.
+			n.updateUsedPorts(pod, false)
+			n.updatePVCRefCounts(pod, false)
+
+			n.Generation = nextGeneration()
 			n.resetSlicesIfEmpty()
 			return nil
 		}
 	}
 	return fmt.Errorf("no corresponding pod %s in pods of node %s", pod.Name, n.node.Name)
-}
-
-// update node info based on the pod and sign.
-// The sign will be set to `+1` when AddPod and to `-1` when RemovePod.
-func (n *NodeInfo) update(pod *v1.Pod, sign int64) {
-	res, non0CPU, non0Mem := calculateResource(pod)
-	n.Requested.MilliCPU += sign * res.MilliCPU
-	n.Requested.Memory += sign * res.Memory
-	n.Requested.EphemeralStorage += sign * res.EphemeralStorage
-	if n.Requested.ScalarResources == nil && len(res.ScalarResources) > 0 {
-		n.Requested.ScalarResources = map[v1.ResourceName]int64{}
-	}
-	for rName, rQuant := range res.ScalarResources {
-		n.Requested.ScalarResources[rName] += sign * rQuant
-	}
-	n.NonZeroRequested.MilliCPU += sign * non0CPU
-	n.NonZeroRequested.Memory += sign * non0Mem
-
-	// Consume ports when pod added or release ports when pod removed.
-	n.updateUsedPorts(pod, sign > 0)
-	n.updatePVCRefCounts(pod, sign > 0)
-
-	n.Generation = nextGeneration()
 }
 
 // resets the slices to nil so that we can do DeepEqual in unit tests.

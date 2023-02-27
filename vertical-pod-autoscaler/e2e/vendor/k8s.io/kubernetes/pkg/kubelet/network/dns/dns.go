@@ -19,12 +19,13 @@ package dns
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
 	"strings"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
@@ -267,12 +268,13 @@ func parseResolvConf(reader io.Reader) (nameservers []string, searches []string,
 			searches = []string{}
 			for _, s := range fields[1:] {
 				if s != "." {
-					searches = append(searches, strings.TrimSuffix(s, "."))
+					s = strings.TrimSuffix(s, ".")
 				}
+				searches = append(searches, s)
 			}
 		}
 		if fields[0] == "options" {
-			options = appendOptions(options, fields[1:]...)
+			options = fields[1:]
 		}
 	}
 
@@ -348,26 +350,6 @@ func mergeDNSOptions(existingDNSConfigOptions []string, dnsConfigOptions []v1.Po
 			op = op + ":" + opValue
 		}
 		options = append(options, op)
-	}
-	return options
-}
-
-// appendOptions appends options to the given list, but does not add duplicates.
-// append option will overwrite the previous one either in new line or in the same line.
-func appendOptions(options []string, newOption ...string) []string {
-	var optionMap = make(map[string]string)
-	for _, option := range options {
-		optName := strings.Split(option, ":")[0]
-		optionMap[optName] = option
-	}
-	for _, option := range newOption {
-		optName := strings.Split(option, ":")[0]
-		optionMap[optName] = option
-	}
-
-	options = []string{}
-	for _, v := range optionMap {
-		options = append(options, v)
 	}
 	return options
 }
@@ -473,7 +455,7 @@ func (c *Configurer) SetupDNSinContainerizedMounter(mounterPath string) {
 			}
 		}
 	}
-	if err := os.WriteFile(resolvePath, []byte(dnsString), 0600); err != nil {
+	if err := ioutil.WriteFile(resolvePath, []byte(dnsString), 0600); err != nil {
 		klog.ErrorS(err, "Could not write dns nameserver in the file", "path", resolvePath)
 	}
 }

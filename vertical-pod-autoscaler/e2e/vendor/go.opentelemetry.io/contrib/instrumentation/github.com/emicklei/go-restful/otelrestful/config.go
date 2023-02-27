@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package otelrestful // import "go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
+package otelrestful
 
 import (
 	"go.opentelemetry.io/otel/propagation"
@@ -25,34 +25,22 @@ type config struct {
 	Propagators    propagation.TextMapPropagator
 }
 
-// Option applies a configuration value.
-type Option interface {
-	apply(*config)
-}
-
-type optionFunc func(*config)
-
-func (o optionFunc) apply(c *config) {
-	o(c)
-}
+// Option specifies instrumentation configuration options.
+type Option func(*config)
 
 // WithPropagators specifies propagators to use for extracting
 // information from the HTTP requests. If none are specified, global
 // ones will be used.
 func WithPropagators(propagators propagation.TextMapPropagator) Option {
-	return optionFunc(func(cfg *config) {
-		if propagators != nil {
-			cfg.Propagators = propagators
-		}
-	})
+	return func(cfg *config) {
+		cfg.Propagators = propagators
+	}
 }
 
 // WithTracerProvider specifies a tracer provider to use for creating a tracer.
 // If none is specified, the global provider is used.
 func WithTracerProvider(provider oteltrace.TracerProvider) Option {
-	return optionFunc(func(cfg *config) {
-		if provider != nil {
-			cfg.TracerProvider = provider
-		}
-	})
+	return func(cfg *config) {
+		cfg.TracerProvider = provider
+	}
 }

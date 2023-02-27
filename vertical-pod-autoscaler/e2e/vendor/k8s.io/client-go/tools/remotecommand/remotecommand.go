@@ -17,7 +17,6 @@ limitations under the License.
 package remotecommand
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/httpstream"
 	"k8s.io/apimachinery/pkg/util/remotecommand"
 	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/transport/spdy"
+	spdy "k8s.io/client-go/transport/spdy"
 )
 
 // StreamOptions holds information pertaining to the current streaming session:
@@ -44,16 +43,11 @@ type StreamOptions struct {
 
 // Executor is an interface for transporting shell-style streams.
 type Executor interface {
-	// Deprecated: use StreamWithContext instead to avoid possible resource leaks.
-	// See https://github.com/kubernetes/kubernetes/pull/103177 for details.
+	// Stream initiates the transport of the standard shell streams. It will transport any
+	// non-nil stream to a remote system, and return an error if a problem occurs. If tty
+	// is set, the stderr stream is not used (raw TTY manages stdout and stderr over the
+	// stdout stream).
 	Stream(options StreamOptions) error
-
-	// StreamWithContext initiates the transport of the standard shell streams. It will
-	// transport any non-nil stream to a remote system, and return an error if a problem
-	// occurs. If tty is set, the stderr stream is not used (raw TTY manages stdout and
-	// stderr over the stdout stream).
-	// The context controls the entire lifetime of stream execution.
-	StreamWithContext(ctx context.Context, options StreamOptions) error
 }
 
 type streamCreator interface {
@@ -112,14 +106,9 @@ func NewSPDYExecutorForProtocols(transport http.RoundTripper, upgrader spdy.Upgr
 // Stream opens a protocol streamer to the server and streams until a client closes
 // the connection or the server disconnects.
 func (e *streamExecutor) Stream(options StreamOptions) error {
-	return e.StreamWithContext(context.Background(), options)
-}
-
-// newConnectionAndStream creates a new SPDY connection and a stream protocol handler upon it.
-func (e *streamExecutor) newConnectionAndStream(ctx context.Context, options StreamOptions) (httpstream.Connection, streamProtocolHandler, error) {
-	req, err := http.NewRequestWithContext(ctx, e.method, e.url.String(), nil)
+	req, err := http.NewRequest(e.method, e.url.String(), nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error creating request: %v", err)
+		return fmt.Errorf("error creating request: %v", err)
 	}
 
 	conn, protocol, err := spdy.Negotiate(
@@ -129,8 +118,9 @@ func (e *streamExecutor) newConnectionAndStream(ctx context.Context, options Str
 		e.protocols...,
 	)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
+	defer conn.Close()
 
 	var streamer streamProtocolHandler
 
@@ -148,35 +138,5 @@ func (e *streamExecutor) newConnectionAndStream(ctx context.Context, options Str
 		streamer = newStreamProtocolV1(options)
 	}
 
-	return conn, streamer, nil
-}
-
-// StreamWithContext opens a protocol streamer to the server and streams until a client closes
-// the connection or the server disconnects or the context is done.
-func (e *streamExecutor) StreamWithContext(ctx context.Context, options StreamOptions) error {
-	conn, streamer, err := e.newConnectionAndStream(ctx, options)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	panicChan := make(chan any, 1)
-	errorChan := make(chan error, 1)
-	go func() {
-		defer func() {
-			if p := recover(); p != nil {
-				panicChan <- p
-			}
-		}()
-		errorChan <- streamer.stream(conn)
-	}()
-
-	select {
-	case p := <-panicChan:
-		panic(p)
-	case err := <-errorChan:
-		return err
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	return streamer.stream(conn)
 }

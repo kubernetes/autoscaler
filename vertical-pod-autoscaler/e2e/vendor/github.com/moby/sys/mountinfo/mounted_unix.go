@@ -1,9 +1,10 @@
-//go:build linux || freebsd || openbsd || darwin
-// +build linux freebsd openbsd darwin
+//go:build linux || (freebsd && cgo) || (openbsd && cgo) || (darwin && cgo)
+// +build linux freebsd,cgo openbsd,cgo darwin,cgo
 
 package mountinfo
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -32,13 +33,13 @@ func mountedByStat(path string) (bool, error) {
 
 func normalizePath(path string) (realPath string, err error) {
 	if realPath, err = filepath.Abs(path); err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to get absolute path for %q: %w", path, err)
 	}
 	if realPath, err = filepath.EvalSymlinks(realPath); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to canonicalise path for %q: %w", path, err)
 	}
 	if _, err := os.Stat(realPath); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to stat target of %q: %w", path, err)
 	}
 	return realPath, nil
 }

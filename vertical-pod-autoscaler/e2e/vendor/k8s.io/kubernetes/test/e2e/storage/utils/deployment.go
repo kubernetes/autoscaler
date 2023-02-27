@@ -152,9 +152,6 @@ func PatchCSIDeployment(f *e2eframework.Framework, o PatchCSIOptions, object int
 		if o.FSGroupPolicy != nil {
 			object.Spec.FSGroupPolicy = o.FSGroupPolicy
 		}
-		if o.SELinuxMount != nil {
-			object.Spec.SELinuxMount = o.SELinuxMount
-		}
 	}
 
 	return nil
@@ -214,8 +211,4 @@ type PatchCSIOptions struct {
 	// field *if* the driver deploys a CSIDriver object. Ignored
 	// otherwise.
 	FSGroupPolicy *storagev1.FSGroupPolicy
-	// If not nil, the value to use for the CSIDriver.Spec.SELinuxMount
-	// field *if* the driver deploys a CSIDriver object. Ignored
-	// otherwise.
-	SELinuxMount *bool
 }

@@ -53,8 +53,24 @@ func ListAll(store Store, selector labels.Selector, appendFn AppendFunc) error {
 
 // ListAllByNamespace used to list items belongs to namespace from Indexer.
 func ListAllByNamespace(indexer Indexer, namespace string, selector labels.Selector, appendFn AppendFunc) error {
+	selectAll := selector.Empty()
 	if namespace == metav1.NamespaceAll {
-		return ListAll(indexer, selector, appendFn)
+		for _, m := range indexer.List() {
+			if selectAll {
+				// Avoid computing labels of the objects to speed up common flows
+				// of listing all objects.
+				appendFn(m)
+				continue
+			}
+			metadata, err := meta.Accessor(m)
+			if err != nil {
+				return err
+			}
+			if selector.Matches(labels.Set(metadata.GetLabels())) {
+				appendFn(m)
+			}
+		}
+		return nil
 	}
 
 	items, err := indexer.Index(NamespaceIndex, &metav1.ObjectMeta{Namespace: namespace})
@@ -73,8 +89,6 @@ func ListAllByNamespace(indexer Indexer, namespace string, selector labels.Selec
 		}
 		return nil
 	}
-
-	selectAll := selector.Empty()
 	for _, m := range items {
 		if selectAll {
 			// Avoid computing labels of the objects to speed up common flows

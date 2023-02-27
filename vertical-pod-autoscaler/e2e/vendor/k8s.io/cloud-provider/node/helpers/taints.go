@@ -89,14 +89,9 @@ func AddOrUpdateTaintOnNode(c clientset.Interface, nodeName string, taints ...*v
 
 // PatchNodeTaints patches node's taints.
 func PatchNodeTaints(c clientset.Interface, nodeName string, oldNode *v1.Node, newNode *v1.Node) error {
-	// Strip base diff node from RV to ensure that our Patch request will set RV to check for conflicts over .spec.taints.
-	// This is needed because .spec.taints does not specify patchMergeKey and patchStrategy and adding them is no longer an option for compatibility reasons.
-	// Using other Patch strategy works for adding new taints, however will not resolve problem with taint removal.
-	oldNodeNoRV := oldNode.DeepCopy()
-	oldNodeNoRV.ResourceVersion = ""
-	oldDataNoRV, err := json.Marshal(&oldNodeNoRV)
+	oldData, err := json.Marshal(oldNode)
 	if err != nil {
-		return fmt.Errorf("failed to marshal old node %#v for node %q: %v", oldNodeNoRV, nodeName, err)
+		return fmt.Errorf("failed to marshal old node %#v for node %q: %v", oldNode, nodeName, err)
 	}
 
 	newTaints := newNode.Spec.Taints
@@ -107,7 +102,7 @@ func PatchNodeTaints(c clientset.Interface, nodeName string, oldNode *v1.Node, n
 		return fmt.Errorf("failed to marshal new node %#v for node %q: %v", newNodeClone, nodeName, err)
 	}
 
-	patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldDataNoRV, newData, v1.Node{})
+	patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, v1.Node{})
 	if err != nil {
 		return fmt.Errorf("failed to create patch for node %q: %v", nodeName, err)
 	}

@@ -34,9 +34,9 @@ import (
 var _ = SIGDescribe("Ephemeral Containers [NodeConformance]", func() {
 	f := framework.NewDefaultFramework("ephemeral-containers-test")
 	f.NamespacePodSecurityEnforceLevel = admissionapi.LevelBaseline
-	var podClient *e2epod.PodClient
+	var podClient *framework.PodClient
 	ginkgo.BeforeEach(func() {
-		podClient = e2epod.NewPodClient(f)
+		podClient = f.PodClient()
 	})
 
 	// Release: 1.25
@@ -74,7 +74,7 @@ var _ = SIGDescribe("Ephemeral Containers [NodeConformance]", func() {
 
 		ginkgo.By("checking pod container endpoints")
 		// Can't use anything depending on kubectl here because it's not available in the node test environment
-		output := e2epod.ExecCommandInContainer(f, pod.Name, ecName, "/bin/echo", "marco")
+		output := f.ExecCommandInContainer(pod.Name, ecName, "/bin/echo", "marco")
 		gomega.Expect(output).To(gomega.ContainSubstring("marco"))
 		log, err := e2epod.GetPodLogs(f.ClientSet, pod.Namespace, pod.Name, ecName)
 		framework.ExpectNoError(err, "Failed to get logs for pod %q ephemeral container %q", format.Pod(pod), ecName)

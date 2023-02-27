@@ -22,7 +22,7 @@ import (
 	"math"
 	"sync/atomic"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -162,9 +162,10 @@ func (pl *InterPodAffinity) PreScore(
 		topologyScore: make(map[string]map[string]int64),
 	}
 
-	if state.podInfo, err = framework.NewPodInfo(pod); err != nil {
+	state.podInfo = framework.NewPodInfo(pod)
+	if state.podInfo.ParseError != nil {
 		// Ideally we never reach here, because errors will be caught by PreFilter
-		return framework.AsStatus(fmt.Errorf("failed to parse pod: %w", err))
+		return framework.AsStatus(fmt.Errorf("failed to parse pod: %w", state.podInfo.ParseError))
 	}
 
 	for i := range state.podInfo.PreferredAffinityTerms {
@@ -202,7 +203,7 @@ func (pl *InterPodAffinity) PreScore(
 			topoScores[atomic.AddInt32(&index, 1)] = topoScore
 		}
 	}
-	pl.parallelizer.Until(pCtx, len(allNodes), processNode, pl.Name())
+	pl.parallelizer.Until(pCtx, len(allNodes), processNode)
 
 	for i := 0; i <= int(index); i++ {
 		state.topologyScore.append(topoScores[i])

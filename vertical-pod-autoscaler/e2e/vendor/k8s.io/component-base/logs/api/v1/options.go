@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"math"
+	"sort"
 	"strings"
 	"time"
 
@@ -31,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	cliflag "k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/featuregate"
-	"k8s.io/component-base/logs/klogflags"
 )
 
 const (
@@ -183,8 +183,12 @@ func apply(c *LoggingConfiguration, featureGate featuregate.FeatureGate) error {
 
 // AddFlags adds command line flags for the configuration.
 func AddFlags(c *LoggingConfiguration, fs *pflag.FlagSet) {
+	// The help text is generated assuming that flags will eventually use
+	// hyphens, even if currently no normalization function is set for the
+	// flag set yet.
+	unsupportedFlags := strings.Join(unsupportedLoggingFlagNames(cliflag.WordSepNormalizeFunc), ", ")
 	formats := logRegistry.list()
-	fs.StringVar(&c.Format, "logging-format", c.Format, fmt.Sprintf("Sets the log format. Permitted formats: %s.", formats))
+	fs.StringVar(&c.Format, "logging-format", c.Format, fmt.Sprintf("Sets the log format. Permitted formats: %s.\nNon-default formats don't honor these flags: %s.\nNon-default choices are currently alpha and subject to change without warning.", formats, unsupportedFlags))
 	// No new log formats should be added after generation is of flag options
 	logRegistry.freeze()
 
@@ -232,13 +236,14 @@ var loggingFlags pflag.FlagSet
 
 func init() {
 	var fs flag.FlagSet
-	klogflags.Init(&fs)
+	klog.InitFlags(&fs)
 	loggingFlags.AddGoFlagSet(&fs)
 }
 
 // List of logs (k8s.io/klog + k8s.io/component-base/logs) flags supported by all logging formats
 var supportedLogsFlags = map[string]struct{}{
 	"v": {},
+	// TODO: support vmodule after 1.19 Alpha
 }
 
 // unsupportedLoggingFlags lists unsupported logging flags. The normalize
@@ -262,4 +267,16 @@ func unsupportedLoggingFlags(normalizeFunc func(f *pflag.FlagSet, name string) p
 		allFlags = append(allFlags, flag)
 	})
 	return allFlags
+}
+
+// unsupportedLoggingFlagNames lists unsupported logging flags by name, with
+// optional normalization and sorted.
+func unsupportedLoggingFlagNames(normalizeFunc func(f *pflag.FlagSet, name string) pflag.NormalizedName) []string {
+	unsupportedFlags := unsupportedLoggingFlags(normalizeFunc)
+	names := make([]string, 0, len(unsupportedFlags))
+	for _, f := range unsupportedFlags {
+		names = append(names, "--"+f.Name)
+	}
+	sort.Strings(names)
+	return names
 }

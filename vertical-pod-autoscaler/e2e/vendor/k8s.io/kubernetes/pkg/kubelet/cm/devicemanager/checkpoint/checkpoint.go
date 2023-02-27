@@ -74,10 +74,10 @@ func (dev DevicesPerNUMA) Devices() sets.String {
 
 // New returns an instance of Checkpoint - must be an alias for the most recent version
 func New(devEntries []PodDevicesEntry, devices map[string][]string) DeviceManagerCheckpoint {
-	return newV2(devEntries, devices)
+	return NewV2(devEntries, devices)
 }
 
-func newV2(devEntries []PodDevicesEntry, devices map[string][]string) DeviceManagerCheckpoint {
+func NewV2(devEntries []PodDevicesEntry, devices map[string][]string) DeviceManagerCheckpoint {
 	return &Data{
 		Data: checkpointData{
 			PodDeviceEntries:  devEntries,

@@ -46,7 +46,7 @@ var (
 		"version", // API version.
 	}
 
-	apiMetrics = registerAPIMetrics()
+	apiMetrics = registerAPIMetrics(metricLabels...)
 )
 
 type metricContext struct {
@@ -84,7 +84,7 @@ func newGenericMetricContext(prefix, request, region, zone, version string) *met
 }
 
 // registerApiMetrics adds metrics definitions for a category of API calls.
-func registerAPIMetrics() *apiCallMetrics {
+func registerAPIMetrics(attributes ...string) *apiCallMetrics {
 	metrics := &apiCallMetrics{
 		latency: metrics.NewHistogramVec(
 			&metrics.HistogramOpts{
@@ -92,7 +92,7 @@ func registerAPIMetrics() *apiCallMetrics {
 				Help:           "Latency of a GCE API call",
 				StabilityLevel: metrics.ALPHA,
 			},
-			metricLabels,
+			attributes,
 		),
 		errors: metrics.NewCounterVec(
 			&metrics.CounterOpts{
@@ -100,7 +100,7 @@ func registerAPIMetrics() *apiCallMetrics {
 				Help:           "Number of errors for an API call",
 				StabilityLevel: metrics.ALPHA,
 			},
-			metricLabels,
+			attributes,
 		),
 	}
 

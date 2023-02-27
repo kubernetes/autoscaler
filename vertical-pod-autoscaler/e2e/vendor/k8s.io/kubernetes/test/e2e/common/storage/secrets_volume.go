@@ -27,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
-	e2epodoutput "k8s.io/kubernetes/test/e2e/framework/pod/output"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	admissionapi "k8s.io/pod-security-admission/api"
 
@@ -191,7 +190,7 @@ var _ = SIGDescribe("Secrets", func() {
 		}
 
 		fileModeRegexp := getFileModeRegex("/etc/secret-volume/data-1", nil)
-		e2epodoutput.TestContainerOutputRegexp(f, "consume secrets", pod, 0, []string{
+		f.TestContainerOutputRegexp("consume secrets", pod, 0, []string{
 			"content of file \"/etc/secret-volume/data-1\": value-1",
 			fileModeRegexp,
 		})
@@ -334,7 +333,7 @@ var _ = SIGDescribe("Secrets", func() {
 			},
 		}
 		ginkgo.By("Creating the pod")
-		e2epod.NewPodClient(f).CreateSync(pod)
+		f.PodClient().CreateSync(pod)
 
 		pollCreateLogs := func() (string, error) {
 			return e2epod.GetPodLogs(f.ClientSet, f.Namespace.Name, pod.Name, createContainerName)
@@ -434,7 +433,7 @@ var _ = SIGDescribe("Secrets", func() {
 	})
 
 	// The secret is in pending during volume creation until the secret objects are available
-	// or until mount the secret volume times out. There is no secret object defined for the pod, so it should return timeout exception unless it is marked optional.
+	// or until mount the secret volume times out. There is no secret object defined for the pod, so it should return timout exception unless it is marked optional.
 	// Slow (~5 mins)
 	ginkgo.It("Should fail non-optional pod creation due to secret object does not exist [Slow]", func() {
 		volumeMountPath := "/etc/secret-volumes"
@@ -535,7 +534,7 @@ func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32, secre
 		fileModeRegexp,
 	}
 
-	e2epodoutput.TestContainerOutputRegexp(f, "consume secrets", pod, 0, expectedOutput)
+	f.TestContainerOutputRegexp("consume secrets", pod, 0, expectedOutput)
 }
 
 func doSecretE2EWithMapping(f *framework.Framework, mode *int32) {
@@ -603,7 +602,7 @@ func doSecretE2EWithMapping(f *framework.Framework, mode *int32) {
 		fileModeRegexp,
 	}
 
-	e2epodoutput.TestContainerOutputRegexp(f, "consume secrets", pod, 0, expectedOutput)
+	f.TestContainerOutputRegexp("consume secrets", pod, 0, expectedOutput)
 }
 
 func createNonOptionalSecretPod(f *framework.Framework, volumeMountPath, podName string) error {
@@ -650,7 +649,7 @@ func createNonOptionalSecretPod(f *framework.Framework, volumeMountPath, podName
 		},
 	}
 	ginkgo.By("Creating the pod")
-	pod = e2epod.NewPodClient(f).Create(pod)
+	pod = f.PodClient().Create(pod)
 	return e2epod.WaitForPodNameRunningInNamespace(f.ClientSet, pod.Name, f.Namespace.Name)
 }
 
@@ -711,6 +710,6 @@ func createNonOptionalSecretPodWithSecret(f *framework.Framework, volumeMountPat
 		},
 	}
 	ginkgo.By("Creating the pod")
-	pod = e2epod.NewPodClient(f).Create(pod)
+	pod = f.PodClient().Create(pod)
 	return e2epod.WaitForPodNameRunningInNamespace(f.ClientSet, pod.Name, f.Namespace.Name)
 }

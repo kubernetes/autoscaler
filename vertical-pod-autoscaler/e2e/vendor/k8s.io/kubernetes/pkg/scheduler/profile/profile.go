@@ -98,7 +98,6 @@ func (v *cfgValidator) validate(cfg config.KubeSchedulerProfile, f framework.Fra
 	for _, plCfg := range cfg.PluginConfig {
 		if plCfg.Name == queueSort {
 			queueSortArgs = plCfg.Args
-			break
 		}
 	}
 	if len(v.queueSort) == 0 {

@@ -21,9 +21,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	utilnet "k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/component-base/version"
 	"k8s.io/kubernetes/pkg/probe"
 
 	"k8s.io/klog/v2"
@@ -61,7 +63,7 @@ func NewWithTLSConfig(config *tls.Config, followNonLocalRedirects bool) Prober {
 
 // Prober is an interface that defines the Probe function for doing HTTP readiness/liveness checks.
 type Prober interface {
-	Probe(req *http.Request, timeout time.Duration) (probe.Result, string, error)
+	Probe(url *url.URL, headers http.Header, timeout time.Duration) (probe.Result, string, error)
 }
 
 type httpProber struct {
@@ -69,14 +71,14 @@ type httpProber struct {
 	followNonLocalRedirects bool
 }
 
-// Probe returns a ProbeRunner capable of running an HTTP check.
-func (pr httpProber) Probe(req *http.Request, timeout time.Duration) (probe.Result, string, error) {
+// Probe returns a probing result. The only case the err will not be nil is when there is a problem reading the response body.
+func (pr httpProber) Probe(url *url.URL, headers http.Header, timeout time.Duration) (probe.Result, string, error) {
 	client := &http.Client{
 		Timeout:       timeout,
 		Transport:     pr.transport,
-		CheckRedirect: RedirectChecker(pr.followNonLocalRedirects),
+		CheckRedirect: redirectChecker(pr.followNonLocalRedirects),
 	}
-	return DoHTTPProbe(req, client)
+	return DoHTTPProbe(url, headers, client)
 }
 
 // GetHTTPInterface is an interface for making HTTP requests, that returns a response and error.
@@ -88,9 +90,29 @@ type GetHTTPInterface interface {
 // If the HTTP response code is successful (i.e. 400 > code >= 200), it returns Success.
 // If the HTTP response code is unsuccessful or HTTP communication fails, it returns Failure.
 // This is exported because some other packages may want to do direct HTTP probes.
-func DoHTTPProbe(req *http.Request, client GetHTTPInterface) (probe.Result, string, error) {
-	url := req.URL
-	headers := req.Header
+func DoHTTPProbe(url *url.URL, headers http.Header, client GetHTTPInterface) (probe.Result, string, error) {
+	req, err := http.NewRequest("GET", url.String(), nil)
+	if err != nil {
+		// Convert errors into failures to catch timeouts.
+		return probe.Failure, err.Error(), nil
+	}
+	if headers == nil {
+		headers = http.Header{}
+	}
+	if _, ok := headers["User-Agent"]; !ok {
+		// explicitly set User-Agent so it's not set to default Go value
+		v := version.Get()
+		headers.Set("User-Agent", fmt.Sprintf("kube-probe/%s.%s", v.Major, v.Minor))
+	}
+	if _, ok := headers["Accept"]; !ok {
+		// Accept header was not defined. accept all
+		headers.Set("Accept", "*/*")
+	} else if headers.Get("Accept") == "" {
+		// Accept header was overridden but is empty. removing
+		headers.Del("Accept")
+	}
+	req.Header = headers
+	req.Host = headers.Get("Host")
 	res, err := client.Do(req)
 	if err != nil {
 		// Convert errors into failures to catch timeouts.
@@ -118,8 +140,7 @@ func DoHTTPProbe(req *http.Request, client GetHTTPInterface) (probe.Result, stri
 	return probe.Failure, fmt.Sprintf("HTTP probe failed with statuscode: %d", res.StatusCode), nil
 }
 
-// RedirectChecker returns a function that can be used to check HTTP redirects.
-func RedirectChecker(followNonLocalRedirects bool) func(*http.Request, []*http.Request) error {
+func redirectChecker(followNonLocalRedirects bool) func(*http.Request, []*http.Request) error {
 	if followNonLocalRedirects {
 		return nil // Use the default http client checker.
 	}

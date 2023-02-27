@@ -88,9 +88,10 @@ func ValidateKubeSchedulerConfiguration(cc *config.KubeSchedulerConfiguration) u
 			}
 		}
 	}
-
-	errs = append(errs, validatePercentageOfNodesToScore(field.NewPath("percentageOfNodesToScore"), cc.PercentageOfNodesToScore))
-
+	if cc.PercentageOfNodesToScore < 0 || cc.PercentageOfNodesToScore > 100 {
+		errs = append(errs, field.Invalid(field.NewPath("percentageOfNodesToScore"),
+			cc.PercentageOfNodesToScore, "not in valid range [0-100]"))
+	}
 	if cc.PodInitialBackoffSeconds <= 0 {
 		errs = append(errs, field.Invalid(field.NewPath("podInitialBackoffSeconds"),
 			cc.PodInitialBackoffSeconds, "must be greater than 0"))
@@ -114,15 +115,6 @@ func splitHostIntPort(s string) (string, int, error) {
 		return "", 0, err
 	}
 	return host, portInt, err
-}
-
-func validatePercentageOfNodesToScore(path *field.Path, percentageOfNodesToScore *int32) error {
-	if percentageOfNodesToScore != nil {
-		if *percentageOfNodesToScore < 0 || *percentageOfNodesToScore > 100 {
-			return field.Invalid(path, *percentageOfNodesToScore, "not in valid range [0-100]")
-		}
-	}
-	return nil
 }
 
 type invalidPlugins struct {
@@ -179,7 +171,6 @@ func validateKubeSchedulerProfile(path *field.Path, apiVersion string, profile *
 	if len(profile.SchedulerName) == 0 {
 		errs = append(errs, field.Required(path.Child("schedulerName"), ""))
 	}
-	errs = append(errs, validatePercentageOfNodesToScore(path.Child("percentageOfNodesToScore"), profile.PercentageOfNodesToScore))
 	errs = append(errs, validatePluginConfig(path, apiVersion, profile)...)
 	return errs
 }
@@ -198,7 +189,6 @@ func validatePluginConfig(path *field.Path, apiVersion string, profile *config.K
 
 	if profile.Plugins != nil {
 		stagesToPluginSet := map[string]config.PluginSet{
-			"preEnqueue": profile.Plugins.PreEnqueue,
 			"queueSort":  profile.Plugins.QueueSort,
 			"preFilter":  profile.Plugins.PreFilter,
 			"filter":     profile.Plugins.Filter,

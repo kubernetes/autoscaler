@@ -17,13 +17,14 @@ limitations under the License.
 package filesystem
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
-// DefaultFs implements Filesystem using same-named functions from "os" and "io"
+// DefaultFs implements Filesystem using same-named functions from "os" and "io/ioutil"
 type DefaultFs struct {
 	root string
 }
@@ -32,7 +33,10 @@ var _ Filesystem = &DefaultFs{}
 
 // NewTempFs returns a fake Filesystem in temporary directory, useful for unit tests
 func NewTempFs() Filesystem {
-	path, _ := os.MkdirTemp("", "tmpfs")
+	path, _ := ioutil.TempDir(
+		"",
+		"tmpfs",
+	)
 	return &DefaultFs{
 		root: path,
 	}
@@ -90,28 +94,28 @@ func (fs *DefaultFs) Remove(name string) error {
 	return os.Remove(fs.prefix(name))
 }
 
-// ReadFile via os.ReadFile
+// ReadFile via ioutil.ReadFile
 func (fs *DefaultFs) ReadFile(filename string) ([]byte, error) {
-	return os.ReadFile(fs.prefix(filename))
+	return ioutil.ReadFile(fs.prefix(filename))
 }
 
-// TempDir via os.MkdirTemp
+// TempDir via ioutil.TempDir
 func (fs *DefaultFs) TempDir(dir, prefix string) (string, error) {
-	return os.MkdirTemp(fs.prefix(dir), prefix)
+	return ioutil.TempDir(fs.prefix(dir), prefix)
 }
 
-// TempFile via os.CreateTemp
+// TempFile via ioutil.TempFile
 func (fs *DefaultFs) TempFile(dir, prefix string) (File, error) {
-	file, err := os.CreateTemp(fs.prefix(dir), prefix)
+	file, err := ioutil.TempFile(fs.prefix(dir), prefix)
 	if err != nil {
 		return nil, err
 	}
 	return &defaultFile{file}, nil
 }
 
-// ReadDir via os.ReadDir
-func (fs *DefaultFs) ReadDir(dirname string) ([]os.DirEntry, error) {
-	return os.ReadDir(fs.prefix(dirname))
+// ReadDir via ioutil.ReadDir
+func (fs *DefaultFs) ReadDir(dirname string) ([]os.FileInfo, error) {
+	return ioutil.ReadDir(fs.prefix(dirname))
 }
 
 // Walk via filepath.Walk

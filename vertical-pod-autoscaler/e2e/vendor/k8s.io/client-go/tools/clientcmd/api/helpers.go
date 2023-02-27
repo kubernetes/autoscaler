@@ -20,11 +20,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
-	"strings"
 )
 
 func init() {
@@ -83,21 +82,21 @@ func MinifyConfig(config *Config) error {
 }
 
 var (
-	dataOmittedBytes []byte
 	redactedBytes    []byte
+	dataOmittedBytes []byte
 )
 
-// ShortenConfig redacts raw data entries from the config object for a human-readable view.
+// Flatten redacts raw data entries from the config object for a human-readable view.
 func ShortenConfig(config *Config) {
-	// trick json encoder into printing a human-readable string in the raw data
+	// trick json encoder into printing a human readable string in the raw data
 	// by base64 decoding what we want to print. Relies on implementation of
 	// http://golang.org/pkg/encoding/json/#Marshal using base64 to encode []byte
 	for key, authInfo := range config.AuthInfos {
 		if len(authInfo.ClientKeyData) > 0 {
-			authInfo.ClientKeyData = dataOmittedBytes
+			authInfo.ClientKeyData = redactedBytes
 		}
 		if len(authInfo.ClientCertificateData) > 0 {
-			authInfo.ClientCertificateData = dataOmittedBytes
+			authInfo.ClientCertificateData = redactedBytes
 		}
 		if len(authInfo.Token) > 0 {
 			authInfo.Token = "REDACTED"
@@ -112,7 +111,7 @@ func ShortenConfig(config *Config) {
 	}
 }
 
-// FlattenConfig changes the config object into a self-contained config (useful for making secrets)
+// Flatten changes the config object into a self contained config (useful for making secrets)
 func FlattenConfig(config *Config) error {
 	for key, authInfo := range config.AuthInfos {
 		baseDir, err := MakeAbs(path.Dir(authInfo.LocationOfOrigin), "")
@@ -153,7 +152,7 @@ func FlattenContent(path *string, contents *[]byte, baseDir string) error {
 
 		var err error
 		absPath := ResolvePath(*path, baseDir)
-		*contents, err = os.ReadFile(absPath)
+		*contents, err = ioutil.ReadFile(absPath)
 		if err != nil {
 			return err
 		}
@@ -189,78 +188,4 @@ func MakeAbs(path, base string) (string, error) {
 		base = cwd
 	}
 	return filepath.Join(base, path), nil
-}
-
-// RedactSecrets replaces any sensitive values with REDACTED
-func RedactSecrets(config *Config) error {
-	return redactSecrets(reflect.ValueOf(config), false)
-}
-
-func redactSecrets(curr reflect.Value, redact bool) error {
-	redactedBytes = []byte("REDACTED")
-	if !curr.IsValid() {
-		return nil
-	}
-
-	actualCurrValue := curr
-	if curr.Kind() == reflect.Ptr {
-		actualCurrValue = curr.Elem()
-	}
-
-	switch actualCurrValue.Kind() {
-	case reflect.Map:
-		for _, v := range actualCurrValue.MapKeys() {
-			err := redactSecrets(actualCurrValue.MapIndex(v), false)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-
-	case reflect.String:
-		if redact {
-			if !actualCurrValue.IsZero() {
-				actualCurrValue.SetString("REDACTED")
-			}
-		}
-		return nil
-
-	case reflect.Slice:
-		if actualCurrValue.Type() == reflect.TypeOf([]byte{}) && redact {
-			if !actualCurrValue.IsNil() {
-				actualCurrValue.SetBytes(redactedBytes)
-			}
-			return nil
-		}
-		for i := 0; i < actualCurrValue.Len(); i++ {
-			err := redactSecrets(actualCurrValue.Index(i), false)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-
-	case reflect.Struct:
-		for fieldIndex := 0; fieldIndex < actualCurrValue.NumField(); fieldIndex++ {
-			currFieldValue := actualCurrValue.Field(fieldIndex)
-			currFieldType := actualCurrValue.Type().Field(fieldIndex)
-			currYamlTag := currFieldType.Tag.Get("datapolicy")
-			currFieldTypeYamlName := strings.Split(currYamlTag, ",")[0]
-			if currFieldTypeYamlName != "" {
-				err := redactSecrets(currFieldValue, true)
-				if err != nil {
-					return err
-				}
-			} else {
-				err := redactSecrets(currFieldValue, false)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-
-	default:
-		return nil
-	}
 }

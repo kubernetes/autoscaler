@@ -257,21 +257,11 @@ func (kvh *kubeletVolumeHost) GetNodeAllocatable() (v1.ResourceList, error) {
 }
 
 func (kvh *kubeletVolumeHost) GetSecretFunc() func(namespace, name string) (*v1.Secret, error) {
-	if kvh.secretManager != nil {
-		return kvh.secretManager.GetSecret
-	}
-	return func(namespace, name string) (*v1.Secret, error) {
-		return nil, fmt.Errorf("not supported due to running kubelet in standalone mode")
-	}
+	return kvh.secretManager.GetSecret
 }
 
 func (kvh *kubeletVolumeHost) GetConfigMapFunc() func(namespace, name string) (*v1.ConfigMap, error) {
-	if kvh.configMapManager != nil {
-		return kvh.configMapManager.GetConfigMap
-	}
-	return func(namespace, name string) (*v1.ConfigMap, error) {
-		return nil, fmt.Errorf("not supported due to running kubelet in standalone mode")
-	}
+	return kvh.configMapManager.GetConfigMap
 }
 
 func (kvh *kubeletVolumeHost) GetServiceAccountTokenFunc() func(namespace, name string, tr *authenticationv1.TokenRequest) (*authenticationv1.TokenRequest, error) {
