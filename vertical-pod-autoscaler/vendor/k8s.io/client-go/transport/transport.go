@@ -22,8 +22,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -37,10 +37,6 @@ func New(config *Config) (http.RoundTripper, error) {
 	// Set transport level security
 	if config.Transport != nil && (config.HasCA() || config.HasCertAuth() || config.HasCertCallback() || config.TLS.Insecure) {
 		return nil, fmt.Errorf("using a custom transport with TLS certificate options or the insecure flag is not allowed")
-	}
-
-	if !isValidHolders(config) {
-		return nil, fmt.Errorf("misconfigured holder for dialer or cert callback")
 	}
 
 	var (
@@ -58,18 +54,6 @@ func New(config *Config) (http.RoundTripper, error) {
 	}
 
 	return HTTPWrappersForConfig(config, rt)
-}
-
-func isValidHolders(config *Config) bool {
-	if config.TLS.GetCertHolder != nil && config.TLS.GetCertHolder.GetCert == nil {
-		return false
-	}
-
-	if config.DialHolder != nil && config.DialHolder.Dial == nil {
-		return false
-	}
-
-	return true
 }
 
 // TLSConfigFor returns a tls.Config that will provide the transport level security defined
@@ -132,7 +116,7 @@ func TLSConfigFor(c *Config) (*tls.Config, error) {
 				return dynamicCertLoader()
 			}
 			if c.HasCertCallback() {
-				cert, err := c.TLS.GetCertHolder.GetCert()
+				cert, err := c.TLS.GetCert()
 				if err != nil {
 					return nil, err
 				}
@@ -173,7 +157,10 @@ func loadTLSFiles(c *Config) error {
 	}
 
 	c.TLS.KeyData, err = dataFromSliceOrFile(c.TLS.KeyData, c.TLS.KeyFile)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // dataFromSliceOrFile returns data from the slice (if non-empty), or from the file,
@@ -183,7 +170,7 @@ func dataFromSliceOrFile(data []byte, file string) ([]byte, error) {
 		return data, nil
 	}
 	if len(file) > 0 {
-		fileData, err := os.ReadFile(file)
+		fileData, err := ioutil.ReadFile(file)
 		if err != nil {
 			return []byte{}, err
 		}
