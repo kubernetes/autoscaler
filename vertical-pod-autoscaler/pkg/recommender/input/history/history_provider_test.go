@@ -134,7 +134,7 @@ func (m *mockPrometheusAPI) WalReplay(ctx context.Context) (prometheusv1.WalRepl
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time, opts ...prometheusv1.Option) (prommodel.Value, prometheusv1.Warnings, error) {
 	args := m.Called(ctx, query, ts)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
@@ -143,7 +143,7 @@ func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Tim
 	return returnArg, nil, args.Error(1)
 }
 
-func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range, opts ...prometheusv1.Option) (prommodel.Value, prometheusv1.Warnings, error) {
 	args := m.Called(ctx, query, r)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
