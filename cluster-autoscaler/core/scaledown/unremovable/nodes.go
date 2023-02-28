@@ -67,6 +67,12 @@ func (n *Nodes) Update(nodeInfos NodeInfoGetter, timestamp time.Time) {
 	n.ttls = newTTLs
 }
 
+// Contains returns true iff a given node is unremovable.
+func (n *Nodes) Contains(nodeName string) bool {
+	_, found := n.reasons[nodeName]
+	return found
+}
+
 // Add adds an unremovable node.
 func (n *Nodes) Add(node *simulator.UnremovableNode) {
 	n.reasons[node.Node.Name] = node

@@ -239,7 +239,6 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 
 // categorizeNodes determines, for each node, whether it can be eventually
 // removed or if there are reasons preventing that.
-// TODO: Track remaining PDB budget.
 func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node) {
 	unremovableTimeout := p.latestUpdate.Add(p.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
@@ -251,12 +250,11 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 	p.nodeUtilizationMap = utilizationMap
 	timer := time.NewTimer(p.context.ScaleDownSimulationTimeout)
+
 	for i, node := range currentlyUnneededNodeNames {
-		select {
-		case <-timer.C:
+		if timedOut(timer) {
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
-		default:
 		}
 		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.context.RemainingPdbTracker.GetPdbs())
 		if removable != nil {
@@ -332,4 +330,13 @@ func sortByRisk(nodes []simulator.NodeToBeRemoved) []simulator.NodeToBeRemoved {
 		}
 	}
 	return append(okNodes, riskyNodes...)
+}
+
+func timedOut(timer *time.Timer) bool {
+	select {
+	case <-timer.C:
+		return true
+	default:
+		return false
+	}
 }
