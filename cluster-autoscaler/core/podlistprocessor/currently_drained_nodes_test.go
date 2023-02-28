@@ -269,7 +269,7 @@ type mockActuator struct {
 	status *mockActuationStatus
 }
 
-func (m *mockActuator) StartDeletion(_, _ []*apiv1.Node, _ time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+func (m *mockActuator) StartDeletion(_, _ []*apiv1.Node) (*status.ScaleDownStatus, errors.AutoscalerError) {
 	return nil, nil
 }
 

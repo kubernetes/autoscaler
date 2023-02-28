@@ -777,7 +777,7 @@ func TestScaleDown(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
@@ -1034,7 +1034,7 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 
 	assert.NoError(t, err)
 	var expectedScaleDownResult status.ScaleDownResult
@@ -1128,7 +1128,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
@@ -1152,7 +1152,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-2*time.Hour))
 	assert.NoError(t, autoscalererr)
 	empty, drain = wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err = wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err = wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
@@ -1242,7 +1242,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
