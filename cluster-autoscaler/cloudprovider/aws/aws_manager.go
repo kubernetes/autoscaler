@@ -333,7 +333,7 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 }
 
 func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) error {
-	if policy == nil {
+	if policy == nil || len(policy.instanceTypesOverrides) > 0 {
 		return nil
 	}
 
