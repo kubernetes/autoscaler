@@ -40,6 +40,8 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+const unneededNodesLimit = 1000
+
 type eligibilityChecker interface {
 	FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
 }
@@ -252,7 +254,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	timer := time.NewTimer(p.context.ScaleDownSimulationTimeout)
 
 	for i, node := range currentlyUnneededNodeNames {
-		if timedOut(timer) {
+		if timedOut(timer) || len(removableList) >= unneededNodesLimit {
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
