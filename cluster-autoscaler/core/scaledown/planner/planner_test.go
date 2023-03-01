@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -42,13 +43,15 @@ import (
 
 func TestUpdateClusterState(t *testing.T) {
 	testCases := []struct {
-		name            string
-		nodes           []*apiv1.Node
-		pods            []*apiv1.Pod
-		actuationStatus *fakeActuationStatus
-		eligible        []string
-		wantUnneeded    []string
-		replicasSets    []*appsv1.ReplicaSet
+		name                string
+		nodes               []*apiv1.Node
+		pods                []*apiv1.Pod
+		actuationStatus     *fakeActuationStatus
+		eligible            []string
+		wantUnneeded        []string
+		wantUnremovable     []string
+		replicasSets        []*appsv1.ReplicaSet
+		isSimulationTimeout bool
 	}{
 		{
 			name: "empty nodes, all eligible",
@@ -71,6 +74,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
 			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
 		},
 		{
 			name: "empty nodes, none eligible",
@@ -82,6 +86,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{},
 			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
 		},
 		{
 			name: "single utilised node, not eligible",
@@ -94,6 +99,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1"},
 			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1"},
 		},
 		{
 			name: "pods cannot schedule on node undergoing deletion, not eligible",
@@ -108,6 +114,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1"},
 			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2"},
 		},
 		{
 			name: "pods can schedule on non-eligible node, eligible",
@@ -122,6 +129,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1"},
 			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
 			name: "pods can schedule on eligible node, eligible",
@@ -136,6 +144,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
 			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
 			name: "pods cannot schedule anywhere, not eligible",
@@ -152,6 +161,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
 			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
 		},
 		{
 			name: "all pods from multiple nodes can schedule elsewhere, all eligible",
@@ -169,6 +179,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
 			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
 		},
 		{
 			name: "some pods from multiple nodes can schedule elsewhere, some eligible",
@@ -186,6 +197,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
 			wantUnneeded:    []string{"n2"},
+			wantUnremovable: []string{"n1", "n3"},
 		},
 		{
 			name: "no pods from multiple nodes can schedule elsewhere, no eligible",
@@ -203,6 +215,7 @@ func TestUpdateClusterState(t *testing.T) {
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
 			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
 		},
 		{
 			name: "recently evicted RS pod, not eligible",
@@ -215,8 +228,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2"), "rs"),
 				},
 			},
-			eligible:     []string{"n1"},
-			wantUnneeded: []string{},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2"},
 		},
 		{
 			name: "recently evicted pod without owner, not eligible",
@@ -228,8 +242,9 @@ func TestUpdateClusterState(t *testing.T) {
 					BuildTestPod("p1", 1000, 1),
 				},
 			},
-			eligible:     []string{"n1"},
-			wantUnneeded: []string{},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1"},
 		},
 		{
 			name: "recently evicted static pod, eligible",
@@ -242,8 +257,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetStaticPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
 				},
 			},
-			eligible:     []string{"n1"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
 			name: "recently evicted mirror pod, eligible",
@@ -256,8 +272,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetMirrorPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
 				},
 			},
-			eligible:     []string{"n1"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
 			name: "recently evicted DS pod, eligible",
@@ -270,8 +287,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetDSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
 				},
 			},
-			eligible:     []string{"n1"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
 			name: "recently evicted pod can schedule on non-eligible node, eligible",
@@ -285,8 +303,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
 				},
 			},
-			eligible:     []string{"n1"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3"},
 		},
 		{
 			name: "recently evicted pod can schedule on eligible node, eligible",
@@ -300,8 +319,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3"},
 		},
 		{
 			name: "recently evicted pod too large to schedule anywhere, all eligible",
@@ -315,8 +335,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p1", 2000, 1, "n3"), "rs"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{"n1", "n2"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
 		},
 		{
 			name: "all recently evicted pod got rescheduled, all eligible",
@@ -332,8 +353,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{"n1", "n2"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
 		},
 		{
 			name: "some recently evicted pod got rescheduled, some eligible",
@@ -349,8 +371,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3"},
 		},
 		{
 			name: "no recently evicted pod got rescheduled, no eligible",
@@ -366,8 +389,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
 		},
 		{
 			name: "all scheduled and recently evicted pods can schedule elsewhere, all eligible",
@@ -386,8 +410,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p3", 250, 1, "n4"), "rs"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{"n1", "n2"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3", "n4"},
 		},
 		{
 			name: "some scheduled and recently evicted pods can schedule elsewhere, some eligible",
@@ -406,8 +431,9 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n4"), "rs"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{"n1"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3", "n4"},
 		},
 		{
 			name: "scheduled and recently evicted pods take all capacity, no eligible",
@@ -426,8 +452,21 @@ func TestUpdateClusterState(t *testing.T) {
 					SetRSPodSpec(BuildScheduledTestPod("p3", 1000, 1, "n4"), "rs"),
 				},
 			},
-			eligible:     []string{"n1", "n2"},
-			wantUnneeded: []string{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3", "n4"},
+		},
+		{
+			name: "Simulation timeout is hitted",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+			},
+			actuationStatus:     &fakeActuationStatus{},
+			eligible:            []string{"n1", "n2", "n3"},
+			wantUnneeded:        []string{"n1"},
+			isSimulationTimeout: true,
 		},
 	}
 	for _, tc := range testCases {
@@ -441,17 +480,27 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil)
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 1 * time.Second}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := simulator.NodeDeleteOptions{}
 			p := New(&context, NewTestProcessors(&context), deleteOptions)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
+			if tc.isSimulationTimeout {
+				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
+				rs := &fakeRemovalSimulator{
+					nodes: tc.nodes,
+					sleep: 2 * time.Second,
+				}
+				p.rs = rs
+			}
 			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
 			assert.NoError(t, p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
 			wantUnneeded := asMap(tc.wantUnneeded)
+			wantUnremovable := asMap(tc.wantUnremovable)
 			for _, n := range tc.nodes {
-				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), n.Name)
+				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), []string{n.Name, "unneeded"})
+				assert.Equal(t, wantUnremovable[n.Name], p.unremovableNodes.Contains(n.Name), []string{n.Name, "unremovable"})
 			}
 		})
 	}
@@ -538,4 +587,22 @@ func (f *fakeEligibilityChecker) FilterOutUnremovable(context *context.Autoscali
 		}
 	}
 	return eligible, utilMap, nil
+}
+
+type fakeRemovalSimulator struct {
+	nodes []*apiv1.Node
+	sleep time.Duration
+}
+
+func (r *fakeRemovalSimulator) DropOldHints() {}
+
+func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]bool, _ time.Time, _ []*policyv1.PodDisruptionBudget) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode) {
+	time.Sleep(r.sleep)
+	node := &apiv1.Node{}
+	for _, n := range r.nodes {
+		if n.Name == name {
+			node = n
+		}
+	}
+	return &simulator.NodeToBeRemoved{Node: node}, nil
 }
