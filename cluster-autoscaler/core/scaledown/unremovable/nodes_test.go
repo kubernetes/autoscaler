@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -76,6 +77,28 @@ func TestUpdate(t *testing.T) {
 		got := len(n.ttls)
 		if got != tc.want {
 			t.Errorf("%s: got %d nodes, want %d", desc, got, tc.want)
+		}
+	}
+}
+
+func TestContains(t *testing.T) {
+	n := NewNodes()
+	nodes := []string{"n1", "n2", "n3"}
+
+	n.Add(makeUnremovableNode(nodes[0]))
+	n.AddTimeout(makeUnremovableNode(nodes[1]), time.Now())
+	n.AddReason(BuildTestNode(nodes[2], 0, 0), simulator.UnremovableReason(1))
+
+	for _, node := range nodes {
+		if !n.Contains(node) {
+			t.Errorf("n.Contains(%s) return false, want true", node)
+		}
+	}
+	//remove nodes
+	n.Update(newFakeNodeInfoGetter(nodes), time.Now().Add(-1*time.Minute))
+	for _, node := range nodes {
+		if n.Contains(node) {
+			t.Errorf("n.Contains(%s) return true, want false", node)
 		}
 	}
 }
