@@ -290,7 +290,8 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 	for _, gceInstance := range gceInstances.ManagedInstances {
 		ref, err := ParseInstanceUrlRef(gceInstance.Instance)
 		if err != nil {
-			return nil, err
+			klog.Errorf("Received error while parsing of the instance url: %v", err)
+			continue
 		}
 
 		instance := cloudprovider.Instance{
