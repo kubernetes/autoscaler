@@ -318,6 +318,26 @@ Containers:
 
 Though enough for the majority of installations, the default PodSecurityPolicy _could_ be too restrictive depending on the specifics of your release. Please make sure to check that the template fits with any customizations made or disable it by setting `rbac.pspEnabled` to `false`.
 
+### VerticalPodAutoscaler
+
+The chart can install a [`VerticalPodAutoscaler`](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md) for the Deployment if needed. A VPA can help minimize wasted resources when usage spikes periodically.
+The following example snippet can be used to install a [`autoscaling.k8s.io/v1` VPA](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go).
+
+```yaml
+vpa:
+  enabled: true
+  apiVersion: v1
+  containerPolicy:
+    minAllowed:
+      cpu: 50m
+      memory: 150Mi
+    maxAllowed:
+      cpu: 100m
+      memory: 300Mi
+```
+
+Supported VPA versions are `v1` and `v1beta2`.
+
 ## Values
 
 | Key | Type | Default | Description |
@@ -413,3 +433,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | tolerations | list | `[]` | List of node taints to tolerate (requires Kubernetes >= 1.6). |
 | topologySpreadConstraints | list | `[]` | You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19). |
 | updateStrategy | object | `{}` | [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| vpa | object | `{"apiVersion":"v1","containerPolicy":{},"enabled":false}` | Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment. |
+| vpa.apiVersion | string | `"v1"` | APIVersion of the VerticalPodAutoscaler. The template only supports v1 and v1beta2. |
+| vpa.containerPolicy | object | `{}` | Configure the containerPolicy of the cluster-autoscaler container. Content is rendered as YAML. |
+| vpa.enabled | bool | `false` | If true, creates a VerticalPodAutoscaler. |
