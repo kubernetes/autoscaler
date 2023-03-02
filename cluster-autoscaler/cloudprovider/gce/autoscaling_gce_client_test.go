@@ -18,6 +18,7 @@ package gce
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -25,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	gce_api "google.golang.org/api/compute/v1"
@@ -209,6 +212,118 @@ func TestErrors(t *testing.T) {
 		}
 	}
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
+	const goodInstanceUrlTempl = "https://content.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst_%d"
+	const badInstanceUrl = "https://badurl.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst"
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+
+	testCases := []struct {
+		name          string
+		lmiResponse   gce_api.InstanceGroupManagersListManagedInstancesResponse
+		wantInstances []cloudprovider.Instance
+	}{
+		{
+			name: "all instances good",
+			lmiResponse: gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 2),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 42),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+				},
+			},
+			wantInstances: []cloudprovider.Instance{
+				{
+					Id:     "gce://myprojid/myzone/myinst_2",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_42",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+			},
+		},
+		{
+			name: "instances with bad url",
+			lmiResponse: gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      badInstanceUrl,
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 42),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+				},
+			},
+			wantInstances: []cloudprovider.Instance{
+				{
+					Id:     "gce://myprojid/myzone/myinst_42",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+			},
+		},
+		{
+			name: "instance with empty url",
+			lmiResponse: gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      "",
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 42),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+				},
+			},
+			wantInstances: []cloudprovider.Instance{
+				{
+					Id:     "gce://myprojid/myzone/myinst_42",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			b, err := json.Marshal(tc.lmiResponse)
+			assert.NoError(t, err)
+			server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances").Return(string(b)).Times(1)
+			gotInstances, err := g.FetchMigInstances(GceRef{})
+			assert.NoError(t, err)
+			if diff := cmp.Diff(tc.wantInstances, gotInstances, cmpopts.EquateErrors()); diff != "" {
+				t.Errorf("FetchMigInstances(...): err diff (-want +got):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestUserAgent(t *testing.T) {
