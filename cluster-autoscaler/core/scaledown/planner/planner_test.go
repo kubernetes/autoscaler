@@ -17,6 +17,7 @@ limitations under the License.
 package planner
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -480,7 +481,13 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 1 * time.Second}, &fake.Clientset{}, registry, provider, nil, nil)
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: 10 * time.Minute,
+				},
+				ScaleDownSimulationTimeout: 1 * time.Second,
+				MaxScaleDownParallelism:    10,
+			}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := simulator.NodeDeleteOptions{}
@@ -502,6 +509,113 @@ func TestUpdateClusterState(t *testing.T) {
 				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), []string{n.Name, "unneeded"})
 				assert.Equal(t, wantUnremovable[n.Name], p.unremovableNodes.Contains(n.Name), []string{n.Name, "unremovable"})
 			}
+		})
+	}
+}
+
+func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
+	testCases := []struct {
+		name               string
+		previouslyUnneeded int
+		nodes              int
+		maxParallelism     int
+		maxUnneededTime    time.Duration
+		updateInterval     time.Duration
+		wantUnneeded       int
+	}{
+		{
+			name:               "no unneeded, default settings",
+			previouslyUnneeded: 0,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       20,
+		},
+		{
+			name:               "some unneeded, default settings",
+			previouslyUnneeded: 3,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       23,
+		},
+		{
+			name:               "max unneeded, default settings",
+			previouslyUnneeded: 70,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       70,
+		},
+		{
+			name:               "too many unneeded, default settings",
+			previouslyUnneeded: 77,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       70,
+		},
+		{
+			name:               "instant kill nodes",
+			previouslyUnneeded: 0,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    0 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       20,
+		},
+		{
+			name:               "quick loops",
+			previouslyUnneeded: 13,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     1 * time.Second,
+			wantUnneeded:       33,
+		},
+		{
+			name:               "slow loops",
+			previouslyUnneeded: 13,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     30 * time.Second,
+			wantUnneeded:       30,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			nodes := make([]*apiv1.Node, tc.nodes)
+			for i := 0; i < tc.nodes; i++ {
+				nodes[i] = BuildTestNode(fmt.Sprintf("n%d", i), 1000, 10)
+			}
+			previouslyUnneeded := make([]simulator.NodeToBeRemoved, tc.previouslyUnneeded)
+			for i := 0; i < tc.previouslyUnneeded; i++ {
+				previouslyUnneeded[i] = simulator.NodeToBeRemoved{Node: nodes[i]}
+			}
+			provider := testprovider.NewTestCloudProvider(nil, nil)
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: tc.maxUnneededTime,
+				},
+				ScaleDownSimulationTimeout: 1 * time.Hour,
+				MaxScaleDownParallelism:    tc.maxParallelism,
+			}, &fake.Clientset{}, nil, provider, nil, nil)
+			assert.NoError(t, err)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
+			deleteOptions := simulator.NodeDeleteOptions{}
+			p := New(&context, NewTestProcessors(&context), deleteOptions)
+			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
+			p.minUpdateInterval = tc.updateInterval
+			p.unneededNodes.Update(previouslyUnneeded, time.Now())
+			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
+			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
 	}
 }
