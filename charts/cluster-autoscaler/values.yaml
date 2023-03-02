@@ -387,3 +387,22 @@ updateStrategy: {}
   #   maxSurge: 1
   #   maxUnavailable: 0
   # type: RollingUpdate
+
+# vpa -- Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment.
+vpa:
+  # vpa.enabled -- If true, creates a VerticalPodAutoscaler.
+  enabled: false
+  # vpa.apiVersion -- APIVersion of the VerticalPodAutoscaler. The template only supports v1 and v1beta2.
+  apiVersion: v1
+  # vpa.containerPolicy -- Configure the containerPolicy of the cluster-autoscaler container. Content is rendered as YAML.
+  containerPolicy: {}
+    # minAllowed:
+    #   cpu: 50m
+    #   memory: 150Mi
+    # maxAllowed:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # controlledResources:
+    #   - cpu
+    #   - memory
+    # controlledValues: RequestsAndLimits
