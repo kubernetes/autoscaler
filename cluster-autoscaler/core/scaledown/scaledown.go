@@ -65,6 +65,7 @@ type Actuator interface {
 }
 
 // ActuationStatus is used for feeding Actuator status back into Planner
+// TODO: Replace ActuationStatus with simple struct with getter methods.
 type ActuationStatus interface {
 	// DeletionsInProgress returns two lists of node names that are
 	// currently undergoing deletion, for empty and non-empty (i.e. drained)
@@ -77,10 +78,4 @@ type ActuationStatus interface {
 	// the Actuator and hence are likely to get recreated elsewhere in the
 	// cluster.
 	RecentEvictions() (pods []*apiv1.Pod)
-	// DeletionResults returns a map of recent node deletion results, keyed
-	// by the node name. Note: if node deletion was scheduled more than
-	// once, only the latest result will be present.
-	// The timestamp returned as the second value indicates the time at
-	// which the last result was collected.
-	DeletionResults() (map[string]status.NodeDeleteResult, time.Time)
 }
