@@ -88,7 +88,7 @@ func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cl
 }
 
 // DeepCopyNodeInfo clones the provided nodeInfo
-func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) *schedulerframework.NodeInfo {
 	newPods := make([]*apiv1.Pod, 0)
 	for _, podInfo := range nodeInfo.Pods {
 		newPods = append(newPods, podInfo.Pod.DeepCopy())
@@ -97,7 +97,7 @@ func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 	// Build a new node info.
 	newNodeInfo := schedulerframework.NewNodeInfo(newPods...)
 	newNodeInfo.SetNode(nodeInfo.Node().DeepCopy())
-	return newNodeInfo, nil
+	return newNodeInfo
 }
 
 // SanitizeNodeInfo modify nodeInfos generated from templates to avoid using duplicated host names
