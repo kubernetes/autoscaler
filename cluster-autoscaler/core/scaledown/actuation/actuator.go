@@ -66,12 +66,9 @@ func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterState
 	}
 }
 
-// CheckStatus should return an immutable snapshot of ongoing deletions. Before the TODO is addressed, a live object
-// is returned instead of an immutable snapshot.
+// CheckStatus should returns an immutable snapshot of ongoing deletions.
 func (a *Actuator) CheckStatus() scaledown.ActuationStatus {
-	// TODO: snapshot information from the tracker instead of keeping live
-	// updated object.
-	return a.nodeDeletionTracker
+	return a.nodeDeletionTracker.Snapshot()
 }
 
 // ClearResultsNotNewerThan removes information about deletions finished before or exactly at the provided timestamp.
