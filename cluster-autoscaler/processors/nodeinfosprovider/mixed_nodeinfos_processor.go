@@ -132,9 +132,10 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			if cacheItem, found := p.nodeInfoCache[id]; found {
 				if p.isCacheItemExpired(cacheItem.added) {
 					delete(p.nodeInfoCache, id)
+				} else {
+					result[id] = utils.DeepCopyNodeInfo(cacheItem.NodeInfo)
 					continue
 				}
-				result[id] = utils.DeepCopyNodeInfo(cacheItem.NodeInfo)
 			}
 		}
 
