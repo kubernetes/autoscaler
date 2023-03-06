@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
@@ -36,15 +36,15 @@ func UpdateSoftDeletionTaints(context *context.AutoscalingContext, uneededNodes,
 		startTime:     now(),
 	}
 	for _, node := range neededNodes {
-		if deletetaint.HasToBeDeletedTaint(node) {
+		if taints.HasToBeDeletedTaint(node) {
 			// Do not consider nodes that are scheduled to be deleted
 			continue
 		}
-		if !deletetaint.HasDeletionCandidateTaint(node) {
+		if !taints.HasDeletionCandidateTaint(node) {
 			continue
 		}
 		b.processWithinBudget(func() {
-			_, err := deletetaint.CleanDeletionCandidate(node, context.ClientSet)
+			_, err := taints.CleanDeletionCandidate(node, context.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
@@ -52,15 +52,15 @@ func UpdateSoftDeletionTaints(context *context.AutoscalingContext, uneededNodes,
 		})
 	}
 	for _, node := range uneededNodes {
-		if deletetaint.HasToBeDeletedTaint(node) {
+		if taints.HasToBeDeletedTaint(node) {
 			// Do not consider nodes that are scheduled to be deleted
 			continue
 		}
-		if deletetaint.HasDeletionCandidateTaint(node) {
+		if taints.HasDeletionCandidateTaint(node) {
 			continue
 		}
 		b.processWithinBudget(func() {
-			err := deletetaint.MarkDeletionCandidate(node, context.ClientSet)
+			err := taints.MarkDeletionCandidate(node, context.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s adding error %v", node.Name, err)

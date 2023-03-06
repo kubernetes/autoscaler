@@ -39,7 +39,7 @@ rules:
     resources: ["daemonsets", "replicasets", "statefulsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "csinodes"]
+    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"]
     verbs: ["watch", "list", "get"]
   - apiGroups: [""]
     resources: ["configmaps"]

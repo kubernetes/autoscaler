@@ -116,9 +116,8 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			return map[string]*schedulerframework.NodeInfo{}, typedErr
 		}
 		if added && p.nodeInfoCache != nil {
-			if nodeInfoCopy, err := utils.DeepCopyNodeInfo(result[id]); err == nil {
-				p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
-			}
+			nodeInfoCopy := utils.DeepCopyNodeInfo(result[id])
+			p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
 		}
 	}
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
@@ -133,8 +132,8 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			if cacheItem, found := p.nodeInfoCache[id]; found {
 				if p.isCacheItemExpired(cacheItem.added) {
 					delete(p.nodeInfoCache, id)
-				} else if nodeInfoCopy, err := utils.DeepCopyNodeInfo(cacheItem.NodeInfo); err == nil {
-					result[id] = nodeInfoCopy
+				} else {
+					result[id] = utils.DeepCopyNodeInfo(cacheItem.NodeInfo)
 					continue
 				}
 			}
