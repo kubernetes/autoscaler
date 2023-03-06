@@ -722,6 +722,9 @@ CA respects `nodeSelector` and `requiredDuringSchedulingIgnoredDuringExecution` 
 
 However, CA does not consider "soft" constraints like `preferredDuringSchedulingIgnoredDuringExecution` when selecting node groups. That means that if CA has two or more node groups available for expansion, it will not use soft constraints to pick one node group over another.
 
+### What are mirror pods?
+Mirror pods are pods which are considered `replicated` i.e., if the node on which the pod is running goes down, the pod can get scheduled on another node.  
+
 ****************
 
 ### What are the parameters to CA?
