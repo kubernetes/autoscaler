@@ -375,7 +375,8 @@ This section must be completed when targeting beta to a release.
 
 #### Does this feature depend on any specific services running in the cluster?
 
-MPA relies on cluster-level service metrics-server and the API server needs to support Mutating Webhooks.
+MPA relies on cluster-level `metrics.k8s.io` API (for example, from [metrics-server](https://github.com/kubernetes-sigs/metrics-server))
+For the evict-and-replace mechanism, the API server needs to support the MutatingAdmissionWebhook API.
 
 ### Scalability
 
