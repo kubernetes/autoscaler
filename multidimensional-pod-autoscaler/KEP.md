@@ -219,7 +219,8 @@ spec:
   resourcePolicy:
     containerControlledResources: [ memory, cpu ]  # Added cpu here as well
     container:
-    - name: '*'
+    - name: '*' # either a literal name, or "*" to match all containers
+                # this is not a general wildcard match
     # Define boundaries for the memory request here
       requests:
         minAllowed:
