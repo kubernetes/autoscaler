@@ -121,7 +121,14 @@ Our proposed MPA framework consists of three controllers (i.e., a recommender, a
 
 [<img src="./kep-imgs/mpa-design.png" width="700"/>](./kep-imgs/mpa-design.png "MPA Design Overview")
 
-**MPA API.** Application owners specify the autoscaling configurations which include (1) whether they only want to know the recommendations from MPA or they want MPA to directly actuate the autoscaling decisions; (2) application SLAs (e.g., in terms of latency or throughput); (3) any custom metrics if there are; and (4) other autoscaling configurations that exist in HPA and VPA (e.g., desired resource utilizations, container update policies, min and max number of replicas). MPA API is also responsible for connecting the autoscaling actions generated from the MPA Recommender to MPA Admission Controller and Updater which actually execute the scaling actions. MPA API is created based on the [multidimensional Pod scaling service] (not open-sourced) provided by Google. MPA API is a Custom Resource Definition (CRD) in Kubernetes and each MPA instance is a CR. MPA CR keeps track of recommendations on target requests and target replica numbers.
+**MPA API.** Application owners specify the autoscaling configurations which include:
+
+1. whether they only want to know the recommendations from MPA or they want MPA to directly actuate the autoscaling decisions;
+2. application SLAs (e.g., in terms of latency or throughput);
+3. any custom metrics if there are; and
+4. other autoscaling configurations that exist in HPA and VPA (e.g., desired resource utilizations, container update policies, min and max number of replicas).
+
+MPA API is also responsible for connecting the autoscaling actions generated from the MPA Recommender to MPA Admission Controller and Updater which actually execute the scaling actions. MPA API is created based on the [multidimensional Pod scaling service] (not open-sourced) provided by Google. MPA API is a Custom Resource Definition (CRD) in Kubernetes and each MPA instance is a CR. MPA CR keeps track of recommendations on target requests and target replica numbers.
 
 [multidimensional Pod scaling service]: https://cloud.google.com/kubernetes-engine/docs/how-to/multidimensional-pod-autoscaling
 
@@ -137,11 +144,15 @@ Our proposed MPA framework consists of three controllers (i.e., a recommender, a
 
 ### Action Actuation Implementation
 
-To actuate the decisions without losing availability, we plan to (1) evict pods with min-replicas configured and update Pod sizes with the web-hooked admission controller (for vertical scaling), and (2) add or remove replicas (for horizontal scaling).
+To actuate the decisions without losing availability, we plan to:
+
+1. evict pods with min-replicas configured and update Pod sizes with the web-hooked admission controller (for vertical scaling), and
+2. add or remove replicas (for horizontal scaling).
+
 We use a web-hooked admission controller to manage vertical scaling because if the actuator directly updates the vertical scaling configurations through deployment, it will potentially overload etcd (as vertical scaling might be quite frequent).
 MPA Admission Controller intercepts Pod creation requests and rewrites the request by applying recommended resources to the Pod spec.
 We do not use the web-hooked admission controller to manage the horizontal scaling as it could slow down the pod creation process.
-In the future when the [in-place vertical resizing](https://github.com/kubernetes/enhancements/issues/1287) is enabled, we can remove the web-hooked admission controller and only have the updater.
+In the future when the [in-place vertical resizing](https://github.com/kubernetes/enhancements/issues/1287) is enabled, we can enable the option of in-place vertical resizing while keeping the web-hooked admission controller for eviction-based vertical resizing as an option as well.
 
 [<img src="./kep-imgs/mpa-action-actuation.png" width="400"/>](./kep-imgs/mpa-action-actuation.png "MPA Action Actuation")
 
@@ -159,7 +170,7 @@ Cons:
 ### Action Recommendation Implementation
 
 To generate the vertical scaling action recommendation, we reuse VPA libraries as much as possible to implement scaling algorithm integrated with the newly generated MPA API code.
-To do that, we need to update accordingly the code which reads and updates the VPA objects to be interacting with the MPA objects.
+To do that, we need to update accordingly the code which read and update the VPA objects to be interacting with the MPA objects.
 To generate the horizontal scaling action recommendation, we reuse HPA libraries, integrating with the MPA API code, to reads and updates the MPA objects.
 We integrate vertical and horizontal scaling in a single feedback cycle.
 As an intitial solution, vertical scaling and horizontal scaling is performed alternatively (vertical scaling first).
@@ -178,7 +189,7 @@ We reuse the CR definitions from the [MultidimPodAutoscaler](https://cloud.googl
 `MultidimPodAutoscaler` is the configuration for multi-dimensional Pod autoscaling, which automatically manages Pod resources and their count based on historical and real-time resource utilization.
 MultidimPodAutoscaler has two main fields: `spec` and `status`.
 
-#### MPA Spec
+#### `MultidimPodAutoscalerSpec`
 
 ```
 # MultidimPodAutoscalerSpec
@@ -204,6 +215,7 @@ spec:
   constraints:
     minReplicas: min-num-replicas
     maxReplicas: max-num-replicas
+    applicationSLA: value  # customizable SLA for application metrics such as latency or throughput
   resourcePolicy:
     containerControlledResources: [ memory, cpu ]  # Added cpu here as well
     container:
