@@ -168,3 +168,26 @@ func (n *NodeDeletionTracker) ClearResultsNotNewerThan(t time.Time) {
 	defer n.Unlock()
 	n.deletionResults.DropNotNewerThan(t)
 }
+
+// Snapshot return a copy of NodeDeletionTracker.
+func (n *NodeDeletionTracker) Snapshot() *NodeDeletionTracker {
+	n.Lock()
+	defer n.Unlock()
+	snapshot := NewNodeDeletionTracker(n.evictionsTTL)
+	for k, val := range n.emptyNodeDeletions {
+		snapshot.emptyNodeDeletions[k] = val
+	}
+	for k, val := range n.drainedNodeDeletions {
+		snapshot.drainedNodeDeletions[k] = val
+	}
+	for k, val := range n.deletionsPerNodeGroup {
+		snapshot.deletionsPerNodeGroup[k] = val
+	}
+	for _, eviction := range n.evictions.ToSlice() {
+		snapshot.evictions.RegisterElement(eviction)
+	}
+	for _, result := range n.deletionResults.ToSlice() {
+		snapshot.deletionResults.RegisterElement(result)
+	}
+	return snapshot
+}

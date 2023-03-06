@@ -36,7 +36,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	klog "k8s.io/klog/v2"
 )
@@ -103,7 +102,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	destinationNodes []*apiv1.Node,
 	scaleDownCandidates []*apiv1.Node,
 	timestamp time.Time,
-	pdbs []*policyv1.PodDisruptionBudget,
 ) errors.AutoscalerError {
 
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
@@ -149,7 +147,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		currentCandidates,
 		destinations,
 		timestamp,
-		pdbs)
+		sd.context.RemainingPdbTracker.GetPdbs())
 
 	additionalCandidatesCount := sd.context.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
 	if additionalCandidatesCount > len(currentNonCandidates) {
@@ -171,7 +169,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinations,
 				timestamp,
-				pdbs)
+				sd.context.RemainingPdbTracker.GetPdbs())
 		if len(additionalNodesToRemove) > additionalCandidatesCount {
 			additionalNodesToRemove = additionalNodesToRemove[:additionalCandidatesCount]
 		}
@@ -254,7 +252,7 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 }
 
 // NodesToDelete selects the nodes to delete for scale down.
-func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDisruptionBudget) (_, drain []*apiv1.Node, res status.ScaleDownResult, err errors.AutoscalerError) {
+func (sd *ScaleDown) NodesToDelete(currentTime time.Time) (_, drain []*apiv1.Node, res status.ScaleDownResult, err errors.AutoscalerError) {
 	_, drained := sd.nodeDeletionTracker.DeletionsInProgress()
 	if len(drained) > 0 {
 		return nil, nil, status.ScaleDownInProgress, nil
@@ -319,7 +317,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		candidateNames,
 		allNodeNames,
 		time.Now(),
-		pdbs)
+		sd.context.RemainingPdbTracker.GetPdbs())
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
 
 	for _, unremovableNode := range unremovable {
