@@ -367,6 +367,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | serviceMonitor.annotations | object | `{}` | Annotations to add to service monitor |
 | serviceMonitor.enabled | bool | `false` | If true, creates a Prometheus Operator ServiceMonitor. |
 | serviceMonitor.interval | string | `"10s"` | Interval that Prometheus scrapes Cluster Autoscaler metrics. |
+| serviceMonitor.metricRelabelings | object | `{}` | MetricRelabelConfigs to apply to samples before ingestion. |
 | serviceMonitor.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
 | serviceMonitor.path | string | `"/metrics"` | The path to scrape for metrics; autoscaler exposes `/metrics` (this is standard) |
 | serviceMonitor.selector | object | `{"release":"prometheus-operator"}` | Default to kube-prometheus install (CoreOS recommended), but should be set according to Prometheus install. |

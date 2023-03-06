@@ -134,6 +134,11 @@ func (e *externalGrpcCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 	return ng, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (e *externalGrpcCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // pricingModel implements cloudprovider.PricingModel interface.
 type pricingModel struct {
 	client protos.CloudProviderClient

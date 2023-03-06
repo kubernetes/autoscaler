@@ -18,7 +18,9 @@ package logic
 
 import (
 	"flag"
+	"sort"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
@@ -26,6 +28,7 @@ var (
 	safetyMarginFraction = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
 	podMinCPUMillicores  = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
 	podMinMemoryMb       = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
+	targetCPUPercentile  = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -99,7 +102,6 @@ func FilterControlledResources(estimation model.Resources, controlledResources [
 
 // CreatePodResourceRecommender returns the primary recommender.
 func CreatePodResourceRecommender() PodResourceRecommender {
-	targetCPUPercentile := 0.9
 	lowerBoundCPUPercentile := 0.5
 	upperBoundCPUPercentile := 0.95
 
@@ -107,7 +109,7 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	lowerBoundMemoryPeaksPercentile := 0.5
 	upperBoundMemoryPeaksPercentile := 0.95
 
-	targetEstimator := NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile)
+	targetEstimator := NewPercentileEstimator(*targetCPUPercentile, targetMemoryPeaksPercentile)
 	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
 	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
@@ -146,4 +148,32 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 		targetEstimator,
 		lowerBoundEstimator,
 		upperBoundEstimator}
+}
+
+// MapToListOfRecommendedContainerResources converts the map of RecommendedContainerResources into a stable sorted list
+// This can be used to get a stable sequence while ranging on the data
+func MapToListOfRecommendedContainerResources(resources RecommendedPodResources) *vpa_types.RecommendedPodResources {
+	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
+	// Sort the container names from the map. This is because maps are an
+	// unordered data structure, and iterating through the map will return
+	// a different order on every call.
+	containerNames := make([]string, 0, len(resources))
+	for containerName := range resources {
+		containerNames = append(containerNames, containerName)
+	}
+	sort.Strings(containerNames)
+	// Create the list of recommendations for each container.
+	for _, name := range containerNames {
+		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
+			ContainerName:  name,
+			Target:         model.ResourcesAsResourceList(resources[name].Target),
+			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound),
+			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound),
+			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target),
+		})
+	}
+	recommendation := &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: containerResources,
+	}
+	return recommendation
 }

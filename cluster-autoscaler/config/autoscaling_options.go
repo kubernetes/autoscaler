@@ -96,6 +96,8 @@ type AutoscalingOptions struct {
 	CloudProviderName string
 	// NodeGroups is the list of node groups a.k.a autoscaling targets
 	NodeGroups []string
+	// EnforceNodeGroupMinSize is used to allow CA to scale up the node group to the configured min size if needed.
+	EnforceNodeGroupMinSize bool
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
@@ -117,6 +119,9 @@ type AutoscalingOptions struct {
 	// The formula to calculate additional candidates number is following:
 	// max(#nodes * ScaleDownCandidatesPoolRatio, ScaleDownCandidatesPoolMinCount)
 	ScaleDownCandidatesPoolMinCount int
+	// ScaleDownSimulationTimeout defines the maximum time that can be
+	// spent on scale down simulation.
+	ScaleDownSimulationTimeout time.Duration
 	// NodeDeletionDelayTimeout is maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
@@ -195,4 +200,17 @@ type AutoscalingOptions struct {
 	// MaxNodeGroupBinpackingDuration is a maximum time that can be spent binpacking a single NodeGroup. If the threshold
 	// is exceeded binpacking will be cut short and a partial scale-up will be performed.
 	MaxNodeGroupBinpackingDuration time.Duration
+	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
+	NodeDeletionBatcherInterval time.Duration
+	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)
+	SkipNodesWithSystemPods bool
+	// SkipNodesWithLocalStorage tells if nodes with pods with local storage, e.g. EmptyDir or HostPath, should be deleted
+	SkipNodesWithLocalStorage bool
+	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
+	// to allow their pods deletion in scale down
+	MinReplicaCount int
+	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
+	NodeDeleteDelayAfterTaint time.Duration
+	// ParallelDrain is whether CA can drain nodes in parallel.
+	ParallelDrain bool
 }

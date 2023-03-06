@@ -20,23 +20,24 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-type quota struct {
+// Quota represents the amount of log lines that can still be printed before suppression starts.
+type Quota struct {
 	limit int
 	left  int
 }
 
-// NewLoggingQuota returns a quota object with limit & left set to the passed value.
-func NewLoggingQuota(n int) *quota {
-	return &quota{n, n}
+// NewLoggingQuota returns a Quota object with limit & left set to the passed value.
+func NewLoggingQuota(n int) *Quota {
+	return &Quota{n, n}
 }
 
-// Left returns how much quota was left. If it was exceeded, the value will be negative.
-func (q *quota) Left() int {
+// Left returns how much Quota was left. If it was exceeded, the value will be negative.
+func (q *Quota) Left() int {
 	return q.left
 }
 
-// Reset resets left quota to initial limit.
-func (q *quota) Reset() {
+// Reset resets left Quota to initial limit.
+func (q *Quota) Reset() {
 	q.left = q.limit
 }
 
@@ -62,24 +63,24 @@ func (v Verbose) enable(b bool) Verbose {
 
 // UpTo calls UpTo from this package if called on true object.
 // The returned value is of type Verbose.
-func (v Verbose) UpTo(quota *quota) Verbose {
+func (v Verbose) UpTo(q *Quota) Verbose {
 	if v.v.Enabled() {
-		quota.left--
-		return v.enable(quota.left >= 0)
+		q.left--
+		return v.enable(q.left >= 0)
 	}
 	return v.enable(false)
 }
 
 // Over calls Over from this package if called on true object.
 // The returned value is of type Verbose.
-func (v Verbose) Over(quota *quota) Verbose {
+func (v Verbose) Over(q *Quota) Verbose {
 	if v.v.Enabled() {
-		return v.enable(quota.left < 0)
+		return v.enable(q.left < 0)
 	}
 	return v.enable(false)
 }
 
-// Infof is a wrapper for klog.Infof that logs if the quota
+// Infof is a wrapper for klog.Infof that logs if the Quota
 // allows for it.
 func (v Verbose) Infof(format string, args ...interface{}) {
 	if v.enabled {
@@ -87,7 +88,7 @@ func (v Verbose) Infof(format string, args ...interface{}) {
 	}
 }
 
-// Info is a wrapper for klog.Info that logs if the quota
+// Info is a wrapper for klog.Info that logs if the Quota
 // allows for it.
 func (v Verbose) Info(args ...interface{}) {
 	if v.enabled {
