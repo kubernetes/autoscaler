@@ -25,13 +25,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-const (
-	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
-	OOMBumpUpRatio float64 = 1.2
-	// OOMMinBumpUp specifies minimal increase of memory after observing OOM.
-	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
-)
-
 // ContainerUsageSample is a measure of resource usage of a container over some
 // interval.
 type ContainerUsageSample struct {
