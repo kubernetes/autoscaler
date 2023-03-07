@@ -159,7 +159,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 	} else {
 		// Shift the memory aggregation window to the next interval.
 		memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationInterval
-		shift := truncate(ts.Sub(container.WindowEnd), memoryAggregationInterval) + memoryAggregationInterval
+		shift := ts.Sub(container.WindowEnd).Truncate(memoryAggregationInterval) + memoryAggregationInterval
 		container.WindowEnd = container.WindowEnd.Add(shift)
 		container.memoryPeak = 0
 		container.oomPeak = 0
@@ -222,15 +222,4 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 	default:
 		return false
 	}
-}
-
-// Truncate returns the result of rounding d toward zero to a multiple of m.
-// If m <= 0, Truncate returns d unchanged.
-// This helper function is introduced to support older implementations of the
-// time package that don't provide Duration.Truncate function.
-func truncate(d, m time.Duration) time.Duration {
-	if m <= 0 {
-		return d
-	}
-	return d - d%m
 }
