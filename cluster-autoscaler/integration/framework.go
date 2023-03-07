@@ -408,7 +408,7 @@ func (driver *Driver) removeAnnotationFromNode(node *v1.Node) error {
 }
 
 func (driver *Driver) makeNodeUnschedulable(node *v1.Node) error {
-	By(fmt.Sprintf("Taint node %s", node.Name))
+	gin.By(fmt.Sprintf("Taint node %s", node.Name))
 	for j := 0; j < 3; j++ {
 		freshNode, err := driver.targetCluster.Clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if err != nil {
