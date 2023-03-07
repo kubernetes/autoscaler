@@ -11,6 +11,9 @@ autoscaler:
               - '.*/aws-sdk-go/.*'
               - '^vendor/.*'
               - '.*/vendor/.*'
+              - '.*/cloudprovider/((?!mcm/).)*/.*'
+              - '^addon-resizer/.*'
+              - '^vertical-pod-autoscaler/.*'
     traits:
       version:
         preprocess:
