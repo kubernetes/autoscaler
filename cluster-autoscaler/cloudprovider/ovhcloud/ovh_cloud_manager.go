@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
@@ -61,8 +62,9 @@ type OvhCloudManager struct {
 	ClusterID string
 	ProjectID string
 
-	NodePools              []sdk.NodePool
-	NodeGroupPerProviderID map[string]*NodeGroup
+	NodePools                  []sdk.NodePool
+	NodeGroupPerProviderID     map[string]*NodeGroup
+	NodeGroupPerProviderIDLock sync.RWMutex
 
 	FlavorsCache               map[string]sdk.Flavor
 	FlavorsCacheExpirationTime time.Time
@@ -146,8 +148,9 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 		ProjectID: cfg.ProjectID,
 		ClusterID: cfg.ClusterID,
 
-		NodePools:              make([]sdk.NodePool, 0),
-		NodeGroupPerProviderID: make(map[string]*NodeGroup),
+		NodePools:                  make([]sdk.NodePool, 0),
+		NodeGroupPerProviderID:     make(map[string]*NodeGroup),
+		NodeGroupPerProviderIDLock: sync.RWMutex{},
 
 		FlavorsCache:               make(map[string]sdk.Flavor),
 		FlavorsCacheExpirationTime: time.Time{},
@@ -190,6 +193,22 @@ func (m *OvhCloudManager) getFlavorByName(flavorName string) (sdk.Flavor, error)
 	}
 
 	return sdk.Flavor{}, fmt.Errorf("flavor %s not found in available flavors", flavorName)
+}
+
+// setNodeGroupPerProviderID stores the association provider ID => node group in cache for future reference
+func (m *OvhCloudManager) setNodeGroupPerProviderID(providerID string, nodeGroup *NodeGroup) {
+	m.NodeGroupPerProviderIDLock.Lock()
+	defer m.NodeGroupPerProviderIDLock.Unlock()
+
+	m.NodeGroupPerProviderID[providerID] = nodeGroup
+}
+
+// getNodeGroupPerProviderID gets from cache the node group associated to the given provider ID
+func (m *OvhCloudManager) getNodeGroupPerProviderID(providerID string) *NodeGroup {
+	m.NodeGroupPerProviderIDLock.RLock()
+	defer m.NodeGroupPerProviderIDLock.RUnlock()
+
+	return m.NodeGroupPerProviderID[providerID]
 }
 
 // ReAuthenticate allows OpenStack keystone token to be revoked and re-created to call API
@@ -274,7 +293,6 @@ func validatePayload(cfg *Config) error {
 
 		if cfg.ApplicationSecret == "" {
 			return fmt.Errorf("`application_secret` not found in config file")
-
 		}
 
 		if cfg.ApplicationConsumerKey == "" {

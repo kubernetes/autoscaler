@@ -159,10 +159,11 @@ func (provider *OVHCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // findNodeGroupFromCache tries to retrieve the associated node group from an already built mapping in cache
 func (provider *OVHCloudProvider) findNodeGroupFromCache(providerID string) cloudprovider.NodeGroup {
-	if ng, ok := provider.manager.NodeGroupPerProviderID[providerID]; ok {
-		return ng
+	nodeGroup := provider.manager.getNodeGroupPerProviderID(providerID)
+	if nodeGroup != nil {
+		return nodeGroup
 	}
-	return nil
+	return nil // To avoid returning a (*cloudprovider.NodeGroup)(nil), which is different from nil
 }
 
 // findNodeGroupFromLabel tries to find the associated node group from the nodepool label on the node
