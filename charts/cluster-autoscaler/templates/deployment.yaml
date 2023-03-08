@@ -42,6 +42,9 @@ spec:
       {{- if .Values.dnsPolicy }}
       dnsPolicy: "{{ .Values.dnsPolicy }}"
       {{- end }}
+      {{- if .Values.hostNetwork }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      {{- end }}
       containers:
         - name: {{ template "cluster-autoscaler.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
