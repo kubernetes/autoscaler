@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -133,6 +134,15 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
 		klog.Warningf("Skipped %s from delete consideration - the node is not autoscaled", node.Name)
 		return simulator.NotAutoscaled, nil
+	}
+
+	// If scale down of unready nodes is disabled, skip the node if it is unready
+	if !context.ScaleDownUnreadyEnabled {
+		ready, _, _ := kube_util.GetReadinessState(node)
+		if !ready {
+			klog.V(4).Infof("Skipping unready node %s from delete consideration - scale-down of unready nodes is disabled", node.Name)
+			return simulator.ScaleDownUnreadyDisabled, nil
+		}
 	}
 
 	underutilized, err := c.isNodeBelowUtilizationThreshold(context, node, nodeGroup, utilInfo)
