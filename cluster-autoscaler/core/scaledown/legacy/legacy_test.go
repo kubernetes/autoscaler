@@ -1110,6 +1110,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 			ScaleDownUnreadyTime:          time.Hour,
 		},
 		MaxGracefulTerminationSec: 60,
+		ScaleDownUnreadyEnabled:   true,
 	}
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p2})
