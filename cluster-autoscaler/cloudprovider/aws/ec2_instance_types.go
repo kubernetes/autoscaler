@@ -1641,7 +1641,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
-	},	
+	},
 	"is4gen.2xlarge": {
 		InstanceType: "is4gen.2xlarge",
 		VCPU:         8,
