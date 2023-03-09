@@ -392,17 +392,7 @@ updateStrategy: {}
 vpa:
   # vpa.enabled -- If true, creates a VerticalPodAutoscaler.
   enabled: false
-  # vpa.apiVersion -- APIVersion of the VerticalPodAutoscaler. The template only supports v1 and v1beta2.
-  apiVersion: v1
-  # vpa.containerPolicy -- Configure the containerPolicy of the cluster-autoscaler container. Content is rendered as YAML.
+  # vpa.updateMode -- [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124)
+  updateMode: "Auto"
+  # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
   containerPolicy: {}
-    # minAllowed:
-    #   cpu: 50m
-    #   memory: 150Mi
-    # maxAllowed:
-    #   cpu: 100m
-    #   memory: 300Mi
-    # controlledResources:
-    #   - cpu
-    #   - memory
-    # controlledValues: RequestsAndLimits
