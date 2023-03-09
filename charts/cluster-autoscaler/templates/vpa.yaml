@@ -1,5 +1,5 @@
 {{- if .Values.vpa.enabled -}}
-apiVersion: "autoscaling.k8s.io/{{ .Values.vpa.apiVersion }}"
+apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
   labels:
@@ -12,7 +12,7 @@ spec:
     kind: Deployment
     name: {{ template "cluster-autoscaler.fullname" . }}
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: {{ .Values.vpa.updateMode | quote }}
   resourcePolicy:
     containerPolicies:
     - containerName: {{ template "cluster-autoscaler.name" . }}
