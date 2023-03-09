@@ -206,17 +206,25 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	// Forge node template in a node group
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("%s-node-%d", ng.Id(), rand.Int63()),
-			Labels: map[string]string{
-				NodePoolLabel: ng.Id(),
-			},
+			Name:        fmt.Sprintf("%s-node-%d", ng.Id(), rand.Int63()),
+			Labels:      ng.Template.Metadata.Labels,
+			Annotations: ng.Template.Metadata.Annotations,
+			Finalizers:  ng.Template.Metadata.Finalizers,
 		},
-		Spec: apiv1.NodeSpec{},
+		Spec: apiv1.NodeSpec{
+			Taints: ng.Template.Spec.Taints,
+		},
 		Status: apiv1.NodeStatus{
 			Capacity:   apiv1.ResourceList{},
 			Conditions: cloudprovider.BuildReadyConditions(),
 		},
 	}
+
+	// Add the nodepool label
+	if node.ObjectMeta.Labels == nil {
+		node.ObjectMeta.Labels = make(map[string]string)
+	}
+	node.ObjectMeta.Labels[NodePoolLabel] = ng.Id()
 
 	flavor, err := ng.Manager.getFlavorByName(ng.Flavor)
 	if err != nil {
