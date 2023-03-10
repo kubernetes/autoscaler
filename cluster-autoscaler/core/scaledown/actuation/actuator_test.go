@@ -916,8 +916,8 @@ func TestStartDeletion(t *testing.T) {
 					break taintsLoop
 				}
 			}
-			ignoreTaintValue := cmpopts.IgnoreFields(apiv1.Taint{}, "Value")
-			if diff := cmp.Diff(tc.wantTaintUpdates, gotTaintUpdates, ignoreTaintValue, cmpopts.EquateEmpty()); diff != "" {
+			taintValue := cmpopts.IgnoreFields(apiv1.Taint{}, "Value")
+			if diff := cmp.Diff(tc.wantTaintUpdates, gotTaintUpdates, taintValue, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("taintUpdates diff (-want +got):\n%s", diff)
 			}
 

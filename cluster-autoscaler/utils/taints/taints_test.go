@@ -370,7 +370,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				Spec: apiv1.NodeSpec{
 					Taints: []apiv1.Taint{
 						{
-							Key:    IgnoreTaintPrefix + "another-taint",
+							Key:    initializationTaintPrefix + "another-taint",
 							Value:  "myValue",
 							Effect: apiv1.TaintEffectNoSchedule,
 						},
@@ -415,7 +415,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			if tc.node != nil {
 				nodes = append(nodes, tc.node)
 			}
-			allNodes, readyNodes := FilterOutNodesWithIgnoredTaints(tc.ignoredTaints, nodes, nodes)
+			allNodes, readyNodes := FilterOutNodesWithInitializationTaints(tc.ignoredTaints, nodes, nodes)
 			assert.Equal(t, tc.allNodes, len(allNodes))
 			assert.Equal(t, tc.readyNodes, len(readyNodes))
 
@@ -451,7 +451,12 @@ func TestSanitizeTaints(t *testing.T) {
 		Spec: apiv1.NodeSpec{
 			Taints: []apiv1.Taint{
 				{
-					Key:    IgnoreTaintPrefix + "another-taint",
+					Key:    initializationTaintPrefix + "another-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    initializationTaintPrefix + "another-taint",
 					Value:  "myValue",
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
@@ -482,6 +487,11 @@ func TestSanitizeTaints(t *testing.T) {
 				},
 				{
 					Key:    "ignore-taint.cluster-autoscaler.kubernetes.io/to-be-ignored",
+					Value:  "I-am-the-invisible-man-Incredible-how-you-can",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "initialization-resource-unready.cluster-autoscaler.kubernetes.io/",
 					Value:  "I-am-the-invisible-man-Incredible-how-you-can",
 					Effect: apiv1.TaintEffectNoSchedule,
 				},

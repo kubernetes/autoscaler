@@ -42,8 +42,11 @@ const (
 
 	// ReschedulerTaintKey is the name of the taint created by rescheduler.
 	ReschedulerTaintKey = "CriticalAddonsOnly"
-	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
-	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
+
+	// any taint starting with those prefixes will be considered Unready (NotStarted for first 15 minutes).
+	// those will be skipped, when creating template from node
+	ignoreTaintPrefix         = "ignore-taint.cluster-autoscaler.kubernetes.io/"
+	initializationTaintPrefix = "initialization-resource-unready.cluster-autoscaler.kubernetes.io/"
 
 	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
 
@@ -56,6 +59,7 @@ type TaintKeySet map[string]bool
 
 var (
 	// NodeConditionTaints lists taint keys used as node conditions
+	// those will be skipped, when creating template from node
 	NodeConditionTaints = TaintKeySet{
 		apiv1.TaintNodeNotReady:                     true,
 		apiv1.TaintNodeUnreachable:                  true,
@@ -322,7 +326,7 @@ func SanitizeTaints(taints []apiv1.Taint, ignoredTaints TaintKeySet) []apiv1.Tai
 			continue
 		}
 
-		if strings.HasPrefix(taint.Key, IgnoreTaintPrefix) {
+		if strings.HasPrefix(taint.Key, initializationTaintPrefix) || strings.HasPrefix(taint.Key, ignoreTaintPrefix) {
 			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
 			continue
 		}
@@ -332,12 +336,12 @@ func SanitizeTaints(taints []apiv1.Taint, ignoredTaints TaintKeySet) []apiv1.Tai
 	return newTaints
 }
 
-// FilterOutNodesWithIgnoredTaints override the condition status of the given nodes to mark them as NotReady when they have
+// FilterOutNodesWithInitializationTaints override the condition status of the given nodes to mark them as NotReady when they have
 // filtered taints.
-func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+func FilterOutNodesWithInitializationTaints(initializationTaints TaintKeySet, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
-	nodesWithIgnoredTaints := make(map[string]*apiv1.Node)
+	nodesWithInitializationTaints := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
 		if len(node.Spec.Taints) == 0 {
 			newReadyNodes = append(newReadyNodes, node)
@@ -345,10 +349,10 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 		}
 		ready := true
 		for _, t := range node.Spec.Taints {
-			_, hasIgnoredTaint := ignoredTaints[t.Key]
-			if hasIgnoredTaint || strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
+			_, hasInitializationTaint := initializationTaints[t.Key]
+			if hasInitializationTaint || strings.HasPrefix(t.Key, initializationTaintPrefix) || strings.HasPrefix(t.Key, ignoreTaintPrefix) {
 				ready = false
-				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.IgnoreTaint)
+				nodesWithInitializationTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.InitializationTaint)
 				klog.V(3).Infof("Overriding status of node %v, which seems to have ignored taint %q", node.Name, t.Key)
 				break
 			}
@@ -359,7 +363,7 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 	}
 	// Override any node with ignored taint with its "unready" copy
 	for _, node := range allNodes {
-		if newNode, found := nodesWithIgnoredTaints[node.Name]; found {
+		if newNode, found := nodesWithInitializationTaints[node.Name]; found {
 			newAllNodes = append(newAllNodes, newNode)
 		} else {
 			newAllNodes = append(newAllNodes, node)

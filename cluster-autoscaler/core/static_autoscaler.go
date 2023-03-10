@@ -160,8 +160,8 @@ func NewStaticAutoscaler(
 	}
 
 	ignoredTaints := make(taints.TaintKeySet)
-	for _, taintKey := range opts.IgnoredTaints {
-		klog.V(4).Infof("Ignoring taint %s on all NodeGroups", taintKey)
+	for _, taintKey := range opts.InitializationTaints {
+		klog.V(4).Infof("Ignoring initialization taint %s on all NodeGroups", taintKey)
 		ignoredTaints[taintKey] = true
 	}
 
@@ -884,7 +884,7 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
-	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.ignoredTaints, allNodes, readyNodes)
+	allNodes, readyNodes = taints.FilterOutNodesWithInitializationTaints(a.ignoredTaints, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
 
