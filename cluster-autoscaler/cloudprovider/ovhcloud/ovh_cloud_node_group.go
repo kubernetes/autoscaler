@@ -22,6 +22,7 @@ import (
 	"math"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -44,6 +45,7 @@ type NodeGroup struct {
 
 	Manager     *OvhCloudManager
 	CurrentSize int
+	mutex       sync.Mutex
 }
 
 // MaxSize returns maximum size of the node pool.
@@ -111,6 +113,12 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 
 // DeleteNodes deletes the nodes from the group.
 func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	// DeleteNodes is called in goroutine so it can run in parallel
+	// Goroutines created in: ScaleDown.scheduleDeleteEmptyNodes()
+	// Adding mutex to ensure CurrentSize attribute keeps consistency
+	ng.mutex.Lock()
+	defer ng.mutex.Unlock()
+
 	// Do not use node group which does not support autoscaling
 	if !ng.Autoscale {
 		return nil
