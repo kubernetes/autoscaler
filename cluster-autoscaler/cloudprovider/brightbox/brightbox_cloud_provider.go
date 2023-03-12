@@ -81,6 +81,11 @@ func (b *brightboxCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	return nil, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (b *brightboxCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Refresh is before every main loop and can be used to dynamically
 // update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can

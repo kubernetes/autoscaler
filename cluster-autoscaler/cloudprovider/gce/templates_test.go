@@ -63,6 +63,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 		reservedEphemeralStorage      string
 		isEphemeralStorageBlocked     bool
 		ephemeralStorageLocalSSDCount int64
+		extendedResources             apiv1.ResourceList
 		// test outputs
 		expectedErr bool
 	}
@@ -186,6 +187,37 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			attachedLocalSSDCount:         4,
 			expectedErr:                   false,
 		},
+		{
+			scenario:                      "extended_resources present in kube-env",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: kube_reserved=cpu=0,memory=0,ephemeral-storage=10Gi;os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2;extended_resources=someResource=2,anotherResource=1G\n",
+			physicalCpu:                   8,
+			physicalMemory:                200 * units.MiB,
+			ephemeralStorageLocalSSDCount: 2,
+			kubeReserved:                  true,
+			reservedCpu:                   "0m",
+			reservedMemory:                fmt.Sprintf("%v", 0*units.MiB),
+			reservedEphemeralStorage:      "10Gi",
+			attachedLocalSSDCount:         4,
+			expectedErr:                   false,
+			extendedResources: apiv1.ResourceList{
+				apiv1.ResourceName("someResource"):    *resource.NewQuantity(2, resource.DecimalSI),
+				apiv1.ResourceName("anotherResource"): *resource.NewQuantity(1*units.GB, resource.DecimalSI),
+			},
+		},
+		{
+			scenario:                      "malformed extended_resources in kube-env",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: kube_reserved=cpu=0,memory=0,ephemeral-storage=10Gi;os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2;extended_resources=someResource\n",
+			physicalCpu:                   8,
+			physicalMemory:                200 * units.MiB,
+			ephemeralStorageLocalSSDCount: 2,
+			kubeReserved:                  true,
+			reservedCpu:                   "0m",
+			reservedMemory:                fmt.Sprintf("%v", 0*units.MiB),
+			reservedEphemeralStorage:      "10Gi",
+			attachedLocalSSDCount:         4,
+			expectedErr:                   false,
+			extendedResources:             apiv1.ResourceList{},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.scenario, func(t *testing.T) {
@@ -254,7 +286,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				} else if tc.isEphemeralStorageBlocked {
 					physicalEphemeralStorageGiB = 0
 				}
-				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, "", physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, "", &GceReserved{})
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, "", physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, "", &GceReserved{}, tc.extendedResources)
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
@@ -561,7 +593,7 @@ func TestBuildCapacityMemory(t *testing.T) {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
 			tb := GceTemplateBuilder{}
 			noAccelerators := make([]*gce.AcceleratorConfig, 0)
-			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, "", -1, 0, nil, "", &GceReserved{})
+			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, "", -1, 0, nil, "", &GceReserved{}, apiv1.ResourceList{})
 			assert.NoError(t, err)
 			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
@@ -1126,6 +1158,112 @@ func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
 			assert.Equal(t, tc.expectedOperatingSystemDistribution, actualOperatingSystem)
 		})
 	}
+}
+
+func TestExtractExtendedResourcesFromKubeEnv(t *testing.T) {
+	type testCase struct {
+		name                      string
+		kubeEnv                   string
+		expectedExtendedResources apiv1.ResourceList
+		expectedErr               bool
+	}
+
+	testCases := []testCase{
+		{
+			name: "numeric value",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=10",
+			expectedExtendedResources: apiv1.ResourceList{
+				apiv1.ResourceName("foo"): *resource.NewQuantity(10, resource.DecimalSI),
+			},
+			expectedErr: false,
+		},
+		{
+			name: "numeric value with quantity suffix",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=10G",
+			expectedExtendedResources: apiv1.ResourceList{
+				apiv1.ResourceName("foo"): *resource.NewQuantity(10*units.GB, resource.DecimalSI),
+			},
+			expectedErr: false,
+		},
+		{
+			name: "multiple extended_resources definition",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=10G,bar=230",
+			expectedExtendedResources: apiv1.ResourceList{
+				apiv1.ResourceName("foo"): *resource.NewQuantity(10*units.GB, resource.DecimalSI),
+				apiv1.ResourceName("bar"): *resource.NewQuantity(230, resource.DecimalSI),
+			},
+			expectedErr: false,
+		},
+		{
+			name: "invalid value",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=bar",
+			expectedExtendedResources: apiv1.ResourceList{},
+			expectedErr:               false,
+		},
+		{
+			name: "both valid and invalid values",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=bar,baz=10G",
+			expectedExtendedResources: apiv1.ResourceList{
+				apiv1.ResourceName("baz"): *resource.NewQuantity(10*units.GB, resource.DecimalSI),
+			},
+			expectedErr: false,
+		},
+		{
+			name: "invalid quantity suffix",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo=10Wi",
+			expectedExtendedResources: apiv1.ResourceList{},
+			expectedErr:               false,
+		},
+		{
+			name: "malformed extended_resources map",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources=foo",
+			expectedExtendedResources: apiv1.ResourceList{},
+			expectedErr:               true,
+		},
+		{
+			name: "malformed extended_resources definition",
+			kubeEnv: "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"extended_resources/",
+			expectedExtendedResources: apiv1.ResourceList{},
+			expectedErr:               true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			extendedResources, err := extractExtendedResourcesFromKubeEnv(tc.kubeEnv)
+			assertEqualResourceLists(t, "Resources", tc.expectedExtendedResources, extendedResources)
+			if tc.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+
 }
 
 func TestParseKubeReserved(t *testing.T) {

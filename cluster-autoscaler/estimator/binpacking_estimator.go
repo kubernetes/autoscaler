@@ -23,7 +23,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -37,15 +38,15 @@ type podInfo struct {
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
-	predicateChecker simulator.PredicateChecker
-	clusterSnapshot  simulator.ClusterSnapshot
+	predicateChecker predicatechecker.PredicateChecker
+	clusterSnapshot  clustersnapshot.ClusterSnapshot
 	limiter          EstimationLimiter
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
 func NewBinpackingNodeEstimator(
-	predicateChecker simulator.PredicateChecker,
-	clusterSnapshot simulator.ClusterSnapshot,
+	predicateChecker predicatechecker.PredicateChecker,
+	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	limiter EstimationLimiter) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,
@@ -75,14 +76,9 @@ func (e *BinpackingNodeEstimator) Estimate(
 	newNodeNames := make(map[string]bool)
 	newNodesWithPods := make(map[string]bool)
 
-	if err := e.clusterSnapshot.Fork(); err != nil {
-		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
-		return 0, nil
-	}
+	e.clusterSnapshot.Fork()
 	defer func() {
-		if err := e.clusterSnapshot.Revert(); err != nil {
-			klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
-		}
+		e.clusterSnapshot.Revert()
 	}()
 
 	newNodeNameIndex := 0

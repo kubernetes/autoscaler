@@ -28,11 +28,13 @@ this document:
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
+  * [How can I increase the information that the CA is logging?](#how-can-i-increase-the-information-that-the-ca-is-logging)
   * [How can I see all the events from Cluster Autoscaler?](#how-can-i-see-all-events-from-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
   * [How can I prevent Cluster Autoscaler from scaling down non-empty nodes?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-non-empty-nodes)
+  * [How can I modify Cluster Autoscaler reaction time?](#how-can-i-modify-cluster-autoscaler-reaction-time)
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
@@ -108,7 +110,7 @@ __Or__ you have overridden this behaviour with one of the relevant flags. [See b
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
-See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases)
+See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases).
 
 ### Is Cluster Autoscaler an Alpha, Beta or GA product?
 
@@ -229,15 +231,15 @@ priority pod preemption.
 Older versions of CA won't take priorities into account.
 
 More about Pod Priority and Preemption:
- * [Priority in Kubernetes API](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-priority-api.md),
- * [Pod Preemption in Kubernetes](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-preemption.md),
+ * [Priority in Kubernetes API](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-priority-api.md),
+ * [Pod Preemption in Kubernetes](https://github.com/kubernetes/design-proposals-archive/blob/main/scheduling/pod-preemption.md),
  * [Pod Priority and Preemption tutorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
 
 ### How does Cluster Autoscaler remove nodes?
 
 Cluster Autoscaler terminates the underlying instance in a cloud-provider-dependent manner.
 
-It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://v1-19.docs.kubernetes.io/docs/reference/command-line-tools-reference/cloud-controller-manager/).
+It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://kubernetes.io/docs/concepts/architecture/cloud-controller/).
 
 
 ****************
@@ -335,6 +337,23 @@ CA might scale down non-empty nodes with utilization below a threshold
 (configurable with `--scale-down-utilization-threshold` flag).
 
 To prevent this behavior, set the utilization threshold to `0`.
+
+### How can I modify Cluster Autoscaler reaction time?
+
+There are multiple flags which can be used to configure scale up and scale down delays.
+
+In some environments, you may wish to give the k8s scheduler a bit more time to schedule a pod than the CA's scan-interval.
+One way to do this is by setting `--new-pod-scale-up-delay`, which causes the CA to ignore unschedulable pods until they are
+a certain "age", regardless of the scan-interval. This setting can be overridden per pod through
+`cluster-autoscaler.kubernetes.io/pod-scale-up-delay` annotation. If k8s has not scheduled them by the end of that delay,
+then they may be considered by the CA for a possible scale-up.
+
+```
+"cluster-autoscaler.kubernetes.io/pod-scale-up-delay": "600s"
+```
+
+Scaling down of unneeded nodes can be configured by setting `--scale-down-unneeded-time`. Increasing value will make nodes stay
+up longer, waiting for pods to be scheduled while decreasing value will make nodes be deleted sooner.
 
 ### How can I configure overprovisioning with Cluster Autoscaler?
 
@@ -625,10 +644,7 @@ then this node group may be excluded from future scale-ups.
 ### How fast is Cluster Autoscaler?
 
 By default, scale-up is considered up to 10 seconds after pod is marked as unschedulable, and scale-down 10 minutes after a node becomes unneeded.
-There are multiple flags which can be used to configure these thresholds. For example, in some environments, you may wish to give the k8s scheduler
-a bit more time to schedule a pod than the CA's scan-interval. One way to do this is by setting `--new-pod-scale-up-delay`, which causes the CA to
-ignore unschedulable pods until they are a certain "age", regardless of the scan-interval. If k8s has not scheduled them by the end of that delay,
-then they may be considered by the CA for a possible scale-up.
+Read [this section](#how-can-i-modify-cluster-autoscaler-reaction-time) to see how you can modify this behaviour.
 
 Assuming default settings, [SLOs described here apply](#what-are-the-service-level-objectives-for-cluster-autoscaler).
 
@@ -725,6 +741,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `kubeconfig` | Path to kubeconfig file with authorization and API Server location information | ""
 | `cloud-config` | The path to the cloud provider configuration file.  Empty string for no configuration file | ""
 | `namespace` | Namespace in which cluster-autoscaler run | "kube-system"
+| `scale-up-node-group-to-min-size-enabled` | Should CA scale up the node group to the configured min size if needed | false
 | `scale-down-enabled` | Should CA scale down the cluster | true
 | `scale-down-delay-after-add` | How long after scale up that scale down evaluation resumes | 10 minutes
 | `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes, defaults to scan-interval | scan-interval
@@ -897,6 +914,23 @@ There are three options:
     * on nodes,
     * on kube-system/cluster-autoscaler-status config map.
 
+### How can I increase the information that the CA is logging?
+
+By default, the Cluster Autoscaler will be conservative about the log messages that it emits.
+This is primarily due to performance degradations in scenarios where clusters have a large
+number of nodes (> 100). In these cases excess log messages will lead to the log storage
+filling more quickly, and in some cases (eg clusters with >1000 nodes) the processing
+performance of the Cluster Autoscaler can be impacted.
+
+The `--v` flag controls how verbose the Cluster Autoscaler will be when running. In most
+cases using a value of `--v=0` or `--v=1` will be sufficient to monitor its activity.
+If you would like to have more information, especially about the scaling decisions made
+by the Cluster Autoscaler, then setting a value of `--v=4` is recommended. If you are
+debugging connection issues between the Cluster Autoscaler and the Kubernetes API server,
+or infrastructure endpoints, then setting a value of `--v=9` will show all the individual
+HTTP calls made. Be aware that using verbosity levels higher than `--v=1` will generate
+an increased amount of logs, prepare your deployments and storage accordingly.
+
 ### What events are emitted by CA?
 
 Whenever Cluster Autoscaler adds or removes nodes it will create events
@@ -938,7 +972,14 @@ Events:
 ```
 ### My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?
 
-Cluster Autoscaler will not scale the cluster beyond these limits, but does not enforce them. If your cluster is below the minimum number of nodes configured for Cluster Autoscaler, it will be scaled up *only* in presence of unschedulable pods.
+Cluster Autoscaler will not scale the cluster beyond these limits, but some other external factors could make this happen. Here are some common scenarios.
+* Existing nodes were deleted from K8s and the cloud provider, which could cause the cluster fell below the minimum number of nodes.
+* New nodes were added directly to the cloud provider, which could cause the cluster exceeded the maximum number of nodes.
+* Cluster Autoscaler was turned on in the middle of the cluster lifecycle, and the initial number of nodes might beyond these limits.
+
+By default, Cluster Autoscaler does not enforce the node group size. If your cluster is below the minimum number of nodes configured for CA, it will be scaled up *only* in presence of unschedulable pods. On the other hand, if your cluster is above the minimum number of nodes configured for CA, it will be scaled down *only* if it has unneeded nodes.
+
+Starting with CA 1.26.0, a new flag `--enforce-node-group-min-size` was introduced to enforce the node group minimum size. For node groups with fewer nodes than the configuration, CA will scale them up to the minimum number of nodes. To enable this feature, please set it to `true` in the command.
 
 ### What happens in scale-up when I have no more quota in the cloud provider?
 

@@ -70,6 +70,11 @@ func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 	return nil, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (k *kamateraCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
 func (k *kamateraCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {

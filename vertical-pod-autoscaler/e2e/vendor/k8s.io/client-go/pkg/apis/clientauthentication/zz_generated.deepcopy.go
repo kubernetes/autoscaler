@@ -88,11 +88,6 @@ func (in *ExecCredentialSpec) DeepCopyInto(out *ExecCredentialSpec) {
 		*out = new(Cluster)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Cluster != nil {
-		in, out := &in.Cluster, &out.Cluster
-		*out = new(Cluster)
-		(*in).DeepCopyInto(*out)
-	}
 	return
 }
 

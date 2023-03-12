@@ -1,10 +1,10 @@
 approvers:
 - mwielgus
 - maciekpytel
-- bskiba
 - gjtempleton
 reviewers:
 - mwielgus
 - maciekpytel
-- bskiba
 - gjtempleton
+emeritus_approvers:
+- bskiba # 2022-09-30

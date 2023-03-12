@@ -81,6 +81,11 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 	return ng, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }

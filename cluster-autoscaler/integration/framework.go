@@ -3,14 +3,15 @@ package integration
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/util/retry"
 	"os"
 	"os/exec"
 	"sort"
 	"strings"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"k8s.io/client-go/util/retry"
+
+	gin "github.com/onsi/ginkgo"
+	gom "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -78,12 +79,12 @@ func (driver *Driver) adjustNodeGroups() error {
 		}
 	}
 
-	By("Adjusting node groups to initial required size")
-	Eventually(
+	gin.By("Adjusting node groups to initial required size")
+	gom.Eventually(
 		driver.targetCluster.getNumberOfReadyNodes,
 		pollingTimeout,
 		pollingInterval).
-		Should(BeNumerically("==", initialNumberOfNodes))
+		Should(gom.BeNumerically("==", initialNumberOfNodes))
 
 	return nil
 }
@@ -144,7 +145,7 @@ func (driver *Driver) runAutoscaler() {
 		return
 	}
 
-	By("Starting Cluster Autoscaler....")
+	gin.By("Starting Cluster Autoscaler....")
 	args := strings.Fields(
 		fmt.Sprintf(
 			"make --directory=%s start TARGET_KUBECONFIG=%s MACHINE_DEPLOYMENT_ZONE_1=%s MACHINE_DEPLOYMENT_ZONE_2=%s MACHINE_DEPLOYMENT_ZONE_3=%s LEADER_ELECT=%s",
@@ -158,10 +159,10 @@ func (driver *Driver) runAutoscaler() {
 	)
 
 	outputFile, err := rotateLogFile(CALogFile)
-	Expect(err).ShouldNot(HaveOccurred())
+	gom.Expect(err).ShouldNot(gom.HaveOccurred())
 	autoscalerSession, err = gexec.Start(exec.Command(args[0], args[1:]...), outputFile, outputFile)
-	Expect(err).ShouldNot(HaveOccurred())
-	Expect(autoscalerSession.ExitCode()).Should(Equal(-1))
+	gom.Expect(err).ShouldNot(gom.HaveOccurred())
+	gom.Expect(autoscalerSession.ExitCode()).Should(gom.Equal(-1))
 }
 
 func getStorageClassObject(class string) (*v1storage.StorageClass, error) {
@@ -407,7 +408,7 @@ func (driver *Driver) removeAnnotationFromNode(node *v1.Node) error {
 }
 
 func (driver *Driver) makeNodeUnschedulable(node *v1.Node) error {
-	By(fmt.Sprintf("Taint node %s", node.Name))
+	gin.By(fmt.Sprintf("Taint node %s", node.Name))
 	for j := 0; j < 3; j++ {
 		freshNode, err := driver.targetCluster.Clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if err != nil {
@@ -444,7 +445,7 @@ func (CriticalAddonsOnlyError) Error() string {
 }
 
 func (driver *Driver) makeNodeSchedulable(node *v1.Node, failOnCriticalAddonsOnly bool) error {
-	By(fmt.Sprintf("Remove taint from node %s", node.Name))
+	gin.By(fmt.Sprintf("Remove taint from node %s", node.Name))
 	for j := 0; j < 3; j++ {
 		freshNode, err := driver.targetCluster.Clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if err != nil {

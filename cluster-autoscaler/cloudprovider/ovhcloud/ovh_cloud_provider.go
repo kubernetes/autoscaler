@@ -151,6 +151,11 @@ func (provider *OVHCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	return ng, err
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (provider *OVHCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // findNodeGroupFromCache tries to retrieve the associated node group from an already built mapping in cache
 func (provider *OVHCloudProvider) findNodeGroupFromCache(providerID string) cloudprovider.NodeGroup {
 	if ng, ok := provider.manager.NodeGroupPerProviderID[providerID]; ok {

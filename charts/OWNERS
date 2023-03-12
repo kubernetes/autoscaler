@@ -2,3 +2,6 @@ approvers:
 - gjtempleton
 reviewers:
 - gjtempleton
+
+labels:
+- helm-charts

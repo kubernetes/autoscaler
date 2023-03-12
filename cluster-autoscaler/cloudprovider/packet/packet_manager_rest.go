@@ -715,8 +715,6 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 func BuildGenericLabels(nodegroup string, instanceType string) map[string]string {
 	result := make(map[string]string)
 
-	//result[kubeletapis.LabelArch] = "amd64"
-	//result[kubeletapis.LabelOS] = "linux"
 	result[apiv1.LabelInstanceType] = instanceType
 	//result[apiv1.LabelZoneRegion] = ""
 	//result[apiv1.LabelZoneFailureDomain] = "0"

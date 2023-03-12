@@ -167,9 +167,6 @@ type CurrentStatus struct {
 
 // MachineStatus holds the most recently observed status of Machine.
 type MachineStatus struct {
-	// Node string
-	Node string
-
 	// Conditions of this machine, same as node
 	Conditions []corev1.NodeCondition
 

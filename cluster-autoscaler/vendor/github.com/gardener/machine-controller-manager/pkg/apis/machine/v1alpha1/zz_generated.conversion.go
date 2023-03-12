@@ -2547,7 +2547,6 @@ func Convert_machine_MachineSpec_To_v1alpha1_MachineSpec(in *machine.MachineSpec
 }
 
 func autoConvert_v1alpha1_MachineStatus_To_machine_MachineStatus(in *MachineStatus, out *machine.MachineStatus, s conversion.Scope) error {
-	out.Node = in.Node
 	out.Conditions = *(*[]v1.NodeCondition)(unsafe.Pointer(&in.Conditions))
 	if err := Convert_v1alpha1_LastOperation_To_machine_LastOperation(&in.LastOperation, &out.LastOperation, s); err != nil {
 		return err
@@ -2565,7 +2564,6 @@ func Convert_v1alpha1_MachineStatus_To_machine_MachineStatus(in *MachineStatus, 
 }
 
 func autoConvert_machine_MachineStatus_To_v1alpha1_MachineStatus(in *machine.MachineStatus, out *MachineStatus, s conversion.Scope) error {
-	out.Node = in.Node
 	out.Conditions = *(*[]v1.NodeCondition)(unsafe.Pointer(&in.Conditions))
 	if err := Convert_machine_LastOperation_To_v1alpha1_LastOperation(&in.LastOperation, &out.LastOperation, s); err != nil {
 		return err
