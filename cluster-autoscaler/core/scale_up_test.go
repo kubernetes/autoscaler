@@ -30,7 +30,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -544,7 +544,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleTestConfig) *ScaleTestResul
 	}
 
 	processors := NewTestProcessors(&context)
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
@@ -700,7 +700,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := NewTestProcessors(&context)
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 
 	assert.NoError(t, err)
@@ -742,7 +742,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	processors := NewTestProcessors(&context)
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
@@ -814,7 +814,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 
 	processors := NewTestProcessors(&context)
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, resourceManager, pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 
 	assert.NoError(t, typedErr)
@@ -875,7 +875,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	nodes := []*apiv1.Node{}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -929,7 +929,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	nodes := []*apiv1.Node{}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -983,7 +983,7 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
-	resourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
 	scaleUpStatus, err := ScaleUpToNodeGroupMinSize(&context, processors, clusterState, resourceManager, nodes, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -994,49 +994,49 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 
 func TestCheckDeltaWithinLimits(t *testing.T) {
 	type testcase struct {
-		limits            scaleup.ResourcesLimits
-		delta             scaleup.ResourcesDelta
+		limits            resource.Limits
+		delta             resource.Delta
 		exceededResources []string
 	}
 	tests := []testcase{
 		{
-			limits:            scaleup.ResourcesLimits{"a": 10},
-			delta:             scaleup.ResourcesDelta{"a": 10},
+			limits:            resource.Limits{"a": 10},
+			delta:             resource.Delta{"a": 10},
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleup.ResourcesLimits{"a": 10},
-			delta:             scaleup.ResourcesDelta{"a": 11},
+			limits:            resource.Limits{"a": 10},
+			delta:             resource.Delta{"a": 11},
 			exceededResources: []string{"a"},
 		},
 		{
-			limits:            scaleup.ResourcesLimits{"a": 10},
-			delta:             scaleup.ResourcesDelta{"b": 10},
+			limits:            resource.Limits{"a": 10},
+			delta:             resource.Delta{"b": 10},
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleup.ResourcesLimits{"a": scaleup.LimitUnknown},
-			delta:             scaleup.ResourcesDelta{"a": 0},
+			limits:            resource.Limits{"a": resource.LimitUnknown},
+			delta:             resource.Delta{"a": 0},
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleup.ResourcesLimits{"a": scaleup.LimitUnknown},
-			delta:             scaleup.ResourcesDelta{"a": 1},
+			limits:            resource.Limits{"a": resource.LimitUnknown},
+			delta:             resource.Delta{"a": 1},
 			exceededResources: []string{"a"},
 		},
 		{
-			limits:            scaleup.ResourcesLimits{"a": 10, "b": 20, "c": 30},
-			delta:             scaleup.ResourcesDelta{"a": 11, "b": 20, "c": 31},
+			limits:            resource.Limits{"a": 10, "b": 20, "c": 30},
+			delta:             resource.Delta{"a": 11, "b": 20, "c": 31},
 			exceededResources: []string{"a", "c"},
 		},
 	}
 
 	for _, test := range tests {
-		checkResult := scaleup.CheckDeltaWithinLimits(test.limits, test.delta)
+		checkResult := resource.CheckDeltaWithinLimits(test.limits, test.delta)
 		if len(test.exceededResources) == 0 {
-			assert.Equal(t, scaleup.LimitsNotExceeded(), checkResult)
+			assert.Equal(t, resource.LimitsNotExceeded(), checkResult)
 		} else {
-			assert.Equal(t, scaleup.LimitsCheckResult{Exceeded: true, ExceededResources: test.exceededResources}, checkResult)
+			assert.Equal(t, resource.LimitsCheckResult{Exceeded: true, ExceededResources: test.exceededResources}, checkResult)
 		}
 	}
 }
