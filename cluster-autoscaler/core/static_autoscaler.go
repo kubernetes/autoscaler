@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	scaleup_wrapper "k8s.io/autoscaler/cluster-autoscaler/core/scaleup/wrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -87,8 +86,7 @@ type StaticAutoscaler struct {
 	lastScaleDownFailTime   time.Time
 	scaleDownPlanner        scaledown.Planner
 	scaleDownActuator       scaledown.Actuator
-	scaleUpResourceManager  *resource.Manager
-	scaleUpManager          scaleup.ScaleUpManager
+	scaleUpManager          scaleup.Manager
 	processors              *ca_processors.AutoscalingProcessors
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
@@ -141,7 +139,8 @@ func NewStaticAutoscaler(
 	estimatorBuilder estimator.EstimatorBuilder,
 	backoff backoff.Backoff,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
-	remainingPdbTracker pdb.RemainingPdbTracker) *StaticAutoscaler {
+	remainingPdbTracker pdb.RemainingPdbTracker,
+	scaleUpManagerFactory scaleup.ManagerFactory) *StaticAutoscaler {
 
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
@@ -197,9 +196,10 @@ func NewStaticAutoscaler(
 	}
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
-	scaleUpResourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-
-	scaleUpProcessor := scaleup_wrapper.NewScaleUpWrapper()
+	if scaleUpManagerFactory == nil {
+		scaleUpManagerFactory = scaleup_wrapper.NewManagerFactory()
+	}
+	scaleUpManager := scaleUpManagerFactory.NewManager(autoscalingContext, processors, clusterStateRegistry, ignoredTaints)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
@@ -211,8 +211,7 @@ func NewStaticAutoscaler(
 		lastScaleDownFailTime:   initialScaleTime,
 		scaleDownPlanner:        scaleDownPlanner,
 		scaleDownActuator:       scaleDownActuator,
-		scaleUpResourceManager:  scaleUpResourceManager,
-		scaleUpManager:          scaleUpProcessor,
+		scaleUpManager:          scaleUpManager,
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
@@ -574,7 +573,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpManager.ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, a.scaleUpResourceManager, unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, a.ignoredTaints)
+		scaleUpStatus, typedErr = a.scaleUpManager.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups)
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}
@@ -693,7 +692,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if a.EnforceNodeGroupMinSize {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpManager.ScaleUpToNodeGroupMinSize(autoscalingContext, a.processors, a.clusterStateRegistry, a.scaleUpResourceManager, readyNodes, nodeInfosForGroups)
+		scaleUpStatus, typedErr = a.scaleUpManager.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}
