@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package wrapper
 
 import (
 	"fmt"
@@ -545,7 +545,8 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleTestConfig) *ScaleTestResul
 
 	processors := NewTestProcessors(&context)
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -701,7 +702,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 
 	processors := NewTestProcessors(&context)
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 
 	assert.NoError(t, err)
 	// Node group is unhealthy.
@@ -743,7 +745,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 
 	processors := NewTestProcessors(&context)
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -815,7 +818,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 
 	processors := NewTestProcessors(&context)
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, resourceManager, pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, typedErr := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 
 	assert.NoError(t, typedErr)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -876,7 +880,8 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -930,7 +935,8 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -984,7 +990,8 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpStatus, err := ScaleUpToNodeGroupMinSize(&context, processors, clusterState, resourceManager, nodes, nodeInfos)
+	scaleUpWrapper := NewScaleUpWrapper()
+	scaleUpStatus, err := scaleUpWrapper.ScaleUpToNodeGroupMinSize(&context, processors, clusterState, resourceManager, nodes, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, 1, len(scaleUpStatus.ScaleUpInfos))
