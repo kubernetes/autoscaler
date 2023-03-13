@@ -38,6 +38,8 @@ func TestManagedNodegroupCache(t *testing.T) {
 	taintEffect := "effect 1"
 	taintKey := "key 1"
 	taintValue := "value 1"
+	tagKey := "tag key 1"
+	tagValue := "tag value 1"
 	taint := apiv1.Taint{
 		Effect: apiv1.TaintEffect(taintEffect),
 		Key:    taintKey,
@@ -50,6 +52,7 @@ func TestManagedNodegroupCache(t *testing.T) {
 		clusterName: clusterName,
 		taints:      []apiv1.Taint{taint},
 		labels:      map[string]string{labelKey: labelValue},
+		tags:        map[string]string{tagKey: tagValue},
 	})
 	require.NoError(t, err)
 	obj, ok, err := c.GetByKey(nodegroupName)
@@ -63,6 +66,8 @@ func TestManagedNodegroupCache(t *testing.T) {
 	assert.Equal(t, apiv1.TaintEffect(taintEffect), obj.(managedNodegroupCachedObject).taints[0].Effect)
 	assert.Equal(t, taintKey, obj.(managedNodegroupCachedObject).taints[0].Key)
 	assert.Equal(t, taintValue, obj.(managedNodegroupCachedObject).taints[0].Value)
+	assert.Equal(t, len(obj.(managedNodegroupCachedObject).tags), 1)
+	assert.Equal(t, tagValue, obj.(managedNodegroupCachedObject).tags[tagKey])
 }
 
 func TestGetManagedNodegroupWithError(t *testing.T) {
@@ -111,6 +116,7 @@ func TestGetManagedNodegroupNoTaintsOrLabels(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        nil,
+		Tags:          nil,
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -130,6 +136,7 @@ func TestGetManagedNodegroupNoTaintsOrLabels(t *testing.T) {
 	assert.Equal(t, cacheObj.labels["capacityType"], capacityType)
 	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
 	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, len(cacheObj.tags), 0)
 }
 
 func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
@@ -165,6 +172,11 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 		Value:  &taintValue2,
 	}
 
+	tagKey1 := "tagKey 1"
+	tagKey2 := "tagKey 2"
+	tagValue1 := "tagValue 1"
+	tagValue2 := "tagValue 2"
+
 	// Create test nodegroup
 	testNodegroup := eks.Nodegroup{
 		AmiType:       &amiType,
@@ -175,6 +187,7 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        []*eks.Taint{&taint1, &taint2},
+		Tags:          map[string]*string{tagKey1: &tagValue1, tagKey2: &tagValue2},
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -203,6 +216,9 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 	assert.Equal(t, cacheObj.labels["capacityType"], capacityType)
 	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
 	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, len(cacheObj.tags), 2)
+	assert.Equal(t, cacheObj.tags[tagKey1], tagValue1)
+	assert.Equal(t, cacheObj.tags[tagKey2], tagValue2)
 }
 
 func TestGetManagedNodegroupInfoObjectWithError(t *testing.T) {
@@ -241,6 +257,8 @@ func TestGetManagedNodegroupInfoObjectWithCachedNodegroup(t *testing.T) {
 		Key:    taintKey,
 		Value:  taintValue,
 	}
+	tagKey := "tag key 1"
+	tagValue := "tag value 1"
 
 	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
 	err := c.Add(managedNodegroupCachedObject{
@@ -248,6 +266,7 @@ func TestGetManagedNodegroupInfoObjectWithCachedNodegroup(t *testing.T) {
 		clusterName: clusterName,
 		taints:      []apiv1.Taint{taint},
 		labels:      map[string]string{labelKey: labelValue},
+		tags:        map[string]string{tagKey: tagValue},
 	})
 
 	mngInfoObject, err := c.getManagedNodegroupInfoObject(nodegroupName, clusterName)
@@ -275,6 +294,11 @@ func TestGetManagedNodegroupInfoObjectNoCachedNodegroup(t *testing.T) {
 	labelValue1 := "testValue 1"
 	labelValue2 := "testValue 2"
 
+	tagKey1 := "tagKey 1"
+	tagKey2 := "tagKey 2"
+	tagValue1 := "tagValue 1"
+	tagValue2 := "tagValue 2"
+
 	// Create test nodegroup
 	testNodegroup := eks.Nodegroup{
 		AmiType:       &amiType,
@@ -285,6 +309,7 @@ func TestGetManagedNodegroupInfoObjectNoCachedNodegroup(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        nil,
+		Tags:          map[string]*string{tagKey1: &tagValue1, tagKey2: &tagValue2},
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -304,6 +329,9 @@ func TestGetManagedNodegroupInfoObjectNoCachedNodegroup(t *testing.T) {
 	assert.Equal(t, mngInfoObject.labels["capacityType"], capacityType)
 	assert.Equal(t, mngInfoObject.labels["k8sVersion"], k8sVersion)
 	assert.Equal(t, mngInfoObject.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, len(mngInfoObject.tags), 2)
+	assert.Equal(t, mngInfoObject.tags[tagKey1], tagValue1)
+	assert.Equal(t, mngInfoObject.tags[tagKey2], tagValue2)
 	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
@@ -325,6 +353,8 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroup(t *testing.T) {
 		Key:    taintKey,
 		Value:  taintValue,
 	}
+	tagKey := "tag key 1"
+	tagValue := "tag value 1"
 
 	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
 	err := c.Add(managedNodegroupCachedObject{
@@ -332,6 +362,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroup(t *testing.T) {
 		clusterName: clusterName,
 		taints:      []apiv1.Taint{taint},
 		labels:      map[string]string{labelKey: labelValue},
+		tags:        map[string]string{tagKey: tagValue},
 	})
 
 	labelsMap, err := c.getManagedNodegroupLabels(nodegroupName, clusterName)
@@ -369,6 +400,7 @@ func TestGetManagedNodegroupLabelsNoCachedNodegroup(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        nil,
+		Tags:          nil,
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -419,6 +451,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroupThatExpires(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        nil,
+		Tags:          nil,
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -581,6 +614,107 @@ func TestGetManagedNodegroupTaintsNoCachedNodegroup(t *testing.T) {
 	assert.Equal(t, taintsList[1].Effect, apiv1.TaintEffect(taintEffect2))
 	assert.Equal(t, taintsList[1].Key, taintKey2)
 	assert.Equal(t, taintsList[1].Value, taintValue2)
+	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	})
+}
+
+func TestGetManagedNodegroupTagsWithCachedNodegroup(t *testing.T) {
+	k := &eksMock{}
+
+	nodegroupName := "nodegroupName"
+	clusterName := "clusterName"
+	labelKey := "label key 1"
+	labelValue := "label value 1"
+	taintEffect := "effect 1"
+	taintKey := "key 1"
+	taintValue := "value 1"
+	taint := apiv1.Taint{
+		Effect: apiv1.TaintEffect(taintEffect),
+		Key:    taintKey,
+		Value:  taintValue,
+	}
+	tagKey := "tag key 1"
+	tagValue := "tag value 1"
+
+	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
+	err := c.Add(managedNodegroupCachedObject{
+		name:        nodegroupName,
+		clusterName: clusterName,
+		taints:      []apiv1.Taint{taint},
+		labels:      map[string]string{labelKey: labelValue},
+		tags:        map[string]string{tagKey: tagValue},
+	})
+
+	tagsMap, err := c.getManagedNodegroupTags(nodegroupName, clusterName)
+	require.NoError(t, err)
+	assert.Equal(t, len(tagsMap), 1)
+	assert.Equal(t, tagsMap[tagKey], tagValue)
+	k.AssertNotCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	})
+}
+
+func TestGetManagedNodegroupTagsNoCachedNodegroup(t *testing.T) {
+	k := &eksMock{}
+
+	nodegroupName := "testNodegroup"
+	clusterName := "testCluster"
+	amiType := "testAmiType"
+	capacityType := "testCapacityType"
+	k8sVersion := "1.19"
+	diskSize := int64(100)
+
+	taintEffect1 := "effect 1"
+	taintKey1 := "key 1"
+	taintValue1 := "value 1"
+	taint1 := eks.Taint{
+		Effect: &taintEffect1,
+		Key:    &taintKey1,
+		Value:  &taintValue1,
+	}
+
+	taintEffect2 := "effect 2"
+	taintKey2 := "key 2"
+	taintValue2 := "value 2"
+	taint2 := eks.Taint{
+		Effect: &taintEffect2,
+		Key:    &taintKey2,
+		Value:  &taintValue2,
+	}
+
+	tagKey1 := "tagKey 1"
+	tagKey2 := "tagKey 2"
+	tagValue1 := "tagValue 1"
+	tagValue2 := "tagValue 2"
+
+	// Create test nodegroup
+	testNodegroup := eks.Nodegroup{
+		AmiType:       &amiType,
+		ClusterName:   &clusterName,
+		DiskSize:      &diskSize,
+		Labels:        nil,
+		NodegroupName: &nodegroupName,
+		CapacityType:  &capacityType,
+		Version:       &k8sVersion,
+		Taints:        []*eks.Taint{&taint1, &taint2},
+		Tags:          map[string]*string{tagKey1: &tagValue1, tagKey2: &tagValue2},
+	}
+
+	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+
+	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
+
+	tagsMap, err := c.getManagedNodegroupTags(nodegroupName, clusterName)
+	require.NoError(t, err)
+	assert.Equal(t, len(tagsMap), 2)
+	assert.Equal(t, tagsMap[tagKey1], tagValue1)
+	assert.Equal(t, tagsMap[tagKey2], tagValue2)
 	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,

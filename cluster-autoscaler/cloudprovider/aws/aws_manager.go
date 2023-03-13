@@ -309,6 +309,18 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 			node.Spec.Taints = append(node.Spec.Taints, mngTaints...)
 			klog.V(5).Infof("node.Spec.Taints : %+v\n", node.Spec.Taints)
 		}
+
+		mngTags, err := m.managedNodegroupCache.getManagedNodegroupTags(nodegroupName, clusterName)
+		if err != nil {
+			klog.Errorf("Failed to get tags from EKS DescribeNodegroup API for nodegroup %s in cluster %s because %s.", nodegroupName, clusterName, err)
+		} else if mngTags != nil && len(mngTags) > 0 {
+			resourcesFromMngTags := extractAllocatableResourcesFromTags(mngTags)
+			klog.V(5).Infof("Extracted resources from EKS nodegroup tags %v", resourcesFromTags)
+			// ManagedNodeGroup resource-indicating tags override conflicting tags on the ASG if they exist
+			for resourceName, val := range resourcesFromMngTags {
+				node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
+			}
+		}
 	}
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
@@ -450,6 +462,27 @@ func extractAllocatableResourcesFromAsg(tags []*autoscaling.TagDescription) map[
 			if label != "" {
 				quantity, err := resource.ParseQuantity(v)
 				if err != nil {
+					continue
+				}
+				result[label] = &quantity
+			}
+		}
+	}
+
+	return result
+}
+
+func extractAllocatableResourcesFromTags(tags map[string]string) map[string]*resource.Quantity {
+	result := make(map[string]*resource.Quantity)
+
+	for k, v := range tags {
+		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/resources/")
+		if len(splits) > 1 {
+			label := splits[1]
+			if label != "" {
+				quantity, err := resource.ParseQuantity(v)
+				if err != nil {
+					klog.Warningf("Failed to parse resource quanitity '%s' for resource '%s'", v, label)
 					continue
 				}
 				result[label] = &quantity
