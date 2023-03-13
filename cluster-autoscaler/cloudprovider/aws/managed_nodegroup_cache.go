@@ -50,6 +50,7 @@ type managedNodegroupCachedObject struct {
 	clusterName string
 	taints      []apiv1.Taint
 	labels      map[string]string
+	tags        map[string]string
 }
 
 type mngJitterClock struct {
@@ -92,7 +93,7 @@ func (c *mngJitterClock) Since(ts time.Time) time.Duration {
 }
 
 func (m *managedNodegroupCache) getManagedNodegroup(nodegroupName string, clusterName string) (*managedNodegroupCachedObject, error) {
-	taintList, labelMap, err := m.awsService.getManagedNodegroupInfo(nodegroupName, clusterName)
+	taintList, labelMap, tagMap, err := m.awsService.getManagedNodegroupInfo(nodegroupName, clusterName)
 	if err != nil {
 		// If there's an error cache an empty nodegroup to limit failed calls to the EKS API
 		newEmptyNodegroup := managedNodegroupCachedObject{
@@ -100,6 +101,7 @@ func (m *managedNodegroupCache) getManagedNodegroup(nodegroupName string, cluste
 			clusterName: clusterName,
 			taints:      nil,
 			labels:      nil,
+			tags:        nil,
 		}
 
 		m.Add(newEmptyNodegroup)
@@ -111,6 +113,7 @@ func (m *managedNodegroupCache) getManagedNodegroup(nodegroupName string, cluste
 		clusterName: clusterName,
 		taints:      taintList,
 		labels:      labelMap,
+		tags:        tagMap,
 	}
 
 	m.Add(newNodegroup)
@@ -130,7 +133,7 @@ func (m managedNodegroupCache) getManagedNodegroupInfoObject(nodegroupName strin
 
 	managedNodegroupInfo, err := m.getManagedNodegroup(nodegroupName, clusterName)
 	if err != nil {
-		klog.Errorf("Failed to query the managed nodegroup %s for the cluster %s while looking for labels/taints: %v", nodegroupName, clusterName, err)
+		klog.Errorf("Failed to query the managed nodegroup %s for the cluster %s while looking for labels/taints/tags: %v", nodegroupName, clusterName, err)
 		return nil, err
 	}
 	return managedNodegroupInfo, nil
@@ -143,6 +146,15 @@ func (m managedNodegroupCache) getManagedNodegroupLabels(nodegroupName string, c
 	}
 
 	return getManagedNodegroupInfoObject.labels, nil
+}
+
+func (m managedNodegroupCache) getManagedNodegroupTags(nodegroupName string, clusterName string) (map[string]string, error) {
+	getManagedNodegroupInfoObject, err := m.getManagedNodegroupInfoObject(nodegroupName, clusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	return getManagedNodegroupInfoObject.tags, nil
 }
 
 func (m managedNodegroupCache) getManagedNodegroupTaints(nodegroupName string, clusterName string) ([]apiv1.Taint, error) {
