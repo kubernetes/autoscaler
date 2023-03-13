@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -52,6 +53,7 @@ type AutoscalerOptions struct {
 	Backoff                backoff.Backoff
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
 	RemainingPdbTracker    pdb.RemainingPdbTracker
+	ScaleUpManagerFactory  scaleup.ManagerFactory
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -82,7 +84,8 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.EstimatorBuilder,
 		opts.Backoff,
 		opts.DebuggingSnapshotter,
-		opts.RemainingPdbTracker), nil
+		opts.RemainingPdbTracker,
+		opts.ScaleUpManagerFactory), nil
 }
 
 // Initialize default options if not provided.
