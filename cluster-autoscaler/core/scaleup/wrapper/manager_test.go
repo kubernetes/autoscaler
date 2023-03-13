@@ -544,9 +544,9 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleTestConfig) *ScaleTestResul
 	}
 
 	processors := NewTestProcessors(&context)
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp(extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -701,9 +701,9 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := NewTestProcessors(&context)
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp([]*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
 	// Node group is unhealthy.
@@ -744,9 +744,9 @@ func TestScaleUpNoHelp(t *testing.T) {
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	processors := NewTestProcessors(&context)
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp([]*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -817,9 +817,9 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 
 	processors := NewTestProcessors(&context)
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, typedErr := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, typedErr := scaleUpWrapper.ScaleUp(pods, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, typedErr)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -879,9 +879,9 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	nodes := []*apiv1.Node{}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp([]*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -934,9 +934,9 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	nodes := []*apiv1.Node{}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, err := scaleUpWrapper.ScaleUp(&context, processors, clusterState, resourceManager, []*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, err := scaleUpWrapper.ScaleUp([]*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -989,9 +989,9 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	scaleUpWrapper := NewScaleUpWrapper()
-	scaleUpStatus, err := scaleUpWrapper.ScaleUpToNodeGroupMinSize(&context, processors, clusterState, resourceManager, nodes, nodeInfos)
+	suManagerFactory := NewManagerFactory()
+	scaleUpWrapper := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	scaleUpStatus, err := scaleUpWrapper.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, 1, len(scaleUpStatus.ScaleUpInfos))
@@ -1058,9 +1058,12 @@ func TestAuthError(t *testing.T) {
 	nodeGroup.On("Id").Return("A")
 	nodeGroup.On("IncreaseSize", 0).Return(errors.NewAutoscalerError(errors.AutoscalerErrorType("abcd"), ""))
 
+	processors := NewTestProcessors(&context)
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(nil, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
-
-	aerr := executeScaleUp(&context, clusterStateRegistry, info, "", "", time.Now())
+	suManagerFactory := NewManagerFactory()
+	suManager := suManagerFactory.NewManager(&context, processors, clusterStateRegistry, nil)
+	scaleUpWrapper := suManager.(*scaleUpManager)
+	aerr := scaleUpWrapper.executeScaleUp(info, "", "", time.Now())
 	assert.Error(t, aerr)
 
 	req, err := http.NewRequest("GET", "/", nil)
