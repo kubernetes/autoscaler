@@ -18,9 +18,11 @@ package azure
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/to"
-	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -36,7 +38,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, "test-vmss", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-vmss", "eastus", compute.Uniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), "rg").Return(expectedScaleSets, nil).AnyTimes()
@@ -123,7 +125,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	defer ctrl.Finish()
 
 	expectedVMSSVMs := newTestVMSSVMList(3)
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)

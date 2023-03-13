@@ -305,7 +305,7 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 	return vmList, nil
 }
 
-// GetScaleSetVms returns list of nodes for flexible scale set.
+// GetFlexibleScaleSetVms returns list of nodes for flexible scale set.
 func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *retry.Error) {
 	klog.V(4).Infof("GetFlexibleScaleSetVms: starts")
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
@@ -542,6 +542,8 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 		return nil, err
 	}
 
+	klog.V(4).Infof("VMSS: orchestration Mode %s", set.VirtualMachineScaleSetProperties.OrchestrationMode)
+
 	if set.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Uniform {
 		vms, rerr := scaleSet.GetScaleSetVms()
 		if rerr != nil {
@@ -558,7 +560,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 		scaleSet.lastInstanceRefresh = lastRefresh
 		klog.V(4).Infof("Nodes: returns")
 
-	} else {
+	} else if set.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
 		vms, rerr := scaleSet.GetFlexibleScaleSetVms()
 		if rerr != nil {
 			if isAzureRequestsThrottled(rerr) {
@@ -574,6 +576,8 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 		scaleSet.lastInstanceRefresh = lastRefresh
 		klog.V(4).Infof("Nodes: returns")
 
+	} else {
+		return nil, fmt.Errorf("Failed to determine orchestration mode for vmss %q", scaleSet.Name)
 	}
 
 	return scaleSet.instanceCache, nil
@@ -599,7 +603,7 @@ func buildInstanceCache(vms []compute.VirtualMachineScaleSetVM) []cloudprovider.
 
 		instances = append(instances, cloudprovider.Instance{
 			Id:     "azure://" + resourceID,
-			Status: instanceStatusFromVM(vm),
+			Status: instanceStatusFromProvisioningState(vm.ProvisioningState),
 		})
 	}
 
@@ -626,7 +630,7 @@ func buildInstanceCacheForFlexVms(vms []compute.VirtualMachine) []cloudprovider.
 
 		instances = append(instances, cloudprovider.Instance{
 			Id:     "azure://" + resourceID,
-			Status: instanceStatusFromFlexVM(vm),
+			Status: instanceStatusFromProvisioningState(vm.ProvisioningState),
 		})
 	}
 
@@ -656,33 +660,16 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 	scaleSet.lastInstanceRefresh = time.Now()
 }
 
-// instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus
-func instanceStatusFromVM(vm compute.VirtualMachineScaleSetVM) *cloudprovider.InstanceStatus {
-	if vm.ProvisioningState == nil {
+// instanceStatusFromProvisioningState converts the VM provisioning state to cloudprovider.InstanceStatus
+func instanceStatusFromProvisioningState(provisioningState *string) *cloudprovider.InstanceStatus {
+	if provisioningState == nil {
 		return nil
 	}
 
-	status := &cloudprovider.InstanceStatus{}
-	switch *vm.ProvisioningState {
-	case string(compute.ProvisioningStateDeleting):
-		status.State = cloudprovider.InstanceDeleting
-	case string(compute.ProvisioningStateCreating):
-		status.State = cloudprovider.InstanceCreating
-	default:
-		status.State = cloudprovider.InstanceRunning
-	}
-
-	return status
-}
-
-// instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus
-func instanceStatusFromFlexVM(vm compute.VirtualMachine) *cloudprovider.InstanceStatus {
-	if vm.ProvisioningState == nil {
-		return nil
-	}
+	klog.V(4).Infof("Getting vm instance provisioning state %s", *provisioningState)
 
 	status := &cloudprovider.InstanceStatus{}
-	switch *vm.ProvisioningState {
+	switch *provisioningState {
 	case string(compute.ProvisioningStateDeleting):
 		status.State = cloudprovider.InstanceDeleting
 	case string(compute.ProvisioningStateCreating):

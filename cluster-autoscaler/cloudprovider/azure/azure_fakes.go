@@ -29,6 +29,7 @@ import (
 
 const (
 	fakeVirtualMachineScaleSetVMID = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/Microsoft.Compute/virtualMachineScaleSets/agents/virtualMachines/%d"
+	fakeVirtualMachineVMID         = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/Microsoft.Compute/virtualMachines/%d"
 )
 
 // DeploymentsClientMock mocks for DeploymentsClient.

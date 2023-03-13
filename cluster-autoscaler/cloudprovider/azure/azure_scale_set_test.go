@@ -28,6 +28,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 )
@@ -43,7 +44,7 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 	}
 }
 
-func newTestVMSSList(cap int64, name, loc string) []compute.VirtualMachineScaleSet {
+func newTestVMSSList(cap int64, name, loc string, orchmode compute.OrchestrationMode) []compute.VirtualMachineScaleSet {
 	return []compute.VirtualMachineScaleSet{
 		{
 			Name: to.StringPtr(name),
@@ -52,9 +53,10 @@ func newTestVMSSList(cap int64, name, loc string) []compute.VirtualMachineScaleS
 				Name:     to.StringPtr("Standard_D4_v2"),
 			},
 			VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-				OrchestrationMode: compute.Uniform,
+				OrchestrationMode: orchmode,
 			},
 			Location: to.StringPtr(loc),
+			ID:       to.StringPtr(name),
 		},
 	}
 }
@@ -66,6 +68,20 @@ func newTestVMSSVMList(count int) []compute.VirtualMachineScaleSetVM {
 			ID:         to.StringPtr(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, i)),
 			InstanceID: to.StringPtr(fmt.Sprintf("%d", i)),
 			VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
+			},
+		}
+		vmssVMList = append(vmssVMList, vmssVM)
+	}
+	return vmssVMList
+}
+
+func newTestVMList(count int) []compute.VirtualMachine {
+	var vmssVMList []compute.VirtualMachine
+	for i := 0; i < count; i++ {
+		vmssVM := compute.VirtualMachine{
+			ID: to.StringPtr(fmt.Sprintf(fakeVirtualMachineVMID, i)),
+			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
 			},
 		}
@@ -96,7 +112,7 @@ func TestTargetSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	provider := newTestProvider(t)
@@ -123,7 +139,7 @@ func TestIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	provider := newTestProvider(t)
@@ -212,7 +228,7 @@ func TestBelongs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	provider := newTestProvider(t)
@@ -515,7 +531,7 @@ func TestScaleSetNodes(t *testing.T) {
 	defer ctrl.Finish()
 
 	expectedVMSSVMs := newTestVMSSVMList(3)
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -555,11 +571,56 @@ func TestScaleSetNodes(t *testing.T) {
 	assert.Equal(t, instances[2], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 2)})
 }
 
+func TestScaleSetNodesForFlexScaleSet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedVMs := newTestVMList(3)
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Flexible)
+
+	provider := newTestProvider(t)
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	provider.azureManager.explicitlyConfigured["test-asg"] = true
+	provider.azureManager.Refresh()
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 0),
+		},
+	}
+	group, err := provider.NodeGroupForNode(node)
+	assert.NoError(t, err)
+	assert.NotNil(t, group, "Group should not be nil")
+	assert.Equal(t, group.Id(), "test-asg")
+	assert.Equal(t, group.MinSize(), 1)
+	assert.Equal(t, group.MaxSize(), 5)
+
+	ss, ok := group.(*ScaleSet)
+	assert.True(t, ok)
+	assert.NotNil(t, ss)
+	instances, err := group.Nodes()
+	assert.NoError(t, err)
+	assert.Equal(t, len(instances), 3)
+	assert.Equal(t, instances[0], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 0)})
+	assert.Equal(t, instances[1], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 1)})
+	assert.Equal(t, instances[2], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 2)})
+}
+
 func TestTemplateNodeInfo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
