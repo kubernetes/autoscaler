@@ -184,7 +184,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.RegisteredNodes()
 	if err != nil {
 		return err
 	}
@@ -209,6 +209,28 @@ func (ng *nodegroup) Debug() string {
 		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(), ng.MaxSize(), err)
 	}
 	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), replicas)
+}
+
+// RegisteredNodes returns a list of all nodes that belong to this node group.
+// This only includes instances that are registered as a Kubernetes Node.
+func (ng *nodegroup) RegisteredNodes() ([]*corev1.Node, error) {
+	nodes, err := ng.Nodes()
+	if err != nil {
+		return nil, err
+	}
+
+	registeredNodes := []*corev1.Node{}
+	for _, node := range nodes {
+		registeredNode, err := ng.machineController.findNodeByProviderID(normalizedProviderString(node.Id))
+		if err != nil {
+			return nil, err
+		}
+		if registeredNode != nil {
+			registeredNodes = append(registeredNodes, registeredNode)
+		}
+	}
+
+	return registeredNodes, nil
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
