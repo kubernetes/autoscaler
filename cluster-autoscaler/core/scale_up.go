@@ -21,7 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
@@ -62,7 +63,7 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 	return &skippedReasons{[]string{fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", "))}}
 }
 
-func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceGroups []*podEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, upcomingNodes []*schedulerframework.NodeInfo) (expander.Option, error) {
+func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceGroups []*equivalence.PodGroup, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, upcomingNodes []*schedulerframework.NodeInfo) (expander.Option, error) {
 	option := expander.Option{
 		NodeGroup: nodeGroup,
 		Pods:      make([]*apiv1.Pod, 0),
@@ -83,18 +84,18 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 	}
 
 	for _, eg := range podEquivalenceGroups {
-		samplePod := eg.pods[0]
+		samplePod := eg.Pods[0]
 		if err := context.PredicateChecker.CheckPredicates(context.ClusterSnapshot, samplePod, nodeInfo.Node().Name); err == nil {
 			// add pods to option
-			option.Pods = append(option.Pods, eg.pods...)
+			option.Pods = append(option.Pods, eg.Pods...)
 			// mark pod group as (theoretically) schedulable
-			eg.schedulable = true
+			eg.Schedulable = true
 		} else {
 			klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate checking error: %v", samplePod.Name, nodeGroup.Id(), err.VerboseMessage())
-			if podCount := len(eg.pods); podCount > 1 {
+			if podCount := len(eg.Pods); podCount > 1 {
 				klog.V(2).Infof("%d other pods similar to %s can't be scheduled on %s", podCount-1, samplePod.Name, nodeGroup.Id())
 			}
-			eg.schedulingErrors[nodeGroup.Id()] = err
+			eg.SchedulingErrors[nodeGroup.Id()] = err
 		}
 	}
 
@@ -122,14 +123,14 @@ func isNodeGroupReadyToScaleUp(nodeGroup cloudprovider.NodeGroup, clusterStateRe
 	return true, nil
 }
 
-func isNodeGroupResourceExceeded(ctx *context.AutoscalingContext, resourceManager *scaleup.ResourceManager, resourcesLeft scaleup.ResourcesLimits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) (bool, *skippedReasons) {
+func isNodeGroupResourceExceeded(ctx *context.AutoscalingContext, resourceManager *resource.Manager, resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) (bool, *skippedReasons) {
 	resourcesDelta, err := resourceManager.DeltaForNode(ctx, nodeInfo, nodeGroup)
 	if err != nil {
 		klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
 		return true, notReadyReason
 	}
 
-	checkResult := scaleup.CheckDeltaWithinLimits(resourcesLeft, resourcesDelta)
+	checkResult := resource.CheckDeltaWithinLimits(resourcesLeft, resourcesDelta)
 	if checkResult.Exceeded {
 		klog.V(4).Infof("Skipping node group %s; maximal limit exceeded for %v", nodeGroup.Id(), checkResult.ExceededResources)
 		for _, resource := range checkResult.ExceededResources {
@@ -162,7 +163,7 @@ func getCappedNewNodeCount(context *context.AutoscalingContext, newNodeCount, cu
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
-func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, resourceManager *scaleup.ResourceManager, unschedulablePods []*apiv1.Pod,
+func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, resourceManager *resource.Manager, unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, nodeInfos map[string]*schedulerframework.NodeInfo, ignoredTaints taints.TaintKeySet) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
@@ -176,7 +177,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		klogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
 	}
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
-	podEquivalenceGroups := buildPodEquivalenceGroups(unschedulablePods)
+	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
 
 	upcomingCounts, _ := clusterStateRegistry.GetUpcomingNodes()
 	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
@@ -357,7 +358,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 
 		// apply upper limits for CPU and memory
-		newNodes, err = resourceManager.ApplyResourcesLimits(context, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
+		newNodes, err = resourceManager.ApplyLimits(context, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
 		if err != nil {
 			return scaleUpError(
 				&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
@@ -441,7 +442,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 // ScaleUpToNodeGroupMinSize tries to scale up node groups that have less nodes than the configured min size.
 // The source of truth for the current node group size is the TargetSize queried directly from cloud providers.
 // Return the scale up status (ScaleUpNotNeeded, ScaleUpSuccessful or FailedResizeNodeGroups) and errors if any.
-func ScaleUpToNodeGroupMinSize(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, resourceManager *scaleup.ResourceManager,
+func ScaleUpToNodeGroupMinSize(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, resourceManager *resource.Manager,
 	nodes []*apiv1.Node, nodeInfos map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	now := time.Now()
 	nodeGroups := context.CloudProvider.NodeGroups()
@@ -488,7 +489,7 @@ func ScaleUpToNodeGroupMinSize(context *context.AutoscalingContext, processors *
 		}
 
 		newNodeCount := ng.MinSize() - targetSize
-		newNodeCount, err = resourceManager.ApplyResourcesLimits(context, newNodeCount, resourcesLeft, nodeInfo, ng)
+		newNodeCount, err = resourceManager.ApplyLimits(context, newNodeCount, resourcesLeft, nodeInfo, ng)
 		if err != nil {
 			klog.Warning("ScaleUpToNodeGroupMinSize: failed to apply resource limits: %v", err)
 			continue
@@ -541,16 +542,16 @@ func ScaleUpToNodeGroupMinSize(context *context.AutoscalingContext, processors *
 	}, nil
 }
 
-func getRemainingPods(egs []*podEquivalenceGroup, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
+func getRemainingPods(egs []*equivalence.PodGroup, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
 	remaining := []status.NoScaleUpInfo{}
 	for _, eg := range egs {
-		if eg.schedulable {
+		if eg.Schedulable {
 			continue
 		}
-		for _, pod := range eg.pods {
+		for _, pod := range eg.Pods {
 			noScaleUpInfo := status.NoScaleUpInfo{
 				Pod:                pod,
-				RejectedNodeGroups: eg.schedulingErrors,
+				RejectedNodeGroups: eg.SchedulingErrors,
 				SkippedNodeGroups:  skipped,
 			}
 			remaining = append(remaining, noScaleUpInfo)
@@ -559,13 +560,13 @@ func getRemainingPods(egs []*podEquivalenceGroup, skipped map[string]status.Reas
 	return remaining
 }
 
-func getPodsAwaitingEvaluation(egs []*podEquivalenceGroup, bestOption string) []*apiv1.Pod {
+func getPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) []*apiv1.Pod {
 	awaitsEvaluation := []*apiv1.Pod{}
 	for _, eg := range egs {
-		if eg.schedulable {
-			if _, found := eg.schedulingErrors[bestOption]; found {
+		if eg.Schedulable {
+			if _, found := eg.SchedulingErrors[bestOption]; found {
 				// Schedulable, but not yet.
-				awaitsEvaluation = append(awaitsEvaluation, eg.pods...)
+				awaitsEvaluation = append(awaitsEvaluation, eg.Pods...)
 			}
 		}
 	}

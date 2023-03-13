@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package scaleup
+package resource
 
 import (
 	"fmt"
@@ -46,18 +46,18 @@ type nodeGroupConfig struct {
 
 type deltaForNodeTestCase struct {
 	nodeGroupConfig nodeGroupConfig
-	expectedOutput  ResourcesDelta
+	expectedOutput  Delta
 }
 
 func TestDeltaForNode(t *testing.T) {
 	testCases := []deltaForNodeTestCase{
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng1", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
-			expectedOutput:  ResourcesDelta{"cpu": 8, "memory": 16},
+			expectedOutput:  Delta{"cpu": 8, "memory": 16},
 		},
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng2", Min: 1, Max: 20, Size: 9, CPU: 4, Mem: 32},
-			expectedOutput:  ResourcesDelta{"cpu": 4, "memory": 32},
+			expectedOutput:  Delta{"cpu": 4, "memory": 32},
 		},
 	}
 
@@ -70,7 +70,7 @@ func TestDeltaForNode(t *testing.T) {
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-		rm := NewResourceManager(processors.CustomResourcesProcessor)
+		rm := NewManager(processors.CustomResourcesProcessor)
 		delta, err := rm.DeltaForNode(&ctx, nodeInfos[ng.Name], group)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, delta)
@@ -81,7 +81,7 @@ type resourceLeftTestCase struct {
 	nodeGroupConfig nodeGroupConfig
 	clusterCPULimit int64
 	clusterMemLimit int64
-	expectedOutput  ResourcesLimits
+	expectedOutput  Limits
 }
 
 func TestResourcesLeft(t *testing.T) {
@@ -91,14 +91,14 @@ func TestResourcesLeft(t *testing.T) {
 			nodeGroupConfig: nodeGroupConfig{Name: "ng1", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
 			clusterCPULimit: 1000,
 			clusterMemLimit: 1000,
-			expectedOutput:  ResourcesLimits{"cpu": 960, "memory": 920},
+			expectedOutput:  Limits{"cpu": 960, "memory": 920},
 		},
 		{
 			// cpu left: 1000 - 4 * 100 = 600; memory left: 1000 - 8 * 100 = 200
 			nodeGroupConfig: nodeGroupConfig{Name: "ng2", Min: 3, Max: 100, Size: 100, CPU: 4, Mem: 8},
 			clusterCPULimit: 1000,
 			clusterMemLimit: 1000,
-			expectedOutput:  ResourcesLimits{"cpu": 600, "memory": 200},
+			expectedOutput:  Limits{"cpu": 600, "memory": 200},
 		},
 	}
 
@@ -111,43 +111,43 @@ func TestResourcesLeft(t *testing.T) {
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-		rm := NewResourceManager(processors.CustomResourcesProcessor)
+		rm := NewManager(processors.CustomResourcesProcessor)
 		left, err := rm.ResourcesLeft(&ctx, nodeInfos, nodes)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, left)
 	}
 }
 
-type applyResourcesLimitsTestCase struct {
+type applyLimitsTestCase struct {
 	nodeGroupConfig nodeGroupConfig
-	resourcesLeft   ResourcesLimits
+	resourcesLeft   Limits
 	newNodeCount    int
 	expectedOutput  int
 }
 
-func TestApplyResourcesLimits(t *testing.T) {
-	testCases := []applyResourcesLimitsTestCase{
+func TestApplyLimits(t *testing.T) {
+	testCases := []applyLimitsTestCase{
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng1", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
-			resourcesLeft:   ResourcesLimits{"cpu": 80, "memory": 160},
+			resourcesLeft:   Limits{"cpu": 80, "memory": 160},
 			newNodeCount:    10,
 			expectedOutput:  10,
 		},
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng2", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
-			resourcesLeft:   ResourcesLimits{"cpu": 80, "memory": 100},
+			resourcesLeft:   Limits{"cpu": 80, "memory": 100},
 			newNodeCount:    10,
 			expectedOutput:  6, // limited by memory: 100 / 16 = 6
 		},
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng3", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
-			resourcesLeft:   ResourcesLimits{"cpu": 39, "memory": 160},
+			resourcesLeft:   Limits{"cpu": 39, "memory": 160},
 			newNodeCount:    10,
 			expectedOutput:  4, // limited by CPU: 39 / 8 = 4
 		},
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng4", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
-			resourcesLeft:   ResourcesLimits{"cpu": 40, "memory": 80},
+			resourcesLeft:   Limits{"cpu": 40, "memory": 80},
 			newNodeCount:    10,
 			expectedOutput:  5, // limited by CPU and memory
 		},
@@ -162,39 +162,39 @@ func TestApplyResourcesLimits(t *testing.T) {
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-		rm := NewResourceManager(processors.CustomResourcesProcessor)
-		newCount, err := rm.ApplyResourcesLimits(&ctx, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
+		rm := NewManager(processors.CustomResourcesProcessor)
+		newCount, err := rm.ApplyLimits(&ctx, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, newCount)
 	}
 }
 
 type checkDeltaWithinLimitsTestCase struct {
-	resourcesLeft  ResourcesLimits
-	resourcesDelta ResourcesDelta
+	resourcesLeft  Limits
+	resourcesDelta Delta
 	expectedOutput LimitsCheckResult
 }
 
 func TestCheckDeltaWithinLimits(t *testing.T) {
 	testCases := []checkDeltaWithinLimitsTestCase{
 		{
-			resourcesLeft:  ResourcesLimits{"cpu": 10, "memory": 20},
-			resourcesDelta: ResourcesDelta{"cpu": 8, "memory": 16},
+			resourcesLeft:  Limits{"cpu": 10, "memory": 20},
+			resourcesDelta: Delta{"cpu": 8, "memory": 16},
 			expectedOutput: LimitsCheckResult{Exceeded: false, ExceededResources: []string{}},
 		},
 		{
-			resourcesLeft:  ResourcesLimits{"cpu": 10, "memory": 20},
-			resourcesDelta: ResourcesDelta{"cpu": 12, "memory": 16},
+			resourcesLeft:  Limits{"cpu": 10, "memory": 20},
+			resourcesDelta: Delta{"cpu": 12, "memory": 16},
 			expectedOutput: LimitsCheckResult{Exceeded: true, ExceededResources: []string{"cpu"}},
 		},
 		{
-			resourcesLeft:  ResourcesLimits{"cpu": 10, "memory": 20},
-			resourcesDelta: ResourcesDelta{"cpu": 8, "memory": 32},
+			resourcesLeft:  Limits{"cpu": 10, "memory": 20},
+			resourcesDelta: Delta{"cpu": 8, "memory": 32},
 			expectedOutput: LimitsCheckResult{Exceeded: true, ExceededResources: []string{"memory"}},
 		},
 		{
-			resourcesLeft:  ResourcesLimits{"cpu": 10, "memory": 20},
-			resourcesDelta: ResourcesDelta{"cpu": 16, "memory": 96},
+			resourcesLeft:  Limits{"cpu": 10, "memory": 20},
+			resourcesDelta: Delta{"cpu": 16, "memory": 96},
 			expectedOutput: LimitsCheckResult{Exceeded: true, ExceededResources: []string{"cpu", "memory"}},
 		},
 	}
@@ -227,7 +227,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	nodes := []*corev1.Node{n1}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, time.Now())
 
-	rm := NewResourceManager(processors.CustomResourcesProcessor)
+	rm := NewManager(processors.CustomResourcesProcessor)
 
 	delta, err := rm.DeltaForNode(&context, nodeInfos["ng1"], ng1)
 	assert.Equal(t, int64(8), delta[cloudprovider.ResourceNameCores])
@@ -236,13 +236,13 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 
 	left, err := rm.ResourcesLeft(&context, nodeInfos, nodes)
 	assert.NoError(t, err)
-	assert.Equal(t, ResourcesLimits{"cpu": 312, "memory": 624, "gpu": 12}, left) // cpu: 320-8*1=312; memory: 640-16*1=624; gpu: 16-4*1=12
+	assert.Equal(t, Limits{"cpu": 312, "memory": 624, "gpu": 12}, left) // cpu: 320-8*1=312; memory: 640-16*1=624; gpu: 16-4*1=12
 
 	result := CheckDeltaWithinLimits(left, delta)
 	assert.False(t, result.Exceeded)
 	assert.Zero(t, len(result.ExceededResources))
 
-	newNodeCount, err := rm.ApplyResourcesLimits(&context, 10, left, nodeInfos["ng1"], ng1)
+	newNodeCount, err := rm.ApplyLimits(&context, 10, left, nodeInfos["ng1"], ng1)
 	assert.Equal(t, 3, newNodeCount) // gpu left / grpu per node: 12 / 4 = 3
 }
 
