@@ -579,7 +579,7 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 
 	manager := newTestAzureManager(t)
 	expectedVMSSVMs := newTestVMSSVMList(3)
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
