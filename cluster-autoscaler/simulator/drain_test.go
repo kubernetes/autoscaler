@@ -115,6 +115,7 @@ func TestGetPodsToMove(t *testing.T) {
 		Spec: apiv1.PodSpec{
 			Volumes: []apiv1.Volume{
 				{
+					Name: "empty-vol",
 					VolumeSource: apiv1.VolumeSource{
 						EmptyDir: &apiv1.EmptyDirVolumeSource{},
 					},
@@ -136,6 +137,7 @@ func TestGetPodsToMove(t *testing.T) {
 		Spec: apiv1.PodSpec{
 			Volumes: []apiv1.Volume{
 				{
+					Name: "my-repo",
 					VolumeSource: apiv1.VolumeSource{
 						GitRepo: &apiv1.GitRepoVolumeSource{
 							Repository: "my-repo",

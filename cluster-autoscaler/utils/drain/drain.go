@@ -18,6 +18,7 @@ package drain
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -38,6 +39,8 @@ const (
 	// PodSafeToEvictKey - annotation that ignores constraints to evict a pod like not being replicated, being on
 	// kube-system namespace or having a local storage.
 	PodSafeToEvictKey = "cluster-autoscaler.kubernetes.io/safe-to-evict"
+	// SafeToEvictLocalVolumesKey - annotation that ignores (doesn't block on) a local storage volume during node scale down
+	SafeToEvictLocalVolumesKey = "cluster-autoscaler.kubernetes.io/safe-to-evict-local-volumes"
 )
 
 // BlockingPod represents a pod which is blocking the scale down of a node.
@@ -219,7 +222,7 @@ func GetPodsForDeletionOnNodeDrain(
 					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: UnmovableKubeSystemPod}, fmt.Errorf("non-daemonset, non-mirrored, non-pdb-assigned kube-system pod present: %s", pod.Name)
 				}
 			}
-			if HasLocalStorage(pod) && skipNodesWithLocalStorage {
+			if HasBlockingLocalStorage(pod) && skipNodesWithLocalStorage {
 				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: LocalStorageRequested}, fmt.Errorf("pod with local storage present: %s", pod.Name)
 			}
 			if hasNotSafeToEvictAnnotation(pod) {
@@ -250,14 +253,28 @@ func isPodTerminal(pod *apiv1.Pod) bool {
 	return pod.Status.Phase == apiv1.PodFailed
 }
 
-// HasLocalStorage returns true if pod has any local storage.
-func HasLocalStorage(pod *apiv1.Pod) bool {
+// HasBlockingLocalStorage returns true if pod has any local storage
+// without pod annotation `<SafeToEvictLocalVolumeKey>: <volume-name-1>,<volume-name-2>...`
+func HasBlockingLocalStorage(pod *apiv1.Pod) bool {
+	isNonBlocking := getNonBlockingVolumes(pod)
 	for _, volume := range pod.Spec.Volumes {
-		if isLocalVolume(&volume) {
+		if isLocalVolume(&volume) && !isNonBlocking[volume.Name] {
 			return true
 		}
 	}
 	return false
+}
+
+func getNonBlockingVolumes(pod *apiv1.Pod) map[string]bool {
+	isNonBlocking := map[string]bool{}
+	annotationVal := pod.GetAnnotations()[SafeToEvictLocalVolumesKey]
+	if annotationVal != "" {
+		vols := strings.Split(annotationVal, ",")
+		for _, v := range vols {
+			isNonBlocking[v] = true
+		}
+	}
+	return isNonBlocking
 }
 
 func isLocalVolume(volume *apiv1.Volume) bool {
