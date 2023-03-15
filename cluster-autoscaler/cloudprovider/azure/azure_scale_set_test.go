@@ -581,6 +581,7 @@ func TestScaleSetNodesForFlexScaleSet(t *testing.T) {
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.config.EnableVmssFlex = true
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
@@ -614,6 +615,36 @@ func TestScaleSetNodesForFlexScaleSet(t *testing.T) {
 	assert.Equal(t, instances[0], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 0)})
 	assert.Equal(t, instances[1], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 1)})
 	assert.Equal(t, instances[2], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineVMID, 2)})
+}
+
+func TestEnableVmssFlexFlag(t *testing.T) {
+
+	//flag set to false
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedVMs := newTestVMList(3)
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Flexible)
+
+	provider := newTestProvider(t)
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.config.EnableVmssFlex = false
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	provider.azureManager.explicitlyConfigured["test-asg"] = true
+	err := provider.azureManager.Refresh()
+	assert.Error(t, err, "vmss - \"test-asg\" with Flexible orchestration detected but 'enbaleVmssFlex' feature flag is turned off")
+
+	//flag set to true
+	provider.azureManager.config.EnableVmssFlex = true
+	err = provider.azureManager.Refresh()
+	assert.NoError(t, err)
 }
 
 func TestTemplateNodeInfo(t *testing.T) {

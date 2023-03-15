@@ -561,20 +561,24 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 		klog.V(4).Infof("Nodes: returns")
 
 	} else if set.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
-		vms, rerr := scaleSet.GetFlexibleScaleSetVms()
-		if rerr != nil {
-			if isAzureRequestsThrottled(rerr) {
-				// Log a warning and update the instance refresh time so that it would retry after cache expiration
-				klog.Warningf("GetFlexibleScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
-				scaleSet.lastInstanceRefresh = lastRefresh
-				return scaleSet.instanceCache, nil
+		if scaleSet.manager.config.EnableVmssFlex {
+			vms, rerr := scaleSet.GetFlexibleScaleSetVms()
+			if rerr != nil {
+				if isAzureRequestsThrottled(rerr) {
+					// Log a warning and update the instance refresh time so that it would retry after cache expiration
+					klog.Warningf("GetFlexibleScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
+					scaleSet.lastInstanceRefresh = lastRefresh
+					return scaleSet.instanceCache, nil
+				}
+				return nil, rerr.Error()
 			}
-			return nil, rerr.Error()
-		}
 
-		scaleSet.instanceCache = buildInstanceCacheForFlexVms(vms)
-		scaleSet.lastInstanceRefresh = lastRefresh
-		klog.V(4).Infof("Nodes: returns")
+			scaleSet.instanceCache = buildInstanceCacheForFlexVms(vms)
+			scaleSet.lastInstanceRefresh = lastRefresh
+			klog.V(4).Infof("Nodes: returns")
+		} else {
+			return nil, fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enbaleVmssFlex' feature flag is turned off", scaleSet.Name)
+		}
 
 	} else {
 		return nil, fmt.Errorf("Failed to determine orchestration mode for vmss %q", scaleSet.Name)
