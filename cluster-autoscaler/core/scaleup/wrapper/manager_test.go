@@ -1062,7 +1062,7 @@ func TestAuthError(t *testing.T) {
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(nil, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	suManagerFactory := NewManagerFactory()
 	suManager := suManagerFactory.NewManager(&context, processors, clusterStateRegistry, nil)
-	scaleUpWrapper := suManager.(*scaleUpManager)
+	scaleUpWrapper := suManager.(*ScaleUpManager)
 	aerr := scaleUpWrapper.executeScaleUp(info, "", "", time.Now())
 	assert.Error(t, aerr)
 
