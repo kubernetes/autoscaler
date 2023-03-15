@@ -336,6 +336,17 @@ The annotation format is the following:
 vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
 ```
 
+### Controlling eviction behavior based on scaling direction and resource
+ To limit disruptions caused by evictions, you can put additional constraints on the Updater's eviction behavior by specifying `.updatePolicy.EvictionRequirements` in the VPA spec. An `EvictionRequirement` contains a resource and a `ChangeRequirement`, which is evaluated by comparing a new recommendation against the currently set resources for a container.
+ Here is an example configuration which allows evictions only when CPU or memory get scaled up, not when they are scaled down
+ ```
+ updatePolicy:
+   evictionRequirements:
+     - resources: ["cpu", "memory"]
+       changeRequirement: TargetHigherThanRequests
+ ```
+ Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original KEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
+
 # Known limitations
 
 * Whenever VPA updates the pod resources, the pod is recreated, which causes all
