@@ -495,11 +495,45 @@ func (m *asgCache) isNodeGroupAvailable(group *autoscaling.Group) (bool, error) 
 	return true, nil
 }
 
+func isProcessSuspended(g *autoscaling.Group, name string) bool {
+	if g.SuspendedProcesses != nil && len(g.SuspendedProcesses) > 0 {
+		for _, p := range g.SuspendedProcesses {
+			if *p.ProcessName == name {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func getMinSize(g *autoscaling.Group) int {
+	// If the Terminate process is suspended, we set min size to the current
+	// size to avoid trying to scale it down.
+	if isProcessSuspended(g, "Terminate") {
+		klog.V(4).Infof("Setting min size to desired size for %s due to suspended Terminate process", *g.AutoScalingGroupName)
+		return int(aws.Int64Value(g.DesiredCapacity))
+	}
+
+	return int(aws.Int64Value(g.MinSize))
+}
+
+func getMaxSize(g *autoscaling.Group) int {
+	// If the Launch process is suspended, we set max size to the current
+	// size to avoid trying to scale it up.
+	if isProcessSuspended(g, "Launch") {
+		klog.V(4).Infof("Setting max size to desired size for %s due to suspended Launch process", *g.AutoScalingGroupName)
+		return int(aws.Int64Value(g.DesiredCapacity))
+	}
+
+	return int(aws.Int64Value(g.MaxSize))
+}
+
 func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 	spec := dynamic.NodeGroupSpec{
 		Name:               aws.StringValue(g.AutoScalingGroupName),
-		MinSize:            int(aws.Int64Value(g.MinSize)),
-		MaxSize:            int(aws.Int64Value(g.MaxSize)),
+		MinSize:            getMinSize(g),
+		MaxSize:            getMaxSize(g),
 		SupportScaleToZero: scaleToZeroSupported,
 	}
 

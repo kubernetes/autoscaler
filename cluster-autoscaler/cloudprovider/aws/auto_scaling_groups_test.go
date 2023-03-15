@@ -45,6 +45,88 @@ func TestBuildAsg(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestBuildAsgFromAWSSizing(t *testing.T) {
+	defaultMin, defaultDesired, defaultMax := 1, 3, 5
+	cases := []struct {
+		name               string
+		expectedMin        int
+		expectedMax        int
+		suspendedProcesses []*autoscaling.SuspendedProcess
+	}{
+		{
+			name:        "No suspended processes should set match ASG settings",
+			expectedMin: defaultMin,
+			expectedMax: defaultMax,
+		},
+		{
+			name:        "Ignore non-impacting suspended processes",
+			expectedMin: defaultMin,
+			expectedMax: defaultMax,
+			suspendedProcesses: []*autoscaling.SuspendedProcess{
+				{
+					ProcessName: aws.String("InstanceRefresh"),
+				},
+			},
+		},
+		{
+			name:        "Launch suspended should set max to desired capacity",
+			expectedMin: defaultMin,
+			expectedMax: defaultDesired,
+			suspendedProcesses: []*autoscaling.SuspendedProcess{
+				{
+					ProcessName: aws.String("Launch"),
+				},
+			},
+		},
+		{
+			name:        "Terminate suspended should set min to desired capacity",
+			expectedMin: defaultDesired,
+			expectedMax: defaultMax,
+			suspendedProcesses: []*autoscaling.SuspendedProcess{
+				{
+					ProcessName: aws.String("Terminate"),
+				},
+			},
+		},
+		{
+			name:        "Terminate and Launch suspended should set min and max to desired capacity",
+			expectedMin: defaultDesired,
+			expectedMax: defaultDesired,
+			suspendedProcesses: []*autoscaling.SuspendedProcess{
+				{
+					ProcessName: aws.String("Launch"),
+				},
+				{
+					ProcessName: aws.String("Terminate"),
+				},
+			},
+		},
+	}
+
+	asgCache := &asgCache{}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			group := autoscaling.Group{
+				AutoScalingGroupName:    aws.String("SomeASG"),
+				LaunchConfigurationName: aws.String("SomeLT"),
+				AvailabilityZones:       []*string{aws.String("westeros-1a")},
+				DesiredCapacity:         aws.Int64(int64(defaultDesired)),
+				MinSize:                 aws.Int64(int64(defaultMin)),
+				MaxSize:                 aws.Int64(int64(defaultMax)),
+				SuspendedProcesses:      tc.suspendedProcesses,
+				Instances:               []*autoscaling.Instance{},
+			}
+
+			asg, err := asgCache.buildAsgFromAWS(&group)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedMin, asg.minSize, "ASG min size should match expected min")
+			assert.Equal(t, tc.expectedMax, asg.maxSize, "ASG max size should match expected max")
+		})
+	}
+}
+
 func validateAsg(t *testing.T, asg *asg, name string, minSize int, maxSize int) {
 	assert.Equal(t, name, asg.Name)
 	assert.Equal(t, minSize, asg.minSize)
