@@ -44,6 +44,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
 	WithRecommender(string2 string) VerticalPodAutoscalerBuilder
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
+	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -177,6 +178,15 @@ func (b *verticalPodAutoscalerBuilder) WithRecommender(recommender string) Verti
 func (b *verticalPodAutoscalerBuilder) WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.groupVersion = gv
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirements []*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder {
+	c := *b
+	if c.updatePolicy == nil {
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+	}
+	c.updatePolicy.EvictionRequirements = evictionRequirements
 	return &c
 }
 
