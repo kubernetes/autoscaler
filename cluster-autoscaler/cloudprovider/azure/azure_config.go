@@ -62,6 +62,7 @@ const (
 
 	// toggle
 	dynamicInstanceListDefault = false
+	enableVmssFlexDefault      = false
 )
 
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
@@ -136,6 +137,9 @@ type Config struct {
 
 	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
 	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
+
+	// EnableVmssFlex defines whether to enable Vmss Flex support or not
+	EnableVmssFlex bool `json:"enableVmssFlex,omitempty" yaml:"enableVmssFlex,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -246,6 +250,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 		} else {
 			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
+		}
+
+		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {
+			cfg.EnableVmssFlex, err = strconv.ParseBool(enableVmssFlex)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_ENABLE_VMSS_FLEX %q: %v", enableVmssFlex, err)
+			}
+		} else {
+			cfg.EnableVmssFlex = enableVmssFlexDefault
 		}
 
 		if cfg.CloudProviderBackoff {
