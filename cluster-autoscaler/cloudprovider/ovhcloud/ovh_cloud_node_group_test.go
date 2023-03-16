@@ -379,7 +379,10 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 		assert.NotNil(t, node)
 
 		assert.Contains(t, node.ObjectMeta.Name, fmt.Sprintf("%s-node-", ng.Id()))
-		assert.Equal(t, ng.Id(), node.Labels["nodepool"])
+		assert.Equal(t, map[string]string{"nodepool": ng.Id()}, node.Labels)
+		assert.Equal(t, map[string]string(nil), node.Annotations)
+		assert.Equal(t, []string(nil), node.Finalizers)
+		assert.Equal(t, []v1.Taint(nil), node.Spec.Taints)
 
 		assert.Equal(t, *resource.NewQuantity(110, resource.DecimalSI), node.Status.Capacity[apiv1.ResourcePods])
 		assert.Equal(t, *resource.NewQuantity(2, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceCPU])
@@ -396,7 +399,49 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 		assert.NotNil(t, node)
 
 		assert.Contains(t, node.ObjectMeta.Name, fmt.Sprintf("%s-node-", ng.Id()))
-		assert.Equal(t, ng.Id(), node.Labels["nodepool"])
+		assert.Equal(t, map[string]string{"nodepool": ng.Id()}, node.Labels)
+		assert.Equal(t, map[string]string(nil), node.Annotations)
+		assert.Equal(t, []string(nil), node.Finalizers)
+		assert.Equal(t, []v1.Taint(nil), node.Spec.Taints)
+
+		assert.Equal(t, *resource.NewQuantity(110, resource.DecimalSI), node.Status.Capacity[apiv1.ResourcePods])
+		assert.Equal(t, *resource.NewQuantity(8, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceCPU])
+		assert.Equal(t, *resource.NewQuantity(1, resource.DecimalSI), node.Status.Capacity[gpu.ResourceNvidiaGPU])
+		assert.Equal(t, *resource.NewQuantity(48318382080, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceMemory])
+	})
+
+	t.Run("template for b2-7 flavor with node pool templates", func(t *testing.T) {
+		ng := newTestNodeGroup(t, "t1-45")
+
+		// Setup node pool templates
+		ng.Template.Metadata.Labels = map[string]string{
+			"label1": "labelValue1",
+		}
+		ng.Template.Metadata.Annotations = map[string]string{
+			"annotation1": "annotationValue1",
+		}
+		ng.Template.Metadata.Finalizers = []string{
+			"finalizer1",
+		}
+		ng.Template.Spec.Taints = []v1.Taint{
+			{
+				Key:    "taintKey1",
+				Value:  "taintValue1",
+				Effect: "taintEffect1",
+			},
+		}
+
+		template, err := ng.TemplateNodeInfo()
+		assert.NoError(t, err)
+
+		node := template.Node()
+		assert.NotNil(t, node)
+
+		assert.Contains(t, node.ObjectMeta.Name, fmt.Sprintf("%s-node-", ng.Id()))
+		assert.Equal(t, map[string]string{"nodepool": ng.Id(), "label1": "labelValue1"}, node.Labels)
+		assert.Equal(t, ng.Template.Metadata.Annotations, node.Annotations)
+		assert.Equal(t, ng.Template.Metadata.Finalizers, node.Finalizers)
+		assert.Equal(t, ng.Template.Spec.Taints, node.Spec.Taints)
 
 		assert.Equal(t, *resource.NewQuantity(110, resource.DecimalSI), node.Status.Capacity[apiv1.ResourcePods])
 		assert.Equal(t, *resource.NewQuantity(8, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceCPU])
