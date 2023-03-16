@@ -107,13 +107,13 @@ func TestOvhCloudManager_getFlavorsByName(t *testing.T) {
 	}
 
 	t.Run("brand new manager: list from api", func(t *testing.T) {
-		ng := newTestManager(t)
-		flavorsByName, err := ng.getFlavorsByName()
+		manager := newTestManager(t)
+		flavorsByName, err := manager.getFlavorsByName()
 
-		ng.Client.(*sdk.ClientMock).AssertCalled(t, "ListClusterFlavors", context.Background(), "projectID", "clusterID")
+		manager.Client.(*sdk.ClientMock).AssertCalled(t, "ListClusterFlavors", context.Background(), "projectID", "clusterID")
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFlavorsByNameFromAPICall, flavorsByName)
-		assert.Equal(t, expectedFlavorsByNameFromAPICall, ng.FlavorsCache)
+		assert.Equal(t, expectedFlavorsByNameFromAPICall, manager.FlavorsCache)
 	})
 
 	t.Run("flavors cache expired: renew and list from api", func(t *testing.T) {
@@ -123,16 +123,16 @@ func TestOvhCloudManager_getFlavorsByName(t *testing.T) {
 			},
 		}
 
-		ng := newTestManager(t)
-		ng.FlavorsCache = initialFlavorsCache
-		ng.FlavorsCacheExpirationTime = time.Now()
+		manager := newTestManager(t)
+		manager.FlavorsCache = initialFlavorsCache
+		manager.FlavorsCacheExpirationTime = time.Now()
 
-		flavorsByName, err := ng.getFlavorsByName()
+		flavorsByName, err := manager.getFlavorsByName()
 
-		ng.Client.(*sdk.ClientMock).AssertCalled(t, "ListClusterFlavors", context.Background(), "projectID", "clusterID")
+		manager.Client.(*sdk.ClientMock).AssertCalled(t, "ListClusterFlavors", context.Background(), "projectID", "clusterID")
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFlavorsByNameFromAPICall, flavorsByName)
-		assert.Equal(t, expectedFlavorsByNameFromAPICall, ng.FlavorsCache)
+		assert.Equal(t, expectedFlavorsByNameFromAPICall, manager.FlavorsCache)
 	})
 
 	t.Run("flavors cache still valid: list from cache", func(t *testing.T) {
@@ -142,24 +142,24 @@ func TestOvhCloudManager_getFlavorsByName(t *testing.T) {
 			},
 		}
 
-		ng := newTestManager(t)
-		ng.FlavorsCache = initialFlavorsCache
-		ng.FlavorsCacheExpirationTime = time.Now().Add(time.Minute)
+		manager := newTestManager(t)
+		manager.FlavorsCache = initialFlavorsCache
+		manager.FlavorsCacheExpirationTime = time.Now().Add(time.Minute)
 
-		flavorsByName, err := ng.getFlavorsByName()
+		flavorsByName, err := manager.getFlavorsByName()
 
-		ng.Client.(*sdk.ClientMock).AssertNotCalled(t, "ListClusterFlavors", context.Background(), "projectID", "clusterID")
+		manager.Client.(*sdk.ClientMock).AssertNotCalled(t, "ListClusterFlavors", context.Background(), "projectID", "clusterID")
 		assert.NoError(t, err)
 		assert.Equal(t, initialFlavorsCache, flavorsByName)
-		assert.Equal(t, initialFlavorsCache, ng.FlavorsCache)
+		assert.Equal(t, initialFlavorsCache, manager.FlavorsCache)
 	})
 }
 
 func TestOvhCloudManager_getFlavorByName(t *testing.T) {
-	ng := newTestManager(t)
+	manager := newTestManager(t)
 
 	t.Run("check default node group max size", func(t *testing.T) {
-		flavor, err := ng.getFlavorByName("b2-7")
+		flavor, err := manager.getFlavorByName("b2-7")
 		assert.NoError(t, err)
 		assert.Equal(t, sdk.Flavor{
 			Name:     "b2-7",
@@ -169,5 +169,124 @@ func TestOvhCloudManager_getFlavorByName(t *testing.T) {
 			GPUs:     0,
 			RAM:      7,
 		}, flavor)
+	})
+}
+
+func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
+	manager := newTestManager(t)
+	ng1 := NodeGroup{
+		CurrentSize: 1,
+	}
+
+	type fields struct {
+		NodeGroupPerProviderID map[string]*NodeGroup
+	}
+	type args struct {
+		providerID string
+		nodeGroup  *NodeGroup
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		args      args
+		wantCache map[string]*NodeGroup
+	}{
+		{
+			name: "New entry",
+			fields: fields{
+				NodeGroupPerProviderID: map[string]*NodeGroup{},
+			},
+			args: args{
+				providerID: "providerID1",
+				nodeGroup:  &ng1,
+			},
+			wantCache: map[string]*NodeGroup{
+				"providerID1": &ng1,
+			},
+		}, {
+			name: "Replace entry",
+			fields: fields{
+				NodeGroupPerProviderID: map[string]*NodeGroup{
+					"providerID1": {},
+				},
+			},
+			args: args{
+				providerID: "providerID1",
+				nodeGroup:  &ng1,
+			},
+			wantCache: map[string]*NodeGroup{
+				"providerID1": &ng1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+
+			manager.setNodeGroupPerProviderID(tt.args.providerID, tt.args.nodeGroup)
+
+			assert.Equal(t, tt.wantCache, manager.NodeGroupPerProviderID)
+		})
+	}
+}
+
+func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
+	manager := newTestManager(t)
+	ng1 := NodeGroup{
+		CurrentSize: 1,
+	}
+
+	type fields struct {
+		NodeGroupPerProviderID map[string]*NodeGroup
+	}
+	type args struct {
+		providerID string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *NodeGroup
+	}{
+		{
+			name: "Node group found",
+			fields: fields{
+				NodeGroupPerProviderID: map[string]*NodeGroup{
+					"providerID1": &ng1,
+				},
+			},
+			args: args{
+				providerID: "providerID1",
+			},
+			want: &ng1,
+		},
+		{
+			name: "Node group not found",
+			fields: fields{
+				NodeGroupPerProviderID: map[string]*NodeGroup{},
+			},
+			args: args{
+				providerID: "providerID1",
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+
+			assert.Equalf(t, tt.want, manager.getNodeGroupPerProviderID(tt.args.providerID), "getNodeGroupPerProviderID(%v)", tt.args.providerID)
+		})
+	}
+}
+
+func TestOvhCloudManager_cacheConcurrency(t *testing.T) {
+	manager := newTestManager(t)
+
+	t.Run("Check NodeGroupPerProviderID cache is safe for concurrency (needs to be run with -race)", func(t *testing.T) {
+		go func() {
+			manager.setNodeGroupPerProviderID("", &NodeGroup{})
+		}()
+		manager.getNodeGroupPerProviderID("")
 	})
 }
