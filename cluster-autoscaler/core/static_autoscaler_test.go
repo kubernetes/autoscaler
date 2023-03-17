@@ -37,7 +37,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/wrapper"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -232,8 +232,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	processors := NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
-	suManagerFactory := wrapper.NewManagerFactory()
-	suManager := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&context, processors, clusterState, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
@@ -242,7 +242,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDownPlanner:      sdPlanner,
 		scaleDownActuator:     sdActuator,
-		scaleUpManager:        suManager,
+		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
@@ -450,8 +450,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
 
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
-	suManagerFactory := wrapper.NewManagerFactory()
-	suManager := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&context, processors, clusterState, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
@@ -460,7 +460,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDownPlanner:      sdPlanner,
 		scaleDownActuator:     sdActuator,
-		scaleUpManager:        suManager,
+		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
@@ -605,8 +605,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	processors := NewTestProcessors(&context)
 
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
-	suManagerFactory := wrapper.NewManagerFactory()
-	suManager := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&context, processors, clusterState, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
@@ -615,7 +615,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDownPlanner:      sdPlanner,
 		scaleDownActuator:     sdActuator,
-		scaleUpManager:        suManager,
+		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 	}
@@ -756,8 +756,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	processors := NewTestProcessors(&context)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
-	suManagerFactory := wrapper.NewManagerFactory()
-	suManager := suManagerFactory.NewManager(&context, processors, clusterState, nil)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&context, processors, clusterState, nil)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
@@ -766,7 +766,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDownPlanner:      sdPlanner,
 		scaleDownActuator:     sdActuator,
-		scaleUpManager:        suManager,
+		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 	}

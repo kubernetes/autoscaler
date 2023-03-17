@@ -53,7 +53,7 @@ type AutoscalerOptions struct {
 	Backoff                backoff.Backoff
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
 	RemainingPdbTracker    pdb.RemainingPdbTracker
-	ScaleUpManagerFactory  scaleup.ManagerFactory
+	ScaleUpOrchestrator    scaleup.Orchestrator
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -85,7 +85,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.Backoff,
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
-		opts.ScaleUpManagerFactory), nil
+		opts.ScaleUpOrchestrator), nil
 }
 
 // Initialize default options if not provided.
