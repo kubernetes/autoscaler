@@ -36,12 +36,19 @@ type ManagerFactory interface {
 		processors *ca_processors.AutoscalingProcessors,
 		clusterStateRegistry *clusterstate.ClusterStateRegistry,
 		ignoredTaints taints.TaintKeySet,
-	) Manager
+	) Orchestrator
 }
 
-// Manager is a component that picks the node group to resize and triggers
+// Orchestrator is a component that picks the node group to resize and triggers
 // creation of needed instances.
-type Manager interface {
+type Orchestrator interface {
+	// Initialize initializes the orchestrator object with required fields.
+	Initialize(
+		autoscalingContext *context.AutoscalingContext,
+		processors *ca_processors.AutoscalingProcessors,
+		clusterStateRegistry *clusterstate.ClusterStateRegistry,
+		ignoredTaints taints.TaintKeySet,
+	)
 	// ScaleUp tries to scale the cluster up. Returns appropriate status or error if
 	// an unexpected error occurred. Assumes that all nodes in the cluster are ready
 	// and in sync with instance groups.

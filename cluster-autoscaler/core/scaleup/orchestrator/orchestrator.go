@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package wrapper
+package orchestrator
 
 import (
 	"strings"
@@ -43,50 +43,51 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// ScaleUpManagerFactory implements scaleup.ManagerFactory interface.
-type ScaleUpManagerFactory struct {
-}
-
-// NewManagerFactory returns new instance of scale up manager factory.
-func NewManagerFactory() *ScaleUpManagerFactory {
-	return &ScaleUpManagerFactory{}
-}
-
-// NewManager returns new instance of scale up wrapper.
-func (f *ScaleUpManagerFactory) NewManager(
-	autoscalingContext *context.AutoscalingContext,
-	processors *ca_processors.AutoscalingProcessors,
-	clusterStateRegistry *clusterstate.ClusterStateRegistry,
-	ignoredTaints taints.TaintKeySet,
-) scaleup.Manager {
-	resourceManager := resource.NewManager(processors.CustomResourcesProcessor)
-	return &ScaleUpManager{
-		autoscalingContext:   autoscalingContext,
-		processors:           processors,
-		resourceManager:      resourceManager,
-		clusterStateRegistry: clusterStateRegistry,
-		ignoredTaints:        ignoredTaints,
-	}
-}
-
-// ScaleUpManager implements scaleup.Manager interface.
-type ScaleUpManager struct {
+// ScaleUpOrchestrator implements scaleup.Orchestrator interface.
+type ScaleUpOrchestrator struct {
 	autoscalingContext   *context.AutoscalingContext
 	processors           *ca_processors.AutoscalingProcessors
 	resourceManager      *resource.Manager
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
 	ignoredTaints        taints.TaintKeySet
+	initialized          bool
+}
+
+// New returns new instance of scale up wrapper.
+func New() scaleup.Orchestrator {
+	return &ScaleUpOrchestrator{
+		initialized: false,
+	}
+}
+
+// Initialize initializes the orchestrator object with required fields.
+func (w *ScaleUpOrchestrator) Initialize(
+	autoscalingContext *context.AutoscalingContext,
+	processors *ca_processors.AutoscalingProcessors,
+	clusterStateRegistry *clusterstate.ClusterStateRegistry,
+	ignoredTaints taints.TaintKeySet,
+) {
+	w.autoscalingContext = autoscalingContext
+	w.processors = processors
+	w.clusterStateRegistry = clusterStateRegistry
+	w.ignoredTaints = ignoredTaints
+	w.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
+	w.initialized = true
 }
 
 // ScaleUp tries to scale the cluster up. Returns appropriate status or error if
 // an unexpected error occurred. Assumes that all nodes in the cluster are ready
 // and in sync with instance groups.
-func (w *ScaleUpManager) ScaleUp(
+func (w *ScaleUpOrchestrator) ScaleUp(
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	if !w.initialized {
+		scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+	}
+
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -344,10 +345,14 @@ func (w *ScaleUpManager) ScaleUp(
 // than the configured min size. The source of truth for the current node group
 // size is the TargetSize queried directly from cloud providers. Returns
 // appropriate status or error if an unexpected error occurred.
-func (w *ScaleUpManager) ScaleUpToNodeGroupMinSize(
+func (w *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodes []*apiv1.Node,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	if !w.initialized {
+		scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+	}
+
 	now := time.Now()
 	nodeGroups := w.autoscalingContext.CloudProvider.NodeGroups()
 	scaleUpInfos := make([]nodegroupset.ScaleUpInfo, 0)
@@ -436,7 +441,7 @@ func (w *ScaleUpManager) ScaleUpToNodeGroupMinSize(
 }
 
 // ComputeExpansionOption computes expansion option based on pending pods and cluster state.
-func (w *ScaleUpManager) ComputeExpansionOption(
+func (w *ScaleUpOrchestrator) ComputeExpansionOption(
 	podEquivalenceGroups []*equivalence.PodGroup,
 	nodeGroup cloudprovider.NodeGroup,
 	nodeInfo *schedulerframework.NodeInfo,
@@ -487,7 +492,7 @@ func (w *ScaleUpManager) ComputeExpansionOption(
 }
 
 // IsNodeGroupReadyToScaleUp returns nil if node group is ready to be scaled up, otherwise a reason is provided.
-func (w *ScaleUpManager) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.NodeGroup, now time.Time) *SkippedReasons {
+func (w *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.NodeGroup, now time.Time) *SkippedReasons {
 	// Autoprovisioned node groups without nodes are created later so skip check for them.
 	if nodeGroup.Exist() && !w.clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup, now) {
 		// Hack that depends on internals of IsNodeGroupSafeToScaleUp.
@@ -502,7 +507,7 @@ func (w *ScaleUpManager) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.NodeG
 }
 
 // IsNodeGroupResourceExceeded returns nil if node group resource limits are not exceeded, otherwise a reason is provided.
-func (w *ScaleUpManager) IsNodeGroupResourceExceeded(resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) *SkippedReasons {
+func (w *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) *SkippedReasons {
 	resourcesDelta, err := w.resourceManager.DeltaForNode(w.autoscalingContext, nodeInfo, nodeGroup)
 	if err != nil {
 		klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
@@ -528,7 +533,7 @@ func (w *ScaleUpManager) IsNodeGroupResourceExceeded(resourcesLeft resource.Limi
 }
 
 // GetCappedNewNodeCount caps resize according to cluster wide node count limit.
-func (w *ScaleUpManager) GetCappedNewNodeCount(newNodeCount, currentNodeCount int) (int, errors.AutoscalerError) {
+func (w *ScaleUpOrchestrator) GetCappedNewNodeCount(newNodeCount, currentNodeCount int) (int, errors.AutoscalerError) {
 	if w.autoscalingContext.MaxNodesTotal > 0 && newNodeCount+currentNodeCount > w.autoscalingContext.MaxNodesTotal {
 		klog.V(1).Infof("Capping size to max cluster total size (%d)", w.autoscalingContext.MaxNodesTotal)
 		newNodeCount = w.autoscalingContext.MaxNodesTotal - currentNodeCount
@@ -542,7 +547,7 @@ func (w *ScaleUpManager) GetCappedNewNodeCount(newNodeCount, currentNodeCount in
 
 // ExecuteScaleUps executes the scale ups, based on the provided scale up infos.
 // In case of issues returns an error and a scale up info which failed to execute.
-func (w *ScaleUpManager) ExecuteScaleUps(
+func (w *ScaleUpOrchestrator) ExecuteScaleUps(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	now time.Time,
@@ -563,7 +568,7 @@ func (w *ScaleUpManager) ExecuteScaleUps(
 	return nil, nil
 }
 
-func (w *ScaleUpManager) executeScaleUp(
+func (w *ScaleUpOrchestrator) executeScaleUp(
 	info nodegroupset.ScaleUpInfo,
 	gpuResourceName, gpuType string,
 	now time.Time,
