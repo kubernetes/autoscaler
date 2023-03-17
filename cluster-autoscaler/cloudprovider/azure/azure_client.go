@@ -278,7 +278,9 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	kubernetesServicesClient := containerserviceclient.New(aksClientConfig)
 	klog.V(5).Infof("Created kubernetes services client with authorizer: %v", kubernetesServicesClient)
 
-	skuClient := compute.NewResourceSkusClient(cfg.SubscriptionID)
+	// Reference on why selecting ResourceManagerEndpoint as baseURI -
+	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
+	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
 	skuClient.Authorizer = azClientConfig.Authorizer
 	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
 
