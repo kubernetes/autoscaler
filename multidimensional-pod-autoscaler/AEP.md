@@ -175,6 +175,7 @@ To do that, we need to update accordingly the code which read and update the VPA
 To generate the horizontal scaling action recommendation, we reuse HPA libraries, integrating with the MPA API code, to reads and updates the MPA objects.
 We integrate vertical and horizontal scaling in a single feedback cycle.
 As an intitial solution, vertical scaling and horizontal scaling is performed alternatively (vertical scaling first).
+Vertical scaling will scale the CPU and memory allocations based on the historical usage; and horizontal scaling will scale the number of replicas based on either CPU utilization or a custom metric.
 In the future, we can consider more complex way of prioritization and conflict resolution.
 The separation of recommendation and actuation allows customized recommender to be used to replace the default recommender.
 For example, users can plug-in their RL-based controller to replace the MPA recommender, receiving measurements from the Metrics Server and modifying the MPA objects directly to give recommendations.
@@ -190,14 +191,14 @@ We reuse the CR definitions from the [MultidimPodAutoscaler](https://cloud.googl
 `MultidimPodAutoscaler` is the configuration for multi-dimensional Pod autoscaling, which automatically manages Pod resources and their count based on historical and real-time resource utilization.
 MultidimPodAutoscaler has two main fields: `spec` and `status`.
 
-#### `MultidimPodAutoscalerSpec`
+#### MPA Object
 
 ```
-# MultidimPodAutoscalerSpec
 apiVersion: autoscaling.gke.io/v1beta1
 kind: MultidimPodAutoscaler
 metadata:
   name: my-autoscaler
+# MultidimPodAutoscalerSpec
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -231,20 +232,26 @@ spec:
   # Define the recommender to use here
   recommenders:
   - name: my-recommender
-```
-
-#### MPA Status
-
-```
-// Describes the current status of a multidimensional pod autoscaler
-type MultidimPodAutoscalerStatus struct {
-  LastScaleTime *metav1.Time
-  CurrentReplicas int32
-  DesiredReplicas int32
-  Recommendation *vpa.RecommendedPodResources
-  CurrentMetrics []autoscalingv2.MetricStatus
-  Conditions []MultidimPodAutoscalerCondition
-}
+# MultidimPodAutoscalerStatus
+status:
+  lastScaleTime: timestamp
+  currentReplicas: number-of-replicas
+  desiredReplicas: number-of-recommended-replicas
+  recommendation:
+    containerRecommendations:
+    - containerName: name
+      lowerBound: lower-bound
+      target: target-value
+      upperBound: upper-bound
+  conditions:
+  - lastTransitionTime: timestamp
+    message: message
+    reason: reason
+    status: status
+    type: condition-type
+  currentMetrics:
+  - type: metric-type
+    value: metric-value
 ```
 
 ### Test Plan
