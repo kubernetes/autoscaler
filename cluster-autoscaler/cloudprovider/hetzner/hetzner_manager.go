@@ -30,10 +30,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
 )
 
 var (
-	version    = "dev"
 	httpClient = &http.Client{
 		Transport: instrumentedRoundTripper(),
 	}
@@ -71,6 +71,7 @@ func newManager() (*hetznerManager, error) {
 	client := hcloud.NewClient(
 		hcloud.WithToken(token),
 		hcloud.WithHTTPClient(httpClient),
+		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
 	)
 
 	ctx := context.Background()
