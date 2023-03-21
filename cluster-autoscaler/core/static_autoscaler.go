@@ -27,6 +27,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
+	orchestrator "k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -40,7 +42,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -85,7 +86,7 @@ type StaticAutoscaler struct {
 	lastScaleDownFailTime   time.Time
 	scaleDownPlanner        scaledown.Planner
 	scaleDownActuator       scaledown.Actuator
-	scaleUpResourceManager  *scaleup.ResourceManager
+	scaleUpOrchestrator     scaleup.Orchestrator
 	processors              *ca_processors.AutoscalingProcessors
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
@@ -138,7 +139,8 @@ func NewStaticAutoscaler(
 	estimatorBuilder estimator.EstimatorBuilder,
 	backoff backoff.Backoff,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
-	remainingPdbTracker pdb.RemainingPdbTracker) *StaticAutoscaler {
+	remainingPdbTracker pdb.RemainingPdbTracker,
+	scaleUpOrchestrator scaleup.Orchestrator) *StaticAutoscaler {
 
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
@@ -194,7 +196,10 @@ func NewStaticAutoscaler(
 	}
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
-	scaleUpResourceManager := scaleup.NewResourceManager(processors.CustomResourcesProcessor)
+	if scaleUpOrchestrator == nil {
+		scaleUpOrchestrator = orchestrator.New()
+	}
+	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, ignoredTaints)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
@@ -206,7 +211,7 @@ func NewStaticAutoscaler(
 		lastScaleDownFailTime:   initialScaleTime,
 		scaleDownPlanner:        scaleDownPlanner,
 		scaleDownActuator:       scaleDownActuator,
-		scaleUpResourceManager:  scaleUpResourceManager,
+		scaleUpOrchestrator:     scaleUpOrchestrator,
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
@@ -568,7 +573,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, a.scaleUpResourceManager, unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, a.ignoredTaints)
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups)
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}
@@ -687,7 +692,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if a.EnforceNodeGroupMinSize {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = ScaleUpToNodeGroupMinSize(autoscalingContext, a.processors, a.clusterStateRegistry, a.scaleUpResourceManager, readyNodes, nodeInfosForGroups)
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}

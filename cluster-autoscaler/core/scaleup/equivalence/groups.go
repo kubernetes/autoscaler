@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package equivalence
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"reflect"
+
+	"k8s.io/autoscaler/cluster-autoscaler/utils"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -27,20 +28,21 @@ import (
 	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
-type podEquivalenceGroup struct {
-	pods             []*apiv1.Pod
-	schedulingErrors map[string]status.Reasons
-	schedulable      bool
+// PodGroup contains a group of pods that are equivalent in terms of schedulability.
+type PodGroup struct {
+	Pods             []*apiv1.Pod
+	SchedulingErrors map[string]status.Reasons
+	Schedulable      bool
 }
 
-// buildPodEquivalenceGroups prepares pod groups with equivalent scheduling properties.
-func buildPodEquivalenceGroups(pods []*apiv1.Pod) []*podEquivalenceGroup {
-	podEquivalenceGroups := []*podEquivalenceGroup{}
+// BuildPodGroups prepares pod groups with equivalent scheduling properties.
+func BuildPodGroups(pods []*apiv1.Pod) []*PodGroup {
+	podEquivalenceGroups := []*PodGroup{}
 	for _, pods := range groupPodsBySchedulingProperties(pods) {
-		podEquivalenceGroups = append(podEquivalenceGroups, &podEquivalenceGroup{
-			pods:             pods,
-			schedulingErrors: map[string]status.Reasons{},
-			schedulable:      false,
+		podEquivalenceGroups = append(podEquivalenceGroups, &PodGroup{
+			Pods:             pods,
+			SchedulingErrors: map[string]status.Reasons{},
+			Schedulable:      false,
 		})
 	}
 	return podEquivalenceGroups
