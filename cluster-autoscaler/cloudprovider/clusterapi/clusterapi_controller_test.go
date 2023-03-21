@@ -171,9 +171,7 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 		if subresource != "scale" {
 			// Handle a bug in the client-go fakeNamespaceScaleClient, where the action namespace and subresource are
 			// switched for update actions
-			if action.GetVerb() == "update" && action.GetNamespace() == "scale" {
-				subresource = "scale"
-			} else {
+			if action.GetVerb() != "update" || action.GetNamespace() != "scale" {
 				// Do not attempt to respond to anything but scale subresource requests
 				return false, nil, nil
 			}
@@ -385,7 +383,9 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 			}
 			config.machineDeployment.SetAnnotations(spec.annotations)
 			config.machineDeployment.SetLabels(machineDeploymentLabels)
-			unstructured.SetNestedStringMap(config.machineDeployment.Object, machineDeploymentLabels, "spec", "selector", "matchLabels")
+			if err := unstructured.SetNestedStringMap(config.machineDeployment.Object, machineDeploymentLabels, "spec", "selector", "matchLabels"); err != nil {
+				panic(err)
+			}
 
 			ownerRefs := []metav1.OwnerReference{
 				{
@@ -397,7 +397,9 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 			config.machineSet.SetOwnerReferences(ownerRefs)
 		}
 		config.machineSet.SetLabels(machineSetLabels)
-		unstructured.SetNestedStringMap(config.machineSet.Object, machineSetLabels, "spec", "selector", "matchLabels")
+		if err := unstructured.SetNestedStringMap(config.machineSet.Object, machineSetLabels, "spec", "selector", "matchLabels"); err != nil {
+			panic(err)
+		}
 
 		machineOwner := metav1.OwnerReference{
 			Name: config.machineSet.GetName(),
@@ -418,7 +420,9 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 					},
 				},
 			}
-			unstructured.SetNestedStringMap(config.machineTemplate.Object, spec.capacity, "status", "capacity")
+			if err := unstructured.SetNestedStringMap(config.machineTemplate.Object, spec.capacity, "status", "capacity"); err != nil {
+				panic(err)
+			}
 		} else {
 			klog.V(4).Infof("not adding capacity")
 		}
@@ -1899,11 +1903,6 @@ func Test_machineController_nodeGroupForNode(t *testing.T) {
 	}, nil)
 	mdTestConfigs = append(mdTestConfigs, uniqueMDConfig)
 
-	allMachineDeployments := make([]*unstructured.Unstructured, 0, len(mdTestConfigs))
-	for i := range mdTestConfigs {
-		allMachineDeployments = append(allMachineDeployments, mdTestConfigs[i].machineDeployment)
-	}
-
 	uniqueMSConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
@@ -1914,11 +1913,6 @@ func Test_machineController_nodeGroupForNode(t *testing.T) {
 		nodeGroupMaxSizeAnnotationKey: "10",
 	}, nil)
 	msTestConfigs = append(msTestConfigs, uniqueMSConfig)
-
-	allMachineSets := make([]*unstructured.Unstructured, 0, len(msTestConfigs))
-	for i := range msTestConfigs {
-		allMachineSets = append(allMachineSets, msTestConfigs[i].machineSet)
-	}
 
 	allTestConfigs := append(mdTestConfigs, msTestConfigs...)
 
