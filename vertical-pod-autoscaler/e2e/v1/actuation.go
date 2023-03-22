@@ -480,7 +480,7 @@ func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *au
 	// Prepare the VPA to allow single-Pod eviction.
 	ginkgo.By("Setting up a VPA CRD")
 	minReplicas := int32(1)
-	SetupVPAForNHamstersWithMinReplicas(f, 1, "200m", vpa_types.UpdateModeAuto, controller, &minReplicas)
+	SetupVPAForNHamstersWithMinReplicas(f, 1, "200m", vpa_types.UpdateModeAuto, controller, &minReplicas, nil)
 
 	ginkgo.By("Waiting for pods to be evicted")
 	err = WaitForPodsEvicted(f, podList)

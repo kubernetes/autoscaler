@@ -297,14 +297,15 @@ func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, tar
 
 // SetupVPAForNHamsters creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
 func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	return SetupVPAForNHamstersWithMinReplicas(f, n, cpu, mode, targetRef, nil)
+	return SetupVPAForNHamstersWithMinReplicas(f, n, cpu, mode, targetRef, nil, nil)
 }
 
 // SetupVPAForNHamstersWithMinReplicas creates and installs a simple hamster VPA for a pod with n containers, setting MinReplicas. To be used for e2e test purposes.
-func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference, minReplicas *int32) *vpa_types.VerticalPodAutoscaler {
+func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference, minReplicas *int32, er []*vpa_types.EvictionRequirement) *vpa_types.VerticalPodAutoscaler {
 	vpaCRD := NewVPA(f, "hamster-vpa", targetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
 	vpaCRD.Spec.UpdatePolicy.MinReplicas = minReplicas
+	vpaCRD.Spec.UpdatePolicy.EvictionRequirements = er
 
 	cpuQuantity := ParseQuantityOrDie(cpu)
 	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
