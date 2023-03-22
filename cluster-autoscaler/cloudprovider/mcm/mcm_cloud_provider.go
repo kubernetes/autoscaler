@@ -392,7 +392,7 @@ func (machinedeployment *MachineDeployment) Debug() string {
 func (machinedeployment *MachineDeployment) Nodes() ([]cloudprovider.Instance, error) {
 	nodeProviderIDs, err := machinedeployment.mcmManager.GetMachineDeploymentNodes(machinedeployment)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get the nodes backed by the machinedeployment %q", machinedeployment.Name)
+		return nil, fmt.Errorf("failed to get the nodes backed by the machinedeployment %q, error: %v", machinedeployment.Name, err)
 	}
 
 	instances := make([]cloudprovider.Instance, len(nodeProviderIDs))
