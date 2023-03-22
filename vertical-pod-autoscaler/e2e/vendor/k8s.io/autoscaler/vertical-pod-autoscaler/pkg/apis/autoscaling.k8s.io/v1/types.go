@@ -105,6 +105,31 @@ type VerticalPodAutoscalerSpec struct {
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
 }
 
+// EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
+// +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetHigherThanOrEqualToRequests;TargetLowerThanRequests;TargetLowerThanOrEqualToRequests
+type EvictionChangeRequirement string
+
+const (
+	// TargetHigherThanRequests means the new target recommendation for a Pod is higher than its current requests, i.e. the Pod is scaled up
+	TargetHigherThanRequests EvictionChangeRequirement = "TargetHigherThanRequests"
+	// TargetHigherThanOrEqualToRequests means the new target recommendation for a Pod is higher or equal than its current requests
+	TargetHigherThanOrEqualToRequests EvictionChangeRequirement = "TargetHigherThanOrEqualToRequests"
+	// TargetLowerThanRequests means the new target recommendation for a Pod is lower than its current requests, i.e. the Pod is scaled down
+	TargetLowerThanRequests EvictionChangeRequirement = "TargetLowerThanRequests"
+	// TargetLowerThanOrEqualToRequests means the new target recommendation for a Pod is lower than or equal to its current requests
+	TargetLowerThanOrEqualToRequests EvictionChangeRequirement = "TargetLowerThanOrEqualToRequests"
+)
+
+// EvictionRequirement defines a single condition which needs to be true in
+// order to evict a Pod
+type EvictionRequirement struct {
+	// Resources is a list of one or more resources that the condition applies
+	// to. If more than one resource is given, they are combined with OR, not
+	// with AND.
+	Resources         []v1.ResourceName         `json:"resource" protobuf:"bytes,1,name=resources"`
+	ChangeRequirement EvictionChangeRequirement `json:"changeRequirement" protobuf:"bytes,2,name=changeRequirement"`
+}
+
 // PodUpdatePolicy describes the rules on how changes are applied to the pods.
 type PodUpdatePolicy struct {
 	// Controls when autoscaler applies changes to the pod resources.
@@ -117,6 +142,12 @@ type PodUpdatePolicy struct {
 	// allowed. Overrides global '--min-replicas' flag.
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
+
+	// EvictionRequirements is a list of EvictionRequirements that need to
+	// evaluate to true in order for a Pod to be evicted. If more than one
+	// EvictionRequirement is specified, they are combined with AND.
+	// +optional
+	EvictionRequirements []*EvictionRequirement `json:"evictionRequirements,omitempty" protobuf:"bytes,3,opt,name=evictionRequirements"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resoures.
