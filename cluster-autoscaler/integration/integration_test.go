@@ -4,26 +4,21 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/client-go/util/retry"
 	"os"
 	"regexp"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 )
 
 var (
 	controlKubeconfig = os.Getenv("CONTROL_KUBECONFIG")
 	targetKubeconfig  = os.Getenv("TARGET_KUBECONFIG")
 
-	pollingTimeout  = 300 * time.Second
-	pollingInterval = 2 * time.Second
-
-	scaleUpWorkload      = "scale-up-pod"
-	initialNumberOfNodes = 1
-	maxNodes             = 4
+	scaleUpWorkload = "scale-up-pod"
+	maxNodes        = 4
 )
 
 var driver = NewDriver(controlKubeconfig, targetKubeconfig)
@@ -60,8 +55,10 @@ func checkIfClusterAutoscalerUp() {
 }
 
 func (driver *Driver) setupBeforeSuite() {
+	// TODO: add gomega assertions, available from MCM release v0.49.0. Example https://github.com/gardener/machine-controller-manager/blob/a03d0fbcd28ef2265adb57d095c5d0d3333d6043/pkg/test/integration/common/framework.go#L1230-L1233
 	driver.scaleAutoscaler(0)
 	driver.adjustNodeGroups()
+	driver.addTaintsToInitialNodes()
 	driver.runAutoscaler()
 }
 func (driver *Driver) deleteWorkload() error {
@@ -76,9 +73,11 @@ func (driver *Driver) deleteWorkload() error {
 func (driver *Driver) cleanup() {
 	By("Running CleanUp")
 
+	// TODO: add gomega assertions, available from MCM release v0.49.0. Example https://github.com/gardener/machine-controller-manager/blob/a03d0fbcd28ef2265adb57d095c5d0d3333d6043/pkg/test/integration/common/framework.go#L1230-L1233
 	driver.deleteWorkload()
 	driver.adjustNodeGroups()
 	driver.deleteWorkload()
+	driver.removeTaintsFromInitialNodes()
 
 	By("Scaling CA back up to 1 in the Shoot namespace")
 	err := driver.scaleAutoscaler(int32(initialNumberOfNodes))
@@ -93,7 +92,7 @@ func (driver *Driver) controllerTests() {
 			It("should not lead to any errors and add 1 more node in target cluster", func() {
 
 				By("Deploying workload...")
-				Expect(driver.deployWorkload(1, scaleUpWorkload)).To(BeNil())
+				Expect(driver.deployWorkload(1, scaleUpWorkload, false)).To(BeNil())
 
 				By("Validating Scale up")
 				Eventually(
@@ -139,7 +138,7 @@ func (driver *Driver) controllerTests() {
 		Context("by adding annotation and then scaling the workload to zero", func() {
 			It("should not scale down the extra node and should log correspondingly", func() {
 				By("adding the annotation after deploy workload to 1")
-				Expect(driver.deployWorkload(1, scaleUpWorkload)).To(BeNil())
+				Expect(driver.deployWorkload(1, scaleUpWorkload, false)).To(BeNil())
 				By("Validating Scale up")
 				Eventually(
 					driver.targetCluster.getNumberOfReadyNodes,
@@ -185,7 +184,7 @@ func (driver *Driver) controllerTests() {
 		Context("by increasing the workload to above max", func() {
 			It("shouldn't scale beyond max number of workers", func() {
 				By("Deploying workload with replicas = max+4")
-				Expect(driver.deployWorkload(int32(maxNodes+4), scaleUpWorkload)).To(BeNil())
+				Expect(driver.deployWorkload(int32(maxNodes+4), scaleUpWorkload, false)).To(BeNil())
 				By("Validating Scale up")
 				Eventually(
 					driver.targetCluster.getNumberOfReadyNodes,
@@ -216,10 +215,10 @@ func (driver *Driver) controllerTests() {
 				_, latestNode, err := driver.getOldestAndLatestNode()
 				Expect(err).To(BeNil())
 
-				driver.makeNodeUnschedulable(latestNode)
+				driver.addTaintsToNode(latestNode, map[string]bool{disabledTaint: true})
 
 				By("Increasing the workload")
-				Expect(driver.deploySmallWorkload(1, scaleUpWorkload)).To(BeNil())
+				Expect(driver.deploySmallWorkload(1, scaleUpWorkload, true)).To(BeNil())
 
 				By("Validating Scale up")
 				Eventually(
@@ -233,7 +232,7 @@ func (driver *Driver) controllerTests() {
 
 				oldestNode, _, err := driver.getOldestAndLatestNode()
 				Expect(err).To(BeNil())
-				driver.makeNodeSchedulable(oldestNode, false)
+				driver.removeTaintsFromNode(oldestNode, false, map[string]bool{disabledTaint: true})
 
 				By("Validating Scale down")
 				Eventually(
@@ -326,7 +325,7 @@ func (driver *Driver) controllerTests() {
 		Context("create a pod requiring more resources than a single machine can provide", func() {
 			It("shouldn't scale up and log the error", func() {
 				By("Deploying the workload")
-				Expect(driver.deployLargeWorkload(1, scaleUpWorkload)).To(BeNil())
+				Expect(driver.deployLargeWorkload(1, scaleUpWorkload, false)).To(BeNil())
 				By("checking that scale up didn't trigger because of no machine satisfying the requirement")
 				skippedRegexp, _ := regexp.Compile("Pod large-scale-up-pod-.* can't be scheduled on .*, predicate checking error: Insufficient cpu; predicateName=NodeResourcesFit; reasons: Insufficient cpu;")
 				Eventually(func() bool {

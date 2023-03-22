@@ -1,12 +1,14 @@
 ## Prerequisite
-(Note the prerequisite will be made less restrictive with time)
+(Note the prerequisite will be made less restrictive with time.)
 
 1. No user workload to be deployed other than system-components.
 2. All system-components to be able to run on one node
-3. 3 machinedeployments/node groups in the cluster should be present, with following min:max limits
-	- machineDeployment1 (1:2)
-	- machineDeployment2 (0:1)
-	- machineDeployment3 (0:1)
+3. Ideal machine size -> 2 cores CPU, 8Gi memory
+4. 3 machinedeployments/node groups in the cluster should be present, with following min:max limits
+    - machineDeployment1 (1:2)
+    - machineDeployment2 (0:1)
+    - machineDeployment3 (0:1)
+5. Make sure to **disable** calico-typha pods as they interfere with Integration test (especially ones related to scale-down due to under-utilization). Refer this [doc](https://github.com/gardener/gardener-extension-networking-calico/blob/master/docs/usage-as-end-user.md#example-networkingconfig-manifest) to disable it. 
 
 ## Cluster Autoscaler integration test suite
 
@@ -14,7 +16,8 @@ Cluster Autoscaler integration test suite runs a set of tests against an actual 
 
 1. Reconfigure the nodeGroups so that the test suite begins with only one nodeGroup, with 3 zones and 1 node running
 2. CA would run with leader-election= false
-2. The testcases will deploy and remove the workloads and nodes based on the test scenario
+3. The testcases will deploy and remove the workloads and nodes based on the test scenario. 
+4. During the tests any nodes present before the start of test suite is tainted with taint  having key `testing.node.gardener.cloud/initial-node-blocked`. This taint is removed after the test suite is done (succeeded or failed)
 
 ## Usage guide for running Cluster Autoscaler integration test suite
 
@@ -95,7 +98,7 @@ Cluster Autoscaler integration test suite runs a set of tests against an actual 
 5. Should not scale lower than the min limit for the nodegrp
 6. Should scale up on the basis of taints and not only on workload size.
 7. Should respond by shifting load if some taint is removed from a workload/node.
-8. AutoScaler scales up a node in zone where PV already present and pod is requesting that PV. CSI PV is used.
+8. Autoscaler scales up a node in zone where PV already present and pod is requesting that PV. CSI PV is used.
 9. Should not scale down a node with  annotation "cluster-autoscaler.kubernetes.io/scale-down-disabled": "true"
 10. Should scale down a node after the above annotation is removed from it.
 11. Should not scale if no machine in worker group can satisfy the requirements of the pod.
@@ -124,12 +127,12 @@ Cluster Autoscaler integration test suite runs a set of tests against an actual 
 20. Should be able to scale a node group down to 0
 21. Shouldn't perform scale up operation and should list unhealthy status if most of the cluster is broken
 22. shouldn't scale up when expendable pod is created 
-23. should scale up when non expendable pod is created
+23. should scale up when non-expandable pod is created
 24. shouldn't scale up when expendable pod is preempted
 25. should scale down when expendable pod is running 
-26. shouldn't scale down when non expendable pod is running
+26. shouldn't scale down when non-expandable pod is running
 
-### test for GPU Pool
+### Tests for GPU Pool
 
 1. Should scale up GPU pool from 0
 2. Should scale up GPU pool from 1

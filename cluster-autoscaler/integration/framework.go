@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+	"time"
 
 	"k8s.io/client-go/util/retry"
 
@@ -24,20 +25,32 @@ import (
 )
 
 const (
-	//annotaion which makes dwd skip the scaling of component
+	// annotaion which makes dwd skip the scaling of component
 	dwdAnnotation string = "dependency-watchdog.gardener.cloud/ignore-scaling"
-	//annotaion to skip the scaling down of exrta/unused node.
+	// annotaion to skip the scaling down of exrta/unused node.
 	ignoreScaledownAnnotation string = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
+
+	pollingTimeout       = 300 * time.Second
+	pollingInterval      = 2 * time.Second
+	initialNumberOfNodes = 1
 )
 
 var (
-	criticalAddonsOnlyTaint = "CriticalAddonsOnly"
-	disabledTaint           = "DisabledForAutoscalingTest"
-	smallMemory             = "50Mi"
-	mediumMemory            = "150Mi"
-	largeMemory             = "500Mi"
-	smallCPU                = "500m"
-	cpuResource             int64
+	criticalAddonsOnlyTaint             = "CriticalAddonsOnly"
+	disabledTaint                       = "DisabledForAutoscalingTest"
+	blockInitialNodesForSchedulingTaint = "testing.node.gardener.cloud/initial-node-blocked"
+	smallMemory                         = *resource.NewQuantity(50*1024*1024, resource.BinarySI)
+	mediumMemory                        = *resource.NewQuantity(150*1024*1024, resource.BinarySI)
+	largeMemory                         = *resource.NewQuantity(500*1024*1024, resource.BinarySI)
+	smallCPU                            = *resource.NewMilliQuantity(500, resource.DecimalSI)
+	cpuResource                         *resource.Quantity
+	tolerationsToInitialNodeTaint       = []v1.Toleration{
+		{
+			Key:      blockInitialNodesForSchedulingTaint,
+			Operator: v1.TolerationOpExists,
+			Effect:   v1.TaintEffectNoSchedule,
+		},
+	}
 )
 
 // rotateLogFile takes file name as input and returns a file object obtained by os.Create
@@ -52,6 +65,29 @@ func rotateLogFile(fileName string) (*os.File, error) {
 	}
 
 	return os.Create(fileName)
+}
+
+func (driver *Driver) addTaintsToInitialNodes() error {
+	gin.By("Marking nodes present before the tests as unschedulable")
+	nodes, _ := driver.targetCluster.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	for _, n := range nodes.Items {
+		if err := driver.addTaintsToNode(&n, map[string]bool{blockInitialNodesForSchedulingTaint: true}); err != nil {
+			return fmt.Errorf("some initial nodes might be tainted, tainting node %s failed with err: %q , aborting operation", n.Name, err)
+		}
+	}
+	return nil
+}
+
+func (driver *Driver) removeTaintsFromInitialNodes() error {
+	gin.By("Turning nodes present before the tests, back to schedulable")
+	nodes, _ := driver.targetCluster.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	// marking every node schedulable as this method is called either in BeforeSuite() or AfterSuite()
+	for _, n := range nodes.Items {
+		if err := driver.removeTaintsFromNode(&n, false, map[string]bool{blockInitialNodesForSchedulingTaint: true}); err != nil {
+			return fmt.Errorf("some initial nodes might be left tainted, removing taint from node %s failed with err: %q , aborting operation", n.Name, err)
+		}
+	}
+	return nil
 }
 
 func (driver *Driver) adjustNodeGroups() error {
@@ -94,7 +130,7 @@ func (c *Cluster) getNumberOfReadyNodes() int16 {
 	nodes, _ := c.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	count := 0
 	for _, n := range nodes.Items {
-		cpuResource, _ = (n.Status.Capacity.Cpu()).AsInt64()
+		cpuResource = n.Status.Capacity.Cpu()
 		for _, nodeCondition := range n.Status.Conditions {
 			if nodeCondition.Type == "Ready" && nodeCondition.Status == "True" {
 				count++
@@ -284,7 +320,7 @@ func getDeploymentObjectWithVolumeReq(deploymentName string, claimName string) *
 	return deployment
 }
 
-func getDeploymentObject(replicas int32, resourceCpu string, resourceMemory string, workloadName string) *appv1.Deployment {
+func getDeploymentObject(replicas int32, resourceCPU resource.Quantity, resourceMemory resource.Quantity, workloadName string, tolerations []v1.Toleration) *appv1.Deployment {
 	deployment := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      workloadName,
@@ -315,12 +351,13 @@ func getDeploymentObject(replicas int32, resourceCpu string, resourceMemory stri
 							},
 							Resources: v1.ResourceRequirements{
 								Requests: v1.ResourceList{
-									v1.ResourceCPU:    resource.MustParse(resourceCpu),
-									v1.ResourceMemory: resource.MustParse(resourceMemory),
+									v1.ResourceCPU:    resourceCPU,
+									v1.ResourceMemory: resourceMemory,
 								},
 							},
 						},
 					},
+					Tolerations: tolerations,
 				},
 			},
 		},
@@ -328,8 +365,17 @@ func getDeploymentObject(replicas int32, resourceCpu string, resourceMemory stri
 	return deployment
 }
 
-func (driver *Driver) deployWorkload(replicas int32, workloadName string) error {
-	deployment := getDeploymentObject(replicas, fmt.Sprint(cpuResource-1), mediumMemory, workloadName)
+func (driver *Driver) deployWorkload(replicas int32, workloadName string, canTolerateTaintPlacedOnInitialNodes bool) error {
+	// TODO(himanshu-kun): Remove such a dependency on approximating system components space . This changes over time.
+	assumedSystemComponentsUsedSpace := *resource.NewMilliQuantity(1000, resource.DecimalSI)
+	approxCPURequested := cpuResource.DeepCopy()
+	approxCPURequested.Sub(assumedSystemComponentsUsedSpace)
+	var deployment *appv1.Deployment
+	if canTolerateTaintPlacedOnInitialNodes {
+		deployment = getDeploymentObject(replicas, approxCPURequested, mediumMemory, workloadName, tolerationsToInitialNodeTaint)
+	} else {
+		deployment = getDeploymentObject(replicas, approxCPURequested, mediumMemory, workloadName, nil)
+	}
 	_, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		return err
@@ -337,8 +383,17 @@ func (driver *Driver) deployWorkload(replicas int32, workloadName string) error 
 	return nil
 }
 
-func (driver *Driver) deployLargeWorkload(replicas int32, workloadName string) error {
-	deployment := getDeploymentObject(replicas, fmt.Sprint(cpuResource+1), largeMemory, "large-"+workloadName)
+func (driver *Driver) deployLargeWorkload(replicas int32, workloadName string, canTolerateTaintPlacedOnInitialNodes bool) error {
+	// TODO(himanshu-kun): Remove such an approximation
+	extraCPURequest := *resource.NewMilliQuantity(1000, resource.DecimalSI)
+	cpuRequested := cpuResource.DeepCopy()
+	cpuRequested.Add(extraCPURequest)
+	var deployment *appv1.Deployment
+	if canTolerateTaintPlacedOnInitialNodes {
+		deployment = getDeploymentObject(replicas, cpuRequested, largeMemory, "large-"+workloadName, tolerationsToInitialNodeTaint)
+	} else {
+		deployment = getDeploymentObject(replicas, cpuRequested, largeMemory, "large-"+workloadName, nil)
+	}
 	_, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		return err
@@ -346,8 +401,13 @@ func (driver *Driver) deployLargeWorkload(replicas int32, workloadName string) e
 	return nil
 }
 
-func (driver *Driver) deploySmallWorkload(replicas int32, workloadName string) error {
-	deployment := getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName)
+func (driver *Driver) deploySmallWorkload(replicas int32, workloadName string, canTolerateTaintPlacedOnInitialNodes bool) error {
+	var deployment *appv1.Deployment
+	if canTolerateTaintPlacedOnInitialNodes {
+		deployment = getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName, tolerationsToInitialNodeTaint)
+	} else {
+		deployment = getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName, nil)
+	}
 	_, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		return err
@@ -380,7 +440,7 @@ func (driver *Driver) getOldestAndLatestNode() (*v1.Node, *v1.Node, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	//sorting in ascending order of creation timeStamp
+	// sorting in ascending order of creation timeStamp
 	sort.Slice(nodeList.Items, func(i, j int) bool {
 		return nodeList.Items[i].ObjectMeta.CreationTimestamp.Before(&nodeList.Items[j].ObjectMeta.CreationTimestamp)
 	})
@@ -407,23 +467,30 @@ func (driver *Driver) removeAnnotationFromNode(node *v1.Node) error {
 	return nil
 }
 
-func (driver *Driver) makeNodeUnschedulable(node *v1.Node) error {
+// CriticalAddonsOnlyError implements the `error` interface, and signifies the
+// presence of the `CriticalAddonsOnly` taint on the node.
+type CriticalAddonsOnlyError struct{}
+
+func (CriticalAddonsOnlyError) Error() string {
+	return "criticalAddonsOnly taint found on node"
+}
+
+func (driver *Driver) addTaintsToNode(node *v1.Node, taintKeysToAdd map[string]bool) error {
 	gin.By(fmt.Sprintf("Taint node %s", node.Name))
 	for j := 0; j < 3; j++ {
 		freshNode, err := driver.targetCluster.Clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
-		for _, taint := range freshNode.Spec.Taints {
-			if taint.Key == disabledTaint {
-				return nil
-			}
+
+		for taintKey := range taintKeysToAdd {
+			freshNode.Spec.Taints = append(freshNode.Spec.Taints, v1.Taint{
+				Key:    taintKey,
+				Value:  "true",
+				Effect: v1.TaintEffectNoSchedule,
+			})
 		}
-		freshNode.Spec.Taints = append(freshNode.Spec.Taints, v1.Taint{
-			Key:    disabledTaint,
-			Value:  "DisabledForTest",
-			Effect: v1.TaintEffectNoSchedule,
-		})
+
 		_, err = driver.targetCluster.Clientset.CoreV1().Nodes().Update(context.TODO(), freshNode, metav1.UpdateOptions{})
 		if err == nil {
 			return nil
@@ -436,16 +503,12 @@ func (driver *Driver) makeNodeUnschedulable(node *v1.Node) error {
 	return fmt.Errorf("failed to taint node in allowed number of retries")
 }
 
-// CriticalAddonsOnlyError implements the `error` interface, and signifies the
-// presence of the `CriticalAddonsOnly` taint on the node.
-type CriticalAddonsOnlyError struct{}
+func (driver *Driver) removeTaintsFromNode(node *v1.Node, failIfCriticalAddonsOnlyTaintPresent bool, taintKeysToRemove map[string]bool) error {
+	if len(taintKeysToRemove) == 0 {
+		return nil
+	}
 
-func (CriticalAddonsOnlyError) Error() string {
-	return "criticalAddonsOnly taint found on node"
-}
-
-func (driver *Driver) makeNodeSchedulable(node *v1.Node, failOnCriticalAddonsOnly bool) error {
-	gin.By(fmt.Sprintf("Remove taint from node %s", node.Name))
+	gin.By(fmt.Sprintf("Remove taint(s) from node %s", node.Name))
 	for j := 0; j < 3; j++ {
 		freshNode, err := driver.targetCluster.Clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if err != nil {
@@ -453,17 +516,14 @@ func (driver *Driver) makeNodeSchedulable(node *v1.Node, failOnCriticalAddonsOnl
 		}
 		var newTaints []v1.Taint
 		for _, taint := range freshNode.Spec.Taints {
-			if failOnCriticalAddonsOnly && taint.Key == criticalAddonsOnlyTaint {
+			if failIfCriticalAddonsOnlyTaintPresent && taint.Key == criticalAddonsOnlyTaint {
 				return CriticalAddonsOnlyError{}
 			}
-			if taint.Key != disabledTaint {
+			if _, present := taintKeysToRemove[taint.Key]; !present {
 				newTaints = append(newTaints, taint)
 			}
 		}
 
-		if len(newTaints) == len(freshNode.Spec.Taints) {
-			return nil
-		}
 		freshNode.Spec.Taints = newTaints
 		_, err = driver.targetCluster.Clientset.CoreV1().Nodes().Update(context.TODO(), freshNode, metav1.UpdateOptions{})
 		if err == nil {

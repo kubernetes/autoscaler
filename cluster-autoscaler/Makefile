@@ -123,6 +123,8 @@ start:
 			--scale-down-delay-after-add=10s \
 			--scale-down-delay-after-failure=2s \
 			--v=4 \
+			--ignore-taint=node.gardener.cloud/critical-components-not-ready \
+			--ignore-taint=testing.node.gardener.cloud/initial-node-blocked \
 			--expander=least-waste \
 			--scale-down-unneeded-time=5s \
 			--balance-similar-node-groups=true \
