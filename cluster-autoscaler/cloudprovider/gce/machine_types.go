@@ -57,7 +57,7 @@ func GetMachineFamily(machineType string) (string, error) {
 	if len(parts) < 2 {
 		return "", fmt.Errorf("unable to parse machine type %q", machineType)
 	}
-	if parts[0] == "custom" {
+	if parts[0] == "custom" || parts[0] == "f1" || parts[0] == "g1" {
 		return "n1", nil
 	}
 	return parts[0], nil
