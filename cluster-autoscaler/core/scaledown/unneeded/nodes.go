@@ -17,6 +17,7 @@ limitations under the License.
 package unneeded
 
 import (
+	"math"
 	"reflect"
 	"time"
 
@@ -121,10 +122,11 @@ func (n *Nodes) RemovableAt(context *context.AutoscalingContext, ts time.Time, r
 	nodeGroupSize := utils.GetNodeGroupSizeMap(context.CloudProvider)
 	resourcesLeftCopy := resourcesLeft.DeepCopy()
 	emptyNodes, drainNodes := n.splitEmptyAndNonEmptyNodes()
+	nodeGroupToBeRemovedCounter := make(map[string]int)
 
 	for nodeName, v := range emptyNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
-		if r := n.unremovableReason(context, v, ts, nodeGroupSize, resourcesLeftCopy, resourcesWithLimits, as); r != simulator.NoReason {
+		if r := n.unremovableReason(context, v, ts, nodeGroupSize, resourcesLeftCopy, resourcesWithLimits, as, nodeGroupToBeRemovedCounter); r != simulator.NoReason {
 			unremovable = append(unremovable, &simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
 		}
@@ -132,7 +134,7 @@ func (n *Nodes) RemovableAt(context *context.AutoscalingContext, ts time.Time, r
 	}
 	for nodeName, v := range drainNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
-		if r := n.unremovableReason(context, v, ts, nodeGroupSize, resourcesLeftCopy, resourcesWithLimits, as); r != simulator.NoReason {
+		if r := n.unremovableReason(context, v, ts, nodeGroupSize, resourcesLeftCopy, resourcesWithLimits, as, nodeGroupToBeRemovedCounter); r != simulator.NoReason {
 			unremovable = append(unremovable, &simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
 		}
@@ -141,7 +143,7 @@ func (n *Nodes) RemovableAt(context *context.AutoscalingContext, ts time.Time, r
 	return
 }
 
-func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, ts time.Time, nodeGroupSize map[string]int, resourcesLeft resource.Limits, resourcesWithLimits []string, as scaledown.ActuationStatus) simulator.UnremovableReason {
+func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, ts time.Time, nodeGroupSize map[string]int, resourcesLeft resource.Limits, resourcesWithLimits []string, as scaledown.ActuationStatus, nodeGroupToBeRemovedCounter map[string]int) simulator.UnremovableReason {
 	node := v.ntbr.Node
 	// Check if node is marked with no scale down annotation.
 	if eligibility.HasNoScaleDownAnnotation(node) {
@@ -206,6 +208,17 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, 
 			}
 		}
 		return simulator.MinimalResourceLimitExceeded
+	}
+
+	if context.ScaleDownBufferRatio != 0.0 {
+		// always leave a buffer of nodes to not scale down
+		// this always needs to be the last check since it assumes everything else is scaled down
+		buffer := int(math.Round(float64(nodeGroupSize[nodeGroup.Id()]) * context.ScaleDownBufferRatio))
+		if nodeGroupToBeRemovedCounter[nodeGroup.Id()] <= buffer {
+			klog.V(4).Infof("Skipping %s - buffer %v not reached for %v", node.Name, buffer, nodeGroup.Id())
+			nodeGroupToBeRemovedCounter[nodeGroup.Id()]++ // so next node might pass ...
+			return simulator.ScaleDownDisabledAnnotation  // TODO: make our own reason and see why that is needed
+		}
 	}
 
 	nodeGroupSize[nodeGroup.Id()]--

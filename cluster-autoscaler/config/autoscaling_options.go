@@ -149,6 +149,8 @@ type AutoscalingOptions struct {
 	// The formula to calculate additional candidates number is following:
 	// max(#nodes * ScaleDownCandidatesPoolRatio, ScaleDownCandidatesPoolMinCount)
 	ScaleDownCandidatesPoolMinCount int
+	// ScaleDownBufferRatio Ratio of empty or underutilized nodes to leave as capacity buffer per nodegroup
+	ScaleDownBufferRatio float64
 	// ScaleDownSimulationTimeout defines the maximum time that can be
 	// spent on scale down simulation.
 	ScaleDownSimulationTimeout time.Duration
