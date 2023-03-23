@@ -231,8 +231,13 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildNodeGroupLabels(n))
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+
+	nodeGroupLabels, err := buildNodeGroupLabels(n)
+	if err != nil {
+		return nil, err
+	}
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, nodeGroupLabels)
 
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
 	nodeInfo.SetNode(&node)
@@ -313,13 +318,19 @@ func newNodeName(n *hetznerNodeGroup) string {
 	return fmt.Sprintf("%s-%x", n.id, rand.Int63())
 }
 
-func buildNodeGroupLabels(n *hetznerNodeGroup) map[string]string {
+func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
+	archLabel, err := instanceTypeArch(n.manager, n.instanceType)
+	if err != nil {
+		return nil, err
+	}
+
 	return map[string]string{
 		apiv1.LabelInstanceType:      n.instanceType,
-		apiv1.LabelZoneRegionStable:  n.region,
+		apiv1.LabelTopologyRegion:    n.region,
+		apiv1.LabelArchStable:        archLabel,
 		"csi.hetzner.cloud/location": n.region,
 		nodeGroupLabel:               n.id,
-	}
+	}, nil
 }
 
 func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.ResourceList, error) {
@@ -350,6 +361,22 @@ func serverTypeAvailable(manager *hetznerManager, instanceType string, region st
 	}
 
 	return false, nil
+}
+
+func instanceTypeArch(manager *hetznerManager, instanceType string) (string, error) {
+	serverType, err := manager.cachedServerType.getServerType(instanceType)
+	if err != nil {
+		return "", err
+	}
+
+	switch serverType.Architecture {
+	case hcloud.ArchitectureARM:
+		return "arm64", nil
+	case hcloud.ArchitectureX86:
+		return "amd64", nil
+	default:
+		return "amd64", nil
+	}
 }
 
 func createServer(n *hetznerNodeGroup) error {
