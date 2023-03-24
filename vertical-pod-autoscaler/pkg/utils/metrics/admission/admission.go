@@ -82,7 +82,7 @@ var (
 		"Time spent in various parts of VPA admission controller")
 )
 
-// Register initializes all metrics for VPA Admission Contoller
+// Register initializes all metrics for VPA Admission Controller
 func Register() {
 	prometheus.MustRegister(admissionCount)
 	prometheus.MustRegister(admissionLatency)

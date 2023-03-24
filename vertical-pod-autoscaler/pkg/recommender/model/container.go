@@ -32,7 +32,7 @@ type ContainerUsageSample struct {
 	MeasureStart time.Time
 	// Average CPU usage in cores or memory usage in bytes.
 	Usage ResourceAmount
-	// CPU or memory request at the time of measurment.
+	// CPU or memory request at the time of measurement.
 	Request ResourceAmount
 	// Which resource is this sample for.
 	Resource ResourceName
