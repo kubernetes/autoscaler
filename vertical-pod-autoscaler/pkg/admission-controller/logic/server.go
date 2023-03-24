@@ -19,7 +19,7 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"k8s.io/api/admission/v1"
@@ -133,7 +133,7 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 
 	var body []byte
 	if r.Body != nil {
-		if data, err := ioutil.ReadAll(r.Body); err == nil {
+		if data, err := io.ReadAll(r.Body); err == nil {
 			body = data
 		}
 	}

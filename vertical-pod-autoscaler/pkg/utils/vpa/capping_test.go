@@ -659,7 +659,7 @@ func TestApplyPodLimitRange(t *testing.T) {
 			},
 		},
 		{
-			name: "cap mem request to pod min, only one container with recomendation",
+			name: "cap mem request to pod min, only one container with recommendation",
 			resources: []vpa_types.RecommendedContainerResources{
 				{
 					ContainerName: "container1",
