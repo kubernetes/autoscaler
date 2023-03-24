@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/cluster-autoscaler
 
-go 1.16
+go 1.19
 
 require (
 	cloud.google.com/go v0.81.0
