@@ -67,7 +67,6 @@ const (
 
 var (
 	resourceConsumerImage = imageutils.GetE2EImage(imageutils.ResourceConsumer)
-	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "50000"}
 )
 
 var (
@@ -436,16 +435,17 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 	ginkgo.By(fmt.Sprintf("Running OOMing RC %s with %v replicas", name, replicas))
 
 	rcConfig := testutils.RCConfig{
-		Client:      c,
-		Image:       stressImage,
-		Command:     stressCommand,
+		Client: c,
+		Image:  stressImage,
+		// request exactly 1025 MiB, in a single chunk (1 MiB above the limit)
+		Command:     []string{"/stress", "--mem-total", "1074790400", "--logtostderr", "--mem-alloc-size", "1074790400"},
 		Name:        name,
 		Namespace:   ns,
 		Timeout:     timeoutRC,
 		Replicas:    replicas,
 		Annotations: make(map[string]string),
-		MemRequest:  1024 * 1024 * 300,
-		MemLimit:    1024 * 1024 * 500,
+		MemRequest:  1024 * 1024 * 1024,
+		MemLimit:    1024 * 1024 * 1024,
 	}
 
 	dpConfig := testutils.DeploymentConfig{
