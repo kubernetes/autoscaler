@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -454,5 +455,15 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 	ginkgo.By(fmt.Sprintf("Creating deployment %s in namespace %s", dpConfig.Name, dpConfig.Namespace))
 	dpConfig.NodeDumpFunc = e2edebug.DumpNodeDebugInfo
 	dpConfig.ContainerDumpFunc = e2ekubectl.LogFailedContainers
-	framework.ExpectNoError(testutils.RunDeployment(dpConfig))
+	// Allow containers to fail (they should be OOM-killed).
+	failures := 999
+	dpConfig.MaxContainerFailures = &failures
+	// Decrease the timeout since the containers are note expected to actually get up.
+	dpConfig.Timeout = 10 * time.Second
+	dpConfig.PollInterval = 5 * time.Second
+	err := testutils.RunDeployment(dpConfig)
+	// Only ignore an error about Pods not starting properly - they're not expected to.
+	if err != nil && !strings.Contains(err.Error(), "pods started out of") {
+		framework.ExpectNoError(err)
+	}
 }
