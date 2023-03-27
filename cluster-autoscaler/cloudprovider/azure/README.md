@@ -103,6 +103,10 @@ Make a copy of [cluster-autoscaler-vmss.yaml](examples/cluster-autoscaler-vmss.y
 - SubscriptionID: `<base64-encoded-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 
+By default VMSS Flex Scale set support is disabled. To Enable the support for VMSS Flex Scale Set, add base64 encoded value of 'true'.
+
+- EnableVmssFlex: `<base64-encoded-boolean-value>`
+
 > **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.

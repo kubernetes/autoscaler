@@ -307,7 +307,6 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 
 // GetFlexibleScaleSetVms returns list of nodes for flexible scale set.
 func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *retry.Error) {
-	klog.V(4).Infof("GetFlexibleScaleSetVms: starts")
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
@@ -535,56 +534,75 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
 	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 
-	set, err := scaleSet.getVMSSFromCache()
+	orchestrationMode, err := scaleSet.getOrchestrationMode()
 
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return nil, err
 	}
 
-	klog.V(4).Infof("VMSS: orchestration Mode %s", set.VirtualMachineScaleSetProperties.OrchestrationMode)
+	klog.V(4).Infof("VMSS: orchestration Mode %s", orchestrationMode)
 
-	if set.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Uniform {
-		vms, rerr := scaleSet.GetScaleSetVms()
-		if rerr != nil {
-			if isAzureRequestsThrottled(rerr) {
-				// Log a warning and update the instance refresh time so that it would retry after cache expiration
-				klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
-				scaleSet.lastInstanceRefresh = lastRefresh
-				return scaleSet.instanceCache, nil
-			}
-			return nil, rerr.Error()
+	if orchestrationMode == compute.Uniform {
+		err := buildScaleSetCache(scaleSet, lastRefresh)
+
+		if err != nil {
+			return nil, err
 		}
 
-		scaleSet.instanceCache = buildInstanceCache(vms)
-		scaleSet.lastInstanceRefresh = lastRefresh
-		klog.V(4).Infof("Nodes: returns")
-
-	} else if set.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
+	} else if orchestrationMode == compute.Flexible {
 		if scaleSet.manager.config.EnableVmssFlex {
-			vms, rerr := scaleSet.GetFlexibleScaleSetVms()
-			if rerr != nil {
-				if isAzureRequestsThrottled(rerr) {
-					// Log a warning and update the instance refresh time so that it would retry after cache expiration
-					klog.Warningf("GetFlexibleScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
-					scaleSet.lastInstanceRefresh = lastRefresh
-					return scaleSet.instanceCache, nil
-				}
-				return nil, rerr.Error()
-			}
+			err := buildScaleSetCacheForFlex(scaleSet, lastRefresh)
 
-			scaleSet.instanceCache = buildInstanceCacheForFlexVms(vms)
-			scaleSet.lastInstanceRefresh = lastRefresh
-			klog.V(4).Infof("Nodes: returns")
+			if err != nil {
+				return nil, err
+			}
 		} else {
-			return nil, fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enbaleVmssFlex' feature flag is turned off", scaleSet.Name)
+			return nil, fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enableVmssFlex' feature flag is turned off", scaleSet.Name)
 		}
 
 	} else {
 		return nil, fmt.Errorf("Failed to determine orchestration mode for vmss %q", scaleSet.Name)
 	}
 
+	klog.V(4).Infof("Nodes: returns")
 	return scaleSet.instanceCache, nil
+}
+
+func buildScaleSetCache(scaleSet *ScaleSet, lastRefresh time.Time) error {
+	vms, rerr := scaleSet.GetScaleSetVms()
+	if rerr != nil {
+		if isAzureRequestsThrottled(rerr) {
+			// Log a warning and update the instance refresh time so that it would retry after cache expiration
+			klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
+			scaleSet.lastInstanceRefresh = lastRefresh
+			return nil
+		}
+		return rerr.Error()
+	}
+
+	scaleSet.instanceCache = buildInstanceCache(vms)
+	scaleSet.lastInstanceRefresh = lastRefresh
+
+	return nil
+}
+
+func buildScaleSetCacheForFlex(scaleSet *ScaleSet, lastRefresh time.Time) error {
+	vms, rerr := scaleSet.GetFlexibleScaleSetVms()
+	if rerr != nil {
+		if isAzureRequestsThrottled(rerr) {
+			// Log a warning and update the instance refresh time so that it would retry after cache expiration
+			klog.Warningf("GetFlexibleScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
+			scaleSet.lastInstanceRefresh = lastRefresh
+			return nil
+		}
+		return rerr.Error()
+	}
+
+	scaleSet.instanceCache = buildInstanceCacheForFlexVms(vms)
+	scaleSet.lastInstanceRefresh = lastRefresh
+
+	return nil
 }
 
 // Note that the GetScaleSetVms() results is not used directly because for the List endpoint,
@@ -696,4 +714,13 @@ func (scaleSet *ScaleSet) invalidateLastSizeRefreshWithLock() {
 	scaleSet.sizeMutex.Lock()
 	scaleSet.lastSizeRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
 	scaleSet.sizeMutex.Unlock()
+}
+
+func (scaleSet *ScaleSet) getOrchestrationMode() (compute.OrchestrationMode, error) {
+	vmss, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
+		return "", err
+	}
+	return vmss.OrchestrationMode, nil
 }
