@@ -318,6 +318,21 @@ Containers:
 
 Though enough for the majority of installations, the default PodSecurityPolicy _could_ be too restrictive depending on the specifics of your release. Please make sure to check that the template fits with any customizations made or disable it by setting `rbac.pspEnabled` to `false`.
 
+### VerticalPodAutoscaler
+
+The chart can install a [`VerticalPodAutoscaler`](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md) for the Deployment if needed. A VPA can help minimize wasted resources when usage spikes periodically or remediate containers that are being OOMKilled.
+
+The following example snippet can be used to install VPA that allows scaling down from the default recommendations of the deployment template:
+
+```yaml
+vpa:
+  enabled: true
+  containerPolicy:
+    minAllowed:
+      cpu: 20m
+      memory: 50Mi
+```
+
 ## Values
 
 | Key | Type | Default | Description |
@@ -413,3 +428,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | tolerations | list | `[]` | List of node taints to tolerate (requires Kubernetes >= 1.6). |
 | topologySpreadConstraints | list | `[]` | You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19). |
 | updateStrategy | object | `{}` | [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| vpa | object | `{"containerPolicy":{},"enabled":false,"updateMode":"Auto"}` | Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment. |
+| vpa.containerPolicy | object | `{}` | [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled. |
+| vpa.enabled | bool | `false` | If true, creates a VerticalPodAutoscaler. |
+| vpa.updateMode | string | `"Auto"` | [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124) |

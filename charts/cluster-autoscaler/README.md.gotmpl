@@ -318,4 +318,19 @@ Containers:
 
 Though enough for the majority of installations, the default PodSecurityPolicy _could_ be too restrictive depending on the specifics of your release. Please make sure to check that the template fits with any customizations made or disable it by setting `rbac.pspEnabled` to `false`.
 
+### VerticalPodAutoscaler
+
+The chart can install a [`VerticalPodAutoscaler`](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md) for the Deployment if needed. A VPA can help minimize wasted resources when usage spikes periodically or remediate containers that are being OOMKilled.
+
+The following example snippet can be used to install VPA that allows scaling down from the default recommendations of the deployment template:
+
+```yaml
+vpa:
+  enabled: true
+  containerPolicy:
+    minAllowed:
+      cpu: 20m
+      memory: 50Mi
+```
+
 {{ template "chart.valuesSection" . }}

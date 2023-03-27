@@ -387,3 +387,12 @@ updateStrategy: {}
   #   maxSurge: 1
   #   maxUnavailable: 0
   # type: RollingUpdate
+
+# vpa -- Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment.
+vpa:
+  # vpa.enabled -- If true, creates a VerticalPodAutoscaler.
+  enabled: false
+  # vpa.updateMode -- [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124)
+  updateMode: "Auto"
+  # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
+  containerPolicy: {}
