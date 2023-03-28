@@ -190,6 +190,8 @@ var (
 	emitPerNodeGroupMetrics  = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
 	debuggingSnapshotEnabled = flag.Bool("debugging-snapshot-enabled", false, "Whether the debugging snapshot of cluster autoscaler feature is enabled")
 	nodeInfoCacheExpireTime  = flag.Duration("node-info-cache-expire-time", 87600*time.Hour, "Node Info cache expire time for each item. Default value is 10 years.")
+	maxNodesPerScaleUp                 = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
+	maxNodeGroupBinpackingDuration     = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -269,6 +271,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
 		DaemonSetEvictionForOccupiedNodes:  *daemonSetEvictionForOccupiedNodes,
 		UserAgent:                          *userAgent,
+		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,
+		MaxNodeGroupBinpackingDuration:     *maxNodeGroupBinpackingDuration,
 	}
 }
 
