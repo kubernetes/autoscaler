@@ -28,17 +28,6 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// ManagerFactory is a component that creates a new instance of the scale up manager.
-type ManagerFactory interface {
-	// NewManager builds a new instance of the scale up manager.
-	NewManager(
-		autoscalingContext *context.AutoscalingContext,
-		processors *ca_processors.AutoscalingProcessors,
-		clusterStateRegistry *clusterstate.ClusterStateRegistry,
-		ignoredTaints taints.TaintKeySet,
-	) Orchestrator
-}
-
 // Orchestrator is a component that picks the node group to resize and triggers
 // creation of needed instances.
 type Orchestrator interface {
