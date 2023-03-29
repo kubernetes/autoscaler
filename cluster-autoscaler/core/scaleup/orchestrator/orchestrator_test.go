@@ -1062,8 +1062,8 @@ func TestAuthError(t *testing.T) {
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(nil, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterStateRegistry, nil)
-	scaleUpWrapper := suOrchestrator.(*ScaleUpOrchestrator)
-	aerr := scaleUpWrapper.executeScaleUp(info, "", "", time.Now())
+	scaleUpOrchestrator := suOrchestrator.(*ScaleUpOrchestrator)
+	aerr := scaleUpOrchestrator.executeScaleUp(info, "", "", time.Now())
 	assert.Error(t, aerr)
 
 	req, err := http.NewRequest("GET", "/", nil)

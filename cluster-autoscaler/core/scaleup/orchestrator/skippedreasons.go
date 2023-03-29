@@ -26,6 +26,11 @@ type SkippedReasons struct {
 	messages []string
 }
 
+// NewSkippedReasons creates new SkippedReason object.
+func NewSkippedReasons(m string) *SkippedReasons {
+	return &SkippedReasons{[]string{m}}
+}
+
 // Reasons returns a slice of reasons why the node group was not considered for scale up.
 func (sr *SkippedReasons) Reasons() []string {
 	return sr.messages
@@ -33,14 +38,14 @@ func (sr *SkippedReasons) Reasons() []string {
 
 var (
 	// BackoffReason node group is in backoff.
-	BackoffReason = &SkippedReasons{[]string{"in backoff after failed scale-up"}}
+	BackoffReason = NewSkippedReasons("in backoff after failed scale-up")
 	// MaxLimitReachedReason node group reached max size limit.
-	MaxLimitReachedReason = &SkippedReasons{[]string{"max node group size reached"}}
+	MaxLimitReachedReason = NewSkippedReasons("max node group size reached")
 	// NotReadyReason node group is not ready.
-	NotReadyReason = &SkippedReasons{[]string{"not ready for scale-up"}}
+	NotReadyReason = NewSkippedReasons("not ready for scale-up")
 )
 
 // MaxResourceLimitReached returns a reason describing which cluster wide resource limits were reached.
 func MaxResourceLimitReached(resources []string) *SkippedReasons {
-	return &SkippedReasons{[]string{fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", "))}}
+	return NewSkippedReasons(fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", ")))
 }
