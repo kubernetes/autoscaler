@@ -40,6 +40,7 @@ type MachineTypeKey struct {
 // - keep track of MIGs to instances mapping,
 // - keep track of MIGs configuration such as target size and basename,
 // - keep track of resource limiters and machine types,
+// - keep track of GCE reservations
 // - limit repetitive GCE API calls.
 //
 // Cache keeps these values and gives access to getters, setters and
@@ -66,6 +67,8 @@ type GceCache struct {
 	migBaseNameCache          map[GceRef]string
 	instanceTemplateNameCache map[GceRef]string
 	instanceTemplatesCache    map[GceRef]*gce.InstanceTemplate
+
+	reservationsCache map[GceRef][]*gce.Reservation
 }
 
 // NewGceCache creates empty GceCache.
@@ -81,6 +84,7 @@ func NewGceCache() *GceCache {
 		migBaseNameCache:          map[GceRef]string{},
 		instanceTemplateNameCache: map[GceRef]string{},
 		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
+		reservationsCache:         map[GceRef][]*gce.Reservation{},
 	}
 }
 
@@ -454,4 +458,30 @@ func (gc *GceCache) InvalidateAllMigBasenames() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.migBaseNameCache = make(map[GceRef]string)
+}
+
+func (gc *GceCache) GetReservations(ref GceRef) ([]*gce.Reservation, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	reservations, found := gc.reservationsCache[ref]
+	if found {
+		klog.V(5).Infof("GCE Reservations cache hit for %s", ref)
+	}
+	return reservations, found
+}
+
+func (gc *GceCache) SetReservations(ref GceRef, reservations []*gce.Reservation) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.reservationsCache[ref] = reservations
+}
+
+func (gc *GceCache) InvalidateAllReservations() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("GCE Reservations cache invalidated")
+	gc.reservationsCache = make(map[GceRef][]*gce.Reservation)
 }

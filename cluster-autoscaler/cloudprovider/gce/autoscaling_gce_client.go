@@ -78,6 +78,9 @@ type AutoscalingGceClient interface {
 	FetchZones(region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
 
+	// List a list of all the reservations that have been configured for the specified project.
+	FetchReservations() ([]*gce.Reservation, error)
+
 	// modifying resources
 	ResizeMig(GceRef, int64) error
 	DeleteInstances(migRef GceRef, instances []GceRef) error
@@ -507,4 +510,16 @@ func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regex
 		return nil, fmt.Errorf("cannot list managed instance groups: %v", err)
 	}
 	return links, nil
+}
+
+func (client *autoscalingGceClientV1) FetchReservations() ([]*gce.Reservation, error) {
+	reservations := make([]*gce.Reservation, 0)
+	call := client.gceService.Reservations.AggregatedList(client.projectId)
+	err := call.Pages(context.TODO(), func(ls *gce.ReservationAggregatedList) error {
+		for _, items := range ls.Items {
+			reservations = append(reservations, items.Reservations...)
+		}
+		return nil
+	})
+	return reservations, err
 }

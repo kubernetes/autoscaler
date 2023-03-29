@@ -49,6 +49,7 @@ import (
 const (
 	refreshInterval              = 1 * time.Minute
 	machinesRefreshInterval      = 1 * time.Hour
+	reservationsRefreshInterval  = 1 * time.Minute // low value to avoid race condition
 	httpTimeout                  = 30 * time.Second
 	scaleToZeroSupported         = true
 	autoDiscovererTypeMIG        = "mig"
@@ -93,7 +94,8 @@ type GceManager interface {
 	GetMigSize(mig Mig) (int64, error)
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
 	GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
-
+	// GetReservations returns list of reservations.
+	GetReservations() ([]*gce.Reservation, error)
 	// SetMigSize sets MIG size.
 	SetMigSize(mig Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
@@ -106,6 +108,7 @@ type gceManagerImpl struct {
 	cache                    *GceCache
 	lastRefresh              time.Time
 	machinesCacheLastRefresh time.Time
+	reservationsCacheLastRefresh time.Time
 	concurrentGceRefreshes   int
 
 	GceService      AutoscalingGceClient
@@ -210,6 +213,9 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 			klog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
+
+	// configurable delay between API calls, passed as a CA flag
+	manager. {tbd} Provider.RegenerateReservationsCache()
 
 	return manager, nil
 }
@@ -327,6 +333,10 @@ func (m *gceManagerImpl) forceRefresh() error {
 		return err
 	}
 	m.refreshAutoscalingOptions()
+
+	// refresh ?
+	m.clearReservationsCache()
+
 	m.lastRefresh = time.Now()
 	klog.V(2).Infof("Refreshed GCE resources, next refresh after %v", m.lastRefresh.Add(refreshInterval))
 	return nil
@@ -488,6 +498,17 @@ func (m *gceManagerImpl) clearMachinesCache() {
 	klog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
 }
 
+func (m *gceManagerImpl) clearReservationsCache() {
+	if m.reservationsCacheLastRefresh.Add(reservationsRefreshInterval).After(time.Now()) {
+		return
+	}
+
+	m.cache.InvalidateAllReservations()
+	nextRefresh := time.Now()
+	m.reservationsCacheLastRefresh = nextRefresh
+	klog.V(2).Infof("Cleared reservations cache, next clear after %v", nextRefresh)
+}
+
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
 func getProjectAndLocation(regional bool) (string, string, error) {
 	result, err := metadata.Get("instance/zone")
@@ -553,6 +574,10 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	}
 
 	return links, nil
+}
+
+func (m *gceManagerImpl) GetReservations() ([]*gce.Reservation, error) {
+	return m.GceService.FetchReservations()
 }
 
 // GetMigOptions merges default options with user-provided options as specified in the MIG's instance template metadata

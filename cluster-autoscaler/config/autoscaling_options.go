@@ -225,6 +225,8 @@ type AutoscalingOptions struct {
 	MaxDrainParallelism int
 	// GceExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
 	GceExpanderEphemeralStorageSupport bool
+	// GceReservationsEnabled is whether scale-up takes GCE Reservations into account.
+	GceReservationsEnabled bool
 	// RecordDuplicatedEvents controls whether events should be duplicated within a 5 minute window.
 	RecordDuplicatedEvents bool
 	// MaxNodesPerScaleUp controls how many nodes can be added in a single scale-up.
