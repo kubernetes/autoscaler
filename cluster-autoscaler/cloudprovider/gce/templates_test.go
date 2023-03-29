@@ -132,6 +132,22 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			isEphemeralStorageBlocked: true,
 		},
 		{
+			scenario: "os_distribution is unset, should default to cos",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: os_distribution=;os=linux;kube_reserved=cpu=0,memory=0,ephemeral-storage=0;BLOCK_EPH_STORAGE_BOOT_DISK=true\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			physicalCpu:               8,
+			physicalMemory:            200 * units.MiB,
+			bootDiskSizeGiB:           300,
+			reservedCpu:               "0m",
+			reservedMemory:            fmt.Sprintf("%v", 0*units.MiB),
+			reservedEphemeralStorage:  "0Gi",
+			kubeReserved:              true,
+			isEphemeralStorageBlocked: true,
+		},
+		{
 			scenario: "BLOCK_EPH_STORAGE_BOOT_DISK is false in kube-env",
 			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
