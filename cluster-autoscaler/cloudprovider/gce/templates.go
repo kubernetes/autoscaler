@@ -173,8 +173,10 @@ func (t *GceTemplateBuilder) MigOsInfo(migId string, template *gce.InstanceTempl
 
 	osDistribution := extractOperatingSystemDistributionFromKubeEnv(kubeEnvValue)
 	if osDistribution == OperatingSystemDistributionUnknown {
-		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
+		osDistribution = OperatingSystemDistributionDefault
+		klog.Errorf("could not obtain os-distribution from kube-env from template metadata, falling back to %q", osDistribution)
 	}
+
 	arch, err := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
 	if err != nil {
 		arch = DefaultArch
