@@ -229,8 +229,7 @@ hostNetwork: false
 image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
-  # image.tag -- Image tag
-  tag: v1.24.0
+  tag: ""  # If not defined, uses appVersion of Chart.yaml
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
