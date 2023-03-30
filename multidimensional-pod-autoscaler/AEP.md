@@ -82,7 +82,7 @@ When using HPA and VPA together to both reduce resource usage and guarantee appl
 Due to the independence of these two controllers, they can lead to an awkward situation where VPA tries to squeeze the pods into smaller sizes based on their measured utilization.
 Still, HPA tries to scale out the applications to improve the customized performance metrics.
 It is also [not recommended] to use HPA together with VPA for CPU or memory metrics.
-Therefore, there is a need to combine the two controllers so that horizontal and vertical scaling decisions are made in combination for an application to achieve both objectives, including resource efficiency and the application service-level agreements (SLA)/performance goals.
+Therefore, there is a need to combine the two controllers so that horizontal and vertical scaling decisions are made in combination for an application to achieve both objectives, including resource efficiency and the application service-level objectives (SLOs)/performance goals.
 However, existing VPA/HPA designs cannot accommodate such requirements.
 Manual fine-tuning the timing or frequency to do vertical/horizontal scaling and prioritization are usually needed for synchronization of the HPA and VPA.
 
@@ -114,7 +114,7 @@ Many studies in research show that combined horizontal and vertical scaling can 
 
 #### Different Scaling Actions for Different Types of Resources
 
-For certain workloads, to ensure a custom metric (e.g., throughput or request-serving latency), horizontal scaling typically controls the CPU resources effectively, and vertical scaling is typically effective in increasing or decreasing the allocated memory capacity per pod. Thus, there is a need to control different types of resources at the same time using different scaling actions. Existing VPA and HPA can control these separately. However, they cannot achieve the same objective, e.g., guarantee a custom metric within an SLA target, by controlling both dimensions with different resource types independently. For example, they can lead to an awkward situation where HPA tries to spin more pods based on the higher-than-threshold CPU usage while VPA tries to squeeze the size of each pod based on the lower memory usage (after scaling out by HPA). In the end, there will be a large number of small pods created for the workloads.
+For certain workloads, to ensure a custom metric (e.g., throughput or request-serving latency), horizontal scaling typically controls the CPU resources effectively, and vertical scaling is typically effective in increasing or decreasing the allocated memory capacity per pod. Thus, there is a need to control different types of resources at the same time using different scaling actions. Existing VPA and HPA can control these separately. However, they cannot achieve the same objective, e.g., guarantee a custom metric within an SLO target, by controlling both dimensions with different resource types independently. For example, they can lead to an awkward situation where HPA tries to spin more pods based on the higher-than-threshold CPU usage while VPA tries to squeeze the size of each pod based on the lower memory usage (after scaling out by HPA). In the end, there will be a large number of small pods created for the workloads.
 
 ## Design Details
 
@@ -125,7 +125,7 @@ Our proposed MPA framework consists of three controllers (i.e., a recommender, a
 **MPA API.** Application owners specify the autoscaling configurations which include:
 
 1. whether they only want to know the recommendations from MPA or they want MPA to directly actuate the autoscaling decisions;
-2. application SLAs (e.g., in terms of latency or throughput);
+2. application SLOs (e.g., in terms of latency or throughput);
 3. any custom metrics if there are; and
 4. other autoscaling configurations that exist in HPA and VPA (e.g., desired resource utilizations, container update policies, min and max number of replicas).
 
@@ -217,7 +217,7 @@ spec:
   constraints:
     minReplicas: min-num-replicas
     maxReplicas: max-num-replicas
-    applicationSLA: value  # customizable SLA for application metrics such as latency or throughput
+    applicationSLO: slo-value  # customizable SLO for application metrics such as latency or throughput
   resourcePolicy:
     containerControlledResources: [ memory, cpu ]  # Added cpu here as well
     container:
