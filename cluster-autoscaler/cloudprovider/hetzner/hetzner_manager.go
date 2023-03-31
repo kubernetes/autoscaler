@@ -18,7 +18,6 @@ package hetzner
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -45,7 +44,7 @@ type hetznerManager struct {
 	client           *hcloud.Client
 	nodeGroups       map[string]*hetznerNodeGroup
 	apiCallContext   context.Context
-	cloudInit        string
+	cloudInit        map[string]string
 	image            *hcloud.Image
 	sshKey           *hcloud.SSHKey
 	network          *hcloud.Network
@@ -63,11 +62,6 @@ func newManager() (*hetznerManager, error) {
 		return nil, errors.New("`HCLOUD_TOKEN` is not specified")
 	}
 
-	cloudInitBase64 := os.Getenv("HCLOUD_CLOUD_INIT")
-	if cloudInitBase64 == "" {
-		return nil, errors.New("`HCLOUD_CLOUD_INIT` is not specified")
-	}
-
 	client := hcloud.NewClient(
 		hcloud.WithToken(token),
 		hcloud.WithHTTPClient(httpClient),
@@ -75,10 +69,7 @@ func newManager() (*hetznerManager, error) {
 	)
 
 	ctx := context.Background()
-	cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
-	}
+	var err error
 
 	imageName := os.Getenv("HCLOUD_IMAGE")
 	if imageName == "" {
@@ -165,7 +156,6 @@ func newManager() (*hetznerManager, error) {
 	m := &hetznerManager{
 		client:           client,
 		nodeGroups:       make(map[string]*hetznerNodeGroup),
-		cloudInit:        string(cloudInit),
 		image:            image,
 		sshKey:           sshKey,
 		network:          network,

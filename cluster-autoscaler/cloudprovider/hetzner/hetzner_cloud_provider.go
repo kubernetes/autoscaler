@@ -17,7 +17,9 @@ limitations under the License.
 package hetzner
 
 import (
+	"encoding/base64"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -28,7 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	asErrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
@@ -107,7 +109,7 @@ func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, asErrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -205,6 +207,26 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 		if err != nil {
 			klog.Fatalf("Failed to get servers for for node pool %s error: %v", nodegroupSpec, err)
 		}
+
+		// Get this node's cloud-init
+		var cloudInitBase64 string
+		nodeCloudInitVar := fmt.Sprintf("HCLOUD_CLOUD_INIT_%s", spec.name)
+		if nodeSpecificCloudInit, ok := os.LookupEnv(nodeCloudInitVar); ok {
+			cloudInitBase64 = nodeSpecificCloudInit
+		} else {
+			cloudInitBase64 = os.Getenv("HCLOUD_CLOUD_INIT")
+		}
+
+		if cloudInitBase64 == "" {
+			klog.Fatalf("`HCLOUD_CLOUD_INIT or %s` is not specified", nodeCloudInitVar)
+		}
+
+		cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
+		if err != nil {
+			klog.Fatalf("failed to parse cloud init error: %s", err)
+		}
+
+		manager.cloudInit[spec.name] = string(cloudInit)
 
 		manager.nodeGroups[spec.name] = &hetznerNodeGroup{
 			manager:            manager,

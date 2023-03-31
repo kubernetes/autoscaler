@@ -356,7 +356,7 @@ func createServer(n *hetznerNodeGroup) error {
 	StartAfterCreate := true
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
-		UserData:         n.manager.cloudInit,
+		UserData:         n.manager.cloudInit[n.id],
 		Location:         &hcloud.Location{Name: n.region},
 		ServerType:       &hcloud.ServerType{Name: n.instanceType},
 		Image:            n.manager.image,
