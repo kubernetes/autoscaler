@@ -8,6 +8,8 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
 `HCLOUD_CLOUD_INIT` Base64 encoded Cloud Init yaml with commands to join the cluster, Sample [examples/cloud-init.txt for (Kubernetes 1.20.1)](examples/cloud-init.txt)
 
+`HCLOUD_{POOL_NAME}_CLOUD_INIT` Base64 encoded Cloud Init yaml. Allows for specifying a different cloud init per pool name. `{POOL_NAME}` should be the uppercase equivalent of the node group's name. e.g. `--nodes=0:2:cpx41:fsn1:test-pool` would look for `HCLOUD_TEST-POOL_CLOUD_INIT`. If not set it will default to `HCLOUD_CLOUD_INIT`.
+
 `HCLOUD_IMAGE` Defaults to `ubuntu-20.04`, @see https://docs.hetzner.cloud/#images. You can also use an image ID here (e.g. `15512617`), or a label selector associated with a custom snapshot (e.g. `customized_ubuntu=true`). The most recent snapshot will be used in the latter case.
 
 `HCLOUD_NETWORK` Default empty , The name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
@@ -18,7 +20,11 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
 `HCLOUD_PUBLIC_IPV4` Default true , Whether the server is created with a public IPv4 address or not, @see https://docs.hetzner.cloud/#primary-ips
 
+`HCLOUD_{POOL_NAME}_PUBLIC_IPV4` is the pool name equivalent of `HCLOUD_PUBLIC_IPV4` and follows the same rules as `HCLOUD_CLOUD_INIT` above.
+
 `HCLOUD_PUBLIC_IPV6` Default true , Whether the server is created with a public IPv6 address or not, @see https://docs.hetzner.cloud/#primary-ips
+
+`HCLOUD_{POOL_NAME}_PUBLIC_IPV6` is the pool name equivalent of `HCLOUD_PUBLIC_IPV6` and follows the same rules as `HCLOUD_CLOUD_INIT` above.
 
 Node groups must be defined with the `--nodes=<min-servers>:<max-servers>:<instance-type>:<region>:<name>` flag.
 

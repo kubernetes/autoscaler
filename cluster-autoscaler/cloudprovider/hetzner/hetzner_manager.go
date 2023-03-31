@@ -138,12 +138,15 @@ func newManager() (*hetznerManager, error) {
 	m := &hetznerManager{
 		client:           client,
 		nodeGroups:       make(map[string]*hetznerNodeGroup),
+		apiCallContext:   ctx,
+		cloudInit:        make(map[string]string),
 		image:            image,
 		sshKey:           sshKey,
 		network:          network,
 		firewall:         firewall,
 		createTimeout:    createTimeout,
-		apiCallContext:   ctx,
+		publicIPv4:       make(map[string]bool),
+		publicIPv6:       make(map[string]bool),
 		cachedServerType: newServerTypeCache(ctx, client),
 		cachedServers:    newServersCache(ctx, client),
 	}
