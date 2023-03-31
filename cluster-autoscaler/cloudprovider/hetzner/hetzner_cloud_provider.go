@@ -210,7 +210,7 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 
 		// Get this node's cloud-init
 		var cloudInitBase64 string
-		nodeCloudInitVar := fmt.Sprintf("HCLOUD_CLOUD_INIT_%s", spec.name)
+		nodeCloudInitVar := fmt.Sprintf("HCLOUD_%s_CLOUD_INIT", strings.ToUpper(spec.name))
 		if nodeSpecificCloudInit, ok := os.LookupEnv(nodeCloudInitVar); ok {
 			cloudInitBase64 = nodeSpecificCloudInit
 		} else {
@@ -227,6 +227,43 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 		}
 
 		manager.cloudInit[spec.name] = string(cloudInit)
+
+		// Get this node's public IP setting
+		publicIPv4 := true
+		var publicIPv4Str string
+		nodePublicIPv4Var := fmt.Sprintf("HCLOUD_%s_PUBLIC_IPV4", strings.ToUpper(spec.name))
+		if nodeSpecificPublicIPv4, ok := os.LookupEnv(nodePublicIPv4Var); ok {
+			publicIPv4Str = nodeSpecificPublicIPv4
+		} else {
+			publicIPv4Str = os.Getenv("HCLOUD_PUBLIC_IPV4")
+		}
+
+		if publicIPv4Str != "" {
+			publicIPv4, err = strconv.ParseBool(publicIPv4Str)
+			if err != nil {
+				klog.Fatalf("failed to parse HCLOUD_PUBLIC_IPV4 or %s: %s", nodePublicIPv4Var, err)
+			}
+		}
+
+		manager.publicIPv4[spec.name] = publicIPv4
+
+		publicIPv6 := true
+		var publicIPv6Str string
+		nodePublicIPv6Var := fmt.Sprintf("HCLOUD_%s_PUBLIC_IPV6", strings.ToUpper(spec.name))
+		if nodeSpecificPublicIPv6, ok := os.LookupEnv(nodePublicIPv6Var); ok {
+			publicIPv6Str = nodeSpecificPublicIPv6
+		} else {
+			publicIPv6Str = os.Getenv("HCLOUD_PUBLIC_IPV6")
+		}
+
+		if publicIPv6Str != "" {
+			publicIPv6, err = strconv.ParseBool(publicIPv6Str)
+			if err != nil {
+				klog.Fatalf("failed to parse HCLOUD_PUBLIC_IPV6 or %s: %s", nodePublicIPv6Var, err)
+			}
+		}
+
+		manager.publicIPv6[spec.name] = publicIPv6
 
 		manager.nodeGroups[spec.name] = &hetznerNodeGroup{
 			manager:            manager,

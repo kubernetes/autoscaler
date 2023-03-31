@@ -50,8 +50,8 @@ type hetznerManager struct {
 	network          *hcloud.Network
 	firewall         *hcloud.Firewall
 	createTimeout    time.Duration
-	publicIPv4       bool
-	publicIPv6       bool
+	publicIPv4       map[string]bool
+	publicIPv6       map[string]bool
 	cachedServerType *serverTypeCache
 	cachedServers    *serversCache
 }
@@ -74,24 +74,6 @@ func newManager() (*hetznerManager, error) {
 	imageName := os.Getenv("HCLOUD_IMAGE")
 	if imageName == "" {
 		imageName = "ubuntu-20.04"
-	}
-
-	publicIPv4 := true
-	publicIPv4Str := os.Getenv("HCLOUD_PUBLIC_IPV4")
-	if publicIPv4Str != "" {
-		publicIPv4, err = strconv.ParseBool(publicIPv4Str)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse HCLOUD_PUBLIC_IPV4: %s", err)
-		}
-	}
-
-	publicIPv6 := true
-	publicIPv6Str := os.Getenv("HCLOUD_PUBLIC_IPV6")
-	if publicIPv6Str != "" {
-		publicIPv6, err = strconv.ParseBool(publicIPv6Str)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse HCLOUD_PUBLIC_IPV6: %s", err)
-		}
 	}
 
 	// Search for an image ID corresponding to the supplied HCLOUD_IMAGE env
@@ -162,8 +144,6 @@ func newManager() (*hetznerManager, error) {
 		firewall:         firewall,
 		createTimeout:    createTimeout,
 		apiCallContext:   ctx,
-		publicIPv4:       publicIPv4,
-		publicIPv6:       publicIPv6,
 		cachedServerType: newServerTypeCache(ctx, client),
 		cachedServers:    newServersCache(ctx, client),
 	}

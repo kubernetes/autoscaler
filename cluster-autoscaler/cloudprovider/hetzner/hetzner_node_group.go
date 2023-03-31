@@ -365,8 +365,8 @@ func createServer(n *hetznerNodeGroup) error {
 			nodeGroupLabel: n.id,
 		},
 		PublicNet: &hcloud.ServerCreatePublicNet{
-			EnableIPv4: n.manager.publicIPv4,
-			EnableIPv6: n.manager.publicIPv6,
+			EnableIPv4: n.manager.publicIPv4[n.id],
+			EnableIPv6: n.manager.publicIPv6[n.id],
 		},
 	}
 	if n.manager.sshKey != nil {
