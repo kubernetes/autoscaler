@@ -44,6 +44,8 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down
 	ScaleDownUnreadyTime time.Duration
+	// Maximum time CA waits for node to be provisioned
+	MaxNodeProvisionTime time.Duration
 }
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
@@ -120,8 +122,6 @@ type AutoscalingOptions struct {
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
 	MaxGracefulTerminationSec int
-	//  Maximum time CA waits for node to be provisioned
-	MaxNodeProvisionTime time.Duration
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
 	MaxTotalUnreadyPercentage float64
 	// OkTotalUnreadyCount is the number of allowed unready nodes, irrespective of max-total-unready-percentage
