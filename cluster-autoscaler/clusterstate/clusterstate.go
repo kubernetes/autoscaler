@@ -45,6 +45,11 @@ const (
 	MaxNodeStartupTime = 15 * time.Minute
 )
 
+type maxNodeProvisionTimeProvider interface {
+	// GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
+	GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+}
+
 // ScaleUpRequest contains information about the requested node group scale up.
 type ScaleUpRequest struct {
 	// NodeGroup is the node group to be scaled up.
@@ -76,8 +81,6 @@ type ClusterStateRegistryConfig struct {
 	// Minimum number of nodes that must be unready for MaxTotalUnreadyPercentage to apply.
 	// This is to ensure that in very small clusters (e.g. 2 nodes) a single node's failure doesn't disable autoscaling.
 	OkTotalUnreadyCount int
-	//  Maximum time CA waits for node to be provisioned
-	MaxNodeProvisionTime time.Duration
 }
 
 // IncorrectNodeGroupSize contains information about how much the current size of the node group
@@ -132,6 +135,7 @@ type ClusterStateRegistry struct {
 	previousCloudProviderNodeInstances map[string][]cloudprovider.Instance
 	cloudProviderNodeInstancesCache    *utils.CloudProviderNodeInstancesCache
 	interrupt                          chan struct{}
+	maxNodeProvisionTimeProvider       maxNodeProvisionTimeProvider
 
 	// scaleUpFailures contains information about scale-up failures for each node group. It should be
 	// cleared periodically to avoid unnecessary accumulation.
@@ -139,7 +143,7 @@ type ClusterStateRegistry struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff) *ClusterStateRegistry {
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, maxNodeProvisionTimeProvider maxNodeProvisionTimeProvider) *ClusterStateRegistry {
 	emptyStatus := &api.ClusterAutoscalerStatus{
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
@@ -163,6 +167,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
 		interrupt:                       make(chan struct{}),
 		scaleUpFailures:                 make(map[string][]ScaleUpFailure),
+		maxNodeProvisionTimeProvider:    maxNodeProvisionTimeProvider,
 	}
 }
 
@@ -188,14 +193,25 @@ func (csr *ClusterStateRegistry) RegisterOrUpdateScaleUp(nodeGroup cloudprovider
 	csr.registerOrUpdateScaleUpNoLock(nodeGroup, delta, currentTime)
 }
 
+// MaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
+func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	return csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+}
+
 func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
+	maxNodeProvisionTime, err := csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+	if err != nil {
+		klog.Warningf("Couldn't update scale up request: failed to get maxNodeProvisionTime for node group %s: %w", nodeGroup.Id(), err)
+		return
+	}
+
 	scaleUpRequest, found := csr.scaleUpRequests[nodeGroup.Id()]
 	if !found && delta > 0 {
 		scaleUpRequest = &ScaleUpRequest{
 			NodeGroup:       nodeGroup,
 			Increase:        delta,
 			Time:            currentTime,
-			ExpectedAddTime: currentTime.Add(csr.config.MaxNodeProvisionTime),
+			ExpectedAddTime: currentTime.Add(maxNodeProvisionTime),
 		}
 		csr.scaleUpRequests[nodeGroup.Id()] = scaleUpRequest
 		return
@@ -217,7 +233,7 @@ func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudpr
 	if delta > 0 {
 		// if we are actually adding new nodes shift Time and ExpectedAddTime
 		scaleUpRequest.Time = currentTime
-		scaleUpRequest.ExpectedAddTime = currentTime.Add(csr.config.MaxNodeProvisionTime)
+		scaleUpRequest.ExpectedAddTime = currentTime.Add(maxNodeProvisionTime)
 	}
 }
 
@@ -589,7 +605,12 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			continue
 		}
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
-		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
+		maxNodeProvisionTime, err := csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+		if err != nil {
+			klog.Warningf("Failed to get maxNodeProvisionTime for node %s in node group %s: %w", unregistered.Node.Name, nodeGroup.Id(), err)
+			continue
+		}
+		if unregistered.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
 			perNgCopy.LongUnregistered = append(perNgCopy.LongUnregistered, unregistered.Node.Name)
 			total.LongUnregistered = append(total.LongUnregistered, unregistered.Node.Name)
 		} else {

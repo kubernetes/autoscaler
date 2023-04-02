@@ -575,6 +575,9 @@ func (m *gceManagerImpl) GetMigOptions(mig Mig, defaults config.NodeGroupAutosca
 	if opt, ok := getDurationOption(options, migRef.Name, config.DefaultScaleDownUnreadyTimeKey); ok {
 		defaults.ScaleDownUnreadyTime = opt
 	}
+	if opt, ok := getDurationOption(options, migRef.Name, config.DefaultMaxNodeProvisionTimeKey); ok {
+		defaults.MaxNodeProvisionTime = opt
+	}
 
 	return &defaults
 }

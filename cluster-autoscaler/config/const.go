@@ -30,4 +30,6 @@ const (
 	DefaultScaleDownUnneededTimeKey = "scaledownunneededtime"
 	// DefaultScaleDownUnreadyTimeKey identifies ScaleDownUnreadyTime autoscaling option
 	DefaultScaleDownUnreadyTimeKey = "scaledownunreadytime"
+	// DefaultMaxNodeProvisionTimeKey identifies MaxNodeProvisionTime autoscaling option
+	DefaultMaxNodeProvisionTimeKey = "maxnodeprovisiontime"
 )
