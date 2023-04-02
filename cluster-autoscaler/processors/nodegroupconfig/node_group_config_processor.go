@@ -33,6 +33,8 @@ type NodeGroupConfigProcessor interface {
 	GetScaleDownUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
 	GetScaleDownGpuUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
+	// GetMaxNodeProvisionTime return MaxNodeProvisionTime value that should be used for a given NodeGroup.
+	GetMaxNodeProvisionTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
@@ -89,6 +91,18 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold
 		return context.NodeGroupDefaults.ScaleDownGpuUtilizationThreshold, nil
 	}
 	return ngConfig.ScaleDownGpuUtilizationThreshold, nil
+}
+
+// GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for a given NodeGroup.
+func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupDefaults)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return time.Duration(0), err
+	}
+	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+		return context.NodeGroupDefaults.MaxNodeProvisionTime, nil
+	}
+	return ngConfig.MaxNodeProvisionTime, nil
 }
 
 // CleanUp cleans up processor's internal structures.
