@@ -1,0 +1,16 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/vertical-pod-autoscaler"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 0 # setting this to 0 means only allowing security updates, see https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
+  labels:
+    - "vertical-pod-autoscaler"
+- package-ecosystem: docker
+  directory: "/vertical-pod-autoscaler/builder"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  labels:
+    - "vertical-pod-autoscaler"
