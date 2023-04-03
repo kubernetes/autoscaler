@@ -125,7 +125,7 @@ Our proposed MPA framework consists of three controllers (i.e., a recommender, a
 **MPA API.** Application owners specify the autoscaling configurations which include:
 
 1. whether they only want to know the recommendations from MPA or they want MPA to directly actuate the autoscaling decisions;
-2. application SLOs (e.g., in terms of latency or throughput);
+2. application SLOs (e.g., in terms of latency or throughput) if there are;
 3. any custom metrics if there are; and
 4. other autoscaling configurations that exist in HPA and VPA (e.g., desired resource utilizations, container update policies, min and max number of replicas).
 
@@ -253,6 +253,11 @@ status:
   - type: metric-type
     value: metric-value
 ```
+
+Note that application SLO field is **optional** and SLO is defined to be the quality of service target that an application must meet (regarding latency, throughput, and so on).
+For example, if the latency SLO is in use, then it could be 99% of the requests finish within 100ms. Accordingly, the replica set can be horizontally scaled when the measured latency is greater than 100ms, i.e., violating the SLO value.
+The default MPA recommender implemented in this AEP will not use the `applicationSLO` field and this field will be used by users who want to implement their own recommender. For example, an RL/ML-based recommender can have `applicationSLO` as part of the reward/loss function and thus they can have extra constraints in addition to min/max replicas.
+The `applicationSLO` field is a floating point number (most application metrics like latency and throughput are floating point numbers).
 
 ### Test Plan
 
