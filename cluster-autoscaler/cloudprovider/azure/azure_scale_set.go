@@ -599,64 +599,46 @@ func buildScaleSetCacheForFlex(scaleSet *ScaleSet, lastRefresh time.Time) error 
 		return rerr.Error()
 	}
 
-	scaleSet.instanceCache = buildInstanceCacheForFlexVms(vms)
+	scaleSet.instanceCache = buildInstanceCache(vms)
 	scaleSet.lastInstanceRefresh = lastRefresh
 
 	return nil
 }
 
-// Note that the GetScaleSetVms() results is not used directly because for the List endpoint,
-// their resource ID format is not consistent with Get endpoint
-func buildInstanceCache(vms []compute.VirtualMachineScaleSetVM) []cloudprovider.Instance {
+func buildInstanceCache(vmList interface{}) []cloudprovider.Instance {
 	instances := []cloudprovider.Instance{}
 
-	for _, vm := range vms {
-		// The resource ID is empty string, which indicates the instance may be in deleting state.
-		if len(*vm.ID) == 0 {
-			continue
+	switch vms := vmList.(type) {
+	case []compute.VirtualMachineScaleSetVM:
+		for _, vm := range vms {
+			addInstanceToCache(&instances, vm.ID, vm.ProvisioningState)
 		}
-
-		resourceID, err := convertResourceGroupNameToLower(*vm.ID)
-		if err != nil {
-			// This shouldn't happen. Log a warning message for tracking.
-			klog.Warningf("buildInstanceCache.convertResourceGroupNameToLower failed with error: %v", err)
-			continue
+	case []compute.VirtualMachine:
+		for _, vm := range vms {
+			addInstanceToCache(&instances, vm.ID, vm.ProvisioningState)
 		}
-
-		instances = append(instances, cloudprovider.Instance{
-			Id:     "azure://" + resourceID,
-			Status: instanceStatusFromProvisioningState(vm.ProvisioningState),
-		})
 	}
 
 	return instances
 }
 
-// Note that the GetFlexibleScaleSetVms() results is not used directly because for the List endpoint,
-// their resource ID format is not consistent with Get endpoint
-func buildInstanceCacheForFlexVms(vms []compute.VirtualMachine) []cloudprovider.Instance {
-	instances := []cloudprovider.Instance{}
-
-	for _, vm := range vms {
-		// The resource ID is empty string, which indicates the instance may be in deleting state.
-		if len(*vm.ID) == 0 {
-			continue
-		}
-
-		resourceID, err := convertResourceGroupNameToLower(*vm.ID)
-		if err != nil {
-			// This shouldn't happen. Log a warning message for tracking.
-			klog.Warningf("buildInstanceCache.convertResourceGroupNameToLower failed with error: %v", err)
-			continue
-		}
-
-		instances = append(instances, cloudprovider.Instance{
-			Id:     "azure://" + resourceID,
-			Status: instanceStatusFromProvisioningState(vm.ProvisioningState),
-		})
+func addInstanceToCache(instances *[]cloudprovider.Instance, id *string, provisioningState *string) {
+	// The resource ID is empty string, which indicates the instance may be in deleting state.
+	if len(*id) == 0 {
+		return
 	}
 
-	return instances
+	resourceID, err := convertResourceGroupNameToLower(*id)
+	if err != nil {
+		// This shouldn't happen. Log a warning message for tracking.
+		klog.Warningf("buildInstanceCache.convertResourceGroupNameToLower failed with error: %v", err)
+		return
+	}
+
+	*instances = append(*instances, cloudprovider.Instance{
+		Id:     "azure://" + resourceID,
+		Status: instanceStatusFromProvisioningState(provisioningState),
+	})
 }
 
 func (scaleSet *ScaleSet) getInstanceByProviderID(providerID string) (cloudprovider.Instance, bool) {
