@@ -229,6 +229,7 @@ hostNetwork: false
 image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
+  # image.tag - Image tag - defaults to the version defined in Chart.AppVersion
   tag: ""  # If not defined, uses appVersion of Chart.yaml
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
