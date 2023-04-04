@@ -217,8 +217,9 @@ func TestFindNodesToRemove(t *testing.T) {
 
 func testDeleteOptions() NodeDeleteOptions {
 	return NodeDeleteOptions{
-		SkipNodesWithSystemPods:   true,
-		SkipNodesWithLocalStorage: true,
-		MinReplicaCount:           0,
+		SkipNodesWithSystemPods:           true,
+		SkipNodesWithLocalStorage:         true,
+		MinReplicaCount:                   0,
+		SkipNodesWithCustomControllerPods: true,
 	}
 }

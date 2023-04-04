@@ -170,12 +170,7 @@ func NewStaticAutoscaler(
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 
-	deleteOptions := simulator.NodeDeleteOptions{
-		SkipNodesWithSystemPods:           opts.SkipNodesWithSystemPods,
-		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
-		MinReplicaCount:                   opts.MinReplicaCount,
-		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
-	}
+	deleteOptions := simulator.NewNodeDeleteOptions(opts)
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
