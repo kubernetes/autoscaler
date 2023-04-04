@@ -218,6 +218,7 @@ spec:
     minReplicas: min-num-replicas
     maxReplicas: max-num-replicas
     applicationSLO: slo-value  # customizable SLO for application metrics such as latency or throughput
+    percentageSLO: percentage  # a percentage used in SLO definitions such as 99% requests <= slo-value
   resourcePolicy:
     containerControlledResources: [ memory, cpu ]  # Added cpu here as well
     container:
@@ -254,10 +255,10 @@ status:
     value: metric-value
 ```
 
-Note that application SLO field is **optional** and SLO is defined to be the quality of service target that an application must meet (regarding latency, throughput, and so on).
-For example, if the latency SLO is in use, then it could be 99% of the requests finish within 100ms. Accordingly, the replica set can be horizontally scaled when the measured latency is greater than 100ms, i.e., violating the SLO value.
+Note that `applicationSLO` field is **optional** and SLO is defined to be the quality of service target that an application must meet (regarding latency, throughput, and so on).
+For example, if the latency SLO is in use, then it could be 99% of the requests finish within 100ms (i.e., `applicationSLO = 100` and `percentageSLO = 0.99`). Accordingly, the replica set can be horizontally scaled when the measured latency is greater than 100ms, i.e., violating the SLO value. Similarly, throughput SLOs can be defined as throughput is greater than 100/s in 90% of the time, i.e., `applicationSLO = 100` and `percentageSLO = 0.9`.
 The default MPA recommender implemented in this AEP will not use the `applicationSLO` field and this field will be used by users who want to implement their own recommender. For example, an RL/ML-based recommender can have `applicationSLO` as part of the reward/loss function and thus they can have extra constraints in addition to min/max replicas.
-The `applicationSLO` field is a floating point number (most application metrics like latency and throughput are floating point numbers).
+The `applicationSLO` field is a floating point number (most application metrics like latency and throughput are floating point numbers). The `percentageSLO` is a floating point number between 0 and 1.
 
 ### Test Plan
 
