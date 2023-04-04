@@ -164,8 +164,8 @@ func (d *gridscaleCloudProvider) Refresh() error {
 	return d.manager.Refresh()
 }
 
-// Buildgridscale builds the gridscale cloud provider.
-func Buildgridscale(
+// BuildGridscale builds the gridscale cloud provider.
+func BuildGridscale(
 	opts config.AutoscalingOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
