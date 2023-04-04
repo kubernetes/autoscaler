@@ -180,7 +180,7 @@ func BuildGridscale(
 		defer configFile.Close()
 	}
 
-	manager, err := newManager(configFile)
+	manager, err := newManager()
 	if err != nil {
 		klog.Fatalf("Failed to create gridscale manager: %v", err)
 	}

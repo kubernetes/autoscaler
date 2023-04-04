@@ -18,11 +18,10 @@ package gridscale
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
+	"os"
+	"strconv"
 
 	"github.com/gridscale/gsclient-go/v3"
 )
@@ -51,64 +50,51 @@ type Manager struct {
 	minNodeCount int
 }
 
-// Config is the configuration of the gridscale cloud provider
-type Config struct {
-	// ClusterUUID is the uuid associated with the gsk cluster where gridscale
-	// Cluster Autoscaler is running.
-	ClusterUUID string `json:"cluster_uuid"`
-
-	// UserUUID is the uuid associated with the user who is running the
-	UserUUID string `json:"user_uuid"`
-
-	// APIToken is the API token used to authenticate with the gridscale API.
-	APIToken string `json:"api_token"`
-
-	// URL points to gridscale API. If empty, defaults to
-	// https://api.gridscale.io
-	APIURL string `json:"api_url"`
-
-	// Debug enables debug logging if set to true.
-	Debug bool `json:"debug"`
-
-	MaxNodeCount int `json:"max_node_count"`
-
-	MinNodeCount int `json:"min_node_count"`
-}
-
-func newManager(configReader io.Reader) (*Manager, error) {
-	cfg := &Config{}
-	if configReader != nil {
-		body, err := ioutil.ReadAll(configReader)
-		if err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal(body, cfg)
-		if err != nil {
-			return nil, err
-		}
+func newManager() (*Manager, error) {
+	gridscaleUUID := os.Getenv("GRIDSCALE_UUID")
+	if gridscaleUUID == "" {
+		return nil, errors.New("env var GRIDSCALE_UUID is not provided")
+	}
+	gridscaleToken := os.Getenv("GRIDSCALE_TOKEN")
+	if gridscaleToken == "" {
+		return nil, errors.New("env var GRIDSCALE_TOKEN is not provided")
+	}
+	gskClusterUUID := os.Getenv("GRIDSCALE_GSK_UUID")
+	if gskClusterUUID == "" {
+		return nil, errors.New("env var GRIDSCALE_GSK_UUID is not provided")
+	}
+	minNodeCountStr := os.Getenv("GRIDSCALE_GSK_MIN_NODE_COUNT")
+	if minNodeCountStr == "" {
+		return nil, errors.New("env var GRIDSCALE_GSK_MIN_NODE_COUNT is not provided")
+	}
+	// convert minNodeCount to int
+	minNodeCount, err := strconv.Atoi(minNodeCountStr)
+	if err != nil {
+		return nil, fmt.Errorf("env var GRIDSCALE_GSK_MIN_NODE_COUNT is not a valid integer: %v", err)
+	}
+	maxNodeCountStr := os.Getenv("GRIDSCALE_GSK_MAX_NODE_COUNT")
+	if maxNodeCountStr == "" {
+		return nil, errors.New("env var GRIDSCALE_GSK_MAX_NODE_COUNT is not provided")
+	}
+	// convert maxNodeCount to int
+	maxNodeCount, err := strconv.Atoi(maxNodeCountStr)
+	if err != nil {
+		return nil, fmt.Errorf("env var GRIDSCALE_GSK_MAX_NODE_COUNT is not a valid integer: %v", err)
 	}
 
-	if cfg.UserUUID == "" {
-		return nil, errors.New("user UUID is not provided")
-	}
-	if cfg.APIToken == "" {
-		return nil, errors.New("API token is not provided")
-	}
-	if cfg.ClusterUUID == "" {
-		return nil, errors.New("cluster UUID is not provided")
-	}
 	apiURL := defaultGridscaleAPIURL
-	if cfg.APIURL != "" {
-		apiURL = cfg.APIURL
+	envVarApiURL := os.Getenv("GRIDSCALE_API_URL")
+	if envVarApiURL != "" {
+		apiURL = envVarApiURL
 	}
-	gsConfig := gsclient.NewConfiguration(apiURL, cfg.UserUUID, cfg.APIToken, cfg.Debug, true, defaultDelayIntervalMilliSecs, defaultMaxNumberOfRetries)
+	gsConfig := gsclient.NewConfiguration(apiURL, gridscaleUUID, gridscaleToken, false, true, defaultDelayIntervalMilliSecs, defaultMaxNumberOfRetries)
 	client := gsclient.NewClient(gsConfig)
 	m := &Manager{
 		client:       client,
-		clusterUUID:  cfg.ClusterUUID,
+		clusterUUID:  gskClusterUUID,
 		nodeGroups:   make([]*NodeGroup, 0),
-		maxNodeCount: cfg.MaxNodeCount,
-		minNodeCount: cfg.MinNodeCount,
+		maxNodeCount: maxNodeCount,
+		minNodeCount: minNodeCount,
 	}
 
 	return m, nil
