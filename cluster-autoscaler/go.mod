@@ -20,6 +20,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-querystring v1.0.0
 	github.com/google/uuid v1.3.0
+	github.com/gridscale/gsclient-go/v3 v3.11.1
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
