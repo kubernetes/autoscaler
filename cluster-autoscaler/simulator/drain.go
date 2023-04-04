@@ -24,6 +24,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -40,6 +41,16 @@ type NodeDeleteOptions struct {
 	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
 	// to allow their pods deletion in scale down
 	MinReplicaCount int
+}
+
+// NewNodeDeleteOptions returns new node delete options extracted from autoscaling options
+func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
+	return NodeDeleteOptions{
+		SkipNodesWithSystemPods:           opts.SkipNodesWithSystemPods,
+		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
+		MinReplicaCount:                   opts.MinReplicaCount,
+		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
+	}
 }
 
 // GetPodsToMove returns a list of pods that should be moved elsewhere
