@@ -9,6 +9,7 @@ GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
 REGISTRY?=staging-k8s.gcr.io
 DOCKER_NETWORK?=default
+LEADER_ELECT?=false
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
   PROVIDER=-${BUILD_TAGS}

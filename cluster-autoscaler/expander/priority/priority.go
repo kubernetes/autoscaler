@@ -61,7 +61,10 @@ func NewFilter(configMapLister v1lister.ConfigMapNamespaceLister,
 func (p *priority) reloadConfigMap() (priorities, *apiv1.ConfigMap, error) {
 	cm, err := p.configMapLister.Get(PriorityConfigMapName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Priority expander config map %s not found: %v", PriorityConfigMapName, err)
+		// FORK-CHANGE: logged warning to simplify debugging.
+		msg := fmt.Sprintf("Priority expander config map %q not found: %v", PriorityConfigMapName, err)
+		klog.Warning(msg)
+		return nil, nil, errors.New(msg)
 	}
 
 	prioString, found := cm.Data[ConfigMapKey]
