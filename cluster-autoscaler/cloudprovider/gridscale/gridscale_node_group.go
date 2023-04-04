@@ -191,6 +191,8 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 			}
 		}
 	}
+	nodeList := toInstances(gskNodeList)
+	klog.V(4).Infof("Node list: %v ", nodeList)
 	return toInstances(gskNodeList), nil
 }
 
