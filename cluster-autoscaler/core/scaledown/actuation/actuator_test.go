@@ -228,9 +228,10 @@ func TestCropNodesToBudgets(t *testing.T) {
 				},
 			}
 			deleteOptions := simulator.NodeDeleteOptions{
-				SkipNodesWithSystemPods:   true,
-				SkipNodesWithLocalStorage: true,
-				MinReplicaCount:           0,
+				SkipNodesWithSystemPods:           true,
+				SkipNodesWithLocalStorage:         true,
+				MinReplicaCount:                   0,
+				SkipNodesWithCustomControllerPods: true,
 			}
 			ndr := deletiontracker.NewNodeDeletionTracker(1 * time.Hour)
 			for i := 0; i < tc.emptyDeletionsInProgress; i++ {

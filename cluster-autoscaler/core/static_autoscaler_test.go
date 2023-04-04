@@ -148,11 +148,7 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 }
 
 func setUpScaleDownActuator(ctx *context.AutoscalingContext, options config.AutoscalingOptions) {
-	deleteOptions := simulator.NodeDeleteOptions{
-		SkipNodesWithSystemPods:   options.SkipNodesWithSystemPods,
-		SkipNodesWithLocalStorage: options.SkipNodesWithLocalStorage,
-		MinReplicaCount:           options.MinReplicaCount,
-	}
+	deleteOptions := simulator.NewNodeDeleteOptions(options)
 	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions)
 }
 
@@ -1727,9 +1723,10 @@ func newScaleDownPlannerAndActuator(t *testing.T, ctx *context.AutoscalingContex
 	ctx.NodeDeletionBatcherInterval = 0 * time.Second
 	ctx.NodeDeleteDelayAfterTaint = 1 * time.Second
 	deleteOptions := simulator.NodeDeleteOptions{
-		SkipNodesWithSystemPods:   true,
-		SkipNodesWithLocalStorage: true,
-		MinReplicaCount:           0,
+		SkipNodesWithSystemPods:           true,
+		SkipNodesWithLocalStorage:         true,
+		MinReplicaCount:                   0,
+		SkipNodesWithCustomControllerPods: true,
 	}
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	sd := legacy.NewScaleDown(ctx, p, ndt, deleteOptions)

@@ -63,9 +63,10 @@ func TestScaleDownEarlierThan(t *testing.T) {
 	niGetter := testNodeInfoGetter{map[string]*schedulerframework.NodeInfo{nodeEmptyName: niEmpty, nodeNonEmptyName: niNonEmpty, nodeEmptyName2: niEmpty2}}
 
 	deleteOptions := simulator.NodeDeleteOptions{
-		SkipNodesWithSystemPods:   true,
-		SkipNodesWithLocalStorage: true,
-		MinReplicaCount:           0,
+		SkipNodesWithSystemPods:           true,
+		SkipNodesWithLocalStorage:         true,
+		MinReplicaCount:                   0,
+		SkipNodesWithCustomControllerPods: true,
 	}
 	p := EmptySorting{&niGetter, deleteOptions}
 
