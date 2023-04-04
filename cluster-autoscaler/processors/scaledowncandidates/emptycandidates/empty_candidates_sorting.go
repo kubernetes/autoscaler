@@ -51,11 +51,7 @@ type EmptySorting struct {
 
 // NewEmptySortingProcessor return EmptySorting struct.
 func NewEmptySortingProcessor(opts *config.AutoscalingOptions, n nodeInfoGetter) *EmptySorting {
-	deleteOptions := simulator.NodeDeleteOptions{
-		SkipNodesWithSystemPods:   opts.SkipNodesWithSystemPods,
-		SkipNodesWithLocalStorage: opts.SkipNodesWithLocalStorage,
-		MinReplicaCount:           opts.MinReplicaCount,
-	}
+	deleteOptions := simulator.NewNodeDeleteOptions(*opts)
 	return &EmptySorting{n, deleteOptions}
 }
 
