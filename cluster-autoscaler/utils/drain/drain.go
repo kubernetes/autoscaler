@@ -93,7 +93,6 @@ func GetPodsForDeletionOnNodeDrain(
 		}
 	}
 
-	isDaemonSetPod := false
 	for _, pod := range podList {
 		if pod_util.IsMirrorPod(pod) {
 			continue
@@ -107,6 +106,7 @@ func GetPodsForDeletionOnNodeDrain(
 			continue
 		}
 
+		isDaemonSetPod := false
 		replicated := false
 		safeToEvict := hasSafeToEvictAnnotation(pod)
 		terminal := isPodTerminal(pod)
@@ -118,12 +118,8 @@ func GetPodsForDeletionOnNodeDrain(
 				return []*apiv1.Pod{}, []*apiv1.Pod{}, blockingPod, err
 			}
 		} else {
-			if ControllerRef(pod) != nil {
-				replicated = true
-			}
-			if pod_util.IsDaemonSetPod(pod) {
-				isDaemonSetPod = true
-			}
+			replicated = ControllerRef(pod) != nil
+			isDaemonSetPod = pod_util.IsDaemonSetPod(pod)
 		}
 
 		if isDaemonSetPod {
