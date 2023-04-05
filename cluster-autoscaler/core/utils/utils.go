@@ -36,7 +36,7 @@ import (
 )
 
 // GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
@@ -54,7 +54,7 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	}
 	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := SanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
+	sanitizedNodeInfo, typedErr := SanitizeNodeInfo(fullNodeInfo, id, taintConfig)
 	if typedErr != nil {
 		return nil, typedErr
 	}
@@ -101,9 +101,9 @@ func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) *schedulerframework
 }
 
 // SanitizeNodeInfo modify nodeInfos generated from templates to avoid using duplicated host names
-func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, taintConfig taints.TaintConfig) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
-	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
+	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, taintConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName strin
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints taints.TaintKeySet) (*apiv1.Node, errors.AutoscalerError) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, taintConfig taints.TaintConfig) (*apiv1.Node, errors.AutoscalerError) {
 	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode.Labels = make(map[string]string, len(node.Labels))
@@ -134,7 +134,7 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints tain
 		}
 	}
 	newNode.Name = nodeName
-	newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, ignoredTaints)
+	newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, taintConfig)
 	return newNode, nil
 }
 

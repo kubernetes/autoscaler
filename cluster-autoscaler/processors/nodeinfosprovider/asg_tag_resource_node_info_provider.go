@@ -40,8 +40,8 @@ func NewAsgTagResourceNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *
 }
 
 // Process returns the nodeInfos set for this cluster.
-func (p *AsgTagResourceNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, currentTime time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
-	nodeInfos, err := p.mixedTemplateNodeInfoProvider.Process(ctx, nodes, daemonsets, ignoredTaints, currentTime)
+func (p *AsgTagResourceNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+	nodeInfos, err := p.mixedTemplateNodeInfoProvider.Process(ctx, nodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return nil, err
 	}

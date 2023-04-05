@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ func TestSanitizeNodeInfo(t *testing.T) {
 	nodeInfo := schedulerframework.NewNodeInfo(pod)
 	nodeInfo.SetNode(node)
 
-	res, err := SanitizeNodeInfo(nodeInfo, "test-group", nil)
+	res, err := SanitizeNodeInfo(nodeInfo, "test-group", taints.TaintConfig{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res.Pods))
 }
@@ -48,7 +49,7 @@ func TestSanitizeLabels(t *testing.T) {
 		apiv1.LabelHostname: "abc",
 		"x":                 "y",
 	}
-	node, err := sanitizeTemplateNode(oldNode, "bzium", nil)
+	node, err := sanitizeTemplateNode(oldNode, "bzium", taints.TaintConfig{})
 	assert.NoError(t, err)
 	assert.NotEqual(t, node.Labels[apiv1.LabelHostname], "abc", nil)
 	assert.Equal(t, node.Labels["x"], "y")

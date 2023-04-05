@@ -90,7 +90,7 @@ type StaticAutoscaler struct {
 	processors              *ca_processors.AutoscalingProcessors
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
-	ignoredTaints           taints.TaintKeySet
+	taintConfig             taints.TaintConfig
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -160,12 +160,7 @@ func NewStaticAutoscaler(
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 	}
 
-	ignoredTaints := make(taints.TaintKeySet)
-	for _, taintKey := range opts.IgnoredTaints {
-		klog.V(4).Infof("Ignoring taint %s on all NodeGroups", taintKey)
-		ignoredTaints[taintKey] = true
-	}
-
+	taintConfig := taints.NewTaintConfig(opts)
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff, clusterstate.NewDefaultMaxNodeProvisionTimeProvider(autoscalingContext, processors.NodeGroupConfigProcessor))
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 
@@ -194,7 +189,7 @@ func NewStaticAutoscaler(
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
-	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, ignoredTaints)
+	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, taintConfig)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
@@ -210,7 +205,7 @@ func NewStaticAutoscaler(
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
-		ignoredTaints:           ignoredTaints,
+		taintConfig:             taintConfig,
 	}
 }
 
@@ -354,7 +349,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return typedErr.AddPrefix("failed to initialize RemainingPdbTracker: ")
 	}
 
-	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.ignoredTaints, currentTime)
+	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.taintConfig, currentTime)
 	if autoscalerError != nil {
 		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
@@ -894,7 +889,7 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
-	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.ignoredTaints, allNodes, readyNodes)
+	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.taintConfig.IgnoredTaints, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
 

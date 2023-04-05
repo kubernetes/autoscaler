@@ -49,7 +49,7 @@ type ScaleUpOrchestrator struct {
 	processors           *ca_processors.AutoscalingProcessors
 	resourceManager      *resource.Manager
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
-	ignoredTaints        taints.TaintKeySet
+	taintConfig          taints.TaintConfig
 	initialized          bool
 }
 
@@ -65,12 +65,12 @@ func (o *ScaleUpOrchestrator) Initialize(
 	autoscalingContext *context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
-	ignoredTaints taints.TaintKeySet,
+	taintConfig taints.TaintConfig,
 ) {
 	o.autoscalingContext = autoscalingContext
 	o.processors = processors
 	o.clusterStateRegistry = clusterStateRegistry
-	o.ignoredTaints = ignoredTaints
+	o.taintConfig = taintConfig
 	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
 	o.initialized = true
 }
@@ -215,7 +215,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 		// If possible replace candidate node-info with node info based on crated node group. The latter
 		// one should be more in line with nodes which will be created by node group.
-		mainCreatedNodeInfo, aErr := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, o.ignoredTaints)
+		mainCreatedNodeInfo, aErr := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, o.taintConfig)
 		if aErr == nil {
 			nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
 		} else {
@@ -229,7 +229,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 
 		for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
-			nodeInfo, aErr := utils.GetNodeInfoFromTemplate(nodeGroup, daemonSets, o.ignoredTaints)
+			nodeInfo, aErr := utils.GetNodeInfoFromTemplate(nodeGroup, daemonSets, o.taintConfig)
 			if aErr != nil {
 				klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), aErr)
 				continue
