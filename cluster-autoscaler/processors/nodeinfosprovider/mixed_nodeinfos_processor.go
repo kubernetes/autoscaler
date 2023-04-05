@@ -95,11 +95,22 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
-			sanitizedNodeInfo, err := utils.SanitizeNodeInfo(nodeInfo, id, taintConfig)
+			sanitizedNode, err := utils.SanitizeNode(node, id, taintConfig)
 			if err != nil {
 				return false, "", err
 			}
+			nodeInfo, err := simulator.BuildNodeInfoForNode(sanitizedNode, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
+			if err != nil {
+				return false, "", err
+			}
+
+			var pods []*apiv1.Pod
+			for _, podInfo := range nodeInfo.Pods {
+				pods = append(pods, podInfo.Pod)
+			}
+
+			sanitizedNodeInfo := schedulerframework.NewNodeInfo(utils.SanitizePods(pods, sanitizedNode)...)
+			sanitizedNodeInfo.SetNode(sanitizedNode)
 			result[id] = sanitizedNodeInfo
 			return true, id, nil
 		}
