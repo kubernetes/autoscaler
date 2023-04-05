@@ -31,7 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud/baiducloud-sdk-go/bce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud/baiducloud-sdk-go/cce"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	klog "k8s.io/klog/v2"
 )
 
@@ -258,7 +258,7 @@ func (m *BaiducloudManager) buildNodeFromTemplate(asg *Asg, template *asgTemplat
 
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template))
 
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(template.GpuCount), resource.DecimalSI)
+	node.Status.Capacity[util.ResourceNvidiaGPU] = *resource.NewQuantity(int64(template.GpuCount), resource.DecimalSI)
 
 	// add ephemeral-storage
 	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.EphemeralStorage*1024*1024*1024), resource.DecimalSI)

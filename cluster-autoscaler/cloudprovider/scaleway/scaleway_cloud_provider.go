@@ -30,9 +30,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
 
@@ -230,7 +230,7 @@ func (scw *scalewayCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 // any GPUs, it returns nil.
 func (scw *scalewayCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
 	klog.V(6).Info("GetNodeGpuConfig,called")
-	return gpu.GetNodeGPUFromCloudProvider(scw, node)
+	return util.GetNodeGPUFromCloudProvider(scw, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.

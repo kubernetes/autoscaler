@@ -25,8 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"strings"
@@ -228,8 +228,8 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 
 	if ng.specs.Gpu > 0 {
 		nbGpu := *resource.NewQuantity(int64(ng.specs.Gpu), resource.DecimalSI)
-		node.Status.Capacity[gpu.ResourceNvidiaGPU] = nbGpu
-		node.Status.Allocatable[gpu.ResourceNvidiaGPU] = nbGpu
+		node.Status.Capacity[util.ResourceNvidiaGPU] = nbGpu
+		node.Status.Allocatable[util.ResourceNvidiaGPU] = nbGpu
 	}
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()

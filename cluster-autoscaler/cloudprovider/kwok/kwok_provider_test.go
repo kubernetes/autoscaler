@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	"github.com/stretchr/testify/assert"
@@ -479,14 +479,14 @@ func TestGetNodeGpuConfig(t *testing.T) {
 		},
 		Status: apiv1.NodeStatus{
 			Allocatable: apiv1.ResourceList{
-				gpu.ResourceNvidiaGPU: resource.MustParse("2Gi"),
+				util.ResourceNvidiaGPU: resource.MustParse("2Gi"),
 			},
 		},
 	}
 	l := p.GetNodeGpuConfig(nodeWithGPU)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
-	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ResourceName))
+	assert.Equal(t, util.ResourceNvidiaGPU, string(l.ResourceName))
 	assert.Equal(t, "nvidia-tesla-k80", l.Type)
 
 	nodeWithNoAllocatableGPU := &apiv1.Node{
@@ -499,7 +499,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 	l = p.GetNodeGpuConfig(nodeWithNoAllocatableGPU)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
-	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ResourceName))
+	assert.Equal(t, util.ResourceNvidiaGPU, string(l.ResourceName))
 	assert.Equal(t, "nvidia-tesla-k80", l.Type)
 
 	nodeWithNoGPULabel := &apiv1.Node{
@@ -508,14 +508,14 @@ func TestGetNodeGpuConfig(t *testing.T) {
 		},
 		Status: apiv1.NodeStatus{
 			Allocatable: apiv1.ResourceList{
-				gpu.ResourceNvidiaGPU: resource.MustParse("2Gi"),
+				util.ResourceNvidiaGPU: resource.MustParse("2Gi"),
 			},
 		},
 	}
 	l = p.GetNodeGpuConfig(nodeWithNoGPULabel)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
-	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ResourceName))
+	assert.Equal(t, util.ResourceNvidiaGPU, string(l.ResourceName))
 	assert.Equal(t, "", l.Type)
 
 }

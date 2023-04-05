@@ -25,8 +25,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -147,7 +147,7 @@ nextoption:
 
 		// Set constant, very high unfitness to make them unattractive for pods that doesn't need GPU and
 		// avoid optimizing them for CPU utilization.
-		if gpu.NodeHasGpu(p.cloudProvider.GPULabel(), nodeInfo.Node()) {
+		if util.NodeHasGpu(p.cloudProvider.GPULabel(), nodeInfo.Node()) {
 			klog.V(4).Infof("Price expander overriding unfitness for node group with GPU %s", option.NodeGroup.Id())
 			supressedUnfitness = gpuUnfitnessOverride
 		}

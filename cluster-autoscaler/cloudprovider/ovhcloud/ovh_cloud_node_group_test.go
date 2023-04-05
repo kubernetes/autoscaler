@@ -30,8 +30,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 func newTestNodeGroup(t *testing.T, flavor string) *NodeGroup {
@@ -386,7 +386,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 		assert.Equal(t, *resource.NewQuantity(110, resource.DecimalSI), node.Status.Capacity[apiv1.ResourcePods])
 		assert.Equal(t, *resource.NewQuantity(2, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceCPU])
-		assert.Equal(t, *resource.NewQuantity(0, resource.DecimalSI), node.Status.Capacity[gpu.ResourceNvidiaGPU])
+		assert.Equal(t, *resource.NewQuantity(0, resource.DecimalSI), node.Status.Capacity[util.ResourceNvidiaGPU])
 		assert.Equal(t, *resource.NewQuantity(7516192768, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceMemory])
 	})
 
@@ -406,7 +406,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 		assert.Equal(t, *resource.NewQuantity(110, resource.DecimalSI), node.Status.Capacity[apiv1.ResourcePods])
 		assert.Equal(t, *resource.NewQuantity(8, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceCPU])
-		assert.Equal(t, *resource.NewQuantity(1, resource.DecimalSI), node.Status.Capacity[gpu.ResourceNvidiaGPU])
+		assert.Equal(t, *resource.NewQuantity(1, resource.DecimalSI), node.Status.Capacity[util.ResourceNvidiaGPU])
 		assert.Equal(t, *resource.NewQuantity(48318382080, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceMemory])
 	})
 
@@ -445,7 +445,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 		assert.Equal(t, *resource.NewQuantity(110, resource.DecimalSI), node.Status.Capacity[apiv1.ResourcePods])
 		assert.Equal(t, *resource.NewQuantity(8, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceCPU])
-		assert.Equal(t, *resource.NewQuantity(1, resource.DecimalSI), node.Status.Capacity[gpu.ResourceNvidiaGPU])
+		assert.Equal(t, *resource.NewQuantity(1, resource.DecimalSI), node.Status.Capacity[util.ResourceNvidiaGPU])
 		assert.Equal(t, *resource.NewQuantity(48318382080, resource.DecimalSI), node.Status.Capacity[apiv1.ResourceMemory])
 	})
 }

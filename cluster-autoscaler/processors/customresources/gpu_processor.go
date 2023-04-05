@@ -19,9 +19,9 @@ package customresources
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
 )
@@ -42,8 +42,8 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
 		_, hasGpuLabel := node.Labels[context.CloudProvider.GPULabel()]
-		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
-		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[gpu.ResourceDirectX]
+		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[util.ResourceNvidiaGPU]
+		directXAllocatable, hasDirectXAllocatable := node.Status.Allocatable[util.ResourceDirectX]
 		// We expect node to have GPU based on label, but it doesn't show up
 		// on node object. Assume the node is still not fully started (installing
 		// GPU drivers).
@@ -81,7 +81,7 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(GPULabel string, node *ap
 		return CustomResourceTarget{}, nil
 	}
 
-	gpuAllocatable, found := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
+	gpuAllocatable, found := node.Status.Allocatable[util.ResourceNvidiaGPU]
 	if found && gpuAllocatable.Value() > 0 {
 		return CustomResourceTarget{gpuLabel, gpuAllocatable.Value()}, nil
 	}
@@ -108,7 +108,7 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(GPULabel string, node *ap
 		klog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
 		return CustomResourceTarget{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
-	if gpuCapacity, found := template.Node().Status.Capacity[gpu.ResourceNvidiaGPU]; found {
+	if gpuCapacity, found := template.Node().Status.Capacity[util.ResourceNvidiaGPU]; found {
 		return CustomResourceTarget{gpuLabel, gpuCapacity.Value()}, nil
 	}
 

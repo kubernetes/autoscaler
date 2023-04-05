@@ -21,8 +21,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -69,8 +69,8 @@ func TestNodesSimilarVariousRequirements(t *testing.T) {
 
 	// One with GPU, one without
 	n5 := BuildTestNode("node5", 1000, 2000)
-	n5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	n5.Status.Allocatable[gpu.ResourceNvidiaGPU] = n5.Status.Capacity[gpu.ResourceNvidiaGPU]
+	n5.Status.Capacity[util.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	n5.Status.Allocatable[util.ResourceNvidiaGPU] = n5.Status.Capacity[util.ResourceNvidiaGPU]
 	checkNodesSimilar(t, n1, n5, comparator, false)
 }
 

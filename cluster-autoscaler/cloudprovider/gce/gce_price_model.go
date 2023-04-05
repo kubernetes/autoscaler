@@ -23,7 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	klog "k8s.io/klog/v2"
@@ -110,7 +110,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 	price += bootDiskPrice * float64(bootDiskSize) * getHours(startTime, endTime)
 
 	// GPUs
-	if gpuRequest, found := node.Status.Capacity[gpu.ResourceNvidiaGPU]; found {
+	if gpuRequest, found := node.Status.Capacity[util.ResourceNvidiaGPU]; found {
 		gpuPrice := model.PriceInfo.BaseGpuPricePerHour()
 		if node.Labels != nil {
 			priceMapToUse := model.PriceInfo.GpuPrices()
@@ -208,7 +208,7 @@ func (model *GcePriceModel) getAdditionalPrice(resources apiv1.ResourceList, sta
 	}
 	hours := getHours(startTime, endTime)
 	price := 0.0
-	gpu := resources[gpu.ResourceNvidiaGPU]
+	gpu := resources[util.ResourceNvidiaGPU]
 	price += float64(gpu.MilliValue()) / 1000.0 * model.PriceInfo.BaseGpuPricePerHour() * hours
 	return price
 }

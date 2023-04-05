@@ -25,7 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
@@ -50,8 +50,8 @@ func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64
 		labels[spotLabel] = "true"
 	}
 	if gpuCount > 0 {
-		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
-		node.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		node.Status.Capacity[util.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		node.Status.Allocatable[util.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
 		if gpuType != "" {
 			labels[GPULabel] = gpuType
 		}

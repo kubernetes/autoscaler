@@ -418,7 +418,6 @@ func (m *tencentcloudManagerImpl) GetAsgTemplateNode(asg Asg) (*apiv1.Node, erro
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.Cpu, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.Mem*1024*1024*1024, resource.DecimalSI)
-
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
 	klog.V(5).Infof("Extracted resources from ASG tags %v", resourcesFromTags)
 	for resourceName, val := range resourcesFromTags {

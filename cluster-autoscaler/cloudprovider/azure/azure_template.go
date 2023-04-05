@@ -29,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog/v2"
 )
@@ -123,7 +123,7 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 	// isNPSeries returns if a SKU is an NP-series SKU
 	// SKU API reports GPUs for NP-series but it's actually FPGAs
 	if !isNPSeries(*template.Sku.Name) {
-		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		node.Status.Capacity[util.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
 	}
 
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memoryMb*1024*1024, resource.DecimalSI)

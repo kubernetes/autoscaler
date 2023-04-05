@@ -26,8 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 const (
@@ -64,8 +64,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 			Conditions:  []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	nodeGpuReady.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeGpuReady.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeGpuReady.Status.Allocatable[util.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeGpuReady.Status.Capacity[util.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	expectedReadiness[nodeGpuReady.Name] = true
 
 	nodeGpuUnready := &apiv1.Node{
@@ -80,8 +80,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 			Conditions:  []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	nodeGpuUnready.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeGpuUnready.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeGpuUnready.Status.Allocatable[util.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeGpuUnready.Status.Capacity[util.ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
 	expectedReadiness[nodeGpuUnready.Name] = false
 
 	nodeDirectXReady := &apiv1.Node{
@@ -96,8 +96,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 			Conditions:  []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	nodeDirectXReady.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeDirectXReady.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeDirectXReady.Status.Allocatable[util.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeDirectXReady.Status.Capacity[util.ResourceDirectX] = *resource.NewQuantity(1, resource.DecimalSI)
 	expectedReadiness[nodeDirectXReady.Name] = true
 
 	nodeDirectXUnready := &apiv1.Node{
@@ -112,8 +112,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 			Conditions:  []apiv1.NodeCondition{readyCondition},
 		},
 	}
-	nodeDirectXUnready.Status.Allocatable[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeDirectXUnready.Status.Capacity[gpu.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeDirectXUnready.Status.Allocatable[util.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeDirectXUnready.Status.Capacity[util.ResourceDirectX] = *resource.NewQuantity(0, resource.DecimalSI)
 	expectedReadiness[nodeDirectXUnready.Name] = false
 
 	nodeGpuUnready2 := &apiv1.Node{
