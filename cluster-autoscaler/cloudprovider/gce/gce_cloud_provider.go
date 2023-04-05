@@ -369,12 +369,12 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		defer config.Close()
 	}
 
-	manager, err := CreateGceManager(config, do, opts.Regional, opts.ConcurrentGceRefreshes, opts.UserAgent)
+	manager, err := CreateGceManager(config, do, opts.Regional, opts.GCEOptions.ConcurrentRefreshes, opts.UserAgent, opts.GCEOptions.MigInstancesMinRefreshWaitTime)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
 
-	pricingModel := NewGcePriceModel(NewGcePriceInfo(), opts.GceExpanderEphemeralStorageSupport)
+	pricingModel := NewGcePriceModel(NewGcePriceInfo(), opts.GCEOptions.ExpanderEphemeralStorageSupport)
 	provider, err := BuildGceCloudProvider(manager, rl, pricingModel)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE cloud provider: %v", err)
