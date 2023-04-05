@@ -23,6 +23,12 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
+	kube_flag "k8s.io/component-base/cli/flag"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -33,10 +39,6 @@ import (
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
-	kube_flag "k8s.io/component-base/cli/flag"
-	"k8s.io/klog/v2"
 )
 
 var (
@@ -65,6 +67,8 @@ var (
 
 	namespace          = os.Getenv("NAMESPACE")
 	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
+
+	podLabelSelector = flag.String("pod-label-selector", "", "Label selector for pods that are eligible for the Updater")
 )
 
 const defaultResyncPeriod time.Duration = 10 * time.Minute
@@ -78,6 +82,7 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_updater.Register()
 
+	podSelector := labelSelectorOrDie(*podLabelSelector)
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
@@ -108,6 +113,7 @@ func main() {
 		targetSelectorFetcher,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
+		podSelector,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
@@ -119,4 +125,16 @@ func main() {
 		healthCheck.UpdateLastActivity()
 		cancel()
 	}
+}
+
+func labelSelectorOrDie(podLabelSelectorStr string) labels.Selector {
+	podSelector := labels.Everything()
+	if podLabelSelectorStr != "" {
+		var err error
+		if podSelector, err = labels.Parse(podLabelSelectorStr); err != nil {
+			klog.Fatalf("Failed to parse pod label selector: %v", err)
+			panic(err)
+		}
+	}
+	return podSelector
 }

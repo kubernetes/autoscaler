@@ -22,10 +22,18 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/scheme"
+	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	v1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
@@ -35,14 +43,6 @@ import (
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/kubernetes/scheme"
-	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	v1lister "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/record"
-	"k8s.io/klog/v2"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
@@ -63,6 +63,7 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
+	podLabelSelector             labels.Selector
 }
 
 // NewUpdater creates Updater with given configuration
@@ -80,6 +81,7 @@ func NewUpdater(
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
+	podLabelSelector labels.Selector,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -102,6 +104,7 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
+		podLabelSelector: podLabelSelector,
 	}, nil
 }
 
@@ -142,10 +145,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
 			continue
 		}
-
+		podSelectorRequirements, _ := u.podLabelSelector.Requirements()
 		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
 			Vpa:      vpa,
-			Selector: selector,
+			Selector: selector.Add(podSelectorRequirements...),
 		})
 	}
 
