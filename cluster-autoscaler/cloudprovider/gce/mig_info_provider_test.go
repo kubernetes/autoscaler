@@ -100,6 +100,10 @@ func (client *mockAutoscalingGceClient) FetchAvailableCpuPlatforms() (map[string
 	return nil, nil
 }
 
+func (client *mockAutoscalingGceClient) FetchReservations() ([]*gce.Reservation, error) {
+	return nil, nil
+}
+
 func (client *mockAutoscalingGceClient) ResizeMig(_ GceRef, _ int64) error {
 	return nil
 }
