@@ -954,32 +954,97 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
-		assert.Equal(t, "ng1", nodeGroup)
 		assert.Equal(t, 1, increase)
 		return nil
 	}, nil)
+
+	// Resource limits: cores [0, 64], memory [0, 1000]
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0},
-		map[string]int64{cloudprovider.ResourceNameCores: 48, cloudprovider.ResourceNameMemory: 1000},
+		map[string]int64{cloudprovider.ResourceNameCores: 64, cloudprovider.ResourceNameMemory: 1000},
 	)
 	provider.SetResourceLimiter(resourceLimiter)
 
 	// Test cases:
-	// ng1: current size 1, min size 3, cores limit 48, memory limit 1000 => scale up with 1 new node.
-	// ng2: current size 1, min size 1, cores limit 48, memory limit 1000 => no scale up.
+	// ng1: current size 1, min size 3
+	// ng2: current size 1, min size 1
+	// ng3: current size 1, min size 3
+	provider.AddNodeGroup("ng1", 3, 10, 1)
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+	provider.AddNodeGroup("ng3", 3, 10, 1)
+
+	// Node sku: cores 16, memory 32
 	n1 := BuildTestNode("n1", 16000, 32)
 	SetNodeReadyState(n1, true, time.Now())
+	provider.AddNode("ng1", n1)
 	n2 := BuildTestNode("n2", 16000, 32)
 	SetNodeReadyState(n2, true, time.Now())
-	provider.AddNodeGroup("ng1", 3, 10, 1)
-	provider.AddNode("ng1", n1)
-	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng2", n2)
+	n3 := BuildTestNode("n3", 16000, 32)
+	SetNodeReadyState(n3, true, time.Now())
+	provider.AddNode("ng3", n3)
 
 	options := config.AutoscalingOptions{
 		EstimatorName:  estimator.BinpackingEstimatorName,
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
+	}
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	assert.NoError(t, err)
+
+	nodes := []*apiv1.Node{n1, n2, n3}
+	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+	processors := NewTestProcessors(&context)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+
+	suOrchestrator := New()
+	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
+	scaleUpStatus, err := suOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
+
+	// Expectations:
+	// ng1 OR ng3 => scale up with 1 new node
+	// ng2 => no scale up
+	assert.NoError(t, err)
+	assert.True(t, scaleUpStatus.WasSuccessful())
+	assert.Equal(t, 1, len(scaleUpStatus.ScaleUpInfos))
+	scaleUpGroupName := scaleUpStatus.ScaleUpInfos[0].Group.Id()
+	assert.True(t, scaleUpGroupName == "ng1" || scaleUpGroupName == "ng3")
+	assert.Equal(t, 2, scaleUpStatus.ScaleUpInfos[0].NewSize)
+}
+
+func TestScaleUpToMeetNodeGroupMinSizeWithMaxNodesCap(t *testing.T) {
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error { return nil }, nil)
+
+	// Resource limits: cores [0, 64], memory [0, 1000]
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0},
+		map[string]int64{cloudprovider.ResourceNameCores: 64, cloudprovider.ResourceNameMemory: 1000},
+	)
+	provider.SetResourceLimiter(resourceLimiter)
+
+	// Test cases:
+	// ng1: current size 1, min size 3
+	// ng2: current size 1, min size 3
+	provider.AddNodeGroup("ng1", 3, 10, 1)
+	provider.AddNodeGroup("ng2", 3, 10, 1)
+
+	// Node sku: cores 16, memory 32
+	n1 := BuildTestNode("n1", 16000, 32)
+	SetNodeReadyState(n1, true, time.Now())
+	provider.AddNode("ng1", n1)
+	n2 := BuildTestNode("n2", 16000, 32)
+	SetNodeReadyState(n2, true, time.Now())
+	provider.AddNode("ng2", n2)
+
+	// MaxNodesTotal in cluster: 3
+	options := config.AutoscalingOptions{
+		EstimatorName:  estimator.BinpackingEstimatorName,
+		MaxCoresTotal:  config.DefaultMaxClusterCores,
+		MaxMemoryTotal: config.DefaultMaxClusterMemory,
+		MaxNodesTotal:  3,
 	}
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
@@ -993,11 +1058,12 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
 	scaleUpStatus, err := suOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
+
+	// Expectations: only 1 node group will be scaled up with 1 new node
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, 1, len(scaleUpStatus.ScaleUpInfos))
 	assert.Equal(t, 2, scaleUpStatus.ScaleUpInfos[0].NewSize)
-	assert.Equal(t, "ng1", scaleUpStatus.ScaleUpInfos[0].Group.Id())
 }
 
 func TestCheckDeltaWithinLimits(t *testing.T) {

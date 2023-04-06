@@ -344,6 +344,18 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
 	}
 
+	nodeCountInCluster := 0
+	for _, ng := range nodeGroups {
+		if !ng.Exist() {
+			continue
+		}
+		targetSize, err := ng.TargetSize()
+		if err != nil {
+			continue
+		}
+		nodeCountInCluster += targetSize
+	}
+
 	for _, ng := range nodeGroups {
 		if !ng.Exist() {
 			klog.Warningf("ScaleUpToNodeGroupMinSize: NodeGroup %s does not exist", ng.Id())
@@ -373,23 +385,35 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 		}
 
 		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, ng, nodeInfo); skipReason != nil {
-			klog.Warning("ScaleUpToNodeGroupMinSize: node group resource excceded: %v", skipReason)
+			klog.Warningf("ScaleUpToNodeGroupMinSize: node group resource excceded: %v", skipReason.Reasons())
 			continue
 		}
 
 		newNodeCount := ng.MinSize() - targetSize
 		newNodeCount, err = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodeCount, resourcesLeft, nodeInfo, ng)
 		if err != nil {
-			klog.Warning("ScaleUpToNodeGroupMinSize: failed to apply resource limits: %v", err)
+			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to apply resource limits: %v", err)
 			continue
 		}
 
-		newNodeCount, err = o.GetCappedNewNodeCount(newNodeCount, targetSize)
+		newNodeCount, err = o.GetCappedNewNodeCount(newNodeCount, nodeCountInCluster)
 		if err != nil {
-			klog.Warning("ScaleUpToNodeGroupMinSize: failed to get capped node count: %v", err)
+			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to get capped node count: %v", err)
 			continue
 		}
 
+		delta, err := o.resourceManager.DeltaForNode(o.autoscalingContext, nodeInfo, ng)
+		if err != nil {
+			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to get delta for node: %v", err)
+			continue
+		}
+		resourcesLeft, err = resource.UpdateLimits(resourcesLeft, delta, newNodeCount)
+		if err != nil {
+			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to allocate %d nodes from resources left: %v", newNodeCount, err)
+			continue
+		}
+
+		nodeCountInCluster += newNodeCount
 		info := nodegroupset.ScaleUpInfo{
 			Group:       ng,
 			CurrentSize: targetSize,
