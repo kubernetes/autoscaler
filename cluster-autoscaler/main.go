@@ -107,13 +107,13 @@ var (
 		"How long after node deletion that scale down evaluation resumes, defaults to scanInterval")
 	scaleDownDelayAfterFailure = flag.Duration("scale-down-delay-after-failure", 3*time.Minute,
 		"How long after scale down failure that scale down evaluation resumes")
-	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
+	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", config.DefaultScaleDownUnneededTime,
 		"How long a node should be unneeded before it is eligible for scale down")
-	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
+	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", config.DefaultScaleDownUnreadyTime,
 		"How long an unready node should be unneeded before it is eligible for scale down")
-	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
+	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", config.DefaultScaleDownUtilizationThreshold,
 		"Sum of cpu or memory of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down")
-	scaleDownGpuUtilizationThreshold = flag.Float64("scale-down-gpu-utilization-threshold", 0.5,
+	scaleDownGpuUtilizationThreshold = flag.Float64("scale-down-gpu-utilization-threshold", config.DefaultScaleDownGpuUtilizationThreshold,
 		"Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down."+
 			"Utilization calculation only cares about gpu resource for accelerator node. cpu and memory utilization will be ignored.")
 	scaleDownNonEmptyCandidatesCount = flag.Int("scale-down-non-empty-candidates-count", 30,
@@ -258,7 +258,9 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
 			ScaleDownUnneededTime:            *scaleDownUnneededTime,
 			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
-			MaxNodeProvisionTime:             *maxNodeProvisionTime,
+			// per nodegroup setting, defaulted to global setting
+			IgnoreDaemonSetsUtilization: *ignoreDaemonSetsUtilization,
+			MaxNodeProvisionTime:        *maxNodeProvisionTime,
 		},
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
@@ -271,7 +273,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ExpanderNames:                    *expanderFlag,
 		GRPCExpanderCert:                 *grpcExpanderCert,
 		GRPCExpanderURL:                  *grpcExpanderURL,
-		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
 		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxBulkSoftTaintCount:            *maxBulkSoftTaintCount,
 		MaxBulkSoftTaintTime:             *maxBulkSoftTaintTime,

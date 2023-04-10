@@ -1303,7 +1303,8 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 		MinReplicaCount:                   0,
 		SkipNodesWithCustomControllerPods: true,
 	}
-	sd := NewScaleDown(ctx, NewTestProcessors(ctx), ndt, deleteOptions)
-	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions)
+	processors := NewTestProcessors(ctx)
+	sd := NewScaleDown(ctx, processors, ndt, deleteOptions)
+	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions, processors)
 	return NewScaleDownWrapper(sd, actuator)
 }
