@@ -21,12 +21,11 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -35,6 +34,15 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
+
+type testCase struct {
+	desc                        string
+	nodes                       []*apiv1.Node
+	pods                        []*apiv1.Pod
+	want                        []string
+	scaleDownUnready            bool
+	ignoreDaemonSetsUtilization bool
+}
 
 func TestFilterOutUnremovable(t *testing.T) {
 	now := time.Now()
@@ -59,13 +67,10 @@ func TestFilterOutUnremovable(t *testing.T) {
 	smallPod := BuildTestPod("smallPod", 100, 0)
 	smallPod.Spec.NodeName = "regular"
 
-	testCases := []struct {
-		desc             string
-		nodes            []*apiv1.Node
-		pods             []*apiv1.Pod
-		want             []string
-		scaleDownUnready bool
-	}{
+	dsPod := BuildDSTestPod("dsPod", 500, 0)
+	dsPod.Spec.NodeName = "regular"
+
+	testCases := []testCase{
 		{
 			desc:             "regular node stays",
 			nodes:            []*apiv1.Node{regularNode},
@@ -111,14 +116,53 @@ func TestFilterOutUnremovable(t *testing.T) {
 			scaleDownUnready: false,
 		},
 	}
+
+	allTestCases := testCases
+
+	// run all test cases again with `IgnoreDaemonSetsUtilization` set to true
 	for _, tc := range testCases {
+		t := tc // shallow copy
+		t.ignoreDaemonSetsUtilization = true
+		allTestCases = append(allTestCases, t)
+	}
+
+	ignoreDsCases := []testCase{
+		{
+			desc:                        "high utilization daemonsets node is filtered out",
+			nodes:                       []*apiv1.Node{regularNode},
+			pods:                        []*apiv1.Pod{smallPod, dsPod},
+			want:                        []string{},
+			scaleDownUnready:            true,
+			ignoreDaemonSetsUtilization: false,
+		},
+		{
+			desc:                        "high utilization daemonsets node stays",
+			nodes:                       []*apiv1.Node{regularNode},
+			pods:                        []*apiv1.Pod{smallPod, dsPod},
+			want:                        []string{"regular"},
+			scaleDownUnready:            true,
+			ignoreDaemonSetsUtilization: true,
+		},
+	}
+
+	allTestCases = append(allTestCases, ignoreDsCases...)
+
+	for _, tc := range allTestCases {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			c := NewChecker(&staticThresholdGetter{0.5})
+			s := nodegroupconfig.DelegatingNodeGroupConfigProcessor{}
+			c := NewChecker(&s)
 			options := config.AutoscalingOptions{
 				UnremovableNodeRecheckTimeout: 5 * time.Minute,
 				ScaleDownUnreadyEnabled:       tc.scaleDownUnready,
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUtilizationThreshold:    config.DefaultScaleDownUtilizationThreshold,
+					ScaleDownGpuUtilizationThreshold: config.DefaultScaleDownGpuUtilizationThreshold,
+					ScaleDownUnneededTime:            config.DefaultScaleDownUnneededTime,
+					ScaleDownUnreadyTime:             config.DefaultScaleDownUnreadyTime,
+					IgnoreDaemonSetsUtilization:      tc.ignoreDaemonSetsUtilization,
+				},
 			}
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -135,16 +179,4 @@ func TestFilterOutUnremovable(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 	}
-}
-
-type staticThresholdGetter struct {
-	threshold float64
-}
-
-func (s *staticThresholdGetter) GetScaleDownUtilizationThreshold(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup) (float64, error) {
-	return s.threshold, nil
-}
-
-func (s *staticThresholdGetter) GetScaleDownGpuUtilizationThreshold(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup) (float64, error) {
-	return s.threshold, nil
 }
