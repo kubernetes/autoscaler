@@ -1,5 +1,5 @@
 options:
-  machineType: N1_HIGHCPU_32
+  machineType: E2_HIGHCPU_32
 timeout: 10800s
 
 substitutions:
