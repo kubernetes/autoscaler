@@ -76,6 +76,9 @@ type ControllerKeyWithAPIVersion struct {
 type ControllerFetcher interface {
 	// FindTopMostWellKnownOrScalable returns topmost well-known or scalable controller. Error is returned if controller cannot be found.
 	FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error)
+
+	// Get Pod Template
+	GetPodTemplateFromTopMostWellKnown(controller *ControllerKeyWithAPIVersion) (*corev1.PodTemplateSpec, error)
 }
 
 type controllerFetcher struct {
@@ -307,6 +310,43 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 
 	// nothing found, apparently the resource doesn't support scale (or we lack RBAC)
 	return nil, lastError
+}
+
+func (f *controllerFetcher) GetPodTemplateFromTopMostWellKnown(key *ControllerKeyWithAPIVersion) (*corev1.PodTemplateSpec, error) {
+	kind := wellKnownController(key.Kind)
+	informer, exists := f.informersMap[kind]
+	if !exists {
+		return nil, fmt.Errorf("can't retrieve podTemplate, no informer defined for kind %v", kind)
+	}
+
+	namespace := key.Namespace
+	name := key.Name
+
+	obj, exists, err := informer.GetStore().GetByKey(namespace + "/" + name)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("%s %s/%s does not exist", kind, namespace, name)
+	}
+	switch apiObj := obj.(type) {
+	case (*appsv1.DaemonSet):
+		return &apiObj.Spec.Template, nil
+	case (*appsv1.Deployment):
+		return &apiObj.Spec.Template, nil
+	case (*appsv1.StatefulSet):
+		return &apiObj.Spec.Template, nil
+	case (*appsv1.ReplicaSet):
+		return &apiObj.Spec.Template, nil
+	case (*batchv1.Job):
+		return &apiObj.Spec.Template, nil
+	case (*batchv1.CronJob):
+		return &apiObj.Spec.JobTemplate.Spec.Template, nil
+	case (*corev1.ReplicationController):
+		return apiObj.Spec.Template, nil
+	}
+
+	return nil, fmt.Errorf("don't know how to read owner controller, to read podTemplate")
 }
 
 func (f *controllerFetcher) FindTopMostWellKnownOrScalable(key *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
