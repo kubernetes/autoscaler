@@ -63,6 +63,8 @@ func (r unstructuredScalableResource) GroupVersionResource() (schema.GroupVersio
 		return r.controller.machineDeploymentResource, nil
 	case machineSetKind:
 		return r.controller.machineSetResource, nil
+	case machinePoolKind:
+		return r.controller.machinePoolResource, nil
 	default:
 		return schema.GroupVersionResource{}, fmt.Errorf("unknown scalable resource kind %s", r.Kind())
 	}
