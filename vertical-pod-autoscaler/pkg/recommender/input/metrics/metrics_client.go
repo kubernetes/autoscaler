@@ -22,11 +22,13 @@ import (
 
 	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	recommender_metrics "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	recommender_metrics "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 )
 
 // ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
@@ -55,9 +57,13 @@ type metricsClient struct {
 }
 
 // NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
-// It requires an instance of PodMetricsesGetter, which is used for underlying communication with metrics server.
 // namespace limits queries to particular namespace, use k8sapiv1.NamespaceAll to select all namespaces.
-func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace, clientName string) MetricsClient {
+func NewMetricsClient(config *rest.Config, namespace, clientName string) MetricsClient {
+	metricsGetter := resourceclient.NewForConfigOrDie(config)
+	return newMetricsClient(metricsGetter, namespace, clientName)
+}
+
+func newMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace, clientName string) MetricsClient {
 	return &metricsClient{
 		metricsGetter: metricsGetter,
 		namespace:     namespace,
