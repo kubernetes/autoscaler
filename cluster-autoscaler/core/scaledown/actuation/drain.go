@@ -136,9 +136,20 @@ func (e Evictor) DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1
 		return evictionResults, errors.NewAutoscalerError(errors.ApiCallError, "Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
 	}
 
+	// The time spent waiting for evictions has an upper bound of ctx.MaxGracefulTerminationSec from evictPod,
+	// but can be reduced to the max of the termination grace periods reported from the evictions
+	var largestPodGracePeriod int64 = 0
+	for _, result := range evictionResults {
+		if result.GracePeriodSeconds > largestPodGracePeriod {
+			largestPodGracePeriod = result.GracePeriodSeconds
+		}
+	}
+	waitDuration := time.Duration(largestPodGracePeriod)*time.Second + e.PodEvictionHeadroom
+
 	// Evictions created successfully, wait maxGracefulTerminationSec + podEvictionHeadroom to see if pods really disappeared.
 	var allGone bool
-	for start := time.Now(); time.Now().Sub(start) < time.Duration(ctx.MaxGracefulTerminationSec)*time.Second+e.PodEvictionHeadroom; time.Sleep(5 * time.Second) {
+	klog.V(4).Infof("Waiting up to %s for evictions from %s", waitDuration.String(), node.Name)
+	for start := time.Now(); time.Now().Sub(start) < waitDuration; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
 			podreturned, err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
@@ -241,7 +252,7 @@ func evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, isDaemonS
 			if evictionRegister != nil {
 				evictionRegister.RegisterEviction(podToEvict)
 			}
-			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
+			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil, GracePeriodSeconds: maxTermination}
 		}
 	}
 	if !isDaemonSetPod {

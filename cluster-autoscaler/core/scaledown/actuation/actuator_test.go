@@ -544,7 +544,7 @@ func TestStartDeletion(t *testing.T) {
 					PodEvictionResults: map[string]status.PodEvictionResult{
 						"drain-node-0-pod-0": {Pod: removablePod("drain-node-0-pod-0", "drain-node-0"), Err: cmpopts.AnyError, TimedOut: true},
 						"drain-node-0-pod-1": {Pod: removablePod("drain-node-0-pod-1", "drain-node-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-0-pod-2": {Pod: removablePod("drain-node-0-pod-2", "drain-node-0")},
+						"drain-node-0-pod-2": {Pod: removablePod("drain-node-0-pod-2", "drain-node-0"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
 					},
 				},
 				"drain-node-1": {ResultType: status.NodeDeleteOk},
@@ -552,9 +552,9 @@ func TestStartDeletion(t *testing.T) {
 					ResultType: status.NodeDeleteErrorFailedToEvictPods,
 					Err:        cmpopts.AnyError,
 					PodEvictionResults: map[string]status.PodEvictionResult{
-						"drain-node-2-pod-0": {Pod: removablePod("drain-node-2-pod-0", "drain-node-2")},
+						"drain-node-2-pod-0": {Pod: removablePod("drain-node-2-pod-0", "drain-node-2"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
 						"drain-node-2-pod-1": {Pod: removablePod("drain-node-2-pod-1", "drain-node-2"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-2-pod-2": {Pod: removablePod("drain-node-2-pod-2", "drain-node-2")},
+						"drain-node-2-pod-2": {Pod: removablePod("drain-node-2-pod-2", "drain-node-2"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
 					},
 				},
 				"drain-node-3": {ResultType: status.NodeDeleteOk},
