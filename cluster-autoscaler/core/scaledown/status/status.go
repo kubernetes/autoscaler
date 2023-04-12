@@ -132,9 +132,10 @@ type NodeDeleteResult struct {
 
 // PodEvictionResult contains the result of an eviction of a pod.
 type PodEvictionResult struct {
-	Pod      *apiv1.Pod
-	TimedOut bool
-	Err      error
+	Pod                *apiv1.Pod
+	TimedOut           bool
+	GracePeriodSeconds int64
+	Err                error
 }
 
 // WasEvictionSuccessful tells if the pod was successfully evicted.

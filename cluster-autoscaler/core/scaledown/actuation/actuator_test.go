@@ -584,7 +584,7 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 					PodEvictionResults: map[string]status.PodEvictionResult{
 						"test-node-0-pod-0": {Pod: removablePod("test-node-0-pod-0", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
 						"test-node-0-pod-1": {Pod: removablePod("test-node-0-pod-1", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"test-node-0-pod-2": {Pod: removablePod("test-node-0-pod-2", "test-node-0")},
+						"test-node-0-pod-2": {Pod: removablePod("test-node-0-pod-2", "test-node-0"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
 					},
 				},
 				"test-node-1": {ResultType: status.NodeDeleteOk},
@@ -592,9 +592,9 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 					ResultType: status.NodeDeleteErrorFailedToEvictPods,
 					Err:        cmpopts.AnyError,
 					PodEvictionResults: map[string]status.PodEvictionResult{
-						"test-node-2-pod-0": {Pod: removablePod("test-node-2-pod-0", "test-node-2")},
+						"test-node-2-pod-0": {Pod: removablePod("test-node-2-pod-0", "test-node-2"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
 						"test-node-2-pod-1": {Pod: removablePod("test-node-2-pod-1", "test-node-2"), Err: cmpopts.AnyError, TimedOut: true},
-						"test-node-2-pod-2": {Pod: removablePod("test-node-2-pod-2", "test-node-2")},
+						"test-node-2-pod-2": {Pod: removablePod("test-node-2-pod-2", "test-node-2"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
 					},
 				},
 				"test-node-3": {ResultType: status.NodeDeleteOk},
