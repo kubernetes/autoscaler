@@ -102,19 +102,9 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
 
-	upcomingCounts, _ := o.clusterStateRegistry.GetUpcomingNodes()
-	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
-	for nodeGroup, numberOfNodes := range upcomingCounts {
-		nodeTemplate, found := nodeInfos[nodeGroup]
-		if !found {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
-				errors.InternalError,
-				"failed to find template node for node group %s",
-				nodeGroup))
-		}
-		for i := 0; i < numberOfNodes; i++ {
-			upcomingNodes = append(upcomingNodes, nodeTemplate)
-		}
+	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)
+	if aErr != nil {
+		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
@@ -182,7 +172,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		klog.V(1).Info("No expansion options")
 		return &status.ScaleUpStatus{
 			Result:                  status.ScaleUpNoOptionsAvailable,
-			PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+			PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
 			ConsideredNodeGroups:    nodeGroups,
 		}, nil
 	}
@@ -196,7 +186,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	if bestOption == nil || bestOption.NodeCount <= 0 {
 		return &status.ScaleUpStatus{
 			Result:                  status.ScaleUpNoOptionsAvailable,
-			PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+			PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
 			ConsideredNodeGroups:    nodeGroups,
 		}, nil
 	}
@@ -333,11 +323,11 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	return &status.ScaleUpStatus{
 		Result:                  status.ScaleUpSuccessful,
 		ScaleUpInfos:            scaleUpInfos,
-		PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+		PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
 		ConsideredNodeGroups:    nodeGroups,
 		CreateNodeGroupResults:  createNodeGroupResults,
 		PodsTriggeredScaleUp:    bestOption.Pods,
-		PodsAwaitEvaluation:     getPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
+		PodsAwaitEvaluation:     GetPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
 	}, nil
 }
 
@@ -491,6 +481,22 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	return option, nil
 }
 
+// UpcomingNodes returns a list of nodes that are not ready but should be.
+func (o *ScaleUpOrchestrator) UpcomingNodes(nodeInfos map[string]*schedulerframework.NodeInfo) ([]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+	upcomingCounts, _ := o.clusterStateRegistry.GetUpcomingNodes()
+	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
+	for nodeGroup, numberOfNodes := range upcomingCounts {
+		nodeTemplate, found := nodeInfos[nodeGroup]
+		if !found {
+			return nil, errors.NewAutoscalerError(errors.InternalError, "failed to find template node for node group %s", nodeGroup)
+		}
+		for i := 0; i < numberOfNodes; i++ {
+			upcomingNodes = append(upcomingNodes, nodeTemplate)
+		}
+	}
+	return upcomingNodes, nil
+}
+
 // IsNodeGroupReadyToScaleUp returns nil if node group is ready to be scaled up, otherwise a reason is provided.
 func (o *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.NodeGroup, now time.Time) *SkippedReasons {
 	// Autoprovisioned node groups without nodes are created later so skip check for them.
@@ -627,7 +633,9 @@ func filterNodeGroupsByPods(
 	return result
 }
 
-func getRemainingPods(egs []*equivalence.PodGroup, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
+// GetRemainingPods returns information about pods which CA is unable to help
+// at this moment.
+func GetRemainingPods(egs []*equivalence.PodGroup, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
 	remaining := []status.NoScaleUpInfo{}
 	for _, eg := range egs {
 		if eg.Schedulable {
@@ -645,7 +653,9 @@ func getRemainingPods(egs []*equivalence.PodGroup, skipped map[string]status.Rea
 	return remaining
 }
 
-func getPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) []*apiv1.Pod {
+// GetPodsAwaitingEvaluation returns list of pods for which CA was unable to help
+// this scale up loop (but should be able to help).
+func GetPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) []*apiv1.Pod {
 	awaitsEvaluation := []*apiv1.Pod{}
 	for _, eg := range egs {
 		if eg.Schedulable {
