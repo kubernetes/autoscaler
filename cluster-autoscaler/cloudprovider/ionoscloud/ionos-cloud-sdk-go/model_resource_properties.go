@@ -41,7 +41,7 @@ func NewResourcePropertiesWithDefaults() *ResourceProperties {
 }
 
 // GetName returns the Name field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *ResourceProperties) GetName() *string {
 	if o == nil {
 		return nil
@@ -79,7 +79,7 @@ func (o *ResourceProperties) HasName() bool {
 }
 
 // GetSecAuthProtection returns the SecAuthProtection field value
-// If the value is explicit nil, the zero value for bool will be returned
+// If the value is explicit nil, nil is returned
 func (o *ResourceProperties) GetSecAuthProtection() *bool {
 	if o == nil {
 		return nil
@@ -121,9 +121,11 @@ func (o ResourceProperties) MarshalJSON() ([]byte, error) {
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
+
 	if o.SecAuthProtection != nil {
 		toSerialize["secAuthProtection"] = o.SecAuthProtection
 	}
+
 	return json.Marshal(toSerialize)
 }
 

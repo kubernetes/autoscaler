@@ -39,7 +39,7 @@ func NewNetworkLoadBalancerEntitiesWithDefaults() *NetworkLoadBalancerEntities {
 }
 
 // GetFlowlogs returns the Flowlogs field value
-// If the value is explicit nil, the zero value for FlowLogs will be returned
+// If the value is explicit nil, nil is returned
 func (o *NetworkLoadBalancerEntities) GetFlowlogs() *FlowLogs {
 	if o == nil {
 		return nil
@@ -77,7 +77,7 @@ func (o *NetworkLoadBalancerEntities) HasFlowlogs() bool {
 }
 
 // GetForwardingrules returns the Forwardingrules field value
-// If the value is explicit nil, the zero value for NetworkLoadBalancerForwardingRules will be returned
+// If the value is explicit nil, nil is returned
 func (o *NetworkLoadBalancerEntities) GetForwardingrules() *NetworkLoadBalancerForwardingRules {
 	if o == nil {
 		return nil
@@ -119,9 +119,11 @@ func (o NetworkLoadBalancerEntities) MarshalJSON() ([]byte, error) {
 	if o.Flowlogs != nil {
 		toSerialize["flowlogs"] = o.Flowlogs
 	}
+
 	if o.Forwardingrules != nil {
 		toSerialize["forwardingrules"] = o.Forwardingrules
 	}
+
 	return json.Marshal(toSerialize)
 }
 

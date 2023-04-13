@@ -17,8 +17,8 @@ import (
 // ServerEntities struct for ServerEntities
 type ServerEntities struct {
 	Cdroms  *Cdroms          `json:"cdroms,omitempty"`
-	Volumes *AttachedVolumes `json:"volumes,omitempty"`
 	Nics    *Nics            `json:"nics,omitempty"`
+	Volumes *AttachedVolumes `json:"volumes,omitempty"`
 }
 
 // NewServerEntities instantiates a new ServerEntities object
@@ -40,7 +40,7 @@ func NewServerEntitiesWithDefaults() *ServerEntities {
 }
 
 // GetCdroms returns the Cdroms field value
-// If the value is explicit nil, the zero value for Cdroms will be returned
+// If the value is explicit nil, nil is returned
 func (o *ServerEntities) GetCdroms() *Cdroms {
 	if o == nil {
 		return nil
@@ -77,46 +77,8 @@ func (o *ServerEntities) HasCdroms() bool {
 	return false
 }
 
-// GetVolumes returns the Volumes field value
-// If the value is explicit nil, the zero value for AttachedVolumes will be returned
-func (o *ServerEntities) GetVolumes() *AttachedVolumes {
-	if o == nil {
-		return nil
-	}
-
-	return o.Volumes
-
-}
-
-// GetVolumesOk returns a tuple with the Volumes field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *ServerEntities) GetVolumesOk() (*AttachedVolumes, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Volumes, true
-}
-
-// SetVolumes sets field value
-func (o *ServerEntities) SetVolumes(v AttachedVolumes) {
-
-	o.Volumes = &v
-
-}
-
-// HasVolumes returns a boolean if a field has been set.
-func (o *ServerEntities) HasVolumes() bool {
-	if o != nil && o.Volumes != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetNics returns the Nics field value
-// If the value is explicit nil, the zero value for Nics will be returned
+// If the value is explicit nil, nil is returned
 func (o *ServerEntities) GetNics() *Nics {
 	if o == nil {
 		return nil
@@ -153,17 +115,58 @@ func (o *ServerEntities) HasNics() bool {
 	return false
 }
 
+// GetVolumes returns the Volumes field value
+// If the value is explicit nil, nil is returned
+func (o *ServerEntities) GetVolumes() *AttachedVolumes {
+	if o == nil {
+		return nil
+	}
+
+	return o.Volumes
+
+}
+
+// GetVolumesOk returns a tuple with the Volumes field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *ServerEntities) GetVolumesOk() (*AttachedVolumes, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Volumes, true
+}
+
+// SetVolumes sets field value
+func (o *ServerEntities) SetVolumes(v AttachedVolumes) {
+
+	o.Volumes = &v
+
+}
+
+// HasVolumes returns a boolean if a field has been set.
+func (o *ServerEntities) HasVolumes() bool {
+	if o != nil && o.Volumes != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o ServerEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Cdroms != nil {
 		toSerialize["cdroms"] = o.Cdroms
 	}
-	if o.Volumes != nil {
-		toSerialize["volumes"] = o.Volumes
-	}
+
 	if o.Nics != nil {
 		toSerialize["nics"] = o.Nics
 	}
+
+	if o.Volumes != nil {
+		toSerialize["volumes"] = o.Volumes
+	}
+
 	return json.Marshal(toSerialize)
 }
 

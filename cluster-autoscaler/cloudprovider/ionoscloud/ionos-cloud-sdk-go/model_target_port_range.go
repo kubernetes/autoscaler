@@ -16,10 +16,10 @@ import (
 
 // TargetPortRange struct for TargetPortRange
 type TargetPortRange struct {
-	// Target port range start associated with the NAT Gateway rule.
-	Start *int32 `json:"start,omitempty"`
 	// Target port range end associated with the NAT Gateway rule.
 	End *int32 `json:"end,omitempty"`
+	// Target port range start associated with the NAT Gateway rule.
+	Start *int32 `json:"start,omitempty"`
 }
 
 // NewTargetPortRange instantiates a new TargetPortRange object
@@ -40,46 +40,8 @@ func NewTargetPortRangeWithDefaults() *TargetPortRange {
 	return &this
 }
 
-// GetStart returns the Start field value
-// If the value is explicit nil, the zero value for int32 will be returned
-func (o *TargetPortRange) GetStart() *int32 {
-	if o == nil {
-		return nil
-	}
-
-	return o.Start
-
-}
-
-// GetStartOk returns a tuple with the Start field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *TargetPortRange) GetStartOk() (*int32, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Start, true
-}
-
-// SetStart sets field value
-func (o *TargetPortRange) SetStart(v int32) {
-
-	o.Start = &v
-
-}
-
-// HasStart returns a boolean if a field has been set.
-func (o *TargetPortRange) HasStart() bool {
-	if o != nil && o.Start != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetEnd returns the End field value
-// If the value is explicit nil, the zero value for int32 will be returned
+// If the value is explicit nil, nil is returned
 func (o *TargetPortRange) GetEnd() *int32 {
 	if o == nil {
 		return nil
@@ -116,14 +78,54 @@ func (o *TargetPortRange) HasEnd() bool {
 	return false
 }
 
+// GetStart returns the Start field value
+// If the value is explicit nil, nil is returned
+func (o *TargetPortRange) GetStart() *int32 {
+	if o == nil {
+		return nil
+	}
+
+	return o.Start
+
+}
+
+// GetStartOk returns a tuple with the Start field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *TargetPortRange) GetStartOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Start, true
+}
+
+// SetStart sets field value
+func (o *TargetPortRange) SetStart(v int32) {
+
+	o.Start = &v
+
+}
+
+// HasStart returns a boolean if a field has been set.
+func (o *TargetPortRange) HasStart() bool {
+	if o != nil && o.Start != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o TargetPortRange) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Start != nil {
-		toSerialize["start"] = o.Start
-	}
 	if o.End != nil {
 		toSerialize["end"] = o.End
 	}
+
+	if o.Start != nil {
+		toSerialize["start"] = o.Start
+	}
+
 	return json.Marshal(toSerialize)
 }
 

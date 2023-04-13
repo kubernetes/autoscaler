@@ -16,8 +16,8 @@ import (
 
 // UsersEntities struct for UsersEntities
 type UsersEntities struct {
-	Owns   *ResourcesUsers `json:"owns,omitempty"`
 	Groups *GroupUsers     `json:"groups,omitempty"`
+	Owns   *ResourcesUsers `json:"owns,omitempty"`
 }
 
 // NewUsersEntities instantiates a new UsersEntities object
@@ -38,46 +38,8 @@ func NewUsersEntitiesWithDefaults() *UsersEntities {
 	return &this
 }
 
-// GetOwns returns the Owns field value
-// If the value is explicit nil, the zero value for ResourcesUsers will be returned
-func (o *UsersEntities) GetOwns() *ResourcesUsers {
-	if o == nil {
-		return nil
-	}
-
-	return o.Owns
-
-}
-
-// GetOwnsOk returns a tuple with the Owns field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *UsersEntities) GetOwnsOk() (*ResourcesUsers, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Owns, true
-}
-
-// SetOwns sets field value
-func (o *UsersEntities) SetOwns(v ResourcesUsers) {
-
-	o.Owns = &v
-
-}
-
-// HasOwns returns a boolean if a field has been set.
-func (o *UsersEntities) HasOwns() bool {
-	if o != nil && o.Owns != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetGroups returns the Groups field value
-// If the value is explicit nil, the zero value for GroupUsers will be returned
+// If the value is explicit nil, nil is returned
 func (o *UsersEntities) GetGroups() *GroupUsers {
 	if o == nil {
 		return nil
@@ -114,14 +76,54 @@ func (o *UsersEntities) HasGroups() bool {
 	return false
 }
 
+// GetOwns returns the Owns field value
+// If the value is explicit nil, nil is returned
+func (o *UsersEntities) GetOwns() *ResourcesUsers {
+	if o == nil {
+		return nil
+	}
+
+	return o.Owns
+
+}
+
+// GetOwnsOk returns a tuple with the Owns field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *UsersEntities) GetOwnsOk() (*ResourcesUsers, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Owns, true
+}
+
+// SetOwns sets field value
+func (o *UsersEntities) SetOwns(v ResourcesUsers) {
+
+	o.Owns = &v
+
+}
+
+// HasOwns returns a boolean if a field has been set.
+func (o *UsersEntities) HasOwns() bool {
+	if o != nil && o.Owns != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o UsersEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Owns != nil {
-		toSerialize["owns"] = o.Owns
-	}
 	if o.Groups != nil {
 		toSerialize["groups"] = o.Groups
 	}
+
+	if o.Owns != nil {
+		toSerialize["owns"] = o.Owns
+	}
+
 	return json.Marshal(toSerialize)
 }
 

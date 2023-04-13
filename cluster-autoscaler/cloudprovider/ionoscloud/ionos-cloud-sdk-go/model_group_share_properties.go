@@ -41,7 +41,7 @@ func NewGroupSharePropertiesWithDefaults() *GroupShareProperties {
 }
 
 // GetEditPrivilege returns the EditPrivilege field value
-// If the value is explicit nil, the zero value for bool will be returned
+// If the value is explicit nil, nil is returned
 func (o *GroupShareProperties) GetEditPrivilege() *bool {
 	if o == nil {
 		return nil
@@ -79,7 +79,7 @@ func (o *GroupShareProperties) HasEditPrivilege() bool {
 }
 
 // GetSharePrivilege returns the SharePrivilege field value
-// If the value is explicit nil, the zero value for bool will be returned
+// If the value is explicit nil, nil is returned
 func (o *GroupShareProperties) GetSharePrivilege() *bool {
 	if o == nil {
 		return nil
@@ -121,9 +121,11 @@ func (o GroupShareProperties) MarshalJSON() ([]byte, error) {
 	if o.EditPrivilege != nil {
 		toSerialize["editPrivilege"] = o.EditPrivilege
 	}
+
 	if o.SharePrivilege != nil {
 		toSerialize["sharePrivilege"] = o.SharePrivilege
 	}
+
 	return json.Marshal(toSerialize)
 }
 

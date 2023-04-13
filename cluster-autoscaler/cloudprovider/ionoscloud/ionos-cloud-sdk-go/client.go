@@ -13,14 +13,17 @@ package ionoscloud
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -49,7 +52,7 @@ const (
 	RequestStatusFailed  = "FAILED"
 	RequestStatusDone    = "DONE"
 
-	Version = "6.0.2"
+	Version = "6.1.11"
 )
 
 // Constants for APIs
@@ -65,6 +68,8 @@ type APIClient struct {
 	// API Services
 
 	DefaultApi *DefaultApiService
+
+	ApplicationLoadBalancersApi *ApplicationLoadBalancersApiService
 
 	BackupUnitsApi *BackupUnitsApiService
 
@@ -104,6 +109,8 @@ type APIClient struct {
 
 	SnapshotsApi *SnapshotsApiService
 
+	TargetGroupsApi *TargetGroupsApiService
+
 	TemplatesApi *TemplatesApiService
 
 	UserManagementApi *UserManagementApiService
@@ -123,6 +130,13 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	if cfg.HTTPClient == nil {
 		cfg.HTTPClient = http.DefaultClient
 	}
+	//enable certificate pinning if the env variable is set
+	pkFingerprint := os.Getenv(IonosPinnedCertEnvVar)
+	if pkFingerprint != "" {
+		httpTransport := &http.Transport{}
+		AddPinnedCert(httpTransport, pkFingerprint)
+		cfg.HTTPClient.Transport = httpTransport
+	}
 
 	c := &APIClient{}
 	c.cfg = cfg
@@ -130,6 +144,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 
 	// API Services
 	c.DefaultApi = (*DefaultApiService)(&c.common)
+	c.ApplicationLoadBalancersApi = (*ApplicationLoadBalancersApiService)(&c.common)
 	c.BackupUnitsApi = (*BackupUnitsApiService)(&c.common)
 	c.ContractResourcesApi = (*ContractResourcesApiService)(&c.common)
 	c.DataCentersApi = (*DataCentersApiService)(&c.common)
@@ -149,12 +164,70 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.RequestsApi = (*RequestsApiService)(&c.common)
 	c.ServersApi = (*ServersApiService)(&c.common)
 	c.SnapshotsApi = (*SnapshotsApiService)(&c.common)
+	c.TargetGroupsApi = (*TargetGroupsApiService)(&c.common)
 	c.TemplatesApi = (*TemplatesApiService)(&c.common)
 	c.UserManagementApi = (*UserManagementApiService)(&c.common)
 	c.UserS3KeysApi = (*UserS3KeysApiService)(&c.common)
 	c.VolumesApi = (*VolumesApiService)(&c.common)
 
 	return c
+}
+
+// AddPinnedCert - enables pinning of the sha256 public fingerprint to the http client's transport
+func AddPinnedCert(transport *http.Transport, pkFingerprint string) {
+	if pkFingerprint != "" {
+		transport.DialTLSContext = addPinnedCertVerification([]byte(pkFingerprint), new(tls.Config))
+	}
+}
+
+// TLSDial can be assigned to a http.Transport's DialTLS field.
+type TLSDial func(ctx context.Context, network, addr string) (net.Conn, error)
+
+// AddPinnedCertVerification returns a TLSDial function which checks that
+// the remote server provides a certificate whose SHA256 fingerprint matches
+// the provided value.
+//
+// The returned dialer function can be plugged into a http.Transport's DialTLS
+// field to allow for certificate pinning.
+func addPinnedCertVerification(fingerprint []byte, tlsConfig *tls.Config) TLSDial {
+	return func(ctx context.Context, network, addr string) (net.Conn, error) {
+		//fingerprints can be added with ':', we need to trim
+		fingerprint = bytes.ReplaceAll(fingerprint, []byte(":"), []byte(""))
+		fingerprint = bytes.ReplaceAll(fingerprint, []byte(" "), []byte(""))
+		//we are manually checking a certificate, so we need to enable insecure
+		tlsConfig.InsecureSkipVerify = true
+
+		// Dial the connection to get certificates to check
+		conn, err := tls.Dial(network, addr, tlsConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := verifyPinnedCert(fingerprint, conn.ConnectionState().PeerCertificates); err != nil {
+			_ = conn.Close()
+			return nil, err
+		}
+
+		return conn, nil
+	}
+}
+
+// verifyPinnedCert iterates the list of peer certificates and attempts to
+// locate a certificate that is not a CA and whose public key fingerprint matches pkFingerprint.
+func verifyPinnedCert(pkFingerprint []byte, peerCerts []*x509.Certificate) error {
+	for _, cert := range peerCerts {
+		fingerprint := sha256.Sum256(cert.Raw)
+
+		var bytesFingerPrint = make([]byte, hex.EncodedLen(len(fingerprint[:])))
+		hex.Encode(bytesFingerPrint, fingerprint[:])
+
+		// we have a match, and it's not an authority certificate
+		if cert.IsCA == false && bytes.EqualFold(bytesFingerPrint, pkFingerprint) {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("remote server presented a certificate which does not match the provided fingerprint")
 }
 
 func atoi(in string) (int, error) {
@@ -263,14 +336,14 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, time.Duratio
 			}
 		}
 
-		if c.cfg.Debug {
+		if c.cfg.Debug || c.cfg.LogLevel.Satisfies(Trace) {
 			dump, err := httputil.DumpRequestOut(clonedRequest, true)
 			if err == nil {
-				log.Printf(" [DEBUG] DumpRequestOut : %s\n", string(dump))
+				c.cfg.Logger.Printf(" DumpRequestOut : %s\n", string(dump))
 			} else {
-				log.Println("[DEBUG] DumpRequestOut err: ", err)
+				c.cfg.Logger.Printf(" DumpRequestOut err: %+v", err)
 			}
-			log.Printf("\n try no: %d\n", retryCount)
+			c.cfg.Logger.Printf("\n try no: %d\n", retryCount)
 		}
 
 		httpRequestStartTime := time.Now()
@@ -281,12 +354,12 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, time.Duratio
 			return resp, httpRequestTime, err
 		}
 
-		if c.cfg.Debug {
+		if c.cfg.Debug || c.cfg.LogLevel.Satisfies(Trace) {
 			dump, err := httputil.DumpResponse(resp, true)
 			if err == nil {
-				log.Printf("\n [DEBUG] DumpResponse : %s\n", string(dump))
+				c.cfg.Logger.Printf("\n DumpResponse : %s\n", string(dump))
 			} else {
-				log.Println("[DEBUG] DumpResponse err ", err)
+				c.cfg.Logger.Printf(" DumpResponse err %+v", err)
 			}
 		}
 
@@ -296,6 +369,9 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, time.Duratio
 		case http.StatusServiceUnavailable,
 			http.StatusGatewayTimeout,
 			http.StatusBadGateway:
+			if request.Method == http.MethodPost {
+				return resp, httpRequestTime, err
+			}
 			backoffTime = c.GetConfig().WaitTime
 
 		case http.StatusTooManyRequests:
@@ -314,26 +390,37 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, time.Duratio
 		}
 
 		if retryCount >= c.GetConfig().MaxRetries {
-			if c.cfg.Debug {
-				log.Printf("number of maximum retries exceeded (%d retries)\n", c.cfg.MaxRetries)
+			if c.cfg.Debug || c.cfg.LogLevel.Satisfies(Debug) {
+				c.cfg.Logger.Printf(" Number of maximum retries exceeded (%d retries)\n", c.cfg.MaxRetries)
 			}
 			break
 		} else {
-			c.backOff(backoffTime)
+			c.backOff(request.Context(), backoffTime)
 		}
 	}
 
 	return resp, httpRequestTime, err
 }
 
-func (c *APIClient) backOff(t time.Duration) {
+func (c *APIClient) backOff(ctx context.Context, t time.Duration) {
 	if t > c.GetConfig().MaxWaitTime {
 		t = c.GetConfig().MaxWaitTime
 	}
-	if c.cfg.Debug {
-		log.Printf("sleeping %s before retrying request\n", t.String())
+	if c.cfg.Debug || c.cfg.LogLevel.Satisfies(Debug) {
+		c.cfg.Logger.Printf(" sleeping %s before retrying request\n", t.String())
 	}
-	time.Sleep(t)
+
+	if t <= 0 {
+		return
+	}
+
+	timer := time.NewTimer(t)
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+	case <-timer.C:
+	}
 }
 
 // Allow modification of underlying config for alternate implementations and testing
@@ -355,6 +442,15 @@ func (c *APIClient) prepareRequest(
 	fileBytes []byte) (localVarRequest *http.Request, err error) {
 
 	var body *bytes.Buffer
+
+	val, isSetInEnv := os.LookupEnv(IonosContractNumber)
+	_, isSetInMap := headerParams["X-Contract-Number"]
+	if headerParams == nil {
+		headerParams = make(map[string]string)
+	}
+	if !isSetInMap && isSetInEnv {
+		headerParams["X-Contract-Number"] = val
+	}
 
 	// Detect postBody type and post.
 	if postBody != nil {
@@ -562,7 +658,7 @@ func (c *APIClient) GetRequestStatus(ctx context.Context, path string) (*Request
 	var responseBody = make([]byte, 0)
 	if resp != nil {
 		var errRead error
-		responseBody, errRead = ioutil.ReadAll(resp.Body)
+		responseBody, errRead = io.ReadAll(resp.Body)
 		_ = resp.Body.Close()
 		if errRead != nil {
 			return nil, nil, errRead
@@ -594,6 +690,216 @@ func (c *APIClient) GetRequestStatus(ctx context.Context, path string) (*Request
 
 }
 
+type ResourceHandler interface {
+	GetMetadata() *DatacenterElementMetadata
+	GetMetadataOk() (*DatacenterElementMetadata, bool)
+}
+
+const (
+	Available        string = "AVAILABLE"
+	Busy                    = "BUSY"
+	Inactive                = "INACTIVE"
+	Deploying               = "DEPLOYING"
+	Active                  = "ACTIVE"
+	Failed                  = "FAILED"
+	Suspended               = "SUSPENDED"
+	FailedSuspended         = "FAILED_SUSPENDED"
+	Updating                = "UPDATING"
+	FailedUpdating          = "FAILED_UPDATING"
+	Destroying              = "DESTROYING"
+	FailedDestroying        = "FAILED_DESTROYING"
+	Terminated              = "TERMINATED"
+)
+
+type resourceGetCallFn func(apiClient *APIClient, resourceID string) (ResourceHandler, error)
+type resourceDeleteCallFn func(apiClient *APIClient, resourceID string) (*APIResponse, error)
+
+type StateChannel struct {
+	Msg string
+	Err error
+}
+
+type DeleteStateChannel struct {
+	Msg int
+	Err error
+}
+
+// fn() is a function that returns from the API the resource you want to check it's state.
+// Successful states that can be checked: Available, or Active
+func (c *APIClient) WaitForState(ctx context.Context, fn resourceGetCallFn, resourceID string) (bool, error) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return false, ctx.Err()
+		case <-ticker.C:
+			resource, err := fn(c, resourceID)
+			if err != nil {
+				return false, fmt.Errorf("error occurred when calling the fn function: %w", err)
+			}
+			if resource == nil {
+				return false, errors.New("fail to get resource")
+			}
+			if metadata := resource.GetMetadata(); metadata != nil {
+				if state, ok := metadata.GetStateOk(); ok && state != nil {
+					if *state == Available || *state == Active {
+						return true, nil
+					}
+					if *state == Failed || *state == FailedSuspended || *state == FailedUpdating {
+						return false, errors.New("state of the resource is " + *state)
+					}
+				}
+			} else {
+				return false, errors.New("metadata could not be retrieved from the fn API call")
+			}
+		}
+		continue
+	}
+}
+
+// fn() is a function that returns from the API the resource you want to check it's state
+// the channel is of type StateChannel and it represents the state of the resource. Successful states that can be checked: Available, or Active
+func (c *APIClient) waitForStateWithChanel(ctx context.Context, fn resourceGetCallFn, resourceID string, ch chan<- StateChannel) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	done := make(chan bool, 1)
+
+	for {
+		select {
+		case <-ctx.Done():
+			ch <- StateChannel{
+				"",
+				ctx.Err(),
+			}
+			return
+		case <-done:
+			return
+		case <-ticker.C:
+			resource, err := fn(c, resourceID)
+			if err != nil {
+				ch <- StateChannel{
+					"",
+					fmt.Errorf("error occurred when calling the fn function: %w", err),
+				}
+			} else if resource == nil {
+				ch <- StateChannel{
+					"",
+					errors.New("fail to get resource"),
+				}
+			} else if metadata := resource.GetMetadata(); metadata != nil {
+				if state, ok := metadata.GetStateOk(); ok && state != nil {
+					if *state == Available || *state == Active {
+						ch <- StateChannel{
+							*state,
+							nil,
+						}
+					}
+					if *state == Failed || *state == FailedSuspended || *state == FailedUpdating {
+						ch <- StateChannel{
+							"",
+							errors.New("state of the resource is " + *state),
+						}
+					}
+				}
+			} else {
+				ch <- StateChannel{
+					"",
+					errors.New("metadata could not be retrieved from the fn API call"),
+				}
+			}
+			done <- true
+		}
+		continue
+	}
+}
+
+// fn() is a function that returns from the API the resource you want to check it's state
+// the channel is of type StateChannel and it represents the state of the resource. Successful states that can be checked: Available, or Active
+func (c *APIClient) WaitForStateAsync(ctx context.Context, fn resourceGetCallFn, resourceID string, ch chan<- StateChannel) {
+	go c.waitForStateWithChanel(ctx, fn, resourceID, ch)
+}
+
+// fn() is a function that returns from the API the resource you want to check it's state.
+// a resource is deleted when status code 404 is returned from the get call to API
+func (c *APIClient) WaitForDeletion(ctx context.Context, fn resourceDeleteCallFn, resourceID string) (bool, error) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return false, ctx.Err()
+		case <-ticker.C:
+			apiResponse, err := fn(c, resourceID)
+			if err != nil {
+				if apiResponse == nil {
+					return false, fmt.Errorf("fail to get response: %w", err)
+				}
+				if apiResp := apiResponse.Response; apiResp != nil {
+					if apiResp.StatusCode == http.StatusNotFound {
+						return true, nil
+					}
+				}
+				return false, err
+			}
+		}
+		continue
+	}
+}
+
+// fn() is a function that returns from the API the resource you want to check it's state
+// the channel is of type int and it represents the status response of the resource, which in this case is 404 to check when the resource is not found.
+func (c *APIClient) waitForDeletionWithChannel(ctx context.Context, fn resourceDeleteCallFn, resourceID string, ch chan<- DeleteStateChannel) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	done := make(chan bool, 1)
+
+	for {
+		select {
+		case <-ctx.Done():
+			ch <- DeleteStateChannel{
+				0,
+				ctx.Err(),
+			}
+			return
+		case <-done:
+			return
+		case <-ticker.C:
+			apiResponse, err := fn(c, resourceID)
+			if err != nil {
+				if apiResponse == nil {
+					ch <- DeleteStateChannel{
+						0,
+						fmt.Errorf("API Response from fn is empty: %w ", err),
+					}
+				} else if apiresp := apiResponse.Response; apiresp != nil {
+					if statusCode := apiresp.StatusCode; statusCode == http.StatusNotFound {
+						ch <- DeleteStateChannel{
+							statusCode,
+							nil,
+						}
+					} else {
+						ch <- DeleteStateChannel{
+							statusCode,
+							err,
+						}
+					}
+					done <- true
+				}
+			}
+		}
+		continue
+	}
+}
+
+// fn() is a function that returns from the API the resource you want to check it's state
+// the channel is of type int and it represents the status response of the resource, which in this case is 404 to check when the resource is not found.
+func (c *APIClient) WaitForDeletionAsync(ctx context.Context, fn resourceDeleteCallFn, resourceID string, ch chan<- DeleteStateChannel) {
+	go c.waitForDeletionWithChannel(ctx, fn, resourceID, ch)
+}
+
 func (c *APIClient) WaitForRequest(ctx context.Context, path string) (*APIResponse, error) {
 
 	var (
@@ -622,7 +928,7 @@ func (c *APIClient) WaitForRequest(ctx context.Context, path string) (*APIRespon
 		var localVarBody = make([]byte, 0)
 		if resp != nil {
 			var errRead error
-			localVarBody, errRead = ioutil.ReadAll(resp.Body)
+			localVarBody, errRead = io.ReadAll(resp.Body)
 			_ = resp.Body.Close()
 			if errRead != nil {
 				return nil, errRead
@@ -651,7 +957,8 @@ func (c *APIClient) WaitForRequest(ctx context.Context, path string) (*APIRespon
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return localVarAPIResponse, fmt.Errorf("WaitForRequest failed; received status code %d from API", resp.StatusCode)
+			msg := fmt.Sprintf("WaitForRequest failed; received status code %d from API", resp.StatusCode)
+			return localVarAPIResponse, NewGenericOpenAPIError(msg, localVarBody, nil, resp.StatusCode)
 		}
 		if status.Metadata != nil && status.Metadata.Status != nil {
 			switch *status.Metadata.Status {
@@ -666,9 +973,7 @@ func (c *APIClient) WaitForRequest(ctx context.Context, path string) (*APIRespon
 				if status.Metadata.Message != nil {
 					message = *status.Metadata.Message
 				}
-				return localVarAPIResponse, errors.New(
-					fmt.Sprintf("Request %s failed: %s", id, message),
-				)
+				return localVarAPIResponse, fmt.Errorf("Request %s failed: %s", id, message)
 			}
 		}
 		select {
@@ -808,7 +1113,7 @@ func strlen(s string) int {
 	return utf8.RuneCountInString(s)
 }
 
-// GenericOpenAPIError Provides access to the body, error and model on returned errors.
+// GenericOpenAPIError provides access to the body, error and model on returned errors.
 type GenericOpenAPIError struct {
 	statusCode int
 	body       []byte
@@ -816,9 +1121,24 @@ type GenericOpenAPIError struct {
 	model      interface{}
 }
 
+// NewGenericOpenAPIError - constructor for GenericOpenAPIError
+func NewGenericOpenAPIError(message string, body []byte, model interface{}, statusCode int) GenericOpenAPIError {
+	return GenericOpenAPIError{
+		statusCode: statusCode,
+		body:       body,
+		error:      message,
+		model:      model,
+	}
+}
+
 // Error returns non-empty string if there was an error.
 func (e GenericOpenAPIError) Error() string {
 	return e.error
+}
+
+// SetError sets the error string
+func (e *GenericOpenAPIError) SetError(error string) {
+	e.error = error
 }
 
 // Body returns the raw bytes of the response
@@ -826,11 +1146,27 @@ func (e GenericOpenAPIError) Body() []byte {
 	return e.body
 }
 
+// SetBody sets the raw body of the error
+func (e *GenericOpenAPIError) SetBody(body []byte) {
+	e.body = body
+}
+
 // Model returns the unpacked model of the error
 func (e GenericOpenAPIError) Model() interface{} {
 	return e.model
 }
 
+// SetModel sets the model of the error
+func (e *GenericOpenAPIError) SetModel(model interface{}) {
+	e.model = model
+}
+
+// StatusCode returns the status code of the error
 func (e GenericOpenAPIError) StatusCode() int {
 	return e.statusCode
+}
+
+// SetStatusCode sets the status code of the error
+func (e *GenericOpenAPIError) SetStatusCode(statusCode int) {
+	e.statusCode = statusCode
 }

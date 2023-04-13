@@ -16,8 +16,8 @@ import (
 
 // RequestTarget struct for RequestTarget
 type RequestTarget struct {
-	Target *ResourceReference `json:"target,omitempty"`
 	Status *string            `json:"status,omitempty"`
+	Target *ResourceReference `json:"target,omitempty"`
 }
 
 // NewRequestTarget instantiates a new RequestTarget object
@@ -38,46 +38,8 @@ func NewRequestTargetWithDefaults() *RequestTarget {
 	return &this
 }
 
-// GetTarget returns the Target field value
-// If the value is explicit nil, the zero value for ResourceReference will be returned
-func (o *RequestTarget) GetTarget() *ResourceReference {
-	if o == nil {
-		return nil
-	}
-
-	return o.Target
-
-}
-
-// GetTargetOk returns a tuple with the Target field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *RequestTarget) GetTargetOk() (*ResourceReference, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Target, true
-}
-
-// SetTarget sets field value
-func (o *RequestTarget) SetTarget(v ResourceReference) {
-
-	o.Target = &v
-
-}
-
-// HasTarget returns a boolean if a field has been set.
-func (o *RequestTarget) HasTarget() bool {
-	if o != nil && o.Target != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetStatus returns the Status field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *RequestTarget) GetStatus() *string {
 	if o == nil {
 		return nil
@@ -114,14 +76,54 @@ func (o *RequestTarget) HasStatus() bool {
 	return false
 }
 
+// GetTarget returns the Target field value
+// If the value is explicit nil, nil is returned
+func (o *RequestTarget) GetTarget() *ResourceReference {
+	if o == nil {
+		return nil
+	}
+
+	return o.Target
+
+}
+
+// GetTargetOk returns a tuple with the Target field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *RequestTarget) GetTargetOk() (*ResourceReference, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Target, true
+}
+
+// SetTarget sets field value
+func (o *RequestTarget) SetTarget(v ResourceReference) {
+
+	o.Target = &v
+
+}
+
+// HasTarget returns a boolean if a field has been set.
+func (o *RequestTarget) HasTarget() bool {
+	if o != nil && o.Target != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o RequestTarget) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Target != nil {
-		toSerialize["target"] = o.Target
-	}
 	if o.Status != nil {
 		toSerialize["status"] = o.Status
 	}
+
+	if o.Target != nil {
+		toSerialize["target"] = o.Target
+	}
+
 	return json.Marshal(toSerialize)
 }
 

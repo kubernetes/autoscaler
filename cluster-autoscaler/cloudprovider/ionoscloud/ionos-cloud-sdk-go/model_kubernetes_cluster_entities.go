@@ -38,7 +38,7 @@ func NewKubernetesClusterEntitiesWithDefaults() *KubernetesClusterEntities {
 }
 
 // GetNodepools returns the Nodepools field value
-// If the value is explicit nil, the zero value for KubernetesNodePools will be returned
+// If the value is explicit nil, nil is returned
 func (o *KubernetesClusterEntities) GetNodepools() *KubernetesNodePools {
 	if o == nil {
 		return nil
@@ -80,6 +80,7 @@ func (o KubernetesClusterEntities) MarshalJSON() ([]byte, error) {
 	if o.Nodepools != nil {
 		toSerialize["nodepools"] = o.Nodepools
 	}
+
 	return json.Marshal(toSerialize)
 }
 

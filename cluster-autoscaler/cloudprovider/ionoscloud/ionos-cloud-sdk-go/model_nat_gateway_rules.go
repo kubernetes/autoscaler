@@ -16,14 +16,14 @@ import (
 
 // NatGatewayRules struct for NatGatewayRules
 type NatGatewayRules struct {
-	// The resource's unique identifier.
-	Id *string `json:"id,omitempty"`
-	// The type of object that has been created.
-	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path).
 	Href *string `json:"href,omitempty"`
+	// The resource's unique identifier.
+	Id *string `json:"id,omitempty"`
 	// Array of items in the collection.
 	Items *[]NatGatewayRule `json:"items,omitempty"`
+	// The type of object that has been created.
+	Type *Type `json:"type,omitempty"`
 }
 
 // NewNatGatewayRules instantiates a new NatGatewayRules object
@@ -44,84 +44,8 @@ func NewNatGatewayRulesWithDefaults() *NatGatewayRules {
 	return &this
 }
 
-// GetId returns the Id field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *NatGatewayRules) GetId() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Id
-
-}
-
-// GetIdOk returns a tuple with the Id field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *NatGatewayRules) GetIdOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Id, true
-}
-
-// SetId sets field value
-func (o *NatGatewayRules) SetId(v string) {
-
-	o.Id = &v
-
-}
-
-// HasId returns a boolean if a field has been set.
-func (o *NatGatewayRules) HasId() bool {
-	if o != nil && o.Id != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetType returns the Type field value
-// If the value is explicit nil, the zero value for Type will be returned
-func (o *NatGatewayRules) GetType() *Type {
-	if o == nil {
-		return nil
-	}
-
-	return o.Type
-
-}
-
-// GetTypeOk returns a tuple with the Type field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *NatGatewayRules) GetTypeOk() (*Type, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Type, true
-}
-
-// SetType sets field value
-func (o *NatGatewayRules) SetType(v Type) {
-
-	o.Type = &v
-
-}
-
-// HasType returns a boolean if a field has been set.
-func (o *NatGatewayRules) HasType() bool {
-	if o != nil && o.Type != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetHref returns the Href field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *NatGatewayRules) GetHref() *string {
 	if o == nil {
 		return nil
@@ -158,8 +82,46 @@ func (o *NatGatewayRules) HasHref() bool {
 	return false
 }
 
+// GetId returns the Id field value
+// If the value is explicit nil, nil is returned
+func (o *NatGatewayRules) GetId() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Id
+
+}
+
+// GetIdOk returns a tuple with the Id field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *NatGatewayRules) GetIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Id, true
+}
+
+// SetId sets field value
+func (o *NatGatewayRules) SetId(v string) {
+
+	o.Id = &v
+
+}
+
+// HasId returns a boolean if a field has been set.
+func (o *NatGatewayRules) HasId() bool {
+	if o != nil && o.Id != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetItems returns the Items field value
-// If the value is explicit nil, the zero value for []NatGatewayRule will be returned
+// If the value is explicit nil, nil is returned
 func (o *NatGatewayRules) GetItems() *[]NatGatewayRule {
 	if o == nil {
 		return nil
@@ -196,20 +158,62 @@ func (o *NatGatewayRules) HasItems() bool {
 	return false
 }
 
+// GetType returns the Type field value
+// If the value is explicit nil, nil is returned
+func (o *NatGatewayRules) GetType() *Type {
+	if o == nil {
+		return nil
+	}
+
+	return o.Type
+
+}
+
+// GetTypeOk returns a tuple with the Type field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *NatGatewayRules) GetTypeOk() (*Type, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Type, true
+}
+
+// SetType sets field value
+func (o *NatGatewayRules) SetType(v Type) {
+
+	o.Type = &v
+
+}
+
+// HasType returns a boolean if a field has been set.
+func (o *NatGatewayRules) HasType() bool {
+	if o != nil && o.Type != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o NatGatewayRules) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Id != nil {
-		toSerialize["id"] = o.Id
-	}
-	if o.Type != nil {
-		toSerialize["type"] = o.Type
-	}
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
+
+	if o.Id != nil {
+		toSerialize["id"] = o.Id
+	}
+
 	if o.Items != nil {
 		toSerialize["items"] = o.Items
 	}
+
+	if o.Type != nil {
+		toSerialize["type"] = o.Type
+	}
+
 	return json.Marshal(toSerialize)
 }
 
