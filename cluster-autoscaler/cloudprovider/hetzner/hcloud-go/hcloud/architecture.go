@@ -14,32 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package instrumentation
+package hcloud
 
-import "testing"
+// Architecture specifies the architecture of the CPU.
+type Architecture string
 
-func Test_preparePath(t *testing.T) {
-	tests := []struct {
-		name string
-		path string
-		want string
-	}{
-		{
-			"simple test",
-			"/v1/volumes/123456",
-			"/volumes/",
-		},
-		{
-			"simple test",
-			"/v1/volumes/123456/actions/attach",
-			"/volumes/actions/attach",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := preparePathForLabel(tt.path); got != tt.want {
-				t.Errorf("preparePathForLabel() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+const (
+	// ArchitectureX86 is the architecture for Intel/AMD x86 CPUs.
+	ArchitectureX86 Architecture = "x86"
+
+	// ArchitectureARM is the architecture for ARM CPUs.
+	ArchitectureARM Architecture = "arm"
+)

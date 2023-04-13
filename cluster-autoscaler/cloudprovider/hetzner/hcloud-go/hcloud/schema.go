@@ -134,13 +134,17 @@ func PrimaryIPFromSchema(s schema.PrimaryIP) *PrimaryIP {
 
 // ISOFromSchema converts a schema.ISO to an ISO.
 func ISOFromSchema(s schema.ISO) *ISO {
-	return &ISO{
+	iso := &ISO{
 		ID:          s.ID,
 		Name:        s.Name,
 		Description: s.Description,
 		Type:        ISOType(s.Type),
 		Deprecated:  s.Deprecated,
 	}
+	if s.Architecture != nil {
+		iso.Architecture = Ptr(Architecture(*s.Architecture))
+	}
+	return iso
 }
 
 // LocationFromSchema converts a schema.Location to a Location.
@@ -290,14 +294,15 @@ func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 // ServerTypeFromSchema converts a schema.ServerType to a ServerType.
 func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 	st := &ServerType{
-		ID:          s.ID,
-		Name:        s.Name,
-		Description: s.Description,
-		Cores:       s.Cores,
-		Memory:      s.Memory,
-		Disk:        s.Disk,
-		StorageType: StorageType(s.StorageType),
-		CPUType:     CPUType(s.CPUType),
+		ID:           s.ID,
+		Name:         s.Name,
+		Description:  s.Description,
+		Cores:        s.Cores,
+		Memory:       s.Memory,
+		Disk:         s.Disk,
+		StorageType:  StorageType(s.StorageType),
+		CPUType:      CPUType(s.CPUType),
+		Architecture: Architecture(s.Architecture),
 	}
 	for _, price := range s.Prices {
 		st.Pricings = append(st.Pricings, ServerTypeLocationPricing{
@@ -334,14 +339,15 @@ func SSHKeyFromSchema(s schema.SSHKey) *SSHKey {
 // ImageFromSchema converts a schema.Image to an Image.
 func ImageFromSchema(s schema.Image) *Image {
 	i := &Image{
-		ID:          s.ID,
-		Type:        ImageType(s.Type),
-		Status:      ImageStatus(s.Status),
-		Description: s.Description,
-		DiskSize:    s.DiskSize,
-		Created:     s.Created,
-		RapidDeploy: s.RapidDeploy,
-		OSFlavor:    s.OSFlavor,
+		ID:           s.ID,
+		Type:         ImageType(s.Type),
+		Status:       ImageStatus(s.Status),
+		Description:  s.Description,
+		DiskSize:     s.DiskSize,
+		Created:      s.Created,
+		RapidDeploy:  s.RapidDeploy,
+		OSFlavor:     s.OSFlavor,
+		Architecture: Architecture(s.Architecture),
 		Protection: ImageProtection{
 			Delete: s.Protection.Delete,
 		},
@@ -737,7 +743,7 @@ func PricingFromSchema(s schema.Pricing) Pricing {
 		var pricings []PrimaryIPTypePricing
 		for _, price := range primaryIPType.Prices {
 			p := PrimaryIPTypePricing{
-				Datacenter: price.Datacenter,
+				Location: price.Location,
 				Monthly: PrimaryIPPrice{
 					Net:   price.PriceMonthly.Net,
 					Gross: price.PriceMonthly.Gross,
@@ -897,19 +903,19 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 	}
 	if opts.Location != nil {
 		if opts.Location.ID != 0 {
-			req.Location = String(strconv.Itoa(opts.Location.ID))
+			req.Location = Ptr(strconv.Itoa(opts.Location.ID))
 		} else {
-			req.Location = String(opts.Location.Name)
+			req.Location = Ptr(opts.Location.Name)
 		}
 	}
 	if opts.NetworkZone != "" {
-		req.NetworkZone = String(string(opts.NetworkZone))
+		req.NetworkZone = Ptr(string(opts.NetworkZone))
 	}
 	if opts.Labels != nil {
 		req.Labels = &opts.Labels
 	}
 	if opts.Network != nil {
-		req.Network = Int(opts.Network.ID)
+		req.Network = Ptr(opts.Network.ID)
 	}
 	for _, target := range opts.Targets {
 		schemaTarget := schema.LoadBalancerCreateRequestTarget{
@@ -943,7 +949,7 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 			}
 			if service.HTTP.CookieLifetime != nil {
 				if sec := service.HTTP.CookieLifetime.Seconds(); sec != 0 {
-					schemaService.HTTP.CookieLifetime = Int(int(sec))
+					schemaService.HTTP.CookieLifetime = Ptr(int(sec))
 				}
 			}
 			if service.HTTP.Certificates != nil {
@@ -961,10 +967,10 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 				Retries:  service.HealthCheck.Retries,
 			}
 			if service.HealthCheck.Interval != nil {
-				schemaHealthCheck.Interval = Int(int(service.HealthCheck.Interval.Seconds()))
+				schemaHealthCheck.Interval = Ptr(int(service.HealthCheck.Interval.Seconds()))
 			}
 			if service.HealthCheck.Timeout != nil {
-				schemaHealthCheck.Timeout = Int(int(service.HealthCheck.Timeout.Seconds()))
+				schemaHealthCheck.Timeout = Ptr(int(service.HealthCheck.Timeout.Seconds()))
 			}
 			if service.HealthCheck.HTTP != nil {
 				schemaHealthCheckHTTP := &schema.LoadBalancerCreateRequestServiceHealthCheckHTTP{
@@ -999,7 +1005,7 @@ func loadBalancerAddServiceOptsToSchema(opts LoadBalancerAddServiceOpts) schema.
 			StickySessions: opts.HTTP.StickySessions,
 		}
 		if opts.HTTP.CookieLifetime != nil {
-			req.HTTP.CookieLifetime = Int(int(opts.HTTP.CookieLifetime.Seconds()))
+			req.HTTP.CookieLifetime = Ptr(int(opts.HTTP.CookieLifetime.Seconds()))
 		}
 		if opts.HTTP.Certificates != nil {
 			certificates := []int{}
@@ -1016,10 +1022,10 @@ func loadBalancerAddServiceOptsToSchema(opts LoadBalancerAddServiceOpts) schema.
 			Retries:  opts.HealthCheck.Retries,
 		}
 		if opts.HealthCheck.Interval != nil {
-			req.HealthCheck.Interval = Int(int(opts.HealthCheck.Interval.Seconds()))
+			req.HealthCheck.Interval = Ptr(int(opts.HealthCheck.Interval.Seconds()))
 		}
 		if opts.HealthCheck.Timeout != nil {
-			req.HealthCheck.Timeout = Int(int(opts.HealthCheck.Timeout.Seconds()))
+			req.HealthCheck.Timeout = Ptr(int(opts.HealthCheck.Timeout.Seconds()))
 		}
 		if opts.HealthCheck.HTTP != nil {
 			req.HealthCheck.HTTP = &schema.LoadBalancerActionAddServiceRequestHealthCheckHTTP{
@@ -1042,7 +1048,7 @@ func loadBalancerUpdateServiceOptsToSchema(opts LoadBalancerUpdateServiceOpts) s
 		Proxyprotocol:   opts.Proxyprotocol,
 	}
 	if opts.Protocol != "" {
-		req.Protocol = String(string(opts.Protocol))
+		req.Protocol = Ptr(string(opts.Protocol))
 	}
 	if opts.HTTP != nil {
 		req.HTTP = &schema.LoadBalancerActionUpdateServiceRequestHTTP{
@@ -1051,7 +1057,7 @@ func loadBalancerUpdateServiceOptsToSchema(opts LoadBalancerUpdateServiceOpts) s
 			StickySessions: opts.HTTP.StickySessions,
 		}
 		if opts.HTTP.CookieLifetime != nil {
-			req.HTTP.CookieLifetime = Int(int(opts.HTTP.CookieLifetime.Seconds()))
+			req.HTTP.CookieLifetime = Ptr(int(opts.HTTP.CookieLifetime.Seconds()))
 		}
 		if opts.HTTP.Certificates != nil {
 			certificates := []int{}
@@ -1067,13 +1073,13 @@ func loadBalancerUpdateServiceOptsToSchema(opts LoadBalancerUpdateServiceOpts) s
 			Retries: opts.HealthCheck.Retries,
 		}
 		if opts.HealthCheck.Interval != nil {
-			req.HealthCheck.Interval = Int(int(opts.HealthCheck.Interval.Seconds()))
+			req.HealthCheck.Interval = Ptr(int(opts.HealthCheck.Interval.Seconds()))
 		}
 		if opts.HealthCheck.Timeout != nil {
-			req.HealthCheck.Timeout = Int(int(opts.HealthCheck.Timeout.Seconds()))
+			req.HealthCheck.Timeout = Ptr(int(opts.HealthCheck.Timeout.Seconds()))
 		}
 		if opts.HealthCheck.Protocol != "" {
-			req.HealthCheck.Protocol = String(string(opts.HealthCheck.Protocol))
+			req.HealthCheck.Protocol = Ptr(string(opts.HealthCheck.Protocol))
 		}
 		if opts.HealthCheck.HTTP != nil {
 			req.HealthCheck.HTTP = &schema.LoadBalancerActionUpdateServiceRequestHealthCheckHTTP{
