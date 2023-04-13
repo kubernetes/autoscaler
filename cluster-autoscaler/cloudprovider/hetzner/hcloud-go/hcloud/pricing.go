@@ -72,12 +72,13 @@ type FloatingIPTypePricing struct {
 // PrimaryIPTypePricing defines the schema of pricing information for a primary IP
 // type at a datacenter.
 type PrimaryIPTypePricing struct {
-	Datacenter string
+	Datacenter string // Deprecated: the API does not return pricing for the individual DCs anymore
+	Location   string
 	Hourly     PrimaryIPPrice
 	Monthly    PrimaryIPPrice
 }
 
-// PrimaryIPTypePricing provides pricing information for PrimaryIPs
+// PrimaryIPTypePricing provides pricing information for PrimaryIPs.
 type PrimaryIPPricing struct {
 	Type     string
 	Pricings []PrimaryIPTypePricing
