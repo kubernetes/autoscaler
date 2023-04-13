@@ -45,7 +45,7 @@ func NewCpuArchitecturePropertiesWithDefaults() *CpuArchitectureProperties {
 }
 
 // GetCpuFamily returns the CpuFamily field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *CpuArchitectureProperties) GetCpuFamily() *string {
 	if o == nil {
 		return nil
@@ -83,7 +83,7 @@ func (o *CpuArchitectureProperties) HasCpuFamily() bool {
 }
 
 // GetMaxCores returns the MaxCores field value
-// If the value is explicit nil, the zero value for int32 will be returned
+// If the value is explicit nil, nil is returned
 func (o *CpuArchitectureProperties) GetMaxCores() *int32 {
 	if o == nil {
 		return nil
@@ -121,7 +121,7 @@ func (o *CpuArchitectureProperties) HasMaxCores() bool {
 }
 
 // GetMaxRam returns the MaxRam field value
-// If the value is explicit nil, the zero value for int32 will be returned
+// If the value is explicit nil, nil is returned
 func (o *CpuArchitectureProperties) GetMaxRam() *int32 {
 	if o == nil {
 		return nil
@@ -159,7 +159,7 @@ func (o *CpuArchitectureProperties) HasMaxRam() bool {
 }
 
 // GetVendor returns the Vendor field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *CpuArchitectureProperties) GetVendor() *string {
 	if o == nil {
 		return nil
@@ -201,15 +201,19 @@ func (o CpuArchitectureProperties) MarshalJSON() ([]byte, error) {
 	if o.CpuFamily != nil {
 		toSerialize["cpuFamily"] = o.CpuFamily
 	}
+
 	if o.MaxCores != nil {
 		toSerialize["maxCores"] = o.MaxCores
 	}
+
 	if o.MaxRam != nil {
 		toSerialize["maxRam"] = o.MaxRam
 	}
+
 	if o.Vendor != nil {
 		toSerialize["vendor"] = o.Vendor
 	}
+
 	return json.Marshal(toSerialize)
 }
 

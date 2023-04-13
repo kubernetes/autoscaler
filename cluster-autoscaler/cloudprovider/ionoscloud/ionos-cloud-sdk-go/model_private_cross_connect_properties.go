@@ -16,14 +16,14 @@ import (
 
 // PrivateCrossConnectProperties struct for PrivateCrossConnectProperties
 type PrivateCrossConnectProperties struct {
-	// The name of the  resource.
-	Name *string `json:"name,omitempty"`
-	// Human-readable description.
-	Description *string `json:"description,omitempty"`
-	// Read-Only attribute. Lists LAN's joined to this private Cross-Connect.
-	Peers *[]Peer `json:"peers,omitempty"`
 	// Read-Only attribute. Lists data centers that can be joined to this private Cross-Connect.
 	ConnectableDatacenters *[]ConnectableDatacenter `json:"connectableDatacenters,omitempty"`
+	// Human-readable description.
+	Description *string `json:"description,omitempty"`
+	// The name of the  resource.
+	Name *string `json:"name,omitempty"`
+	// Read-Only attribute. Lists LAN's joined to this private Cross-Connect.
+	Peers *[]Peer `json:"peers,omitempty"`
 }
 
 // NewPrivateCrossConnectProperties instantiates a new PrivateCrossConnectProperties object
@@ -44,122 +44,8 @@ func NewPrivateCrossConnectPropertiesWithDefaults() *PrivateCrossConnectProperti
 	return &this
 }
 
-// GetName returns the Name field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *PrivateCrossConnectProperties) GetName() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Name
-
-}
-
-// GetNameOk returns a tuple with the Name field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *PrivateCrossConnectProperties) GetNameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Name, true
-}
-
-// SetName sets field value
-func (o *PrivateCrossConnectProperties) SetName(v string) {
-
-	o.Name = &v
-
-}
-
-// HasName returns a boolean if a field has been set.
-func (o *PrivateCrossConnectProperties) HasName() bool {
-	if o != nil && o.Name != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetDescription returns the Description field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *PrivateCrossConnectProperties) GetDescription() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Description
-
-}
-
-// GetDescriptionOk returns a tuple with the Description field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *PrivateCrossConnectProperties) GetDescriptionOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Description, true
-}
-
-// SetDescription sets field value
-func (o *PrivateCrossConnectProperties) SetDescription(v string) {
-
-	o.Description = &v
-
-}
-
-// HasDescription returns a boolean if a field has been set.
-func (o *PrivateCrossConnectProperties) HasDescription() bool {
-	if o != nil && o.Description != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetPeers returns the Peers field value
-// If the value is explicit nil, the zero value for []Peer will be returned
-func (o *PrivateCrossConnectProperties) GetPeers() *[]Peer {
-	if o == nil {
-		return nil
-	}
-
-	return o.Peers
-
-}
-
-// GetPeersOk returns a tuple with the Peers field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *PrivateCrossConnectProperties) GetPeersOk() (*[]Peer, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Peers, true
-}
-
-// SetPeers sets field value
-func (o *PrivateCrossConnectProperties) SetPeers(v []Peer) {
-
-	o.Peers = &v
-
-}
-
-// HasPeers returns a boolean if a field has been set.
-func (o *PrivateCrossConnectProperties) HasPeers() bool {
-	if o != nil && o.Peers != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetConnectableDatacenters returns the ConnectableDatacenters field value
-// If the value is explicit nil, the zero value for []ConnectableDatacenter will be returned
+// If the value is explicit nil, nil is returned
 func (o *PrivateCrossConnectProperties) GetConnectableDatacenters() *[]ConnectableDatacenter {
 	if o == nil {
 		return nil
@@ -196,20 +82,138 @@ func (o *PrivateCrossConnectProperties) HasConnectableDatacenters() bool {
 	return false
 }
 
+// GetDescription returns the Description field value
+// If the value is explicit nil, nil is returned
+func (o *PrivateCrossConnectProperties) GetDescription() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Description
+
+}
+
+// GetDescriptionOk returns a tuple with the Description field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *PrivateCrossConnectProperties) GetDescriptionOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Description, true
+}
+
+// SetDescription sets field value
+func (o *PrivateCrossConnectProperties) SetDescription(v string) {
+
+	o.Description = &v
+
+}
+
+// HasDescription returns a boolean if a field has been set.
+func (o *PrivateCrossConnectProperties) HasDescription() bool {
+	if o != nil && o.Description != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetName returns the Name field value
+// If the value is explicit nil, nil is returned
+func (o *PrivateCrossConnectProperties) GetName() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Name
+
+}
+
+// GetNameOk returns a tuple with the Name field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *PrivateCrossConnectProperties) GetNameOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Name, true
+}
+
+// SetName sets field value
+func (o *PrivateCrossConnectProperties) SetName(v string) {
+
+	o.Name = &v
+
+}
+
+// HasName returns a boolean if a field has been set.
+func (o *PrivateCrossConnectProperties) HasName() bool {
+	if o != nil && o.Name != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetPeers returns the Peers field value
+// If the value is explicit nil, nil is returned
+func (o *PrivateCrossConnectProperties) GetPeers() *[]Peer {
+	if o == nil {
+		return nil
+	}
+
+	return o.Peers
+
+}
+
+// GetPeersOk returns a tuple with the Peers field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *PrivateCrossConnectProperties) GetPeersOk() (*[]Peer, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Peers, true
+}
+
+// SetPeers sets field value
+func (o *PrivateCrossConnectProperties) SetPeers(v []Peer) {
+
+	o.Peers = &v
+
+}
+
+// HasPeers returns a boolean if a field has been set.
+func (o *PrivateCrossConnectProperties) HasPeers() bool {
+	if o != nil && o.Peers != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o PrivateCrossConnectProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Name != nil {
-		toSerialize["name"] = o.Name
-	}
-	if o.Description != nil {
-		toSerialize["description"] = o.Description
-	}
-	if o.Peers != nil {
-		toSerialize["peers"] = o.Peers
-	}
 	if o.ConnectableDatacenters != nil {
 		toSerialize["connectableDatacenters"] = o.ConnectableDatacenters
 	}
+
+	if o.Description != nil {
+		toSerialize["description"] = o.Description
+	}
+
+	if o.Name != nil {
+		toSerialize["name"] = o.Name
+	}
+
+	if o.Peers != nil {
+		toSerialize["peers"] = o.Peers
+	}
+
 	return json.Marshal(toSerialize)
 }
 
