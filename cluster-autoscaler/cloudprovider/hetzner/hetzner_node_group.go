@@ -17,8 +17,10 @@ limitations under the License.
 package hetzner
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
@@ -231,8 +233,13 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildNodeGroupLabels(n))
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+
+	nodeGroupLabels, err := buildNodeGroupLabels(n)
+	if err != nil {
+		return nil, err
+	}
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, nodeGroupLabels)
 
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
 	nodeInfo.SetNode(&node)
@@ -313,13 +320,19 @@ func newNodeName(n *hetznerNodeGroup) string {
 	return fmt.Sprintf("%s-%x", n.id, rand.Int63())
 }
 
-func buildNodeGroupLabels(n *hetznerNodeGroup) map[string]string {
+func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
+	archLabel, err := instanceTypeArch(n.manager, n.instanceType)
+	if err != nil {
+		return nil, err
+	}
+
 	return map[string]string{
 		apiv1.LabelInstanceType:      n.instanceType,
-		apiv1.LabelZoneRegionStable:  n.region,
+		apiv1.LabelTopologyRegion:    n.region,
+		apiv1.LabelArchStable:        archLabel,
 		"csi.hetzner.cloud/location": n.region,
 		nodeGroupLabel:               n.id,
-	}
+	}, nil
 }
 
 func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.ResourceList, error) {
@@ -352,14 +365,40 @@ func serverTypeAvailable(manager *hetznerManager, instanceType string, region st
 	return false, nil
 }
 
+func instanceTypeArch(manager *hetznerManager, instanceType string) (string, error) {
+	serverType, err := manager.cachedServerType.getServerType(instanceType)
+	if err != nil {
+		return "", err
+	}
+
+	switch serverType.Architecture {
+	case hcloud.ArchitectureARM:
+		return "arm64", nil
+	case hcloud.ArchitectureX86:
+		return "amd64", nil
+	default:
+		return "amd64", nil
+	}
+}
+
 func createServer(n *hetznerNodeGroup) error {
+	serverType, err := n.manager.cachedServerType.getServerType(n.instanceType)
+	if err != nil {
+		return err
+	}
+
+	image, err := findImage(n, serverType)
+	if err != nil {
+		return err
+	}
+
 	StartAfterCreate := true
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
 		UserData:         n.manager.cloudInit,
 		Location:         &hcloud.Location{Name: n.region},
-		ServerType:       &hcloud.ServerType{Name: n.instanceType},
-		Image:            n.manager.image,
+		ServerType:       serverType,
+		Image:            image,
 		StartAfterCreate: &StartAfterCreate,
 		Labels: map[string]string{
 			nodeGroupLabel: n.id,
@@ -394,6 +433,44 @@ func createServer(n *hetznerNodeGroup) error {
 	}
 
 	return nil
+}
+
+// findImage searches for an image ID corresponding to the supplied
+// HCLOUD_IMAGE env variable. This value can either be an image ID itself (an
+// int), a name (e.g. "ubuntu-20.04"), or a label selector associated with an
+// image snapshot. In the latter case it will use the most recent snapshot.
+// It also verifies that the returned image has a compatible architecture with
+// server.
+func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Image, error) {
+	// Select correct image based on server type architecture
+	image, _, err := n.manager.client.Image.GetForArchitecture(context.TODO(), n.manager.image, serverType.Architecture)
+	if err != nil {
+		// Keep looking for label if image was not found by id or name
+		if !strings.HasPrefix(err.Error(), "image not found") {
+			return nil, err
+		}
+	}
+
+	if image != nil {
+		return image, nil
+	}
+
+	// Look for snapshot with label
+	images, err := n.manager.client.Image.AllWithOpts(context.TODO(), hcloud.ImageListOpts{
+		Type:         []hcloud.ImageType{hcloud.ImageTypeSnapshot},
+		Status:       []hcloud.ImageStatus{hcloud.ImageStatusAvailable},
+		Sort:         []string{"created:desc"},
+		Architecture: []hcloud.Architecture{serverType.Architecture},
+		ListOpts: hcloud.ListOpts{
+			LabelSelector: n.manager.image,
+		},
+	})
+
+	if err != nil || len(images) == 0 {
+		return nil, fmt.Errorf("unable to find image %s with architecture %s: %v", n.manager.image, serverType.Architecture, err)
+	}
+
+	return images[0], nil
 }
 
 func waitForServerAction(m *hetznerManager, serverName string, action *hcloud.Action) error {

@@ -2,7 +2,7 @@ package schema
 
 import "time"
 
-// PrimaryIP defines a Primary IP
+// PrimaryIP defines a Primary IP.
 type PrimaryIP struct {
 	ID           int                 `json:"id"`
 	IP           string              `json:"ip"`
@@ -46,4 +46,10 @@ type PrimaryIPGetResult struct {
 // PrimaryIPListResult defines the response when listing Primary IPs.
 type PrimaryIPListResult struct {
 	PrimaryIPs []PrimaryIP `json:"primary_ips"`
+}
+
+// PrimaryIPUpdateResult defines the response
+// when updating a Primary IP.
+type PrimaryIPUpdateResult struct {
+	PrimaryIP PrimaryIP `json:"primary_ip"`
 }
