@@ -20,10 +20,10 @@ set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-go get -u golang.org/x/lint/golint
+go install golang.org/x/lint/golint@latest
 
-go get -u github.com/tools/godep
+go install github.com/tools/godep@latest
 
-go get -u github.com/client9/misspell/cmd/misspell
+go install github.com/client9/misspell/cmd/misspell@latest
 
 # ex: ts=2 sw=2 et filetype=sh
