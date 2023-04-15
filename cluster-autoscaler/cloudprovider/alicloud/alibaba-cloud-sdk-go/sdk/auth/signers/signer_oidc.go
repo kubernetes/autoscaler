@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jmespath/go-jmespath"
-	"io/ioutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
@@ -155,7 +154,7 @@ func (signer *OIDCSigner) getOIDCToken(OIDCTokenFilePath string) string {
 		}
 	}
 
-	token, err := ioutil.ReadFile(tokenPath)
+	token, err := os.ReadFile(tokenPath)
 	if err != nil {
 		return ""
 	}
