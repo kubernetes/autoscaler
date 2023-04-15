@@ -33,9 +33,9 @@ type AnnotationNodeInfoProvider struct {
 }
 
 // NewAnnotationNodeInfoProvider returns AnnotationNodeInfoProvider.
-func NewAnnotationNodeInfoProvider(t *time.Duration) *AnnotationNodeInfoProvider {
+func NewAnnotationNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *AnnotationNodeInfoProvider {
 	return &AnnotationNodeInfoProvider{
-		mixedTemplateNodeInfoProvider: NewMixedTemplateNodeInfoProvider(t),
+		mixedTemplateNodeInfoProvider: NewMixedTemplateNodeInfoProvider(t, forceDaemonSets),
 	}
 }
 
@@ -45,7 +45,7 @@ func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, no
 	if err != nil {
 		return nil, err
 	}
-	// Add annotatios to the NodeInfo to use later in expander.
+	// Add annotations to the NodeInfo to use later in expander.
 	nodeGroups := ctx.CloudProvider.NodeGroups()
 	for _, ng := range nodeGroups {
 		if nodeInfo, ok := nodeInfos[ng.Id()]; ok {

@@ -38,6 +38,8 @@ import (
 type NodeToBeRemoved struct {
 	// Node to be removed.
 	Node *apiv1.Node
+	// IsRisky indicates that node has high chance to fail during removal.
+	IsRisky bool
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
 	DaemonSetPods    []*apiv1.Pod
@@ -59,6 +61,8 @@ const (
 	NoReason UnremovableReason = iota
 	// ScaleDownDisabledAnnotation - node can't be removed because it has a "scale down disabled" annotation.
 	ScaleDownDisabledAnnotation
+	// ScaleDownUnreadyDisabled - node can't be removed because it is unready and scale down is disabled for unready nodes.
+	ScaleDownUnreadyDisabled
 	// NotAutoscaled - node can't be removed because it doesn't belong to an autoscaled node group.
 	NotAutoscaled
 	// NotUnneededLongEnough - node can't be removed because it wasn't unneeded for long enough.

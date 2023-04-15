@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -80,6 +81,12 @@ func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (gce *GceCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(gce, node)
+}
+
 // NodeGroups returns all node groups configured for this cloud provider.
 func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	migs := gce.gceManager.GetMigs()
@@ -99,6 +106,11 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	}
 	mig, err := gce.gceManager.GetMigForInstance(ref)
 	return mig, err
+}
+
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (gce *GceCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
@@ -177,7 +189,6 @@ type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
-	Version() string
 }
 
 type gceMig struct {
@@ -186,11 +197,6 @@ type gceMig struct {
 	gceManager GceManager
 	minSize    int
 	maxSize    int
-}
-
-// Version return the Mig version.
-func (mig *gceMig) Version() string {
-	return ""
 }
 
 // GceRef returns Mig's GceRef

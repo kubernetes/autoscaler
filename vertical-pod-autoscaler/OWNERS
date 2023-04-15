@@ -8,3 +8,5 @@ reviewers:
 - krzysied
 emeritus_approvers:
 - schylek # 2022-09-30
+labels:
+- vertical-pod-autoscaler

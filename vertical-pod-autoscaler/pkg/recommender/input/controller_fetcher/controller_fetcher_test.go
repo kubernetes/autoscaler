@@ -37,6 +37,17 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+const (
+	testNamespace             = "test-namespace"
+	testDeployment            = "test-deployment"
+	testReplicaSet            = "test-rs"
+	testStatefulSet           = "test-statefulset"
+	testDaemonSet             = "test-daemonset"
+	testCronJob               = "test-cronjob"
+	testJob                   = "test-job"
+	testReplicationController = "test-rc"
+)
+
 var wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
 var trueVar = true
 
@@ -62,14 +73,14 @@ func simpleControllerFetcher() *controllerFetcher {
 	scaleNamespacer := &scalefake.FakeScaleClient{}
 	f.scaleNamespacer = scaleNamespacer
 
-	//return not found if if tries to find the scale subresouce on bah
+	// return not found if if tries to find the scale subresource on bah
 	scaleNamespacer.AddReactor("get", "bah", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		groupResource := schema.GroupResource{}
 		error := apierrors.NewNotFound(groupResource, "Foo")
 		return true, nil, error
 	})
 
-	//resource that can scale
+	// resource that can scale
 	scaleNamespacer.AddReactor("get", "iCanScale", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 
 		ret = &autoscalingv1.Scale{
@@ -124,109 +135,109 @@ func TestControllerFetcher(t *testing.T) {
 		{
 			name: "deployment doesn't exist",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			expectedKey:   nil,
-			expectedError: fmt.Errorf("Deployment test-namesapce/test-deployment does not exist"),
+			expectedError: fmt.Errorf("Deployment %s/%s does not exist", testNamespace, testDeployment),
 		},
 		{
 			name: "deployment no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.Deployment{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "test-namesapce",
+					Name:      testDeployment,
+					Namespace: testNamespace,
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}}, // Deployment has no parrent
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Deployment has no parent
 			expectedError: nil,
 		},
 		{
 			name: "deployment with parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-rs", Kind: "ReplicaSet", Namespace: "test-namesapce"}},
+				Name: testReplicaSet, Kind: "ReplicaSet", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.Deployment{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "test-namesapce",
+					Name:      testDeployment,
+					Namespace: testNamespace,
 				},
 			}, &appsv1.ReplicaSet{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "ReplicaSet",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-rs",
-					Namespace: "test-namesapce",
+					Name:      testReplicaSet,
+					Namespace: testNamespace,
 					OwnerReferences: []metav1.OwnerReference{
 						{
 							Controller: &trueVar,
 							Kind:       "Deployment",
-							Name:       "test-deployment",
+							Name:       testDeployment,
 						},
 					},
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}}, // Deployment has no parent
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Deployment has no parent
 			expectedError: nil,
 		},
 		{
 			name: "StatefulSet",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-statefulset", Kind: "StatefulSet", Namespace: "test-namesapce"}},
+				Name: testStatefulSet, Kind: "StatefulSet", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.StatefulSet{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "StatefulSet",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-statefulset",
-					Namespace: "test-namesapce",
+					Name:      testStatefulSet,
+					Namespace: testNamespace,
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-statefulset", Kind: "StatefulSet", Namespace: "test-namesapce"}}, // StatefulSet has no parent
+				Name: testStatefulSet, Kind: "StatefulSet", Namespace: testNamespace}}, // StatefulSet has no parent
 			expectedError: nil,
 		},
 		{
 			name: "DaemonSet",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-daemonset", Kind: "DaemonSet", Namespace: "test-namesapce"}},
+				Name: testDaemonSet, Kind: "DaemonSet", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.DaemonSet{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "DaemonSet",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-daemonset",
-					Namespace: "test-namesapce",
+					Name:      testDaemonSet,
+					Namespace: testNamespace,
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-daemonset", Kind: "DaemonSet", Namespace: "test-namesapce"}}, // DaemonSet has no parent
+				Name: testDaemonSet, Kind: "DaemonSet", Namespace: testNamespace}}, // DaemonSet has no parent
 			expectedError: nil,
 		},
 		{
 			name: "CronJob",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-job", Kind: "Job", Namespace: "test-namespace"}},
+				Name: testJob, Kind: "Job", Namespace: testNamespace}},
 			objects: []runtime.Object{&batchv1.Job{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Job",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-job",
-					Namespace: "test-namespace",
+					Name:      testJob,
+					Namespace: testNamespace,
 					OwnerReferences: []metav1.OwnerReference{
 						{
 							Controller: &trueVar,
 							Kind:       "CronJob",
-							Name:       "test-cronjob",
+							Name:       testCronJob,
 						},
 					},
 				},
@@ -235,65 +246,65 @@ func TestControllerFetcher(t *testing.T) {
 					Kind: "CronJob",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-cronjob",
-					Namespace: "test-namespace",
+					Name:      testCronJob,
+					Namespace: testNamespace,
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}}, // CronJob has no parent
+				Name: testCronJob, Kind: "CronJob", Namespace: testNamespace}}, // CronJob has no parent
 			expectedError: nil,
 		},
 		{
 			name: "CronJob no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}},
+				Name: testCronJob, Kind: "CronJob", Namespace: testNamespace}},
 			objects: []runtime.Object{&batchv1.CronJob{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "CronJob",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-cronjob",
-					Namespace: "test-namespace",
+					Name:      testCronJob,
+					Namespace: testNamespace,
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}}, // CronJob has no parent
+				Name: testCronJob, Kind: "CronJob", Namespace: testNamespace}}, // CronJob has no parent
 			expectedError: nil,
 		},
 		{
 			name: "rc no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-rc", Kind: "ReplicationController", Namespace: "test-namesapce"}},
+				Name: testReplicationController, Kind: "ReplicationController", Namespace: testNamespace}},
 			objects: []runtime.Object{&corev1.ReplicationController{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "ReplicationController",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-rc",
-					Namespace: "test-namesapce",
+					Name:      testReplicationController,
+					Namespace: testNamespace,
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-rc", Kind: "ReplicationController", Namespace: "test-namesapce"}}, // ReplicationController has no parent
+				Name: testReplicationController, Kind: "ReplicationController", Namespace: testNamespace}}, // ReplicationController has no parent
 			expectedError: nil,
 		},
 		{
 			name: "deployment cycle in ownership",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.Deployment{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "test-namesapce",
+					Name:      testDeployment,
+					Namespace: testNamespace,
 					// Deployment points to itself
 					OwnerReferences: []metav1.OwnerReference{
 						{
 							Controller: &trueVar,
 							Kind:       "Deployment",
-							Name:       "test-deployment",
+							Name:       testDeployment,
 						},
 					},
 				},
@@ -304,14 +315,14 @@ func TestControllerFetcher(t *testing.T) {
 		{
 			name: "deployment, parent with no scale subresource",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.Deployment{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "test-namesapce",
+					Name:      testDeployment,
+					Namespace: testNamespace,
 					// Parent that does not support scale subresource and is not well known
 					OwnerReferences: []metav1.OwnerReference{
 						{
@@ -324,20 +335,20 @@ func TestControllerFetcher(t *testing.T) {
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}}, // Parent does not support scale subresource so should return itself"
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Parent does not support scale subresource so should return itself"
 			expectedError: nil,
 		},
 		{
 			name: "deployment, parent not well known with scale subresource",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.Deployment{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "test-namesapce",
+					Name:      testDeployment,
+					Namespace: testNamespace,
 					// Parent that support scale subresource and is not well known
 					OwnerReferences: []metav1.OwnerReference{
 						{
@@ -350,20 +361,20 @@ func TestControllerFetcher(t *testing.T) {
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "iCanScale", Kind: "Scale", Namespace: "test-namesapce"}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource"
+				Name: "iCanScale", Kind: "Scale", Namespace: testNamespace}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource"
 			expectedError: nil,
 		},
 		{
 			name: "pod, parent is node",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			objects: []runtime.Object{&appsv1.Deployment{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "test-namesapce",
+					Name:      testDeployment,
+					Namespace: testNamespace,
 					// Parent is a node
 					OwnerReferences: []metav1.OwnerReference{
 						{

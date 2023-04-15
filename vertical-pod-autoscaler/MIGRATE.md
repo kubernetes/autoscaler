@@ -93,4 +93,4 @@ VPA objects that have been defined with `poc.autoscaling.k8s.io/v1alpha1`
 apiVersion. Then use `vpa-up.sh` to bring up the new version of VPA and create
 your VPA objects from the scratch, passing apiVersion
 `autoscaling.k8s.io/v1beta2` and switching from selector to targetRef, as
-described in the prevous section.
+described in the previous section.

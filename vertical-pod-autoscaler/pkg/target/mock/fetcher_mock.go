@@ -17,8 +17,8 @@ limitations under the License.
 package mocktarget
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	labels "k8s.io/apimachinery/pkg/labels"
+	"github.com/golang/mock/gomock"
+	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
@@ -40,7 +40,7 @@ func NewMockVpaTargetSelectorFetcher(ctrl *gomock.Controller) *MockVpaTargetSele
 	return mock
 }
 
-// EXPECT enables configuring expectaions
+// EXPECT enables configuring expectations
 func (_m *MockVpaTargetSelectorFetcher) EXPECT() *_MockVpaTargetSelectorFetcherRecorder {
 	return _m.recorder
 }

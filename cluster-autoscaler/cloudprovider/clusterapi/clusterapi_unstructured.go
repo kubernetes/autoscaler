@@ -30,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation"
 	klog "k8s.io/klog/v2"
 )
 
@@ -62,6 +63,8 @@ func (r unstructuredScalableResource) GroupVersionResource() (schema.GroupVersio
 		return r.controller.machineDeploymentResource, nil
 	case machineSetKind:
 		return r.controller.machineSetResource, nil
+	case machinePoolKind:
+		return r.controller.machinePoolResource, nil
 	default:
 		return schema.GroupVersionResource{}, fmt.Errorf("unknown scalable resource kind %s", r.Kind())
 	}
@@ -169,15 +172,36 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 }
 
 func (r unstructuredScalableResource) Labels() map[string]string {
-	// TODO implement this once the community has decided how they will handle labels
-	// this issue is related, https://github.com/kubernetes-sigs/cluster-api/issues/7006
-
+	annotations := r.unstructured.GetAnnotations()
+	// annotation value of the form "key1=value1,key2=value2"
+	if val, found := annotations[labelsKey]; found {
+		labels := strings.Split(val, ",")
+		kv := make(map[string]string, len(labels))
+		for _, label := range labels {
+			split := strings.SplitN(label, "=", 2)
+			if len(split) == 2 {
+				kv[split[0]] = split[1]
+			}
+		}
+		return kv
+	}
 	return nil
 }
 
 func (r unstructuredScalableResource) Taints() []apiv1.Taint {
-	// TODO implement this once the community has decided how they will handle taints
-
+	annotations := r.unstructured.GetAnnotations()
+	// annotation value the form of "key1=value1:condition,key2=value2:condition"
+	if val, found := annotations[taintsKey]; found {
+		taints := strings.Split(val, ",")
+		ret := make([]apiv1.Taint, 0, len(taints))
+		for _, taintStr := range taints {
+			taint, err := parseTaint(taintStr)
+			if err == nil {
+				ret = append(ret, taint)
+			}
+		}
+		return ret
+	}
 	return nil
 }
 
@@ -217,6 +241,14 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	}
 	if !mem.IsZero() {
 		capacityAnnotations[corev1.ResourceMemory] = mem
+	}
+
+	disk, err := r.InstanceEphemeralDiskCapacityAnnotation()
+	if err != nil {
+		return nil, err
+	}
+	if !disk.IsZero() {
+		capacityAnnotations[corev1.ResourceEphemeralStorage] = disk
 	}
 
 	gpuCount, err := r.InstanceGPUCapacityAnnotation()
@@ -262,6 +294,10 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	}
 
 	return capacity, nil
+}
+
+func (r unstructuredScalableResource) InstanceEphemeralDiskCapacityAnnotation() (resource.Quantity, error) {
+	return parseEphemeralDiskCapacity(r.unstructured.GetAnnotations())
 }
 
 func (r unstructuredScalableResource) InstanceCPUCapacityAnnotation() (resource.Quantity, error) {
@@ -346,4 +382,45 @@ func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructure
 	}
 
 	return capacity
+}
+
+// adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39
+func parseTaint(st string) (apiv1.Taint, error) {
+	var taint apiv1.Taint
+
+	var key string
+	var value string
+	var effect apiv1.TaintEffect
+
+	parts := strings.Split(st, ":")
+	switch len(parts) {
+	case 1:
+		key = parts[0]
+	case 2:
+		effect = apiv1.TaintEffect(parts[1])
+
+		partsKV := strings.Split(parts[0], "=")
+		if len(partsKV) > 2 {
+			return taint, fmt.Errorf("invalid taint spec: %v", st)
+		}
+		key = partsKV[0]
+		if len(partsKV) == 2 {
+			value = partsKV[1]
+			if errs := validation.IsValidLabelValue(value); len(errs) > 0 {
+				return taint, fmt.Errorf("invalid taint spec: %v, %s", st, strings.Join(errs, "; "))
+			}
+		}
+	default:
+		return taint, fmt.Errorf("invalid taint spec: %v", st)
+	}
+
+	if errs := validation.IsQualifiedName(key); len(errs) > 0 {
+		return taint, fmt.Errorf("invalid taint spec: %v, %s", st, strings.Join(errs, "; "))
+	}
+
+	taint.Key = key
+	taint.Value = value
+	taint.Effect = effect
+
+	return taint, nil
 }

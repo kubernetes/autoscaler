@@ -17,66 +17,25 @@ limitations under the License.
 package pdb
 
 import (
-	"fmt"
-
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	"k8s.io/klog/v2"
 )
 
-// PdbRemainingDisruptions stores how many discuptiption is left for pdb.
-type PdbRemainingDisruptions struct {
-	pdbs []*policyv1.PodDisruptionBudget
-}
+// RemainingPdbTracker is responsible for tracking the remaining PDBs
+type RemainingPdbTracker interface {
+	// SetPdbs sets PDBs of the remaining PDB tracker.
+	SetPdbs(pdbs []*policyv1.PodDisruptionBudget) error
+	// GetPdbs returns the current remaining PDBs.
+	GetPdbs() []*policyv1.PodDisruptionBudget
 
-// NewPdbRemainingDisruptions initialize PdbRemainingDisruptions.
-func NewPdbRemainingDisruptions(pdbs []*policyv1.PodDisruptionBudget) *PdbRemainingDisruptions {
-	pdbsCopy := make([]*policyv1.PodDisruptionBudget, len(pdbs))
-	for i, pdb := range pdbs {
-		pdbsCopy[i] = pdb.DeepCopy()
-	}
-	return &PdbRemainingDisruptions{pdbsCopy}
-}
+	// CanRemovePods checks if the set of pods can be removed.
+	// inParallel indicates if the pods can be removed in parallel. If it is false
+	// then evicting pods could fail due to drain timeout.
+	CanRemovePods(pods []*apiv1.Pod) (canRemove, inParallel bool, blockingPod *drain.BlockingPod)
+	// RemovePods updates the remaining PDBs after pod removal.
+	RemovePods(pods []*apiv1.Pod)
 
-// CanDisrupt return if the pod can be removed.
-func (p *PdbRemainingDisruptions) CanDisrupt(pods []*apiv1.Pod) (bool, *drain.BlockingPod) {
-	for _, pdb := range p.pdbs {
-		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
-		if err != nil {
-			klog.Errorf("Can't get selector for pdb %s", pdb.GetNamespace()+" "+pdb.GetName())
-			return false, nil
-		}
-		count := int32(0)
-		for _, pod := range pods {
-			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
-				count += 1
-				if pdb.Status.DisruptionsAllowed < count {
-					return false, &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}
-				}
-			}
-		}
-	}
-	return true, nil
-}
-
-// Update make updates the remaining disruptions for pdb.
-func (p *PdbRemainingDisruptions) Update(pods []*apiv1.Pod) error {
-	for _, pdb := range p.pdbs {
-		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
-		if err != nil {
-			return err
-		}
-		for _, pod := range pods {
-			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
-				if pdb.Status.DisruptionsAllowed < 1 {
-					return fmt.Errorf("Pod can't be removed, pdb is blocking by pdb %s, disruptionsAllowed: %v", pdb.GetNamespace()+"/"+pdb.GetName(), pdb.Status.DisruptionsAllowed)
-				}
-				pdb.Status.DisruptionsAllowed -= 1
-			}
-		}
-	}
-	return nil
+	// Clear resets the remaining PDB tracker to empty state.
+	Clear()
 }

@@ -44,20 +44,22 @@ type cacheItem struct {
 
 // MixedTemplateNodeInfoProvider build nodeInfos from the cluster's nodes and node groups.
 type MixedTemplateNodeInfoProvider struct {
-	nodeInfoCache map[string]cacheItem
-	ttl           time.Duration
+	nodeInfoCache   map[string]cacheItem
+	ttl             time.Duration
+	forceDaemonSets bool
 }
 
 // NewMixedTemplateNodeInfoProvider returns a NodeInfoProvider processor building
 // NodeInfos from real-world nodes when available, otherwise from node groups templates.
-func NewMixedTemplateNodeInfoProvider(t *time.Duration) *MixedTemplateNodeInfoProvider {
+func NewMixedTemplateNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *MixedTemplateNodeInfoProvider {
 	ttl := maxCacheExpireTime
 	if t != nil {
 		ttl = *t
 	}
 	return &MixedTemplateNodeInfoProvider{
-		nodeInfoCache: make(map[string]cacheItem),
-		ttl:           ttl,
+		nodeInfoCache:   make(map[string]cacheItem),
+		ttl:             ttl,
+		forceDaemonSets: forceDaemonSets,
 	}
 }
 
@@ -93,10 +95,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes)
-			if err != nil {
-				return false, "", err
-			}
+			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
 			sanitizedNodeInfo, err := utils.SanitizeNodeInfo(nodeInfo, id, ignoredTaints)
 			if err != nil {
 				return false, "", err
@@ -117,9 +116,8 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			return map[string]*schedulerframework.NodeInfo{}, typedErr
 		}
 		if added && p.nodeInfoCache != nil {
-			if nodeInfoCopy, err := utils.DeepCopyNodeInfo(result[id]); err == nil {
-				p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
-			}
+			nodeInfoCopy := utils.DeepCopyNodeInfo(result[id])
+			p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
 		}
 	}
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
@@ -134,8 +132,8 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			if cacheItem, found := p.nodeInfoCache[id]; found {
 				if p.isCacheItemExpired(cacheItem.added) {
 					delete(p.nodeInfoCache, id)
-				} else if nodeInfoCopy, err := utils.DeepCopyNodeInfo(cacheItem.NodeInfo); err == nil {
-					result[id] = nodeInfoCopy
+				} else {
+					result[id] = utils.DeepCopyNodeInfo(cacheItem.NodeInfo)
 					continue
 				}
 			}
@@ -143,7 +141,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, ctx.PredicateChecker, ignoredTaints)
+		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, ignoredTaints)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue

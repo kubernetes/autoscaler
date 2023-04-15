@@ -17,176 +17,223 @@ limitations under the License.
 package simulator
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/kubelet/types"
-
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/kubernetes/pkg/controller/daemon"
 )
 
-func TestRequiredPodsForNode(t *testing.T) {
-	nodeName1 := "node1"
-	nodeName2 := "node2"
-	pod1 := &apiv1.Pod{
+func TestBuildNodeInfoForNode(t *testing.T) {
+	ds1 := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      "pod1",
-			SelfLink:  "pod1",
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName1,
-		},
-	}
-	// Manifest pod.
-	pod2 := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod2",
-			Namespace: "kube-system",
-			SelfLink:  "pod2",
-			Annotations: map[string]string{
-				types.ConfigMirrorAnnotationKey: "something",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName1,
-		},
-	}
-	pod3 := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod2",
-			Namespace: "kube-system",
-			SelfLink:  "pod2",
-			Annotations: map[string]string{
-				types.ConfigMirrorAnnotationKey: "something",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName2,
+			Name:      "ds1",
+			Namespace: "ds1-namespace",
+			UID:       types.UID("ds1"),
 		},
 	}
 
-	podsForNodes := map[string][]*apiv1.Pod{nodeName1: {pod1, pod2}, nodeName2: {pod3}}
-	pods, err := getRequiredPodsForNode(nodeName1, podsForNodes)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(pods))
-	assert.Equal(t, "pod2", pods[0].Name)
-}
-
-func Test_filterRequiredPodsForNode(t *testing.T) {
-	nodeName := "node1"
-	pod1 := &apiv1.Pod{
+	ds2 := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      "pod1",
-			SelfLink:  "pod1",
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
-		},
-	}
-	// Manifest pod.
-	mirrorPod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "mirrorPod",
-			Namespace: "kube-system",
-			SelfLink:  "mirrorPod",
-			Annotations: map[string]string{
-				types.ConfigMirrorAnnotationKey: "something",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
-		},
-	}
-	now := metav1.NewTime(time.Now())
-	podDeleted := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      "podDeleted",
-			SelfLink:  "podDeleted",
-			Annotations: map[string]string{
-				types.ConfigMirrorAnnotationKey: "something",
-			},
-			DeletionTimestamp: &now,
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
+			Name:      "ds2",
+			Namespace: "ds2-namespace",
+			UID:       types.UID("ds2"),
 		},
 	}
 
-	podDaemonset := &apiv1.Pod{
+	ds3 := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace:       "default",
-			Name:            "podDaemonset",
-			SelfLink:        "podDaemonset",
-			OwnerReferences: GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", ""),
-			Annotations: map[string]string{
-				types.ConfigSourceAnnotationKey: types.FileSource,
-			},
+			Name:      "ds3",
+			Namespace: "ds3-namespace",
+			UID:       types.UID("ds3"),
 		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
+		Spec: appsv1.DaemonSetSpec{
+			Template: apiv1.PodTemplateSpec{
+				Spec: apiv1.PodSpec{
+					NodeSelector: map[string]string{"key": "value"},
+				},
+			},
 		},
 	}
 
-	podDaemonsetAnnotation := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:       "default",
-			Name:            "podDaemonset2",
-			SelfLink:        "podDaemonset2",
-			OwnerReferences: GenerateOwnerReferences("ds2", "CustomDaemonset", "crd/v1", ""),
-			Annotations: map[string]string{
-				pod_util.DaemonSetPodAnnotationKey: "true",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
-		},
-	}
+	testCases := []struct {
+		name       string
+		node       *apiv1.Node
+		pods       []*apiv1.Pod
+		daemonSets []*appsv1.DaemonSet
+		forceDS    bool
 
-	tests := []struct {
-		name      string
-		inputPods []*apiv1.Pod
-		want      []*apiv1.Pod
+		wantPods  []*apiv1.Pod
+		wantError bool
 	}{
 		{
-			name:      "nil input pod list",
-			inputPods: nil,
-			want:      []*apiv1.Pod{},
+			name: "node without any pods",
+			node: test.BuildTestNode("n", 1000, 10),
 		},
 		{
-			name:      "should return only mirrorPod",
-			inputPods: []*apiv1.Pod{pod1, mirrorPod},
-			want:      []*apiv1.Pod{mirrorPod},
+			name: "node with non-DS/mirror pods",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				test.BuildScheduledTestPod("p1", 100, 1, "n"),
+				test.BuildScheduledTestPod("p2", 100, 1, "n"),
+			},
 		},
 		{
-			name:      "should ignore podDeleted",
-			inputPods: []*apiv1.Pod{pod1, mirrorPod, podDeleted},
-			want:      []*apiv1.Pod{mirrorPod},
+			name: "node with a mirror pod",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+			},
+			wantPods: []*apiv1.Pod{
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+			},
 		},
 		{
-			name:      "should return daemonset pod",
-			inputPods: []*apiv1.Pod{pod1, podDaemonset},
-			want:      []*apiv1.Pod{podDaemonset},
+			name: "node with a deleted mirror pod",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p2", 100, 1, "n"))),
+			},
+			wantPods: []*apiv1.Pod{
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+			},
 		},
 		{
-			name:      "should return daemonset pods with",
-			inputPods: []*apiv1.Pod{pod1, podDaemonset, podDaemonsetAnnotation},
-			want:      []*apiv1.Pod{podDaemonset, podDaemonsetAnnotation},
+			name: "node with DS pods [forceDS=false, no daemon sets]",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+				setDeletionTimestamp(buildDSPod(ds2, "n")),
+			},
+			wantPods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+			},
+		},
+		{
+			name: "node with DS pods [forceDS=false, some daemon sets]",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+				setDeletionTimestamp(buildDSPod(ds2, "n")),
+			},
+			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
+			wantPods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+			},
+		},
+		{
+			name: "node with a DS pod [forceDS=true, no daemon sets]",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+				setDeletionTimestamp(buildDSPod(ds2, "n")),
+			},
+			wantPods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+			},
+			forceDS: true,
+		},
+		{
+			name: "node with a DS pod [forceDS=true, some daemon sets]",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+				setDeletionTimestamp(buildDSPod(ds2, "n")),
+			},
+			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
+			forceDS:    true,
+			wantPods: []*apiv1.Pod{
+				buildDSPod(ds1, "n"),
+				buildDSPod(ds2, "n"),
+			},
+		},
+		{
+			name: "everything together [forceDS=false]",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				test.BuildScheduledTestPod("p1", 100, 1, "n"),
+				test.BuildScheduledTestPod("p2", 100, 1, "n"),
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p4", 100, 1, "n"))),
+				buildDSPod(ds1, "n"),
+				setDeletionTimestamp(buildDSPod(ds2, "n")),
+			},
+			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
+			wantPods: []*apiv1.Pod{
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				buildDSPod(ds1, "n"),
+			},
+		},
+		{
+			name: "everything together [forceDS=true]",
+			node: test.BuildTestNode("n", 1000, 10),
+			pods: []*apiv1.Pod{
+				test.BuildScheduledTestPod("p1", 100, 1, "n"),
+				test.BuildScheduledTestPod("p2", 100, 1, "n"),
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p4", 100, 1, "n"))),
+				buildDSPod(ds1, "n"),
+				setDeletionTimestamp(buildDSPod(ds2, "n")),
+			},
+			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
+			forceDS:    true,
+			wantPods: []*apiv1.Pod{
+				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				buildDSPod(ds1, "n"),
+				buildDSPod(ds2, "n"),
+			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := filterRequiredPodsForNode(tt.inputPods); !apiequality.Semantic.DeepEqual(got, tt.want) {
-				t.Errorf("filterRequiredPodsForNode() = %v, want %v", got, tt.want)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			nodeInfo, err := BuildNodeInfoForNode(tc.node, tc.pods, tc.daemonSets, tc.forceDS)
+
+			if tc.wantError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, nodeInfo.Node(), tc.node)
+
+				// clean pod metadata for comparison purposes
+				var wantPods, pods []*apiv1.Pod
+				for _, pod := range tc.wantPods {
+					wantPods = append(wantPods, cleanPodMetadata(pod))
+				}
+				for _, podInfo := range nodeInfo.Pods {
+					pods = append(pods, cleanPodMetadata(podInfo.Pod))
+				}
+				assert.ElementsMatch(t, tc.wantPods, pods)
 			}
 		})
 	}
+}
+
+func cleanPodMetadata(pod *apiv1.Pod) *apiv1.Pod {
+	pod.Name = strings.Split(pod.Name, "-")[0]
+	pod.OwnerReferences = nil
+	return pod
+}
+
+func buildDSPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
+	pod := daemon.NewPod(ds, nodeName)
+	pod.Name = ds.Name
+	ptrVal := true
+	pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+		{Kind: "DaemonSet", UID: ds.UID, Controller: &ptrVal},
+	}
+	return pod
+}
+
+func setDeletionTimestamp(pod *apiv1.Pod) *apiv1.Pod {
+	now := metav1.NewTime(time.Now())
+	pod.DeletionTimestamp = &now
+	return pod
 }

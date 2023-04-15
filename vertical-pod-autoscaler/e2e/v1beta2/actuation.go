@@ -290,7 +290,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 			// TODO(krzysied): Update the image url when the agnhost:2.10 image
 			// is promoted to the k8s-e2e-test-images repository.
 			agnhostImage  = "gcr.io/k8s-staging-e2e-test-images/agnhost:2.10"
-			sidecarParam  = "--sidecar-image=k8s.gcr.io/pause:3.1"
+			sidecarParam  = "--sidecar-image=registry.k8s.io/pause:3.1"
 			sidecarName   = "webhook-added-sidecar"
 			servicePort   = int32(8443)
 			containerPort = int32(8444)
@@ -507,7 +507,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	}
 	err := testutils.CreateJobWithRetries(f.ClientSet, f.Namespace.Name, job)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	err = framework_job.WaitForAllJobPodsRunning(f.ClientSet, f.Namespace.Name, job.Name, replicas)
+	err = framework_job.WaitForJobPodsRunning(f.ClientSet, f.Namespace.Name, job.Name, replicas)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 

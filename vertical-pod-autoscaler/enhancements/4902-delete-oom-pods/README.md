@@ -1,3 +1,7 @@
+**WARNING**
+:warning: We no longer intend to implement this KEP. Instead we recommend using
+[Unhealthy Pod Eviction Policy for PDBs](https://github.com/kubernetes/enhancements/blob/master/keps/sig-apps/3017-pod-healthy-policy-for-pdb/README.md).
+
 # KEP-4902: Delete OOM Pods
 
 <!-- toc -->
@@ -58,7 +62,7 @@ fit their needs.
 
 ## Design Details
 
-When the eviction fails the pod will not just get blindy deleted, but further
+When the eviction fails the pod will not just get blindly deleted, but further
 checks will occur. Which gives us the following checklist:
 - [ ] Was at least one container in the Pod terminated due to being OOM
       (`OOMKilled`)?

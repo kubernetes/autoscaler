@@ -1,0 +1,8 @@
+approvers:
+- mwielgus
+- kgolab
+reviewers:
+- mwielgus
+- kgolab
+labels:
+- balancer

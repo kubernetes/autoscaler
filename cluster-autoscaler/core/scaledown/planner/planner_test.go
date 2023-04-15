@@ -21,6 +21,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -31,357 +36,438 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
-	"github.com/stretchr/testify/assert"
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-var rSetLabels = map[string]string{
-	"app": "rs",
-}
-
 func TestUpdateClusterState(t *testing.T) {
 	testCases := []struct {
-		name            string
-		nodes           []*apiv1.Node
-		pods            []*apiv1.Pod
-		actuationStatus *fakeActuationStatus
-		eligible        []string
-		wantUnneeded    []string
-		wantErr         bool
-		replicasSets    []*appsv1.ReplicaSet
+		name                string
+		nodes               []*apiv1.Node
+		pods                []*apiv1.Pod
+		actuationStatus     *fakeActuationStatus
+		eligible            []string
+		wantUnneeded        []string
+		wantUnremovable     []string
+		replicasSets        []*appsv1.ReplicaSet
+		isSimulationTimeout bool
 	}{
 		{
-			name: "all eligible",
+			name: "empty nodes, all eligible",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
 				BuildTestNode("n2", 1000, 10),
 				BuildTestNode("n3", 1000, 10),
-				BuildTestNode("n4", 1000, 10),
 			},
-			eligible:        []string{"n1", "n2", "n3", "n4"},
 			actuationStatus: &fakeActuationStatus{},
-			wantUnneeded:    []string{"n1", "n2", "n3", "n4"},
+			eligible:        []string{"n1", "n2", "n3"},
+			wantUnneeded:    []string{"n1", "n2", "n3"},
 		},
 		{
-			name: "none eligible",
+			name: "empty nodes, some eligible",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
 				BuildTestNode("n2", 1000, 10),
 				BuildTestNode("n3", 1000, 10),
-				BuildTestNode("n4", 1000, 10),
 			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
+		},
+		{
+			name: "empty nodes, none eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{},
-			actuationStatus: &fakeActuationStatus{},
 			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
 		},
 		{
-			name: "some eligible",
+			name: "single utilised node, not eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1"},
+		},
+		{
+			name: "pods cannot schedule on node undergoing deletion, not eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2"},
+		},
+		{
+			name: "pods can schedule on non-eligible node, eligible",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
 				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				BuildTestNode("n4", 1000, 10),
 			},
-			eligible:        []string{"n1", "n3"},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+			},
 			actuationStatus: &fakeActuationStatus{},
-			wantUnneeded:    []string{"n1", "n3"},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
-			name: "pods from already drained node can schedule elsewhere",
+			name: "pods can schedule on eligible node, eligible",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 2000, 10),
+				BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2", "rs"),
-				scheduledPod("p2", 500, 1, "n2", "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
 			},
-			eligible: []string{"n1"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2"},
-			},
-			wantUnneeded: []string{},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
 		},
 		{
-			name: "pods from already drained node can't schedule elsewhere",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 2000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2", "rs"),
-				scheduledPod("p2", 500, 1, "n2", "rs"),
-				scheduledPod("p3", 500, 1, "n2", "rs"),
-			},
-			eligible: []string{"n1"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2"},
-			},
-			wantUnneeded: []string{},
-			wantErr:      true,
-		},
-		{
-			name: "pods from multiple drained nodes can schedule elsewhere",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 2000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 2000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2", "rs"),
-				scheduledPod("p2", 500, 1, "n2", "rs"),
-				scheduledPod("p4", 500, 1, "n4", "rs"),
-				scheduledPod("p5", 500, 1, "n4", "rs"),
-			},
-			eligible: []string{"n1", "n3"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-			},
-			wantUnneeded: []string{},
-		},
-		{
-			name: "pods from multiple drained nodes can't schedule elsewhere",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 2000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 2000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2", "rs"),
-				scheduledPod("p2", 500, 1, "n2", "rs"),
-				scheduledPod("p3", 500, 1, "n2", "rs"),
-				scheduledPod("p4", 500, 1, "n4", "rs"),
-				scheduledPod("p5", 500, 1, "n4", "rs"),
-			},
-			eligible: []string{"n1", "n3"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-			},
-			wantUnneeded: []string{},
-			wantErr:      true,
-		},
-		{
-			name: "multiple drained nodes but new candidates found",
+			name: "pods cannot schedule anywhere, not eligible",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 2000, 10),
-				nodeUndergoingDeletion("n2", 2000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 500, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p3", 1000, 1, "n2"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
+		},
+		{
+			name: "all pods from multiple nodes can schedule elsewhere, all eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
 				BuildTestNode("n3", 2000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
+		},
+		{
+			name: "some pods from multiple nodes can schedule elsewhere, some eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 2000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n2"},
+			wantUnremovable: []string{"n1", "n3"},
+		},
+		{
+			name: "no pods from multiple nodes can schedule elsewhere, no eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 500, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
+		},
+		{
+			name: "recently evicted RS pod, not eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 2000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2"), "rs"),
+				},
+			},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2"},
+		},
+		{
+			name: "recently evicted pod without owner, not eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					BuildTestPod("p1", 1000, 1),
+				},
+			},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1"},
+		},
+		{
+			name: "recently evicted static pod, eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 2000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetStaticPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
+				},
+			},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
+		},
+		{
+			name: "recently evicted mirror pod, eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 2000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetMirrorPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
+				},
+			},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
+		},
+		{
+			name: "recently evicted DS pod, eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				nodeUndergoingDeletion("n2", 2000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetDSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
+				},
+			},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2"},
+		},
+		{
+			name: "recently evicted pod can schedule on non-eligible node, eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				nodeUndergoingDeletion("n3", 1000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
+				},
+			},
+			eligible:        []string{"n1"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3"},
+		},
+		{
+			name: "recently evicted pod can schedule on eligible node, eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				nodeUndergoingDeletion("n3", 1000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3"},
+		},
+		{
+			name: "recently evicted pod too large to schedule anywhere, all eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				nodeUndergoingDeletion("n3", 2000, 10),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 2000, 1, "n3"), "rs"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
+		},
+		{
+			name: "all recently evicted pod got rescheduled, all eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				nodeUndergoingDeletion("n3", 2000, 10),
+			},
+			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 2, nil), generateReplicaSets("rs", 5)...),
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
+					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3"},
+		},
+		{
+			name: "some recently evicted pod got rescheduled, some eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				nodeUndergoingDeletion("n3", 2000, 10),
+			},
+			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 1, nil), generateReplicaSets("rs", 5)...),
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
+					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3"},
+		},
+		{
+			name: "no recently evicted pod got rescheduled, no eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				nodeUndergoingDeletion("n3", 2000, 10),
+			},
+			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 0, nil), generateReplicaSets("rs", 5)...),
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
+					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3"},
+		},
+		{
+			name: "all scheduled and recently evicted pods can schedule elsewhere, all eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
 				nodeUndergoingDeletion("n4", 2000, 10),
-				BuildTestNode("n5", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				scheduledPod("p1", 400, 1, "n1", "rs"),
-				scheduledPod("p2", 400, 1, "n2", "rs"),
-				scheduledPod("p3", 400, 1, "n3", "rs"),
-				scheduledPod("p4", 400, 1, "n4", "rs"),
-				scheduledPod("p5", 400, 1, "n5", "rs"),
+				SetRSPodSpec(BuildScheduledTestPod("p1", 250, 1, "n1"), "rs"),
 			},
-			eligible: []string{"n1", "n3", "n5"},
 			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p2", 250, 1, "n4"), "rs"),
+					SetRSPodSpec(BuildScheduledTestPod("p3", 250, 1, "n4"), "rs"),
+				},
 			},
-			wantUnneeded: []string{"n1", "n3"},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1", "n2"},
+			wantUnremovable: []string{"n3", "n4"},
 		},
 		{
-			name: "recently evicted pods can schedule elsewhere, node uneeded",
+			name: "some scheduled and recently evicted pods can schedule elsewhere, some eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+				nodeUndergoingDeletion("n4", 2000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n4"), "rs"),
+					SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n4"), "rs"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{"n1"},
+			wantUnremovable: []string{"n2", "n3", "n4"},
+		},
+		{
+			name: "scheduled and recently evicted pods take all capacity, no eligible",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+				BuildTestNode("n3", 1000, 10),
+				nodeUndergoingDeletion("n4", 2000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
+			},
+			actuationStatus: &fakeActuationStatus{
+				recentEvictions: []*apiv1.Pod{
+					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n4"), "rs"),
+					SetRSPodSpec(BuildScheduledTestPod("p3", 1000, 1, "n4"), "rs"),
+				},
+			},
+			eligible:        []string{"n1", "n2"},
+			wantUnneeded:    []string{},
+			wantUnremovable: []string{"n1", "n2", "n3", "n4"},
+		},
+		{
+			name: "Simulation timeout is hitted",
 			nodes: []*apiv1.Node{
 				BuildTestNode("n1", 1000, 10),
 				BuildTestNode("n2", 1000, 10),
 				BuildTestNode("n3", 1000, 10),
 			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2", "rs"),
-				scheduledPod("p2", 500, 1, "n2", "rs"),
-			},
-			eligible: []string{"n1", "n2"},
-			actuationStatus: &fakeActuationStatus{
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p3", 500, 1, "n4", "rs"),
-				},
-			},
-			wantUnneeded: []string{"n1"},
-		},
-		{
-			name: "recently evicted pods can schedule elsewhere, no unneeded",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n2", "rs"),
-				scheduledPod("p2", 500, 1, "n2", "rs"),
-			},
-			eligible: []string{"n1", "n2"},
-			actuationStatus: &fakeActuationStatus{
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p3", 500, 1, "n4", "rs"),
-					scheduledPod("p4", 500, 1, "n4", "rs"),
-					scheduledPod("p5", 500, 1, "n4", "rs"),
-				},
-			},
-			wantUnneeded: []string{},
-		},
-		{
-			name: "recently evicted pods can't schedule elsewhere",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 500, 1, "n1", "rs"),
-				scheduledPod("p2", 500, 1, "n1", "rs"),
-			},
-			eligible: []string{"n1", "n2"},
-			actuationStatus: &fakeActuationStatus{
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p3", 500, 1, "n3", "rs"),
-					scheduledPod("p4", 500, 1, "n3", "rs"),
-					scheduledPod("p5", 500, 1, "n3", "rs"),
-				},
-			},
-			wantUnneeded: []string{},
-			wantErr:      true,
-		},
-		{
-			name: "multiple drained nodes and recent evictions, no unneeded",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 1000, 10),
-				BuildTestNode("n5", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1", "rs"),
-				scheduledPod("p2", 200, 1, "n2", "rs"),
-				scheduledPod("p3", 200, 1, "n3", "rs"),
-				scheduledPod("p4", 200, 1, "n4", "rs"),
-				scheduledPod("p5", 200, 1, "n5", "rs"),
-			},
-			eligible: []string{"n1", "n3", "n5"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p6", 600, 1, "n6", "rs"),
-					scheduledPod("p7", 600, 1, "n6", "rs"),
-				},
-			},
-			wantUnneeded: []string{},
-		},
-		{
-			name: "multiple drained nodes and recent evictions, one unneeded",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 1000, 10),
-				BuildTestNode("n5", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1", "rs"),
-				scheduledPod("p2", 200, 1, "n2", "rs"),
-				scheduledPod("p3", 200, 1, "n3", "rs"),
-				scheduledPod("p4", 200, 1, "n4", "rs"),
-				scheduledPod("p5", 200, 1, "n5", "rs"),
-			},
-			eligible: []string{"n1", "n3", "n5"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p6", 600, 1, "n6", "rs"),
-				},
-			},
-			wantUnneeded: []string{"n1"},
-		},
-		{
-			name: "multiple drained nodes and recent evictions, replicas rescheduled, two nodes unneeded",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 1000, 10),
-				BuildTestNode("n5", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1", "rs"),
-				scheduledPod("p2", 200, 1, "n2", "rs"),
-				scheduledPod("p3", 200, 1, "n3", "rs"),
-				scheduledPod("p4", 200, 1, "n4", "rs"),
-				scheduledPod("p5", 200, 1, "n5", "rs"),
-			},
-			eligible: []string{"n1", "n3", "n5"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p6", 600, 1, "n1", "rs1"),
-					scheduledPod("p7", 600, 1, "n3", "rs1"),
-				},
-			},
-			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 2, rSetLabels), generateReplicaSets("rs", 5)...),
-			wantUnneeded: []string{"n1", "n3"},
-		},
-		{
-			name: "multiple drained nodes and recent evictions, some replicas rescheduled, one node unneeded",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 1000, 10),
-				BuildTestNode("n5", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1", "rs"),
-				scheduledPod("p2", 200, 1, "n2", "rs"),
-				scheduledPod("p3", 200, 1, "n3", "rs"),
-				scheduledPod("p4", 200, 1, "n4", "rs"),
-				scheduledPod("p5", 200, 1, "n5", "rs"),
-			},
-			eligible: []string{"n1", "n3", "n5"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-				recentEvictions: []*apiv1.Pod{
-					scheduledPod("p6", 600, 1, "n1", "rs1"),
-					scheduledPod("p7", 600, 1, "n3", "rs1"),
-				},
-			},
-			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 1, rSetLabels), generateReplicaSets("rs", 5)...),
-			wantUnneeded: []string{"n1"},
-		},
-		{
-			name: "multiple drained nodes and recent evictions, pods belonging to ds",
-			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				nodeUndergoingDeletion("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				nodeUndergoingDeletion("n4", 1000, 10),
-				BuildTestNode("n5", 1000, 10),
-			},
-			pods: []*apiv1.Pod{
-				scheduledPod("p1", 200, 1, "n1", "rs"),
-				scheduledPod("p2", 200, 1, "n2", "rs"),
-				scheduledPod("p3", 200, 1, "n3", "rs"),
-				scheduledPod("p4", 200, 1, "n4", "rs"),
-				scheduledPod("p5", 200, 1, "n5", "rs"),
-			},
-			eligible: []string{"n1", "n3", "n5"},
-			actuationStatus: &fakeActuationStatus{
-				currentlyDrained: []string{"n2", "n4"},
-				recentEvictions: []*apiv1.Pod{
-					scheduledDSPod("p6", 600, 1, "n1"),
-					scheduledDSPod("p7", 600, 1, "n3"),
-				},
-			},
-			wantUnneeded: []string{"n1", "n3"},
+			actuationStatus:     &fakeActuationStatus{},
+			eligible:            []string{"n1", "n2", "n3"},
+			wantUnneeded:        []string{"n1"},
+			isSimulationTimeout: true,
 		},
 	}
 	for _, tc := range testCases {
@@ -395,27 +481,141 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, registry, provider, nil, nil)
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: 10 * time.Minute,
+				},
+				ScaleDownSimulationTimeout: 1 * time.Second,
+				MaxScaleDownParallelism:    10,
+			}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := simulator.NodeDeleteOptions{}
 			p := New(&context, NewTestProcessors(&context), deleteOptions)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
-			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
-			aErr := p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, nil, time.Now())
-			if tc.wantErr {
-				assert.Error(t, aErr)
-			} else {
-				assert.NoError(t, aErr)
-			}
-			wantUnneeded := asMap(tc.wantUnneeded)
-			for _, n := range tc.nodes {
-				if wantUnneeded[n.Name] {
-					assert.True(t, p.unneededNodes.Contains(n.Name), n.Name)
-				} else {
-					assert.False(t, p.unneededNodes.Contains(n.Name), n.Name)
+			if tc.isSimulationTimeout {
+				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
+				rs := &fakeRemovalSimulator{
+					nodes: tc.nodes,
+					sleep: 2 * time.Second,
 				}
+				p.rs = rs
 			}
+			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
+			assert.NoError(t, p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
+			wantUnneeded := asMap(tc.wantUnneeded)
+			wantUnremovable := asMap(tc.wantUnremovable)
+			for _, n := range tc.nodes {
+				assert.Equal(t, wantUnneeded[n.Name], p.unneededNodes.Contains(n.Name), []string{n.Name, "unneeded"})
+				assert.Equal(t, wantUnremovable[n.Name], p.unremovableNodes.Contains(n.Name), []string{n.Name, "unremovable"})
+			}
+		})
+	}
+}
+
+func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
+	testCases := []struct {
+		name               string
+		previouslyUnneeded int
+		nodes              int
+		maxParallelism     int
+		maxUnneededTime    time.Duration
+		updateInterval     time.Duration
+		wantUnneeded       int
+	}{
+		{
+			name:               "no unneeded, default settings",
+			previouslyUnneeded: 0,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       20,
+		},
+		{
+			name:               "some unneeded, default settings",
+			previouslyUnneeded: 3,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       23,
+		},
+		{
+			name:               "max unneeded, default settings",
+			previouslyUnneeded: 70,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       70,
+		},
+		{
+			name:               "too many unneeded, default settings",
+			previouslyUnneeded: 77,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       70,
+		},
+		{
+			name:               "instant kill nodes",
+			previouslyUnneeded: 0,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    0 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       20,
+		},
+		{
+			name:               "quick loops",
+			previouslyUnneeded: 13,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     1 * time.Second,
+			wantUnneeded:       33,
+		},
+		{
+			name:               "slow loops",
+			previouslyUnneeded: 13,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     30 * time.Second,
+			wantUnneeded:       30,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			nodes := make([]*apiv1.Node, tc.nodes)
+			for i := 0; i < tc.nodes; i++ {
+				nodes[i] = BuildTestNode(fmt.Sprintf("n%d", i), 1000, 10)
+			}
+			previouslyUnneeded := make([]simulator.NodeToBeRemoved, tc.previouslyUnneeded)
+			for i := 0; i < tc.previouslyUnneeded; i++ {
+				previouslyUnneeded[i] = simulator.NodeToBeRemoved{Node: nodes[i]}
+			}
+			provider := testprovider.NewTestCloudProvider(nil, nil)
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: tc.maxUnneededTime,
+				},
+				ScaleDownSimulationTimeout: 1 * time.Hour,
+				MaxScaleDownParallelism:    tc.maxParallelism,
+			}, &fake.Clientset{}, nil, provider, nil, nil)
+			assert.NoError(t, err)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
+			deleteOptions := simulator.NodeDeleteOptions{}
+			p := New(&context, NewTestProcessors(&context), deleteOptions)
+			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
+			p.minUpdateInterval = tc.updateInterval
+			p.unneededNodes.Update(previouslyUnneeded, time.Now())
+			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
+			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
 	}
 }
@@ -426,7 +626,7 @@ func generateReplicaSets(name string, replicas int32) []*appsv1.ReplicaSet {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: "default",
-				UID:       rSetUID(name),
+				UID:       types.UID(name),
 			},
 			Spec: appsv1.ReplicaSetSpec{
 				Replicas: &replicas,
@@ -436,12 +636,16 @@ func generateReplicaSets(name string, replicas int32) []*appsv1.ReplicaSet {
 }
 
 func generateReplicaSetWithReplicas(name string, specReplicas, statusReplicas int32, labels map[string]string) []*appsv1.ReplicaSet {
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels["app"] = "rs"
 	return []*appsv1.ReplicaSet{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: "default",
-				UID:       rSetUID(name),
+				UID:       types.UID(name),
 			},
 			Spec: appsv1.ReplicaSetSpec{
 				Replicas: &specReplicas,
@@ -454,38 +658,15 @@ func generateReplicaSetWithReplicas(name string, specReplicas, statusReplicas in
 	}
 }
 
-func rSetUID(name string) types.UID {
-	return types.UID(fmt.Sprintf("api/v1/namespaces/default/replicasets/%s", name))
-}
-
-func scheduledDSPod(name string, cpu, memory int64, nodeName string) *apiv1.Pod {
-	p := BuildTestPod(name, cpu, memory)
-	p.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "extensions/v1beta1", "api/v1/namespaces/default/daemonsets/ds")
-	p.Spec.NodeName = nodeName
-	p.Namespace = "default"
-	p.Labels = rSetLabels
-	return p
-}
-
-func scheduledPod(name string, cpu, memory int64, nodeName, rSetName string) *apiv1.Pod {
-	p := BuildTestPod(name, cpu, memory)
-	p.OwnerReferences = GenerateOwnerReferences(rSetName, "ReplicaSet", "extensions/v1beta1", rSetUID(rSetName))
-	p.Spec.NodeName = nodeName
-	p.Namespace = "default"
-	p.Labels = rSetLabels
-	return p
-}
-
 func nodeUndergoingDeletion(name string, cpu, memory int64) *apiv1.Node {
 	n := BuildTestNode(name, cpu, memory)
-	toBeDeletedTaint := apiv1.Taint{Key: deletetaint.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
+	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
 	n.Spec.Taints = append(n.Spec.Taints, toBeDeletedTaint)
 	return n
 }
 
 type fakeActuationStatus struct {
-	recentEvictions  []*apiv1.Pod
-	currentlyDrained []string
+	recentEvictions []*apiv1.Pod
 }
 
 func (f *fakeActuationStatus) RecentEvictions() []*apiv1.Pod {
@@ -493,7 +674,7 @@ func (f *fakeActuationStatus) RecentEvictions() []*apiv1.Pod {
 }
 
 func (f *fakeActuationStatus) DeletionsInProgress() ([]string, []string) {
-	return nil, f.currentlyDrained
+	return nil, nil
 }
 
 func (f *fakeActuationStatus) DeletionResults() (map[string]status.NodeDeleteResult, time.Time) {
@@ -520,4 +701,22 @@ func (f *fakeEligibilityChecker) FilterOutUnremovable(context *context.Autoscali
 		}
 	}
 	return eligible, utilMap, nil
+}
+
+type fakeRemovalSimulator struct {
+	nodes []*apiv1.Node
+	sleep time.Duration
+}
+
+func (r *fakeRemovalSimulator) DropOldHints() {}
+
+func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]bool, _ time.Time, _ []*policyv1.PodDisruptionBudget) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode) {
+	time.Sleep(r.sleep)
+	node := &apiv1.Node{}
+	for _, n := range r.nodes {
+		if n.Name == name {
+			node = n
+		}
+	}
+	return &simulator.NodeToBeRemoved{Node: node}, nil
 }

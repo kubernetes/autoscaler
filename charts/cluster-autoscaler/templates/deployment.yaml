@@ -42,6 +42,9 @@ spec:
       {{- if .Values.dnsPolicy }}
       dnsPolicy: "{{ .Values.dnsPolicy }}"
       {{- end }}
+      {{- if .Values.hostNetwork }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      {{- end }}
       containers:
         - name: {{ template "cluster-autoscaler.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -59,6 +62,11 @@ spec:
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
             {{- end }}
           {{- end }}
+          {{- if eq .Values.cloudProvider "rancher" }}
+            {{- if .Values.cloudConfigPath }}
+            - --cloud-config={{ .Values.cloudConfigPath }}
+            {{- end }}
+          {{- end }}
           {{- if eq .Values.cloudProvider "aws" }}
             {{- if .Values.autoDiscovery.clusterName }}
             - --node-group-auto-discovery=asg:tag={{ tpl (join "," .Values.autoDiscovery.tags) . }}
@@ -70,6 +78,12 @@ spec:
           {{- if .Values.autoscalingGroupsnamePrefix }}
             {{- range .Values.autoscalingGroupsnamePrefix }}
             - --node-group-auto-discovery=mig:namePrefix={{ .name }},min={{ .minSize }},max={{ .maxSize }}
+            {{- end }}
+          {{- end }}
+          {{- if eq .Values.cloudProvider "oci-oke" }}
+            {{- if .Values.cloudConfigPath }}
+            - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
+            - --balance-similar-node-groups
             {{- end }}
           {{- end }}
           {{- else if eq .Values.cloudProvider "magnum" }}
@@ -148,7 +162,10 @@ spec:
                 secretKeyRef:
                   key: ClusterName
                   name: {{ template "cluster-autoscaler.fullname" . }}
-            {{- if .Values.azureUseManagedIdentityExtension }}
+            {{- if .Values.azureUseWorkloadIdentityExtension }}
+            - name: ARM_USE_WORKLOAD_IDENTITY_EXTENSION
+              value: "true"
+            {{- else if .Values.azureUseManagedIdentityExtension }}
             - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
               value: "true"
             {{- else }}

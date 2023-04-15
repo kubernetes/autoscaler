@@ -2,8 +2,11 @@
 # affinity -- Affinity for pod assignment
 affinity: {}
 
+# additionalLabels -- Labels to add to each object of the chart.
+additionalLabels: {}
+
 autoDiscovery:
-  # cloudProviders `aws`, `gce`, `azure`, `magnum` and `clusterapi` are supported by auto-discovery at this time
+  # cloudProviders `aws`, `gce`, `azure`, `magnum` and `clusterapi` `oci-oke` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
 
   # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
@@ -72,6 +75,14 @@ azureClientID: ""
 # Required if `cloudProvider=azure`
 azureClientSecret: ""
 
+# azureClusterName -- Azure AKS cluster name.
+# Required if `cloudProvider=azure`
+azureClusterName: ""
+
+# azureNodeResourceGroup -- Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`.
+# Required if `cloudProvider=azure`
+azureNodeResourceGroup: ""
+
 # azureResourceGroup -- Azure resource group that the cluster is located.
 # Required if `cloudProvider=azure`
 azureResourceGroup: ""
@@ -84,45 +95,14 @@ azureSubscriptionID: ""
 # Required if `cloudProvider=azure`
 azureTenantID: ""
 
-# azureVMType -- Azure VM type.
-azureVMType: "AKS"
-
-# azureClusterName -- Azure AKS cluster name.
-# Required if `cloudProvider=azure`
-azureClusterName: ""
-
-# azureNodeResourceGroup -- Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`.
-# Required if `cloudProvider=azure`
-azureNodeResourceGroup: ""
-
-# azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set.
+# azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set.
 azureUseManagedIdentityExtension: false
 
-# magnumClusterName -- Cluster name or ID in Magnum.
-# Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`.
-magnumClusterName: ""
+# azureUseWorkloadIdentityExtension -- Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set.
+azureUseWorkloadIdentityExtension: false
 
-# magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
-magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"
-
-# clusterAPIMode --  Cluster API mode, see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters
-# Syntax: workloadClusterMode-ManagementClusterMode
-# for `kubeconfig-kubeconfig`, `incluster-kubeconfig` and `single-kubeconfig` you always must mount the external kubeconfig using either `extraVolumeSecrets` or `extraMounts` and `extraVolumes`
-# if you dont set `clusterAPIKubeconfigSecret`and thus use an in-cluster config or want to use a non capi generated kubeconfig you must do so for the workload kubeconfig as well
-clusterAPIMode: incluster-incluster  # incluster-incluster, incluster-kubeconfig, kubeconfig-incluster, kubeconfig-kubeconfig, single-kubeconfig
-
-# clusterAPIKubeconfigSecret -- Secret containing kubeconfig for connecting to Cluster API managed workloadcluster
-# Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig`
-clusterAPIKubeconfigSecret: ""
-
-# clusterAPIWorkloadKubeconfigPath -- Path to kubeconfig for connecting to Cluster API managed workloadcluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or kubeconfig-incluster`
-clusterAPIWorkloadKubeconfigPath: /etc/kubernetes/value
-
-# clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
-clusterAPICloudConfigPath: /etc/kubernetes/mgmt-kubeconfig
-
-# clusterAPIConfigMapsNamespace -- Namespace on the workload cluster to store Leader election and status configmaps
-clusterAPIConfigMapsNamespace: ""
+# azureVMType -- Azure VM type.
+azureVMType: "AKS"
 
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
@@ -132,6 +112,25 @@ cloudConfigPath: ""
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
 # `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
 cloudProvider: aws
+
+# clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
+clusterAPICloudConfigPath: /etc/kubernetes/mgmt-kubeconfig
+
+# clusterAPIConfigMapsNamespace -- Namespace on the workload cluster to store Leader election and status configmaps
+clusterAPIConfigMapsNamespace: ""
+
+# clusterAPIKubeconfigSecret -- Secret containing kubeconfig for connecting to Cluster API managed workloadcluster
+# Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig`
+clusterAPIKubeconfigSecret: ""
+
+# clusterAPIMode --  Cluster API mode, see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters
+# Syntax: workloadClusterMode-ManagementClusterMode
+# for `kubeconfig-kubeconfig`, `incluster-kubeconfig` and `single-kubeconfig` you always must mount the external kubeconfig using either `extraVolumeSecrets` or `extraMounts` and `extraVolumes`
+# if you dont set `clusterAPIKubeconfigSecret`and thus use an in-cluster config or want to use a non capi generated kubeconfig you must do so for the workload kubeconfig as well
+clusterAPIMode: incluster-incluster  # incluster-incluster, incluster-kubeconfig, kubeconfig-incluster, kubeconfig-kubeconfig, single-kubeconfig
+
+# clusterAPIWorkloadKubeconfigPath -- Path to kubeconfig for connecting to Cluster API managed workloadcluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or kubeconfig-incluster`
+clusterAPIWorkloadKubeconfigPath: /etc/kubernetes/value
 
 # containerSecurityContext -- [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 containerSecurityContext: {}
@@ -148,16 +147,17 @@ deployment:
 # If autoscaler does not depend on cluster DNS, recommended to set this to `Default`.
 dnsPolicy: ClusterFirst
 
+# envFromConfigMap -- ConfigMap name to use as envFrom.
+envFromConfigMap: ""
+
+# envFromSecret -- Secret name to use as envFrom.
+envFromSecret: ""
+
 ## Priorities Expander
 # expanderPriorities -- The expanderPriorities is used if `extraArgs.expander` contains `priority` and expanderPriorities is also set with the priorities.
 # If `extraArgs.expander` contains `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities.
 # See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md
 expanderPriorities: {}
-
-# priorityConfigMapAnnotations -- Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap.
-priorityConfigMapAnnotations: {}
-  # key1: "value1"
-  # key2: "value2"
 
 # extraArgs -- Additional container arguments.
 # Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
@@ -197,11 +197,17 @@ extraEnvConfigMaps: {}
 # extraEnvSecrets -- Additional container environment variables from Secrets.
 extraEnvSecrets: {}
 
-# envFromConfigMap -- ConfigMap name to use as envFrom.
-envFromConfigMap: ""
+# extraVolumeMounts -- Additional volumes to mount.
+extraVolumeMounts: []
+  # - name: ssl-certs
+  #   mountPath: /etc/ssl/certs/ca-certificates.crt
+  #   readOnly: true
 
-# envFromSecret -- Secret name to use as envFrom.
-envFromSecret: ""
+# extraVolumes -- Additional volumes.
+extraVolumes: []
+  # - name: ssl-certs
+  #   hostPath:
+  #     path: /etc/ssl/certs/ca-bundle.crt
 
 # extraVolumeSecrets -- Additional volumes to mount from Secrets.
 extraVolumeSecrets: {}
@@ -214,26 +220,17 @@ extraVolumeSecrets: {}
   #     - key: subkey
   #       path: mypath
 
-# extraVolumes -- Additional volumes.
-extraVolumes: []
-  # - name: ssl-certs
-  #   hostPath:
-  #     path: /etc/ssl/certs/ca-bundle.crt
-
-# extraVolumeMounts -- Additional volumes to mount.
-extraVolumeMounts: []
-  # - name: ssl-certs
-  #   mountPath: /etc/ssl/certs/ca-certificates.crt
-  #   readOnly: true
-
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
+# hostNetwork -- Whether to expose network interfaces of the host machine to pods.
+hostNetwork: false
+
 image:
   # image.repository -- Image repository
-  repository: k8s.gcr.io/autoscaling/cluster-autoscaler
+  repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.23.0
+  tag: v1.26.2
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -246,6 +243,13 @@ image:
 
 # kubeTargetVersionOverride -- Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands.
 kubeTargetVersionOverride: ""
+
+# magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
+magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"
+
+# magnumClusterName -- Cluster name or ID in Magnum.
+# Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`.
+magnumClusterName: ""
 
 # nameOverride -- String to partially override `cluster-autoscaler.fullname` template (will maintain the release name)
 nameOverride: ""
@@ -264,11 +268,28 @@ podDisruptionBudget:
 # podLabels -- Labels to add to each pod.
 podLabels: {}
 
-# additionalLabels -- Labels to add to each object of the chart.
-additionalLabels: {}
-
 # priorityClassName -- priorityClassName
 priorityClassName: "system-cluster-critical"
+
+# priorityConfigMapAnnotations -- Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap.
+priorityConfigMapAnnotations: {}
+  # key1: "value1"
+  # key2: "value2"
+
+## Custom PrometheusRule to be defined
+## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
+## ref: https://github.com/coreos/prometheus-operator#customresourcedefinitions
+prometheusRule:
+  # prometheusRule.enabled -- If true, creates a Prometheus Operator PrometheusRule.
+  enabled: false
+  # prometheusRule.additionalLabels -- Additional labels to be set in metadata.
+  additionalLabels: {}
+  # prometheusRule.namespace -- Namespace which Prometheus is running in.
+  namespace: monitoring
+  # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
+  interval: null
+  # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
+  rules: []
 
 rbac:
   # rbac.create -- If `true`, create and use RBAC resources.
@@ -348,21 +369,6 @@ serviceMonitor:
   # serviceMonitor.metricRelabelings -- MetricRelabelConfigs to apply to samples before ingestion.
   metricRelabelings: {}
 
-## Custom PrometheusRule to be defined
-## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
-## ref: https://github.com/coreos/prometheus-operator#customresourcedefinitions
-prometheusRule:
-  # prometheusRule.enabled -- If true, creates a Prometheus Operator PrometheusRule.
-  enabled: false
-  # prometheusRule.additionalLabels -- Additional labels to be set in metadata.
-  additionalLabels: {}
-  # prometheusRule.namespace -- Namespace which Prometheus is running in.
-  namespace: monitoring
-  # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
-  interval: null
-  # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
-  rules: []
-
 # tolerations -- List of node taints to tolerate (requires Kubernetes >= 1.6).
 tolerations: []
 
@@ -381,3 +387,12 @@ updateStrategy: {}
   #   maxSurge: 1
   #   maxUnavailable: 0
   # type: RollingUpdate
+
+# vpa -- Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment.
+vpa:
+  # vpa.enabled -- If true, creates a VerticalPodAutoscaler.
+  enabled: false
+  # vpa.updateMode -- [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124)
+  updateMode: "Auto"
+  # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
+  containerPolicy: {}

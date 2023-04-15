@@ -217,7 +217,7 @@ func TestGetUpdatePriority(t *testing.T) {
 	}
 }
 
-// Verify GetUpdatePriorty does not encounter a NPE when there is no
+// Verify GetUpdatePriority does not encounter a NPE when there is no
 // recommendation for a container.
 func TestGetUpdatePriority_NoRecommendationForContainer(t *testing.T) {
 	p := NewProcessor()

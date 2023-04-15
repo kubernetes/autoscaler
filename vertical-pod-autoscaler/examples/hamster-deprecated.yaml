@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: hamster
-          image: k8s.gcr.io/ubuntu-slim:0.1
+          image: registry.k8s.io/ubuntu-slim:0.1
           resources:
             requests:
               cpu: 100m
