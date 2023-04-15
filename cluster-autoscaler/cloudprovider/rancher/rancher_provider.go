@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -31,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	autoscalererrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -43,13 +43,10 @@ const (
 	// providerName is the cloud provider name for rancher
 	providerName = "rancher"
 
-	// rke2ProviderID identifies nodes that are using RKE2
-	rke2ProviderID       = "rke2"
-	rke2ProviderIDPrefix = rke2ProviderID + "://"
-
-	rancherProvisioningGroup   = "provisioning.cattle.io"
-	rancherProvisioningVersion = "v1"
-	rancherLocalClusterPath    = "/k8s/clusters/local"
+	rancherProvisioningGroup       = "provisioning.cattle.io"
+	rancherProvisioningVersion     = "v1"
+	rancherLocalClusterPath        = "/k8s/clusters/local"
+	rancherMachinePoolNameLabelKey = "rke.cattle.io/rke-machine-pool-name"
 
 	minSizeAnnotation                  = "cluster.provisioning.cattle.io/autoscaler-min-size"
 	maxSizeAnnotation                  = "cluster.provisioning.cattle.io/autoscaler-max-size"
@@ -130,6 +127,12 @@ func (provider *RancherCloudProvider) GetAvailableGPUTypes() map[string]struct{}
 	return nil
 }
 
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (provider *RancherCloudProvider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(provider, node)
+}
+
 // NodeGroups returns all node groups configured for this cloud provider.
 func (provider *RancherCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(provider.nodeGroups))
@@ -146,22 +149,27 @@ func (provider *RancherCloudProvider) Pricing() (cloudprovider.PricingModel, aut
 
 // NodeGroupForNode returns the node group for the given node.
 func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
-	// skip nodes that are not managed by rke2.
-	if !strings.HasPrefix(node.Spec.ProviderID, rke2ProviderID) {
+	machineName, ok := node.Annotations[machineNodeAnnotationKey]
+	if !ok {
+		klog.V(4).Infof("skipping NodeGroupForNode %q as the annotation %q is missing", node.Name, machineNodeAnnotationKey)
 		return nil, nil
 	}
 
 	for _, group := range provider.nodeGroups {
-		// the node name is expected to have the following format:
-		// <cluster-name>-<node group name>-<random int>-<random string>
-		// so we trim the cluster name and then cut off the last two parts to
-		// leave us with the node group name
-		parts := strings.Split(strings.TrimPrefix(node.Name, provider.config.ClusterName), "-")
-		if len(parts) < 4 {
-			return nil, fmt.Errorf("unable to get node group name out of node %s: unexpected node name format", node.Name)
+		machine, err := group.machineByName(machineName)
+		if err != nil {
+			klog.V(6).Infof("node %q is not part of node group %q", node.Name, group.name)
+			continue
 		}
-		groupName := strings.Join(parts[1:len(parts)-2], "-")
-		if group.name == groupName {
+
+		pool, ok := machine.GetLabels()[rancherMachinePoolNameLabelKey]
+		if !ok {
+			return nil, fmt.Errorf("machine %q is missing the label %q", machine.GetName(), rancherMachinePoolNameLabelKey)
+		}
+
+		klog.V(4).Infof("found pool %q via machine %q", pool, machine.GetName())
+
+		if group.name == pool {
 			return group, nil
 		}
 	}
@@ -169,6 +177,11 @@ func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloud
 	// if node is not in one of our scalable nodeGroups, we return nil so it
 	// won't be processed further by the CA.
 	return nil, nil
+}
+
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (provider *RancherCloudProvider) HasInstance(node *corev1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.

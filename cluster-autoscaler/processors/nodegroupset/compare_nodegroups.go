@@ -21,20 +21,9 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-)
-
-const (
-	// MaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between
-	// groups in the same NodeGroupSet
-	MaxAllocatableDifferenceRatio = 0.05
-	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
-	// can differ between groups in the same NodeGroupSet
-	MaxFreeDifferenceRatio = 0.05
-	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between
-	// groups in the same NodeGroupSet
-	MaxCapacityMemoryDifferenceRatio = 0.015
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
@@ -92,7 +81,7 @@ func compareLabels(nodes []*schedulerframework.NodeInfo, ignoredLabels map[strin
 }
 
 // CreateGenericNodeInfoComparator returns a generic comparator that checks for node group similarity
-func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
+func CreateGenericNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	genericIgnoredLabels := make(map[string]bool)
 	for k, v := range BasicIgnoredLabels {
 		genericIgnoredLabels[k] = v
@@ -102,7 +91,7 @@ func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoCompar
 	}
 
 	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels)
+		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels, ratioOpts)
 	}
 }
 
@@ -111,7 +100,8 @@ func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoCompar
 // somewhat arbitrary, but generally we check if resources provided by both nodes
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a set of labels passed in to be ignored like hostname or zone).
-func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignoredLabels map[string]bool) bool {
+func IsCloudProviderNodeInfoSimilar(
+	n1, n2 *schedulerframework.NodeInfo, ignoredLabels map[string]bool, ratioOpts config.NodeGroupDifferenceRatios) bool {
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
@@ -136,7 +126,7 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignored
 		}
 		switch kind {
 		case apiv1.ResourceMemory:
-			if !resourceListWithinTolerance(qtyList, MaxCapacityMemoryDifferenceRatio) {
+			if !resourceListWithinTolerance(qtyList, ratioOpts.MaxCapacityMemoryDifferenceRatio) {
 				return false
 			}
 		default:
@@ -150,10 +140,10 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignored
 	}
 
 	// For allocatable and free we allow resource quantities to be within a few % of each other
-	if !resourceMapsWithinTolerance(allocatable, MaxAllocatableDifferenceRatio) {
+	if !resourceMapsWithinTolerance(allocatable, ratioOpts.MaxAllocatableDifferenceRatio) {
 		return false
 	}
-	if !resourceMapsWithinTolerance(free, MaxFreeDifferenceRatio) {
+	if !resourceMapsWithinTolerance(free, ratioOpts.MaxFreeDifferenceRatio) {
 		return false
 	}
 

@@ -22,13 +22,10 @@ import (
 	"strings"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/server"
-	"k8s.io/apiserver/pkg/util/disablecompression"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	netutils "k8s.io/utils/net"
 
 	"github.com/spf13/pflag"
 )
@@ -65,27 +62,21 @@ type ServerRunOptions struct {
 	// If enabled, after ShutdownDelayDuration elapses, any incoming request is
 	// rejected with a 429 status code and a 'Retry-After' response.
 	ShutdownSendRetryAfter bool
-
-	// DisableCompressionForClientIPs is a comma separated list of CIDR IP ranges
-	// (parsable by net.ParseCIDR, as defined in RFC 4632 and RFC 4291) for which
-	// traffic compression should be disabled.
-	DisableCompressionForClientIPs []string
 }
 
 func NewServerRunOptions() *ServerRunOptions {
 	defaults := server.NewConfig(serializer.CodecFactory{})
 	return &ServerRunOptions{
-		MaxRequestsInFlight:            defaults.MaxRequestsInFlight,
-		MaxMutatingRequestsInFlight:    defaults.MaxMutatingRequestsInFlight,
-		RequestTimeout:                 defaults.RequestTimeout,
-		LivezGracePeriod:               defaults.LivezGracePeriod,
-		MinRequestTimeout:              defaults.MinRequestTimeout,
-		ShutdownDelayDuration:          defaults.ShutdownDelayDuration,
-		JSONPatchMaxCopyBytes:          defaults.JSONPatchMaxCopyBytes,
-		MaxRequestBodyBytes:            defaults.MaxRequestBodyBytes,
-		EnablePriorityAndFairness:      true,
-		ShutdownSendRetryAfter:         false,
-		DisableCompressionForClientIPs: nil,
+		MaxRequestsInFlight:         defaults.MaxRequestsInFlight,
+		MaxMutatingRequestsInFlight: defaults.MaxMutatingRequestsInFlight,
+		RequestTimeout:              defaults.RequestTimeout,
+		LivezGracePeriod:            defaults.LivezGracePeriod,
+		MinRequestTimeout:           defaults.MinRequestTimeout,
+		ShutdownDelayDuration:       defaults.ShutdownDelayDuration,
+		JSONPatchMaxCopyBytes:       defaults.JSONPatchMaxCopyBytes,
+		MaxRequestBodyBytes:         defaults.MaxRequestBodyBytes,
+		EnablePriorityAndFairness:   true,
+		ShutdownSendRetryAfter:      false,
 	}
 }
 
@@ -105,13 +96,6 @@ func (s *ServerRunOptions) ApplyTo(c *server.Config) error {
 	c.MaxRequestBodyBytes = s.MaxRequestBodyBytes
 	c.PublicAddress = s.AdvertiseAddress
 	c.ShutdownSendRetryAfter = s.ShutdownSendRetryAfter
-	if len(s.DisableCompressionForClientIPs) != 0 {
-		pred, err := disablecompression.NewClientIPPredicate(s.DisableCompressionForClientIPs)
-		if err != nil {
-			return err
-		}
-		c.CompressionDisabledFunc = pred.Predicate
-	}
 
 	return nil
 }
@@ -176,10 +160,6 @@ func (s *ServerRunOptions) Validate() []error {
 	if err := validateHSTSDirectives(s.HSTSDirectives); err != nil {
 		errors = append(errors, err)
 	}
-
-	if _, err := netutils.ParseCIDRs(s.DisableCompressionForClientIPs); err != nil {
-		errors = append(errors, err)
-	}
 	return errors
 }
 
@@ -223,10 +203,6 @@ func (s *ServerRunOptions) AddUniversalFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&s.ExternalHost, "external-hostname", s.ExternalHost,
 		"The hostname to use when generating externalized URLs for this master (e.g. Swagger API Docs or OpenID Discovery).")
-
-	deprecatedMasterServiceNamespace := metav1.NamespaceDefault
-	fs.StringVar(&deprecatedMasterServiceNamespace, "master-service-namespace", deprecatedMasterServiceNamespace, ""+
-		"DEPRECATED: the namespace from which the Kubernetes master services should be injected into pods.")
 
 	fs.IntVar(&s.MaxRequestsInFlight, "max-requests-inflight", s.MaxRequestsInFlight, ""+
 		"This and --max-mutating-requests-inflight are summed to determine the server's total concurrency limit "+
@@ -274,9 +250,6 @@ func (s *ServerRunOptions) AddUniversalFlags(fs *pflag.FlagSet) {
 		"If true the HTTP Server will continue listening until all non long running request(s) in flight have been drained, "+
 		"during this window all incoming requests will be rejected with a status code 429 and a 'Retry-After' response header, "+
 		"in addition 'Connection: close' response header is set in order to tear down the TCP connection when idle.")
-
-	fs.StringSliceVar(&s.DisableCompressionForClientIPs, "disable-compression-for-client-ips", s.DisableCompressionForClientIPs, ""+
-		"A comma separated list of client IP ranges in CIDR notation like \"192.0.2.0/24\" or \"2001:db8::/32\", as defined in RFC 4632 and RFC 4291, for which traffic compression will be disabled.")
 
 	utilfeature.DefaultMutableFeatureGate.AddFlag(fs)
 }

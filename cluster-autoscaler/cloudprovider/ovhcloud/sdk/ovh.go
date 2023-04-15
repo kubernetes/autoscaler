@@ -258,7 +258,6 @@ func (c *Client) DeleteUnAuthWithContext(ctx context.Context, url string, result
 
 // timeDelta returns the time  delta between the host and the remote API
 func (c *Client) getTimeDelta() (time.Duration, error) {
-
 	if !c.timeDeltaDone {
 		// Ensure only one thread is updating
 		c.timeDeltaMutex.Lock()
@@ -434,12 +433,35 @@ func (c *Client) CallAPIWithContext(ctx context.Context, method, path string, re
 	if err != nil {
 		return err
 	}
+
 	req = req.WithContext(ctx)
 	response, err := c.Do(req)
 	if err != nil {
 		return err
 	}
-	return c.UnmarshalResponse(response, result)
+
+	err = c.UnmarshalResponse(response, result)
+	if err != nil {
+		// An error 500 on api.ovh.com could be due to the tenant being canadian and too recent, so let's retry on ca.api.ovh.
+		// This is a temporary fix until the issue is correctly handled
+		if IsPossiblyCanadianTenantSyncError(err, req.URL.String()) {
+			// Create a canadian API client with the same token
+			client, err2 := NewClient(OvhCA, "none", "none", "none")
+			if err2 != nil {
+				return fmt.Errorf("failed to create canadian ovh API client for fallback: %w", err2)
+			}
+			client.openStackToken = c.openStackToken
+
+			// Execute the same call on ca.api.ovh.com and ignore the potential error, we will return the original one
+			err2 = client.CallAPIWithContext(ctx, method, path, reqBody, result, queryParams, headers, needAuth)
+			if err2 == nil {
+				// OK on the canadian API, our job is done
+				return nil
+			}
+		}
+	}
+
+	return err
 }
 
 // UnmarshalResponse checks the response and unmarshals it into the response

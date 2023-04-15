@@ -39,7 +39,7 @@ const (
 )
 
 // InitializeCloudFromSecret initializes Azure cloud provider from Kubernetes secret.
-func (az *Cloud) InitializeCloudFromSecret() error {
+func (az *Cloud) InitializeCloudFromSecret(ctx context.Context) error {
 	config, err := az.GetConfigFromSecret()
 	if err != nil {
 		klog.Errorf("Failed to get cloud-config from secret: %v", err)
@@ -51,7 +51,7 @@ func (az *Cloud) InitializeCloudFromSecret() error {
 		return nil
 	}
 
-	if err := az.InitializeCloudFromConfig(config, true, true); err != nil {
+	if err := az.InitializeCloudFromConfig(ctx, config, true, true); err != nil {
 		klog.Errorf("Failed to initialize Azure cloud provider: %v", err)
 		return fmt.Errorf("InitializeCloudFromSecret: failed to initialize Azure cloud provider: %w", err)
 	}

@@ -128,7 +128,7 @@ func (lf *LimitsFinder) customResourcesTotal(context *context.AutoscalingContext
 		}
 		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("can not get node group for node %v when calculating cluster gpu usage", node.Name)
+			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("cannot get node group for node %v when calculating cluster custom resource usage", node.Name)
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			// We do not trust cloud providers to return properly constructed nil for interface type - hence the reflection check.
@@ -146,7 +146,7 @@ func (lf *LimitsFinder) customResourcesTotal(context *context.AutoscalingContext
 		if !cacheHit {
 			resourceTargets, err = lf.crp.GetNodeResourceTargets(context, node, nodeGroup)
 			if err != nil {
-				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("can not get gpu count for node %v when calculating cluster gpu usage")
+				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("cannot get custom resource count for node %v when calculating cluster custom resource usage")
 			}
 			if nodeGroup != nil {
 				ngCache[nodeGroup.Id()] = resourceTargets

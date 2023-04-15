@@ -281,6 +281,9 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 
 		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
 			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		if scalableResource.Spec.Replicas != tc.initial {
 			t.Errorf("expected %v, got %v", tc.initial, scalableResource.Spec.Replicas)
@@ -354,6 +357,9 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 
 		scalableResource, err := ng.machineController.managementScaleClient.Scales(ng.scalableResource.Namespace()).
 			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		if scalableResource.Spec.Replicas != tc.expected {
 			t.Errorf("expected %v, got %v", tc.expected, scalableResource.Spec.Replicas)
@@ -478,8 +484,12 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 				}
 			},
 		}
-		controller.machineSetInformer.Informer().AddEventHandler(handler)
-		controller.machineDeploymentInformer.Informer().AddEventHandler(handler)
+		if _, err := controller.machineSetInformer.Informer().AddEventHandler(handler); err != nil {
+			t.Fatalf("unexpected error adding event handler for machineSetInformer: %v", err)
+		}
+		if _, err := controller.machineDeploymentInformer.Informer().AddEventHandler(handler); err != nil {
+			t.Fatalf("unexpected error adding event handler for machineDeploymentInformer: %v", err)
+		}
 
 		scalableResource.Spec.Replicas += tc.targetSizeIncrement
 
@@ -606,6 +616,9 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 
 		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
 			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		if scalableResource.Spec.Replicas != tc.initial {
 			t.Errorf("expected %v, got %v", tc.initial, scalableResource.Spec.Replicas)
@@ -1126,6 +1139,9 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 
 		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
 			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		if scalableResource.Spec.Replicas != int32(expectedSize) {
 			t.Errorf("expected %v, got %v", expectedSize, scalableResource.Spec.Replicas)
@@ -1181,7 +1197,9 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 		machine := testConfig.machines[3].DeepCopy()
 
 		unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
-		unstructured.SetNestedField(machine.Object, "FailureMessage", "status", "failureMessage")
+		if err := unstructured.SetNestedField(machine.Object, "FailureMessage", "status", "failureMessage"); err != nil {
+			t.Fatalf("unexpected error setting nested field: %v", err)
+		}
 
 		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
@@ -1309,10 +1327,8 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 			config: testCaseConfig{
 				expectedErr: nil,
 				nodeLabels: map[string]string{
-					"kubernetes.io/os":        "linux",
-					"beta.kubernetes.io/os":   "linux",
-					"kubernetes.io/arch":      "amd64",
-					"beta.kubernetes.io/arch": "amd64",
+					"kubernetes.io/os":   "linux",
+					"kubernetes.io/arch": "amd64",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
 					corev1.ResourceCPU:        2,
@@ -1321,11 +1337,9 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					gpuapis.ResourceNvidiaGPU: 1,
 				},
 				expectedNodeLabels: map[string]string{
-					"kubernetes.io/os":        "linux",
-					"beta.kubernetes.io/os":   "linux",
-					"kubernetes.io/arch":      "amd64",
-					"beta.kubernetes.io/arch": "amd64",
-					"kubernetes.io/hostname":  "random value",
+					"kubernetes.io/os":       "linux",
+					"kubernetes.io/arch":     "amd64",
+					"kubernetes.io/hostname": "random value",
 				},
 			},
 		},
@@ -1340,9 +1354,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				expectedErr:  nil,
 				nodeLabels: map[string]string{
 					"kubernetes.io/os":                 "windows",
-					"beta.kubernetes.io/os":            "windows",
 					"kubernetes.io/arch":               "arm64",
-					"beta.kubernetes.io/arch":          "arm64",
 					"node.kubernetes.io/instance-type": "instance1",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
@@ -1353,9 +1365,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				expectedNodeLabels: map[string]string{
 					"kubernetes.io/hostname":           "random value",
 					"kubernetes.io/os":                 "windows",
-					"beta.kubernetes.io/os":            "windows",
 					"kubernetes.io/arch":               "arm64",
-					"beta.kubernetes.io/arch":          "arm64",
 					"node.kubernetes.io/instance-type": "instance1",
 				},
 			},
@@ -1420,8 +1430,6 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					}
 				} else {
 					t.Errorf("Expected node label %q to exist in node", key)
-				}
-				if value != config.expectedNodeLabels[key] {
 				}
 			}
 		}

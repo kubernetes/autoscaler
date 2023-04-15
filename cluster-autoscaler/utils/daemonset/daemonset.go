@@ -20,9 +20,6 @@ import (
 	"fmt"
 	"math/rand"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/kubernetes/pkg/controller/daemon"
@@ -36,22 +33,8 @@ const (
 )
 
 // GetDaemonSetPodsForNode returns daemonset nodes for the given pod.
-func GetDaemonSetPodsForNode(nodeInfo *schedulerframework.NodeInfo, daemonsets []*appsv1.DaemonSet, predicateChecker predicatechecker.PredicateChecker) ([]*apiv1.Pod, error) {
+func GetDaemonSetPodsForNode(nodeInfo *schedulerframework.NodeInfo, daemonsets []*appsv1.DaemonSet) ([]*apiv1.Pod, error) {
 	result := make([]*apiv1.Pod, 0)
-
-	// here we can use empty snapshot
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-
-	// add a node with pods - node info is created by cloud provider,
-	// we don't know whether it'll have pods or not.
-	var pods []*apiv1.Pod
-	for _, podInfo := range nodeInfo.Pods {
-		pods = append(pods, podInfo.Pod)
-	}
-	if err := clusterSnapshot.AddNodeWithPods(nodeInfo.Node(), pods); err != nil {
-		return nil, err
-	}
-
 	for _, ds := range daemonsets {
 		shouldRun, _ := daemon.NodeShouldRunDaemonPod(nodeInfo.Node(), ds)
 		if shouldRun {

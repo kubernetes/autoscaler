@@ -47,6 +47,7 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeTags",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeLaunchTemplateVersions"
@@ -109,7 +110,9 @@ binary, replacing min and max node counts and the ASG:
 
 The `"eks:DescribeNodegroup"` permission allows Cluster Autoscaler to pull labels and taints from the EKS DescribeNodegroup API for EKS managed nodegroups. (Note: When an EKS DescribeNodegroup API label and a tag on the underlying autoscaling group have the same key, the EKS DescribeNodegroup API label value will be saved by the Cluster Autoscaler over the autoscaling group tag value.) Currently the Cluster Autoscaler will only call the EKS DescribeNodegroup API when a managed nodegroup is created with 0 nodes and has never had any nodes added to it. Once nodes are added, even if the managed nodegroup is scaled back to 0 nodes, this functionality will not be called anymore. In the case of a Cluster Autoscaler restart, the Cluster Autoscaler will need to repopulate caches so it will call this functionality again if the managed nodegroup is at 0 nodes. Enabling this functionality any time there are 0 nodes in a managed nodegroup (even after a scale-up then scale-down) would require changes to the general shared Cluster Autoscaler code which could happen in the future.
 
-NOTE: PrivateLink is not yet supported by EKS APIs so the EKS DescribeNodegroup API call will not work in a private cluster.
+NOTE: For private clusters, in order for the EKS DescribeNodegroup API to work,
+you need to create an interface endpoint for Amazon EKS (AWS PrivateLink), as
+described at the [AWS Documentation](https://docs.aws.amazon.com/eks/latest/userguide/vpc-interface-endpoints.html).
 
 ### Using OIDC Federated Authentication
 
@@ -169,7 +172,7 @@ will find the ASGs that have at least all the given tags. Without the tags, the 
 to the ASG as it has not been discovered. In the example, a value is not given for the tags and in this case any value will be ignored and
 will be arbitrary - only the tag name matters. Optionally, the tag value can be set to be usable and custom tags can also be added. For example,
 `--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled=foo,k8s.io/cluster-autoscaler/<cluster-name>=bar,my-custom-tag=custom-value`.
-Now the ASG tags must have the correct values as well as the custom tag to be successfully discovered by the Cluster Autoscaler. 
+Now the ASG tags must have the correct values as well as the custom tag to be successfully discovered by the Cluster Autoscaler.
 
 Example deployment:
 
@@ -196,9 +199,9 @@ Policies and Spot Instances](#Using-Mixed-Instances-Policies-and-Spot-Instances)
 for details.
 
 When scaling up from 0 nodes, the Cluster Autoscaler reads ASG tags to derive information about the specifications of the nodes
-i.e labels and taints in that ASG. Note that it does not actually apply these labels or taints - this is done by an AWS generated 
+i.e labels and taints in that ASG. Note that it does not actually apply these labels or taints - this is done by an AWS generated
 user data script. It gives the Cluster Autoscaler information about whether pending pods will be able to be scheduled should a new node
-be spun up for a particular ASG with the asumption the ASG tags accurately reflect the labels/taint actually applied. 
+be spun up for a particular ASG with the asumption the ASG tags accurately reflect the labels/taint actually applied.
 
 The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the label tag
 on the ASG should a deployment have a NodeSelector, else no scaling will occur as the Cluster Autoscaler does not realise
@@ -252,8 +255,8 @@ Recommendations:
 - It is recommended to use a second tag like
   `k8s.io/cluster-autoscaler/<cluster-name>` when
   `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent
-  ASGs from different clusters having conflicts. 
-  An ASG must contain at least all the tags specified and as such secondary tags can differentiate between different 
+  ASGs from different clusters having conflicts.
+  An ASG must contain at least all the tags specified and as such secondary tags can differentiate between different
   clusters ASGs.
 - To prevent conflicts, do not provide a `--nodes` argument if
   `--node-group-auto-discovery` is specified.
@@ -422,7 +425,7 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 
 ## Using the AWS SDK vendored in the AWS cloudprovider
 
-If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider. 
+If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
 
 The current version vendored is `v1.44.24`.
 
@@ -443,12 +446,12 @@ If you want to use custom AWS cloud config e.g. endpoint urls
 2. Add the following in your `values.yaml`:
     ```yaml
     cloudConfigPath: config/cloud.conf
-    
+
     extraVolumes:
       - name: cloud-config
         configMap:
           name: cloud-config
-    
+
     extraVolumeMounts:
       - name: cloud-config
         mountPath: config
@@ -461,7 +464,7 @@ Please note: it is also possible to mount the cloud config file from host:
       - name: cloud-config
         hostPath:
           path: /path/to/file/on/host
-    
+
     extraVolumeMounts:
       - name: cloud-config
         mountPath: config/cloud.conf
@@ -520,3 +523,4 @@ Please note: it is also possible to mount the cloud config file from host:
   EC2 launch configuration has the setting `Metadata response hop limit` set to `2`.
   Otherwise, the `/latest/api/token` call will timeout and result in an error. See [AWS docs here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html#configuring-instance-metadata-options) for further information.
 - If you don't use EKS managed nodegroups, don't add the `eks:nodegroup-name` tag to the ASG as this will lead to extra EKS API calls that could slow down scaling when there are 0 nodes in the nodegroup.
+- Set `AWS_MAX_ATTEMPTS` to configure max retries

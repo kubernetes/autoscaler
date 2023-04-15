@@ -78,13 +78,13 @@ func GetPodsForDeletionOnNodeDrain(
 	pdbs []*policyv1.PodDisruptionBudget,
 	skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool,
+	skipNodesWithCustomControllerPods bool,
 	listers kube_util.ListerRegistry,
 	minReplica int32,
 	currentTime time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *BlockingPod, err error) {
 
 	pods = []*apiv1.Pod{}
 	daemonSetPods = []*apiv1.Pod{}
-	checkReferences := listers != nil
 	// filter kube-system PDBs to avoid doing it for every kube-system pod
 	kubeSystemPDBs := make([]*policyv1.PodDisruptionBudget, 0)
 	for _, pdb := range pdbs {
@@ -111,96 +111,17 @@ func GetPodsForDeletionOnNodeDrain(
 		safeToEvict := hasSafeToEvictAnnotation(pod)
 		terminal := isPodTerminal(pod)
 
-		controllerRef := ControllerRef(pod)
-		refKind := ""
-		if controllerRef != nil {
-			refKind = controllerRef.Kind
+		if skipNodesWithCustomControllerPods {
+			// TODO(vadasambar): remove this when we get rid of skipNodesWithCustomControllerPods
+			replicated, isDaemonSetPod, blockingPod, err = legacyCheckForReplicatedPods(listers, pod, minReplica)
+			if err != nil {
+				return []*apiv1.Pod{}, []*apiv1.Pod{}, blockingPod, err
+			}
+		} else {
+			replicated = ControllerRef(pod) != nil
+			isDaemonSetPod = pod_util.IsDaemonSetPod(pod)
 		}
 
-		// For now, owner controller must be in the same namespace as the pod
-		// so OwnerReference doesn't have its own Namespace field
-		controllerNamespace := pod.Namespace
-
-		if refKind == "ReplicationController" {
-			if checkReferences {
-				rc, err := listers.ReplicationControllerLister().ReplicationControllers(controllerNamespace).Get(controllerRef.Name)
-				// Assume a reason for an error is because the RC is either
-				// gone/missing or that the rc has too few replicas configured.
-				// TODO: replace the minReplica check with pod disruption budget.
-				if err == nil && rc != nil {
-					if rc.Spec.Replicas != nil && *rc.Spec.Replicas < minReplica {
-						return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: MinReplicasReached}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
-							pod.Namespace, pod.Name, rc.Spec.Replicas, minReplica)
-					}
-					replicated = true
-				} else {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
-				}
-			} else {
-				replicated = true
-			}
-		} else if pod_util.IsDaemonSetPod(pod) {
-			isDaemonSetPod = true
-			// don't have listener for other DaemonSet kind
-			// TODO: we should use a generic client for checking the reference.
-			if checkReferences && refKind == "DaemonSet" {
-				_, err := listers.DaemonSetLister().DaemonSets(controllerNamespace).Get(controllerRef.Name)
-				if apierrors.IsNotFound(err) {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("daemonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
-				} else if err != nil {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: UnexpectedError}, fmt.Errorf("error when trying to get daemonset for %s/%s , err: %v", pod.Namespace, pod.Name, err)
-				}
-			}
-		} else if refKind == "Job" {
-			if checkReferences {
-				job, err := listers.JobLister().Jobs(controllerNamespace).Get(controllerRef.Name)
-
-				// Assume the only reason for an error is because the Job is
-				// gone/missing, not for any other cause.  TODO(mml): something more
-				// sophisticated than this
-				if err == nil && job != nil {
-					replicated = true
-				} else {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("job for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
-				}
-			} else {
-				replicated = true
-			}
-		} else if refKind == "ReplicaSet" {
-			if checkReferences {
-				rs, err := listers.ReplicaSetLister().ReplicaSets(controllerNamespace).Get(controllerRef.Name)
-
-				// Assume the only reason for an error is because the RS is
-				// gone/missing, not for any other cause.  TODO(mml): something more
-				// sophisticated than this
-				if err == nil && rs != nil {
-					if rs.Spec.Replicas != nil && *rs.Spec.Replicas < minReplica {
-						return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: MinReplicasReached}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
-							pod.Namespace, pod.Name, rs.Spec.Replicas, minReplica)
-					}
-					replicated = true
-				} else {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
-				}
-			} else {
-				replicated = true
-			}
-		} else if refKind == "StatefulSet" {
-			if checkReferences {
-				ss, err := listers.StatefulSetLister().StatefulSets(controllerNamespace).Get(controllerRef.Name)
-
-				// Assume the only reason for an error is because the StatefulSet is
-				// gone/missing, not for any other cause.  TODO(mml): something more
-				// sophisticated than this
-				if err == nil && ss != nil {
-					replicated = true
-				} else {
-					return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("statefulset for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
-				}
-			} else {
-				replicated = true
-			}
-		}
 		if isDaemonSetPod {
 			daemonSetPods = append(daemonSetPods, pod)
 			continue
@@ -229,6 +150,104 @@ func GetPodsForDeletionOnNodeDrain(
 		pods = append(pods, pod)
 	}
 	return pods, daemonSetPods, nil, nil
+}
+
+func legacyCheckForReplicatedPods(listers kube_util.ListerRegistry, pod *apiv1.Pod, minReplica int32) (replicated bool, isDaemonSetPod bool, blockingPod *BlockingPod, err error) {
+	replicated = false
+	refKind := ""
+	checkReferences := listers != nil
+	isDaemonSetPod = false
+
+	controllerRef := ControllerRef(pod)
+	if controllerRef != nil {
+		refKind = controllerRef.Kind
+	}
+
+	// For now, owner controller must be in the same namespace as the pod
+	// so OwnerReference doesn't have its own Namespace field
+	controllerNamespace := pod.Namespace
+	if refKind == "ReplicationController" {
+		if checkReferences {
+			rc, err := listers.ReplicationControllerLister().ReplicationControllers(controllerNamespace).Get(controllerRef.Name)
+			// Assume a reason for an error is because the RC is either
+			// gone/missing or that the rc has too few replicas configured.
+			// TODO: replace the minReplica check with pod disruption budget.
+			if err == nil && rc != nil {
+				if rc.Spec.Replicas != nil && *rc.Spec.Replicas < minReplica {
+					return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: MinReplicasReached}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
+						pod.Namespace, pod.Name, rc.Spec.Replicas, minReplica)
+				}
+				replicated = true
+			} else {
+				return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
+			}
+		} else {
+			replicated = true
+		}
+	} else if pod_util.IsDaemonSetPod(pod) {
+		isDaemonSetPod = true
+		// don't have listener for other DaemonSet kind
+		// TODO: we should use a generic client for checking the reference.
+		if checkReferences && refKind == "DaemonSet" {
+			_, err := listers.DaemonSetLister().DaemonSets(controllerNamespace).Get(controllerRef.Name)
+			if apierrors.IsNotFound(err) {
+				return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("daemonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
+			} else if err != nil {
+				return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: UnexpectedError}, fmt.Errorf("error when trying to get daemonset for %s/%s , err: %v", pod.Namespace, pod.Name, err)
+			}
+		}
+	} else if refKind == "Job" {
+		if checkReferences {
+			job, err := listers.JobLister().Jobs(controllerNamespace).Get(controllerRef.Name)
+
+			// Assume the only reason for an error is because the Job is
+			// gone/missing, not for any other cause.  TODO(mml): something more
+			// sophisticated than this
+			if err == nil && job != nil {
+				replicated = true
+			} else {
+				return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("job for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
+			}
+		} else {
+			replicated = true
+		}
+	} else if refKind == "ReplicaSet" {
+		if checkReferences {
+			rs, err := listers.ReplicaSetLister().ReplicaSets(controllerNamespace).Get(controllerRef.Name)
+
+			// Assume the only reason for an error is because the RS is
+			// gone/missing, not for any other cause.  TODO(mml): something more
+			// sophisticated than this
+			if err == nil && rs != nil {
+				if rs.Spec.Replicas != nil && *rs.Spec.Replicas < minReplica {
+					return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: MinReplicasReached}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
+						pod.Namespace, pod.Name, rs.Spec.Replicas, minReplica)
+				}
+				replicated = true
+			} else {
+				return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
+			}
+		} else {
+			replicated = true
+		}
+	} else if refKind == "StatefulSet" {
+		if checkReferences {
+			ss, err := listers.StatefulSetLister().StatefulSets(controllerNamespace).Get(controllerRef.Name)
+
+			// Assume the only reason for an error is because the StatefulSet is
+			// gone/missing, not for any other cause.  TODO(mml): something more
+			// sophisticated than this
+			if err == nil && ss != nil {
+				replicated = true
+			} else {
+				return replicated, isDaemonSetPod, &BlockingPod{Pod: pod, Reason: ControllerNotFound}, fmt.Errorf("statefulset for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
+			}
+		} else {
+			replicated = true
+		}
+	}
+
+	return replicated, isDaemonSetPod, &BlockingPod{}, nil
 }
 
 // ControllerRef returns the OwnerReference to pod's controller.
@@ -261,7 +280,7 @@ func HasLocalStorage(pod *apiv1.Pod) bool {
 }
 
 func isLocalVolume(volume *apiv1.Volume) bool {
-	return volume.HostPath != nil || volume.EmptyDir != nil
+	return volume.HostPath != nil || (volume.EmptyDir != nil && volume.EmptyDir.Medium != apiv1.StorageMediumMemory)
 }
 
 // This only checks if a matching PDB exist and therefore if it makes sense to attempt drain simulation,

@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -44,7 +45,7 @@ func nodesFromSameAzureNodePoolLegacy(n1, n2 *schedulerframework.NodeInfo) bool 
 // CreateAzureNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they either belong to the same Azure agentpool
 // or match usual conditions checked by IsCloudProviderNodeInfoSimilar, even if they have different agentpool labels.
-func CreateAzureNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
+func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	azureIgnoredLabels := make(map[string]bool)
 	for k, v := range BasicIgnoredLabels {
 		azureIgnoredLabels[k] = v
@@ -60,6 +61,6 @@ func CreateAzureNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparat
 		if nodesFromSameAzureNodePool(n1, n2) {
 			return true
 		}
-		return IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels)
+		return IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels, ratioOpts)
 	}
 }

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
@@ -162,6 +163,18 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 		return nil, fmt.Errorf("creating the OAuth config: %v", err)
 	}
 
+	if config.UseWorkloadIdentityExtension {
+		klog.V(2).Infoln("azure: using workload identity extension to retrieve access token")
+		jwt, err := os.ReadFile(config.AADFederatedTokenFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read a file with a federated token: %v", err)
+		}
+		token, err := adal.NewServicePrincipalTokenFromFederatedToken(*oauthConfig, config.AADClientID, string(jwt), env.ResourceManagerEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create a workload identity token: %v", err)
+		}
+		return token, nil
+	}
 	if config.UseManagedIdentityExtension {
 		klog.V(2).Infoln("azure: using managed identity extension to retrieve access token")
 		msiEndpoint, err := adal.GetMSIVMEndpoint()
@@ -265,7 +278,9 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	kubernetesServicesClient := containerserviceclient.New(aksClientConfig)
 	klog.V(5).Infof("Created kubernetes services client with authorizer: %v", kubernetesServicesClient)
 
-	skuClient := compute.NewResourceSkusClient(cfg.SubscriptionID)
+	// Reference on why selecting ResourceManagerEndpoint as baseURI -
+	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
+	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
 	skuClient.Authorizer = azClientConfig.Authorizer
 	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
 

@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 const (
@@ -81,6 +82,11 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 	return ng, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
@@ -121,6 +127,12 @@ func (p *provider) GetAvailableGPUTypes() map[string]struct{} {
 // GPULabel returns the label added to nodes with GPU resource.
 func (p *provider) GPULabel() string {
 	return GPULabel
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (p *provider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(p, node)
 }
 
 func newProvider(

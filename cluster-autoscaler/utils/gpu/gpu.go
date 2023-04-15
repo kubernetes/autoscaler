@@ -47,27 +47,24 @@ const (
 	MetricsNoGPU = ""
 )
 
-// GetGpuTypeForMetrics returns name of the GPU used on the node or empty string if there's no GPU
+// GetGpuInfoForMetrics returns the name of the custom resource and the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuTypeForMetrics(GPULabel string, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) string {
-	// we use the GKE label if there is one
-	gpuType, labelFound := node.Labels[GPULabel]
-	capacity, capacityFound := node.Status.Capacity[ResourceNvidiaGPU]
-
-	if !labelFound {
-		// no label, fallback to generic solution
-		if capacityFound && !capacity.IsZero() {
-			return MetricsGenericGPU
-		}
-
-		// no signs of GPU
-		return MetricsNoGPU
+func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuResource string, gpuType string) {
+	// There is no sign of GPU
+	if gpuConfig == nil {
+		return "", MetricsNoGPU
+	}
+	resourceName := gpuConfig.ResourceName
+	capacity, capacityFound := node.Status.Capacity[resourceName]
+	// There is no label value, fallback to generic solution
+	if gpuConfig.Type == "" && capacityFound && !capacity.IsZero() {
+		return resourceName.String(), MetricsGenericGPU
 	}
 
 	// GKE-specific label & capacity are present - consistent state
 	if capacityFound {
-		return validateGpuType(availableGPUTypes, gpuType)
+		return resourceName.String(), validateGpuType(availableGPUTypes, gpuConfig.Type)
 	}
 
 	// GKE-specific label present but no capacity (yet?) - check the node template
@@ -75,19 +72,19 @@ func GetGpuTypeForMetrics(GPULabel string, availableGPUTypes map[string]struct{}
 		template, err := nodeGroup.TemplateNodeInfo()
 		if err != nil {
 			klog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
-			return MetricsErrorGPU
+			return resourceName.String(), MetricsErrorGPU
 		}
 
-		if _, found := template.Node().Status.Capacity[ResourceNvidiaGPU]; found {
-			return MetricsMissingGPU
+		if _, found := template.Node().Status.Capacity[resourceName]; found {
+			return resourceName.String(), MetricsMissingGPU
 		}
 
 		// if template does not define GPUs we assume node will not have any even if it has gpu label
 		klog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
-		return MetricsUnexpectedLabelGPU
+		return resourceName.String(), MetricsUnexpectedLabelGPU
 	}
 
-	return MetricsUnexpectedLabelGPU
+	return resourceName.String(), MetricsUnexpectedLabelGPU
 }
 
 func validateGpuType(availableGPUTypes map[string]struct{}, gpu string) string {
@@ -117,4 +114,14 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 		}
 	}
 	return false
+}
+
+// GetNodeGPUFromCloudProvider returns the GPU the node has. Returned GPU has the GPU label of the
+// passed in cloud provider. If the node doesn't have a GPU, returns nil.
+func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
+	gpuLabel := provider.GPULabel()
+	if NodeHasGpu(gpuLabel, node) {
+		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ResourceName: ResourceNvidiaGPU}
+	}
+	return nil
 }

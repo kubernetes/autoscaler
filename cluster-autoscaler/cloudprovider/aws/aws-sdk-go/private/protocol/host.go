@@ -8,7 +8,7 @@ import (
 )
 
 // ValidateEndpointHostHandler is a request handler that will validate the
-// request endpoint's hosts is a valid RFC 3986 host.
+// request endpoint's hosts is a valid RFC 3986 (https://www.ietf.org/rfc/rfc3986.txt) host.
 var ValidateEndpointHostHandler = request.NamedHandler{
 	Name: "awssdk.protocol.ValidateEndpointHostHandler",
 	Fn: func(r *request.Request) {
@@ -20,7 +20,7 @@ var ValidateEndpointHostHandler = request.NamedHandler{
 }
 
 // ValidateEndpointHost validates that the host string passed in is a valid RFC
-// 3986 host. Returns error if the host is not valid.
+// 3986 (https://www.ietf.org/rfc/rfc3986.txt) host. Returns error if the host is not valid.
 func ValidateEndpointHost(opName, host string) error {
 	paramErrs := request.ErrInvalidParams{Context: opName}
 
@@ -71,7 +71,7 @@ func ValidateEndpointHost(opName, host string) error {
 	return nil
 }
 
-// ValidHostLabel returns if the label is a valid RFC 3986 host label.
+// ValidHostLabel returns if the label is a valid RFC 3986 (https://www.ietf.org/rfc/rfc3986.txt) host label.
 func ValidHostLabel(label string) bool {
 	if l := len(label); l == 0 || l > 63 {
 		return false
@@ -90,7 +90,7 @@ func ValidHostLabel(label string) bool {
 	return true
 }
 
-// ValidPortNumber return if the port is valid RFC 3986 port
+// ValidPortNumber return if the port is valid RFC 3986 (https://www.ietf.org/rfc/rfc3986.txt) port
 func ValidPortNumber(port string) bool {
 	i, err := strconv.Atoi(port)
 	if err != nil {

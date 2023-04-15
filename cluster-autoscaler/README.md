@@ -48,17 +48,21 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
-| 1.22.X | 1.22.X  |
-| 1.21.X | 1.21.X  |
-| 1.20.X | 1.20.X  |
-| 1.19.X | 1.19.X  |
-| 1.18.X | 1.18.X  |
-| 1.17.X | 1.17.X  |
-| 1.16.X | 1.16.X  |
-| 1.15.X | 1.15.X  |
-| 1.14.X | 1.14.X  |
-| 1.13.X | 1.13.X  |
-| 1.12.X | 1.12.X  |
+| 1.26.X | 1.26.X |
+| 1.25.X | 1.25.X |
+| 1.24.X | 1.24.X |
+| 1.23.X | 1.23.X |
+| 1.22.X | 1.22.X |
+| 1.21.X | 1.21.X |
+| 1.20.X | 1.20.X |
+| 1.19.X | 1.19.X |
+| 1.18.X | 1.18.X |
+| 1.17.X | 1.17.X |
+| 1.16.X | 1.16.X |
+| 1.15.X | 1.15.X |
+| 1.14.X | 1.14.X |
+| 1.13.X | 1.13.X |
+| 1.12.X | 1.12.X |
 | 1.11.X | 1.3.X  |
 | 1.10.X | 1.2.X  |
 | 1.9.X  | 1.1.X  |
@@ -69,6 +73,25 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 | 1.4.X  | 0.3.X  |
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, Cluster Autoscaler internally simulates Kubernetes' scheduler and using different versions of scheduler code can lead to subtle issues.
+
+# Patch releases
+
+Cluster Autoscaler releases patches for versions corresponding to currently
+supported [Kubernetes versions](https://kubernetes.io/releases/) on a roughly 2
+month cadence. Currently planned schedule is below. Please note that target
+dates listed below are approximate and we expect up to a week difference between
+target ETA and the actual releases.
+
+| Date       | Maintainer Preparing Release | Backup Maintainer |
+|------------|------------------------------|-------------------|
+| 2023-03-15 | MaciekPytel                  | gjtempleton       |
+| 2023-05-17 | gjtempleton                  | towca             |
+| 2023-07-19 | towca                        | x13n              |
+| 2023-09-13 | x13n                         | MaciekPytel       |
+| 2023-11-15 | MaciekPytel                  | gjtempleton       |
+
+Additional patch releases may happen outside of the schedule in case of critical
+bugs or vulnerabilities.
 
 # Notable changes
 

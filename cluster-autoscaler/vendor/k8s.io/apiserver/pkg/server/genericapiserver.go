@@ -26,11 +26,13 @@ import (
 
 	systemd "github.com/coreos/go-systemd/v22/daemon"
 
+	apidiscoveryv2beta1 "k8s.io/api/apidiscovery/v2beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilwaitgroup "k8s.io/apimachinery/pkg/util/waitgroup"
 	"k8s.io/apimachinery/pkg/version"
@@ -39,6 +41,7 @@ import (
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	genericapi "k8s.io/apiserver/pkg/endpoints"
 	"k8s.io/apiserver/pkg/endpoints/discovery"
+	discoveryendpoint "k8s.io/apiserver/pkg/endpoints/discovery/aggregated"
 	"k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager"
 	"k8s.io/apiserver/pkg/features"
 	"k8s.io/apiserver/pkg/registry/rest"
@@ -46,7 +49,6 @@ import (
 	"k8s.io/apiserver/pkg/server/routes"
 	"k8s.io/apiserver/pkg/storageversion"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	utilopenapi "k8s.io/apiserver/pkg/util/openapi"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	openapibuilder2 "k8s.io/kube-openapi/pkg/builder"
@@ -54,7 +56,6 @@ import (
 	"k8s.io/kube-openapi/pkg/handler"
 	"k8s.io/kube-openapi/pkg/handler3"
 	openapiutil "k8s.io/kube-openapi/pkg/util"
-	openapiproto "k8s.io/kube-openapi/pkg/util/proto"
 	"k8s.io/kube-openapi/pkg/validation/spec"
 	"k8s.io/utils/clock"
 )
@@ -134,11 +135,21 @@ type GenericAPIServer struct {
 	// Handler holds the handlers being used by this API server
 	Handler *APIServerHandler
 
+	// UnprotectedDebugSocket is used to serve pprof information in a unix-domain socket. This socket is
+	// not protected by authentication/authorization.
+	UnprotectedDebugSocket *routes.DebugSocket
+
 	// listedPathProvider is a lister which provides the set of paths to show at /
 	listedPathProvider routes.ListedPathProvider
 
-	// DiscoveryGroupManager serves /apis
+	// DiscoveryGroupManager serves /apis in an unaggregated form.
 	DiscoveryGroupManager discovery.GroupManager
+
+	// AggregatedDiscoveryGroupManager serves /apis in an aggregated form.
+	AggregatedDiscoveryGroupManager discoveryendpoint.ResourceManager
+
+	// AggregatedLegacyDiscoveryGroupManager serves /api in an aggregated form.
+	AggregatedLegacyDiscoveryGroupManager discoveryendpoint.ResourceManager
 
 	// Enable swagger and/or OpenAPI if these configs are non-nil.
 	openAPIConfig *openapicommon.Config
@@ -206,8 +217,10 @@ type GenericAPIServer struct {
 	// delegationTarget is the next delegate in the chain. This is never nil.
 	delegationTarget DelegationTarget
 
-	// HandlerChainWaitGroup allows you to wait for all chain handlers finish after the server shutdown.
-	HandlerChainWaitGroup *utilwaitgroup.SafeWaitGroup
+	// NonLongRunningRequestWaitGroup allows you to wait for all chain
+	// handlers associated with non long-running requests
+	// to complete while the server is shuting down.
+	NonLongRunningRequestWaitGroup *utilwaitgroup.SafeWaitGroup
 
 	// ShutdownDelayDuration allows to block shutdown for some time, e.g. until endpoints pointing to this API server
 	// have converged on all node. During this time, the API server keeps serving, /healthz will return 200,
@@ -418,50 +431,54 @@ func (s *GenericAPIServer) PrepareRun() preparedGenericAPIServer {
 // or the secure port cannot be listened on initially.
 // This is the diagram of what channels/signals are dependent on each other:
 //
-//	                              stopCh
-//	                                |
-//	       ---------------------------------------------------------
-//	       |                                                       |
-//	ShutdownInitiated (shutdownInitiatedCh)                        |
-//	       |                                                       |
-//
-// (ShutdownDelayDuration)                                    (PreShutdownHooks)
-//
-//	         |                                                       |
-//	AfterShutdownDelayDuration (delayedStopCh)   PreShutdownHooksStopped (preShutdownHooksHasStoppedCh)
-//	         |                                                       |
-//	         |-------------------------------------------------------|
-//	                                  |
-//	                                  |
-//	             NotAcceptingNewRequest (notAcceptingNewRequestCh)
-//	                                  |
-//	                                  |
-//	         |---------------------------------------------------------|
-//	         |                        |              |                 |
-//	      [without                 [with             |                 |
-//
-// ShutdownSendRetryAfter]  ShutdownSendRetryAfter]  |                 |
-//
-//	     |                        |              |                 |
-//	     |                        ---------------|                 |
-//	     |                                       |                 |
-//	     |                         (HandlerChainWaitGroup::Wait)   |
-//	     |                                       |                 |
-//	     |                    InFlightRequestsDrained (drainedCh)  |
-//	     |                                       |                 |
-//	     ----------------------------------------|-----------------|
-//	                           |                 |
-//	                 stopHttpServerCh     (AuditBackend::Shutdown())
-//	                           |
-//	                 listenerStoppedCh
-//	                           |
-//	HTTPServerStoppedListening (httpServerStoppedListeningCh)
+// |                                  stopCh
+// |                                    |
+// |           ---------------------------------------------------------
+// |           |                                                       |
+// |    ShutdownInitiated (shutdownInitiatedCh)                        |
+// |           |                                                       |
+// | (ShutdownDelayDuration)                                    (PreShutdownHooks)
+// |           |                                                       |
+// |  AfterShutdownDelayDuration (delayedStopCh)   PreShutdownHooksStopped (preShutdownHooksHasStoppedCh)
+// |           |                                                       |
+// |           |-------------------------------------------------------|
+// |                                    |
+// |                                    |
+// |               NotAcceptingNewRequest (notAcceptingNewRequestCh)
+// |                                    |
+// |                                    |
+// |           |---------------------------------------------------------|
+// |           |                        |              |                 |
+// |        [without                 [with             |                 |
+// | ShutdownSendRetryAfter]  ShutdownSendRetryAfter]  |                 |
+// |           |                        |              |                 |
+// |           |                        ---------------|                 |
+// |           |                                       |                 |
+// |           |                (NonLongRunningRequestWaitGroup::Wait)   |
+// |           |                                       |                 |
+// |           |                    InFlightRequestsDrained (drainedCh)  |
+// |           |                                       |                 |
+// |           ----------------------------------------|-----------------|
+// |                                 |                 |
+// |                       stopHttpServerCh     (AuditBackend::Shutdown())
+// |                                 |
+// |                       listenerStoppedCh
+// |                                 |
+// |      HTTPServerStoppedListening (httpServerStoppedListeningCh)
 func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 	delayedStopCh := s.lifecycleSignals.AfterShutdownDelayDuration
 	shutdownInitiatedCh := s.lifecycleSignals.ShutdownInitiated
 
 	// Clean up resources on shutdown.
 	defer s.Destroy()
+
+	// If UDS profiling is enabled, start a local http server listening on that socket
+	if s.UnprotectedDebugSocket != nil {
+		go func() {
+			defer utilruntime.HandleCrash()
+			klog.Error(s.UnprotectedDebugSocket.Run(stopCh))
+		}()
+	}
 
 	// spawn a new goroutine for closing the MuxAndDiscoveryComplete signal
 	// registration happens during construction of the generic api server
@@ -505,7 +522,7 @@ func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 		//   net/http waits for 1s for the peer to respond to a GO_AWAY frame, so
 		//   we should wait for a minimum of 2s
 		shutdownTimeout = 2 * time.Second
-		klog.V(1).InfoS("[graceful-termination] using HTTP Server shutdown timeout", "ShutdownTimeout", shutdownTimeout)
+		klog.V(1).InfoS("[graceful-termination] using HTTP Server shutdown timeout", "shutdownTimeout", shutdownTimeout)
 	}
 
 	notAcceptingNewRequestCh := s.lifecycleSignals.NotAcceptingNewRequest
@@ -567,7 +584,7 @@ func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 		<-notAcceptingNewRequestCh.Signaled()
 
 		// Wait for all requests to finish, which are bounded by the RequestTimeout variable.
-		// once HandlerChainWaitGroup.Wait is invoked, the apiserver is
+		// once NonLongRunningRequestWaitGroup.Wait is invoked, the apiserver is
 		// expected to reject any incoming request with a {503, Retry-After}
 		// response via the WithWaitGroup filter. On the contrary, we observe
 		// that incoming request(s) get a 'connection refused' error, this is
@@ -579,7 +596,7 @@ func (s preparedGenericAPIServer) Run(stopCh <-chan struct{}) error {
 		// 'Server.Shutdown' will be invoked only after in-flight requests
 		// have been drained.
 		// TODO: can we consolidate these two modes of graceful termination?
-		s.HandlerChainWaitGroup.Wait()
+		s.NonLongRunningRequestWaitGroup.Wait()
 	}()
 
 	klog.V(1).Info("[graceful-termination] waiting for shutdown to be initiated")
@@ -649,7 +666,7 @@ func (s preparedGenericAPIServer) NonBlockingRun(stopCh <-chan struct{}, shutdow
 }
 
 // installAPIResources is a private method for installing the REST storage backing each api groupversionresource
-func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *APIGroupInfo, openAPIModels openapiproto.Models) error {
+func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *APIGroupInfo, openAPIModels *spec.Swagger) error {
 	var resourceInfos []*storageversion.ResourceInfo
 	for _, groupVersion := range apiGroupInfo.PrioritizedVersions {
 		if len(apiGroupInfo.VersionedResourcesStorageMap[groupVersion.Version]) == 0 {
@@ -666,7 +683,7 @@ func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *A
 		}
 		apiGroupVersion.OpenAPIModels = openAPIModels
 
-		if openAPIModels != nil && utilfeature.DefaultFeatureGate.Enabled(features.ServerSideApply) {
+		if openAPIModels != nil {
 			typeConverter, err := fieldmanager.NewTypeConverter(openAPIModels, false)
 			if err != nil {
 				return err
@@ -676,11 +693,35 @@ func (s *GenericAPIServer) installAPIResources(apiPrefix string, apiGroupInfo *A
 
 		apiGroupVersion.MaxRequestBodyBytes = s.maxRequestBodyBytes
 
-		r, err := apiGroupVersion.InstallREST(s.Handler.GoRestfulContainer)
+		discoveryAPIResources, r, err := apiGroupVersion.InstallREST(s.Handler.GoRestfulContainer)
+
 		if err != nil {
 			return fmt.Errorf("unable to setup API %v: %v", apiGroupInfo, err)
 		}
 		resourceInfos = append(resourceInfos, r...)
+
+		if utilfeature.DefaultFeatureGate.Enabled(features.AggregatedDiscoveryEndpoint) {
+			// Aggregated discovery only aggregates resources under /apis
+			if apiPrefix == APIGroupPrefix {
+				s.AggregatedDiscoveryGroupManager.AddGroupVersion(
+					groupVersion.Group,
+					apidiscoveryv2beta1.APIVersionDiscovery{
+						Version:   groupVersion.Version,
+						Resources: discoveryAPIResources,
+					},
+				)
+			} else {
+				// There is only one group version for legacy resources, priority can be defaulted to 0.
+				s.AggregatedLegacyDiscoveryGroupManager.AddGroupVersion(
+					groupVersion.Group,
+					apidiscoveryv2beta1.APIVersionDiscovery{
+						Version:   groupVersion.Version,
+						Resources: discoveryAPIResources,
+					},
+				)
+			}
+		}
+
 	}
 
 	s.RegisterDestroyFunc(apiGroupInfo.destroyStorage)
@@ -715,7 +756,13 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 
 	// Install the version handler.
 	// Add a handler at /<apiPrefix> to enumerate the supported api versions.
-	s.Handler.GoRestfulContainer.Add(discovery.NewLegacyRootAPIHandler(s.discoveryAddresses, s.Serializer, apiPrefix).WebService())
+	legacyRootAPIHandler := discovery.NewLegacyRootAPIHandler(s.discoveryAddresses, s.Serializer, apiPrefix)
+	if utilfeature.DefaultFeatureGate.Enabled(features.AggregatedDiscoveryEndpoint) {
+		wrapped := discoveryendpoint.WrapAggregatedDiscoveryToHandler(legacyRootAPIHandler, s.AggregatedLegacyDiscoveryGroupManager)
+		s.Handler.GoRestfulContainer.Add(wrapped.GenerateWebService("/api", metav1.APIVersions{}))
+	} else {
+		s.Handler.GoRestfulContainer.Add(legacyRootAPIHandler.WebService())
+	}
 
 	return nil
 }
@@ -834,7 +881,7 @@ func NewDefaultAPIGroupInfo(group string, scheme *runtime.Scheme, parameterCodec
 }
 
 // getOpenAPIModels is a private method for getting the OpenAPI models
-func (s *GenericAPIServer) getOpenAPIModels(apiPrefix string, apiGroupInfos ...*APIGroupInfo) (openapiproto.Models, error) {
+func (s *GenericAPIServer) getOpenAPIModels(apiPrefix string, apiGroupInfos ...*APIGroupInfo) (*spec.Swagger, error) {
 	if s.openAPIConfig == nil {
 		return nil, nil
 	}
@@ -856,7 +903,7 @@ func (s *GenericAPIServer) getOpenAPIModels(apiPrefix string, apiGroupInfos ...*
 	for _, apiGroupInfo := range apiGroupInfos {
 		apiGroupInfo.StaticOpenAPISpec = openAPISpec
 	}
-	return utilopenapi.ToProtoModels(openAPISpec)
+	return openAPISpec, nil
 }
 
 // getResourceNamesForGroup is a private method for getting the canonical names for each resource to build in an api group

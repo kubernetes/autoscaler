@@ -31,6 +31,8 @@ import (
 	"k8s.io/utils/pointer"
 )
 
+const testProviderID = "rke2://"
+
 func TestNodeGroups(t *testing.T) {
 	tests := []struct {
 		name                string
@@ -121,7 +123,7 @@ func TestNodeGroups(t *testing.T) {
 }
 
 func TestNodeGroupForNode(t *testing.T) {
-	provider, err := setup(nil)
+	provider, err := setup([]runtime.Object{newMachine(nodeGroupDev, 0), newMachine(nodeGroupProd, 0)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,9 +141,12 @@ func TestNodeGroupForNode(t *testing.T) {
 		{
 			name: "match dev",
 			node: &corev1.Node{
-				ObjectMeta: v1.ObjectMeta{Name: nodeName(nodeGroupDev, 0)},
+				ObjectMeta: v1.ObjectMeta{
+					Name:        nodeName(nodeGroupDev, 0),
+					Annotations: map[string]string{machineNodeAnnotationKey: nodeName(nodeGroupDev, 0)},
+				},
 				Spec: corev1.NodeSpec{
-					ProviderID: rke2ProviderIDPrefix + nodeName(nodeGroupDev, 0),
+					ProviderID: testProviderID + nodeName(nodeGroupDev, 0),
 				},
 			},
 			nodeGroupId: nodeGroupDev,
@@ -149,9 +154,12 @@ func TestNodeGroupForNode(t *testing.T) {
 		{
 			name: "match prod",
 			node: &corev1.Node{
-				ObjectMeta: v1.ObjectMeta{Name: nodeName(nodeGroupProd, 0)},
+				ObjectMeta: v1.ObjectMeta{
+					Name:        nodeName(nodeGroupProd, 0),
+					Annotations: map[string]string{machineNodeAnnotationKey: nodeName(nodeGroupProd, 0)},
+				},
 				Spec: corev1.NodeSpec{
-					ProviderID: rke2ProviderIDPrefix + nodeName(nodeGroupProd, 0),
+					ProviderID: testProviderID + nodeName(nodeGroupProd, 0),
 				},
 			},
 			nodeGroupId: nodeGroupProd,

@@ -68,7 +68,7 @@ func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*schedulerf
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
-	return nil, errNodeNotFound
+	return nil, ErrNodeNotFound
 }
 
 func (data *internalBasicSnapshotData) isPVCUsedByPods(key string) bool {
@@ -162,7 +162,7 @@ func (data *internalBasicSnapshotData) addNodes(nodes []*apiv1.Node) error {
 
 func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
-		return errNodeNotFound
+		return ErrNodeNotFound
 	}
 	for _, pod := range data.nodeInfoMap[nodeName].Pods {
 		data.removePvcUsedByPod(pod.Pod)
@@ -173,7 +173,7 @@ func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 
 func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
-		return errNodeNotFound
+		return ErrNodeNotFound
 	}
 	data.nodeInfoMap[nodeName].AddPod(pod)
 	data.addPvcUsedByPod(pod)
@@ -183,7 +183,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName string) error {
 	nodeInfo, found := data.nodeInfoMap[nodeName]
 	if !found {
-		return errNodeNotFound
+		return ErrNodeNotFound
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		if podInfo.Pod.Namespace == namespace && podInfo.Pod.Name == podName {

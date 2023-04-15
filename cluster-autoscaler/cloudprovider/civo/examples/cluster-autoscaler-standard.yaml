@@ -139,7 +139,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.25.0 # or your custom image
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.0 # or your custom image
           name: cluster-autoscaler
           imagePullPolicy: Always
           resources:

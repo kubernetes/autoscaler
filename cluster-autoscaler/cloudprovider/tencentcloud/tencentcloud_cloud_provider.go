@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
 
@@ -109,6 +110,11 @@ func (tencentcloud *tencentCloudProvider) NodeGroupForNode(node *apiv1.Node) (cl
 	return asg, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (tencentcloud *tencentCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // GPULabel returns the label added to nodes with GPU resource.
 func (tencentcloud *tencentCloudProvider) GPULabel() string {
 	return GPULabel
@@ -117,6 +123,12 @@ func (tencentcloud *tencentCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes returns all available GPU types cloud provider supports.
 func (tencentcloud *tencentCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (tencentcloud *tencentCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(tencentcloud, node)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

@@ -19,9 +19,8 @@ package consts
 import (
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
-
-	"k8s.io/component-base/featuregate"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 )
 
 const (
@@ -29,6 +28,8 @@ const (
 	VMTypeVMSS = "vmss"
 	// VMTypeStandard is the vmas vm type
 	VMTypeStandard = "standard"
+	// VMTypeVmssFlex is the vmssflex vm type
+	VMTypeVmssFlex = "vmssflex"
 
 	// ExternalResourceGroupLabel is the label representing the node is in a different
 	// resource group from other cloud provider components
@@ -72,10 +73,6 @@ const (
 	DefaultDiskMBpsReadWrite = 100
 
 	DiskEncryptionSetIDFormat = "/subscriptions/{subs-id}/resourceGroups/{rg-name}/providers/Microsoft.Compute/diskEncryptionSets/{diskEncryptionSet-name}"
-
-	// IPv6DualStack is here to avoid having to import features pkg
-	// and violate import rules
-	IPv6DualStack featuregate.Feature = "IPv6DualStack"
 
 	// MachineIDTemplate is the template of the virtual machine
 	MachineIDTemplate = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s"
@@ -131,6 +128,8 @@ const (
 	TagKeyValueDelimiter = "="
 	// VMSetNamesSharingPrimarySLBDelimiter is the delimiter of vmSet names sharing the primary SLB
 	VMSetNamesSharingPrimarySLBDelimiter = ","
+	// PremiumV2_LRS type for Azure Disk
+	PremiumV2LRS = compute.DiskStorageAccountTypes("PremiumV2_LRS")
 )
 
 // cache
@@ -141,8 +140,21 @@ const (
 	VMSSKey = "k8svmssKey"
 	// VMASKey is the key when querying vmss cache
 	VMASKey = "k8svmasKey"
+	// NonVmssUniformNodesKey is the key when querying nonVmssUniformNodes cache
+	NonVmssUniformNodesKey = "k8sNonVmssUniformNodesKey"
 	// AvailabilitySetNodesKey is the availability set nodes key
 	AvailabilitySetNodesKey = "k8sAvailabilitySetNodesKey"
+
+	// VmssFlexKey is the key when querying vmssFlexVM cache
+	VmssFlexKey = "k8sVmssFlexKey"
+
+	// GetNodeVmssFlexIDLockKey is the key for getting the lock for getNodeVmssFlexID function
+	GetNodeVmssFlexIDLockKey = "k8sGetNodeVmssFlexIDLockKey"
+	// VMManagementTypeLockKey is the key for getting the lock for getVMManagementType function
+	VMManagementTypeLockKey = "VMManagementType"
+
+	// NonVmssUniformNodesCacheTTLDefaultInSeconds is the TTL of the non vmss uniform node cache
+	NonVmssUniformNodesCacheTTLDefaultInSeconds = 900
 	// AvailabilitySetNodesCacheTTLDefaultInSeconds is the TTL of the availabilitySet node cache
 	AvailabilitySetNodesCacheTTLDefaultInSeconds = 900
 	// VMSSCacheTTLDefaultInSeconds is the TTL of the vmss cache
@@ -151,6 +163,11 @@ const (
 	VMSSVirtualMachinesCacheTTLDefaultInSeconds = 600
 	// VMASCacheTTLDefaultInSeconds is the TTL of the vmas cache
 	VMASCacheTTLDefaultInSeconds = 600
+
+	// VmssFlexCacheTTLDefaultInSeconds is the TTL of the vmss flex cache
+	VmssFlexCacheTTLDefaultInSeconds = 600
+	// VmssFlexVMCacheTTLDefaultInSeconds is the TTL of the vmss flex vm cache
+	VmssFlexVMCacheTTLDefaultInSeconds = 600
 
 	// ZoneFetchingInterval defines the interval of performing zoneClient.GetZones
 	ZoneFetchingInterval = 30 * time.Minute
@@ -174,6 +191,16 @@ const (
 	BackoffDurationDefault = 5 // in seconds
 	// BackoffJitterDefault is the default value of the backoff jitter
 	BackoffJitterDefault = 1.0
+)
+
+// LB variables for dual-stack
+var (
+	// Service.Spec.LoadBalancerIP has been deprecated and may be removed in a future release. Those two annotations are introduced as alternatives to set IPv4/IPv6 LoadBalancer IPs.
+	// Refer https://github.com/kubernetes/api/blob/3638040e4063e0f889c129220cd386497f328276/core/v1/types.go#L4459-L4468 for more details.
+	ServiceAnnotationLoadBalancerIPDualStack = map[bool]string{
+		false: "service.beta.kubernetes.io/azure-load-balancer-ipv4",
+		true:  "service.beta.kubernetes.io/azure-load-balancer-ipv6",
+	}
 )
 
 // load balancer
@@ -273,13 +300,17 @@ const (
 
 	// ServiceAnnotationLoadBalancerHealthProbeRequestPath determines the request path of the load balancer health probe.
 	// This is only useful for the HTTP and HTTPS, and would be ignored when using TCP. If not set,
-	// `/healthz` would be configured by default.
+	// `/` would be configured by default.
 	ServiceAnnotationLoadBalancerHealthProbeRequestPath = "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path"
 
 	// ServiceAnnotationAzurePIPTags determines what tags should be applied to the public IP of the service. The cluster name
 	// and service names tags (which is managed by controller manager itself) would keep unchanged. The supported format
 	// is `a=b,c=d,...`. After updated, the old user-assigned tags would not be replaced by the new ones.
 	ServiceAnnotationAzurePIPTags = "service.beta.kubernetes.io/azure-pip-tags"
+
+	// ServiceAnnotationDisableLoadBalancerFloatingIP is the annotation used on the service to disable floating IP in load balancer rule.
+	// If omitted, the default value is false
+	ServiceAnnotationDisableLoadBalancerFloatingIP = "service.beta.kubernetes.io/azure-disable-load-balancer-floating-ip"
 
 	// ServiceAnnotationAzurePIPTags sets the additional Public IPs (split by comma) besides the service's Public IP configured on LoadBalancer.
 	// These additional Public IPs would be consumed by kube-proxy to configure the iptables rules on each node. Note they would not be configured
@@ -344,6 +375,14 @@ const (
 	CannotDeletePublicIPErrorMessageCode = "PublicIPAddressCannotBeDeleted"
 	// ReferencedResourceNotProvisionedMessageCode means the referenced resource has not been provisioned
 	ReferencedResourceNotProvisionedMessageCode = "ReferencedResourceNotProvisioned"
+	// ParentResourceNotFoundMessageCode is the error code that the parent VMSS of the VM is not found.
+	ParentResourceNotFoundMessageCode = "ParentResourceNotFound"
+	// ConcurrentRequestConflictMessage is the error message that the request failed due to the conflict with another concurrent operation.
+	ConcurrentRequestConflictMessage = "The request failed due to conflict with a concurrent request."
+	// CannotUpdateVMBeingDeletedMessagePrefix is the prefix of the error message that the request failed due to delete a VM that is being deleted
+	CannotUpdateVMBeingDeletedMessagePrefix = "'Put on Virtual Machine Scale Set VM Instance' is not allowed on Virtual Machine Scale Set"
+	// CannotUpdateVMBeingDeletedMessageSuffix is the suffix of the error message that the request failed due to delete a VM that is being deleted
+	CannotUpdateVMBeingDeletedMessageSuffix = "since it is marked for deletion"
 )
 
 // node ipam controller
@@ -389,9 +428,27 @@ const RateLimited = "rate limited"
 // CreatedByTag tag key for CSI drivers
 const CreatedByTag = "k8s-azure-created-by"
 
+// port specific
+const (
+	PortAnnotationPrefixPattern            = "service.beta.kubernetes.io/port_%d_%s"
+	PortAnnotationNoLBRule      PortParams = "no_lb_rule"
+	// NoHealthProbeRule determines whether the port is only used for health probe. no lb probe rule will be created.
+	PortAnnotationNoHealthProbeRule PortParams = "no_probe_rule"
+)
+
+type PortParams string
+
 // health probe
 const (
-	HealthProbeAnnotationPrefixPattern = "service.beta.kubernetes.io/port_%d_health-probe_"
+	HealthProbeAnnotationPrefixPattern = "health-probe_%s"
+
+	// HealthProbeParamsProtocol determines the protocol for the health probe params.
+	// It always takes priority over spec.appProtocol or any other specified protocol
+	HealthProbeParamsProtocol HealthProbeParams = "protocol"
+
+	// HealthProbeParamsPort determines the probe port for the health probe params.
+	// It always takes priority over the NodePort of the spec.ports in a Service
+	HealthProbeParamsPort HealthProbeParams = "port"
 
 	// HealthProbeParamsProbeInterval determines the probe interval of the load balancer health probe.
 	// The minimum probe interval is 5 seconds and the default value is 5. The total duration of all intervals cannot exceed 120 seconds.
@@ -456,4 +513,8 @@ const (
 
 	// Default number of IP configs for PLS
 	PLSDefaultNumOfIPConfig = 1
+)
+
+const (
+	VMSSTagForBatchOperation = "aks-managed-coordination"
 )

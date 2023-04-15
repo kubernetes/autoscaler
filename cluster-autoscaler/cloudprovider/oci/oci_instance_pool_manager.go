@@ -18,11 +18,12 @@ package oci
 
 import (
 	"fmt"
-	"gopkg.in/gcfg.v1"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/gcfg.v1"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -30,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/common/auth"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/workrequests"
 )
 
 var (
@@ -163,6 +164,12 @@ func CreateInstancePoolManager(cloudConfigPath string, discoveryOpts cloudprovid
 	}
 	networkClient.SetCustomClientConfiguration(clientConfig)
 
+	workRequestClient, err := workrequests.NewWorkRequestClientWithConfigurationProvider(configProvider)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create work request client")
+	}
+	workRequestClient.SetCustomClientConfiguration(clientConfig)
+
 	cloudConfig.Global.CompartmentID = os.Getenv(ociCompartmentEnvVar)
 
 	// Not passed by --cloud-config or environment variable, attempt to use the tenancy ID as the compartment ID
@@ -178,7 +185,7 @@ func CreateInstancePoolManager(cloudConfigPath string, discoveryOpts cloudprovid
 		cfg:                 cloudConfig,
 		staticInstancePools: map[string]*InstancePoolNodeGroup{},
 		shapeGetter:         createShapeGetter(ShapeClientImpl{computeMgmtClient: computeMgmtClient, computeClient: computeClient}),
-		instancePoolCache:   newInstancePoolCache(&computeMgmtClient, &computeClient, &networkClient),
+		instancePoolCache:   newInstancePoolCache(&computeMgmtClient, &computeClient, &networkClient, &workRequestClient),
 		kubeClient:          kubeClient,
 	}
 
@@ -270,6 +277,18 @@ func (m *InstancePoolManagerImpl) forceRefresh() error {
 	return nil
 }
 
+func (m *InstancePoolManagerImpl) forceRefreshInstancePool(instancePoolID string) error {
+
+	if m.cfg == nil {
+		return errors.New("instance pool manager does have a required config")
+	}
+
+	if instancePoolCache, found := m.staticInstancePools[instancePoolID]; found {
+		return m.instancePoolCache.rebuild(map[string]*InstancePoolNodeGroup{instancePoolID: instancePoolCache}, *m.cfg)
+	}
+	return errors.New("instance pool not found")
+}
+
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 func (m *InstancePoolManagerImpl) Cleanup() error {
 	return nil
@@ -287,7 +306,7 @@ func (m *InstancePoolManagerImpl) GetInstancePools() []*InstancePoolNodeGroup {
 // GetInstancePoolNodes returns InstancePool nodes that are not in a terminal state.
 func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup) ([]cloudprovider.Instance, error) {
 
-	klog.V(4).Infof("getting instances for node pool: %q", ip.Id())
+	klog.V(4).Infof("getting (cached) instances for node pool: %q", ip.Id())
 
 	instanceSummaries, err := m.instancePoolCache.getInstanceSummaries(ip.Id())
 	if err != nil {
@@ -312,6 +331,13 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 			status.State = cloudprovider.InstanceDeleting
 		case string(core.InstanceLifecycleStateStopping):
 			status.State = cloudprovider.InstanceDeleting
+		case instanceStateUnfulfilled:
+			status.State = cloudprovider.InstanceCreating
+			status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+				ErrorCode:    instanceStateUnfulfilled,
+				ErrorMessage: "OCI cannot provision additional instances for this instance pool. Review quota and/or capacity.",
+			}
 		}
 
 		// Instance not in a terminal or unknown state, ok to add.
@@ -390,10 +416,14 @@ func (m *InstancePoolManagerImpl) GetInstancePoolSize(ip InstancePoolNodeGroup) 
 
 // SetInstancePoolSize sets instance-pool size.
 func (m *InstancePoolManagerImpl) SetInstancePoolSize(np InstancePoolNodeGroup, size int) error {
+	klog.Infof("SetInstancePoolSize (%d) called on instance pool %s", size, np.Id())
 
-	err := m.instancePoolCache.setSize(np.Id(), size)
-	if err != nil {
-		return err
+	setSizeErr := m.instancePoolCache.setSize(np.Id(), size)
+	klog.V(5).Infof("SetInstancePoolSize was called: refreshing instance pool cache")
+	// refresh instance pool cache after update (regardless if there was an error or not)
+	_ = m.forceRefreshInstancePool(np.Id())
+	if setSizeErr != nil {
+		return setSizeErr
 	}
 
 	// Interface says this function should wait until node group size is updated.
@@ -496,10 +526,8 @@ func getInstancePoolAvailabilityDomain(ip *core.InstancePool) (string, error) {
 
 func buildGenericLabelsForInstancePool(instancePool *core.InstancePool, nodeName, shape, availabilityDomain string) map[string]string {
 	result := make(map[string]string)
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
 
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
 	parts := strings.Split(*instancePool.Id, ".")

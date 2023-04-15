@@ -137,6 +137,14 @@ func TestGetMachineFamily(t *testing.T) {
 			machineType: "e2-small",
 			wantFamily:  "e2",
 		},
+		"fallback f1 family to n1": {
+			machineType: "f1-micro",
+			wantFamily:  "n1",
+		},
+		"fallback g1 family to n1": {
+			machineType: "g1-small",
+			wantFamily:  "n1",
+		},
 		"custom machine type with family prefix": {
 			machineType: "n2-custom-2-2816",
 			wantFamily:  "n2",
