@@ -130,11 +130,9 @@ func main() {
 	log.Infof("Recommended range +/-%d%%", *recommendationOffset)
 
 	var kubeClient kubernetes.Interface
-	_, err := rest.InClusterConfig()
-	if err != nil {
+	kubeClient = GetClientOrDie()
+	if kubeClient == nil {
 		kubeClient = GetClientOutOfClusterOrDie()
-	} else {
-		kubeClient = GetClientOrDie()
 	}
 
 	k8s := nanny.NewKubernetesClient(kubeClient, *podNamespace, *deployment, *podName, *containerName)
@@ -161,7 +159,7 @@ func main() {
 	if *baseStorage != noValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseStorage),
-			ExtraPerNode: resource.MustParse(*memoryPerNode),
+			ExtraPerNode: resource.MustParse(*storagePerNode),
 			Name:         "storage",
 		})
 	}
