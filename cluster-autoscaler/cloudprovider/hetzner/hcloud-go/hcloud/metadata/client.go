@@ -18,7 +18,7 @@ package metadata
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -90,7 +90,7 @@ func (c *Client) get(path string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -102,7 +102,7 @@ func (c *Client) get(path string) (string, error) {
 }
 
 // IsHcloudServer checks if the currently called server is a hcloud server by calling a metadata endpoint
-// if the endpoint answers with a non-empty value this method returns true, otherwise false
+// if the endpoint answers with a non-empty value this method returns true, otherwise false.
 func (c *Client) IsHcloudServer() bool {
 	hostname, err := c.Hostname()
 	if err != nil {
@@ -114,12 +114,12 @@ func (c *Client) IsHcloudServer() bool {
 	return false
 }
 
-// Hostname returns the hostname of the server that did the request to the Metadata server
+// Hostname returns the hostname of the server that did the request to the Metadata server.
 func (c *Client) Hostname() (string, error) {
 	return c.get("/hostname")
 }
 
-// InstanceID returns the ID of the server that did the request to the Metadata server
+// InstanceID returns the ID of the server that did the request to the Metadata server.
 func (c *Client) InstanceID() (int, error) {
 	resp, err := c.get("/instance-id")
 	if err != nil {
@@ -128,7 +128,7 @@ func (c *Client) InstanceID() (int, error) {
 	return strconv.Atoi(resp)
 }
 
-// PublicIPv4 returns the Public IPv4 of the server that did the request to the Metadata server
+// PublicIPv4 returns the Public IPv4 of the server that did the request to the Metadata server.
 func (c *Client) PublicIPv4() (net.IP, error) {
 	resp, err := c.get("/public-ipv4")
 	if err != nil {
@@ -137,18 +137,18 @@ func (c *Client) PublicIPv4() (net.IP, error) {
 	return net.ParseIP(resp), nil
 }
 
-// Region returns the Network Zone of the server that did the request to the Metadata server
+// Region returns the Network Zone of the server that did the request to the Metadata server.
 func (c *Client) Region() (string, error) {
 	return c.get("/region")
 }
 
-// AvailabilityZone returns the datacenter of the server that did the request to the Metadata server
+// AvailabilityZone returns the datacenter of the server that did the request to the Metadata server.
 func (c *Client) AvailabilityZone() (string, error) {
 	return c.get("/availability-zone")
 }
 
-// PrivateNetworks returns details about the private networks the server is attached to
-// Returns YAML (unparsed)
+// PrivateNetworks returns details about the private networks the server is attached to.
+// Returns YAML (unparsed).
 func (c *Client) PrivateNetworks() (string, error) {
 	return c.get("/private-networks")
 }
