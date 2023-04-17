@@ -138,5 +138,7 @@ func drainabilityStatus(pod *apiv1.Pod, dr []drainability.Rule) drainability.Sta
 			return d
 		}
 	}
-	return drainability.Status{}
+	return drainability.Status{
+		Outcome: drainability.UndefinedOutcome,
+	}
 }

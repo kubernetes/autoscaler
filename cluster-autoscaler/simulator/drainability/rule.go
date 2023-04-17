@@ -89,5 +89,7 @@ type Rule interface {
 
 // DefaultRules returns the default list of Rules.
 func DefaultRules() []Rule {
-	return []Rule{}
+	return []Rule{
+		NewMirrorPodRule(),
+	}
 }
