@@ -25,15 +25,17 @@ import (
 )
 
 type thresholdBasedEstimationLimiter struct {
-	maxDuration time.Duration
-	maxNodes    int
-	nodes       int
-	start       time.Time
+	maxDuration  time.Duration
+	maxNodes     int
+	nodes        int
+	start        time.Time
+	reachedLimit bool
 }
 
 func (tbel *thresholdBasedEstimationLimiter) StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
+	tbel.reachedLimit = false
 }
 
 func (*thresholdBasedEstimationLimiter) EndEstimation() {}
@@ -41,15 +43,21 @@ func (*thresholdBasedEstimationLimiter) EndEstimation() {}
 func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 	if tbel.maxNodes > 0 && tbel.nodes >= tbel.maxNodes {
 		klog.V(4).Infof("Capping binpacking after exceeding threshold of %d nodes", tbel.maxNodes)
+		tbel.reachedLimit = true
 		return false
 	}
 	timeDefined := tbel.maxDuration > 0 && tbel.start != time.Time{}
 	if timeDefined && time.Now().After(tbel.start.Add(tbel.maxDuration)) {
 		klog.V(4).Infof("Capping binpacking after exceeding max duration of %v", tbel.maxDuration)
+		tbel.reachedLimit = true
 		return false
 	}
 	tbel.nodes++
 	return true
+}
+
+func (tbel *thresholdBasedEstimationLimiter) ReachedLimit() bool {
+	return tbel.reachedLimit
 }
 
 // NewThresholdBasedEstimationLimiter returns an EstimationLimiter that will prevent estimation
