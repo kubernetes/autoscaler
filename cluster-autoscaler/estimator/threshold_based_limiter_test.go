@@ -42,12 +42,13 @@ func resetLimiter(t *testing.T, l EstimationLimiter) {
 
 func TestThresholdBasedLimiter(t *testing.T) {
 	testCases := []struct {
-		name            string
-		maxNodes        int
-		maxDuration     time.Duration
-		startDelta      time.Duration
-		operations      []limiterOperation
-		expectNodeCount int
+		name                 string
+		maxNodes             int
+		maxDuration          time.Duration
+		startDelta           time.Duration
+		operations           []limiterOperation
+		expectNodeCount      int
+		expectedReachedLimit bool
 	}{
 		{
 			name:     "no limiting happens",
@@ -68,7 +69,8 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectDeny,
 				expectDeny,
 			},
-			expectNodeCount: 0,
+			expectNodeCount:      0,
+			expectedReachedLimit: true,
 		},
 		{
 			name:     "sequence of additions works until the threshold is hit",
@@ -79,7 +81,8 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectAllow,
 				expectDeny,
 			},
-			expectNodeCount: 3,
+			expectNodeCount:      3,
+			expectedReachedLimit: true,
 		},
 		{
 			name:     "node counter is reset",
@@ -123,6 +126,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				op(t, limiter)
 			}
 			assert.Equal(t, tc.expectNodeCount, limiter.nodes)
+			assert.Equal(t, tc.expectedReachedLimit, limiter.reachedLimit)
 			limiter.EndEstimation()
 		})
 	}
