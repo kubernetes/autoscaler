@@ -156,11 +156,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			continue
 		}
 
-		option, err := o.ComputeExpansionOption(podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
-		if err != nil {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
-		}
-
+		option := o.ComputeExpansionOption(podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
 		if len(option.Pods) > 0 && option.NodeCount > 0 {
 			expansionOptions[nodeGroup.Id()] = option
 		} else {
@@ -236,11 +232,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			}
 			nodeInfos[nodeGroup.Id()] = nodeInfo
 
-			option, err := o.ComputeExpansionOption(podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
-			if err != nil {
-				return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, errors.ToAutoscalerError(errors.InternalError, err))
-			}
-
+			option := o.ComputeExpansionOption(podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
 			if len(option.Pods) > 0 && option.NodeCount > 0 {
 				expansionOptions[nodeGroup.Id()] = option
 			}
@@ -436,30 +428,47 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	nodeGroup cloudprovider.NodeGroup,
 	nodeInfo *schedulerframework.NodeInfo,
 	upcomingNodes []*schedulerframework.NodeInfo,
-) (expander.Option, error) {
+) expander.Option {
 	option := expander.Option{
 		NodeGroup: nodeGroup,
 		Pods:      make([]*apiv1.Pod, 0),
 	}
 
+	option.Pods = o.SchedulablePods(podEquivalenceGroups, nodeGroup, nodeInfo)
+	if len(option.Pods) > 0 {
+		estimator := o.autoscalingContext.EstimatorBuilder(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot)
+		option.NodeCount, option.Pods = estimator.Estimate(option.Pods, nodeInfo, option.NodeGroup)
+	}
+
+	return option
+}
+
+// SchedulablePods returns a list of pods that could be scheduled
+// in a given node group after a scale up.
+func (o *ScaleUpOrchestrator) SchedulablePods(
+	podEquivalenceGroups []*equivalence.PodGroup,
+	nodeGroup cloudprovider.NodeGroup,
+	nodeInfo *schedulerframework.NodeInfo,
+) []*apiv1.Pod {
 	o.autoscalingContext.ClusterSnapshot.Fork()
+	defer o.autoscalingContext.ClusterSnapshot.Revert()
 
 	// Add test node to snapshot.
-	var pods []*apiv1.Pod
+	var allPods []*apiv1.Pod
 	for _, podInfo := range nodeInfo.Pods {
-		pods = append(pods, podInfo.Pod)
+		allPods = append(allPods, podInfo.Pod)
 	}
-	if err := o.autoscalingContext.ClusterSnapshot.AddNodeWithPods(nodeInfo.Node(), pods); err != nil {
+	if err := o.autoscalingContext.ClusterSnapshot.AddNodeWithPods(nodeInfo.Node(), allPods); err != nil {
 		klog.Errorf("Error while adding test Node: %v", err)
-		o.autoscalingContext.ClusterSnapshot.Revert()
-		return expander.Option{}, nil
+		return []*apiv1.Pod{}
 	}
 
+	var schedulablePods []*apiv1.Pod
 	for _, eg := range podEquivalenceGroups {
 		samplePod := eg.Pods[0]
 		if err := o.autoscalingContext.PredicateChecker.CheckPredicates(o.autoscalingContext.ClusterSnapshot, samplePod, nodeInfo.Node().Name); err == nil {
 			// Add pods to option.
-			option.Pods = append(option.Pods, eg.Pods...)
+			schedulablePods = append(schedulablePods, eg.Pods...)
 			// Mark pod group as (theoretically) schedulable.
 			eg.Schedulable = true
 		} else {
@@ -471,14 +480,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		}
 	}
 
-	o.autoscalingContext.ClusterSnapshot.Revert()
-
-	if len(option.Pods) > 0 {
-		estimator := o.autoscalingContext.EstimatorBuilder(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot)
-		option.NodeCount, option.Pods = estimator.Estimate(option.Pods, nodeInfo, option.NodeGroup)
-	}
-
-	return option, nil
+	return schedulablePods
 }
 
 // UpcomingNodes returns a list of nodes that are not ready but should be.
