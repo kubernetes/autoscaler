@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	gce "google.golang.org/api/compute/v1"
@@ -239,7 +240,7 @@ func TestMigInfoProviderGetMigForInstance(t *testing.T) {
 				fetchMigs:         fetchMigsConst(nil),
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
 			mig, err := provider.GetMigForInstance(instanceRef)
 
@@ -311,7 +312,7 @@ func TestGetMigInstances(t *testing.T) {
 				fetchMigInstances: tc.fetchMigInstances,
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 			instances, err := provider.GetMigInstances(mig.GceRef())
 			cachedInstances, cached := tc.cache.GetMigInstances(mig.GceRef())
 
@@ -475,7 +476,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				fetchMigInstances: tc.fetchMigInstances,
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 			err := provider.RegenerateMigInstancesCache()
 
 			assert.Equal(t, tc.expectedErr, err)
@@ -554,7 +555,7 @@ func TestGetMigTargetSize(t *testing.T) {
 				fetchMigTargetSize: tc.fetchMigTargetSize,
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
 			targetSize, err := provider.GetMigTargetSize(mig.GceRef())
 			cachedTargetSize, found := tc.cache.GetMigTargetSize(mig.GceRef())
@@ -636,7 +637,7 @@ func TestGetMigBasename(t *testing.T) {
 				fetchMigBasename: tc.fetchMigBasename,
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
 			basename, err := provider.GetMigBasename(mig.GceRef())
 			cachedBasename, found := tc.cache.GetMigBasename(mig.GceRef())
@@ -718,7 +719,7 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 				fetchMigTemplateName: tc.fetchMigTemplateName,
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
 			templateName, err := provider.GetMigInstanceTemplateName(mig.GceRef())
 			cachedTemplateName, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
@@ -824,7 +825,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 				fetchMigTemplate:     tc.fetchMigTemplate,
 			}
 			migLister := NewMigLister(tc.cache)
-			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
 			template, err := provider.GetMigInstanceTemplate(mig.GceRef())
 			cachedTemplate, found := tc.cache.GetMigInstanceTemplate(mig.GceRef())
@@ -919,7 +920,7 @@ func TestGetMigMachineType(t *testing.T) {
 				fetchMachineType: tc.fetchMachineType,
 			}
 			migLister := NewMigLister(cache)
-			provider := NewCachingMigInfoProvider(cache, migLister, client, mig.GceRef().Project, 1)
+			provider := NewCachingMigInfoProvider(cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 			machine, err := provider.GetMigMachineType(mig.GceRef())
 			if tc.expectError {
 				assert.Error(t, err)
@@ -932,6 +933,91 @@ func TestGetMigMachineType(t *testing.T) {
 	}
 }
 
+func TestMultipleGetMigInstanceCallsLimited(t *testing.T) {
+	mig := &gceMig{
+		gceRef: GceRef{
+			Project: "project",
+			Zone:    "zone",
+			Name:    "base-instance-name",
+		},
+	}
+	instance := cloudprovider.Instance{
+		Id: "gce://project/zone/base-instance-name-abcd",
+	}
+	instanceRef, err := GceRefFromProviderId(instance.Id)
+	assert.Nil(t, err)
+	instance2 := cloudprovider.Instance{
+		Id: "gce://project/zone/base-instance-name-abcd2",
+	}
+	instanceRef2, err := GceRefFromProviderId(instance2.Id)
+	assert.Nil(t, err)
+	now := time.Now()
+	for name, tc := range map[string]struct {
+		refreshRateDuration              time.Duration
+		firstCallTime                    time.Time
+		secondCallTime                   time.Time
+		expectedCallsToFetchMigInstances int
+	}{
+		"0s refresh rate duration, refetch expected": {
+			refreshRateDuration:              0 * time.Second,
+			firstCallTime:                    now,
+			secondCallTime:                   now,
+			expectedCallsToFetchMigInstances: 2,
+		},
+		"5s refresh rate duration, 0.01s between calls, no refetch expected": {
+			refreshRateDuration:              5 * time.Second,
+			firstCallTime:                    now,
+			secondCallTime:                   now.Add(10 * time.Millisecond),
+			expectedCallsToFetchMigInstances: 1,
+		},
+		"0.01s refresh rate duration, 0.01s between calls, refetch expected": {
+			refreshRateDuration:              10 * time.Millisecond,
+			firstCallTime:                    now,
+			secondCallTime:                   now.Add(11 * time.Millisecond),
+			expectedCallsToFetchMigInstances: 2,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			cache := emptyCache()
+			cache.migs = map[GceRef]Mig{
+				mig.gceRef: mig,
+			}
+			cache.migBaseNameCache = map[GceRef]string{mig.GceRef(): "base-instance-name"}
+			callCounter := make(map[GceRef]int)
+			client := &mockAutoscalingGceClient{
+				fetchMigInstances: fetchMigInstancesWithCounter(nil, callCounter),
+			}
+			migLister := NewMigLister(cache)
+			ft := &fakeTime{}
+			provider := &cachingMigInfoProvider{
+				cache:                          cache,
+				migLister:                      migLister,
+				gceClient:                      client,
+				projectId:                      projectId,
+				concurrentGceRefreshes:         1,
+				migInstancesMinRefreshWaitTime: tc.refreshRateDuration,
+				migInstancesLastRefreshedInfo:  make(map[string]time.Time),
+				timeProvider:                   ft,
+			}
+			ft.now = tc.firstCallTime
+			_, err = provider.GetMigForInstance(instanceRef)
+			assert.NoError(t, err)
+			ft.now = tc.secondCallTime
+			_, err = provider.GetMigForInstance(instanceRef2)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedCallsToFetchMigInstances, callCounter[mig.GceRef()])
+		})
+	}
+}
+
+type fakeTime struct {
+	now time.Time
+}
+
+func (f *fakeTime) Now() time.Time {
+	return f.now
+}
+
 func emptyCache() *GceCache {
 	return &GceCache{
 		migs:                      map[GceRef]Mig{mig.GceRef(): mig},
@@ -940,6 +1026,7 @@ func emptyCache() *GceCache {
 		migBaseNameCache:          make(map[GceRef]string),
 		instanceTemplateNameCache: make(map[GceRef]string),
 		instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
+		instancesFromUnknownMig:   make(map[GceRef]bool),
 	}
 }
 
@@ -959,6 +1046,13 @@ func fetchMigInstancesFail(_ GceRef) ([]cloudprovider.Instance, error) {
 
 func fetchMigInstancesConst(instances []cloudprovider.Instance) func(GceRef) ([]cloudprovider.Instance, error) {
 	return func(GceRef) ([]cloudprovider.Instance, error) {
+		return instances, nil
+	}
+}
+
+func fetchMigInstancesWithCounter(instances []cloudprovider.Instance, migCounter map[GceRef]int) func(GceRef) ([]cloudprovider.Instance, error) {
+	return func(ref GceRef) ([]cloudprovider.Instance, error) {
+		migCounter[ref] = migCounter[ref] + 1
 		return instances, nil
 	}
 }
