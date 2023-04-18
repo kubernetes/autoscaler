@@ -46,6 +46,16 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 }
 
+// GCEOptions contain autoscaling options specific to GCE cloud provider.
+type GCEOptions struct {
+	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	ConcurrentRefreshes int
+	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
+	MigInstancesMinRefreshWaitTime time.Duration
+	// ExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
+	ExpanderEphemeralStorageSupport bool
+}
+
 const (
 	// DefaultMaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between groups in the same NodeGroupSet
 	DefaultMaxAllocatableDifferenceRatio = 0.05
@@ -194,8 +204,8 @@ type AutoscalingOptions struct {
 	BalancingLabels []string
 	// AWSUseStaticInstanceList tells if AWS cloud provider use static instance type list or dynamically fetch from remote APIs.
 	AWSUseStaticInstanceList bool
-	// ConcurrentGceRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
-	ConcurrentGceRefreshes int
+	// GCEOptions contain autoscaling options specific to GCE cloud provider.
+	GCEOptions GCEOptions
 	// Path to kube configuration if available
 	KubeConfigPath string
 	// Burst setting for kubernetes client
@@ -223,8 +233,6 @@ type AutoscalingOptions struct {
 	MaxScaleDownParallelism int
 	// MaxDrainParallelism is the maximum number of nodes needing drain, that can be drained and deleted in parallel.
 	MaxDrainParallelism int
-	// GceExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
-	GceExpanderEphemeralStorageSupport bool
 	// RecordDuplicatedEvents controls whether events should be duplicated within a 5 minute window.
 	RecordDuplicatedEvents bool
 	// MaxNodesPerScaleUp controls how many nodes can be added in a single scale-up.
