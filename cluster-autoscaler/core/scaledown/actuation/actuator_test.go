@@ -829,7 +829,7 @@ func TestStartDeletion(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 			for _, node := range tc.emptyNodes {
 				err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
 				if err != nil {
@@ -1078,7 +1078,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
