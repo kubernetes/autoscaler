@@ -476,6 +476,11 @@ func TestSanitizeTaints(t *testing.T) {
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
 				{
+					Key:    "status-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
 					Key:    "node.kubernetes.io/memory-pressure",
 					Value:  "1",
 					Effect: apiv1.TaintEffectNoSchedule,
@@ -491,9 +496,12 @@ func TestSanitizeTaints(t *testing.T) {
 			Conditions: []apiv1.NodeCondition{},
 		},
 	}
-	ignoredTaints := map[string]bool{"ignore-me": true}
+	taintConfig := TaintConfig{
+		IgnoredTaints: map[string]bool{"ignore-me": true},
+		StatusTaints:  map[string]bool{"status-me": true},
+	}
 
-	newTaints := SanitizeTaints(node.Spec.Taints, ignoredTaints)
+	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)
 	require.Equal(t, len(newTaints), 1)
 	assert.Equal(t, newTaints[0].Key, "test-taint")
 }
