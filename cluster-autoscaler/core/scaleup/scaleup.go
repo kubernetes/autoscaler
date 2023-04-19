@@ -36,7 +36,7 @@ type Orchestrator interface {
 		autoscalingContext *context.AutoscalingContext,
 		processors *ca_processors.AutoscalingProcessors,
 		clusterStateRegistry *clusterstate.ClusterStateRegistry,
-		ignoredTaints taints.TaintKeySet,
+		taintConfig taints.TaintConfig,
 	)
 	// ScaleUp tries to scale the cluster up. Returns appropriate status or error if
 	// an unexpected error occurred. Assumes that all nodes in the cluster are ready
