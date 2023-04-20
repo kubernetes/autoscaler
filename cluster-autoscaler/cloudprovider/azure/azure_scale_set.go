@@ -307,9 +307,11 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 
 // GetFlexibleScaleSetVms returns list of nodes for flexible scale set.
 func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *retry.Error) {
+	klog.V(4).Infof("GetScaleSetVms: starts")
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
+	// get VMSS info from cache to obtain ID currently scaleSet does not store ID info.
 	vmssInfo, err := scaleSet.getVMSSFromCache()
 
 	if err != nil {
@@ -320,11 +322,11 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *r
 		return nil, rerr
 	}
 	vmList, rerr := scaleSet.manager.azClient.virtualMachinesClient.ListVmssFlexVMsWithoutInstanceView(ctx, *vmssInfo.ID)
-	klog.V(4).Infof("GetFlexibleScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
 	if rerr != nil {
 		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, rerr)
 		return nil, rerr
 	}
+	klog.V(4).Infof("GetFlexibleScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
 	return vmList, nil
 }
 
@@ -535,7 +537,6 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 
 	orchestrationMode, err := scaleSet.getOrchestrationMode()
-
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return nil, err
@@ -544,16 +545,14 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	klog.V(4).Infof("VMSS: orchestration Mode %s", orchestrationMode)
 
 	if orchestrationMode == compute.Uniform {
-		err := buildScaleSetCache(scaleSet, lastRefresh)
-
+		err := scaleSet.buildScaleSetCache(lastRefresh)
 		if err != nil {
 			return nil, err
 		}
 
 	} else if orchestrationMode == compute.Flexible {
 		if scaleSet.manager.config.EnableVmssFlex {
-			err := buildScaleSetCacheForFlex(scaleSet, lastRefresh)
-
+			err := scaleSet.buildScaleSetCacheForFlex(lastRefresh)
 			if err != nil {
 				return nil, err
 			}
@@ -569,7 +568,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	return scaleSet.instanceCache, nil
 }
 
-func buildScaleSetCache(scaleSet *ScaleSet, lastRefresh time.Time) error {
+func (scaleSet *ScaleSet) buildScaleSetCache(lastRefresh time.Time) error {
 	vms, rerr := scaleSet.GetScaleSetVms()
 	if rerr != nil {
 		if isAzureRequestsThrottled(rerr) {
@@ -587,7 +586,7 @@ func buildScaleSetCache(scaleSet *ScaleSet, lastRefresh time.Time) error {
 	return nil
 }
 
-func buildScaleSetCacheForFlex(scaleSet *ScaleSet, lastRefresh time.Time) error {
+func (scaleSet *ScaleSet) buildScaleSetCacheForFlex(lastRefresh time.Time) error {
 	vms, rerr := scaleSet.GetFlexibleScaleSetVms()
 	if rerr != nil {
 		if isAzureRequestsThrottled(rerr) {
@@ -605,6 +604,8 @@ func buildScaleSetCacheForFlex(scaleSet *ScaleSet, lastRefresh time.Time) error 
 	return nil
 }
 
+// Note that the GetScaleSetVms() results is not used directly because for the List endpoint,
+// their resource ID format is not consistent with Get endpoint
 func buildInstanceCache(vmList interface{}) []cloudprovider.Instance {
 	instances := []cloudprovider.Instance{}
 
@@ -670,7 +671,7 @@ func instanceStatusFromProvisioningState(provisioningState *string) *cloudprovid
 		return nil
 	}
 
-	klog.V(4).Infof("Getting vm instance provisioning state %s", *provisioningState)
+	klog.V(5).Infof("Getting vm instance provisioning state %s", *provisioningState)
 
 	status := &cloudprovider.InstanceStatus{}
 	switch *provisioningState {
