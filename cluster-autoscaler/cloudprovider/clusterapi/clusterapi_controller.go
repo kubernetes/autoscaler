@@ -36,7 +36,7 @@ import (
 	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
