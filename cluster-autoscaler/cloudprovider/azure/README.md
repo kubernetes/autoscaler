@@ -103,10 +103,6 @@ Make a copy of [cluster-autoscaler-vmss.yaml](examples/cluster-autoscaler-vmss.y
 - SubscriptionID: `<base64-encoded-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 
-By default VMSS Flex Scale set support is disabled. To Enable the support for VMSS Flex Scale Set, add base64 encoded value of 'true'.
-
-- EnableVmssFlex: `<base64-encoded-boolean-value>`
-
 > **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
@@ -195,6 +191,12 @@ The `AZURE_ENABLE_DYNAMIC_INSTANCE_LIST` environment variable enables workflow t
 | Config Name               | Default | Environment Variable               | Cloud Config File         |
 |---------------------------|---------|------------------------------------|---------------------------|
 | enableDynamicInstanceList | false   | AZURE_ENABLE_DYNAMIC_INSTANCE_LIST | enableDynamicInstanceList |
+
+The `AZURE_ENABLE_VMSS_FLEX` environment variable enables VMSS Flex support. By default, support is disabled.
+
+| Config Name               | Default | Environment Variable                    | Cloud Config File         |
+|---------------------------|---------|-----------------------------------------|---------------------------|
+| enableVmssFlex            | false   | AZURE_ENABLE_VMSS_FLEX                  | enableVmssFlex            |
 
 When using K8s 1.18 or higher, it is also recommended to configure backoff and retries on the client as described [here](#rate-limit-and-back-off-retries)
 
