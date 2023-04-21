@@ -341,11 +341,13 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 
 	if vmType == vmTypeVMSS {
-		// Omit virtual machines not managed by vmss.
-		if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
-			klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
-			m.unownedInstances[inst] = true
-			return nil, nil
+		if m.areAllScaleSetsUniform() {
+			// Omit virtual machines not managed by vmss only in case of uniform scale set.
+			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
+				klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
+				m.unownedInstances[inst] = true
+				return nil, nil
+			}
 		}
 	}
 
@@ -366,6 +368,16 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 	klog.V(4).Infof("FindForInstance: Couldn't find node group of instance %q", inst)
 	return nil, nil
+}
+
+// isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
+func (m *azureCache) areAllScaleSetsUniform() bool {
+	for _, scaleSet := range m.scaleSets {
+		if scaleSet.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
+			return false
+		}
+	}
+	return true
 }
 
 // getInstanceFromCache gets the node group from cache. Returns nil if not found.
