@@ -141,7 +141,8 @@ containerSecurityContext: {}
 deployment:
   # deployment.annotations -- Annotations to add to the Deployment object.
   annotations: {}
-
+  # deployment.revisionHistoryLimit -- The number of ReplicaSets to keep for this Deployment.
+  revisionHistoryLimit: 10
 # dnsPolicy -- Defaults to `ClusterFirst`. Valid values are:
 # `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`.
 # If autoscaler does not depend on cluster DNS, recommended to set this to `Default`.
