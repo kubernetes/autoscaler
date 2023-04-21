@@ -341,7 +341,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 
 	if vmType == vmTypeVMSS {
-		if m.areAllScaleSetsAreUniform() {
+		if m.areAllScaleSetsUniform() {
 			// Omit virtual machines not managed by vmss only in case of uniform scale set.
 			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
 				klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
@@ -371,7 +371,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 }
 
 // isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
-func (m *azureCache) areAllScaleSetsAreUniform() bool {
+func (m *azureCache) areAllScaleSetsUniform() bool {
 	for _, scaleSet := range m.scaleSets {
 		if scaleSet.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
 			return false
