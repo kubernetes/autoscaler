@@ -192,6 +192,12 @@ The `AZURE_ENABLE_DYNAMIC_INSTANCE_LIST` environment variable enables workflow t
 |---------------------------|---------|------------------------------------|---------------------------|
 | enableDynamicInstanceList | false   | AZURE_ENABLE_DYNAMIC_INSTANCE_LIST | enableDynamicInstanceList |
 
+The `AZURE_ENABLE_VMSS_FLEX` environment variable enables VMSS Flex support. By default, support is disabled.
+
+| Config Name               | Default | Environment Variable                    | Cloud Config File         |
+|---------------------------|---------|-----------------------------------------|---------------------------|
+| enableVmssFlex            | false   | AZURE_ENABLE_VMSS_FLEX                  | enableVmssFlex            |
+
 When using K8s 1.18 or higher, it is also recommended to configure backoff and retries on the client as described [here](#rate-limit-and-back-off-retries)
 
 ### Standard deployment
