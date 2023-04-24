@@ -45,7 +45,26 @@ var (
 	NotReadyReason = NewSkippedReasons("not ready for scale-up")
 )
 
-// MaxResourceLimitReached returns a reason describing which cluster wide resource limits were reached.
-func MaxResourceLimitReached(resources []string) *SkippedReasons {
-	return NewSkippedReasons(fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", ")))
+// MaxResourceLimitReached contains information why given node group was skipped.
+type MaxResourceLimitReached struct {
+	messages  []string
+	resources []string
+}
+
+// Reasons returns a slice of reasons why the node group was not considered for scale up.
+func (sr *MaxResourceLimitReached) Reasons() []string {
+	return sr.messages
+}
+
+// Resources returns a slice of resources which were missing in the node group.
+func (sr *MaxResourceLimitReached) Resources() []string {
+	return sr.resources
+}
+
+// NewMaxResourceLimitReached returns a reason describing which cluster wide resource limits were reached.
+func NewMaxResourceLimitReached(resources []string) *MaxResourceLimitReached {
+	return &MaxResourceLimitReached{
+		messages:  []string{fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", "))},
+		resources: resources,
+	}
 }
