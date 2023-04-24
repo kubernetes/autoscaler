@@ -81,7 +81,7 @@ func (cc *cloudConfig) isValid() bool {
 		cc.RRSAEnabled = true
 		return true
 	} else {
-		klog.V(5).Infof("Failed to get AccessKeyId:%s,AccessKeySecret:%s,RegionId:%s from cloudConfig and Env\n", cc.AccessKeyID, cc.AccessKeySecret, cc.RegionId)
+		klog.V(5).Infof("Failed to get AccessKeyId:%s,RegionId:%s from cloudConfig and Env\n", cc.AccessKeyID, cc.RegionId)
 		klog.V(5).Infof("Failed to get OIDCProviderARN:%s,OIDCTokenFilePath:%s,RoleARN:%s,RoleSessionName:%s,RegionId:%s from cloudConfig and Env\n", cc.OIDCProviderARN, cc.OIDCTokenFilePath, cc.RoleARN, cc.RoleSessionName, cc.RegionId)
 		klog.V(5).Infof("Try to use sts token in metadata instead.\n")
 		if cc.validateSTSToken() && cc.getRegion() != "" {
