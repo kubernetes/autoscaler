@@ -61,7 +61,7 @@ func NewOIDCSigner(credential *credentials.OIDCCredential) (signer *OIDCSigner, 
 	if len(credential.RoleSessionName) > 0 {
 		signer.roleSessionName = credential.RoleSessionName
 	} else {
-		signer.roleSessionName = "aliyun-go-sdk-" + strconv.FormatInt(time.Now().UnixNano()/1000, 10)
+		signer.roleSessionName = "kubernetes-cluster-autoscaler-" + strconv.FormatInt(time.Now().UnixNano()/1000, 10)
 	}
 	if credential.RoleSessionExpiration > 0 {
 		if credential.RoleSessionExpiration >= 900 && credential.RoleSessionExpiration <= 3600 {
