@@ -156,6 +156,7 @@ func (signer *OIDCSigner) getOIDCToken(OIDCTokenFilePath string) string {
 
 	token, err := os.ReadFile(tokenPath)
 	if err != nil {
+	     klog.Errorf("get oidc token from file %s failed: %s", tokenPath, err)
 		return ""
 	}
 	return string(token)
