@@ -18,21 +18,30 @@ package alicloud
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/metadata"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 	"os"
 )
 
 const (
-	accessKeyId     = "ACCESS_KEY_ID"
-	accessKeySecret = "ACCESS_KEY_SECRET"
-	regionId        = "REGION_ID"
+	accessKeyId       = "ACCESS_KEY_ID"
+	accessKeySecret   = "ACCESS_KEY_SECRET"
+	oidcProviderARN   = "ALICLOUD_OIDC_PROVIDER_ARN"
+	oidcTokenFilePath = "ALICLOUD_OIDC_TOKEN_FILE_PATH"
+	roleARN           = "ALICLOUD_ROLE_ARN"
+	roleSessionName   = "ALICLOUD_SESSION_NAME"
+	regionId          = "REGION_ID"
 )
 
 type cloudConfig struct {
-	RegionId        string
-	AccessKeyID     string
-	AccessKeySecret string
-	STSEnabled      bool
+	RegionId          string
+	AccessKeyID       string
+	AccessKeySecret   string
+	OIDCProviderARN   string
+	OIDCTokenFilePath string
+	RoleARN           string
+	RoleSessionName   string
+	RRSAEnabled       bool
+	STSEnabled        bool
 }
 
 func (cc *cloudConfig) isValid() bool {
@@ -48,18 +57,40 @@ func (cc *cloudConfig) isValid() bool {
 		cc.RegionId = os.Getenv(regionId)
 	}
 
-	if cc.RegionId == "" || cc.AccessKeyID == "" || cc.AccessKeySecret == "" {
-		klog.V(5).Infof("Failed to get AccessKeyId:%s,AccessKeySecret:%s,RegionId:%s from cloudConfig and Env\n", cc.AccessKeyID, cc.AccessKeySecret, cc.RegionId)
+	if cc.OIDCProviderARN == "" {
+		cc.OIDCProviderARN = os.Getenv(oidcProviderARN)
+	}
+
+	if cc.OIDCTokenFilePath == "" {
+		cc.OIDCTokenFilePath = os.Getenv(oidcTokenFilePath)
+	}
+
+	if cc.RoleARN == "" {
+		cc.RoleARN = os.Getenv(roleARN)
+	}
+
+	if cc.RoleSessionName == "" {
+		cc.RoleSessionName = os.Getenv(roleSessionName)
+	}
+
+	if cc.RegionId != "" && cc.AccessKeyID != "" && cc.AccessKeySecret != "" {
+		klog.V(2).Info("Using AccessKey authentication")
+		return true
+	} else if cc.RegionId != "" && cc.OIDCProviderARN != "" && cc.OIDCTokenFilePath != "" && cc.RoleARN != "" && cc.RoleSessionName != "" {
+		klog.V(2).Info("Using RRSA authentication")
+		cc.RRSAEnabled = true
+		return true
+	} else {
+		klog.V(5).Infof("Failed to get AccessKeyId:%s,RegionId:%s from cloudConfig and Env\n", cc.AccessKeyID, cc.RegionId)
+		klog.V(5).Infof("Failed to get OIDCProviderARN:%s,OIDCTokenFilePath:%s,RoleARN:%s,RoleSessionName:%s,RegionId:%s from cloudConfig and Env\n", cc.OIDCProviderARN, cc.OIDCTokenFilePath, cc.RoleARN, cc.RoleSessionName, cc.RegionId)
 		klog.V(5).Infof("Try to use sts token in metadata instead.\n")
-		if cc.validateSTSToken() == true && cc.getRegion() != "" {
+		if cc.validateSTSToken() && cc.getRegion() != "" {
 			//if CA is working on ECS with valid role name, use sts token instead.
 			cc.STSEnabled = true
 			return true
 		}
-	} else {
-		cc.STSEnabled = false
-		return true
 	}
+
 	return false
 }
 
