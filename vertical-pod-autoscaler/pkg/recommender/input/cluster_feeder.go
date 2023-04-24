@@ -49,7 +49,7 @@ import (
 const (
 	evictionWatchRetryWait    = 10 * time.Second
 	evictionWatchJitterFactor = 0.5
-	// DefaultRecommenderName default name for the recommender
+	// DefaultRecommenderName recommender name explicitly (and so implicitly specify that the default recommender should handle them)
 	DefaultRecommenderName = "default"
 )
 
