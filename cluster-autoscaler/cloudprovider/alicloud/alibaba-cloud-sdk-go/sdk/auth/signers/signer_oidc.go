@@ -140,7 +140,7 @@ func (signer *OIDCSigner) buildCommonRequest() (request *requests.CommonRequest,
 	request.Headers["host"] = endpoint
 	request.Headers["Accept-Encoding"] = "identity"
 	request.Headers["content-type"] = "application/x-www-form-urlencoded"
-	request.Headers["user-agent"] = fmt.Sprintf("AlibabaCloud (%s; %s) Golang/%s Core/%s TeaDSL/1", runtime.GOOS, runtime.GOARCH, strings.Trim(runtime.Version(), "go"), "0.01")
+	request.Headers["user-agent"] = fmt.Sprintf("AlibabaCloud (%s; %s) Golang/%s Core/%s TeaDSL/1 kubernetes-cluster-autoscaler", runtime.GOOS, runtime.GOARCH, strings.Trim(runtime.Version(), "go"), "0.01")
 	return
 }
 
