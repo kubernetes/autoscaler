@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/responses"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
+	"k8s.io/klog/v2"
 	"net/http"
 	"os"
 	"runtime"
@@ -150,13 +151,14 @@ func (signer *OIDCSigner) getOIDCToken(OIDCTokenFilePath string) string {
 	if os.IsNotExist(err) {
 		tokenPath = os.Getenv("ALIBABA_CLOUD_OIDC_TOKEN_FILE")
 		if tokenPath == "" {
+			klog.Error("oidc token file path is missing")
 			return ""
 		}
 	}
 
 	token, err := os.ReadFile(tokenPath)
 	if err != nil {
-	     klog.Errorf("get oidc token from file %s failed: %s", tokenPath, err)
+		klog.Errorf("get oidc token from file %s failed: %s", tokenPath, err)
 		return ""
 	}
 	return string(token)
@@ -166,7 +168,7 @@ func (signer *OIDCSigner) refreshApi(request *requests.CommonRequest) (response 
 	body := utils.GetUrlFormedMap(request.FormParams)
 	httpRequest, err := http.NewRequest(request.Method, fmt.Sprintf("%s://%s/?%s", strings.ToLower(request.Scheme), request.Domain, utils.GetUrlFormedMap(request.QueryParams)), strings.NewReader(body))
 	if err != nil {
-		fmt.Println("refresh RRSA token err", err)
+		klog.Errorf("refresh RRSA token failed: %s", err)
 		return
 	}
 
@@ -179,7 +181,7 @@ func (signer *OIDCSigner) refreshApi(request *requests.CommonRequest) (response 
 	httpClient := &http.Client{}
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
-		fmt.Println("refresh RRSA token err", err)
+		klog.Errorf("refresh RRSA token failed: %s", err)
 		return
 	}
 
@@ -199,27 +201,27 @@ func (signer *OIDCSigner) refreshCredential(response *responses.CommonResponse) 
 	var data interface{}
 	err = json.Unmarshal(response.GetHttpContentBytes(), &data)
 	if err != nil {
-		fmt.Println("refresh RRSA token err, json.Unmarshal fail", err)
+		klog.Errorf("refresh RRSA token err, json.Unmarshal fail: %s", err)
 		return
 	}
 	accessKeyId, err := jmespath.Search("Credentials.AccessKeyId", data)
 	if err != nil {
-		fmt.Println("refresh RRSA token err, fail to get AccessKeyId", err)
+		klog.Errorf("refresh RRSA token err, fail to get AccessKeyId: %s", err)
 		return
 	}
 	accessKeySecret, err := jmespath.Search("Credentials.AccessKeySecret", data)
 	if err != nil {
-		fmt.Println("refresh RRSA token err, fail to get AccessKeySecret", err)
+		klog.Errorf("refresh RRSA token err, fail to get AccessKeySecret: %s", err)
 		return
 	}
 	securityToken, err := jmespath.Search("Credentials.SecurityToken", data)
 	if err != nil {
-		fmt.Println("refresh RRSA token err, fail to get SecurityToken", err)
+		klog.Errorf("refresh RRSA token err, fail to get SecurityToken: %s", err)
 		return
 	}
 	expiration, err := jmespath.Search("Credentials.Expiration", data)
 	if err != nil {
-		fmt.Println("refresh RRSA token err, fail to get Expiration", err)
+		klog.Errorf("refresh RRSA token err, fail to get Expiration: %s", err)
 		return
 	}
 
