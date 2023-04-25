@@ -103,13 +103,13 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
 		nodeID, ok := node.Labels[nodeIDLabel]
+		providerID := node.Spec.ProviderID
 
-		//todo review this
 		if !ok {
-			// CA creates fake node objects to represent upcoming VMs that
-			// haven't registered as nodes yet. We cannot delete the node at
-			// this point.
-			return fmt.Errorf("cannot delete node %q with provider ID %q on node pool %q: node ID label %q is missing", node.Name, node.Spec.ProviderID, n.id, nodeIDLabel)
+			if providerID == "" {
+				return fmt.Errorf("cannot delete node %q on node pool %q: missing provider ID and node ID label %q", node.Name, n.id, nodeIDLabel)
+			}
+			nodeID = toNodeID(providerID)
 		}
 
 		err := n.client.DeleteNodePoolInstance(context.Background(), n.clusterID, n.id, nodeID)
