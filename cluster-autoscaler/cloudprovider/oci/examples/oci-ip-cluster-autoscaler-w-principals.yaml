@@ -158,5 +158,3 @@ spec:
           env:
             - name: OCI_USE_INSTANCE_PRINCIPAL
               value: "true"
-            - name: OCI_REGION
-              value: "us-phoenix-1"
