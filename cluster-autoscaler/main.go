@@ -56,6 +56,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -68,6 +69,7 @@ import (
 	"k8s.io/component-base/config/options"
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
+	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -133,6 +135,7 @@ var (
 			"for scale down when some candidates from previous iteration are no longer valid."+
 			"When calculating the pool size for additional candidates we take"+
 			"max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).")
+	schedulerConfigFile         = flag.String(config.SchedulerConfigFileFlag, "", "scheduler-config allows changing configuration of in-tree scheduler plugins acting on PreFilter and Filter extension points")
 	nodeDeletionDelayTimeout    = flag.Duration("node-deletion-delay-timeout", 2*time.Minute, "Maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.")
 	nodeDeletionBatcherInterval = flag.Duration("node-deletion-batcher-interval", 0*time.Second, "How long CA ScaleDown gather nodes to delete them in batch.")
 	scanInterval                = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
@@ -274,6 +277,15 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		*maxEmptyBulkDeleteFlag = *maxScaleDownParallelismFlag
 	}
 
+	var parsedSchedConfig *scheduler_config.KubeSchedulerConfiguration
+	// if scheduler config flag was set by the user
+	if pflag.CommandLine.Changed(config.SchedulerConfigFileFlag) {
+		parsedSchedConfig, err = scheduler_util.ConfigFromPath(*schedulerConfigFile)
+	}
+	if err != nil {
+		klog.Fatalf("Failed to get scheduler config: %v", err)
+	}
+
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -316,6 +328,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
 		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
+		SchedulerConfig:                  parsedSchedConfig,
 		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
 		StatusConfigMapName:              *statusConfigMapName,
 		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
@@ -422,7 +435,8 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
-	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(kubeClient, make(chan struct{}))
+	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(kubeClient,
+		autoscalingOptions.SchedulerConfig, make(chan struct{}))
 	if err != nil {
 		return nil, err
 	}

@@ -18,11 +18,15 @@ package scheduler
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/resource"
+	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -100,5 +104,88 @@ func TestResourceList(t *testing.T) {
 				t.Errorf("expected: %#v, got: %#v", test.expected, rl)
 			}
 		})
+	}
+}
+
+func TestConfigFromPath(t *testing.T) {
+	// temp dir
+	tmpDir, err := os.MkdirTemp("", "scheduler-configs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Note that even if we are passing minimal config like below
+	// `ConfigFromPath` will set the rest of the default fields
+	// on its own (including default profile and default plugins)
+	correctConfigFile := filepath.Join(tmpDir, "correct_config.yaml")
+	if err := os.WriteFile(correctConfigFile,
+		[]byte(testconfig.SchedulerConfigMinimalCorrect),
+		os.FileMode(0600)); err != nil {
+		t.Fatal(err)
+	}
+
+	decodeErrConfigFile := filepath.Join(tmpDir, "decode_err_no_version_config.yaml")
+	if err := os.WriteFile(decodeErrConfigFile,
+		[]byte(testconfig.SchedulerConfigDecodeErr),
+		os.FileMode(0600)); err != nil {
+		t.Fatal(err)
+	}
+
+	validationErrConfigFile := filepath.Join(tmpDir, "invalid_percent_node_score_config.yaml")
+	if err := os.WriteFile(validationErrConfigFile,
+		[]byte(testconfig.SchedulerConfigInvalid),
+		os.FileMode(0600)); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name           string
+		path           string
+		expectedErr    error
+		expectedConfig *config.KubeSchedulerConfiguration
+	}{
+		{
+			name:           "Empty scheduler config file path",
+			path:           "",
+			expectedErr:    fmt.Errorf(schedulerConfigLoadErr),
+			expectedConfig: nil,
+		},
+		{
+			name:           "Correct scheduler config",
+			path:           correctConfigFile,
+			expectedErr:    nil,
+			expectedConfig: &config.KubeSchedulerConfiguration{},
+		},
+		{
+			name:           "Scheduler config with decode error",
+			path:           decodeErrConfigFile,
+			expectedErr:    fmt.Errorf(schedulerConfigDecodeErr),
+			expectedConfig: nil,
+		},
+		{
+			name:           "Invalid scheduler config",
+			path:           validationErrConfigFile,
+			expectedErr:    fmt.Errorf(schedulerConfigInvalidErr),
+			expectedConfig: nil,
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("case_%d: %s", i, test.name), func(t *testing.T) {
+			cfg, err := ConfigFromPath(test.path)
+			if test.expectedConfig == nil {
+				assert.Nil(t, cfg)
+			} else {
+				assert.NotNil(t, cfg)
+			}
+
+			if test.expectedErr == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorContains(t, err, test.expectedErr.Error())
+			}
+		})
+
 	}
 }
