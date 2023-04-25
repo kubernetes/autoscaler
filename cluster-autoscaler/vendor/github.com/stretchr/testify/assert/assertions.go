@@ -140,10 +140,10 @@ func CallerInfo() []string {
 		}
 
 		parts := strings.Split(file, "/")
-		file = parts[len(parts)-1]
 		if len(parts) > 1 {
+			filename := parts[len(parts)-1]
 			dir := parts[len(parts)-2]
-			if (dir != "assert" && dir != "mock" && dir != "require") || file == "mock_test.go" {
+			if (dir != "assert" && dir != "mock" && dir != "require") || filename == "mock_test.go" {
 				callers = append(callers, fmt.Sprintf("%s:%d", file, line))
 			}
 		}
@@ -528,7 +528,7 @@ func isNil(object interface{}) bool {
 		[]reflect.Kind{
 			reflect.Chan, reflect.Func,
 			reflect.Interface, reflect.Map,
-			reflect.Ptr, reflect.Slice},
+			reflect.Ptr, reflect.Slice, reflect.UnsafePointer},
 		kind)
 
 	if isNilableKind && value.IsNil() {
@@ -563,16 +563,17 @@ func isEmpty(object interface{}) bool {
 
 	switch objValue.Kind() {
 	// collection types are empty when they have no element
-	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+	case reflect.Chan, reflect.Map, reflect.Slice:
 		return objValue.Len() == 0
-		// pointers are empty if nil or if the value they point to is empty
+	// pointers are empty if nil or if the value they point to is empty
 	case reflect.Ptr:
 		if objValue.IsNil() {
 			return true
 		}
 		deref := objValue.Elem().Interface()
 		return isEmpty(deref)
-		// for all other types, compare against the zero value
+	// for all other types, compare against the zero value
+	// array types are empty when they match their zero-initialized state
 	default:
 		zero := reflect.Zero(objValue.Type())
 		return reflect.DeepEqual(object, zero.Interface())
@@ -815,32 +816,44 @@ func Subset(t TestingT, list, subset interface{}, msgAndArgs ...interface{}) (ok
 		return true // we consider nil to be equal to the nil set
 	}
 
-	subsetValue := reflect.ValueOf(subset)
-	defer func() {
-		if e := recover(); e != nil {
-			ok = false
-		}
-	}()
-
 	listKind := reflect.TypeOf(list).Kind()
-	subsetKind := reflect.TypeOf(subset).Kind()
-
-	if listKind != reflect.Array && listKind != reflect.Slice {
+	if listKind != reflect.Array && listKind != reflect.Slice && listKind != reflect.Map {
 		return Fail(t, fmt.Sprintf("%q has an unsupported type %s", list, listKind), msgAndArgs...)
 	}
 
-	if subsetKind != reflect.Array && subsetKind != reflect.Slice {
+	subsetKind := reflect.TypeOf(subset).Kind()
+	if subsetKind != reflect.Array && subsetKind != reflect.Slice && listKind != reflect.Map {
 		return Fail(t, fmt.Sprintf("%q has an unsupported type %s", subset, subsetKind), msgAndArgs...)
 	}
 
-	for i := 0; i < subsetValue.Len(); i++ {
-		element := subsetValue.Index(i).Interface()
+	if subsetKind == reflect.Map && listKind == reflect.Map {
+		subsetMap := reflect.ValueOf(subset)
+		actualMap := reflect.ValueOf(list)
+
+		for _, k := range subsetMap.MapKeys() {
+			ev := subsetMap.MapIndex(k)
+			av := actualMap.MapIndex(k)
+
+			if !av.IsValid() {
+				return Fail(t, fmt.Sprintf("%#v does not contain %#v", list, subset), msgAndArgs...)
+			}
+			if !ObjectsAreEqual(ev.Interface(), av.Interface()) {
+				return Fail(t, fmt.Sprintf("%#v does not contain %#v", list, subset), msgAndArgs...)
+			}
+		}
+
+		return true
+	}
+
+	subsetList := reflect.ValueOf(subset)
+	for i := 0; i < subsetList.Len(); i++ {
+		element := subsetList.Index(i).Interface()
 		ok, found := containsElement(list, element)
 		if !ok {
-			return Fail(t, fmt.Sprintf("\"%s\" could not be applied builtin len()", list), msgAndArgs...)
+			return Fail(t, fmt.Sprintf("%#v could not be applied builtin len()", list), msgAndArgs...)
 		}
 		if !found {
-			return Fail(t, fmt.Sprintf("\"%s\" does not contain \"%s\"", list, element), msgAndArgs...)
+			return Fail(t, fmt.Sprintf("%#v does not contain %#v", list, element), msgAndArgs...)
 		}
 	}
 
@@ -859,26 +872,38 @@ func NotSubset(t TestingT, list, subset interface{}, msgAndArgs ...interface{}) 
 		return Fail(t, "nil is the empty set which is a subset of every set", msgAndArgs...)
 	}
 
-	subsetValue := reflect.ValueOf(subset)
-	defer func() {
-		if e := recover(); e != nil {
-			ok = false
-		}
-	}()
-
 	listKind := reflect.TypeOf(list).Kind()
-	subsetKind := reflect.TypeOf(subset).Kind()
-
-	if listKind != reflect.Array && listKind != reflect.Slice {
+	if listKind != reflect.Array && listKind != reflect.Slice && listKind != reflect.Map {
 		return Fail(t, fmt.Sprintf("%q has an unsupported type %s", list, listKind), msgAndArgs...)
 	}
 
-	if subsetKind != reflect.Array && subsetKind != reflect.Slice {
+	subsetKind := reflect.TypeOf(subset).Kind()
+	if subsetKind != reflect.Array && subsetKind != reflect.Slice && listKind != reflect.Map {
 		return Fail(t, fmt.Sprintf("%q has an unsupported type %s", subset, subsetKind), msgAndArgs...)
 	}
 
-	for i := 0; i < subsetValue.Len(); i++ {
-		element := subsetValue.Index(i).Interface()
+	if subsetKind == reflect.Map && listKind == reflect.Map {
+		subsetMap := reflect.ValueOf(subset)
+		actualMap := reflect.ValueOf(list)
+
+		for _, k := range subsetMap.MapKeys() {
+			ev := subsetMap.MapIndex(k)
+			av := actualMap.MapIndex(k)
+
+			if !av.IsValid() {
+				return true
+			}
+			if !ObjectsAreEqual(ev.Interface(), av.Interface()) {
+				return true
+			}
+		}
+
+		return Fail(t, fmt.Sprintf("%q is a subset of %q", subset, list), msgAndArgs...)
+	}
+
+	subsetList := reflect.ValueOf(subset)
+	for i := 0; i < subsetList.Len(); i++ {
+		element := subsetList.Index(i).Interface()
 		ok, found := containsElement(list, element)
 		if !ok {
 			return Fail(t, fmt.Sprintf("\"%s\" could not be applied builtin len()", list), msgAndArgs...)
@@ -1104,6 +1129,27 @@ func WithinDuration(t TestingT, expected, actual time.Time, delta time.Duration,
 	dt := expected.Sub(actual)
 	if dt < -delta || dt > delta {
 		return Fail(t, fmt.Sprintf("Max difference between %v and %v allowed is %v, but difference was %v", expected, actual, delta, dt), msgAndArgs...)
+	}
+
+	return true
+}
+
+// WithinRange asserts that a time is within a time range (inclusive).
+//
+//   assert.WithinRange(t, time.Now(), time.Now().Add(-time.Second), time.Now().Add(time.Second))
+func WithinRange(t TestingT, actual, start, end time.Time, msgAndArgs ...interface{}) bool {
+	if h, ok := t.(tHelper); ok {
+		h.Helper()
+	}
+
+	if end.Before(start) {
+		return Fail(t, "Start should be before end", msgAndArgs...)
+	}
+
+	if actual.Before(start) {
+		return Fail(t, fmt.Sprintf("Time %v expected to be in time range %v to %v, but is before the range", actual, start, end), msgAndArgs...)
+	} else if actual.After(end) {
+		return Fail(t, fmt.Sprintf("Time %v expected to be in time range %v to %v, but is after the range", actual, start, end), msgAndArgs...)
 	}
 
 	return true

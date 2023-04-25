@@ -20,11 +20,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -42,9 +45,9 @@ type AutoscalingContext struct {
 	CloudProvider cloudprovider.CloudProvider
 	// TODO(kgolab) - move away too as it's not config
 	// PredicateChecker to check if a pod can fit into a node.
-	PredicateChecker simulator.PredicateChecker
+	PredicateChecker predicatechecker.PredicateChecker
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
-	ClusterSnapshot simulator.ClusterSnapshot
+	ClusterSnapshot clustersnapshot.ClusterSnapshot
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
 	// EstimatorBuilder is the builder function for node count estimator to be used.
@@ -53,6 +56,10 @@ type AutoscalingContext struct {
 	ProcessorCallbacks processor_callbacks.ProcessorCallbacks
 	// DebuggingSnapshotter is the interface for capturing the debugging snapshot
 	DebuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
+	// ScaleDownActuator is the interface for draining and deleting nodes
+	ScaleDownActuator scaledown.Actuator
+	// RemainingPdbTracker tracks the remaining pod disruption budget
+	RemainingPdbTracker pdb.RemainingPdbTracker
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -90,14 +97,15 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(
 	options config.AutoscalingOptions,
-	predicateChecker simulator.PredicateChecker,
-	clusterSnapshot simulator.ClusterSnapshot,
+	predicateChecker predicatechecker.PredicateChecker,
+	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *AutoscalingKubeClients,
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
 	processorCallbacks processor_callbacks.ProcessorCallbacks,
-	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) *AutoscalingContext {
+	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
+	remainingPdbTracker pdb.RemainingPdbTracker) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:     options,
 		CloudProvider:          cloudProvider,
@@ -108,6 +116,7 @@ func NewAutoscalingContext(
 		EstimatorBuilder:       estimatorBuilder,
 		ProcessorCallbacks:     processorCallbacks,
 		DebuggingSnapshotter:   debuggingSnapshotter,
+		RemainingPdbTracker:    remainingPdbTracker,
 	}
 }
 

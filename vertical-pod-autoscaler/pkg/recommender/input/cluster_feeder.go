@@ -46,7 +46,7 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
@@ -310,13 +310,13 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
 	feeder.LoadVPAs()
 
-	namspaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
+	namespaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		klog.Errorf("Cannot list namespaces. Reason: %+v", err)
 		return
 	}
 
-	for _, namespaceItem := range namspaceList.Items {
+	for _, namespaceItem := range namespaceList.Items {
 		namespace := namespaceItem.Name
 		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
@@ -375,7 +375,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 	return vpaCRDs
 }
 
-// Fetch VPA objects and load them into the cluster state.
+// LoadVPAs fetches VPA objects and loads them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
 	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
@@ -424,7 +424,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	feeder.clusterState.ObservedVpas = vpaCRDs
 }
 
-// Load pod into the cluster state.
+// LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
 	podSpecs, err := feeder.specClient.GetPodSpecs()
 	if err != nil {

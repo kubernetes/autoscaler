@@ -17,6 +17,7 @@ limitations under the License.
 package kuberuntime
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -93,12 +94,13 @@ func (m *kubeGenericRuntimeManager) toKubeContainer(c *runtimeapi.Container) (*k
 
 	annotatedInfo := getContainerInfoFromAnnotations(c.Annotations)
 	return &kubecontainer.Container{
-		ID:      kubecontainer.ContainerID{Type: m.runtimeName, ID: c.Id},
-		Name:    c.GetMetadata().GetName(),
-		ImageID: c.ImageRef,
-		Image:   c.Image.Image,
-		Hash:    annotatedInfo.Hash,
-		State:   toKubeContainerState(c.State),
+		ID:                   kubecontainer.ContainerID{Type: m.runtimeName, ID: c.Id},
+		Name:                 c.GetMetadata().GetName(),
+		ImageID:              c.ImageRef,
+		Image:                c.Image.Image,
+		Hash:                 annotatedInfo.Hash,
+		HashWithoutResources: annotatedInfo.HashWithoutResources,
+		State:                toKubeContainerState(c.State),
 	}, nil
 }
 
@@ -119,8 +121,8 @@ func (m *kubeGenericRuntimeManager) sandboxToKubeContainer(s *runtimeapi.PodSand
 
 // getImageUser gets uid or user name that will run the command(s) from image. The function
 // guarantees that only one of them is set.
-func (m *kubeGenericRuntimeManager) getImageUser(image string) (*int64, string, error) {
-	resp, err := m.imageService.ImageStatus(&runtimeapi.ImageSpec{Image: image}, false)
+func (m *kubeGenericRuntimeManager) getImageUser(ctx context.Context, image string) (*int64, string, error) {
+	resp, err := m.imageService.ImageStatus(ctx, &runtimeapi.ImageSpec{Image: image}, false)
 	if err != nil {
 		return nil, "", err
 	}

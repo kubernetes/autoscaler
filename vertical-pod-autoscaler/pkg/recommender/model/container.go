@@ -25,13 +25,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-const (
-	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
-	OOMBumpUpRatio float64 = 1.2
-	// OOMMinBumpUp specifies minimal increase of memory after observing OOM.
-	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
-)
-
 // ContainerUsageSample is a measure of resource usage of a container over some
 // interval.
 type ContainerUsageSample struct {
@@ -39,7 +32,7 @@ type ContainerUsageSample struct {
 	MeasureStart time.Time
 	// Average CPU usage in cores or memory usage in bytes.
 	Usage ResourceAmount
-	// CPU or memory request at the time of measurment.
+	// CPU or memory request at the time of measurement.
 	Request ResourceAmount
 	// Which resource is this sample for.
 	Resource ResourceName
@@ -166,7 +159,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 	} else {
 		// Shift the memory aggregation window to the next interval.
 		memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationInterval
-		shift := truncate(ts.Sub(container.WindowEnd), memoryAggregationInterval) + memoryAggregationInterval
+		shift := ts.Sub(container.WindowEnd).Truncate(memoryAggregationInterval) + memoryAggregationInterval
 		container.WindowEnd = container.WindowEnd.Add(shift)
 		container.memoryPeak = 0
 		container.oomPeak = 0
@@ -199,8 +192,8 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(OOMMinBumpUp),
-		ScaleResource(memoryUsed, OOMBumpUpRatio))
+	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
+		ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
@@ -229,15 +222,4 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 	default:
 		return false
 	}
-}
-
-// Truncate returns the result of rounding d toward zero to a multiple of m.
-// If m <= 0, Truncate returns d unchanged.
-// This helper function is introduced to support older implementations of the
-// time package that don't provide Duration.Truncate function.
-func truncate(d, m time.Duration) time.Duration {
-	if m <= 0 {
-		return d
-	}
-	return d - d%m
 }

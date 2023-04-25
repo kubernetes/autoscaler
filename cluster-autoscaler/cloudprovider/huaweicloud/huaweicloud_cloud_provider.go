@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 )
 
@@ -123,6 +124,11 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (hcp *huaweicloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available. Not implemented.
 func (hcp *huaweicloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
@@ -153,6 +159,12 @@ func (hcp *huaweicloudCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes returns all available GPU types cloud provider supports.
 func (hcp *huaweicloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (hcp *huaweicloudCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(hcp, node)
 }
 
 // Cleanup currently does nothing.

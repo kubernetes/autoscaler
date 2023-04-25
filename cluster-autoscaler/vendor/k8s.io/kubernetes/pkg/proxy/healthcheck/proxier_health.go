@@ -41,6 +41,8 @@ type ProxierHealthUpdater interface {
 
 	// Run starts the healthz HTTP server and blocks until it exits.
 	Run() error
+
+	proxierHealthChecker
 }
 
 var _ ProxierHealthUpdater = &proxierHealthServer{}
@@ -79,16 +81,50 @@ func newProxierHealthServer(listener listener, httpServerFactory httpServerFacto
 	}
 }
 
-// Updated updates the lastUpdated timestamp.
+// Updated indicates that kube-proxy has successfully updated its backend, so it should
+// be considered healthy now.
 func (hs *proxierHealthServer) Updated() {
 	hs.oldestPendingQueued.Store(zeroTime)
 	hs.lastUpdated.Store(hs.clock.Now())
 }
 
-// QueuedUpdate updates the lastQueued timestamp.
+// QueuedUpdate indicates that the proxy has received changes from the apiserver but
+// has not yet pushed them to its backend. If the proxy does not call Updated within the
+// healthTimeout time then it will be considered unhealthy.
 func (hs *proxierHealthServer) QueuedUpdate() {
 	// Set oldestPendingQueued only if it's currently zero
 	hs.oldestPendingQueued.CompareAndSwap(zeroTime, hs.clock.Now())
+}
+
+// IsHealthy returns the proxier's health state, following the same definition
+// the HTTP server defines.
+func (hs *proxierHealthServer) IsHealthy() bool {
+	isHealthy, _, _ := hs.isHealthy()
+	return isHealthy
+}
+
+func (hs *proxierHealthServer) isHealthy() (bool, time.Time, time.Time) {
+	var oldestPendingQueued, lastUpdated time.Time
+	if val := hs.oldestPendingQueued.Load(); val != nil {
+		oldestPendingQueued = val.(time.Time)
+	}
+	if val := hs.lastUpdated.Load(); val != nil {
+		lastUpdated = val.(time.Time)
+	}
+	currentTime := hs.clock.Now()
+
+	healthy := false
+	switch {
+	case oldestPendingQueued.IsZero():
+		// The proxy is healthy while it's starting up
+		// or the proxy is fully synced.
+		healthy = true
+	case currentTime.Sub(oldestPendingQueued) < hs.healthTimeout:
+		// There's an unprocessed update queued, but it's not late yet
+		healthy = true
+	}
+
+	return healthy, lastUpdated, currentTime
 }
 
 // Run starts the healthz HTTP server and blocks until it exits.
@@ -120,26 +156,7 @@ type healthzHandler struct {
 }
 
 func (h healthzHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	var oldestPendingQueued, lastUpdated time.Time
-	if val := h.hs.oldestPendingQueued.Load(); val != nil {
-		oldestPendingQueued = val.(time.Time)
-	}
-	if val := h.hs.lastUpdated.Load(); val != nil {
-		lastUpdated = val.(time.Time)
-	}
-	currentTime := h.hs.clock.Now()
-
-	healthy := false
-	switch {
-	case oldestPendingQueued.IsZero():
-		// The proxy is healthy while it's starting up
-		// or the proxy is fully synced.
-		healthy = true
-	case currentTime.Sub(oldestPendingQueued) < h.hs.healthTimeout:
-		// There's an unprocessed update queued, but it's not late yet
-		healthy = true
-	}
-
+	healthy, lastUpdated, currentTime := h.hs.isHealthy()
 	resp.Header().Set("Content-Type", "application/json")
 	resp.Header().Set("X-Content-Type-Options", "nosniff")
 	if !healthy {

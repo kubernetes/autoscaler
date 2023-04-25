@@ -22,9 +22,13 @@ var matchMethod = flag.String("testify.m", "", "regular expression to select tes
 // retrieving the current *testing.T context.
 type Suite struct {
 	*assert.Assertions
+
 	mu      sync.RWMutex
 	require *require.Assertions
 	t       *testing.T
+
+	// Parent suite to have access to the implemented methods of parent struct
+	s TestingSuite
 }
 
 // T retrieves the current *testing.T context.
@@ -41,6 +45,12 @@ func (suite *Suite) SetT(t *testing.T) {
 	suite.t = t
 	suite.Assertions = assert.New(t)
 	suite.require = require.New(t)
+}
+
+// SetS needs to set the current test suite as parent
+// to get access to the parent methods
+func (suite *Suite) SetS(s TestingSuite) {
+	suite.s = s
 }
 
 // Require returns a require context for suite.
@@ -67,8 +77,12 @@ func (suite *Suite) Assert() *assert.Assertions {
 	return suite.Assertions
 }
 
-func failOnPanic(t *testing.T) {
+func recoverAndFailOnPanic(t *testing.T) {
 	r := recover()
+	failOnPanic(t, r)
+}
+
+func failOnPanic(t *testing.T, r interface{}) {
 	if r != nil {
 		t.Errorf("test panicked: %v\n%s", r, debug.Stack())
 		t.FailNow()
@@ -81,7 +95,18 @@ func failOnPanic(t *testing.T) {
 // Provides compatibility with go test pkg -run TestSuite/TestName/SubTestName.
 func (suite *Suite) Run(name string, subtest func()) bool {
 	oldT := suite.T()
-	defer suite.SetT(oldT)
+
+	if setupSubTest, ok := suite.s.(SetupSubTest); ok {
+		setupSubTest.SetupSubTest()
+	}
+
+	defer func() {
+		suite.SetT(oldT)
+		if tearDownSubTest, ok := suite.s.(TearDownSubTest); ok {
+			tearDownSubTest.TearDownSubTest()
+		}
+	}()
+
 	return oldT.Run(name, func(t *testing.T) {
 		suite.SetT(t)
 		subtest()
@@ -91,9 +116,10 @@ func (suite *Suite) Run(name string, subtest func()) bool {
 // Run takes a testing suite and runs all of the tests attached
 // to it.
 func Run(t *testing.T, suite TestingSuite) {
-	defer failOnPanic(t)
+	defer recoverAndFailOnPanic(t)
 
 	suite.SetT(t)
+	suite.SetS(suite)
 
 	var suiteSetupDone bool
 
@@ -136,10 +162,12 @@ func Run(t *testing.T, suite TestingSuite) {
 			F: func(t *testing.T) {
 				parentT := suite.T()
 				suite.SetT(t)
-				defer failOnPanic(t)
+				defer recoverAndFailOnPanic(t)
 				defer func() {
+					r := recover()
+
 					if stats != nil {
-						passed := !t.Failed()
+						passed := !t.Failed() && r == nil
 						stats.end(method.Name, passed)
 					}
 
@@ -152,6 +180,7 @@ func Run(t *testing.T, suite TestingSuite) {
 					}
 
 					suite.SetT(parentT)
+					failOnPanic(t, r)
 				}()
 
 				if setupTestSuite, ok := suite.(SetupTestSuite); ok {

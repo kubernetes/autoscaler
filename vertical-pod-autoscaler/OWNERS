@@ -1,10 +1,12 @@
 approvers:
-- schylek
 - kgolab
 - jbartosik
 - krzysied
 reviewers:
-- schylek
 - kgolab
 - jbartosik
 - krzysied
+emeritus_approvers:
+- schylek # 2022-09-30
+labels:
+- vertical-pod-autoscaler

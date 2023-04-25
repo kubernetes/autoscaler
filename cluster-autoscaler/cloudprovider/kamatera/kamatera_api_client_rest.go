@@ -18,9 +18,8 @@ package kamatera
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
-	"github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/klog/v2"
 	"strings"
@@ -266,5 +265,5 @@ func kamateraServerName(namePrefix string) string {
 	if len(namePrefix) > 0 {
 		namePrefix = fmt.Sprintf("%s-", namePrefix)
 	}
-	return fmt.Sprintf("%s%s", namePrefix, hex.EncodeToString(uuid.NewV4().Bytes()))
+	return fmt.Sprintf("%s%s", namePrefix, strings.ReplaceAll(uuid.New().String(), "-", ""))
 }

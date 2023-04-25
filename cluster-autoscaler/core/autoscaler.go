@@ -24,12 +24,15 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -42,13 +45,15 @@ type AutoscalerOptions struct {
 	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker       simulator.PredicateChecker
-	ClusterSnapshot        simulator.ClusterSnapshot
+	PredicateChecker       predicatechecker.PredicateChecker
+	ClusterSnapshot        clustersnapshot.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
 	Backoff                backoff.Backoff
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
+	RemainingPdbTracker    pdb.RemainingPdbTracker
+	ScaleUpOrchestrator    scaleup.Orchestrator
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -78,7 +83,9 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
 		opts.Backoff,
-		opts.DebuggingSnapshotter), nil
+		opts.DebuggingSnapshotter,
+		opts.RemainingPdbTracker,
+		opts.ScaleUpOrchestrator), nil
 }
 
 // Initialize default options if not provided.
@@ -89,23 +96,19 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
 	}
-	if opts.PredicateChecker == nil {
-		predicateCheckerStopChannel := make(chan struct{})
-		predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
-		if err != nil {
-			return err
-		}
-		opts.PredicateChecker = predicateChecker
-	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = simulator.NewBasicClusterSnapshot()
+		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
+	}
+	if opts.RemainingPdbTracker == nil {
+		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 	if opts.CloudProvider == nil {
 		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
 	}
 	if opts.ExpanderStrategy == nil {
-		expanderStrategy, err := factory.ExpanderStrategyFromStrings(strings.Split(opts.ExpanderNames, ","), opts.CloudProvider,
-			opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+		expanderFactory := factory.NewFactory()
+		expanderFactory.RegisterDefaultExpanders(opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+		expanderStrategy, err := expanderFactory.Build(strings.Split(opts.ExpanderNames, ","))
 		if err != nil {
 			return err
 		}

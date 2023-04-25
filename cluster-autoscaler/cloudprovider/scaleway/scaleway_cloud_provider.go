@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
 
@@ -162,6 +163,11 @@ func (scw *scalewayCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	return scw.nodeGroupForNode(node)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (scw *scalewayCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	ng, err := scw.nodeGroupForNode(node)
 	if err != nil {
@@ -218,6 +224,13 @@ func (scw *scalewayCloudProvider) GPULabel() string {
 func (scw *scalewayCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	klog.V(4).Info("GetAvailableGPUTypes,called")
 	return nil
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (scw *scalewayCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	klog.V(6).Info("GetNodeGpuConfig,called")
+	return gpu.GetNodeGPUFromCloudProvider(scw, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.

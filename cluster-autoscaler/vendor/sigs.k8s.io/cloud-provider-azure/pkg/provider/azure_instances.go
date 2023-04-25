@@ -28,7 +28,8 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
@@ -385,22 +386,16 @@ func (az *Cloud) getLocalInstanceProviderID(metadata *InstanceMetadata, nodeName
 	resourceGroup := strings.ToLower(metadata.Compute.ResourceGroup)
 	subscriptionID := strings.ToLower(metadata.Compute.SubscriptionID)
 
-	// Compose instanceID based on nodeName for standard instance.
-	if metadata.Compute.VMScaleSetName == "" {
-		return az.getStandardMachineID(subscriptionID, resourceGroup, nodeName), nil
+	if metadata.Compute.ResourceID == "" {
+		// No ResourceID is got from instance metadata service, clean up cache and report errors.
+		_ = az.Metadata.imsCache.Delete(consts.MetadataCacheKey)
+		return "", fmt.Errorf("get empty ResoureceID from instance metadata service")
 	}
 
-	// Get scale set name and instanceID from vmName for vmss.
-	ssName, instanceID, err := extractVmssVMName(metadata.Compute.Name)
-	if err != nil {
-		if errors.Is(err, ErrorNotVmssInstance) {
-			// Compose machineID for standard Node.
-			return az.getStandardMachineID(subscriptionID, resourceGroup, nodeName), nil
-		}
-		return "", err
-	}
-	// Compose instanceID based on ssName and instanceID for vmss instance.
-	return az.getVmssMachineID(subscriptionID, resourceGroup, ssName, instanceID), nil
+	providerID := strings.Replace(metadata.Compute.ResourceID, metadata.Compute.SubscriptionID, subscriptionID, -1)
+	providerID = strings.Replace(providerID, metadata.Compute.ResourceGroup, resourceGroup, -1)
+
+	return providerID, nil
 }
 
 // InstanceTypeByProviderID returns the cloudprovider instance type of the node with the specified unique providerID
@@ -433,7 +428,7 @@ func (az *Cloud) InstanceTypeByProviderID(ctx context.Context, providerID string
 // InstanceType returns the type of the specified instance.
 // Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
 // (Implementer Note): This is used by kubelet. Kubelet will label the node. Real log from kubelet:
-//       Adding node label from cloud provider: beta.kubernetes.io/instance-type=[value]
+// Adding node label from cloud provider: beta.kubernetes.io/instance-type=[value]
 func (az *Cloud) InstanceType(ctx context.Context, name types.NodeName) (string, error) {
 	// Returns "" for unmanaged nodes because azure cloud provider couldn't fetch information for them.
 	unmanaged, err := az.IsNodeUnmanaged(string(name))

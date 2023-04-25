@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -63,9 +63,9 @@ func checkResourceExistsFromError(err *retry.Error) (bool, *retry.Error) {
 	return false, err
 }
 
-/// getVirtualMachine calls 'VirtualMachinesClient.Get' with a timed cache
-/// The service side has throttling control that delays responses if there are multiple requests onto certain vm
-/// resource request in short period.
+// getVirtualMachine calls 'VirtualMachinesClient.Get' with a timed cache
+// The service side has throttling control that delays responses if there are multiple requests onto certain vm
+// resource request in short period.
 func (az *Cloud) getVirtualMachine(nodeName types.NodeName, crt azcache.AzureCacheReadType) (vm compute.VirtualMachine, err error) {
 	vmName := string(nodeName)
 	cachedVM, err := az.vmCache.Get(vmName, crt)
@@ -86,7 +86,7 @@ func (az *Cloud) getRouteTable(crt azcache.AzureCacheReadType) (routeTable netwo
 		return routeTable, false, fmt.Errorf("Route table name is not configured")
 	}
 
-	cachedRt, err := az.rtCache.Get(az.RouteTableName, crt)
+	cachedRt, err := az.rtCache.GetWithDeepCopy(az.RouteTableName, crt)
 	if err != nil {
 		return routeTable, false, err
 	}
@@ -109,7 +109,7 @@ func (az *Cloud) getPIPCacheKey(pipResourceGroup string, pipName string) string 
 func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string, crt azcache.AzureCacheReadType) (network.PublicIPAddress, bool, error) {
 	pip := network.PublicIPAddress{}
 	cacheKey := az.getPIPCacheKey(pipResourceGroup, pipName)
-	cachedPIP, err := az.pipCache.Get(cacheKey, crt)
+	cachedPIP, err := az.pipCache.GetWithDeepCopy(cacheKey, crt)
 	if err != nil {
 		return pip, false, err
 	}
@@ -145,8 +145,8 @@ func (az *Cloud) getSubnet(virtualNetworkName string, subnetName string) (networ
 	return subnet, exists, nil
 }
 
-func (az *Cloud) getAzureLoadBalancer(name string, crt azcache.AzureCacheReadType) (lb network.LoadBalancer, exists bool, err error) {
-	cachedLB, err := az.lbCache.Get(name, crt)
+func (az *Cloud) getAzureLoadBalancer(name string, crt azcache.AzureCacheReadType) (lb *network.LoadBalancer, exists bool, err error) {
+	cachedLB, err := az.lbCache.GetWithDeepCopy(name, crt)
 	if err != nil {
 		return lb, false, err
 	}
@@ -155,7 +155,7 @@ func (az *Cloud) getAzureLoadBalancer(name string, crt azcache.AzureCacheReadTyp
 		return lb, false, nil
 	}
 
-	return *(cachedLB.(*network.LoadBalancer)), true, nil
+	return cachedLB.(*network.LoadBalancer), true, nil
 }
 
 func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.SecurityGroup, error) {
@@ -164,7 +164,7 @@ func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.Secur
 		return nsg, fmt.Errorf("securityGroupName is not configured")
 	}
 
-	securityGroup, err := az.nsgCache.Get(az.SecurityGroupName, crt)
+	securityGroup, err := az.nsgCache.GetWithDeepCopy(az.SecurityGroupName, crt)
 	if err != nil {
 		return nsg, err
 	}
@@ -177,7 +177,7 @@ func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.Secur
 }
 
 func (az *Cloud) getPrivateLinkService(frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
-	cachedPLS, err := az.plsCache.Get(*frontendIPConfigID, crt)
+	cachedPLS, err := az.plsCache.GetWithDeepCopy(*frontendIPConfigID, crt)
 	if err != nil {
 		return pls, err
 	}
@@ -405,8 +405,8 @@ func (az *Cloud) IsNodeUnmanagedByProviderID(providerID string) bool {
 	return !azureNodeProviderIDRE.Match([]byte(providerID))
 }
 
-// convertResourceGroupNameToLower converts the resource group name in the resource ID to be lowered.
-func convertResourceGroupNameToLower(resourceID string) (string, error) {
+// ConvertResourceGroupNameToLower converts the resource group name in the resource ID to be lowered.
+func ConvertResourceGroupNameToLower(resourceID string) (string, error) {
 	matches := azureResourceGroupNameRE.FindStringSubmatch(resourceID)
 	if len(matches) != 2 {
 		return "", fmt.Errorf("%q isn't in Azure resource ID format %q", resourceID, azureResourceGroupNameRE.String())

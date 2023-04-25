@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 
 	v1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
@@ -68,6 +69,11 @@ func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudp
 	return provider.manager.clusterForNode(node)
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (provider *cloudStackCloudProvider) HasInstance(node *v1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 func (provider *cloudStackCloudProvider) Cleanup() error {
 	return provider.manager.cleanup()
@@ -96,6 +102,12 @@ func (provider *cloudStackCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
 func (provider *cloudStackCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (provider *cloudStackCloudProvider) GetNodeGpuConfig(node *v1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(provider, node)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

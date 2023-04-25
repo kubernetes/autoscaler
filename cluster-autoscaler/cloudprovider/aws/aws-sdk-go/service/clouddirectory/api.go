@@ -298,7 +298,7 @@ func (c *CloudDirectory) AttachObjectRequest(input *AttachObjectInput) (req *req
 //
 // # Using the path
 //
-// Using ObjectIdentifier
+// # Using ObjectIdentifier
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about

@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -41,14 +42,14 @@ func checkNodesSimilarWithPods(t *testing.T, n1, n2 *apiv1.Node, pods1, pods2 []
 }
 
 func TestIdenticalNodesSimilar(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{})
+	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n2 := BuildTestNode("node2", 1000, 2000)
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }
 
 func TestNodesSimilarVariousRequirements(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{})
+	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
 	n1 := BuildTestNode("node1", 1000, 2000)
 
 	// Different CPU capacity
@@ -74,7 +75,7 @@ func TestNodesSimilarVariousRequirements(t *testing.T) {
 }
 
 func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{})
+	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
 	n1 := BuildTestNode("node1", 1000, 2000)
 	p1 := BuildTestPod("pod1", 500, 1000)
 	p1.Spec.NodeName = "node1"
@@ -100,22 +101,22 @@ func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 }
 
 func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{})
+	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
 	n1 := BuildTestNode("node1", 1000, 1000)
 
 	// Different memory capacity within tolerance
 	n2 := BuildTestNode("node2", 1000, 1000)
-	n2.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*MaxCapacityMemoryDifferenceRatio)+1, resource.DecimalSI)
+	n2.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*config.DefaultMaxCapacityMemoryDifferenceRatio)+1, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
 	// Different memory capacity exceeds tolerance
 	n3 := BuildTestNode("node3", 1000, 1000)
-	n3.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*MaxCapacityMemoryDifferenceRatio)-1, resource.DecimalSI)
+	n3.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*config.DefaultMaxCapacityMemoryDifferenceRatio)-1, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }
 
 func TestNodesSimilarVariousLargeMemoryRequirementsM5XLarge(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{})
+	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
 
 	// Use realistic memory capacity (taken from real nodes)
 	// 15944120 KB ~= 16GiB (m5.xLarge)
@@ -137,7 +138,7 @@ func TestNodesSimilarVariousLargeMemoryRequirementsM5XLarge(t *testing.T) {
 }
 
 func TestNodesSimilarVariousLargeMemoryRequirementsM516XLarge(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{})
+	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
 
 	// Use realistic memory capacity (taken from real nodes)
 	// 257217528 KB ~= 256GiB (m5.16xLarge)
@@ -159,7 +160,7 @@ func TestNodesSimilarVariousLargeMemoryRequirementsM516XLarge(t *testing.T) {
 }
 
 func TestNodesSimilarVariousLabels(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator([]string{"example.com/ready"})
+	comparator := CreateGenericNodeInfoComparator([]string{"example.com/ready"}, config.NewDefaultNodeGroupDifferenceRatios())
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n1.ObjectMeta.Labels["test-label"] = "test-value"
 	n1.ObjectMeta.Labels["character"] = "winnie the pooh"

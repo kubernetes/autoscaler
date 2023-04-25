@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 
 	"k8s.io/klog/v2"
 
@@ -40,6 +40,9 @@ func (az *Cloud) CreateFileShare(ctx context.Context, accountOptions *AccountOpt
 	if accountOptions.ResourceGroup == "" {
 		accountOptions.ResourceGroup = az.resourceGroup
 	}
+	if accountOptions.SubscriptionID == "" {
+		accountOptions.SubscriptionID = az.subscriptionID
+	}
 
 	accountOptions.EnableHTTPSTrafficOnly = true
 	if shareOptions.Protocol == storage.EnabledProtocolsNFS {
@@ -51,7 +54,7 @@ func (az *Cloud) CreateFileShare(ctx context.Context, accountOptions *AccountOpt
 		return "", "", fmt.Errorf("could not get storage key for storage account %s: %w", accountOptions.Name, err)
 	}
 
-	if err := az.createFileShare(accountOptions.ResourceGroup, accountName, shareOptions); err != nil {
+	if err := az.createFileShare(ctx, accountOptions.SubscriptionID, accountOptions.ResourceGroup, accountName, shareOptions); err != nil {
 		return "", "", fmt.Errorf("failed to create share %s in account %s: %w", shareOptions.Name, accountName, err)
 	}
 	klog.V(4).Infof("created share %s in account %s", shareOptions.Name, accountOptions.Name)
@@ -59,8 +62,8 @@ func (az *Cloud) CreateFileShare(ctx context.Context, accountOptions *AccountOpt
 }
 
 // DeleteFileShare deletes a file share using storage account name and key
-func (az *Cloud) DeleteFileShare(resourceGroup, accountName, shareName string) error {
-	if err := az.deleteFileShare(resourceGroup, accountName, shareName); err != nil {
+func (az *Cloud) DeleteFileShare(ctx context.Context, subsID, resourceGroup, accountName, shareName string) error {
+	if err := az.deleteFileShare(ctx, subsID, resourceGroup, accountName, shareName); err != nil {
 		return err
 	}
 	klog.V(4).Infof("share %s deleted", shareName)
@@ -68,11 +71,11 @@ func (az *Cloud) DeleteFileShare(resourceGroup, accountName, shareName string) e
 }
 
 // ResizeFileShare resizes a file share
-func (az *Cloud) ResizeFileShare(resourceGroup, accountName, name string, sizeGiB int) error {
-	return az.resizeFileShare(resourceGroup, accountName, name, sizeGiB)
+func (az *Cloud) ResizeFileShare(ctx context.Context, subsID, resourceGroup, accountName, name string, sizeGiB int) error {
+	return az.resizeFileShare(ctx, subsID, resourceGroup, accountName, name, sizeGiB)
 }
 
 // GetFileShare gets a file share
-func (az *Cloud) GetFileShare(resourceGroupName, accountName, name string) (storage.FileShare, error) {
-	return az.getFileShare(resourceGroupName, accountName, name)
+func (az *Cloud) GetFileShare(ctx context.Context, subsID, resourceGroupName, accountName, name string) (storage.FileShare, error) {
+	return az.getFileShare(ctx, subsID, resourceGroupName, accountName, name)
 }

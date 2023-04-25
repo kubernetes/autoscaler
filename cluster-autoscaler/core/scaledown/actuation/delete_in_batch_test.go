@@ -29,7 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
@@ -161,7 +161,7 @@ func TestRemove(t *testing.T) {
 				})
 
 			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
-			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder, NewBackoff())
+			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
@@ -188,7 +188,7 @@ func TestRemove(t *testing.T) {
 			if test.addNgToBucket {
 				for _, node := range nodes {
 					node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
-						Key:    deletetaint.ToBeDeletedTaint,
+						Key:    taints.ToBeDeletedTaint,
 						Effect: apiv1.TaintEffectNoSchedule,
 					})
 					_, _, err := d.addNodeToBucket(node, true)

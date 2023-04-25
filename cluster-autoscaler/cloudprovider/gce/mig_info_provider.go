@@ -23,6 +23,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -52,24 +53,40 @@ type MigInfoProvider interface {
 	GetMigMachineType(migRef GceRef) (MachineType, error)
 }
 
+type timeProvider interface {
+	Now() time.Time
+}
+
 type cachingMigInfoProvider struct {
-	migInfoMutex           sync.Mutex
-	cache                  *GceCache
-	migLister              MigLister
-	gceClient              AutoscalingGceClient
-	projectId              string
-	concurrentGceRefreshes int
-	migInstanceMutex       sync.Mutex
+	migInfoMutex                   sync.Mutex
+	cache                          *GceCache
+	migLister                      MigLister
+	gceClient                      AutoscalingGceClient
+	projectId                      string
+	concurrentGceRefreshes         int
+	migInstanceMutex               sync.Mutex
+	migInstancesMinRefreshWaitTime time.Duration
+	migInstancesLastRefreshedInfo  map[string]time.Time
+	timeProvider                   timeProvider
+}
+
+type realTime struct{}
+
+func (r *realTime) Now() time.Time {
+	return time.Now()
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
-func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int) MigInfoProvider {
+func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration) MigInfoProvider {
 	return &cachingMigInfoProvider{
-		cache:                  cache,
-		migLister:              migLister,
-		gceClient:              gceClient,
-		projectId:              projectId,
-		concurrentGceRefreshes: concurrentGceRefreshes,
+		cache:                          cache,
+		migLister:                      migLister,
+		gceClient:                      gceClient,
+		projectId:                      projectId,
+		concurrentGceRefreshes:         concurrentGceRefreshes,
+		migInstancesMinRefreshWaitTime: migInstancesMinRefreshWaitTime,
+		migInstancesLastRefreshedInfo:  make(map[string]time.Time),
+		timeProvider:                   &realTime{},
 	}
 }
 
@@ -158,12 +175,21 @@ func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef)
 }
 
 func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
+	if val, ok := c.migInstancesLastRefreshedInfo[migRef.String()]; ok {
+		// do not regenerate MIG instances cache if last refresh happened recently.
+		if c.timeProvider.Now().Sub(val) < c.migInstancesMinRefreshWaitTime {
+			klog.V(4).Infof("Not regenerating MIG instances cache for %s, as it was refreshed in last MinRefreshWaitTime (%s).", migRef.String(), c.migInstancesMinRefreshWaitTime)
+			return nil
+		}
+	}
 	klog.V(4).Infof("Regenerating MIG instances cache for %s", migRef.String())
 	instances, err := c.gceClient.FetchMigInstances(migRef)
 	if err != nil {
 		c.migLister.HandleMigIssue(migRef, err)
 		return err
 	}
+	// only save information for successful calls, given the errors above may be transient.
+	c.migInstancesLastRefreshedInfo[migRef.String()] = c.timeProvider.Now()
 	return c.cache.SetMigInstances(migRef, instances)
 }
 

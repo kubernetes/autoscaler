@@ -17,8 +17,13 @@ limitations under the License.
 package sdk
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
+	"strings"
 )
+
+const canadianTenantSyncErrorMessage = "Internal Server Error"
 
 // APIError represents an error that can occurred while calling the API.
 type APIError struct {
@@ -47,4 +52,14 @@ type (
 
 func (e Error) Error() string {
 	return fmt.Sprintf("%d: %s", e.StatusCode, e.Message)
+}
+
+// IsPossiblyCanadianTenantSyncError returns whether the given error and URL could be due to the tenant being canadian and too recent.
+// This is a temporary fix until the issue is correctly handled
+func IsPossiblyCanadianTenantSyncError(err error, url string) bool {
+	var apiError *APIError
+	return (strings.HasPrefix(url, OvhEU) || strings.HasPrefix(url, "https://api.ovh.com/1.0")) &&
+		errors.As(err, &apiError) &&
+		apiError.Code == http.StatusInternalServerError &&
+		apiError.Message == canadianTenantSyncErrorMessage
 }

@@ -13,7 +13,6 @@ package ec2metadata
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -58,13 +57,13 @@ type EC2Metadata struct {
 // New creates a new instance of the EC2Metadata client with a session.
 // This client is safe to use across multiple goroutines.
 //
-//
 // Example:
-//     // Create a EC2Metadata client from just a session.
-//     svc := ec2metadata.New(mySession)
 //
-//     // Create a EC2Metadata client with additional configuration
-//     svc := ec2metadata.New(mySession, aws.NewConfig().WithLogLevel(aws.LogDebugHTTPBody))
+//	// Create a EC2Metadata client from just a session.
+//	svc := ec2metadata.New(mySession)
+//
+//	// Create a EC2Metadata client with additional configuration
+//	svc := ec2metadata.New(mySession, aws.NewConfig().WithLogLevel(aws.LogDebugHTTPBody))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *EC2Metadata {
 	c := p.ClientConfig(ServiceName, cfgs...)
 	return NewClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
@@ -234,7 +233,8 @@ func unmarshalError(r *request.Request) {
 
 	// Response body format is not consistent between metadata endpoints.
 	// Grab the error message as a string and include that as the source error
-	r.Error = awserr.NewRequestFailure(awserr.New("EC2MetadataError", "failed to make EC2Metadata request", errors.New(b.String())),
+	r.Error = awserr.NewRequestFailure(
+		awserr.New("EC2MetadataError", "failed to make EC2Metadata request\n"+b.String(), nil),
 		r.HTTPResponse.StatusCode, r.RequestID)
 }
 

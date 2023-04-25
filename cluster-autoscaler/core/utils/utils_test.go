@@ -20,26 +20,25 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-func TestSanitizeNodeInfo(t *testing.T) {
+func TestSanitizePods(t *testing.T) {
 	pod := BuildTestPod("p1", 80, 0)
 	pod.Spec.NodeName = "n1"
+	pods := []*apiv1.Pod{pod}
 
 	node := BuildTestNode("node", 1000, 1000)
 
-	nodeInfo := schedulerframework.NewNodeInfo(pod)
-	nodeInfo.SetNode(node)
-
-	res, err := SanitizeNodeInfo(nodeInfo, "test-group", nil)
+	resNode, err := SanitizeNode(node, "test-group", taints.TaintConfig{})
 	assert.NoError(t, err)
-	assert.Equal(t, 1, len(res.Pods))
+	res := SanitizePods(pods, resNode)
+	assert.Equal(t, 1, len(res))
 }
 
 func TestSanitizeLabels(t *testing.T) {
@@ -48,7 +47,7 @@ func TestSanitizeLabels(t *testing.T) {
 		apiv1.LabelHostname: "abc",
 		"x":                 "y",
 	}
-	node, err := sanitizeTemplateNode(oldNode, "bzium", nil)
+	node, err := SanitizeNode(oldNode, "bzium", taints.TaintConfig{})
 	assert.NoError(t, err)
 	assert.NotEqual(t, node.Labels[apiv1.LabelHostname], "abc", nil)
 	assert.Equal(t, node.Labels["x"], "y")

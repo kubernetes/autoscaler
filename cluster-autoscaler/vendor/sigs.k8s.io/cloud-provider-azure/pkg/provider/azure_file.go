@@ -17,24 +17,27 @@ limitations under the License.
 package provider
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"context"
+
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/fileclient"
 )
 
 // create file share
-func (az *Cloud) createFileShare(resourceGroupName, accountName string, shareOptions *fileclient.ShareOptions) error {
-	return az.FileClient.CreateFileShare(resourceGroupName, accountName, shareOptions)
+func (az *Cloud) createFileShare(ctx context.Context, subsID, resourceGroupName, accountName string, shareOptions *fileclient.ShareOptions) error {
+	_, err := az.FileClient.WithSubscriptionID(subsID).CreateFileShare(ctx, resourceGroupName, accountName, shareOptions, "")
+	return err
 }
 
-func (az *Cloud) deleteFileShare(resourceGroupName, accountName, name string) error {
-	return az.FileClient.DeleteFileShare(resourceGroupName, accountName, name)
+func (az *Cloud) deleteFileShare(ctx context.Context, subsID, resourceGroupName, accountName, name string) error {
+	return az.FileClient.WithSubscriptionID(subsID).DeleteFileShare(ctx, resourceGroupName, accountName, name, "")
 }
 
-func (az *Cloud) resizeFileShare(resourceGroupName, accountName, name string, sizeGiB int) error {
-	return az.FileClient.ResizeFileShare(resourceGroupName, accountName, name, sizeGiB)
+func (az *Cloud) resizeFileShare(ctx context.Context, subsID, resourceGroupName, accountName, name string, sizeGiB int) error {
+	return az.FileClient.WithSubscriptionID(subsID).ResizeFileShare(ctx, resourceGroupName, accountName, name, sizeGiB)
 }
 
-func (az *Cloud) getFileShare(resourceGroupName, accountName, name string) (storage.FileShare, error) {
-	return az.FileClient.GetFileShare(resourceGroupName, accountName, name)
+func (az *Cloud) getFileShare(ctx context.Context, subsID, resourceGroupName, accountName, name string) (storage.FileShare, error) {
+	return az.FileClient.WithSubscriptionID(subsID).GetFileShare(ctx, resourceGroupName, accountName, name, "")
 }

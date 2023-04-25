@@ -26,10 +26,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -63,9 +63,8 @@ func NewChecker(thresholdGetter utilizationThresholdGetter) *Checker {
 // utilization info.
 // TODO(x13n): Node utilization could actually be calculated independently for
 // all nodes and just used here. Next refactor...
-func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info) {
-	unremovableNodes.Update(context.ClusterSnapshot.NodeInfos(), timestamp)
-
+func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+	ineligible := []*simulator.UnremovableNode{}
 	skipped := 0
 	utilizationMap := make(map[string]utilization.Info)
 	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
@@ -75,13 +74,13 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 		nodeInfo, err := context.ClusterSnapshot.NodeInfos().Get(node.Name)
 		if err != nil {
 			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)
-			unremovableNodes.AddReason(node, simulator.UnexpectedError)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.UnexpectedError})
 			continue
 		}
 
 		// Skip nodes that were recently checked.
 		if unremovableNodes.IsRecent(node.Name) {
-			unremovableNodes.AddReason(node, simulator.RecentlyUnremovable)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.RecentlyUnremovable})
 			skipped++
 			continue
 		}
@@ -91,7 +90,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 			utilizationMap[node.Name] = *utilInfo
 		}
 		if reason != simulator.NoReason {
-			unremovableNodes.AddReason(node, reason)
+			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: reason})
 			continue
 		}
 
@@ -102,7 +101,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 	if skipped > 0 {
 		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
-	return currentlyUnneededNodeNames, utilizationMap
+	return currentlyUnneededNodeNames, utilizationMap, ineligible
 }
 
 func (c *Checker) unremovableReasonAndNodeUtilization(context *context.AutoscalingContext, timestamp time.Time, nodeInfo *schedulerframework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
@@ -119,7 +118,8 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		return simulator.ScaleDownDisabledAnnotation, nil
 	}
 
-	utilInfo, err := utilization.Calculate(nodeInfo, context.IgnoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, context.CloudProvider.GPULabel(), timestamp)
+	gpuConfig := context.CloudProvider.GetNodeGpuConfig(node)
+	utilInfo, err := utilization.Calculate(nodeInfo, context.IgnoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, gpuConfig, timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 	}
@@ -134,6 +134,15 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
 		klog.Warningf("Skipped %s from delete consideration - the node is not autoscaled", node.Name)
 		return simulator.NotAutoscaled, nil
+	}
+
+	// If scale down of unready nodes is disabled, skip the node if it is unready
+	if !context.ScaleDownUnreadyEnabled {
+		ready, _, _ := kube_util.GetReadinessState(node)
+		if !ready {
+			klog.V(4).Infof("Skipping unready node %s from delete consideration - scale-down of unready nodes is disabled", node.Name)
+			return simulator.ScaleDownUnreadyDisabled, nil
+		}
 	}
 
 	underutilized, err := c.isNodeBelowUtilizationThreshold(context, node, nodeGroup, utilInfo)
@@ -155,7 +164,8 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 func (c *Checker) isNodeBelowUtilizationThreshold(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
 	var err error
-	if gpu.NodeHasGpu(context.CloudProvider.GPULabel(), node) {
+	gpuConfig := context.CloudProvider.GetNodeGpuConfig(node)
+	if gpuConfig != nil {
 		threshold, err = c.thresholdGetter.GetScaleDownGpuUtilizationThreshold(context, nodeGroup)
 		if err != nil {
 			return false, err

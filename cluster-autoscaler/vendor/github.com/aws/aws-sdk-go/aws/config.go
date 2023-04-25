@@ -20,16 +20,16 @@ type RequestRetryer interface{}
 // A Config provides service configuration for service clients. By default,
 // all clients will use the defaults.DefaultConfig structure.
 //
-//     // Create Session with MaxRetries configuration to be shared by multiple
-//     // service clients.
-//     sess := session.Must(session.NewSession(&aws.Config{
-//         MaxRetries: aws.Int(3),
-//     }))
+//	// Create Session with MaxRetries configuration to be shared by multiple
+//	// service clients.
+//	sess := session.Must(session.NewSession(&aws.Config{
+//	    MaxRetries: aws.Int(3),
+//	}))
 //
-//     // Create S3 service client with a specific Region.
-//     svc := s3.New(sess, &aws.Config{
-//         Region: aws.String("us-west-2"),
-//     })
+//	// Create S3 service client with a specific Region.
+//	svc := s3.New(sess, &aws.Config{
+//	    Region: aws.String("us-west-2"),
+//	})
 type Config struct {
 	// Enables verbose error printing of all credential chain errors.
 	// Should be used when wanting to see all errors while attempting to
@@ -170,6 +170,9 @@ type Config struct {
 	//
 	// For example S3's X-Amz-Meta prefixed header will be unmarshaled to lower case
 	// Metadata member's map keys. The value of the header in the map is unaffected.
+	//
+	// The AWS SDK for Go v2, uses lower case header maps by default. The v1
+	// SDK provides this opt-in for this option, for backwards compatibility.
 	LowerCaseHeaderMaps *bool
 
 	// Set this to `true` to disable the EC2Metadata client from overriding the
@@ -188,6 +191,23 @@ type Config struct {
 	//    svc := s3.New(sess)
 	//
 	EC2MetadataDisableTimeoutOverride *bool
+
+	// Set this to `false` to disable EC2Metadata client from falling back to IMDSv1.
+	// By default, EC2 role credentials will fall back to IMDSv1 as needed for backwards compatibility.
+	// You can disable this behavior by explicitly setting this flag to `false`. When false, the EC2Metadata
+	// client will return any errors encountered from attempting to fetch a token instead of silently
+	// using the insecure data flow of IMDSv1.
+	//
+	// Example:
+	//    sess := session.Must(session.NewSession(aws.NewConfig()
+	//       .WithEC2MetadataEnableFallback(false)))
+	//
+	//    svc := s3.New(sess)
+	//
+	// See [configuring IMDS] for more information.
+	//
+	// [configuring IMDS]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
+	EC2MetadataEnableFallback *bool
 
 	// Instructs the endpoint to be generated for a service client to
 	// be the dual stack endpoint. The dual stack endpoint will support
@@ -208,7 +228,18 @@ type Config struct {
 	//     svc := s3.New(sess, &aws.Config{
 	//         UseDualStack: aws.Bool(true),
 	//     })
+	//
+	// Deprecated: This option will continue to function for S3 and S3 Control for backwards compatibility.
+	// UseDualStackEndpoint should be used to enable usage of a service's dual-stack endpoint for all service clients
+	// moving forward. For S3 and S3 Control, when UseDualStackEndpoint is set to a non-zero value it takes higher
+	// precedence then this option.
 	UseDualStack *bool
+
+	// Sets the resolver to resolve a dual-stack endpoint for the service.
+	UseDualStackEndpoint endpoints.DualStackEndpointState
+
+	// UseFIPSEndpoint specifies the resolver must resolve a FIPS endpoint.
+	UseFIPSEndpoint endpoints.FIPSEndpointState
 
 	// SleepDelay is an override for the func the SDK will call when sleeping
 	// during the lifecycle of a request. Specifically this will be used for
@@ -269,16 +300,16 @@ type Config struct {
 // NewConfig returns a new Config pointer that can be chained with builder
 // methods to set multiple configuration values inline without using pointers.
 //
-//     // Create Session with MaxRetries configuration to be shared by multiple
-//     // service clients.
-//     sess := session.Must(session.NewSession(aws.NewConfig().
-//         WithMaxRetries(3),
-//     ))
+//	// Create Session with MaxRetries configuration to be shared by multiple
+//	// service clients.
+//	sess := session.Must(session.NewSession(aws.NewConfig().
+//	    WithMaxRetries(3),
+//	))
 //
-//     // Create S3 service client with a specific Region.
-//     svc := s3.New(sess, aws.NewConfig().
-//         WithRegion("us-west-2"),
-//     )
+//	// Create S3 service client with a specific Region.
+//	svc := s3.New(sess, aws.NewConfig().
+//	    WithRegion("us-west-2"),
+//	)
 func NewConfig() *Config {
 	return &Config{}
 }
@@ -418,6 +449,13 @@ func (c *Config) WithEC2MetadataDisableTimeoutOverride(enable bool) *Config {
 	return c
 }
 
+// WithEC2MetadataEnableFallback sets a config EC2MetadataEnableFallback value
+// returning a Config pointer for chaining.
+func (c *Config) WithEC2MetadataEnableFallback(v bool) *Config {
+	c.EC2MetadataEnableFallback = &v
+	return c
+}
+
 // WithSleepDelay overrides the function used to sleep while waiting for the
 // next retry. Defaults to time.Sleep.
 func (c *Config) WithSleepDelay(fn func(time.Duration)) *Config {
@@ -554,8 +592,16 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.UseDualStack = other.UseDualStack
 	}
 
+	if other.UseDualStackEndpoint != endpoints.DualStackEndpointStateUnset {
+		dst.UseDualStackEndpoint = other.UseDualStackEndpoint
+	}
+
 	if other.EC2MetadataDisableTimeoutOverride != nil {
 		dst.EC2MetadataDisableTimeoutOverride = other.EC2MetadataDisableTimeoutOverride
+	}
+
+	if other.EC2MetadataEnableFallback != nil {
+		dst.EC2MetadataEnableFallback = other.EC2MetadataEnableFallback
 	}
 
 	if other.SleepDelay != nil {
@@ -588,6 +634,14 @@ func mergeInConfig(dst *Config, other *Config) {
 
 	if other.LowerCaseHeaderMaps != nil {
 		dst.LowerCaseHeaderMaps = other.LowerCaseHeaderMaps
+	}
+
+	if other.UseDualStackEndpoint != endpoints.DualStackEndpointStateUnset {
+		dst.UseDualStackEndpoint = other.UseDualStackEndpoint
+	}
+
+	if other.UseFIPSEndpoint != endpoints.FIPSEndpointStateUnset {
+		dst.UseFIPSEndpoint = other.UseFIPSEndpoint
 	}
 }
 

@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vpa-recommender
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vpa-recommender-performance
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vpa-recommender-performance
+  template:
+    metadata:
+      labels:
+        app: vpa-recommender-performance
+    spec:
+      serviceAccountName: vpa-recommender
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+      - name: recommender
+        image: registry.k8s.io/autoscaling/vpa-recommender:0.13.0
+        imagePullPolicy: Always
+        args:
+          - --name=performance
+          - --target-cpu-percentile=0.95
+        resources:
+          limits:
+            cpu: 200m
+            memory: 1000Mi
+          requests:
+            cpu: 50m
+            memory: 500Mi
+        ports:
+        - name: prometheus
+          containerPort: 8942

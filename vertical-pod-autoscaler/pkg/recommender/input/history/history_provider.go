@@ -74,7 +74,7 @@ type prometheusHistoryProvider struct {
 	historyResolution prommodel.Duration
 }
 
-// NewPrometheusHistoryProvider contructs a history provider that gets data from Prometheus.
+// NewPrometheusHistoryProvider constructs a history provider that gets data from Prometheus.
 func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (HistoryProvider, error) {
 	promClient, err := promapi.NewClient(promapi.Config{
 		Address: config.Address,

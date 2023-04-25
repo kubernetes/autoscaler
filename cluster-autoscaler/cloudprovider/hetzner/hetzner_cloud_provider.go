@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
 
@@ -99,6 +100,11 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	return group, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	return true, cloudprovider.ErrNotImplemented
+}
+
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
 func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
@@ -149,6 +155,12 @@ func (d *HetznerCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
 func (d *HetznerCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return nil
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (d *HetznerCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(d, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,

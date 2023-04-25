@@ -202,28 +202,13 @@ func (csm *cloudServiceManager) GetDesireInstanceNumber(groupID string) (int, er
 }
 
 func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.Instance, error) {
-	asClient := csm.getASClientFunc()
-	if asClient == nil {
-		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
-	}
-
-	// SDK 'ListScalingInstances' only return no more than 20 instances.
-	// If there is a need in the future, need to retrieve by pages.
-	opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
-		ScalingGroupId: groupID,
-	}
-	response, err := asClient.ListScalingInstances(opts)
+	scalingGroupInstances, err := csm.ListScalingInstances(groupID)
 	if err != nil {
-		klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
 		return nil, err
 	}
-	if response == nil || response.ScalingGroupInstances == nil {
-		klog.Infof("no instance in scaling group: %s", groupID)
-		return nil, nil
-	}
 
-	instances := make([]cloudprovider.Instance, 0, len(*response.ScalingGroupInstances))
-	for _, sgi := range *response.ScalingGroupInstances {
+	instances := make([]cloudprovider.Instance, 0, len(scalingGroupInstances))
+	for _, sgi := range scalingGroupInstances {
 		// When a new instance joining to the scaling group, the instance id maybe empty(nil).
 		if sgi.InstanceId == nil {
 			klog.Infof("ignore instance without instance id, maybe instance is joining.")
@@ -237,6 +222,48 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 	}
 
 	return instances, nil
+}
+
+func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicloudsdkasmodel.ScalingGroupInstance, error) {
+	asClient := csm.getASClientFunc()
+	if asClient == nil {
+		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
+	}
+
+	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
+	var startNumber int32 = 0
+	for {
+		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
+			ScalingGroupId: groupID,
+			StartNumber:    &startNumber,
+		}
+		response, err := asClient.ListScalingInstances(opts)
+		if err != nil {
+			klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
+			return nil, err
+		}
+		if response == nil {
+			klog.Errorf("Unexpected get nil response when listing instances.")
+			return nil, fmt.Errorf("unexpected get nil response when listing instances")
+		}
+		if response.ScalingGroupInstances == nil {
+			klog.Errorf("Unexpected get nil scaling group instances")
+			return nil, fmt.Errorf("unexpected get nil scaling group instances")
+		}
+
+		klog.Infof("Got %d instances from scaling group, total instances: %d", len(*response.ScalingGroupInstances), *response.TotalNumber)
+		scalingGroupInstances = append(scalingGroupInstances, *response.ScalingGroupInstances...)
+
+		// break once we get all instances
+		if response.TotalNumber != nil && len(scalingGroupInstances) == int(*response.TotalNumber) {
+			break
+		}
+
+		// get ready to request next page
+		startNumber += int32(len(*response.ScalingGroupInstances))
+	}
+
+	return scalingGroupInstances, nil
 }
 
 func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
@@ -318,7 +345,7 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 	}
 
 	// wait for instance number indeed be increased
-	return wait.Poll(5*time.Second, 300*time.Second, func() (done bool, err error) {
+	return wait.Poll(5*time.Second, 30*time.Minute, func() (done bool, err error) {
 		currentInstanceSize, err := csm.GetDesireInstanceNumber(groupID)
 		if err != nil {
 			return false, err
@@ -475,6 +502,34 @@ func (csm *cloudServiceManager) getScalingGroupByID(groupID string) (*huaweiclou
 	return response.ScalingGroup, nil
 }
 
+func (csm *cloudServiceManager) listScalingTagsByID(groupID string) (map[string]string, error) {
+	asClient := csm.getASClientFunc()
+	opts := &huaweicloudsdkasmodel.ListScalingTagInfosByResourceIdRequest{
+		ResourceType: huaweicloudsdkasmodel.GetListScalingTagInfosByResourceIdRequestResourceTypeEnum().SCALING_GROUP_TAG,
+		ResourceId:   groupID,
+	}
+	response, err := asClient.ListScalingTagInfosByResourceId(opts)
+	if err != nil {
+		klog.Errorf("failed to list scaling group tags. scaling group id: %s, error: %v", groupID, err)
+		return nil, err
+	}
+	if response == nil || response.Tags == nil {
+		klog.Infof("Not tags found for scaling group by id:%s", groupID)
+		return nil, nil
+	}
+
+	tags := make(map[string]string)
+	for _, tag := range *response.Tags {
+		if tag.Value != nil {
+			tags[tag.Key] = *tag.Value
+			continue
+		}
+		tags[tag.Key] = ""
+	}
+
+	return tags, nil
+}
+
 func (csm *cloudServiceManager) getScalingGroupConfigByID(groupID, configID string) (*huaweicloudsdkasmodel.ScalingConfiguration, error) {
 	asClient := csm.getASClientFunc()
 	opts := &huaweicloudsdkasmodel.ShowScalingConfigRequest{
@@ -513,7 +568,15 @@ func (csm *cloudServiceManager) getAsgTemplate(groupID string) (*asgTemplate, er
 	}
 
 	configuration, err := csm.getScalingGroupConfigByID(groupID, *sg.ScalingConfigurationId)
-
+	if err != nil {
+		klog.Errorf("failed to get scaling group config by id:%s", *sg.ScalingConfigurationId)
+		return nil, err
+	}
+	tags, err := csm.listScalingTagsByID(groupID)
+	if err != nil {
+		klog.Errorf("failed to list scaling tags by id:%s", groupID)
+		return nil, err
+	}
 	for _, az := range *sg.AvailableZones {
 		flavors, err := csm.listFlavors(az)
 		if err != nil {
@@ -522,7 +585,8 @@ func (csm *cloudServiceManager) getAsgTemplate(groupID string) (*asgTemplate, er
 		}
 
 		for _, flavor := range *flavors {
-			if !strings.EqualFold(flavor.Name, *configuration.InstanceConfig.FlavorRef) {
+			// FlavorRef is in format like: c7.4xlarge.2,c7.4xlarge.4,c7.6xlarge.2
+			if !strings.Contains(*configuration.InstanceConfig.FlavorRef, flavor.Name) {
 				continue
 			}
 
@@ -532,10 +596,11 @@ func (csm *cloudServiceManager) getAsgTemplate(groupID string) (*asgTemplate, er
 				vcpu: vcpus,
 				ram:  int64(flavor.Ram),
 				zone: az,
+				tags: tags,
 			}, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("no available instance flavor:%s found in as group:%s", *configuration.InstanceConfig.FlavorRef, groupID)
 }
 
 func (csm *cloudServiceManager) buildNodeFromTemplate(asgName string, template *asgTemplate) (*apiv1.Node, error) {
@@ -561,8 +626,55 @@ func (csm *cloudServiceManager) buildNodeFromTemplate(asgName string, template *
 
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
 
+	node.Spec.Taints = extractTaintsFromTags(template.tags)
+
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+// extractTaintsFromTags extract taints from as group tags.
+// The tag is of the format "k8s.io_cluster-autoscaler_node-template_taint_<taint-key>". "<taint-key>" is
+// the name of the taint and the value of each tag specifies the taint value and effect with the
+// format "<taint-value>:<taint-effect>".
+// Example tags: "k8s.io_cluster-autoscaler_node-template_taint_dedicated": "true:NoSchedule"
+func extractTaintsFromTags(tags map[string]string) []apiv1.Taint {
+	taints := make([]apiv1.Taint, 0)
+
+	for tagKey, tagValue := range tags {
+		if !strings.Contains(tagKey, "k8s.io_cluster-autoscaler_node-template_taint_") {
+			continue
+		}
+
+		splits := strings.Split(tagKey, "k8s.io_cluster-autoscaler_node-template_taint_")
+		// If the tagKey is 'k8s.io_cluster-autoscaler_node-template_taint_', the second element is '',
+		// this should be ruled out.
+		if len(splits) < 2 || splits[1] == "" {
+			klog.Warningf("Invalid tag key format:%s", tagKey)
+			continue
+		}
+
+		values := strings.Split(tagValue, ":")
+		if len(values) != 2 {
+			klog.Warningf("Invalid tag value format:%s", tagValue)
+			continue
+		}
+
+		if values[1] != string(apiv1.TaintEffectNoSchedule) &&
+			values[1] != string(apiv1.TaintEffectPreferNoSchedule) &&
+			values[1] != string(apiv1.TaintEffectNoExecute) {
+			klog.Warningf("Invalid tag value format:%s", tagValue)
+			continue
+		}
+
+		taints = append(taints, apiv1.Taint{
+			Key:    splits[1],
+			Value:  values[0],
+			Effect: apiv1.TaintEffect(values[1]),
+		})
+		klog.V(6).Infof("Extract taints from tag key/value successfully:%s, %s", tagKey, tagValue)
+	}
+
+	return taints
 }
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
@@ -578,6 +690,10 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 
 	// append custom node labels
 	for key, value := range template.tags {
+		// ignore the tag which represents a taint
+		if strings.Contains(key, "k8s.io_cluster-autoscaler_node-template_taint_") {
+			continue
+		}
 		result[key] = value
 	}
 

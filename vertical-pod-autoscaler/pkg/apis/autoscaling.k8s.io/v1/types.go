@@ -54,7 +54,7 @@ type VerticalPodAutoscaler struct {
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Specification of the behavior of the autoscaler.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
 	Spec VerticalPodAutoscalerSpec `json:"spec" protobuf:"bytes,2,name=spec"`
 
 	// Current information about the autoscaler.
@@ -119,7 +119,7 @@ type PodUpdatePolicy struct {
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
 }
 
-// UpdateMode controls when autoscaler applies changes to the pod resoures.
+// UpdateMode controls when autoscaler applies changes to the pod resources.
 // +kubebuilder:validation:Enum=Off;Initial;Recreate;Auto
 type UpdateMode string
 
@@ -323,7 +323,7 @@ type VerticalPodAutoscalerCheckpoint struct {
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Specification of the checkpoint.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
 	// +optional
 	Spec VerticalPodAutoscalerCheckpointSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 

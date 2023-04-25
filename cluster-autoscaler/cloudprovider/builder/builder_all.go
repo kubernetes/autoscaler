@@ -41,7 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kamatera"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci"
+	oci "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher"

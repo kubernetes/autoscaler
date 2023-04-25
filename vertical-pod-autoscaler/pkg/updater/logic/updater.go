@@ -260,10 +260,10 @@ func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalP
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
 }
 
-func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriciton eviction.PodsEvictionRestriction) []*apiv1.Pod {
+func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriction eviction.PodsEvictionRestriction) []*apiv1.Pod {
 	result := make([]*apiv1.Pod, 0)
 	for _, pod := range pods {
-		if evictionRestriciton.CanEvict(pod) {
+		if evictionRestriction.CanEvict(pod) {
 			result = append(result, pod)
 		}
 	}

@@ -28,6 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	kube_types "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
 // BuildTestPod creates a pod with specified resources.
@@ -100,6 +102,37 @@ func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage in
 		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(ephemeralStorage, resource.DecimalSI)
 	}
 
+	return pod
+}
+
+// BuildScheduledTestPod builds a scheduled test pod with a given spec
+func BuildScheduledTestPod(name string, cpu, memory int64, nodeName string) *apiv1.Pod {
+	p := BuildTestPod(name, cpu, memory)
+	p.Spec.NodeName = nodeName
+	return p
+}
+
+// SetStaticPodSpec sets pod spec to make it a static pod
+func SetStaticPodSpec(pod *apiv1.Pod) *apiv1.Pod {
+	pod.Annotations[kube_types.ConfigSourceAnnotationKey] = kube_types.FileSource
+	return pod
+}
+
+// SetMirrorPodSpec sets pod spec to make it a mirror pod
+func SetMirrorPodSpec(pod *apiv1.Pod) *apiv1.Pod {
+	pod.ObjectMeta.Annotations[kube_types.ConfigMirrorAnnotationKey] = "mirror"
+	return pod
+}
+
+// SetDSPodSpec sets pod spec to make it a DS pod
+func SetDSPodSpec(pod *apiv1.Pod) *apiv1.Pod {
+	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "api/v1/namespaces/default/daemonsets/ds")
+	return pod
+}
+
+// SetRSPodSpec sets pod spec to make it a RS pod
+func SetRSPodSpec(pod *apiv1.Pod, rsName string) *apiv1.Pod {
+	pod.OwnerReferences = GenerateOwnerReferences(rsName, "ReplicaSet", "extensions/v1beta1", types.UID(rsName))
 	return pod
 }
 
@@ -206,6 +239,20 @@ func AddGpuLabelToNode(node *apiv1.Node) {
 // GetGPULabel return GPULabel on the node. This is only used in unit tests.
 func GetGPULabel() string {
 	return gpuLabel
+}
+
+// GetGpuConfigFromNode returns the GPU of the node if it has one. This is only used in unit tests.
+func GetGpuConfigFromNode(node *apiv1.Node) *cloudprovider.GpuConfig {
+	gpuType, hasGpuLabel := node.Labels[gpuLabel]
+	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[resourceNvidiaGPU]
+	if hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero()) {
+		return &cloudprovider.GpuConfig{
+			Label:        gpuLabel,
+			Type:         gpuType,
+			ResourceName: resourceNvidiaGPU,
+		}
+	}
+	return nil
 }
 
 // SetNodeReadyState sets node ready state to either ConditionTrue or ConditionFalse.

@@ -21,7 +21,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -41,15 +42,15 @@ type Estimator interface {
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(simulator.PredicateChecker, simulator.ClusterSnapshot) Estimator
+type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot) Estimator
 
 // NewEstimatorBuilder creates a new estimator object from flag.
 func NewEstimatorBuilder(name string, limiter EstimationLimiter) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
-			predicateChecker simulator.PredicateChecker,
-			clusterSnapshot simulator.ClusterSnapshot) Estimator {
+			predicateChecker predicatechecker.PredicateChecker,
+			clusterSnapshot clustersnapshot.ClusterSnapshot) Estimator {
 			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter)
 		}, nil
 	}

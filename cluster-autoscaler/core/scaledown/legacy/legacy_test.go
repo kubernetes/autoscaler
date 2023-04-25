@@ -23,11 +23,13 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,12 +48,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-	klog "k8s.io/klog/v2"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 )
 
 func TestFindUnneededNodes(t *testing.T) {
@@ -103,10 +104,10 @@ func TestFindUnneededNodes(t *testing.T) {
 	n7 := BuildTestNode("n7", 0, 10)
 	// Node being deleted.
 	n8 := BuildTestNode("n8", 1000, 10)
-	n8.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+	n8.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 	// Nod being deleted recently.
 	n9 := BuildTestNode("n9", 1000, 10)
-	n9.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-60, 10)}}
+	n9.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-60, 10)}}
 
 	SetNodeReadyState(n1, true, time.Time{})
 	SetNodeReadyState(n2, true, time.Time{})
@@ -129,9 +130,12 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n8)
 	provider.AddNode("ng1", n9)
 
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1, p2, p3, p4, p5, p6})
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -142,23 +146,19 @@ func TestFindUnneededNodes(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 	allNodes := []*apiv1.Node{n1, n2, n3, n4, n5, n7, n8, n9}
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4, p5, p6})
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4, p5, p6})
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now())
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 3, len(sd.unneededNodes))
-	_, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-	_, found = sd.unneededNodes["n7"]
-	assert.True(t, found)
-	addTime, found := sd.unneededNodes["n8"]
-	assert.True(t, found)
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
+	assert.Equal(t, 3, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
+	assert.True(t, sd.unneededNodes.Contains("n7"))
+	assert.True(t, sd.unneededNodes.Contains("n8"))
 	for _, n := range []string{"n1", "n2", "n3", "n4", "n7", "n8"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -169,16 +169,14 @@ func TestFindUnneededNodes(t *testing.T) {
 	}
 
 	sd.unremovableNodes = unremovable.NewNodes()
-	sd.unneededNodes["n1"] = time.Now()
+	sd.unneededNodes.Update([]simulator.NodeToBeRemoved{{Node: n1}, {Node: n2}, {Node: n3}, {Node: n4}}, time.Now())
 	allNodes = []*apiv1.Node{n1, n2, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now())
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 1, len(sd.unneededNodes))
-	addTime2, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-	assert.Equal(t, addTime, addTime2)
+	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
 	for _, n := range []string{"n1", "n2", "n3", "n4"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -190,28 +188,28 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	sd.unremovableNodes = unremovable.NewNodes()
 	scaleDownCandidates := []*apiv1.Node{n1, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now())
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 0, len(sd.unneededNodes))
+	assert.Equal(t, 0, len(sd.unneededNodes.AsList()))
 
 	// Node n1 is unneeded, but should be skipped because it has just recently been found to be unremovable
 	allNodes = []*apiv1.Node{n1}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now())
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 0, len(sd.unneededNodes))
+	assert.Equal(t, 0, len(sd.unneededNodes.AsList()))
 	// Verify that no other nodes are in unremovable map.
 	assert.Equal(t, 1, len(sd.unremovableNodes.AsList()))
 
 	// But it should be checked after timeout
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now().Add(context.UnremovableNodeRecheckTimeout+time.Second), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now().Add(context.UnremovableNodeRecheckTimeout+time.Second))
 	assert.NoError(t, autoscalererr)
 
-	assert.Equal(t, 1, len(sd.unneededNodes))
+	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
 	// Verify that nodes that are no longer unremovable are removed.
 	assert.Equal(t, 0, len(sd.unremovableNodes.AsList()))
 }
@@ -262,9 +260,12 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	provider.AddNode("ng1", n2)
 	provider.AddNode("ng1", n3)
 
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1, p2, p3})
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -276,20 +277,17 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 	allNodes := []*apiv1.Node{n1, n2, n3}
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3})
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3})
 
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now())
 	assert.NoError(t, autoscalererr)
-	assert.Equal(t, 1, len(sd.unneededNodes))
-	_, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
+	assert.Equal(t, 1, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
 	for _, n := range []string{"n1", "n2", "n3"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -385,29 +383,30 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 	}
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
+			podLister := kube_util.NewTestPodLister(allPods)
+			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 			rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 			assert.NoError(t, err)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 			context, err := NewScaleTestAutoscalingContext(globalOptions, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
-			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 			wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 			sd := wrapper.sd
-			simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, allPods)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, allPods)
 
 			ng1 := provider.GetNodeGroup("n1").(*testprovider.TestNodeGroup)
 			ng1.SetOptions(tc.n1opts)
 			ng2 := provider.GetNodeGroup("n2").(*testprovider.TestNodeGroup)
 			ng2.SetOptions(tc.n2opts)
 
-			autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
+			autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now())
 			assert.NoError(t, autoscalererr)
-			klog.Infof("[%s] Unneeded nodes %v", tn, sd.unneededNodes)
-			assert.Equal(t, len(tc.wantUnneeded), len(sd.unneededNodes))
+			assert.Equal(t, len(tc.wantUnneeded), len(sd.unneededNodes.AsList()))
 			for _, node := range tc.wantUnneeded {
-				_, found := sd.unneededNodes[node]
-				assert.True(t, found)
+				assert.True(t, sd.unneededNodes.Contains(node))
 			}
 		})
 	}
@@ -461,9 +460,12 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n3)
 	provider.AddNode("ng1", n4)
 
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -473,22 +475,17 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 
 	allNodes := []*apiv1.Node{n1, n2, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
-	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
+	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now())
 	assert.NoError(t, autoscalererr)
-	assert.Equal(t, 2, len(sd.unneededNodes))
-	klog.Warningf("Unneeded nodes %v", sd.unneededNodes)
-	_, found := sd.unneededNodes["n2"]
-	assert.True(t, found)
-	_, found = sd.unneededNodes["n3"]
-	assert.True(t, found)
-	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
-	assert.Contains(t, sd.podLocationHints, p3.Namespace+"/"+p3.Name)
+	assert.Equal(t, 2, len(sd.unneededNodes.AsList()))
+	assert.True(t, sd.unneededNodes.Contains("n2"))
+	assert.True(t, sd.unneededNodes.Contains("n3"))
 	for _, n := range []string{"n1", "n2", "n3", "n4"} {
 		_, found := sd.nodeUtilizationMap[n]
 		assert.True(t, found, n)
@@ -524,9 +521,12 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	numCandidates := 30
 
+	podLister := kube_util.NewTestPodLister(pods)
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -539,16 +539,16 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
-	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now())
 	assert.NoError(t, autoscalererr)
-	assert.Equal(t, numCandidates, len(sd.unneededNodes))
+	assert.Equal(t, numCandidates, len(sd.unneededNodes.AsList()))
 	// Simulate one of the unneeded nodes got deleted
-	deleted := sd.unneededNodesList[len(sd.unneededNodesList)-1]
+	deleted := sd.unneededNodes.AsList()[len(sd.unneededNodes.AsList())-1]
 	for i, node := range nodes {
 		if node.Name == deleted.Name {
 			// Move pod away from the node
@@ -566,12 +566,12 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		}
 	}
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
-	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now())
 	assert.NoError(t, autoscalererr)
 	// Check that the deleted node was replaced
-	assert.Equal(t, numCandidates, len(sd.unneededNodes))
-	assert.NotContains(t, sd.unneededNodes, deleted)
+	assert.Equal(t, numCandidates, len(sd.unneededNodes.AsList()))
+	assert.False(t, sd.unneededNodes.Contains(deleted.Name))
 }
 
 func TestFindUnneededEmptyNodes(t *testing.T) {
@@ -605,9 +605,12 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 
 	numCandidates := 30
 
+	podLister := kube_util.NewTestPodLister(pods)
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -620,17 +623,14 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
 
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
-	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now())
 	assert.NoError(t, autoscalererr)
-	for _, node := range sd.unneededNodesList {
-		t.Log(node.Name)
-	}
-	assert.Equal(t, numEmpty+numCandidates, len(sd.unneededNodes))
+	assert.Equal(t, numEmpty+numCandidates, len(sd.unneededNodes.AsList()))
 }
 
 func TestFindUnneededNodePool(t *testing.T) {
@@ -662,9 +662,12 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 	numCandidates := 30
 
+	podLister := kube_util.NewTestPodLister(pods)
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, rsLister, nil)
 
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -677,11 +680,11 @@ func TestFindUnneededNodePool(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
 	sd := wrapper.sd
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
-	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now(), nil)
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, pods)
+	autoscalererr = sd.UpdateUnneededNodes(nodes, nodes, time.Now())
 	assert.NoError(t, autoscalererr)
 	assert.NotEmpty(t, sd.unneededNodes)
 }
@@ -759,19 +762,22 @@ func TestScaleDown(t *testing.T) {
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1, p2})
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, jobLister, nil, nil)
 
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 	nodes := []*apiv1.Node{n1, n2}
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
-	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
+	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
@@ -1015,17 +1021,20 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 
 	assert.NotNil(t, provider)
 
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(config.Options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, config.NodeDeletionTracker)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{})
-	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{})
+	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 
 	assert.NoError(t, err)
 	var expectedScaleDownResult status.ScaleDownResult
@@ -1101,21 +1110,26 @@ func TestNoScaleDownUnready(t *testing.T) {
 			ScaleDownUnreadyTime:          time.Hour,
 		},
 		MaxGracefulTerminationSec: 60,
+		ScaleDownUnreadyEnabled:   true,
 	}
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p2})
+	pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
 
 	// N1 is unready so it requires a bigger unneeded time.
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
-	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
+	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
@@ -1135,11 +1149,11 @@ func TestNoScaleDownUnready(t *testing.T) {
 	// N1 has been unready for 2 hours, ok to delete.
 	context.CloudProvider = provider
 	wrapper = newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
-	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-2*time.Hour))
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
+	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-2*time.Hour))
 	assert.NoError(t, autoscalererr)
 	empty, drain = wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err = wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err = wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
@@ -1223,13 +1237,13 @@ func TestScaleDownNoMove(t *testing.T) {
 
 	nodes := []*apiv1.Node{n1, n2}
 
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 	wrapper := newWrapperForTesting(&context, clusterStateRegistry, nil)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
-	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, nil, time.Now().Add(-5*time.Minute))
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
+	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain, time.Now())
+	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
@@ -1267,10 +1281,18 @@ func generateReplicaSets() []*appsv1.ReplicaSet {
 func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker) *ScaleDownWrapper {
 	ctx.MaxDrainParallelism = 1
 	ctx.MaxScaleDownParallelism = 10
+	ctx.NodeDeletionBatcherInterval = 0 * time.Second
+	ctx.NodeDeleteDelayAfterTaint = 0 * time.Second
 	if ndt == nil {
 		ndt = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	sd := NewScaleDown(ctx, NewTestProcessors(), clusterStateRegistry, ndt)
-	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, 0*time.Second)
+	deleteOptions := simulator.NodeDeleteOptions{
+		SkipNodesWithSystemPods:           true,
+		SkipNodesWithLocalStorage:         true,
+		MinReplicaCount:                   0,
+		SkipNodesWithCustomControllerPods: true,
+	}
+	sd := NewScaleDown(ctx, NewTestProcessors(ctx), ndt, deleteOptions)
+	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions)
 	return NewScaleDownWrapper(sd, actuator)
 }

@@ -1,5 +1,10 @@
 approvers:
-#- jlamillan
+- jlamillan
+#- trungng92
+#- sohan-oracle
+
 reviewers:
-#- jlamillan
+- jlamillan
+#- trungng92
+#- sohan-oracle
 #- ericrrath
