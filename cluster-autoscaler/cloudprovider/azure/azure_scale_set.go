@@ -679,6 +679,13 @@ func instanceStatusFromProvisioningState(provisioningState *string) *cloudprovid
 		status.State = cloudprovider.InstanceDeleting
 	case string(compute.ProvisioningStateCreating):
 		status.State = cloudprovider.InstanceCreating
+	case string(compute.ProvisioningStateFailed):
+		status.State = cloudprovider.InstanceCreating
+		status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
+			ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+			ErrorCode:    "provisioning-state-failed",
+			ErrorMessage: "Azure failed to provision a node for this node group",
+		}
 	default:
 		status.State = cloudprovider.InstanceRunning
 	}
