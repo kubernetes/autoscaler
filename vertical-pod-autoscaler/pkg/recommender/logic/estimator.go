@@ -142,7 +142,7 @@ func (e *marginEstimator) GetResourceEstimation(s *model.AggregateContainerState
 	newResources := make(model.Resources)
 	for resource, resourceAmount := range originalResources {
 		margin := model.ScaleResource(resourceAmount, e.marginFraction)
-		if(e.marginFraction < 0.0){
+		if e.marginFraction < 0.0 {
 			margin = margin * -1.0
 		}
 		newResources[resource] = originalResources[resource] + margin
