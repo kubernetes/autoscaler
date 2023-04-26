@@ -513,7 +513,7 @@ func (o *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.
 }
 
 // IsNodeGroupResourceExceeded returns nil if node group resource limits are not exceeded, otherwise a reason is provided.
-func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) *SkippedReasons {
+func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) status.Reasons {
 	resourcesDelta, err := o.resourceManager.DeltaForNode(o.autoscalingContext, nodeInfo, nodeGroup)
 	if err != nil {
 		klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
@@ -533,7 +533,7 @@ func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(resourcesLeft resource
 				continue
 			}
 		}
-		return MaxResourceLimitReached(checkResult.ExceededResources)
+		return NewMaxResourceLimitReached(checkResult.ExceededResources)
 	}
 	return nil
 }
