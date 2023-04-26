@@ -276,7 +276,7 @@ func (ng *nodegroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 }
 
 func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
-	labels := cloudprovider.JoinStringMaps(ng.scalableResource.Labels(), buildGenericLabels(nodeName))
+	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), ng.scalableResource.Labels())
 
 	nodes, err := ng.Nodes()
 	if err != nil {
