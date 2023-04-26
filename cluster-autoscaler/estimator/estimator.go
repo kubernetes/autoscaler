@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -45,13 +46,13 @@ type Estimator interface {
 type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot) Estimator
 
 // NewEstimatorBuilder creates a new estimator object from flag.
-func NewEstimatorBuilder(name string, limiter EstimationLimiter) (EstimatorBuilder, error) {
+func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
 			predicateChecker predicatechecker.PredicateChecker,
 			clusterSnapshot clustersnapshot.ClusterSnapshot) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter)
+			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)
@@ -71,4 +72,10 @@ type EstimationLimiter interface {
 	// There is no requirement for the Estimator to stop calculations, it's
 	// just not expected to add any more nodes.
 	PermissionToAddNode() bool
+}
+
+// EstimationPodOrderer is an interface used to determine the order of the pods
+// used while binpacking during scale up estimation
+type EstimationPodOrderer interface {
+	Order(pods []*apiv1.Pod, nodeTemplate *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) []*apiv1.Pod
 }
