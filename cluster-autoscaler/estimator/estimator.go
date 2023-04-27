@@ -71,7 +71,4 @@ type EstimationLimiter interface {
 	// There is no requirement for the Estimator to stop calculations, it's
 	// just not expected to add any more nodes.
 	PermissionToAddNode() bool
-	// ReachedLimit returns true if the limiter blocked addition of the new node.
-	// Otherwise returns false.
-	ReachedLimit() bool
 }
