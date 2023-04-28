@@ -84,6 +84,8 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 	atomic2mixed := sizedNodeGroup("atomic-2-mixed", 2, true)
 	atomic2drain := sizedNodeGroup("atomic-2-drain", 2, true)
 
+	maxGracefulTermination := int64(60)
+
 	testCases := map[string]startDeletionTestCase{
 		"nothing to delete": {
 			emptyNodes: nil,
@@ -600,6 +602,60 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"test-node-3": {ResultType: status.NodeDeleteOk},
 			},
 		},
+		"node drain limits termination grace period to MaxGracefulTerminationSec": {
+			drainNodes: generateNodeGroupViewList(testNg, 0, 1),
+			pods: map[string][]*apiv1.Pod{
+				"test-node-0": {
+					removablePodWithGracePeriod("test-node-0-pod-0", "test-node-0", maxGracefulTermination-10),
+					removablePodWithGracePeriod("test-node-0-pod-1", "test-node-0", maxGracefulTermination),
+					removablePodWithGracePeriod("test-node-0-pod-2", "test-node-0", maxGracefulTermination+10),
+					removablePod("test-node-0-pod-3", "test-node-0"),
+					removablePod("test-node-0-pod-4", "test-node-0"),
+				},
+			},
+			failedPodDrain: map[string]bool{
+				"test-node-0-pod-4": true,
+			},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:      generateNode("test-node-0"),
+						NodeGroup: testNg,
+						EvictedPods: []*apiv1.Pod{
+							removablePodWithGracePeriod("test-node-0-pod-0", "test-node-0", maxGracefulTermination-10),
+							removablePodWithGracePeriod("test-node-0-pod-1", "test-node-0", maxGracefulTermination),
+							removablePodWithGracePeriod("test-node-0-pod-2", "test-node-0", maxGracefulTermination+10),
+							removablePod("test-node-0-pod-3", "test-node-0"), // default grace period
+							removablePod("test-node-0-pod-4", "test-node-0"),
+						},
+						UtilInfo: generateUtilInfo(5./8., 5./8.),
+					},
+				},
+			},
+			wantDeletedPods: []string{
+				"test-node-0-pod-0", "test-node-0-pod-1", "test-node-0-pod-2", "test-node-0-pod-3",
+			},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-node-0": {
+					ResultType: status.NodeDeleteErrorFailedToEvictPods,
+					Err:        cmpopts.AnyError,
+					PodEvictionResults: map[string]status.PodEvictionResult{
+						"test-node-0-pod-0": {Pod: removablePodWithGracePeriod("test-node-0-pod-0", "test-node-0", maxGracefulTermination-10), GracePeriodSeconds: maxGracefulTermination - 10},
+						"test-node-0-pod-1": {Pod: removablePodWithGracePeriod("test-node-0-pod-1", "test-node-0", maxGracefulTermination), GracePeriodSeconds: maxGracefulTermination},
+						"test-node-0-pod-2": {Pod: removablePodWithGracePeriod("test-node-0-pod-2", "test-node-0", maxGracefulTermination+10), GracePeriodSeconds: maxGracefulTermination},
+						"test-node-0-pod-3": {Pod: removablePod("test-node-0-pod-3", "test-node-0"), GracePeriodSeconds: apiv1.DefaultTerminationGracePeriodSeconds},
+						"test-node-0-pod-4": {Pod: removablePod("test-node-0-pod-4", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
+					},
+				},
+			},
+		},
 		"nodes that failed deletion are correctly reported in results": {
 			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
@@ -1063,6 +1119,7 @@ func TestStartDeletion(t *testing.T) {
 					MaxDrainParallelism:            5,
 					MaxPodEvictionTime:             0,
 					DaemonSetEvictionForEmptyNodes: true,
+					MaxGracefulTerminationSec:      60,
 				}
 
 				allPods := []*apiv1.Pod{}
@@ -1419,6 +1476,12 @@ func generateNode(name string) *apiv1.Node {
 			},
 		},
 	}
+}
+
+func removablePodWithGracePeriod(name string, node string, gracePeriod int64) *apiv1.Pod {
+	pod := removablePod(name, node)
+	pod.Spec.TerminationGracePeriodSeconds = &gracePeriod
+	return pod
 }
 
 func removablePods(count int, prefix string) []*apiv1.Pod {

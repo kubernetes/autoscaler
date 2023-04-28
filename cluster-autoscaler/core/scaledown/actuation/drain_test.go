@@ -236,6 +236,61 @@ func TestDrainNodeWithPods(t *testing.T) {
 	assert.Equal(t, p2.Name, deleted[2])
 }
 
+func TestDrainNodeCapsEvictionDurations(t *testing.T) {
+	deletedPods := make(chan string, 10)
+	fakeClient := &fake.Clientset{}
+	maxGracefulTerminationSec := 60
+
+	p1 := BuildTestPod("p1", 100, 0)
+	p1TerminationGracePeriod := int64(45)
+	p1.Spec.TerminationGracePeriodSeconds = &p1TerminationGracePeriod
+
+	p2 := BuildTestPod("p2", 100, 0)
+	p2TerminationGracePeriod := int64(60)
+	p2.Spec.TerminationGracePeriodSeconds = &p2TerminationGracePeriod
+
+	p3 := BuildTestPod("p3", 100, 0)
+	p3TerminationGracePeriod := int64(75)
+	p3.Spec.TerminationGracePeriodSeconds = &p3TerminationGracePeriod
+
+	p4 := BuildTestPod("p4", 100, 0) // Implicitly use default termination grace period
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+
+	SetNodeReadyState(n1, true, time.Time{})
+
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		createAction := action.(core.CreateAction)
+		if createAction == nil {
+			return false, nil, nil
+		}
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
+		if eviction == nil {
+			return false, nil, nil
+		}
+		deletedPods <- eviction.Name
+		return true, nil, nil
+	})
+
+	options := config.AutoscalingOptions{
+		MaxGracefulTerminationSec: maxGracefulTerminationSec,
+		MaxPodEvictionTime:        5 * time.Second,
+	}
+	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	assert.NoError(t, err)
+
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	results, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{})
+	assert.NoError(t, err)
+	assert.Equal(t, p1TerminationGracePeriod, results["p1"].GracePeriodSeconds)
+	assert.Equal(t, p2TerminationGracePeriod, results["p2"].GracePeriodSeconds)
+	assert.Equal(t, int64(maxGracefulTerminationSec), results["p3"].GracePeriodSeconds)
+	assert.Equal(t, int64(apiv1.DefaultTerminationGracePeriodSeconds), results["p4"].GracePeriodSeconds)
+}
+
 func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
