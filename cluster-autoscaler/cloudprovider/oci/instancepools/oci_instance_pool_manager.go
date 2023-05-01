@@ -80,12 +80,21 @@ func CreateInstancePoolManager(cloudConfigPath string, discoveryOpts cloudprovid
 		RetryPolicy: ocicommon.NewRetryPolicy(),
 	}
 
-	if os.Getenv(consts.OciUseInstancePrincipalEnvVar) == "true" {
+	// Preference to Workload Identity if set to true
+	if os.Getenv(consts.OciUseWorkloadIdentityEnvVar) == "true" {
+		klog.V(4).Info("using workload identity...")
+		configProvider, err = auth.OkeWorkloadIdentityConfigurationProvider()
+		if err != nil {
+			return nil, err
+		}
+		// try instance principal is set to true
+	} else if os.Getenv(consts.OciUseInstancePrincipalEnvVar) == "true" {
 		klog.V(4).Info("using instance principals...")
 		configProvider, err = auth.InstancePrincipalConfigurationProvider()
 		if err != nil {
 			return nil, err
 		}
+		// default to default provider
 	} else {
 		klog.Info("using default configuration provider")
 		configProvider = common.DefaultConfigProvider()

@@ -10,6 +10,8 @@ import (
 )
 
 const (
+	// OciUseWorkloadIdentityEnvVar is an env var that indicates whether to use the workload identity provider
+	OciUseWorkloadIdentityEnvVar = "OCI_USE_WORKLOAD_IDENTITY"
 	// OciUseInstancePrincipalEnvVar is an env var that indicates whether to use an instance principal
 	OciUseInstancePrincipalEnvVar = "OCI_USE_INSTANCE_PRINCIPAL"
 	// OciUseNonPoolMemberAnnotationEnvVar is an env var indicating that non-members of instance pools will get a special annotation
