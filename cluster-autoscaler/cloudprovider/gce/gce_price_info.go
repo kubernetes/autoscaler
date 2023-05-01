@@ -96,7 +96,7 @@ var (
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
-		"g2":  0.007496 / 0.024988
+		"g2":  0.007496 / 0.024988,
 		"c2":  0.00822 / 0.03398,
 		"c2d": 0.007154 / 0.029563,
 		"c3":  0.003086 / 0.03398,
@@ -495,7 +495,7 @@ var (
 		"nvidia-tesla-k80":  0.45,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
-		"nvidia-l4":  0, 		// price of this gpu is counted into G2 machine-type price
+		"nvidia-l4":  0, 	// price of this gpu is counted into G2 machine-type price
 	}
 	preemptibleGpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.11,
@@ -505,7 +505,7 @@ var (
 		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
-		"nvidia-l4":  0, 		// price of this gpu is counted into G2 machine-type price
+		"nvidia-l4":  0, 	// price of this gpu is counted into G2 machine-type price
 	}
 	bootDiskPricePerHour = map[string]float64{
 		"pd-standard": 0.04 / hoursInMonth,
