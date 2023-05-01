@@ -7,18 +7,19 @@ package instancepools
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/util/wait"
-	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/core"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/workrequests"
-	"k8s.io/klog/v2"
 	"math"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
+	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/workrequests"
+	"k8s.io/klog/v2"
 )
 
 // ComputeMgmtClient wraps core.ComputeManagementClient exposing the functions we actually require.
