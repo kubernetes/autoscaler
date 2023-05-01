@@ -6,12 +6,13 @@ package instancepools
 
 import (
 	"fmt"
-	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -23,10 +24,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	"github.com/pkg/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/common/auth"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/core"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/workrequests"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common/auth"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/workrequests"
 )
 
 var (
