@@ -49,6 +49,23 @@ Allow dynamic-group acme-oci-cluster-autoscaler-dyn-grp to use vnics in compartm
 Allow dynamic-group acme-oci-cluster-autoscaler-dyn-grp to inspect compartments in compartment <compartment-name>
 ```
 
+### If using Workload Identity
+
+Note: This is available to use with OKE Node Pools or OCI Managed Instance Pools with OKE Enhanced Clusters only. 
+
+See the [documentation](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contenggrantingworkloadaccesstoresources.htm) for more details
+
+When using a mix of nodes, make sure to add proper lables and affinities on the cluster-autoscaler deployment to prevent it from being deployed on non-OCI managed nodes.
+
+```
+Allow any-user to manage cluster-node-pools in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+Allow any-user to manage instance-family in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+Allow any-user to use subnets in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+Allow any-user to read virtual-network-family in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+Allow any-user to use vnics in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+Allow any-user to inspect compartments in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+```
+
 ### Instance Pool and Instance Configurations
 
 Before you deploy the Cluster Autoscaler on OCI, your need to create one or more static Instance Pools and Instance
@@ -123,6 +140,7 @@ use-instance-principals = true
 ### Configuration via environment-variables:
 
 - `OCI_USE_INSTANCE_PRINCIPAL` - Whether to use Instance Principals for authentication rather than expecting an OCI config file to be mounted in the container. Defaults to false.
+- `OCI_USE_WORKLOAD_IDENTITY` - Whether to use Workload Identity for authentication (Available with node pools and OCI managed nodepools in OKE Enhanced Clusters only). Setting to `true` takes precedence over `OCI_USE_INSTANCE_PRINCIPAL`. When using this flag, the `OCI_RESOURCE_PRINCIPAL_VERSION` (1.1 or 2.2) and `OCI_RESOURCE_PRINCIPAL_REGION` also need to be set. See this [blog post](https://blogs.oracle.com/cloud-infrastructure/post/oke-workload-identity-greater-control-access#:~:text=The%20OKE%20Workload%20Identity%20feature,having%20to%20run%20fewer%20nodes.) for more details on setting the policies for this auth mode.
 - `OCI_REFRESH_INTERVAL` - Optional. Refresh interval to sync internal cache with OCI API. Defaults to `2m`.
 
 #### Instance Pool specific environment-variables
