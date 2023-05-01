@@ -82,7 +82,13 @@ func CreateNodePoolManager(cloudConfigPath string, discoveryOpts cloudprovider.N
 	var err error
 	var configProvider common.ConfigurationProvider
 
-	if os.Getenv(ipconsts.OciUseInstancePrincipalEnvVar) == "true" || os.Getenv(npconsts.OkeUseInstancePrincipalEnvVar) == "true" {
+	if os.Getenv(ipconsts.OciUseWorkloadIdentityEnvVar) == "true" {
+		klog.Info("using workload identity provider")
+		configProvider, err = auth.OkeWorkloadIdentityConfigurationProvider()
+		if err != nil {
+			return nil, err
+		}
+	} else if os.Getenv(ipconsts.OciUseInstancePrincipalEnvVar) == "true" || os.Getenv(npconsts.OkeUseInstancePrincipalEnvVar) == "true" {
 		klog.Info("using instance principal provider")
 		configProvider, err = auth.InstancePrincipalConfigurationProvider()
 		if err != nil {
