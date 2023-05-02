@@ -153,7 +153,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.22.2
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.2
           name: cluster-autoscaler
           resources:
             limits:
