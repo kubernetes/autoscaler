@@ -652,6 +652,8 @@ k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/validation/spec
 # k8s.io/metrics v0.25.0 => k8s.io/metrics v0.26.1
 ## explicit; go 1.19
+k8s.io/metrics/pkg/apis/external_metrics
+k8s.io/metrics/pkg/apis/external_metrics/v1beta1
 k8s.io/metrics/pkg/apis/metrics
 k8s.io/metrics/pkg/apis/metrics/v1alpha1
 k8s.io/metrics/pkg/apis/metrics/v1beta1
