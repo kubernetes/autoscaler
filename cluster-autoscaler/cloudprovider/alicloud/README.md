@@ -119,9 +119,9 @@ spec:
                 key: access-key-secret
           - name: REGION_ID
             valueFrom:
-            secretKeyRef:
-              name: cloud-config
-              key: region-id
+              secretKeyRef:
+                name: cloud-config
+                key: region-id
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
