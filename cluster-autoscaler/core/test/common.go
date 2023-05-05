@@ -57,10 +57,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+
+	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 )
 
 // NodeConfig is a node config used in tests
@@ -100,6 +101,32 @@ type ScaleTestConfig struct {
 
 	ExpectedScaleDowns     []string
 	ExpectedScaleDownCount int
+}
+
+// NodeGroupConfig is a node group config used in tests
+type NodeGroupConfig struct {
+	Name    string
+	MinSize int
+	MaxSize int
+}
+
+// GroupsScaleUpTestConfig represents a config of a scale test
+type GroupsScaleUpTestConfig struct {
+	Groups    []NodeGroupConfig
+	Nodes     []NodeConfig
+	Pods      []PodConfig
+	ExtraPods []PodConfig
+	OnScaleUp testcloudprovider.OnScaleUpFunc
+	Options   *config.AutoscalingOptions
+}
+
+// GroupsScaleUpTestResult represents a node groups scale up result
+type GroupsScaleUpTestResult struct {
+	Error            errors.AutoscalerError
+	ScaleUpStatus    ScaleUpStatusInfo
+	GroupSizeChanges []GroupSizeChange
+	Events           []string
+	TargetSizes      map[string]int
 }
 
 // ScaleTestResults contains results of a scale test
