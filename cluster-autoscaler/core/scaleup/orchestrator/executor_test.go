@@ -19,9 +19,9 @@ package orchestrator
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
@@ -58,7 +58,7 @@ func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
 			},
 			expectedErr: errors.NewAutoscalerError(
 				errors.CloudProviderError,
-				"provider error ...other concurrent errors: [\"[internalError] internal error\"]",
+				"provider error ...and other concurrent errors: [\"[internalError] internal error\"]",
 			),
 		},
 		{
@@ -69,7 +69,7 @@ func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
 			},
 			expectedErr: errors.NewAutoscalerError(
 				errors.CloudProviderError,
-				"provider error ...other concurrent errors: [\"[internalError] internal error\"]",
+				"provider error ...and other concurrent errors: [\"[internalError] internal error\"]",
 			),
 		},
 		{
@@ -81,7 +81,7 @@ func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
 			},
 			expectedErr: errors.NewAutoscalerError(
 				errors.InternalError,
-				"A ...other concurrent errors: [\"B\", \"C\"]"),
+				"A ...and other concurrent errors: [\"B\", \"C\"]"),
 		},
 		{
 			desc: "errors with the same type and some duplicated messages",
@@ -92,7 +92,7 @@ func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
 			},
 			expectedErr: errors.NewAutoscalerError(
 				errors.InternalError,
-				"A ...other concurrent errors: [\"B\"]"),
+				"A ...and other concurrent errors: [\"B\"]"),
 		},
 		{
 			desc: "some duplicated errors",
@@ -104,7 +104,7 @@ func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
 			},
 			expectedErr: errors.NewAutoscalerError(
 				errors.CloudProviderError,
-				"A ...other concurrent errors: [\"[cloudProviderError] B\", \"[internalError] A\"]"),
+				"A ...and other concurrent errors: [\"[cloudProviderError] B\", \"[internalError] A\"]"),
 		},
 		{
 			desc: "different errors with quotes in messages",
@@ -114,7 +114,7 @@ func TestCombinedConcurrentScaleUpErrors(t *testing.T) {
 			},
 			expectedErr: errors.NewAutoscalerError(
 				errors.InternalError,
-				"\"first\" ...other concurrent errors: [\"\\\"second\\\"\"]"),
+				"\"first\" ...and other concurrent errors: [\"\\\"second\\\"\"]"),
 		},
 	}
 
