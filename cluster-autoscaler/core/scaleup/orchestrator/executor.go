@@ -93,7 +93,7 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	now time.Time,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
-	if err := assertUniqueNodeGroups(scaleUpInfos); err != nil {
+	if err := checkUniqueNodeGroups(scaleUpInfos); err != nil {
 		return err, extractNodeGroups(scaleUpInfos)
 	}
 	type errResult struct {
@@ -171,6 +171,15 @@ func combineConcurrentScaleUpErrors(errs []errors.AutoscalerError) errors.Autosc
 	if len(errs) == 1 {
 		return errs[0]
 	}
+	uniqueMessages := make(map[string]bool)
+	uniqueTypes := make(map[errors.AutoscalerErrorType]bool)
+	for _, err := range errs {
+		uniqueTypes[err.Type()] = true
+		uniqueMessages[err.Error()] = true
+	}
+	if len(uniqueTypes) == 1 && len(uniqueMessages) == 1 {
+		return errs[0]
+	}
 	// sort to stabilize the results and easier log aggregation
 	sort.Slice(errs, func(i, j int) bool {
 		errA := errs[i]
@@ -180,44 +189,43 @@ func combineConcurrentScaleUpErrors(errs []errors.AutoscalerError) errors.Autosc
 		}
 		return errA.Type() < errB.Type()
 	})
-	firstErrMsg := errs[0].Error()
-	firstErrType := errs[0].Type()
-	singleError := true
-	singleType := true
-	for _, err := range errs {
-		singleType = singleType && firstErrType == err.Type()
-		singleError = singleError && singleType && firstErrMsg == err.Error()
-	}
-	if singleError {
-		return errs[0]
-	}
-	var builder strings.Builder
-	builder.WriteString(firstErrMsg)
-	builder.WriteString(" ...other concurrent errors: [")
-	concurrentErrs := make(map[string]bool)
-	for _, err := range errs {
-		var concurrentErr string
-		if singleType {
-			concurrentErr = err.Error()
-		} else {
-			concurrentErr = fmt.Sprintf("[%s] %s", err.Type(), err.Error())
-		}
-		n := len(concurrentErrs)
-		if !concurrentErrs[concurrentErr] && n > 0 {
-			if n > 1 {
-				builder.WriteString(", ")
-			}
-			builder.WriteString(fmt.Sprintf("%q", concurrentErr))
-		}
-		concurrentErrs[concurrentErr] = true
-	}
-	builder.WriteString("]")
-	return errors.NewAutoscalerError(firstErrType, builder.String())
+	firstErr := errs[0]
+	printErrorTypes := len(uniqueTypes) > 1
+	message := formatMessageFromConcurrentErrors(errs, printErrorTypes)
+	return errors.NewAutoscalerError(firstErr.Type(), message)
 }
 
-// Asserts all groups are scaled only once.
+func formatMessageFromConcurrentErrors(errs []errors.AutoscalerError, printErrorTypes bool) string {
+	firstErr := errs[0]
+	var builder strings.Builder
+	builder.WriteString(firstErr.Error())
+	builder.WriteString(" ...and other concurrent errors: [")
+	formattedErrs := map[errors.AutoscalerError]bool{
+		firstErr: true,
+	}
+	for _, err := range errs {
+		if _, has := formattedErrs[err]; has {
+			continue
+		}
+		formattedErrs[err] = true
+		var message string
+		if printErrorTypes {
+			message = fmt.Sprintf("[%s] %s", err.Type(), err.Error())
+		} else {
+			message = err.Error()
+		}
+		if len(formattedErrs) > 2 {
+			builder.WriteString(", ")
+		}
+		builder.WriteString(fmt.Sprintf("%q", message))
+	}
+	builder.WriteString("]")
+	return builder.String()
+}
+
+// Checks if all groups are scaled only once.
 // Scaling one group multiple times concurrently may cause problems.
-func assertUniqueNodeGroups(scaleUpInfos []nodegroupset.ScaleUpInfo) errors.AutoscalerError {
+func checkUniqueNodeGroups(scaleUpInfos []nodegroupset.ScaleUpInfo) errors.AutoscalerError {
 	uniqueGroups := make(map[string]bool)
 	for _, info := range scaleUpInfos {
 		if uniqueGroups[info.Group.Id()] {
