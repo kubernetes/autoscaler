@@ -20,6 +20,7 @@
   - [Capping to Limit Range](#capping-to-limit-range)
   - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
   - [Starting multiple recommenders](#starting-multiple-recommenders)
+  - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
@@ -303,6 +304,17 @@ Please note the usage of the following arguments to override default names and p
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
 
+### Using CPU management with static policy
+
+If you are using the [CPU management with static policy](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy) for some containers,
+you probably want the CPU recommendation to be an integer. A dedicated recommendation pre-processor can perform a round up on the CPU recommendation. Recommendation capping still applies after the round up.   
+To activate this feature, pass the flag `--cpu-integer-post-processor-enabled` when you start the recommender. 
+The pre-processor only acts on containers having a specific configuration. This configuration consists in an annotation on your VPA object for each impacted container.
+The annotation format is the following:
+```
+vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
+```
+ 
 # Known limitations
 
 * Whenever VPA updates the pod resources, the pod is recreated, which causes all

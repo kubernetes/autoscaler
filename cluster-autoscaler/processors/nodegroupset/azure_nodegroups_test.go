@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -29,7 +30,7 @@ import (
 )
 
 func TestIsAzureNodeInfoSimilar(t *testing.T) {
-	comparator := CreateAzureNodeInfoComparator([]string{"example.com/ready"})
+	comparator := CreateAzureNodeInfoComparator([]string{"example.com/ready"}, config.NodeGroupDifferenceRatios{})
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n1.ObjectMeta.Labels["test-label"] = "test-value"
 	n1.ObjectMeta.Labels["character"] = "thing"
@@ -75,12 +76,12 @@ func TestIsAzureNodeInfoSimilar(t *testing.T) {
 func TestFindSimilarNodeGroupsAzureBasic(t *testing.T) {
 	context := &context.AutoscalingContext{}
 	ni1, ni2, ni3 := buildBasicNodeGroups(context)
-	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{})}
+	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
 	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
 }
 
 func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{})}
+	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
 	context := &context.AutoscalingContext{}
 
 	n1 := BuildTestNode("n1", 1000, 1000)
