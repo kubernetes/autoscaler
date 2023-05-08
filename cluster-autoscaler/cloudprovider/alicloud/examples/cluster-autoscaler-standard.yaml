@@ -45,7 +45,7 @@ rules:
   resources: ["statefulsets", "replicasets", "daemonsets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
+  resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"]
   verbs: ["watch","list","get"]
 
 ---
@@ -109,7 +109,7 @@ metadata:
 type: Opaque
 data:
   access-key-id: [YOUR_BASE64_AK_ID]
-  access-key-id: [YOUR_BASE64_AK_SECRET]
+  access-key-secret: [YOUR_BASE64_AK_SECRET]
   region-id: [YOUR_BASE64_REGION_ID]
 
 ---

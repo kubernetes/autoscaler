@@ -178,12 +178,6 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 					filterStatus.Reasons(),
 					p.buildDebugInfo(filterName, nodeInfo))
 			}
-			return NewPredicateError(
-				InternalPredicateError,
-				filterName,
-				filterStatus.Message(),
-				filterStatus.Reasons(),
-				p.buildDebugInfo(filterName, nodeInfo))
 		}
 	}
 	return nil

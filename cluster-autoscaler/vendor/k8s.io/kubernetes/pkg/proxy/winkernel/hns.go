@@ -48,6 +48,8 @@ type hns struct{}
 var (
 	// LoadBalancerFlagsIPv6 enables IPV6.
 	LoadBalancerFlagsIPv6 hcn.LoadBalancerFlags = 2
+	// LoadBalancerPortMappingFlagsVipExternalIP enables VipExternalIP.
+	LoadBalancerPortMappingFlagsVipExternalIP hcn.LoadBalancerPortMappingFlags = 16
 )
 
 func (hns hns) getNetworkByName(name string) (*hnsNetworkInfo, error) {
@@ -110,8 +112,28 @@ func (hns hns) getAllEndpointsByNetwork(networkName string) (map[string]*(endpoi
 			terminating: false,
 		}
 		endpointInfos[ep.IpConfigurations[0].IpAddress] = endpointInfos[ep.Id]
+
+		if len(ep.IpConfigurations) == 1 {
+			continue
+		}
+
+		// If ipFamilyPolicy is RequireDualStack or PreferDualStack, then there will be 2 IPS (iPV4 and IPV6)
+		// in the endpoint list
+		endpointDualstack := &endpointsInfo{
+			ip:         ep.IpConfigurations[1].IpAddress,
+			isLocal:    uint32(ep.Flags&hcn.EndpointFlagsRemoteEndpoint) == 0,
+			macAddress: ep.MacAddress,
+			hnsID:      ep.Id,
+			hns:        hns,
+			// only ready and not terminating endpoints were added to HNS
+			ready:       true,
+			serving:     true,
+			terminating: false,
+		}
+		endpointInfos[ep.IpConfigurations[1].IpAddress] = endpointDualstack
 	}
 	klog.V(3).InfoS("Queried endpoints from network", "network", networkName)
+	klog.V(5).InfoS("Queried endpoints details", "network", networkName, "endpointInfos", endpointInfos)
 	return endpointInfos, nil
 }
 
@@ -242,6 +264,20 @@ func (hns hns) deleteEndpoint(hnsID string) error {
 	return err
 }
 
+// findLoadBalancerID will construct a id from the provided loadbalancer fields
+func findLoadBalancerID(endpoints []endpointsInfo, vip string, protocol, internalPort, externalPort uint16) (loadBalancerIdentifier, error) {
+	// Compute hash from backends (endpoint IDs)
+	hash, err := hashEndpoints(endpoints)
+	if err != nil {
+		klog.V(2).ErrorS(err, "Error hashing endpoints", "endpoints", endpoints)
+		return loadBalancerIdentifier{}, err
+	}
+	if len(vip) > 0 {
+		return loadBalancerIdentifier{protocol: protocol, internalPort: internalPort, externalPort: externalPort, vip: vip, endpointsHash: hash}, nil
+	}
+	return loadBalancerIdentifier{protocol: protocol, internalPort: internalPort, externalPort: externalPort, endpointsHash: hash}, nil
+}
+
 func (hns hns) getAllLoadBalancers() (map[loadBalancerIdentifier]*loadBalancerInfo, error) {
 	lbs, err := hcn.ListLoadBalancers()
 	var id loadBalancerIdentifier
@@ -304,6 +340,9 @@ func (hns hns) getLoadBalancer(endpoints []endpointsInfo, flags loadBalancerFlag
 	}
 	if flags.localRoutedVIP {
 		lbPortMappingFlags |= hcn.LoadBalancerPortMappingFlagsLocalRoutedVIP
+	}
+	if flags.isVipExternalIP {
+		lbPortMappingFlags |= LoadBalancerPortMappingFlagsVipExternalIP
 	}
 
 	lbFlags := hcn.LoadBalancerFlagsNone
@@ -391,7 +430,7 @@ func hashEndpoints[T string | endpointsInfo](endpoints []T) (hash [20]byte, err 
 	for _, ep := range endpoints {
 		switch x := any(ep).(type) {
 		case endpointsInfo:
-			id = x.hnsID
+			id = strings.ToUpper(x.hnsID)
 		case string:
 			id = x
 		}

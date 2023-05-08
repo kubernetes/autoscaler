@@ -67,6 +67,12 @@ var (
 	cpuHistogramDecayHalfLife      = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
 )
 
+// Post processors flags
+var (
+	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
+	postProcessorCPUasInteger = flag.Bool("cpu-integer-post-processor-enabled", false, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
+)
+
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
@@ -83,9 +89,13 @@ func main() {
 
 	useCheckpoints := *storage != "prometheus"
 
-	postProcessors := []routines.RecommendationPostProcessor{
-		&routines.CappingPostProcessor{},
+	var postProcessors []routines.RecommendationPostProcessor
+	if *postProcessorCPUasInteger {
+		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
+	// CappingPostProcessor, should always come in the last position for post-processing
+	postProcessors = append(postProcessors, &routines.CappingPostProcessor{})
+
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace, *recommenderName, postProcessors)
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
