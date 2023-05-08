@@ -119,45 +119,45 @@ func newManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDis
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
-	var minSize int
-	var maxSize int
-	var workerConfigFound = false
-	for _, specString := range m.discoveryOpts.NodeGroupSpecs {
-		spec, err := dynamic.SpecFromString(specString, true)
-		if err != nil {
-			return fmt.Errorf("failed to parse node group spec: %v", err)
-		}
-		if spec.Name == "workers" {
-			minSize = spec.MinSize
-			maxSize = spec.MaxSize
-			workerConfigFound = true
-			klog.V(4).Infof("found configuration for workers node group: min: %d max: %d", minSize, maxSize)
-		}
-	}
-	if !workerConfigFound {
-		return fmt.Errorf("no workers node group configuration found")
-	}
+	var (
+		workerConfigFound = false
+		group             []*NodeGroup
+	)
 
 	pools, err := m.client.ListKubernetesClusterPools(m.clusterID)
 	if err != nil {
 		return fmt.Errorf("couldn't list Kubernetes cluster pools: %s", err)
 	}
 
-	klog.V(4).Infof("refreshing workers node group kubernetes cluster: %q min: %d max: %d", m.clusterID, minSize, maxSize)
+	klog.V(4).Infof("refreshing workers node group kubernetes cluster: %q", m.clusterID)
 
-	var group []*NodeGroup
-	for _, nodePool := range pools {
-		np := nodePool
-		klog.V(4).Infof("adding node pool: %q", nodePool.ID)
+	for _, specString := range m.discoveryOpts.NodeGroupSpecs {
+		spec, err := dynamic.SpecFromString(specString, true)
+		if err != nil {
+			return fmt.Errorf("failed to parse node group spec: %v", err)
+		}
 
-		group = append(group, &NodeGroup{
-			id:        nodePool.ID,
-			clusterID: m.clusterID,
-			client:    m.client,
-			nodePool:  &np,
-			minSize:   minSize,
-			maxSize:   maxSize,
-		})
+		for _, nodePool := range pools {
+			if spec.Name == nodePool.ID {
+				np := nodePool
+				klog.V(4).Infof("adding node pool: %q", nodePool.ID)
+
+				group = append(group, &NodeGroup{
+					id:        nodePool.ID,
+					clusterID: m.clusterID,
+					client:    m.client,
+					nodePool:  &np,
+					minSize:   spec.MinSize,
+					maxSize:   spec.MaxSize,
+				})
+				workerConfigFound = true
+				klog.V(4).Infof("found configuration for workers node group: %s min: %d max: %d", spec.Name, spec.MinSize, spec.MaxSize)
+			}
+		}
+	}
+
+	if !workerConfigFound {
+		return fmt.Errorf("no workers node group configuration found")
 	}
 
 	if len(group) == 0 {
