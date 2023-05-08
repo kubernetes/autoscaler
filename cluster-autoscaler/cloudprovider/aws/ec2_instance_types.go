@@ -3189,6 +3189,27 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:          0,
 		Architecture: "arm64",
 	},
+	"trn1.2xlarge": {
+		InstanceType: "trn1.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"trn1.32xlarge": {
+		InstanceType: "trn1.32xlarge",
+		VCPU:         128,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"trn1n.32xlarge": {
+		InstanceType: "trn1n.32xlarge",
+		VCPU:         128,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
 	"u-12tb1.112xlarge": {
 		InstanceType: "u-12tb1.112xlarge",
 		VCPU:         448,
