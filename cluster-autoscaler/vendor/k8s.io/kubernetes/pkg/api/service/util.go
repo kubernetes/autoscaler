@@ -74,7 +74,7 @@ func RequestsOnlyLocalTraffic(service *api.Service) bool {
 		return false
 	}
 
-	return service.Spec.ExternalTrafficPolicy == api.ServiceExternalTrafficPolicyLocal
+	return service.Spec.ExternalTrafficPolicy == api.ServiceExternalTrafficPolicyTypeLocal
 }
 
 // NeedsHealthCheck checks if service needs health check.

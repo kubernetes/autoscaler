@@ -24,6 +24,9 @@ import (
 	schedutil "k8s.io/kubernetes/pkg/scheduler/util"
 )
 
+// resourceToWeightMap contains resource name and weight.
+type resourceToWeightMap map[v1.ResourceName]int64
+
 // scorer is decorator for resourceAllocationScorer
 type scorer func(args *config.NodeResourcesFitArgs) *resourceAllocationScorer
 
@@ -32,10 +35,13 @@ type resourceAllocationScorer struct {
 	Name string
 	// used to decide whether to use Requested or NonZeroRequested for
 	// cpu and memory.
-	useRequested bool
-	scorer       func(requested, allocable []int64) int64
-	resources    []config.ResourceSpec
+	useRequested        bool
+	scorer              func(requested, allocable resourceToValueMap) int64
+	resourceToWeightMap resourceToWeightMap
 }
+
+// resourceToValueMap is keyed with resource name and valued with quantity.
+type resourceToValueMap map[v1.ResourceName]int64
 
 // score will use `scorer` function to calculate the score.
 func (r *resourceAllocationScorer) score(
@@ -45,31 +51,26 @@ func (r *resourceAllocationScorer) score(
 	if node == nil {
 		return 0, framework.NewStatus(framework.Error, "node not found")
 	}
-	// resources not set, nothing scheduled,
-	if len(r.resources) == 0 {
+	if r.resourceToWeightMap == nil {
 		return 0, framework.NewStatus(framework.Error, "resources not found")
 	}
 
-	requested := make([]int64, len(r.resources))
-	allocatable := make([]int64, len(r.resources))
-	for i := range r.resources {
-		alloc, req := r.calculateResourceAllocatableRequest(nodeInfo, pod, v1.ResourceName(r.resources[i].Name))
-		// Only fill the extended resource entry when it's non-zero.
-		if alloc == 0 {
-			continue
+	requested := make(resourceToValueMap)
+	allocatable := make(resourceToValueMap)
+	for resource := range r.resourceToWeightMap {
+		alloc, req := r.calculateResourceAllocatableRequest(nodeInfo, pod, resource)
+		if alloc != 0 {
+			// Only fill the extended resource entry when it's non-zero.
+			allocatable[resource], requested[resource] = alloc, req
 		}
-		allocatable[i] = alloc
-		requested[i] = req
 	}
 
 	score := r.scorer(requested, allocatable)
 
-	if klogV := klog.V(10); klogV.Enabled() { // Serializing these maps is costly.
-		klogV.InfoS("Listing internal info for allocatable resources, requested resources and score", "pod",
-			klog.KObj(pod), "node", klog.KObj(node), "resourceAllocationScorer", r.Name,
-			"allocatableResource", allocatable, "requestedResource", requested, "resourceScore", score,
-		)
-	}
+	klog.V(10).InfoS("Listing internal info for allocatable resources, requested resources and score", "pod",
+		klog.KObj(pod), "node", klog.KObj(node), "resourceAllocationScorer", r.Name,
+		"allocatableResource", allocatable, "requestedResource", requested, "resourceScore", score,
+	)
 
 	return score, nil
 }
@@ -133,4 +134,13 @@ func (r *resourceAllocationScorer) calculatePodResourceRequest(pod *v1.Pod, reso
 	}
 
 	return podRequest
+}
+
+// resourcesToWeightMap make weightmap from resources spec
+func resourcesToWeightMap(resources []config.ResourceSpec) resourceToWeightMap {
+	resourceToWeightMap := make(resourceToWeightMap)
+	for _, resource := range resources {
+		resourceToWeightMap[v1.ResourceName(resource.Name)] = resource.Weight
+	}
+	return resourceToWeightMap
 }

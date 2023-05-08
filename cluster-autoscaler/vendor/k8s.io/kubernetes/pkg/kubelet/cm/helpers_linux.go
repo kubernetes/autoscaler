@@ -186,22 +186,22 @@ func ResourceConfigForPod(pod *v1.Pod, enforceCPULimits bool, cpuPeriod uint64, 
 	// build the result
 	result := &ResourceConfig{}
 	if qosClass == v1.PodQOSGuaranteed {
-		result.CPUShares = &cpuShares
-		result.CPUQuota = &cpuQuota
-		result.CPUPeriod = &cpuPeriod
+		result.CpuShares = &cpuShares
+		result.CpuQuota = &cpuQuota
+		result.CpuPeriod = &cpuPeriod
 		result.Memory = &memoryLimits
 	} else if qosClass == v1.PodQOSBurstable {
-		result.CPUShares = &cpuShares
+		result.CpuShares = &cpuShares
 		if cpuLimitsDeclared {
-			result.CPUQuota = &cpuQuota
-			result.CPUPeriod = &cpuPeriod
+			result.CpuQuota = &cpuQuota
+			result.CpuPeriod = &cpuPeriod
 		}
 		if memoryLimitsDeclared {
 			result.Memory = &memoryLimits
 		}
 	} else {
 		shares := uint64(MinShares)
-		result.CPUShares = &shares
+		result.CpuShares = &shares
 	}
 	result.HugePageLimit = hugePageLimits
 

@@ -19,7 +19,7 @@ package stats
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"path"
 	"sort"
 	"strings"
 
@@ -318,7 +318,7 @@ func filterTerminatedContainerInfoAndAssembleByPodCgroupKey(containerInfo map[st
 			podCgroupKey = internalCgroupName[len(internalCgroupName)-1]
 		} else {
 			// Take last component only.
-			podCgroupKey = filepath.Base(key)
+			podCgroupKey = path.Base(key)
 		}
 		cinfosByPodCgroupKey[podCgroupKey] = cinfo
 		if !isPodManagedContainer(&cinfo) {

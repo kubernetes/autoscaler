@@ -220,14 +220,15 @@ func (b *downwardAPIVolumeMounter) SetUpAt(dir string, mounterArgs volume.Mounte
 		return err
 	}
 
-	setPerms := func(_ string) error {
-		// This may be the first time writing and new files get created outside the timestamp subdirectory:
-		// change the permissions on the whole volume and not only in the timestamp directory.
-		return volume.SetVolumeOwnership(b, mounterArgs.FsGroup, nil /*fsGroupChangePolicy*/, volumeutil.FSGroupCompleteHook(b.plugin, nil))
-	}
-	err = writer.Write(data, setPerms)
+	err = writer.Write(data)
 	if err != nil {
 		klog.Errorf("Error writing payload to dir: %v", err)
+		return err
+	}
+
+	err = volume.SetVolumeOwnership(b, mounterArgs.FsGroup, nil /*fsGroupChangePolicy*/, volumeutil.FSGroupCompleteHook(b.plugin, nil))
+	if err != nil {
+		klog.Errorf("Error applying volume ownership settings for group: %v", mounterArgs.FsGroup)
 		return err
 	}
 

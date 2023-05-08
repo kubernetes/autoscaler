@@ -86,16 +86,11 @@ const (
 
 // Write does an atomic projection of the given payload into the writer's target
 // directory.  Input paths must not begin with '..'.
-// setPerms is an optional pointer to a function that caller can provide to set the
-// permissions of the newly created files before they are published. The function is
-// passed subPath which is the name of the timestamped directory that was created
-// under target directory.
 //
 // The Write algorithm is:
 //
 //  1. The payload is validated; if the payload is invalid, the function returns
-//
-//  2. The current timestamped directory is detected by reading the data directory
+//     2.  The current timestamped directory is detected by reading the data directory
 //     symlink
 //
 //  3. The old version of the volume is walked to determine whether any
@@ -103,19 +98,13 @@ const (
 //
 //  4. The data in the current timestamped directory is compared to the projected
 //     data to determine if an update is required.
+//     5.  A new timestamped dir is created
 //
-//  5. A new timestamped dir is created.
-//
-//  6. The payload is written to the new timestamped directory.
-//
-//  7. Permissions are set (if setPerms is not nil) on the new timestamped directory and files.
-//
-//  8. A symlink to the new timestamped directory ..data_tmp is created that will
-//     become the new data directory.
-//
-//  9. The new data directory symlink is renamed to the data directory; rename is atomic.
-//
-//  10. Symlinks and directory for new user-visible files are created (if needed).
+//  6. The payload is written to the new timestamped directory
+//     7.  A symlink to the new timestamped directory ..data_tmp is created that will
+//     become the new data directory
+//     8.  The new data directory symlink is renamed to the data directory; rename is atomic
+//     9.  Symlinks and directory for new user-visible files are created (if needed).
 //
 //     For example, consider the files:
 //     <target-dir>/podName
@@ -134,10 +123,9 @@ const (
 //     linking everything else. On Windows, if a target does not exist, the created symlink
 //     will not work properly if the target ends up being a directory.
 //
-//  11. Old paths are removed from the user-visible portion of the target directory.
-//
-//  12. The previous timestamped directory is removed, if it exists.
-func (w *AtomicWriter) Write(payload map[string]FileProjection, setPerms func(subPath string) error) error {
+// 10.  Old paths are removed from the user-visible portion of the target directory
+// 11.  The previous timestamped directory is removed, if it exists
+func (w *AtomicWriter) Write(payload map[string]FileProjection) error {
 	// (1)
 	cleanPayload, err := validatePayload(payload)
 	if err != nil {
@@ -197,14 +185,6 @@ func (w *AtomicWriter) Write(payload map[string]FileProjection, setPerms func(su
 	klog.V(4).Infof("%s: performed write of new data to ts data directory: %s", w.logContext, tsDir)
 
 	// (7)
-	if setPerms != nil {
-		if err := setPerms(tsDirName); err != nil {
-			klog.Errorf("%s: error applying ownership settings: %v", w.logContext, err)
-			return err
-		}
-	}
-
-	// (8)
 	newDataDirPath := filepath.Join(w.targetDir, newDataDirName)
 	if err = os.Symlink(tsDirName, newDataDirPath); err != nil {
 		os.RemoveAll(tsDir)
@@ -212,7 +192,7 @@ func (w *AtomicWriter) Write(payload map[string]FileProjection, setPerms func(su
 		return err
 	}
 
-	// (9)
+	// (8)
 	if runtime.GOOS == "windows" {
 		os.Remove(dataDirPath)
 		err = os.Symlink(tsDirName, dataDirPath)
@@ -227,19 +207,19 @@ func (w *AtomicWriter) Write(payload map[string]FileProjection, setPerms func(su
 		return err
 	}
 
-	// (10)
+	// (9)
 	if err = w.createUserVisibleFiles(cleanPayload); err != nil {
 		klog.Errorf("%s: error creating visible symlinks in %s: %v", w.logContext, w.targetDir, err)
 		return err
 	}
 
-	// (11)
+	// (10)
 	if err = w.removeUserVisiblePaths(pathsToRemove); err != nil {
 		klog.Errorf("%s: error removing old visible symlinks: %v", w.logContext, err)
 		return err
 	}
 
-	// (12)
+	// (11)
 	if len(oldTsDir) > 0 {
 		if err = os.RemoveAll(oldTsPath); err != nil {
 			klog.Errorf("%s: error removing old data directory %s: %v", w.logContext, oldTsDir, err)

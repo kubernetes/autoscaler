@@ -20,7 +20,6 @@ import (
 	"context"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // FakeVolumeBinderConfig holds configurations for fake volume binder.
@@ -47,20 +46,13 @@ type FakeVolumeBinder struct {
 	BindCalled   bool
 }
 
-var _ SchedulerVolumeBinder = &FakeVolumeBinder{}
-
-// GetPodVolumeClaims implements SchedulerVolumeBinder.GetPodVolumes.
-func (b *FakeVolumeBinder) GetPodVolumeClaims(pod *v1.Pod) (podVolumeClaims *PodVolumeClaims, err error) {
-	return &PodVolumeClaims{}, nil
-}
-
-// GetEligibleNodes implements SchedulerVolumeBinder.GetEligibleNodes.
-func (b *FakeVolumeBinder) GetEligibleNodes(boundClaims []*v1.PersistentVolumeClaim) (eligibleNodes sets.String) {
-	return nil
+// GetPodVolumes implements SchedulerVolumeBinder.GetPodVolumes.
+func (b *FakeVolumeBinder) GetPodVolumes(pod *v1.Pod) (boundClaims, unboundClaimsDelayBinding, unboundClaimsImmediate []*v1.PersistentVolumeClaim, err error) {
+	return nil, nil, nil, nil
 }
 
 // FindPodVolumes implements SchedulerVolumeBinder.FindPodVolumes.
-func (b *FakeVolumeBinder) FindPodVolumes(pod *v1.Pod, _ *PodVolumeClaims, node *v1.Node) (podVolumes *PodVolumes, reasons ConflictReasons, err error) {
+func (b *FakeVolumeBinder) FindPodVolumes(pod *v1.Pod, _, _ []*v1.PersistentVolumeClaim, node *v1.Node) (podVolumes *PodVolumes, reasons ConflictReasons, err error) {
 	return nil, b.config.FindReasons, b.config.FindErr
 }
 

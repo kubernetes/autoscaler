@@ -223,33 +223,6 @@ func (cf ConditionFunc) WithContext() ConditionWithContextFunc {
 	}
 }
 
-// ContextForChannel provides a context that will be treated as cancelled
-// when the provided parentCh is closed. The implementation returns
-// context.Canceled for Err() if and only if the parentCh is closed.
-func ContextForChannel(parentCh <-chan struct{}) context.Context {
-	return channelContext{stopCh: parentCh}
-}
-
-var _ context.Context = channelContext{}
-
-// channelContext will behave as if the context were cancelled when stopCh is
-// closed.
-type channelContext struct {
-	stopCh <-chan struct{}
-}
-
-func (c channelContext) Done() <-chan struct{} { return c.stopCh }
-func (c channelContext) Err() error {
-	select {
-	case <-c.stopCh:
-		return context.Canceled
-	default:
-		return nil
-	}
-}
-func (c channelContext) Deadline() (time.Time, bool) { return time.Time{}, false }
-func (c channelContext) Value(key any) any           { return nil }
-
 // runConditionWithCrashProtection runs a ConditionFunc with crash protection
 func runConditionWithCrashProtection(condition ConditionFunc) (bool, error) {
 	return runConditionWithCrashProtectionWithContext(context.TODO(), condition.WithContext())
@@ -315,6 +288,25 @@ func (b *Backoff) Step() time.Duration {
 		duration = Jitter(duration, b.Jitter)
 	}
 	return duration
+}
+
+// ContextForChannel derives a child context from a parent channel.
+//
+// The derived context's Done channel is closed when the returned cancel function
+// is called or when the parent channel is closed, whichever happens first.
+//
+// Note the caller must *always* call the CancelFunc, otherwise resources may be leaked.
+func ContextForChannel(parentCh <-chan struct{}) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		select {
+		case <-parentCh:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+	return ctx, cancel
 }
 
 // BackoffManager manages backoff with a particular scheme based on its underlying implementation. It provides
@@ -474,7 +466,9 @@ func PollWithContext(ctx context.Context, interval, timeout time.Duration, condi
 // PollUntil always waits interval before the first run of 'condition'.
 // 'condition' will always be invoked at least once.
 func PollUntil(interval time.Duration, condition ConditionFunc, stopCh <-chan struct{}) error {
-	return PollUntilWithContext(ContextForChannel(stopCh), interval, condition.WithContext())
+	ctx, cancel := ContextForChannel(stopCh)
+	defer cancel()
+	return PollUntilWithContext(ctx, interval, condition.WithContext())
 }
 
 // PollUntilWithContext tries a condition func until it returns true,
@@ -539,7 +533,9 @@ func PollImmediateWithContext(ctx context.Context, interval, timeout time.Durati
 // PollImmediateUntil runs the 'condition' before waiting for the interval.
 // 'condition' will always be invoked at least once.
 func PollImmediateUntil(interval time.Duration, condition ConditionFunc, stopCh <-chan struct{}) error {
-	return PollImmediateUntilWithContext(ContextForChannel(stopCh), interval, condition.WithContext())
+	ctx, cancel := ContextForChannel(stopCh)
+	defer cancel()
+	return PollImmediateUntilWithContext(ctx, interval, condition.WithContext())
 }
 
 // PollImmediateUntilWithContext tries a condition func until it returns true,
@@ -581,7 +577,7 @@ func PollImmediateInfiniteWithContext(ctx context.Context, interval time.Duratio
 // wait: user specified WaitFunc function that controls at what interval the condition
 // function should be invoked periodically and whether it is bound by a timeout.
 // condition: user specified ConditionWithContextFunc function.
-func poll(ctx context.Context, immediate bool, wait waitWithContextFunc, condition ConditionWithContextFunc) error {
+func poll(ctx context.Context, immediate bool, wait WaitWithContextFunc, condition ConditionWithContextFunc) error {
 	if immediate {
 		done, err := runConditionWithCrashProtectionWithContext(ctx, condition)
 		if err != nil {
@@ -597,36 +593,55 @@ func poll(ctx context.Context, immediate bool, wait waitWithContextFunc, conditi
 		// returning ctx.Err() will break backward compatibility
 		return ErrWaitTimeout
 	default:
-		return waitForWithContext(ctx, wait, condition)
+		return WaitForWithContext(ctx, wait, condition)
 	}
 }
 
-// waitFunc creates a channel that receives an item every time a test
+// WaitFunc creates a channel that receives an item every time a test
 // should be executed and is closed when the last test should be invoked.
-type waitFunc func(done <-chan struct{}) <-chan struct{}
+type WaitFunc func(done <-chan struct{}) <-chan struct{}
 
 // WithContext converts the WaitFunc to an equivalent WaitWithContextFunc
-func (w waitFunc) WithContext() waitWithContextFunc {
+func (w WaitFunc) WithContext() WaitWithContextFunc {
 	return func(ctx context.Context) <-chan struct{} {
 		return w(ctx.Done())
 	}
 }
 
-// waitWithContextFunc creates a channel that receives an item every time a test
+// WaitWithContextFunc creates a channel that receives an item every time a test
 // should be executed and is closed when the last test should be invoked.
 //
 // When the specified context gets cancelled or expires the function
 // stops sending item and returns immediately.
-//
-// Deprecated: Will be removed when the legacy Poll methods are removed.
-type waitWithContextFunc func(ctx context.Context) <-chan struct{}
+type WaitWithContextFunc func(ctx context.Context) <-chan struct{}
 
-// waitForWithContext continually checks 'fn' as driven by 'wait'.
+// WaitFor continually checks 'fn' as driven by 'wait'.
 //
-// waitForWithContext gets a channel from 'wait()”, and then invokes 'fn'
+// WaitFor gets a channel from 'wait()”, and then invokes 'fn' once for every value
+// placed on the channel and once more when the channel is closed. If the channel is closed
+// and 'fn' returns false without error, WaitFor returns ErrWaitTimeout.
+//
+// If 'fn' returns an error the loop ends and that error is returned. If
+// 'fn' returns true the loop ends and nil is returned.
+//
+// ErrWaitTimeout will be returned if the 'done' channel is closed without fn ever
+// returning true.
+//
+// When the done channel is closed, because the golang `select` statement is
+// "uniform pseudo-random", the `fn` might still run one or multiple time,
+// though eventually `WaitFor` will return.
+func WaitFor(wait WaitFunc, fn ConditionFunc, done <-chan struct{}) error {
+	ctx, cancel := ContextForChannel(done)
+	defer cancel()
+	return WaitForWithContext(ctx, wait.WithContext(), fn.WithContext())
+}
+
+// WaitForWithContext continually checks 'fn' as driven by 'wait'.
+//
+// WaitForWithContext gets a channel from 'wait()”, and then invokes 'fn'
 // once for every value placed on the channel and once more when the
 // channel is closed. If the channel is closed and 'fn'
-// returns false without error, waitForWithContext returns ErrWaitTimeout.
+// returns false without error, WaitForWithContext returns ErrWaitTimeout.
 //
 // If 'fn' returns an error the loop ends and that error is returned. If
 // 'fn' returns true the loop ends and nil is returned.
@@ -636,10 +651,8 @@ type waitWithContextFunc func(ctx context.Context) <-chan struct{}
 //
 // When the ctx.Done() channel is closed, because the golang `select` statement is
 // "uniform pseudo-random", the `fn` might still run one or multiple times,
-// though eventually `waitForWithContext` will return.
-//
-// Deprecated: Will be removed when the legacy Poll methods are removed.
-func waitForWithContext(ctx context.Context, wait waitWithContextFunc, fn ConditionWithContextFunc) error {
+// though eventually `WaitForWithContext` will return.
+func WaitForWithContext(ctx context.Context, wait WaitWithContextFunc, fn ConditionWithContextFunc) error {
 	waitCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	c := wait(waitCtx)
@@ -673,8 +686,8 @@ func waitForWithContext(ctx context.Context, wait waitWithContextFunc, fn Condit
 //
 // Output ticks are not buffered. If the channel is not ready to receive an
 // item, the tick is skipped.
-func poller(interval, timeout time.Duration) waitWithContextFunc {
-	return waitWithContextFunc(func(ctx context.Context) <-chan struct{} {
+func poller(interval, timeout time.Duration) WaitWithContextFunc {
+	return WaitWithContextFunc(func(ctx context.Context) <-chan struct{} {
 		ch := make(chan struct{})
 
 		go func() {
@@ -716,7 +729,7 @@ func poller(interval, timeout time.Duration) waitWithContextFunc {
 
 // ExponentialBackoffWithContext works with a request context and a Backoff. It ensures that the retry wait never
 // exceeds the deadline specified by the request context.
-func ExponentialBackoffWithContext(ctx context.Context, backoff Backoff, condition ConditionWithContextFunc) error {
+func ExponentialBackoffWithContext(ctx context.Context, backoff Backoff, condition ConditionFunc) error {
 	for backoff.Steps > 0 {
 		select {
 		case <-ctx.Done():
@@ -724,7 +737,7 @@ func ExponentialBackoffWithContext(ctx context.Context, backoff Backoff, conditi
 		default:
 		}
 
-		if ok, err := runConditionWithCrashProtectionWithContext(ctx, condition); err != nil || ok {
+		if ok, err := runConditionWithCrashProtection(condition); err != nil || ok {
 			return err
 		}
 

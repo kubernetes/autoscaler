@@ -26,6 +26,7 @@ import (
 	v1alpha1 "k8s.io/api/admissionregistration/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	admissionregistrationv1alpha1 "k8s.io/client-go/applyconfigurations/admissionregistration/v1alpha1"
@@ -37,9 +38,9 @@ type FakeValidatingAdmissionPolicies struct {
 	Fake *FakeAdmissionregistrationV1alpha1
 }
 
-var validatingadmissionpoliciesResource = v1alpha1.SchemeGroupVersion.WithResource("validatingadmissionpolicies")
+var validatingadmissionpoliciesResource = schema.GroupVersionResource{Group: "admissionregistration.k8s.io", Version: "v1alpha1", Resource: "validatingadmissionpolicies"}
 
-var validatingadmissionpoliciesKind = v1alpha1.SchemeGroupVersion.WithKind("ValidatingAdmissionPolicy")
+var validatingadmissionpoliciesKind = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1alpha1", Kind: "ValidatingAdmissionPolicy"}
 
 // Get takes name of the validatingAdmissionPolicy, and returns the corresponding validatingAdmissionPolicy object, and an error if there is any.
 func (c *FakeValidatingAdmissionPolicies) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ValidatingAdmissionPolicy, err error) {

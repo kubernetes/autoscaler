@@ -306,8 +306,8 @@ func (m *cgroupManagerImpl) Destroy(cgroupConfig *CgroupConfig) error {
 	return nil
 }
 
-// getCPUWeight converts from the range [2, 262144] to [1, 10000]
-func getCPUWeight(cpuShares *uint64) uint64 {
+// getCpuWeight converts from the range [2, 262144] to [1, 10000]
+func getCpuWeight(cpuShares *uint64) uint64 {
 	if cpuShares == nil {
 		return 0
 	}
@@ -359,18 +359,18 @@ func (m *cgroupManagerImpl) toResources(resourceConfig *ResourceConfig) *libcont
 	if resourceConfig.Memory != nil {
 		resources.Memory = *resourceConfig.Memory
 	}
-	if resourceConfig.CPUShares != nil {
+	if resourceConfig.CpuShares != nil {
 		if libcontainercgroups.IsCgroup2UnifiedMode() {
-			resources.CpuWeight = getCPUWeight(resourceConfig.CPUShares)
+			resources.CpuWeight = getCpuWeight(resourceConfig.CpuShares)
 		} else {
-			resources.CpuShares = *resourceConfig.CPUShares
+			resources.CpuShares = *resourceConfig.CpuShares
 		}
 	}
-	if resourceConfig.CPUQuota != nil {
-		resources.CpuQuota = *resourceConfig.CPUQuota
+	if resourceConfig.CpuQuota != nil {
+		resources.CpuQuota = *resourceConfig.CpuQuota
 	}
-	if resourceConfig.CPUPeriod != nil {
-		resources.CpuPeriod = *resourceConfig.CPUPeriod
+	if resourceConfig.CpuPeriod != nil {
+		resources.CpuPeriod = *resourceConfig.CpuPeriod
 	}
 	if resourceConfig.PidsLimit != nil {
 		resources.PidsLimit = *resourceConfig.PidsLimit
@@ -530,7 +530,7 @@ func (m *cgroupManagerImpl) ReduceCPULimits(cgroupName CgroupName) error {
 	// Set lowest possible CpuShares value for the cgroup
 	minimumCPUShares := uint64(MinShares)
 	resources := &ResourceConfig{
-		CPUShares: &minimumCPUShares,
+		CpuShares: &minimumCPUShares,
 	}
 	containerConfig := &CgroupConfig{
 		Name:               cgroupName,

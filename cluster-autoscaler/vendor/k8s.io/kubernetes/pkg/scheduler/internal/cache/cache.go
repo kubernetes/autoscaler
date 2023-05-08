@@ -537,22 +537,17 @@ func (cache *cacheImpl) UpdatePod(oldPod, newPod *v1.Pod) error {
 	defer cache.mu.Unlock()
 
 	currState, ok := cache.podStates[key]
-	if !ok {
-		return fmt.Errorf("pod %v(%v) is not added to scheduler cache, so cannot be updated", key, klog.KObj(oldPod))
-	}
-
 	// An assumed pod won't have Update/Remove event. It needs to have Add event
 	// before Update event, in which case the state would change from Assumed to Added.
-	if cache.assumedPods.Has(key) {
-		return fmt.Errorf("assumed pod %v(%v) should not be updated", key, klog.KObj(oldPod))
+	if ok && !cache.assumedPods.Has(key) {
+		if currState.pod.Spec.NodeName != newPod.Spec.NodeName {
+			klog.ErrorS(nil, "Pod updated on a different node than previously added to", "podKey", key, "pod", klog.KObj(oldPod))
+			klog.ErrorS(nil, "scheduler cache is corrupted and can badly affect scheduling decisions")
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+		return cache.updatePod(oldPod, newPod)
 	}
-
-	if currState.pod.Spec.NodeName != newPod.Spec.NodeName {
-		klog.ErrorS(nil, "Pod updated on a different node than previously added to", "podKey", key, "pod", klog.KObj(oldPod))
-		klog.ErrorS(nil, "scheduler cache is corrupted and can badly affect scheduling decisions")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-	}
-	return cache.updatePod(oldPod, newPod)
+	return fmt.Errorf("pod %v(%v) is not added to scheduler cache, so cannot be updated", key, klog.KObj(oldPod))
 }
 
 func (cache *cacheImpl) RemovePod(pod *v1.Pod) error {

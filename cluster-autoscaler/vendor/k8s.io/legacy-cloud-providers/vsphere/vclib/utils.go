@@ -94,7 +94,7 @@ func getNextUnitNumber(devices object.VirtualDeviceList, c types.BaseVirtualCont
 	for _, device := range devices {
 		d := device.GetVirtualDevice()
 		if d.ControllerKey == key {
-			if d.UnitNumber != nil && *d.UnitNumber < SCSIDeviceSlots {
+			if d.UnitNumber != nil {
 				takenUnitNumbers[*d.UnitNumber] = true
 			}
 		}

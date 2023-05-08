@@ -24,6 +24,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	sysruntime "runtime"
 	"sort"
@@ -32,13 +33,11 @@ import (
 	"time"
 
 	"github.com/opencontainers/selinux/go-selinux"
-
 	"k8s.io/client-go/informers"
 
 	cadvisorapi "github.com/google/cadvisor/info/v1"
 	libcontaineruserns "github.com/opencontainers/runc/libcontainer/userns"
 	"go.opentelemetry.io/otel/trace"
-
 	"k8s.io/mount-utils"
 	"k8s.io/utils/integer"
 	netutils "k8s.io/utils/net"
@@ -302,20 +301,24 @@ func makePodSourceConfig(kubeCfg *kubeletconfiginternal.KubeletConfiguration, ku
 }
 
 // PreInitRuntimeService will init runtime service before RunKubelet.
-func PreInitRuntimeService(kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *Dependencies) error {
-	remoteImageEndpoint := kubeCfg.ImageServiceEndpoint
-	if remoteImageEndpoint == "" && kubeCfg.ContainerRuntimeEndpoint != "" {
-		remoteImageEndpoint = kubeCfg.ContainerRuntimeEndpoint
+func PreInitRuntimeService(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
+	kubeDeps *Dependencies,
+	remoteRuntimeEndpoint string,
+	remoteImageEndpoint string) error {
+	// remoteImageEndpoint is same as remoteRuntimeEndpoint if not explicitly specified
+	if remoteRuntimeEndpoint != "" && remoteImageEndpoint == "" {
+		remoteImageEndpoint = remoteRuntimeEndpoint
 	}
+
 	var err error
-	if kubeDeps.RemoteRuntimeService, err = remote.NewRemoteRuntimeService(kubeCfg.ContainerRuntimeEndpoint, kubeCfg.RuntimeRequestTimeout.Duration, kubeDeps.TracerProvider); err != nil {
+	if kubeDeps.RemoteRuntimeService, err = remote.NewRemoteRuntimeService(remoteRuntimeEndpoint, kubeCfg.RuntimeRequestTimeout.Duration, kubeDeps.TracerProvider); err != nil {
 		return err
 	}
 	if kubeDeps.RemoteImageService, err = remote.NewRemoteImageService(remoteImageEndpoint, kubeCfg.RuntimeRequestTimeout.Duration, kubeDeps.TracerProvider); err != nil {
 		return err
 	}
 
-	kubeDeps.useLegacyCadvisorStats = cadvisor.UsingLegacyCadvisorStats(kubeCfg.ContainerRuntimeEndpoint)
+	kubeDeps.useLegacyCadvisorStats = cadvisor.UsingLegacyCadvisorStats(remoteRuntimeEndpoint)
 
 	return nil
 }
@@ -606,7 +609,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	// podManager is also responsible for keeping secretManager and configMapManager contents up-to-date.
 	mirrorPodClient := kubepod.NewBasicMirrorClient(klet.kubeClient, string(nodeName), nodeLister)
-	klet.podManager = kubepod.NewBasicPodManager(mirrorPodClient)
+	klet.podManager = kubepod.NewBasicPodManager(mirrorPodClient, secretManager, configMapManager)
 
 	klet.statusManager = status.NewManager(klet.kubeClient, klet.podManager, klet, kubeDeps.PodStartupLatencyTracker)
 
@@ -1306,7 +1309,7 @@ func (kl *Kubelet) RlimitStats() (*statsapi.RlimitStats, error) {
 // 4.  the pod-resources directory
 // 5.  the checkpoint directory
 func (kl *Kubelet) setupDataDirs() error {
-	kl.rootDirectory = filepath.Clean(kl.rootDirectory)
+	kl.rootDirectory = path.Clean(kl.rootDirectory)
 	pluginRegistrationDir := kl.getPluginsRegistrationDir()
 	pluginsDir := kl.getPluginsDir()
 	if err := os.MkdirAll(kl.getRootDir(), 0750); err != nil {
@@ -1570,15 +1573,15 @@ func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate) {
 // Arguments:
 //
 // updateType - whether this is a create (first time) or an update, should
-// only be used for metrics since this method must be reentrant
+//
+//	only be used for metrics since this method must be reentrant
 //
 // pod - the pod that is being set up
-//
 // mirrorPod - the mirror pod known to the kubelet for this pod, if any
-//
 // podStatus - the most recent pod status observed for this pod which can
-// be used to determine the set of actions that should be taken during
-// this loop of syncPod
+//
+//	be used to determine the set of actions that should be taken during
+//	this loop of syncPod
 //
 // The workflow is:
 //   - If the pod is being created, record pod worker start latency

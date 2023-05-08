@@ -28,6 +28,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/klog/v2"
@@ -35,7 +36,6 @@ import (
 	"k8s.io/legacy-cloud-providers/azure/clients/armclient"
 	"k8s.io/legacy-cloud-providers/azure/metrics"
 	"k8s.io/legacy-cloud-providers/azure/retry"
-	"k8s.io/utils/pointer"
 )
 
 var _ Interface = &Client{}
@@ -197,7 +197,7 @@ func (c *Client) listVMSS(ctx context.Context, resourceGroupName string) ([]comp
 		result = append(result, page.Values()...)
 
 		// Abort the loop when there's no nextLink in the response.
-		if pointer.StringDeref(page.Response().NextLink, "") == "" {
+		if to.String(page.Response().NextLink) == "" {
 			break
 		}
 
@@ -365,12 +365,12 @@ func (c *Client) listResponder(resp *http.Response) (result compute.VirtualMachi
 // virtualMachineScaleSetListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (c *Client) virtualMachineScaleSetListResultPreparer(ctx context.Context, vmsslr compute.VirtualMachineScaleSetListResult) (*http.Request, error) {
-	if vmsslr.NextLink == nil || len(pointer.StringDeref(vmsslr.NextLink, "")) < 1 {
+	if vmsslr.NextLink == nil || len(to.String(vmsslr.NextLink)) < 1 {
 		return nil, nil
 	}
 
 	decorators := []autorest.PrepareDecorator{
-		autorest.WithBaseURL(pointer.StringDeref(vmsslr.NextLink, "")),
+		autorest.WithBaseURL(to.String(vmsslr.NextLink)),
 	}
 	return c.armClient.PrepareGetRequest(ctx, decorators...)
 }

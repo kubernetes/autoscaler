@@ -1741,6 +1741,7 @@ type CSIPersistentVolumeSource struct {
 	// ControllerExpandSecretRef is a reference to the secret object containing
 	// sensitive information to pass to the CSI driver to complete the CSI
 	// ControllerExpandVolume call.
+	// This is an beta field and requires enabling ExpandCSIVolumes feature gate.
 	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
@@ -2190,7 +2191,7 @@ type ResourceRequirements struct {
 	// This is an alpha field and requires enabling the
 	// DynamicResourceAllocation feature gate.
 	//
-	// This field is immutable.
+	// This field is immutable. It can only be set for containers.
 	//
 	// +featureGate=DynamicResourceAllocation
 	// +optional
@@ -3780,33 +3781,33 @@ const (
 	ServiceTypeExternalName ServiceType = "ExternalName"
 )
 
-// ServiceInternalTrafficPolicy describes the endpoint-selection policy for
+// ServiceInternalTrafficPolicyType describes the endpoint-selection policy for
 // traffic sent to the ClusterIP.
-type ServiceInternalTrafficPolicy string
+type ServiceInternalTrafficPolicyType string
 
 const (
 	// ServiceInternalTrafficPolicyCluster routes traffic to all endpoints.
-	ServiceInternalTrafficPolicyCluster ServiceInternalTrafficPolicy = "Cluster"
+	ServiceInternalTrafficPolicyCluster ServiceInternalTrafficPolicyType = "Cluster"
 
 	// ServiceInternalTrafficPolicyLocal routes traffic only to endpoints on the same
 	// node as the traffic was received on (dropping the traffic if there are no
 	// local endpoints).
-	ServiceInternalTrafficPolicyLocal ServiceInternalTrafficPolicy = "Local"
+	ServiceInternalTrafficPolicyLocal ServiceInternalTrafficPolicyType = "Local"
 )
 
-// ServiceExternalTrafficPolicy describes the endpoint-selection policy for
+// ServiceExternalTrafficPolicyType describes the endpoint-selection policy for
 // traffic to external service entrypoints (NodePorts, ExternalIPs, and
 // LoadBalancer IPs).
-type ServiceExternalTrafficPolicy string
+type ServiceExternalTrafficPolicyType string
 
 const (
-	// ServiceExternalTrafficPolicyCluster routes traffic to all endpoints.
-	ServiceExternalTrafficPolicyCluster ServiceExternalTrafficPolicy = "Cluster"
+	// ServiceExternalTrafficPolicyTypeCluster routes traffic to all endpoints.
+	ServiceExternalTrafficPolicyTypeCluster ServiceExternalTrafficPolicyType = "Cluster"
 
-	// ServiceExternalTrafficPolicyLocal preserves the source IP of the traffic by
+	// ServiceExternalTrafficPolicyTypeLocal preserves the source IP of the traffic by
 	// routing only to endpoints on the same node as the traffic was received on
 	// (dropping the traffic if there are no local endpoints).
-	ServiceExternalTrafficPolicyLocal ServiceExternalTrafficPolicy = "Local"
+	ServiceExternalTrafficPolicyTypeLocal ServiceExternalTrafficPolicyType = "Local"
 )
 
 // These are the valid conditions of a service.
@@ -4012,7 +4013,7 @@ type ServiceSpec struct {
 	// a NodePort from within the cluster may need to take traffic policy into account
 	// when picking a node.
 	// +optional
-	ExternalTrafficPolicy ServiceExternalTrafficPolicy
+	ExternalTrafficPolicy ServiceExternalTrafficPolicyType
 
 	// healthCheckNodePort specifies the healthcheck nodePort for the service.
 	// If not specified, HealthCheckNodePort is created by the service api
@@ -4063,7 +4064,7 @@ type ServiceSpec struct {
 	// "Cluster", uses the standard behavior of routing to all endpoints evenly
 	// (possibly modified by topology and other features).
 	// +optional
-	InternalTrafficPolicy *ServiceInternalTrafficPolicy
+	InternalTrafficPolicy *ServiceInternalTrafficPolicyType
 }
 
 // ServicePort represents the port on which the service is exposed
@@ -4207,8 +4208,9 @@ type EndpointSubset struct {
 // EndpointAddress is a tuple that describes single IP address.
 type EndpointAddress struct {
 	// The IP of this endpoint.
-	// May not be loopback (127.0.0.0/8 or ::1), link-local (169.254.0.0/16 or fe80::/10),
-	// or link-local multicast (224.0.0.0/24 or ff02::/16).
+	// IPv6 is also accepted but not fully supported on all platforms. Also, certain
+	// kubernetes components, like kube-proxy, are not IPv6 ready.
+	// TODO: This should allow hostname or IP, see #4447.
 	IP string
 	// Optional: Hostname of this endpoint
 	// Meant to be used by DNS servers etc.

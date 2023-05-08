@@ -18,7 +18,7 @@ package kuberuntime
 
 import (
 	"fmt"
-	"path/filepath"
+	"path"
 	"strings"
 
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
@@ -71,5 +71,5 @@ func logSymlink(containerLogsDir, podFullName, containerName, containerID string
 	if len(logPath) > ext4MaxFileNameLen-len(suffix) {
 		logPath = logPath[:ext4MaxFileNameLen-len(suffix)]
 	}
-	return filepath.Join(containerLogsDir, logPath+suffix)
+	return path.Join(containerLogsDir, logPath+suffix)
 }

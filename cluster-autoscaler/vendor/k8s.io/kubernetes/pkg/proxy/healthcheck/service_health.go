@@ -150,6 +150,7 @@ type hcInstance struct {
 	nsn  types.NamespacedName
 	port uint16
 
+	listeners   []net.Listener
 	httpServers []httpServer
 
 	endpoints int // number of local endpoints for a service
@@ -161,6 +162,7 @@ func (hcI *hcInstance) listenAndServeAll(hcs *server) error {
 	var listener net.Listener
 
 	addresses := hcs.nodeAddresses.List()
+	hcI.listeners = make([]net.Listener, 0, len(addresses))
 	hcI.httpServers = make([]httpServer, 0, len(addresses))
 
 	// for each of the node addresses start listening and serving
@@ -179,15 +181,16 @@ func (hcI *hcInstance) listenAndServeAll(hcs *server) error {
 
 		// start serving
 		go func(hcI *hcInstance, listener net.Listener, httpSrv httpServer) {
-			// Serve() will exit and return ErrServerClosed when the http server is closed.
+			// Serve() will exit when the listener is closed.
 			klog.V(3).InfoS("Starting goroutine for healthcheck", "service", hcI.nsn, "address", listener.Addr())
-			if err := httpSrv.Serve(listener); err != nil && err != http.ErrServerClosed {
+			if err := httpSrv.Serve(listener); err != nil {
 				klog.ErrorS(err, "Healthcheck closed", "service", hcI.nsn)
 				return
 			}
 			klog.V(3).InfoS("Healthcheck closed", "service", hcI.nsn, "address", listener.Addr())
 		}(hcI, listener, httpSrv)
 
+		hcI.listeners = append(hcI.listeners, listener)
 		hcI.httpServers = append(hcI.httpServers, httpSrv)
 	}
 
@@ -196,9 +199,9 @@ func (hcI *hcInstance) listenAndServeAll(hcs *server) error {
 
 func (hcI *hcInstance) closeAll() error {
 	errors := []error{}
-	for _, server := range hcI.httpServers {
-		if err := server.Close(); err != nil {
-			klog.ErrorS(err, "Error closing server for health check service", "service", hcI.nsn)
+	for _, listener := range hcI.listeners {
+		if err := listener.Close(); err != nil {
+			klog.ErrorS(err, "Error closing listener for health check service", "service", hcI.nsn, "address", listener.Addr())
 			errors = append(errors, err)
 		}
 	}

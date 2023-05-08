@@ -24,23 +24,7 @@ import (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-/*
-EncryptionConfiguration stores the complete configuration for encryption providers.
-example:
-
-	kind: EncryptionConfiguration
-	apiVersion: apiserver.config.k8s.io/v1
-	resources:
-	- resources:
-	  - secrets
-	  - configmaps
-	  - pandas.awesome.bears.example
-	  providers:
-	  - aescbc:
-	      keys:
-	      - name: key1
-	        secret: c2VjcmV0IGlzIHNlY3VyZQ==
-*/
+// EncryptionConfiguration stores the complete configuration for encryption providers.
 type EncryptionConfiguration struct {
 	metav1.TypeMeta
 	// resources is a list containing resources, and their corresponding encryption providers.
@@ -49,8 +33,7 @@ type EncryptionConfiguration struct {
 
 // ResourceConfiguration stores per resource configuration.
 type ResourceConfiguration struct {
-	// resources is a list of kubernetes resources which have to be encrypted. The resource names are derived from `resource` or `resource.group` of the group/version/resource.
-	// eg: pandas.awesome.bears.example is a custom resource with 'group': awesome.bears.example, 'resource': pandas)
+	// resources is a list of kubernetes resources which have to be encrypted.
 	Resources []string
 	// providers is a list of transformers to be used for reading and writing the resources to disk.
 	// eg: aesgcm, aescbc, secretbox, identity.
