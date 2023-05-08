@@ -513,8 +513,7 @@ spec:
         type: object
     served: true
     storage: true
-    subresources:
-      status: {}
+    subresources: {}
   - deprecated: true
     deprecationWarning: autoscaling.k8s.io/v1beta2 API is deprecated
     name: v1beta2
