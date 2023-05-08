@@ -20,17 +20,6 @@ type contextWithAttachProgressReporter interface {
 	AttachProgressReporter(func() string) func()
 }
 
-type asyncGomegaHaltExecutionError struct{}
-
-func (a asyncGomegaHaltExecutionError) GinkgoRecoverShouldIgnoreThisPanic() {}
-func (a asyncGomegaHaltExecutionError) Error() string {
-	return `An assertion has failed in a goroutine.  You should call 
-
-    defer GinkgoRecover()
-
-at the top of the goroutine that caused this panic.  This will allow Ginkgo and Gomega to correctly capture and manage this panic.`
-}
-
 type AsyncAssertionType uint
 
 const (
@@ -240,8 +229,7 @@ func (assertion *AsyncAssertion) buildActualPoller() (func() (interface{}, error
 			}
 			_, file, line, _ := runtime.Caller(skip + 1)
 			assertionFailure = fmt.Errorf("Assertion in callback at %s:%d failed:\n%s", file, line, message)
-			// we throw an asyncGomegaHaltExecutionError so that defer GinkgoRecover() can catch this error if the user makes an assertion in a goroutine
-			panic(asyncGomegaHaltExecutionError{})
+			panic("stop execution")
 		})))
 	}
 	if takesContext {

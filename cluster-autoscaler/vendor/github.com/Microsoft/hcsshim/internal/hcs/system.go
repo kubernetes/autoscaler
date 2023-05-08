@@ -275,19 +275,11 @@ func (computeSystem *System) waitBackground() {
 	oc.SetSpanStatus(span, err)
 }
 
-func (computeSystem *System) WaitChannel() <-chan struct{} {
-	return computeSystem.waitBlock
-}
-
-func (computeSystem *System) WaitError() error {
-	return computeSystem.waitError
-}
-
 // Wait synchronously waits for the compute system to shutdown or terminate. If
 // the compute system has already exited returns the previous error (if any).
 func (computeSystem *System) Wait() error {
-	<-computeSystem.WaitChannel()
-	return computeSystem.WaitError()
+	<-computeSystem.waitBlock
+	return computeSystem.waitError
 }
 
 // ExitError returns an error describing the reason the compute system terminated.

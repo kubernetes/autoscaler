@@ -63,30 +63,20 @@ var (
 	// xDS-enabled server invokes this method on a grpc.Server when a particular
 	// listener moves to "not-serving" mode.
 	DrainServerTransports interface{} // func(*grpc.Server, string)
-	// AddGlobalServerOptions adds an array of ServerOption that will be
+	// AddExtraServerOptions adds an array of ServerOption that will be
 	// effective globally for newly created servers. The priority will be: 1.
 	// user-provided; 2. this method; 3. default values.
-	AddGlobalServerOptions interface{} // func(opt ...ServerOption)
-	// ClearGlobalServerOptions clears the array of extra ServerOption. This
+	AddExtraServerOptions interface{} // func(opt ...ServerOption)
+	// ClearExtraServerOptions clears the array of extra ServerOption. This
 	// method is useful in testing and benchmarking.
-	ClearGlobalServerOptions func()
-	// AddGlobalDialOptions adds an array of DialOption that will be effective
+	ClearExtraServerOptions func()
+	// AddExtraDialOptions adds an array of DialOption that will be effective
 	// globally for newly created client channels. The priority will be: 1.
 	// user-provided; 2. this method; 3. default values.
-	AddGlobalDialOptions interface{} // func(opt ...DialOption)
-	// ClearGlobalDialOptions clears the array of extra DialOption. This
+	AddExtraDialOptions interface{} // func(opt ...DialOption)
+	// ClearExtraDialOptions clears the array of extra DialOption. This
 	// method is useful in testing and benchmarking.
-	ClearGlobalDialOptions func()
-	// JoinServerOptions combines the server options passed as arguments into a
-	// single server option.
-	JoinServerOptions interface{} // func(...grpc.ServerOption) grpc.ServerOption
-
-	// WithBinaryLogger returns a DialOption that specifies the binary logger
-	// for a ClientConn.
-	WithBinaryLogger interface{} // func(binarylog.Logger) grpc.DialOption
-	// BinaryLogger returns a ServerOption that can set the binary logger for a
-	// server.
-	BinaryLogger interface{} // func(binarylog.Logger) grpc.ServerOption
+	ClearExtraDialOptions func()
 
 	// NewXDSResolverWithConfigForTesting creates a new xds resolver builder using
 	// the provided xds bootstrap config instead of the global configuration from
@@ -127,6 +117,22 @@ var (
 	//
 	// TODO: Remove this function once the RBAC env var is removed.
 	UnregisterRBACHTTPFilterForTesting func()
+
+	// RegisterOutlierDetectionBalancerForTesting registers the Outlier
+	// Detection Balancer for testing purposes, regardless of the Outlier
+	// Detection environment variable.
+	//
+	// TODO: Remove this function once the Outlier Detection env var is removed.
+	RegisterOutlierDetectionBalancerForTesting func()
+
+	// UnregisterOutlierDetectionBalancerForTesting unregisters the Outlier
+	// Detection Balancer for testing purposes. This is needed because there is
+	// no way to unregister the Outlier Detection Balancer after registering it
+	// solely for testing purposes using
+	// RegisterOutlierDetectionBalancerForTesting().
+	//
+	// TODO: Remove this function once the Outlier Detection env var is removed.
+	UnregisterOutlierDetectionBalancerForTesting func()
 )
 
 // HealthChecker defines the signature of the client-side LB channel health checking function.

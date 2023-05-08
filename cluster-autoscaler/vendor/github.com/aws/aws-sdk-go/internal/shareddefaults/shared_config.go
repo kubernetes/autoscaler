@@ -1,8 +1,9 @@
 package shareddefaults
 
 import (
-	"os/user"
+	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // SharedCredentialsFilename returns the SDK's default file path
@@ -30,17 +31,10 @@ func SharedConfigFilename() string {
 // UserHomeDir returns the home directory for the user the process is
 // running under.
 func UserHomeDir() string {
-	var home string
-
-	home = userHomeDir()
-	if len(home) > 0 {
-		return home
+	if runtime.GOOS == "windows" { // Windows
+		return os.Getenv("USERPROFILE")
 	}
 
-	currUser, _ := user.Current()
-	if currUser != nil {
-		home = currUser.HomeDir
-	}
-
-	return home
+	// *nix
+	return os.Getenv("HOME")
 }

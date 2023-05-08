@@ -4,6 +4,7 @@ package jsonutil
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -13,12 +14,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/private/protocol"
-)
-
-const (
-	floatNaN    = "NaN"
-	floatInf    = "Infinity"
-	floatNegInf = "-Infinity"
 )
 
 var timeType = reflect.ValueOf(time.Time{}).Type()
@@ -216,16 +211,10 @@ func buildScalar(v reflect.Value, buf *bytes.Buffer, tag reflect.StructTag) erro
 		buf.Write(strconv.AppendInt(scratch[:0], value.Int(), 10))
 	case reflect.Float64:
 		f := value.Float()
-		switch {
-		case math.IsNaN(f):
-			writeString(floatNaN, buf)
-		case math.IsInf(f, 1):
-			writeString(floatInf, buf)
-		case math.IsInf(f, -1):
-			writeString(floatNegInf, buf)
-		default:
-			buf.Write(strconv.AppendFloat(scratch[:0], f, 'f', -1, 64))
+		if math.IsInf(f, 0) || math.IsNaN(f) {
+			return &json.UnsupportedValueError{Value: v, Str: strconv.FormatFloat(f, 'f', -1, 64)}
 		}
+		buf.Write(strconv.AppendFloat(scratch[:0], f, 'f', -1, 64))
 	default:
 		switch converted := value.Interface().(type) {
 		case time.Time:

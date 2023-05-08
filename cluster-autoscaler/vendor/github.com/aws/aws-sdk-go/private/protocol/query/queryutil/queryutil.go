@@ -3,7 +3,6 @@ package queryutil
 import (
 	"encoding/base64"
 	"fmt"
-	"math"
 	"net/url"
 	"reflect"
 	"sort"
@@ -12,12 +11,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/private/protocol"
-)
-
-const (
-	floatNaN    = "NaN"
-	floatInf    = "Infinity"
-	floatNegInf = "-Infinity"
 )
 
 // Parse parses an object i and fills a url.Values object. The isEC2 flag
@@ -235,32 +228,9 @@ func (q *queryParser) parseScalar(v url.Values, r reflect.Value, name string, ta
 	case int:
 		v.Set(name, strconv.Itoa(value))
 	case float64:
-		var str string
-		switch {
-		case math.IsNaN(value):
-			str = floatNaN
-		case math.IsInf(value, 1):
-			str = floatInf
-		case math.IsInf(value, -1):
-			str = floatNegInf
-		default:
-			str = strconv.FormatFloat(value, 'f', -1, 64)
-		}
-		v.Set(name, str)
+		v.Set(name, strconv.FormatFloat(value, 'f', -1, 64))
 	case float32:
-		asFloat64 := float64(value)
-		var str string
-		switch {
-		case math.IsNaN(asFloat64):
-			str = floatNaN
-		case math.IsInf(asFloat64, 1):
-			str = floatInf
-		case math.IsInf(asFloat64, -1):
-			str = floatNegInf
-		default:
-			str = strconv.FormatFloat(asFloat64, 'f', -1, 32)
-		}
-		v.Set(name, str)
+		v.Set(name, strconv.FormatFloat(float64(value), 'f', -1, 32))
 	case time.Time:
 		const ISO8601UTC = "2006-01-02T15:04:05Z"
 		format := tag.Get("timestampFormat")

@@ -1,3 +1,5 @@
+// +build linux
+
 package ipvs
 
 import (
@@ -122,8 +124,8 @@ func (i *Handle) doCmdwithResponse(s *Service, d *Destination, cmd uint8) ([][]b
 	req.Seq = atomic.AddUint32(&i.seq, 1)
 
 	if s == nil {
-		req.Flags |= syscall.NLM_F_DUMP                    // Flag to dump all messages
-		req.AddData(nl.NewRtAttr(ipvsCmdAttrService, nil)) // Add a dummy attribute
+		req.Flags |= syscall.NLM_F_DUMP                    //Flag to dump all messages
+		req.AddData(nl.NewRtAttr(ipvsCmdAttrService, nil)) //Add a dummy attribute
 	} else {
 		req.AddData(fillService(s))
 	}
@@ -132,6 +134,7 @@ func (i *Handle) doCmdwithResponse(s *Service, d *Destination, cmd uint8) ([][]b
 		if cmd == ipvsCmdGetDest {
 			req.Flags |= syscall.NLM_F_DUMP
 		}
+
 	} else {
 		req.AddData(fillDestination(d))
 	}
@@ -256,6 +259,7 @@ done:
 }
 
 func parseIP(ip []byte, family uint16) (net.IP, error) {
+
 	var resIP net.IP
 
 	switch family {
@@ -272,6 +276,7 @@ func parseIP(ip []byte, family uint16) (net.IP, error) {
 
 // parseStats
 func assembleStats(msg []byte) (SvcStats, error) {
+
 	var s SvcStats
 
 	attrs, err := nl.ParseRouteAttr(msg)
@@ -282,25 +287,25 @@ func assembleStats(msg []byte) (SvcStats, error) {
 	for _, attr := range attrs {
 		attrType := int(attr.Attr.Type)
 		switch attrType {
-		case ipvsStatsConns:
+		case ipvsSvcStatsConns:
 			s.Connections = native.Uint32(attr.Value)
-		case ipvsStatsPktsIn:
+		case ipvsSvcStatsPktsIn:
 			s.PacketsIn = native.Uint32(attr.Value)
-		case ipvsStatsPktsOut:
+		case ipvsSvcStatsPktsOut:
 			s.PacketsOut = native.Uint32(attr.Value)
-		case ipvsStatsBytesIn:
+		case ipvsSvcStatsBytesIn:
 			s.BytesIn = native.Uint64(attr.Value)
-		case ipvsStatsBytesOut:
+		case ipvsSvcStatsBytesOut:
 			s.BytesOut = native.Uint64(attr.Value)
-		case ipvsStatsCPS:
+		case ipvsSvcStatsCPS:
 			s.CPS = native.Uint32(attr.Value)
-		case ipvsStatsPPSIn:
+		case ipvsSvcStatsPPSIn:
 			s.PPSIn = native.Uint32(attr.Value)
-		case ipvsStatsPPSOut:
+		case ipvsSvcStatsPPSOut:
 			s.PPSOut = native.Uint32(attr.Value)
-		case ipvsStatsBPSIn:
+		case ipvsSvcStatsBPSIn:
 			s.BPSIn = native.Uint32(attr.Value)
-		case ipvsStatsBPSOut:
+		case ipvsSvcStatsBPSOut:
 			s.BPSOut = native.Uint32(attr.Value)
 		}
 	}
@@ -309,6 +314,7 @@ func assembleStats(msg []byte) (SvcStats, error) {
 
 // assembleService assembles a services back from a hain of netlink attributes
 func assembleService(attrs []syscall.NetlinkRouteAttr) (*Service, error) {
+
 	var s Service
 	var addressBytes []byte
 
@@ -360,9 +366,10 @@ func assembleService(attrs []syscall.NetlinkRouteAttr) (*Service, error) {
 
 // parseService given a ipvs netlink response this function will respond with a valid service entry, an error otherwise
 func (i *Handle) parseService(msg []byte) (*Service, error) {
+
 	var s *Service
 
-	// Remove General header for this message and parse the NetLink message
+	//Remove General header for this message and parse the NetLink message
 	hdr := deserializeGenlMsg(msg)
 	NetLinkAttrs, err := nl.ParseRouteAttr(msg[hdr.Len():])
 	if err != nil {
@@ -372,13 +379,13 @@ func (i *Handle) parseService(msg []byte) (*Service, error) {
 		return nil, fmt.Errorf("error no valid netlink message found while parsing service record")
 	}
 
-	// Now Parse and get IPVS related attributes messages packed in this message.
+	//Now Parse and get IPVS related attributes messages packed in this message.
 	ipvsAttrs, err := nl.ParseRouteAttr(NetLinkAttrs[0].Value)
 	if err != nil {
 		return nil, err
 	}
 
-	// Assemble all the IPVS related attribute messages and create a service record
+	//Assemble all the IPVS related attribute messages and create a service record
 	s, err = assembleService(ipvsAttrs)
 	if err != nil {
 		return nil, err
@@ -415,6 +422,7 @@ func (i *Handle) doCmdWithoutAttr(cmd uint8) ([][]byte, error) {
 }
 
 func assembleDestination(attrs []syscall.NetlinkRouteAttr) (*Destination, error) {
+
 	var d Destination
 	var addressBytes []byte
 
@@ -439,9 +447,9 @@ func assembleDestination(attrs []syscall.NetlinkRouteAttr) (*Destination, error)
 		case ipvsDestAttrLowerThreshold:
 			d.LowerThreshold = native.Uint32(attr.Value)
 		case ipvsDestAttrActiveConnections:
-			d.ActiveConnections = int(native.Uint32(attr.Value))
+			d.ActiveConnections = int(native.Uint16(attr.Value))
 		case ipvsDestAttrInactiveConnections:
-			d.InactiveConnections = int(native.Uint32(attr.Value))
+			d.InactiveConnections = int(native.Uint16(attr.Value))
 		case ipvsDestAttrStats:
 			stats, err := assembleStats(attr.Value)
 			if err != nil {
@@ -478,12 +486,9 @@ func assembleDestination(attrs []syscall.NetlinkRouteAttr) (*Destination, error)
 
 // getIPFamily parses the IP family based on raw data from netlink.
 // For AF_INET, netlink will set the first 4 bytes with trailing zeros
-//
-//	10.0.0.1 -> [10 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0]
-//
+//   10.0.0.1 -> [10 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0]
 // For AF_INET6, the full 16 byte array is used:
-//
-//	2001:db8:3c4d:15::1a00 -> [32 1 13 184 60 77 0 21 0 0 0 0 0 0 26 0]
+//   2001:db8:3c4d:15::1a00 -> [32 1 13 184 60 77 0 21 0 0 0 0 0 0 26 0]
 func getIPFamily(address []byte) (uint16, error) {
 	if len(address) == 4 {
 		return syscall.AF_INET, nil
@@ -514,7 +519,7 @@ func isZeros(b []byte) bool {
 func (i *Handle) parseDestination(msg []byte) (*Destination, error) {
 	var dst *Destination
 
-	// Remove General header for this message
+	//Remove General header for this message
 	hdr := deserializeGenlMsg(msg)
 	NetLinkAttrs, err := nl.ParseRouteAttr(msg[hdr.Len():])
 	if err != nil {
@@ -524,13 +529,13 @@ func (i *Handle) parseDestination(msg []byte) (*Destination, error) {
 		return nil, fmt.Errorf("error no valid netlink message found while parsing destination record")
 	}
 
-	// Now Parse and get IPVS related attributes messages packed in this message.
+	//Now Parse and get IPVS related attributes messages packed in this message.
 	ipvsAttrs, err := nl.ParseRouteAttr(NetLinkAttrs[0].Value)
 	if err != nil {
 		return nil, err
 	}
 
-	// Assemble netlink attributes and create a Destination record
+	//Assemble netlink attributes and create a Destination record
 	dst, err = assembleDestination(ipvsAttrs)
 	if err != nil {
 		return nil, err
@@ -541,6 +546,7 @@ func (i *Handle) parseDestination(msg []byte) (*Destination, error) {
 
 // doGetDestinationsCmd a wrapper function to be used by GetDestinations and GetDestination(d) apis
 func (i *Handle) doGetDestinationsCmd(s *Service, d *Destination) ([]*Destination, error) {
+
 	var res []*Destination
 
 	msgs, err := i.doCmdwithResponse(s, d, ipvsCmdGetDest)
@@ -562,7 +568,7 @@ func (i *Handle) doGetDestinationsCmd(s *Service, d *Destination) ([]*Destinatio
 func (i *Handle) parseConfig(msg []byte) (*Config, error) {
 	var c Config
 
-	// Remove General header for this message
+	//Remove General header for this message
 	hdr := deserializeGenlMsg(msg)
 	attrs, err := nl.ParseRouteAttr(msg[hdr.Len():])
 	if err != nil {

@@ -52,9 +52,7 @@ type MethodLogger interface {
 	Log(LogEntryConfig)
 }
 
-// TruncatingMethodLogger is a method logger that truncates headers and messages
-// based on configured fields.
-type TruncatingMethodLogger struct {
+type methodLogger struct {
 	headerMaxLen, messageMaxLen uint64
 
 	callID          uint64
@@ -63,9 +61,8 @@ type TruncatingMethodLogger struct {
 	sink Sink // TODO(blog): make this plugable.
 }
 
-// NewTruncatingMethodLogger returns a new truncating method logger.
-func NewTruncatingMethodLogger(h, m uint64) *TruncatingMethodLogger {
-	return &TruncatingMethodLogger{
+func newMethodLogger(h, m uint64) *methodLogger {
+	return &methodLogger{
 		headerMaxLen:  h,
 		messageMaxLen: m,
 
@@ -78,8 +75,8 @@ func NewTruncatingMethodLogger(h, m uint64) *TruncatingMethodLogger {
 
 // Build is an internal only method for building the proto message out of the
 // input event. It's made public to enable other library to reuse as much logic
-// in TruncatingMethodLogger as possible.
-func (ml *TruncatingMethodLogger) Build(c LogEntryConfig) *pb.GrpcLogEntry {
+// in methodLogger as possible.
+func (ml *methodLogger) Build(c LogEntryConfig) *pb.GrpcLogEntry {
 	m := c.toProto()
 	timestamp, _ := ptypes.TimestampProto(time.Now())
 	m.Timestamp = timestamp
@@ -98,11 +95,11 @@ func (ml *TruncatingMethodLogger) Build(c LogEntryConfig) *pb.GrpcLogEntry {
 }
 
 // Log creates a proto binary log entry, and logs it to the sink.
-func (ml *TruncatingMethodLogger) Log(c LogEntryConfig) {
+func (ml *methodLogger) Log(c LogEntryConfig) {
 	ml.sink.Write(ml.Build(c))
 }
 
-func (ml *TruncatingMethodLogger) truncateMetadata(mdPb *pb.Metadata) (truncated bool) {
+func (ml *methodLogger) truncateMetadata(mdPb *pb.Metadata) (truncated bool) {
 	if ml.headerMaxLen == maxUInt {
 		return false
 	}
@@ -132,7 +129,7 @@ func (ml *TruncatingMethodLogger) truncateMetadata(mdPb *pb.Metadata) (truncated
 	return truncated
 }
 
-func (ml *TruncatingMethodLogger) truncateMessage(msgPb *pb.Message) (truncated bool) {
+func (ml *methodLogger) truncateMessage(msgPb *pb.Message) (truncated bool) {
 	if ml.messageMaxLen == maxUInt {
 		return false
 	}
