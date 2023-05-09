@@ -491,6 +491,14 @@ func main() {
 
 	klog.V(1).Infof("Cluster Autoscaler %s", version.ClusterAutoscalerVersion)
 
+	// FORK-CHANGE: logging version of g/autoscaler as well
+	gardenerversion, err := os.ReadFile("../VERSION")
+	if err != nil {
+		klog.Warningf("Error reading gardener autoscaler version, err: %s", err)
+	} else {
+		klog.V(1).Infof("Gardener Cluster Autoscaler %s", gardenerversion)
+	}
+
 	debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(*debuggingSnapshotEnabled)
 
 	go func() {

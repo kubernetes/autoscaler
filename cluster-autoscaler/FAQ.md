@@ -1128,6 +1128,7 @@ Assumption: We assume that the developer executing the below stages wants to syn
    - This is where changes of master get merged in. advantage of merging is it won’t change the commit hashes of already existing commits.
    - Accept all vpa changes.
    - Accept our changes in `go.mod` and `go.sum` and `vendor` directory.  (The `hack/update-vendor.sh` script which will be executed in later step expected to fix things)
+   - Accept the version in `cluster-autoscler/version/version.go` . This is the version of kubernetes autoscaler with which syncing is being done. 
 1. In `cluster-autoscaler/go.mod`, upgrade versions of `machine-controller-manager-provider-aws`,  `machine-controller-manager-provider-azure` to the latest available release.
 1. Run update vendor script after changing to `cluster-autoscaler` directory:  `./hack/update-vendor.sh 1.x.0` 
    - If the above still gives test issues then use `rsync` or `diff -rq` to figure out differences in `vendor` directory between upstream and our fork and synchronize them manually.
