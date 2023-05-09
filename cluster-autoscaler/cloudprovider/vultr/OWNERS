@@ -4,3 +4,6 @@ approvers:
 reviewers:
 #- happytreees
 #- optik-aper
+
+labels:
+- cloudprovider/vultr

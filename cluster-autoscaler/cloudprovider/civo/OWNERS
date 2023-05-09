@@ -8,3 +8,6 @@
 #- birdiesanders
 #- vishalanarase
 #- RealHarshThakur
+
+labels:
+- cloudprovider/civo
