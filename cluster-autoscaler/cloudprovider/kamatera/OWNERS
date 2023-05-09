@@ -2,3 +2,6 @@ approvers:
 #- OriHoch
 reviewers:
 #- OriHoch
+
+labels:
+- cloudprovider/kamatera

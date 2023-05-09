@@ -2,3 +2,6 @@ approvers:
 - tghartland
 reviewers:
 - tghartland
+
+labels:
+- cloudprovider/magnum
