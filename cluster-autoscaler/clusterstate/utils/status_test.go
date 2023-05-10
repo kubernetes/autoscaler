@@ -95,6 +95,17 @@ func TestWriteStatusConfigMapExisting(t *testing.T) {
 	assert.True(t, ti.getCalled)
 	assert.True(t, ti.updateCalled)
 	assert.False(t, ti.createCalled)
+
+	// to test the case where configmap is empty
+	ti.configMap.Data = nil
+	result, err = WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
+	assert.Equal(t, ti.configMap, result)
+	assert.Contains(t, result.Data["status"], "TEST_MSG")
+	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
+	assert.Nil(t, err)
+	assert.True(t, ti.getCalled)
+	assert.True(t, ti.updateCalled)
+	assert.False(t, ti.createCalled)
 }
 
 func TestWriteStatusConfigMapCreate(t *testing.T) {
