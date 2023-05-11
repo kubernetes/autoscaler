@@ -1,4 +1,4 @@
-# KEP-4831: Control VPA eviction behavior based on scaling direction and resource
+# AEP-4831: Control VPA eviction behavior based on scaling direction and resource
 
 <!-- toc -->
 - [Summary](#summary)
@@ -8,6 +8,8 @@
 - [Design Details](#design-details)
    - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
+- [Implementation History](#implementation-history)
+
 <!-- /toc -->
 
 ## Summary
@@ -60,3 +62,8 @@ different controller inspect the recommendations and apply them based on certain
 time.
 With this approach you either end up re-building half of the VPA (updater/webhook), or use a different mechanism to
 apply the recommendations, such as modifying the requests in the Pod owning Object – which has its own drawbacks.
+
+## Implementation History
+
+*  2022-09-08: Initial version
+
