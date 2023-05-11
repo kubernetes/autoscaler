@@ -33,8 +33,10 @@ type scalingDirectionPodEvictionAdmission struct {
 	EvictionRequirements map[*apiv1.Pod][]*vpa_types.EvictionRequirement
 }
 
-// Admit denies Pod eviction, if an EvictionRequirement exists for at least one Container which evaluates to 'false'.
-// If no EvictionRequirement exists or no Recommendation is present yet, the Pod is admitted for eviction.
+// Admit admits a Pod for eviction in one of three cases
+// * an EvictionRequirement exists which is evaluated to 'true' for at least one Container in this Pod
+// * no Recommendation exists for at least one Container in this Pod
+// * no EvictionRequirement exists for this Pod
 func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *vpa_types.RecommendedPodResources) bool {
 	podEvictionRequirements, found := s.EvictionRequirements[pod]
 	if !found {
