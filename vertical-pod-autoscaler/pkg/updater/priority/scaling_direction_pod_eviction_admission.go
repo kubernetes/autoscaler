@@ -70,13 +70,14 @@ func (s *scalingDirectionPodEvictionAdmission) admitContainer(container apiv1.Co
 func (s *scalingDirectionPodEvictionAdmission) allowEvictionForResourceAndScalingDirection(resource apiv1.ResourceName, currentRequests int64, recommendation int64, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
 	for _, evictionRequirement := range podEvictionRequirements {
 		for _, resourceName := range evictionRequirement.Resources {
-			if resourceName == resource {
-				if evictionRequirement.ChangeRequirement == vpa_types.TargetHigherThanRequests {
-					return recommendation > currentRequests
-				}
-				if evictionRequirement.ChangeRequirement == vpa_types.TargetLowerThanRequests {
-					return recommendation < currentRequests
-				}
+			if resourceName != resource {
+				continue
+			}
+			if evictionRequirement.ChangeRequirement == vpa_types.TargetHigherThanRequests {
+				return recommendation > currentRequests
+			}
+			if evictionRequirement.ChangeRequirement == vpa_types.TargetLowerThanRequests {
+				return recommendation < currentRequests
 			}
 		}
 	}
