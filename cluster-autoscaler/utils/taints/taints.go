@@ -116,16 +116,26 @@ func getKeyShortName(key string) string {
 
 // MarkToBeDeleted sets a taint that makes the node unschedulable.
 func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode bool) error {
-	return AddTaint(node, client, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, cordonNode)
+	taint := apiv1.Taint{
+		Key:    ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	}
+	return AddTaint(node, client, taint, cordonNode)
 }
 
 // MarkDeletionCandidate sets a soft taint that makes the node preferably unschedulable.
 func MarkDeletionCandidate(node *apiv1.Node, client kube_client.Interface) error {
-	return AddTaint(node, client, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule, false)
+	taint := apiv1.Taint{
+		Key:    DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	}
+	return AddTaint(node, client, taint, false)
 }
 
 // AddTaint sets the specified taint on the node.
-func AddTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, effect apiv1.TaintEffect, cordonNode bool) error {
+func AddTaint(node *apiv1.Node, client kube_client.Interface, taint apiv1.Taint, cordonNode bool) error {
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
 	var err error
@@ -135,12 +145,12 @@ func AddTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 			// Get the newest version of the node.
 			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
-				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taint.Key), node.Name, err)
 				return fmt.Errorf("failed to get node %v: %v", node.Name, err)
 			}
 		}
 
-		if !addTaintToSpec(freshNode, taintKey, effect, cordonNode) {
+		if !addTaintToSpec(freshNode, taint, cordonNode) {
 			if !refresh {
 				// Make sure we have the latest version before skipping update.
 				refresh = true
@@ -156,26 +166,22 @@ func AddTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 		}
 
 		if err != nil {
-			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taint.Key), node.Name, err)
 			return err
 		}
-		klog.V(1).Infof("Successfully added %v on node %v", getKeyShortName(taintKey), node.Name)
+		klog.V(1).Infof("Successfully added %v on node %v", getKeyShortName(taint.Key), node.Name)
 		return nil
 	}
 }
 
-func addTaintToSpec(node *apiv1.Node, taintKey string, effect apiv1.TaintEffect, cordonNode bool) bool {
-	for _, taint := range node.Spec.Taints {
-		if taint.Key == taintKey {
-			klog.V(2).Infof("%v already present on node %v, taint: %v", taintKey, node.Name, taint)
+func addTaintToSpec(node *apiv1.Node, taint apiv1.Taint, cordonNode bool) bool {
+	for _, t := range node.Spec.Taints {
+		if t.Key == taint.Key {
+			klog.V(2).Infof("%v already present on node %v, t: %v", taint.Key, node.Name, t)
 			return false
 		}
 	}
-	node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
-		Key:    taintKey,
-		Value:  fmt.Sprint(time.Now().Unix()),
-		Effect: effect,
-	})
+	node.Spec.Taints = append(node.Spec.Taints, taint)
 	if cordonNode {
 		klog.V(1).Infof("Marking node %v to be cordoned by Cluster Autoscaler", node.Name)
 		node.Spec.Unschedulable = true
