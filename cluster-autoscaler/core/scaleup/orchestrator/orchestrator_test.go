@@ -33,11 +33,14 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -850,6 +853,155 @@ func TestScaleUpNoHelp(t *testing.T) {
 		t.Fatal("No Event recorded, expected NotTriggerScaleUp event")
 	}
 	assert.Regexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+}
+
+type constNodeGroupSetProcessor struct {
+	similarNodeGroups []cloudprovider.NodeGroup
+}
+
+func (p *constNodeGroupSetProcessor) FindSimilarNodeGroups(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup, _ map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+	return p.similarNodeGroups, nil
+}
+
+func (p *constNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(_ *context.AutoscalingContext, _ []cloudprovider.NodeGroup, _ int) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
+	return nil, nil
+}
+
+func (p *constNodeGroupSetProcessor) CleanUp() {}
+
+func TestComputeSimilarNodeGroups(t *testing.T) {
+	pod1 := BuildTestPod("p1", 100, 1000)
+	pod2 := BuildTestPod("p2", 100, 1000)
+	pod3 := BuildTestPod("p3", 100, 1000)
+
+	testCases := []struct {
+		name                  string
+		nodeGroup             string
+		similarNodeGroups     []string
+		otherNodeGroups       []string
+		balancingEnabled      bool
+		schedulablePods       map[string][]*apiv1.Pod
+		wantSimilarNodeGroups []string
+	}{
+		{
+			name:                  "no similar node groups",
+			nodeGroup:             "ng1",
+			otherNodeGroups:       []string{"pg1", "pg2"},
+			balancingEnabled:      true,
+			wantSimilarNodeGroups: []string{},
+		},
+		{
+			name:                  "some similar node groups, but no schedulable pods",
+			nodeGroup:             "ng1",
+			similarNodeGroups:     []string{"ng2", "ng3"},
+			otherNodeGroups:       []string{"pg1", "pg2"},
+			balancingEnabled:      true,
+			wantSimilarNodeGroups: []string{},
+		},
+		{
+			name:              "some similar node groups and same schedulable pods, but balancing disabled",
+			nodeGroup:         "ng1",
+			similarNodeGroups: []string{"ng2", "ng3"},
+			otherNodeGroups:   []string{"pg1", "pg2"},
+			balancingEnabled:  false,
+			schedulablePods: map[string][]*apiv1.Pod{
+				"ng1": {pod1},
+				"ng2": {pod1},
+				"ng3": {pod1},
+				"pg1": {pod1},
+				"pg2": {pod1},
+			},
+			wantSimilarNodeGroups: []string{},
+		},
+		{
+			name:              "some similar node groups and same schedulable pods",
+			nodeGroup:         "ng1",
+			similarNodeGroups: []string{"ng2", "ng3"},
+			otherNodeGroups:   []string{"pg1", "pg2"},
+			balancingEnabled:  true,
+			schedulablePods: map[string][]*apiv1.Pod{
+				"ng1": {pod1},
+				"ng2": {pod1},
+				"ng3": {pod1},
+				"pg1": {pod1},
+				"pg2": {pod1},
+			},
+			wantSimilarNodeGroups: []string{"ng2", "ng3"},
+		},
+		{
+			name:              "similar node groups can schedule more pods",
+			nodeGroup:         "ng1",
+			similarNodeGroups: []string{"ng2", "ng3"},
+			otherNodeGroups:   []string{"pg1", "pg2"},
+			balancingEnabled:  true,
+			schedulablePods: map[string][]*apiv1.Pod{
+				"ng1": {pod1},
+				"ng2": {pod1, pod2},
+				"ng3": {pod1, pod2, pod3},
+				"pg1": {pod1, pod2},
+				"pg2": {pod1, pod2, pod3},
+			},
+			wantSimilarNodeGroups: []string{"ng2", "ng3"},
+		},
+		{
+			name:              "similar node groups can schedule different/no pods",
+			nodeGroup:         "ng1",
+			similarNodeGroups: []string{"ng2", "ng3"},
+			otherNodeGroups:   []string{"pg1", "pg2"},
+			balancingEnabled:  true,
+			schedulablePods: map[string][]*apiv1.Pod{
+				"ng1": {pod1, pod2},
+				"ng2": {pod1},
+				"pg1": {pod1},
+			},
+			wantSimilarNodeGroups: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			provider := testprovider.NewTestCloudProvider(func(string, int) error { return nil }, nil)
+			nodeGroupSetProcessor := &constNodeGroupSetProcessor{}
+			now := time.Now()
+
+			allNodeGroups := []string{tc.nodeGroup}
+			allNodeGroups = append(allNodeGroups, tc.similarNodeGroups...)
+			allNodeGroups = append(allNodeGroups, tc.otherNodeGroups...)
+
+			var nodes []*apiv1.Node
+			for _, ng := range allNodeGroups {
+				nodeName := fmt.Sprintf("%s-node", ng)
+				node := BuildTestNode(nodeName, 100, 1000)
+				SetNodeReadyState(node, true, now.Add(-2*time.Minute))
+				nodes = append(nodes, node)
+
+				provider.AddNodeGroup(ng, 0, 10, 1)
+				provider.AddNode(ng, node)
+			}
+
+			for _, ng := range tc.similarNodeGroups {
+				nodeGroupSetProcessor.similarNodeGroups = append(nodeGroupSetProcessor.similarNodeGroups, provider.GetNodeGroup(ng))
+			}
+
+			listers := kube_util.NewListerRegistry(nil, nil, kube_util.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil, nil)
+			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled}, &fake.Clientset{}, listers, provider, nil, nil)
+			assert.NoError(t, err)
+
+			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+			assert.NoError(t, clusterState.UpdateNodes(nodes, nodeInfos, time.Now()))
+
+			suOrchestrator := &ScaleUpOrchestrator{}
+			suOrchestrator.Initialize(&ctx, &processors.AutoscalingProcessors{NodeGroupSetProcessor: nodeGroupSetProcessor}, clusterState, taints.TaintConfig{})
+			similarNodeGroups := suOrchestrator.ComputeSimilarNodeGroups(provider.GetNodeGroup(tc.nodeGroup), nodeInfos, tc.schedulablePods, now)
+
+			var gotSimilarNodeGroups []string
+			for _, ng := range similarNodeGroups {
+				gotSimilarNodeGroups = append(gotSimilarNodeGroups, ng.Id())
+			}
+			assert.ElementsMatch(t, gotSimilarNodeGroups, tc.wantSimilarNodeGroups)
+		})
+	}
 }
 
 func TestScaleUpBalanceGroups(t *testing.T) {
