@@ -38,6 +38,7 @@ type exponentialBackoffInfo struct {
 	backoffUntil        time.Time
 	lastFailedExecution time.Time
 	errorInfo           cloudprovider.InstanceErrorInfo
+	errorClass          cloudprovider.InstanceErrorClass
 }
 
 // NewExponentialBackoff creates an instance of exponential backoff.
@@ -89,6 +90,7 @@ func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo
 		backoffUntil:        backoffUntil,
 		lastFailedExecution: currentTime,
 		errorInfo:           errorInfo,
+		errorClass:          errorClass,
 	}
 	return backoffUntil
 }
@@ -117,4 +119,10 @@ func (b *exponentialBackoff) RemoveStaleBackoffData(currentTime time.Time) {
 			delete(b.backoffInfo, key)
 		}
 	}
+}
+
+// IsNodeGroupOutOfResources returns true if the given node group is out of resources.
+func (b *exponentialBackoff) IsNodeGroupOutOfResources(nodeGroup cloudprovider.NodeGroup) bool {
+	backoffInfo, found := b.backoffInfo[b.nodeGroupKey(nodeGroup)]
+	return found && backoffInfo.errorClass == cloudprovider.OutOfResourcesErrorClass
 }
