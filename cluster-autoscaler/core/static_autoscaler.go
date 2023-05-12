@@ -282,8 +282,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	a.DebuggingSnapshotter.StartDataCollection()
 	defer a.DebuggingSnapshotter.Flush()
 
-	unschedulablePodLister := a.UnschedulablePodLister()
-	scheduledPodLister := a.ScheduledPodLister()
+	scheduledAndUnschedulablePodLister := a.ScheduledAndUnschedulablePodLister()
 	autoscalingContext := a.AutoscalingContext
 
 	klog.V(4).Info("Starting main loop")
@@ -296,15 +295,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
 	}
-	originalScheduledPods, err := scheduledPodLister.List()
-	if err != nil {
-		klog.Errorf("Failed to list scheduled pods: %v", err)
-		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-	}
 
 	if abortLoop, err := a.processors.ActionableClusterProcessor.ShouldAbort(
 		a.AutoscalingContext, allNodes, readyNodes, currentTime); abortLoop {
 		return err
+	}
+
+	originalScheduledPods, unschedulablePods, err := scheduledAndUnschedulablePodLister.List()
+	if err != nil {
+		klog.Errorf("Failed to list scheduled and unschedulable pods: %v", err)
+		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
 
 	// Update cluster resource usage metrics
@@ -446,11 +446,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
-	unschedulablePods, err := unschedulablePodLister.List()
-	if err != nil {
-		klog.Errorf("Failed to list unscheduled pods: %v", err)
-		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
-	}
 	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods))
 
 	unschedulablePods = tpu.ClearTPURequests(unschedulablePods)
