@@ -193,14 +193,17 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		mainCreatedNodeInfo, aErr := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, o.taintConfig)
 		if aErr == nil {
 			nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
+			schedulablePods[createNodeGroupResult.MainCreatedNodeGroup.Id()] = o.SchedulablePods(podEquivalenceGroups, createNodeGroupResult.MainCreatedNodeGroup, mainCreatedNodeInfo)
 		} else {
 			klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), aErr)
-			// Use node info based on expansion candidate but upadte Id which likely changed when node group was created.
-			nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
+			// Use node info based on expansion candidate but update Id which likely changed when node group was created.
+			nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = nodeInfos[oldId]
+			schedulablePods[createNodeGroupResult.MainCreatedNodeGroup.Id()] = schedulablePods[oldId]
 		}
 
 		if oldId != createNodeGroupResult.MainCreatedNodeGroup.Id() {
 			delete(nodeInfos, oldId)
+			delete(schedulablePods, oldId)
 		}
 
 		for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
@@ -219,7 +222,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		o.clusterStateRegistry.Recalculate()
 
 		// Recompute similar node groups
-		bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePods, now)
+		bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(createNodeGroupResult.MainCreatedNodeGroup, nodeInfos, schedulablePods, now)
 	}
 
 	nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
