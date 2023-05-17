@@ -50,6 +50,8 @@ rules:
     resources:
     - machinedeployments
     - machinedeployments/scale
+    - machinepools
+    - machinepools/scale
     - machines
     - machinesets
     verbs:
