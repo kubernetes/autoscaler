@@ -82,8 +82,9 @@ eviction actuation doesn't offer any more control than single setting, because V
 `Initial`) or because it will use only one mode of actuation (`Recreate` and `InPlaceOnly`). It also assumes that scale
 downs always succeed.
 
-VPA wil attempt to scale in place before attempting to evict. Since scale downs succeed VPA will never consider evicting
-pods to scale them down so configuring scale down in place separately from scale down by eviction is unnecessary.
+VPA will attempt to scale in-place before attempting to evict. Since scale downs succeed VPA will never consider
+evicting  pods to scale them down so configuring scale down in place separately from scale down by eviction is
+unnecessary.
 
 If user wants to scale up in place only, not evict they should use `InPlaceOnly` mode (since we assume scale downs in
 place always succeed `InPlaceOnly` and `InPlaceOrRecreate` are the same when scaling down).
