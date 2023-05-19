@@ -339,5 +339,5 @@ func (n neverDrain) Drainable(*apiv1.Pod) drainability.Status {
 type cantDecide struct{}
 
 func (c cantDecide) Drainable(*apiv1.Pod) drainability.Status {
-	return drainability.NewUnmatchedStatus()
+	return drainability.NewUndefinedStatus()
 }
