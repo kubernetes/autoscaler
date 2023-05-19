@@ -317,7 +317,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to get daemonset list: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
-
+	// Snapshot scale-down actuation status before cache refresh.
+	scaleDownActuationStatus := a.scaleDownActuator.CheckStatus()
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
 	refreshStart := time.Now()
 	err = a.AutoscalingContext.CloudProvider.Refresh()
@@ -596,8 +597,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			}
 		}
 
-		actuationStatus := a.scaleDownActuator.CheckStatus()
-		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, actuationStatus, currentTime)
+		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, scaleDownActuationStatus, currentTime)
 		// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
 		unneededNodes := a.scaleDownPlanner.UnneededNodes()
 		a.processors.ScaleDownCandidatesNotifier.Update(unneededNodes, currentTime)
@@ -628,7 +628,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
-			_, drained := actuationStatus.DeletionsInProgress()
+			_, drained := scaleDownActuationStatus.DeletionsInProgress()
 			var removedNodeGroups []cloudprovider.NodeGroup
 			if len(drained) == 0 {
 				var err error
