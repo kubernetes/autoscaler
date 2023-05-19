@@ -54,6 +54,7 @@ func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
 		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
 		MinReplicaCount:                   opts.MinReplicaCount,
 		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
+		DrainabilityRules:                 drainability.DefaultRules(),
 	}
 }
 
@@ -68,25 +69,28 @@ func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
 func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDeleteOptions, listers kube_util.ListerRegistry,
 	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	var drainPods, drainDs []*apiv1.Pod
+	drainabilityRules := deleteOptions.DrainabilityRules
+	if drainabilityRules == nil {
+		drainabilityRules = drainability.DefaultRules()
+	}
 	for _, podInfo := range nodeInfo.Pods {
 		pod := podInfo.Pod
-		d := drainabilityStatus(pod, deleteOptions.DrainabilityRules)
-		if d.Matched {
-			switch d.Reason {
-			case drain.NoReason:
-				if pod_util.IsDaemonSetPod(pod) {
-					drainDs = append(drainDs, pod)
-				} else {
-					drainPods = append(drainPods, pod)
-				}
-				continue
-			default:
-				blockingPod = &drain.BlockingPod{pod, d.Reason}
-				err = d.Error
-				return
+		d := drainabilityStatus(pod, drainabilityRules)
+		switch d.Outcome {
+		case drainability.UndefinedOutcome:
+			pods = append(pods, podInfo.Pod)
+		case drainability.DrainOk:
+			if pod_util.IsDaemonSetPod(pod) {
+				drainDs = append(drainDs, pod)
+			} else {
+				drainPods = append(drainPods, pod)
 			}
+		case drainability.BlockDrain:
+			blockingPod = &drain.BlockingPod{pod, d.BlockingReason}
+			err = d.Error
+			return
+		case drainability.SkipDrain:
 		}
-		pods = append(pods, podInfo.Pod)
 	}
 	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
 		pods,
@@ -130,9 +134,11 @@ func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.
 
 func drainabilityStatus(pod *apiv1.Pod, dr []drainability.Rule) drainability.Status {
 	for _, f := range dr {
-		if d := f.Drainable(pod); d.Matched {
+		if d := f.Drainable(pod); d.Outcome != drainability.UndefinedOutcome {
 			return d
 		}
 	}
-	return drainability.Status{}
+	return drainability.Status{
+		Outcome: drainability.UndefinedOutcome,
+	}
 }

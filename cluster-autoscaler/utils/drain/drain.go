@@ -97,10 +97,6 @@ func GetPodsForDeletionOnNodeDrain(
 	}
 
 	for _, pod := range podList {
-		if pod_util.IsMirrorPod(pod) {
-			continue
-		}
-
 		// Possibly skip a pod under deletion but only if it was being deleted for long enough
 		// to avoid a situation when we delete the empty node immediately after the pod was marked for
 		// deletion without respecting any graceful termination.
