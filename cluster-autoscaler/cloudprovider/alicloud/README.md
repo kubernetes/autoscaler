@@ -12,7 +12,7 @@ Cluster autoscaler must run on v1.9.3 or greater.
 
 
 ## ACS Console Deployment 
-doc: https://www.alibabacloud.com/help/doc-detail/89733.html
+doc: https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/auto-scaling-of-nodes
 
 ## Custom Deployment
 ### 1.Prepare Identity authentication
