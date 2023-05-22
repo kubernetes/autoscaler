@@ -196,6 +196,21 @@ func TestAdmitForSingleContainer(t *testing.T) {
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
 	})
 
+	t.Run("it should admit a Pod for eviction even if Container CPU is scaled down and config allows only scaling up CPU, because memory is scaled up", func(t *testing.T) {
+		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+			pod: {
+				{Resources: []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
+					ChangeRequirement: v1.TargetHigherThanRequests,
+				},
+			},
+		}
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "11Gi").Get()
+
+		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
+	})
+
 	t.Run("it should admit a Pod for eviction if Container memory is scaled up and config allows scaling up memory", func(t *testing.T) {
 		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
 			pod: {
