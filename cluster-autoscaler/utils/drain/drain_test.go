@@ -210,6 +210,178 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	emptyDirSafeToEvictVolumeSingleVal := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: "scratch",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
+	emptyDirSafeToEvictLocalVolumeSingleValEmpty := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: "",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
+	emptyDirSafeToEvictLocalVolumeSingleValNonMatching := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: "scratch-2",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch-1",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
+	emptyDirSafeToEvictLocalVolumeMultiValAllMatching := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: "scratch-1,scratch-2,scratch-3",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch-1",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-2",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-3",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
+	emptyDirSafeToEvictLocalVolumeMultiValNonMatching := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: "scratch-1,scratch-2,scratch-5",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch-1",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-2",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-3",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
+	emptyDirSafeToEvictLocalVolumeMultiValSomeMatchingVals := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: "scratch-1,scratch-2",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch-1",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-2",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-3",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
+	emptyDirSafeToEvictLocalVolumeMultiValEmpty := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+			Annotations: map[string]string{
+				SafeToEvictLocalVolumesKey: ",",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch-1",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-2",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+				{
+					Name:         "scratch-3",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
 	terminalPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -487,6 +659,76 @@ func TestDrain(t *testing.T) {
 			expectFatal:         true,
 			expectPods:          []*apiv1.Pod{},
 			expectBlockingPod:   &BlockingPod{Pod: emptydirPod, Reason: LocalStorageRequested},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictVolumeSingleVal},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{emptyDirSafeToEvictVolumeSingleVal},
+			expectBlockingPod:   &BlockingPod{},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and empty value for SafeToEvictLocalVolumesKey annotation",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeSingleValEmpty},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeSingleValEmpty, Reason: LocalStorageRequested},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and non-matching value for SafeToEvictLocalVolumesKey annotation",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeSingleValNonMatching},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeSingleValNonMatching, Reason: LocalStorageRequested},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation with matching values",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValAllMatching},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValAllMatching},
+			expectBlockingPod:   &BlockingPod{},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation with non-matching values",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValNonMatching},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeMultiValNonMatching, Reason: LocalStorageRequested},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation with some matching values",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValSomeMatchingVals},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeMultiValSomeMatchingVals, Reason: LocalStorageRequested},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation empty values",
+			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValEmpty},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeMultiValEmpty, Reason: LocalStorageRequested},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
