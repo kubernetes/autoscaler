@@ -120,6 +120,22 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	}, nil
 }
 
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider
+func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	awsRef, err := AwsRefFromProviderId(node.Spec.ProviderID)
+	if err != nil {
+		return false, err
+	}
+
+	// we don't care about the status
+	status, err := aws.awsManager.asgCache.InstanceStatus(*awsRef)
+	if status != nil {
+		return true, nil
+	}
+
+	return false, fmt.Errorf("node is not present in aws: %v", err)
+}
+
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
