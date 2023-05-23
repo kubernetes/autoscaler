@@ -220,10 +220,10 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
 		//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
 		o.clusterStateRegistry.Recalculate()
-
-		// Recompute similar node groups
-		bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(createNodeGroupResult.MainCreatedNodeGroup, nodeInfos, schedulablePods, now)
 	}
+
+	// Recompute similar node groups in case they need to be updated
+	bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePods, now)
 
 	nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
 	if !found {
