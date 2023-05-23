@@ -1,8 +1,5 @@
-//go:build !linux
-// +build !linux
-
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package volume
+package common
 
-import (
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/kubernetes/pkg/volume/util/types"
+// QuotaID is generic quota identifier.
+// Data type based on quotactl(2).
+type QuotaID int32
+
+const (
+	// UnknownQuotaID -- cannot determine whether a quota is in force
+	UnknownQuotaID QuotaID = -1
+	// BadQuotaID -- Invalid quota
+	BadQuotaID QuotaID = 0
 )
-
-func SetVolumeOwnership(mounter Mounter, dir string, fsGroup *int64, fsGroupChangePolicy *v1.PodFSGroupChangePolicy, completeFunc func(types.CompleteFuncParam)) error {
-	return nil
-}
