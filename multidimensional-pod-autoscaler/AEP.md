@@ -204,20 +204,21 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: my-target
-  updatePolicy:
+  policy:
     updateMode: Auto
-  metrics:
-  - type: Resource
-    resource:
-    # Define the target CPU utilization request here
-    name: cpu
-    target:
-      type: Utilization
-      averageUtilization: target-cpu-util
+  goals:
+    metrics:
+    - type: Resource
+      resource:
+      # Define the target CPU utilization request here
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: target-cpu-util
   constraints:
-    minReplicas: min-num-replicas
-    maxReplicas: max-num-replicas
-  resourcePolicy:
+    global:
+      minReplicas: min-num-replicas
+      maxReplicas: max-num-replicas
     containerControlledResources: [ memory, cpu ]  # Added cpu here as well
     container:
     - name: '*' # either a literal name, or "*" to match all containers
