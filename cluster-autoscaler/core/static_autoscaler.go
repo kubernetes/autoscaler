@@ -745,6 +745,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			a.clusterStateRegistry.RefreshCloudProviderNodeInstancesCache()
 			return false, fmt.Errorf("node %s has no known nodegroup", node.GetName())
 		}
 		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
