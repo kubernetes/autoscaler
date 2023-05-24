@@ -1183,7 +1183,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupC})
 	provider.On("NodeGroupForNode", mock.Anything).Return(nil, nil)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, newBackoff())
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	autoscaler.clusterStateRegistry = clusterState
 
