@@ -8,3 +8,6 @@ reviewers:
 #- zalmarge
 #- ArturasRa
 #- Andrius521
+
+labels:
+- cloudprovider/cherryservers
