@@ -48,7 +48,7 @@ type Info struct {
 // returns the individual cpu, memory and gpu utilization.
 func Calculate(nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
 	if gpuConfig != nil {
-		gpuUtil, err := calculateUtilizationOfResource(nodeInfo, gpuConfig.ResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
+		gpuUtil, err := CalculateUtilizationOfResource(nodeInfo, gpuConfig.ResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
 		if err != nil {
 			klog.V(3).Infof("node %s has unready GPU resource: %s", nodeInfo.Node().Name, gpuConfig.ResourceName)
 			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
@@ -58,11 +58,11 @@ func Calculate(nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMir
 		return Info{GpuUtil: gpuUtil, ResourceName: gpuConfig.ResourceName, Utilization: gpuUtil}, err
 	}
 
-	cpu, err := calculateUtilizationOfResource(nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
+	cpu, err := CalculateUtilizationOfResource(nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
 	if err != nil {
 		return Info{}, err
 	}
-	mem, err := calculateUtilizationOfResource(nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods, currentTime)
+	mem, err := CalculateUtilizationOfResource(nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods, currentTime)
 	if err != nil {
 		return Info{}, err
 	}
@@ -80,7 +80,8 @@ func Calculate(nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMir
 	return utilization, nil
 }
 
-func calculateUtilizationOfResource(nodeInfo *schedulerframework.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool, currentTime time.Time) (float64, error) {
+// CalculateUtilizationOfResource calculates utilization of a given resource for a node.
+func CalculateUtilizationOfResource(nodeInfo *schedulerframework.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool, currentTime time.Time) (float64, error) {
 	nodeAllocatable, found := nodeInfo.Node().Status.Allocatable[resourceName]
 	if !found {
 		return 0, fmt.Errorf("failed to get %v from %s", resourceName, nodeInfo.Node().Name)
