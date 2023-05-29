@@ -6,4 +6,4 @@ reviewers:
 - RainbowMango
 
 labels:
-- cloudprovider/huaweicloud
+- area/provider/huaweicloud

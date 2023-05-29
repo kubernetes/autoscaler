@@ -6,4 +6,4 @@ reviewers:
 - MorrisLaw
 
 labels:
-- cloudprovider/digitalocean
+- area/provider/digitalocean

@@ -6,4 +6,4 @@ reviewers:
 #- optik-aper
 
 labels:
-- cloudprovider/vultr
+- area/provider/vultr

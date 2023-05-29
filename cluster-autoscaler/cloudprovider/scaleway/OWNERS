@@ -6,4 +6,4 @@ reviewers:
 - Sh4d1
 
 labels:
-- cloudprovider/scaleway
+- area/provider/scaleway

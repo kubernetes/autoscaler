@@ -3,4 +3,4 @@ maintainers:
 
 
 labels:
-- cloudprovider/cloudstack
+- area/provider/cloudstack
