@@ -4,4 +4,4 @@ approvers:
 # - PhilippeChepy
 
 labels:
-- cloudprovider/exoscale
+- area/provider/exoscale

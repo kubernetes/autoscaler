@@ -4,4 +4,4 @@ reviewers:
 - tghartland
 
 labels:
-- cloudprovider/magnum
+- area/provider/magnum

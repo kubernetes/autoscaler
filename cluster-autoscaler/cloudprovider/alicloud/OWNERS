@@ -5,4 +5,4 @@ reviewers:
 
 
 labels:
-- cloudprovider/alicloud
+- area/provider/alicloud

@@ -10,4 +10,4 @@ reviewers:
 - drmorr0
 
 labels:
-- cloudprovider/aws
+- area/provider/aws

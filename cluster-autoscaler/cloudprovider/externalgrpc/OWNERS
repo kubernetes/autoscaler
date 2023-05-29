@@ -4,4 +4,4 @@ reviewers:
 #- dbonfigli
 
 labels:
-- cloudprovider/externalgrpc
+- area/provider/externalgrpc
