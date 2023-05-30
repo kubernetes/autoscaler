@@ -10,4 +10,4 @@ reviewers:
 #- thirdeyenick
 
 labels:
-- cloudprovider/rancher
+- area/provider/rancher

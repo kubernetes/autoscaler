@@ -10,4 +10,4 @@ reviewers:
 #- Andrius521
 
 labels:
-- cloudprovider/cherryservers
+- area/provider/cherryservers

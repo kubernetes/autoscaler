@@ -6,4 +6,4 @@ reviewers:
 # - johnl
 
 labels:
-- cloudprovider/brightbox
+- area/provider/brightbox

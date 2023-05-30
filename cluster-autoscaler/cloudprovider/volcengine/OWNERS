@@ -2,3 +2,5 @@ approvers:
 # - dougsong
 reviewers:
 # - dougsong
+labels:
+- area/provider/volcengine

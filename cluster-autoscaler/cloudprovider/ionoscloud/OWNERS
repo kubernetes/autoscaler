@@ -4,4 +4,4 @@ maintainers:
 - piepmatz
 
 labels:
-- cloudprovider/ionoscloud
+- area/provider/ionoscloud

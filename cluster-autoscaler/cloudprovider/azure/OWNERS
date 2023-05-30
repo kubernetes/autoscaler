@@ -13,4 +13,4 @@ emeritus_approvers:
 
 
 labels:
-- cloudprovider/azure
+- area/provider/azure

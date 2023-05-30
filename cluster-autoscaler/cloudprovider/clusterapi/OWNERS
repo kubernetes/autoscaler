@@ -14,4 +14,4 @@ reviewers:
 - shysank
 
 labels:
-- cloudprovider/clusterapi
+- area/provider/clusterapi

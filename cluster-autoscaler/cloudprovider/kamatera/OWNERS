@@ -4,4 +4,4 @@ reviewers:
 #- OriHoch
 
 labels:
-- cloudprovider/kamatera
+- area/provider/kamatera
