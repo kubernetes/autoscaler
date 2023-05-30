@@ -4,4 +4,4 @@ reviewers:
 - ellistarn
 
 labels:
-- cloudprovider/kubemark
+- area/provider/kubemark

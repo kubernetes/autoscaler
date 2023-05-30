@@ -4,4 +4,4 @@ reviewers:
 # - alphajc
 
 labels:
-- cloudprovider/tencentcloud
+- area/provider/tencentcloud

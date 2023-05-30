@@ -13,4 +13,4 @@ reviewers:
 - v-pap
 
 labels:
-- cloudprovider/packet
+- area/provider/packet
