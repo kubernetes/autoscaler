@@ -125,6 +125,14 @@ spec:
             {{- end }}
           {{- end }}
           env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
           {{- if and (eq .Values.cloudProvider "aws") (ne .Values.awsRegion "") }}
             - name: AWS_REGION
               value: "{{ .Values.awsRegion }}"
@@ -207,6 +215,9 @@ spec:
                 secretKeyRef:
                   key: api-zone
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+          {{- else if eq .Values.cloudProvider "kwok" }}
+            - name: KWOK_PROVIDER_CONFIGMAP
+              value: "{{.Values.kwokConfigMapName | default "kwok-provider-config"}}"
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}

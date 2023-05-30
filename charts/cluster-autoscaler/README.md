@@ -419,6 +419,7 @@ vpa:
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
 | image.tag | string | `"v1.27.2"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
+| kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
 | magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
 | nameOverride | string | `""` | String to partially override `cluster-autoscaler.fullname` template (will maintain the release name) |

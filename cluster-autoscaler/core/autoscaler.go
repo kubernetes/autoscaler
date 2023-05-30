@@ -73,8 +73,8 @@ type Autoscaler interface {
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
-	err := initializeDefaultOptions(&opts)
+func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInformerFactory) (Autoscaler, errors.AutoscalerError) {
+	err := initializeDefaultOptions(&opts, informerFactory)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
@@ -97,7 +97,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 }
 
 // Initialize default options if not provided.
-func initializeDefaultOptions(opts *AutoscalerOptions) error {
+func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
@@ -111,7 +111,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 	if opts.CloudProvider == nil {
-		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
+		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions, informerFactory)
 	}
 	if opts.ExpanderStrategy == nil {
 		expanderFactory := factory.NewFactory()
