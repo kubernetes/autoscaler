@@ -125,7 +125,7 @@ func main() {
 		},
 		UserAgent: "user-agent",
 	}
-	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions)
+	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions, nil)
 	srv := wrapper.NewCloudProviderGrpcWrapper(cloudProvider)
 
 	// listen
