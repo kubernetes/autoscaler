@@ -124,6 +124,223 @@ func TestMixedScaleUp(t *testing.T) {
 	simpleScaleUpTest(t, config, expectedResults)
 }
 
+func TestAtomicScaleUpOK(t *testing.T) {
+	options := defaultOptions
+	options.NodeGroupDefaults.AtomicScaleUp = true
+
+	n := BuildTestNode("n", 1000, 1000)
+	SetNodeReadyState(n, true, time.Time{})
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(n)
+
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 5},
+			{Name: "ng2", MaxSize: 5},
+		},
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 900, Memory: 900, Gpu: 0, Ready: true, Group: "ng1"},
+		},
+		Pods: []PodConfig{
+			{Name: "p1", Cpu: 900, Memory: 900, Gpu: 0, Node: "n1", ToleratesGpu: false},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p-new", Cpu: 1000, Memory: 1000, Gpu: 0, Node: "", ToleratesGpu: false},
+		},
+		// ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 2},
+		Options: &options,
+		NodeTemplateConfig: &NodeTemplateConfig{
+			NodeGroupName: "ng2",
+			MachineType:   "ct4p",
+			NodeInfo:      nodeInfo,
+		},
+	}
+	expectedResults := &ScaleTestResults{
+		FinalOption: GroupSizeChange{GroupName: "ng2", SizeChange: 5},
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsTriggeredScaleUp: []string{"p-new"},
+		},
+	}
+	simpleScaleUpTest(t, config, expectedResults)
+}
+
+func TestAtomicScaleUpMixed(t *testing.T) {
+	options := defaultOptions
+	options.NodeGroupDefaults.AtomicScaleUp = true
+
+	n := BuildTestNode("n", 700, 700)
+	SetNodeReadyState(n, true, time.Time{})
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(n)
+
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 5},
+			{Name: "ng2", MaxSize: 5},
+			{Name: "ng3", MaxSize: 5},
+		},
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 500, Memory: 1000, Gpu: 0, Ready: true, Group: "ng1"},
+			{Name: "n2", Cpu: 1000, Memory: 500, Gpu: 0, Ready: true, Group: "ng2"},
+		},
+		Pods: []PodConfig{
+			{Name: "p1", Cpu: 400, Memory: 900, Gpu: 0, Node: "n1", ToleratesGpu: false},
+			{Name: "p2", Cpu: 900, Memory: 400, Gpu: 0, Node: "n2", ToleratesGpu: false},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p-triggering", Cpu: 650, Memory: 650, Gpu: 0, Node: "", ToleratesGpu: false},
+			{Name: "p-remaining", Cpu: 2000, Memory: 2000, Gpu: 0, Node: "", ToleratesGpu: false},
+			{Name: "p-awaiting", Cpu: 100, Memory: 800, Gpu: 0, Node: "", ToleratesGpu: false},
+		},
+		ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng3", SizeChange: 5},
+		Options:                 &options,
+		NodeTemplateConfig: &NodeTemplateConfig{
+			NodeGroupName: "ng3",
+			MachineType:   "ct4p",
+			NodeInfo:      nodeInfo,
+		},
+	}
+	expectedResults := &ScaleTestResults{
+		FinalOption: GroupSizeChange{GroupName: "ng3", SizeChange: 5},
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsTriggeredScaleUp:    []string{"p-triggering"},
+			PodsRemainUnschedulable: []string{"p-remaining"},
+			PodsAwaitEvaluation:     []string{"p-awaiting"},
+		},
+	}
+	simpleScaleUpTest(t, config, expectedResults)
+}
+
+func TestAtomicScaleUpMaxCoresLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxCoresTotal = 9
+	options.NodeGroupDefaults.AtomicScaleUp = true
+
+	n := BuildTestNode("n", 4500, 4500)
+	SetNodeReadyState(n, true, time.Time{})
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(n)
+
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 5},
+			{Name: "ng2", MaxSize: 3},
+		},
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 900, Memory: 900, Gpu: 0, Ready: true, Group: "ng1"},
+		},
+		Pods: []PodConfig{
+			{Name: "p1", Cpu: 900, Memory: 900, Gpu: 0, Node: "n1", ToleratesGpu: false},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p-new-1", Cpu: 4200, Memory: 4200, Gpu: 0, Node: "", ToleratesGpu: false},
+			{Name: "p-new-2", Cpu: 4200, Memory: 4200, Gpu: 0, Node: "", ToleratesGpu: false},
+		},
+		// ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 2},
+		Options: &options,
+		NodeTemplateConfig: &NodeTemplateConfig{
+			NodeGroupName: "ng2",
+			MachineType:   "ct4p",
+			NodeInfo:      nodeInfo,
+		},
+	}
+	expectedResults := &ScaleTestResults{
+		NoScaleUpReason: "max cluster cpu limit reached",
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsRemainUnschedulable: []string{"p-new-1", "p-new-2"},
+		},
+	}
+	simpleNoScaleUpTest(t, config, expectedResults)
+}
+
+func TestAtomicScaleUpMaxMemoryLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxMemoryTotal = 10000
+	options.NodeGroupDefaults.AtomicScaleUp = true
+
+	n := BuildTestNode("n", 5000, 5000)
+	SetNodeReadyState(n, true, time.Time{})
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(n)
+
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 5},
+			{Name: "ng2", MaxSize: 3},
+		},
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 900, Memory: 900, Gpu: 0, Ready: true, Group: "ng1"},
+		},
+		Pods: []PodConfig{
+			{Name: "p1", Cpu: 900, Memory: 900, Gpu: 0, Node: "n1", ToleratesGpu: false},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p-new-1", Cpu: 4900, Memory: 4900, Gpu: 0, Node: "", ToleratesGpu: false},
+			{Name: "p-new-2", Cpu: 4900, Memory: 4900, Gpu: 0, Node: "", ToleratesGpu: false},
+		},
+		// ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 2},
+		Options: &options,
+		NodeTemplateConfig: &NodeTemplateConfig{
+			NodeGroupName: "ng2",
+			MachineType:   "ct4p",
+			NodeInfo:      nodeInfo,
+		},
+	}
+	expectedResults := &ScaleTestResults{
+		NoScaleUpReason: "max cluster memory limit reached",
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsRemainUnschedulable: []string{"p-new-1", "p-new-2"},
+		},
+	}
+	simpleNoScaleUpTest(t, config, expectedResults)
+}
+
+// Test with memory and cpu in limit
+
+func TestAtomicScaleUpNodeLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 5
+	options.NodeGroupDefaults.AtomicScaleUp = true
+
+	n := BuildTestNode("n", 5000, 5000)
+	SetNodeReadyState(n, true, time.Time{})
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(n)
+
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 2},
+			{Name: "ng2", MaxSize: 5},
+		},
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 900, Memory: 900, Gpu: 0, Ready: true, Group: "ng1"},
+			{Name: "n2", Cpu: 900, Memory: 900, Gpu: 0, Ready: true, Group: "ng1"},
+		},
+		Pods: []PodConfig{
+			{Name: "p1", Cpu: 900, Memory: 900, Gpu: 0, Node: "n1", ToleratesGpu: false},
+			{Name: "p2", Cpu: 900, Memory: 900, Gpu: 0, Node: "n1", ToleratesGpu: false},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p-new-1", Cpu: 4900, Memory: 4900, Gpu: 0, Node: "", ToleratesGpu: false},
+			{Name: "p-new-2", Cpu: 4900, Memory: 4900, Gpu: 0, Node: "", ToleratesGpu: false},
+		},
+		// ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 2},
+		Options: &options,
+		NodeTemplateConfig: &NodeTemplateConfig{
+			NodeGroupName: "ng2",
+			MachineType:   "ct4p",
+			NodeInfo:      nodeInfo,
+		},
+	}
+	expectedResults := &ScaleTestResults{
+		NoScaleUpReason: "atomic scale-up exceeds cluster node count limit",
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsRemainUnschedulable: []string{"p-new-1", "p-new-2"},
+		},
+	}
+	simpleNoScaleUpTest(t, config, expectedResults)
+}
+
 func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	options := defaultOptions
 	options.MaxCoresTotal = 9
@@ -634,11 +851,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	// build nodes
 	nodes := make([]*apiv1.Node, 0, len(config.Nodes))
 	for _, n := range config.Nodes {
-		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
-		if n.Gpu > 0 {
-			AddGpusToNode(node, n.Gpu)
-		}
-		SetNodeReadyState(node, n.Ready, now.Add(-2*time.Minute))
+		node := buildTestNode(n, now)
 		nodes = append(nodes, node)
 		if n.Group != "" {
 			groupNodes[n.Group] = append(groupNodes[n.Group], node)
@@ -658,13 +871,19 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
 	// setup node groups
-	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+	var provider *testprovider.TestCloudProvider
+	onScaleUpFunc := func(nodeGroup string, increase int) error {
 		groupSizeChangesChannel <- GroupSizeChange{GroupName: nodeGroup, SizeChange: increase}
 		if config.OnScaleUp != nil {
 			return config.OnScaleUp(nodeGroup, increase)
 		}
 		return nil
-	}, nil)
+	}
+	if config.NodeTemplateConfig != nil {
+		provider = testprovider.NewTestAutoprovisioningCloudProvider(onScaleUpFunc, nil, nil, nil, []string{config.NodeTemplateConfig.MachineType}, map[string]*schedulerframework.NodeInfo{config.NodeTemplateConfig.NodeGroupName: config.NodeTemplateConfig.NodeInfo})
+	} else {
+		provider = testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
+	}
 	options := defaultOptions
 	if config.Options != nil {
 		options = *config.Options
@@ -692,6 +911,13 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 		}
 	}
 
+	// Build node groups without any nodes
+	for name, ng := range groupConfigs {
+		if provider.GetNodeGroup(name) == nil {
+			tng := provider.BuildNodeGroup(name, ng.MinSize, ng.MaxSize, 0, false, config.NodeTemplateConfig.MachineType, &options.NodeGroupDefaults)
+			provider.InsertNodeGroup(tng)
+		}
+	}
 	// build orchestrator
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
@@ -740,6 +966,15 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 		GroupTargetSizes: targetSizes,
 		ExpansionOptions: expander.LastInputOptions(),
 	}
+}
+
+func buildTestNode(n NodeConfig, now time.Time) *apiv1.Node {
+	node := BuildTestNode(n.Name, n.Cpu, n.Memory)
+	if n.Gpu > 0 {
+		AddGpusToNode(node, n.Gpu)
+	}
+	SetNodeReadyState(node, n.Ready, now.Add(-2*time.Minute))
+	return node
 }
 
 func buildTestPod(p PodConfig) *apiv1.Pod {
