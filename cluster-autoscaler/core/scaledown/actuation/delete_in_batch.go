@@ -18,7 +18,6 @@ package actuation
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 	"time"
 
@@ -68,59 +67,55 @@ func NewNodeDeletionBatcher(ctx *context.AutoscalingContext, csr *clusterstate.C
 	}
 }
 
-// AddNode adds node to delete candidates and schedule deletion.
-func (d *NodeDeletionBatcher) AddNode(node *apiv1.Node, drain bool) error {
+// AddNodes adds node list to delete candidates and schedules deletion.
+func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
 	// If delete interval is 0, than instantly start node deletion.
 	if d.deleteInterval == 0 {
-		nodeGroup, err := deleteNodesFromCloudProvider(d.ctx, []*apiv1.Node{node})
-		if err != nil {
-			result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
-		} else {
-			RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
+		err := deleteNodesFromCloudProvider(d.ctx, nodes, nodeGroup)
+		for _, node := range nodes {
+			if err != nil {
+				result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+				CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
+			} else {
+				RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
+			}
 		}
-		return nil
+		return
 	}
-	nodeGroupId, first, err := d.addNodeToBucket(node, drain)
-	if err != nil {
-		return err
-	}
+	first := d.addNodesToBucket(nodes, nodeGroup, drain)
 	if first {
-		go func(nodeGroupId string) {
+		go func(nodeGroup cloudprovider.NodeGroup) {
 			time.Sleep(d.deleteInterval)
-			d.remove(nodeGroupId)
-		}(nodeGroupId)
+			d.executeForBucket(nodeGroup)
+		}(nodeGroup)
 	}
-	return nil
 }
 
 // AddToBucket adds node to delete candidates and return if it's a first node in the group.
-func (d *NodeDeletionBatcher) addNodeToBucket(node *apiv1.Node, drain bool) (string, bool, error) {
+func (d *NodeDeletionBatcher) addNodesToBucket(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) bool {
 	d.Lock()
 	defer d.Unlock()
-	nodeGroup, err := d.ctx.CloudProvider.NodeGroupForNode(node)
-	if err != nil {
-		return "", false, err
+	for _, node := range nodes {
+		d.drainedNodeDeletions[node.Name] = drain
 	}
-	d.drainedNodeDeletions[node.Name] = drain
 	val, ok := d.deletionsPerNodeGroup[nodeGroup.Id()]
 	if !ok || len(val) == 0 {
-		d.deletionsPerNodeGroup[nodeGroup.Id()] = []*apiv1.Node{node}
-		return nodeGroup.Id(), true, nil
+		d.deletionsPerNodeGroup[nodeGroup.Id()] = nodes
+		return true
 	}
-	d.deletionsPerNodeGroup[nodeGroup.Id()] = append(d.deletionsPerNodeGroup[nodeGroup.Id()], node)
-	return nodeGroup.Id(), false, nil
+	d.deletionsPerNodeGroup[nodeGroup.Id()] = append(d.deletionsPerNodeGroup[nodeGroup.Id()], nodes...)
+	return false
 }
 
-// remove delete nodes of a given nodeGroup, if successful, the deletion is recorded in CSR, and an event is emitted on the node.
-func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
+// executeForBucket deletes nodes of a given nodeGroup, if successful, the deletion is recorded in CSR, and an event is emitted on the node.
+func (d *NodeDeletionBatcher) executeForBucket(nodeGroup cloudprovider.NodeGroup) error {
 	d.Lock()
 	defer d.Unlock()
-	nodes, ok := d.deletionsPerNodeGroup[nodeGroupId]
+	nodes, ok := d.deletionsPerNodeGroup[nodeGroup.Id()]
 	if !ok {
-		return fmt.Errorf("Node Group %s is not present in the batch deleter", nodeGroupId)
+		return fmt.Errorf("Node Group %s is not present in the batch deleter", nodeGroup.Id())
 	}
-	delete(d.deletionsPerNodeGroup, nodeGroupId)
+	delete(d.deletionsPerNodeGroup, nodeGroup.Id())
 	drainedNodeDeletions := make(map[string]bool)
 	for _, node := range nodes {
 		drainedNodeDeletions[node.Name] = d.drainedNodeDeletions[node.Name]
@@ -129,7 +124,7 @@ func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 
 	go func(nodes []*apiv1.Node, drainedNodeDeletions map[string]bool) {
 		var result status.NodeDeleteResult
-		nodeGroup, err := deleteNodesFromCloudProvider(d.ctx, nodes)
+		err := deleteNodesFromCloudProvider(d.ctx, nodes, nodeGroup)
 		for _, node := range nodes {
 			drain := drainedNodeDeletions[node.Name]
 			if err != nil {
@@ -138,7 +133,6 @@ func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 			} else {
 				RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
 			}
-
 		}
 	}(nodes, drainedNodeDeletions)
 	return nil
@@ -146,18 +140,11 @@ func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 
 // deleteNodeFromCloudProvider removes the given nodes from cloud provider. No extra pre-deletion actions are executed on
 // the Kubernetes side.
-func deleteNodesFromCloudProvider(ctx *context.AutoscalingContext, nodes []*apiv1.Node) (cloudprovider.NodeGroup, error) {
-	nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(nodes[0])
-	if err != nil {
-		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
+func deleteNodesFromCloudProvider(ctx *context.AutoscalingContext, nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup) error {
+	if err := nodeGroup.DeleteNodes(nodes); err != nil {
+		return errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete nodes from group %s: %v", nodeGroup.Id(), err)
 	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		return nodeGroup, errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", nodes[0].Name)
-	}
-	if err = nodeGroup.DeleteNodes(nodes); err != nil {
-		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete %s: %v", nodes[0].Name, err)
-	}
-	return nodeGroup, nil
+	return nil
 }
 
 func nodeScaleDownReason(node *apiv1.Node, drain bool) metrics.NodeScaleDownReason {
