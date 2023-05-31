@@ -120,34 +120,6 @@ func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (*status.ScaleDownS
 	return scaleDownStatus, nil
 }
 
-// cropNodesToBudgets crops the provided node lists to respect scale-down max parallelism budgets.
-func (a *Actuator) cropNodesToBudgets(empty, needDrain []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
-	emptyInProgress, drainInProgress := a.nodeDeletionTracker.DeletionsInProgress()
-	parallelismBudget := a.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
-	drainBudget := a.ctx.MaxDrainParallelism - len(drainInProgress)
-
-	var emptyToDelete []*apiv1.Node
-	for _, node := range empty {
-		if len(emptyToDelete) >= parallelismBudget {
-			break
-		}
-		emptyToDelete = append(emptyToDelete, node)
-	}
-
-	parallelismBudgetLeft := parallelismBudget - len(emptyToDelete)
-	drainBudget = min(parallelismBudgetLeft, drainBudget)
-
-	var drainToDelete []*apiv1.Node
-	for _, node := range needDrain {
-		if len(drainToDelete) >= drainBudget {
-			break
-		}
-		drainToDelete = append(drainToDelete, node)
-	}
-
-	return emptyToDelete, drainToDelete
-}
-
 // deleteAsyncEmpty immediately starts deletions asynchronously.
 // scaledDownNodes return value contains all nodes for which deletion successfully started. It's valid and should be consumed
 // even if err != nil.
