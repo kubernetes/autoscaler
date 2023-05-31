@@ -448,7 +448,7 @@ func (o *ScaleUpOrchestrator) filterValidScaleUpNodeGroups(
 		}
 		if autoscalingOptions != nil && autoscalingOptions.AtomicScaleUp {
 			if o.autoscalingContext.MaxNodesTotal != 0 && currentNodeCount+nodeGroup.MaxSize() > o.autoscalingContext.MaxNodesTotal {
-				klog.Errorf("Skipping node group %s - atomic scale-up exceetds cluster node count limit", nodeGroup.Id())
+				klog.V(4).Infof("Skipping node group %s - atomic scale-up exceetds cluster node count limit", nodeGroup.Id())
 				skippedNodeGroups[nodeGroup.Id()] = NewSkippedReasons("atomic scale-up exceeds cluster node count limit")
 				continue
 			}
@@ -505,7 +505,6 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		estimator := estimator.NewBinpackingNodeEstimator(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot, limiter, estimator.NewDecreasingPodOrderer())
 		option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
 		if option.NodeCount != nodeGroup.MaxSize() {
-			klog.Warningf("Estimator NodeCount: %d setting to %d", option.NodeCount, nodeGroup.MaxSize())
 			option.NodeCount = nodeGroup.MaxSize()
 		}
 		return option
