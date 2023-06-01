@@ -28,7 +28,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
@@ -37,7 +38,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
-func parseLabelSelector(selector string) labels.Selector {
+func parseLabelSelector(selector string) k8slabels.Selector {
 	labelSelector, _ := metav1.ParseToLabelSelector(selector)
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	return parsedSelector
@@ -180,6 +181,7 @@ func testRunOnceBase(
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
+		podLabelSelector:             k8slabels.Everything(),
 	}
 
 	if expectFetchCalls {
@@ -204,6 +206,7 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		useAdmissionControllerStatus: true,
 		statusValidator:              newFakeValidator(true),
+		podLabelSelector:             k8slabels.Everything(),
 	}
 	updater.RunOnce(context.Background())
 }
