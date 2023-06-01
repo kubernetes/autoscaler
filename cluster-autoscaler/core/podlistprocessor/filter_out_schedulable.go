@@ -109,29 +109,32 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 		scheduledPods[status.Pod.UID] = true
 	}
 
+	// Channels to sync workers
 	unschedulableCandidatesChan := make(chan *apiv1.Pod, 1000)
 	unschedulablePodsChan := make(chan *apiv1.Pod, 1000)
 
 	// Pods that remain unschedulable
 	var unschedulablePods []*apiv1.Pod
+
+	// Worker setup
 	var lock = sync.RWMutex{}
-	threads := 5
 	var wg sync.WaitGroup
+	threads := 5
 	wg.Add(threads)
 
 	klog.Infof("+++ Spinning up %v workers", threads)
 	for i := 0; i < threads; i++ {
 		go func(workerId int) {
-			//listScheduledAndUnschedulablePods(&wg, workerId, podsChan, scheduledPodsChan, unschedulablePodsChan)
 			findUnschedulablePods(&wg, lock, workerId, scheduledPods, unschedulableCandidatesChan, unschedulablePodsChan)
 		}(i)
 	}
 
-	// Push all pods into channel by looping over slice
+	// Push all unschedulable pods into channel by looping over slice
 	for _, pod := range unschedulableCandidates {
 		unschedulableCandidatesChan <- pod
 	}
 
+	// Close out channels and wait for workers to complete
 	go func() {
 		close(unschedulableCandidatesChan)
 		wg.Wait()
@@ -139,6 +142,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 		close(unschedulablePodsChan)
 	}()
 
+	// Loop over chan and push into slice
 	for p := range unschedulablePodsChan {
 		unschedulablePods = append(unschedulablePods, p)
 	}
@@ -147,11 +151,14 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
 
 	p.schedulingSimulator.DropOldHints()
+
+	klog.Infof("+++ unschedulable pod count: %v", len(unschedulablePods))
 	return unschedulablePods, nil
 }
 
 func findUnschedulablePods(wg *sync.WaitGroup, lock sync.RWMutex, workerId int, scheduledPods map[types.UID]bool,
 	unschedulableCandidatesChan chan *apiv1.Pod, unschedulablePodsChan chan *apiv1.Pod) {
+	klog.Infof("+++ inside worker %v", workerId)
 	defer wg.Done()
 
 	for pod := range unschedulableCandidatesChan {
