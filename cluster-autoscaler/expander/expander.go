@@ -47,7 +47,6 @@ type Option struct {
 	NodeCount         int
 	Debug             string
 	Pods              []*apiv1.Pod
-	IsAtomic          bool
 }
 
 // Strategy describes an interface for selecting the best option when scaling up
