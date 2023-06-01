@@ -18,6 +18,7 @@ package podlistprocessor
 
 import (
 	"sort"
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -108,12 +109,38 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 		scheduledPods[status.Pod.UID] = true
 	}
 
+	unschedulableCandidatesChan := make(chan *apiv1.Pod, 1000)
+	unschedulablePodsChan := make(chan *apiv1.Pod, 1000)
+
 	// Pods that remain unschedulable
 	var unschedulablePods []*apiv1.Pod
+	var lock = sync.RWMutex{}
+	threads := 5
+	var wg sync.WaitGroup
+	wg.Add(threads)
+
+	klog.Infof("+++ Spinning up %v workers", threads)
+	for i := 0; i < threads; i++ {
+		go func(workerId int) {
+			//listScheduledAndUnschedulablePods(&wg, workerId, podsChan, scheduledPodsChan, unschedulablePodsChan)
+			findUnschedulablePods(&wg, lock, workerId, scheduledPods, unschedulableCandidatesChan, unschedulablePodsChan)
+		}(i)
+	}
+
+	// Push all pods into channel by looping over slice
 	for _, pod := range unschedulableCandidates {
-		if !scheduledPods[pod.UID] {
-			unschedulablePods = append(unschedulablePods, pod)
-		}
+		unschedulableCandidatesChan <- pod
+	}
+
+	go func() {
+		close(unschedulableCandidatesChan)
+		wg.Wait()
+		//close(scheduledPodsChan)
+		close(unschedulablePodsChan)
+	}()
+
+	for p := range unschedulablePodsChan {
+		unschedulablePods = append(unschedulablePods, p)
 	}
 
 	metrics.UpdateOverflowingControllers(overflowingControllerCount)
@@ -121,6 +148,19 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 
 	p.schedulingSimulator.DropOldHints()
 	return unschedulablePods, nil
+}
+
+func findUnschedulablePods(wg *sync.WaitGroup, lock sync.RWMutex, workerId int, scheduledPods map[types.UID]bool,
+	unschedulableCandidatesChan chan *apiv1.Pod, unschedulablePodsChan chan *apiv1.Pod) {
+	defer wg.Done()
+
+	for pod := range unschedulableCandidatesChan {
+		lock.RLock()
+		if !scheduledPods[pod.UID] {
+			unschedulablePodsChan <- pod
+		}
+		lock.RUnlock()
+	}
 }
 
 func findSchedulablePods(allUnschedulablePods, podsStillUnschedulable []*apiv1.Pod) []*apiv1.Pod {
