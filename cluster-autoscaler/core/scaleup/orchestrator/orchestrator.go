@@ -119,6 +119,13 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 	}
 
+	useBinpackingLimiter := false
+	nodeGroupsWithExpansionOption := make(map[string]bool)
+	if o.processors.BinpackingLimiter != nil {
+		useBinpackingLimiter = true
+		o.processors.BinpackingLimiter.InitBinpacking(o.autoscalingContext, nodeGroups)
+	}
+
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
 		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
@@ -144,7 +151,12 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			continue
 		}
 
+		nodeGroupsWithExpansionOption[nodeGroup.Id()] = true
 		options = append(options, option)
+
+		if useBinpackingLimiter && o.processors.BinpackingLimiter.StopBinpacking(o.autoscalingContext, options, nodeGroupsWithExpansionOption) {
+			break
+		}
 	}
 
 	if len(options) == 0 {
