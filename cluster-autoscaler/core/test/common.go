@@ -37,6 +37,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/binpacking"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
@@ -167,6 +168,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 	return &processors.AutoscalingProcessors{
 		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(context.PredicateChecker),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
+		BinpackingLimiter:      binpacking.NewDefaultBinpackingLimiter(),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
@@ -327,6 +329,22 @@ func (p *MockAutoprovisioningNodeGroupListProcessor) Process(context *context.Au
 
 // CleanUp doesn't do anything; it's here to satisfy the interface
 func (p *MockAutoprovisioningNodeGroupListProcessor) CleanUp() {
+}
+
+// MockBinpackingLimiter is a fake BinpackingLimiter to be used in tests.
+type MockBinpackingLimiter struct {
+	requiredExpansionOptions int
+	T                        *testing.T
+}
+
+// InitBinpacking initialises the MockBinpackingLimiter and sets requiredExpansionOptions to 1.
+func (p *MockBinpackingLimiter) InitBinpacking(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
+	p.requiredExpansionOptions = 1
+}
+
+// StopBinpacking stops the binpacking early, if we already have requiredExpansionOptions i.e. 1.
+func (p *MockBinpackingLimiter) StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option, usedNodeGroups map[string]bool) bool {
+	return len(evaluatedOptions) == p.requiredExpansionOptions
 }
 
 // NewBackoff creates a new backoff object
