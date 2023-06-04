@@ -75,7 +75,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["create","list","watch"]
+    verbs: ["create", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps"]
     resourceNames: ["cluster-autoscaler-status", "cluster-autoscaler-priority-expander"]
@@ -164,7 +164,7 @@ spec:
             - --nodes=1:10:k8s-worker-asg-1
           volumeMounts:
             - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt #/etc/ssl/certs/ca-bundle.crt for Amazon Linux Worker Nodes
+              mountPath: /etc/ssl/certs/ca-certificates.crt # /etc/ssl/certs/ca-bundle.crt for Amazon Linux Worker Nodes
               readOnly: true
           imagePullPolicy: "Always"
           securityContext:
