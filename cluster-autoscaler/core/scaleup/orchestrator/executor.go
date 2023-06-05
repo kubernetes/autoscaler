@@ -63,10 +63,23 @@ func (e *scaleUpExecutor) ExecuteScaleUps(
 	now time.Time,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	options := e.autoscalingContext.AutoscalingOptions
+	scaleUpInfos = filterInvalidScaleUps(scaleUpInfos)
 	if options.ParallelScaleUp {
 		return e.executeScaleUpsParallel(scaleUpInfos, nodeInfos, now)
 	}
 	return e.executeScaleUpsSync(scaleUpInfos, nodeInfos, now)
+}
+
+func filterInvalidScaleUps(scaleUpInfos []nodegroupset.ScaleUpInfo) []nodegroupset.ScaleUpInfo {
+	var result []nodegroupset.ScaleUpInfo
+	for _, scaleUpInfo := range scaleUpInfos {
+		if scaleUpInfo.NewSize <= scaleUpInfo.CurrentSize {
+			klog.Warningf("Filtering out scale up info for node group %q: new size %v is not larger than current size %v", scaleUpInfo.Group.Id(), scaleUpInfo.NewSize, scaleUpInfo.CurrentSize)
+			continue
+		}
+		result = append(result, scaleUpInfo)
+	}
+	return result
 }
 
 func (e *scaleUpExecutor) executeScaleUpsSync(
