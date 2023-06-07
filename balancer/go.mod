@@ -1,4 +1,4 @@
-module k8s.io/autoscaling/balancer
+module k8s.io/autoscaler/balancer
 
 go 1.19
 

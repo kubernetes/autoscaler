@@ -1614,6 +1614,34 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:          0,
 		Architecture: "amd64",
 	},
+	"inf2.48xlarge": {
+		InstanceType: "inf2.48xlarge",
+		VCPU:         192,
+		MemoryMb:     786432,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"inf2.24xlarge": {
+		InstanceType: "inf2.24xlarge",
+		VCPU:         96,
+		MemoryMb:     393216,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"inf2.8xlarge": {
+		InstanceType: "inf2.8xlarge",
+		VCPU:         32,
+		MemoryMb:     131072,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"inf2.xlarge": {
+		InstanceType: "inf2.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          0,
+		Architecture: "amd64",
+	},
 	"is4gen.2xlarge": {
 		InstanceType: "is4gen.2xlarge",
 		VCPU:         8,
@@ -2785,6 +2813,13 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"p4d.24xlarge": {
 		InstanceType: "p4d.24xlarge",
+		VCPU:         96,
+		MemoryMb:     1179648,
+		GPU:          8,
+		Architecture: "amd64",
+	},
+	"p4de.24xlarge": {
+		InstanceType: "p4de.24xlarge",
 		VCPU:         96,
 		MemoryMb:     1179648,
 		GPU:          8,
@@ -4038,6 +4073,13 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"trn1.32xlarge": {
 		InstanceType: "trn1.32xlarge",
+		VCPU:         128,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"trn1n.32xlarge": {
+		InstanceType: "trn1n.32xlarge",
 		VCPU:         128,
 		MemoryMb:     524288,
 		GPU:          0,

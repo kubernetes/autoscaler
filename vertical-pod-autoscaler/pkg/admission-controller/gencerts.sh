@@ -48,7 +48,7 @@ if [[ $? -ne 0 ]]; then
 fi
 set -o errexit
 
-# Create a server certiticate
+# Create a server certificate
 openssl genrsa -out ${TMP_DIR}/serverKey.pem 2048
 # Note the CN is the DNS name of the service of the webhook.
 openssl req -new -key ${TMP_DIR}/serverKey.pem -out ${TMP_DIR}/server.csr -subj "/CN=vpa-webhook.kube-system.svc" -config ${TMP_DIR}/server.conf -addext "subjectAltName = DNS:vpa-webhook.kube-system.svc"

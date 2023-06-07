@@ -66,6 +66,9 @@ func TestSetSize(t *testing.T) {
 
 		s, err := sr.controller.managementScaleClient.Scales(testResource.GetNamespace()).
 			Get(context.TODO(), gvr.GroupResource(), testResource.GetName(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("error getting scale subresource: %v", err)
+		}
 
 		if s.Spec.Replicas != int32(updatedReplicas) {
 			t.Errorf("expected %v, got: %v", updatedReplicas, s.Spec.Replicas)
@@ -185,8 +188,12 @@ func TestReplicas(t *testing.T) {
 			},
 		}
 
-		controller.machineSetInformer.Informer().AddEventHandler(handler)
-		controller.machineDeploymentInformer.Informer().AddEventHandler(handler)
+		if _, err := controller.machineSetInformer.Informer().AddEventHandler(handler); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := controller.machineDeploymentInformer.Informer().AddEventHandler(handler); err != nil {
+			t.Fatal(err)
+		}
 
 		_, err = sr.controller.managementScaleClient.Scales(testResource.GetNamespace()).
 			Update(context.TODO(), gvr.GroupResource(), s, metav1.UpdateOptions{})

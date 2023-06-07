@@ -42,10 +42,11 @@ var (
 
 // Option describes an option to expand the cluster.
 type Option struct {
-	NodeGroup cloudprovider.NodeGroup
-	NodeCount int
-	Debug     string
-	Pods      []*apiv1.Pod
+	NodeGroup         cloudprovider.NodeGroup
+	SimilarNodeGroups []cloudprovider.NodeGroup
+	NodeCount         int
+	Debug             string
+	Pods              []*apiv1.Pod
 }
 
 // Strategy describes an interface for selecting the best option when scaling up

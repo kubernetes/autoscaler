@@ -8,3 +8,6 @@ reviewers:
 - jaypipes
 - gjtempleton
 - drmorr0
+
+labels:
+- area/provider/aws

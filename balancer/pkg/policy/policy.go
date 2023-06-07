@@ -18,8 +18,8 @@ package policy
 
 import (
 	"fmt"
-	"k8s.io/autoscaling/balancer/pkg/apis/balancer.x-k8s.io/v1alpha1"
-	"k8s.io/autoscaling/balancer/pkg/pods"
+	"k8s.io/autoscaler/balancer/pkg/apis/balancer.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/balancer/pkg/pods"
 )
 
 // GetPlacement calculates the placement for the given balancer and pod summary

@@ -91,6 +91,9 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 	maps := kubeClient.CoreV1().ConfigMaps(namespace)
 	configMap, getStatusError = maps.Get(context.TODO(), statusConfigMapName, metav1.GetOptions{})
 	if getStatusError == nil {
+		if configMap.Data == nil {
+			configMap.Data = make(map[string]string)
+		}
 		configMap.Data["status"] = statusMsg
 		if configMap.ObjectMeta.Annotations == nil {
 			configMap.ObjectMeta.Annotations = make(map[string]string)

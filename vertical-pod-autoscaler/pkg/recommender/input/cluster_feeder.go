@@ -27,8 +27,13 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	kube_client "k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	v1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
@@ -39,27 +44,12 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
-	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	v1lister "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
-	klog "k8s.io/klog/v2"
-	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
 const (
-	evictionWatchRetryWait               = 10 * time.Second
-	evictionWatchJitterFactor            = 0.5
-	scaleCacheLoopPeriod                 = 7 * time.Second
-	scaleCacheEntryLifetime              = time.Hour
-	scaleCacheEntryFreshnessTime         = 10 * time.Minute
-	scaleCacheEntryJitterFactor  float64 = 1.
-	defaultResyncPeriod                  = 10 * time.Minute
-	// DefaultRecommenderName designates the recommender that will handle VPA objects which don't specify
-	// recommender name explicitly (and so implicitly specify that the default recommender should handle them)
+	evictionWatchRetryWait    = 10 * time.Second
+	evictionWatchJitterFactor = 0.5
+	// DefaultRecommenderName recommender name explicitly (and so implicitly specify that the default recommender should handle them)
 	DefaultRecommenderName = "default"
 )
 
@@ -114,34 +104,6 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		controllerFetcher:   m.ControllerFetcher,
 		recommenderName:     m.RecommenderName,
 	}
-}
-
-// NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config.
-// Deprecated; Use ClusterStateFeederFactory instead.
-func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState, memorySave bool, namespace, metricsClientName string, recommenderName string) ClusterStateFeeder {
-	kubeClient := kube_client.NewForConfigOrDie(config)
-	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient, namespace)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-	controllerFetcher.Start(context.TODO(), scaleCacheLoopPeriod)
-	return ClusterStateFeederFactory{
-		PodLister:           podLister,
-		OOMObserver:         oomObserver,
-		KubeClient:          kubeClient,
-		MetricsClient:       newMetricsClient(config, namespace, metricsClientName),
-		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
-		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), namespace),
-		ClusterState:        clusterState,
-		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
-		MemorySaveMode:      memorySave,
-		ControllerFetcher:   controllerFetcher,
-		RecommenderName:     recommenderName,
-	}.Make()
-}
-
-func newMetricsClient(config *rest.Config, namespace, clientName string) metrics.MetricsClient {
-	metricsGetter := resourceclient.NewForConfigOrDie(config)
-	return metrics.NewMetricsClient(metricsGetter, namespace, clientName)
 }
 
 // WatchEvictionEventsWithRetries watches new Events with reason=Evicted and passes them to the observer.
@@ -310,13 +272,13 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
 	feeder.LoadVPAs()
 
-	namspaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
+	namespaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		klog.Errorf("Cannot list namespaces. Reason: %+v", err)
 		return
 	}
 
-	for _, namespaceItem := range namspaceList.Items {
+	for _, namespaceItem := range namespaceList.Items {
 		namespace := namespaceItem.Name
 		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
@@ -375,7 +337,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 	return vpaCRDs
 }
 
-// Fetch VPA objects and load them into the cluster state.
+// LoadVPAs fetches VPA objects and loads them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
 	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
@@ -424,7 +386,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	feeder.clusterState.ObservedVpas = vpaCRDs
 }
 
-// Load pod into the cluster state.
+// LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
 	podSpecs, err := feeder.specClient.GetPodSpecs()
 	if err != nil {

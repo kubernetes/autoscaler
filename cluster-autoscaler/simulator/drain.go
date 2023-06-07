@@ -24,8 +24,11 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -35,9 +38,24 @@ type NodeDeleteOptions struct {
 	SkipNodesWithSystemPods bool
 	// SkipNodesWithLocalStorage tells if nodes with pods with local storage, e.g. EmptyDir or HostPath, should be deleted
 	SkipNodesWithLocalStorage bool
+	// SkipNodesWithCustomControllerPods tells if nodes with custom-controller owned pods should be skipped from deletion (skip if 'true')
+	SkipNodesWithCustomControllerPods bool
 	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
 	// to allow their pods deletion in scale down
 	MinReplicaCount int
+	// DrainabilityRules contain a list of checks that are used to verify whether a pod can be drained from node.
+	DrainabilityRules []drainability.Rule
+}
+
+// NewNodeDeleteOptions returns new node delete options extracted from autoscaling options
+func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
+	return NodeDeleteOptions{
+		SkipNodesWithSystemPods:           opts.SkipNodesWithSystemPods,
+		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
+		MinReplicaCount:                   opts.MinReplicaCount,
+		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
+		DrainabilityRules:                 drainability.DefaultRules(),
+	}
 }
 
 // GetPodsToMove returns a list of pods that should be moved elsewhere
@@ -47,19 +65,44 @@ type NodeDeleteOptions struct {
 // along with their pods (no abandoned pods with dangling created-by annotation).
 // If listers is not nil it checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
+// TODO(x13n): Rewrite GetPodsForDeletionOnNodeDrain into a set of DrainabilityRules.
 func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDeleteOptions, listers kube_util.ListerRegistry,
 	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
+	var drainPods, drainDs []*apiv1.Pod
+	drainabilityRules := deleteOptions.DrainabilityRules
+	if drainabilityRules == nil {
+		drainabilityRules = drainability.DefaultRules()
+	}
 	for _, podInfo := range nodeInfo.Pods {
-		pods = append(pods, podInfo.Pod)
+		pod := podInfo.Pod
+		d := drainabilityStatus(pod, drainabilityRules)
+		switch d.Outcome {
+		case drainability.UndefinedOutcome:
+			pods = append(pods, podInfo.Pod)
+		case drainability.DrainOk:
+			if pod_util.IsDaemonSetPod(pod) {
+				drainDs = append(drainDs, pod)
+			} else {
+				drainPods = append(drainPods, pod)
+			}
+		case drainability.BlockDrain:
+			blockingPod = &drain.BlockingPod{pod, d.BlockingReason}
+			err = d.Error
+			return
+		case drainability.SkipDrain:
+		}
 	}
 	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
 		pods,
 		pdbs,
 		deleteOptions.SkipNodesWithSystemPods,
 		deleteOptions.SkipNodesWithLocalStorage,
+		deleteOptions.SkipNodesWithCustomControllerPods,
 		listers,
 		int32(deleteOptions.MinReplicaCount),
 		timestamp)
+	pods = append(pods, drainPods...)
+	daemonSetPods = append(daemonSetPods, drainDs...)
 	if err != nil {
 		return pods, daemonSetPods, blockingPod, err
 	}
@@ -72,7 +115,7 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDele
 
 func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.BlockingPod, error) {
 	// TODO: remove it after deprecating legacy scale down.
-	// PdbRemainingDisruption.CanDisrupt() to replace this function.
+	// RemainingPdbTracker.CanRemovePods() to replace this function.
 	for _, pdb := range pdbs {
 		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
 		if err != nil {
@@ -87,4 +130,15 @@ func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.
 		}
 	}
 	return nil, nil
+}
+
+func drainabilityStatus(pod *apiv1.Pod, dr []drainability.Rule) drainability.Status {
+	for _, f := range dr {
+		if d := f.Drainable(pod); d.Outcome != drainability.UndefinedOutcome {
+			return d
+		}
+	}
+	return drainability.Status{
+		Outcome: drainability.UndefinedOutcome,
+	}
 }

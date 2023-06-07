@@ -102,7 +102,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	}
 
 	// if we are at minSize already we wail early.
-	if int(replicas) <= ng.MinSize() {
+	if replicas <= ng.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -276,7 +276,7 @@ func (ng *nodegroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 }
 
 func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
-	labels := cloudprovider.JoinStringMaps(ng.scalableResource.Labels(), buildGenericLabels(nodeName))
+	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), ng.scalableResource.Labels())
 
 	nodes, err := ng.Nodes()
 	if err != nil {

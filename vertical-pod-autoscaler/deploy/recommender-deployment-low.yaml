@@ -8,17 +8,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vpa-recommender-performance
+  name: vpa-recommender-frugal
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vpa-recommender-performance
+      app: vpa-recommender-frugal
   template:
     metadata:
       labels:
-        app: vpa-recommender-performance
+        app: vpa-recommender-frugal
     spec:
       serviceAccountName: vpa-recommender
       securityContext:
