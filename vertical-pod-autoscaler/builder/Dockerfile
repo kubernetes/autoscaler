@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.20.4
+FROM golang:1.20.5
 LABEL maintainer="Beata Skiba	<bskiba@google.com>"
 
 ENV GOPATH /gopath/
