@@ -156,7 +156,7 @@ func handleSendError(r *request.Request, err error) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: int(0),
 			Status:     http.StatusText(int(0)),
-			Body:       i.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 	}
 	// Catch all request errors, and let the default retrier determine
