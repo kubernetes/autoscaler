@@ -161,8 +161,8 @@ $ make build
 
 This builds an autoscaler containing only the Brightbox Cloud provider,
 tagged as `brightbox/cluster-autoscaler-brightbox:dev`. To build any
-other version add a TAG variable
+other version add a TAG variable and/or a REGISTRY variable
 
 ```
-make build TAG=1.1x
+make build TAG=1.1x REGISTRY=cr.brightbox.com/acc-xxxxx/<registry-name>
 ```
