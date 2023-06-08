@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -74,7 +73,7 @@ type testData struct {
 }
 
 func body(str string) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewReader([]byte(str)))
+	return io.NopCloser(bytes.NewReader([]byte(str)))
 }
 
 func unmarshal(req *request.Request) {
@@ -85,7 +84,7 @@ func unmarshal(req *request.Request) {
 }
 
 func unmarshalError(req *request.Request) {
-	bodyBytes, err := ioutil.ReadAll(req.HTTPResponse.Body)
+	bodyBytes, err := io.ReadAll(req.HTTPResponse.Body)
 	if err != nil {
 		req.Error = awserr.New("UnmarshaleError", req.HTTPResponse.Status, err)
 		return
@@ -531,7 +530,7 @@ func TestRequest_NoBody(t *testing.T) {
 
 			outMsg := []byte(`{"Value": "abc"}`)
 
-			if b, err := ioutil.ReadAll(r.Body); err != nil {
+			if b, err := io.ReadAll(r.Body); err != nil {
 				t.Fatalf("%d, expect no error reading request body, got %v", i, err)
 			} else if n := len(b); n > 0 {
 				t.Errorf("%d, expect no request body, got %d bytes", i, n)
@@ -708,7 +707,7 @@ func TestEnforceShouldRetryCheck(t *testing.T) {
 		Fn: func(r *request.Request) {
 			r.HTTPResponse = &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(bytes.NewBuffer(nil)),
+				Body:   io.NopCloser(bytes.NewBuffer(nil)),
 			}
 			r.Retryable = aws.Bool(false)
 		},
@@ -748,8 +747,8 @@ func TestIsNoBodyReader(t *testing.T) {
 		reader io.ReadCloser
 		expect bool
 	}{
-		{ioutil.NopCloser(bytes.NewReader([]byte("abc"))), false},
-		{ioutil.NopCloser(bytes.NewReader(nil)), false},
+		{io.NopCloser(bytes.NewReader([]byte("abc"))), false},
+		{io.NopCloser(bytes.NewReader(nil)), false},
 		{nil, false},
 		{request.NoBody, true},
 	}
@@ -795,7 +794,7 @@ func TestRequest_TemporaryRetry(t *testing.T) {
 
 	req.Handlers.Unmarshal.PushBack(func(r *request.Request) {
 		defer req.HTTPResponse.Body.Close()
-		_, err := io.Copy(ioutil.Discard, req.HTTPResponse.Body)
+		_, err := io.Copy(io.Discard, req.HTTPResponse.Body)
 		r.Error = awserr.New(request.ErrCodeSerialization, "error", err)
 	})
 

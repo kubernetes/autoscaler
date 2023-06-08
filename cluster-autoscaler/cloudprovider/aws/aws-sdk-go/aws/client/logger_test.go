@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
@@ -117,7 +116,7 @@ func TestLogRequest(t *testing.T) {
 
 		logRequest(req)
 
-		b, err := ioutil.ReadAll(req.HTTPRequest.Body)
+		b, err := io.ReadAll(req.HTTPRequest.Body)
 		if err != nil {
 			t.Fatalf("%d, expect to read SDK request Body", i)
 		}
@@ -181,7 +180,7 @@ func TestLogResponse(t *testing.T) {
 			Header: http.Header{
 				"ABC": []string{"123"},
 			},
-			Body: ioutil.NopCloser(c.Body),
+			Body: io.NopCloser(c.Body),
 		}
 
 		logResponse(req)
@@ -199,7 +198,7 @@ func TestLogResponse(t *testing.T) {
 			t.Errorf("%d, expect no log, got,\n%v", i, logW.String())
 		}
 
-		b, err := ioutil.ReadAll(req.HTTPResponse.Body)
+		b, err := io.ReadAll(req.HTTPResponse.Body)
 		if err != nil {
 			t.Fatalf("%d, expect to read SDK request Body", i)
 		}

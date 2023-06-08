@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -159,7 +159,7 @@ func loadTokenFile(startURL string) (t token, err error) {
 		return token{}, awserr.New(ErrCodeSSOProviderInvalidToken, invalidTokenMessage, err)
 	}
 
-	fileBytes, err := ioutil.ReadFile(filepath.Join(defaultCacheLocation(), key))
+	fileBytes, err := os.ReadFile(filepath.Join(defaultCacheLocation(), key))
 	if err != nil {
 		return token{}, awserr.New(ErrCodeSSOProviderInvalidToken, invalidTokenMessage, err)
 	}

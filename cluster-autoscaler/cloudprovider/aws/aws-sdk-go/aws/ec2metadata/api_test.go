@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"path"
@@ -670,7 +669,7 @@ func TestMetadataNotAvailable(t *testing.T) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: int(0),
 			Status:     http.StatusText(int(0)),
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 		r.Error = awserr.New(request.ErrCodeRequestError, "send request failed", nil)
 		r.Retryable = aws.Bool(true) // network errors are retryable
@@ -688,7 +687,7 @@ func TestMetadataErrorResponse(t *testing.T) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: http.StatusBadRequest,
 			Status:     http.StatusText(http.StatusBadRequest),
-			Body:       ioutil.NopCloser(strings.NewReader("error message text")),
+			Body:       io.NopCloser(strings.NewReader("error message text")),
 		}
 		r.Retryable = aws.Bool(false) // network errors are retryable
 	})

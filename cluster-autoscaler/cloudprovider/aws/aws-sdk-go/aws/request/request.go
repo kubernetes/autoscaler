@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -531,7 +530,7 @@ func (r *Request) Send() error {
 		if r.HTTPResponse == nil {
 			r.HTTPResponse = &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(&bytes.Buffer{}),
+				Body:   io.NopCloser(&bytes.Buffer{}),
 			}
 		}
 		// Regardless of success or failure of the request trigger the Complete

@@ -9,7 +9,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"net"
 	"net/http"
@@ -269,7 +268,7 @@ func CleanupTLSBundleFiles(files ...string) error {
 }
 
 func createTmpFile(b []byte) (string, error) {
-	bundleFile, err := ioutil.TempFile(os.TempDir(), "aws-sdk-go-session-test")
+	bundleFile, err := os.CreateTemp(os.TempDir(), "aws-sdk-go-session-test")
 	if err != nil {
 		return "", err
 	}

@@ -20,10 +20,11 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
+	"io"
 	"net/http"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 )
 
 // AcsResponse interface
@@ -113,7 +114,7 @@ func (baseResponse *BaseResponse) IsSuccess() bool {
 
 func (baseResponse *BaseResponse) parseFromHttpResponse(httpResponse *http.Response) (err error) {
 	defer httpResponse.Body.Close()
-	body, err := ioutil.ReadAll(httpResponse.Body)
+	body, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
 		return
 	}

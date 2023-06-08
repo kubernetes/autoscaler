@@ -5,7 +5,6 @@ package session
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -866,7 +865,7 @@ func TestSessionAssumeRoleWithWebIdentity_Options(t *testing.T) {
 }
 
 func ssoTestSetup() (func(), error) {
-	dir, err := ioutil.TempDir("", "sso-test")
+	dir, err := os.MkdirTemp("", "sso-test")
 	if err != nil {
 		return nil, err
 	}

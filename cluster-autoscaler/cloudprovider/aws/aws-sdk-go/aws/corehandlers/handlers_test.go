@@ -3,7 +3,7 @@ package corehandlers_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -108,7 +108,7 @@ func TestAfterRetryRefreshCreds(t *testing.T) {
 			Resp: &http.Response{
 				StatusCode: 403,
 				Header:     http.Header{},
-				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+				Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
 			},
 			Err: awserr.New("ExpiredToken", "", nil),
 		},
@@ -116,7 +116,7 @@ func TestAfterRetryRefreshCreds(t *testing.T) {
 			Resp: &http.Response{
 				StatusCode: 403,
 				Header:     http.Header{},
-				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+				Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
 			},
 			Err: awserr.New("ExpiredToken", "", nil),
 		},
@@ -124,7 +124,7 @@ func TestAfterRetryRefreshCreds(t *testing.T) {
 			Resp: &http.Response{
 				StatusCode: 200,
 				Header:     http.Header{},
-				Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+				Body:       io.NopCloser(bytes.NewBuffer([]byte{})),
 			},
 		},
 	}
@@ -366,7 +366,7 @@ func setupContentLengthTestServer(t *testing.T, hasContentLength bool, contentLe
 			}
 		}
 
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("expect no error, got %v", err)
 		}

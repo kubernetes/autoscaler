@@ -5,7 +5,6 @@ package ini
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,7 +45,7 @@ func TestValidDataFiles(t *testing.T) {
 		expectedPath := path + "_expected"
 		e := map[string]interface{}{}
 
-		b, err := ioutil.ReadFile(expectedPath)
+		b, err := os.ReadFile(expectedPath)
 		if err != nil {
 			// ignore files that do not have an expected file
 			return nil

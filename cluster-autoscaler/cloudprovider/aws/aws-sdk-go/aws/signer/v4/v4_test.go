@@ -3,7 +3,6 @@ package v4
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -554,7 +553,7 @@ func TestSignWithRequestBody(t *testing.T) {
 	expectBody := []byte("abc123")
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		r.Body.Close()
 		if err != nil {
 			t.Errorf("expect no error, got %v", err)
@@ -592,7 +591,7 @@ func TestSignWithRequestBody_Overwrite(t *testing.T) {
 	var expectBody []byte
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		r.Body.Close()
 		if err != nil {
 			t.Errorf("expect not no error, got %v", err)
@@ -648,7 +647,7 @@ func TestBuildCanonicalRequest(t *testing.T) {
 func TestSignWithBody_ReplaceRequestBody(t *testing.T) {
 	creds := credentials.NewStaticCredentials("AKID", "SECRET", "SESSION")
 	req, seekerBody := buildRequest("dynamodb", "us-east-1", "{}")
-	req.Body = ioutil.NopCloser(bytes.NewReader([]byte{}))
+	req.Body = io.NopCloser(bytes.NewReader([]byte{}))
 
 	s := NewSigner(creds)
 	origBody := req.Body
@@ -670,7 +669,7 @@ func TestSignWithBody_ReplaceRequestBody(t *testing.T) {
 func TestSignWithBody_NoReplaceRequestBody(t *testing.T) {
 	creds := credentials.NewStaticCredentials("AKID", "SECRET", "SESSION")
 	req, seekerBody := buildRequest("dynamodb", "us-east-1", "{}")
-	req.Body = ioutil.NopCloser(bytes.NewReader([]byte{}))
+	req.Body = io.NopCloser(bytes.NewReader([]byte{}))
 
 	s := NewSigner(creds, func(signer *Signer) {
 		signer.DisableRequestBodyOverwrite = true

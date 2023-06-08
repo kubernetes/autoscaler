@@ -81,7 +81,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
@@ -416,7 +415,7 @@ func executeCommand(cmd exec.Cmd, exec chan error) {
 func readInput(r io.Reader, w io.Writer, read chan error) {
 	tee := io.TeeReader(r, w)
 
-	_, err := ioutil.ReadAll(tee)
+	_, err := io.ReadAll(tee)
 
 	if err == io.EOF {
 		err = nil

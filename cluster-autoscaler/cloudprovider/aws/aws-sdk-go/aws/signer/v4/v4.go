@@ -60,7 +60,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sort"
@@ -360,7 +359,7 @@ func (v4 Signer) signWithBody(r *http.Request, body io.ReadSeeker, service, regi
 		if body != nil {
 			var ok bool
 			if reader, ok = body.(io.ReadCloser); !ok {
-				reader = ioutil.NopCloser(body)
+				reader = io.NopCloser(body)
 			}
 		}
 		r.Body = reader

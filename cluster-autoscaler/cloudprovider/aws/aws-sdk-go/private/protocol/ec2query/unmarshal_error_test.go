@@ -4,7 +4,7 @@
 package ec2query
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -25,7 +25,7 @@ func TestUnmarshalError(t *testing.T) {
 				HTTPResponse: &http.Response{
 					StatusCode: 400,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<Response>
 							<Errors>
 								<Error>
@@ -45,7 +45,7 @@ func TestUnmarshalError(t *testing.T) {
 				HTTPResponse: &http.Response{
 					StatusCode: 400,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<Hello>
 							<World>.</World>
 						</Hello>`)),

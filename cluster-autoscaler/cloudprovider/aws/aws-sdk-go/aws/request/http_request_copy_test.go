@@ -2,7 +2,7 @@ package request
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"sync"
@@ -17,10 +17,10 @@ func TestRequestCopyRace(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func() {
-			req := copyHTTPRequest(origReq, ioutil.NopCloser(&bytes.Buffer{}))
+			req := copyHTTPRequest(origReq, io.NopCloser(&bytes.Buffer{}))
 			req.Header.Set("Header", "Value")
 			go func() {
-				req2 := copyHTTPRequest(req, ioutil.NopCloser(&bytes.Buffer{}))
+				req2 := copyHTTPRequest(req, io.NopCloser(&bytes.Buffer{}))
 				req2.Header.Add("Header", "Value2")
 			}()
 			_ = req.Header.Get("Header")

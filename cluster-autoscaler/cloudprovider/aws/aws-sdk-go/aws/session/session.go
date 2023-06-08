@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -659,7 +658,7 @@ func loadCustomCABundle(client *http.Client, bundle io.Reader) error {
 }
 
 func loadCertPool(r io.Reader) (*x509.CertPool, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, awserr.New(ErrCodeLoadCustomCABundle,
 			"failed to read custom CA bundle PEM file", err)
@@ -681,13 +680,13 @@ func loadClientTLSCert(client *http.Client, certFile, keyFile io.Reader) error {
 			"unable to get usable HTTP transport from client", err)
 	}
 
-	cert, err := ioutil.ReadAll(certFile)
+	cert, err := io.ReadAll(certFile)
 	if err != nil {
 		return awserr.New(ErrCodeLoadClientTLSCert,
 			"unable to get read client TLS cert file", err)
 	}
 
-	key, err := ioutil.ReadAll(keyFile)
+	key, err := io.ReadAll(keyFile)
 	if err != nil {
 		return awserr.New(ErrCodeLoadClientTLSCert,
 			"unable to get read client TLS key file", err)

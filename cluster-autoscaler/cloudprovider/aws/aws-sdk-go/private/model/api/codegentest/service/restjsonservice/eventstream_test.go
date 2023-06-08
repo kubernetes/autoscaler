@@ -8,7 +8,7 @@ package restjsonservice
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -184,7 +184,7 @@ func BenchmarkEmptyStream_Read(b *testing.B) {
 					Status:     "200 OK",
 					StatusCode: 200,
 					Header:     http.Header{},
-					Body:       ioutil.NopCloser(stream),
+					Body:       io.NopCloser(stream),
 				}
 			},
 		},
@@ -386,7 +386,7 @@ func BenchmarkGetEventStream_Read(b *testing.B) {
 					Status:     "200 OK",
 					StatusCode: 200,
 					Header:     http.Header{},
-					Body:       ioutil.NopCloser(stream),
+					Body:       io.NopCloser(stream),
 				}
 			},
 		},

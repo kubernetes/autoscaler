@@ -3,7 +3,7 @@ package request_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -323,7 +323,7 @@ func TestWaiterError(t *testing.T) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: code,
 			Status:     http.StatusText(code),
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 	})
 	svc.Handlers.Unmarshal.PushBack(func(r *request.Request) {
@@ -408,7 +408,7 @@ func TestWaiterStatus(t *testing.T) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: code,
 			Status:     http.StatusText(code),
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 	})
 

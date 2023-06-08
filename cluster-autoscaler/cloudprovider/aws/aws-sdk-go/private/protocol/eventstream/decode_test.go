@@ -3,7 +3,6 @@ package eventstream
 import (
 	"bytes"
 	"encoding/hex"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -16,7 +15,7 @@ func TestWriteEncodedFromDecoded(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		f, err := ioutil.TempFile(os.TempDir(), "encoded_positive_"+c.Name)
+		f, err := os.CreateTemp(os.TempDir(), "encoded_positive_"+c.Name)
 		if err != nil {
 			t.Fatalf("failed to open %q, %v", c.Name, err)
 		}
