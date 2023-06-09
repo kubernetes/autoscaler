@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -562,7 +561,7 @@ func (c *APIClient) GetRequestStatus(ctx context.Context, path string) (*Request
 	var responseBody = make([]byte, 0)
 	if resp != nil {
 		var errRead error
-		responseBody, errRead = ioutil.ReadAll(resp.Body)
+		responseBody, errRead = io.ReadAll(resp.Body)
 		_ = resp.Body.Close()
 		if errRead != nil {
 			return nil, nil, errRead
@@ -622,7 +621,7 @@ func (c *APIClient) WaitForRequest(ctx context.Context, path string) (*APIRespon
 		var localVarBody = make([]byte, 0)
 		if resp != nil {
 			var errRead error
-			localVarBody, errRead = ioutil.ReadAll(resp.Body)
+			localVarBody, errRead = io.ReadAll(resp.Body)
 			_ = resp.Body.Close()
 			if errRead != nil {
 				return nil, errRead
