@@ -12,7 +12,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -179,7 +178,7 @@ func drainBody(b io.ReadCloser) (r1, r2 io.ReadCloser, err error) {
 	if err = b.Close(); err != nil {
 		return nil, b, err
 	}
-	return ioutil.NopCloser(&buf), ioutil.NopCloser(bytes.NewReader(buf.Bytes())), nil
+	return io.NopCloser(&buf), io.NopCloser(bytes.NewReader(buf.Bytes())), nil
 }
 
 func hashAndEncode(data []byte) string {
@@ -203,7 +202,7 @@ func GetBodyHash(request *http.Request) (hashString string, err error) {
 		return "", fmt.Errorf("can not read body of request while calculating body hash: %s", err.Error())
 	}
 
-	data, err = ioutil.ReadAll(bReader)
+	data, err = io.ReadAll(bReader)
 	if err != nil {
 		return "", fmt.Errorf("can not read body of request while calculating body hash: %s", err.Error())
 	}

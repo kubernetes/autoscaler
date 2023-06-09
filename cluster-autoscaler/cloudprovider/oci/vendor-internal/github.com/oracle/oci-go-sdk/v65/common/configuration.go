@@ -7,7 +7,6 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -161,7 +160,7 @@ func (p environmentConfigurationProvider) PrivateRSAKey() (key *rsa.PrivateKey, 
 	}
 
 	expandedPath := expandPath(value)
-	pemFileContent, err := ioutil.ReadFile(expandedPath)
+	pemFileContent, err := os.ReadFile(expandedPath)
 	if err != nil {
 		Debugln("Can not read PrivateKey location from environment variable: " + environmentVariable)
 		return
@@ -392,7 +391,7 @@ func expandPath(filepath string) (expandedPath string) {
 
 func openConfigFile(configFilePath string) (data []byte, err error) {
 	expandedPath := expandPath(configFilePath)
-	data, err = ioutil.ReadFile(expandedPath)
+	data, err = os.ReadFile(expandedPath)
 	if err != nil {
 		err = fmt.Errorf("can not read config file: %s due to: %s", configFilePath, err.Error())
 	}
@@ -522,7 +521,7 @@ func (p fileConfigurationProvider) PrivateRSAKey() (key *rsa.PrivateKey, err err
 	}
 
 	expandedPath := expandPath(filePath)
-	pemFileContent, err := ioutil.ReadFile(expandedPath)
+	pemFileContent, err := os.ReadFile(expandedPath)
 	if err != nil {
 		err = fileConfigurationProviderError{err: fmt.Errorf("can not read PrivateKey  from configuration file due to: %s", err.Error())}
 		return
@@ -585,7 +584,7 @@ func (p fileConfigurationProvider) AuthType() (AuthConfig, error) {
 
 func getTokenContent(filePath string) (string, error) {
 	expandedPath := expandPath(filePath)
-	tokenFileContent, err := ioutil.ReadFile(expandedPath)
+	tokenFileContent, err := os.ReadFile(expandedPath)
 	if err != nil {
 		err = fileConfigurationProviderError{err: fmt.Errorf("can not read token content from configuration file due to: %s", err.Error())}
 		return "", err

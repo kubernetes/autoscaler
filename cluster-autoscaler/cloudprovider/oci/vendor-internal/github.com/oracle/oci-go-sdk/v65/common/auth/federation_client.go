@@ -12,7 +12,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -104,7 +103,7 @@ func newFileBasedFederationClient(securityTokenPath string, supplier sessionKeyS
 		SessionKeySupplier: supplier,
 		RefreshSecurityToken: func() (token securityToken, err error) {
 			var content []byte
-			if content, err = ioutil.ReadFile(securityTokenPath); err != nil {
+			if content, err = os.ReadFile(securityTokenPath); err != nil {
 				return nil, fmt.Errorf("failed to read security token from :%s. Due to: %s", securityTokenPath, err.Error())
 			}
 
@@ -421,13 +420,13 @@ func newFileBasedKeySessionSupplier(privateKeyPemPath string, passphrasePath *st
 			var err error
 			var passContent []byte
 			if passphrasePath != nil {
-				if passContent, err = ioutil.ReadFile(*passphrasePath); err != nil {
+				if passContent, err = os.ReadFile(*passphrasePath); err != nil {
 					return nil, nil, fmt.Errorf("can not read passphrase from file: %s, due to %s", *passphrasePath, err.Error())
 				}
 			}
 
 			var keyPemContent []byte
-			if keyPemContent, err = ioutil.ReadFile(privateKeyPemPath); err != nil {
+			if keyPemContent, err = os.ReadFile(privateKeyPemPath); err != nil {
 				return nil, nil, fmt.Errorf("can not read private privateKey pem from file: %s, due to %s", privateKeyPemPath, err.Error())
 			}
 

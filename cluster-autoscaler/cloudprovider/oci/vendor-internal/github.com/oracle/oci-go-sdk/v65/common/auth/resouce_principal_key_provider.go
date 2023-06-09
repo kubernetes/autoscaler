@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -104,14 +103,14 @@ func OkeWorkloadIdentityConfigurationProvider() (ConfigurationProviderWithClaimA
 	}
 
 	if version == ResourcePrincipalVersion1_1 || version == ResourcePrincipalVersion2_2 {
-		kubernetesServiceAccountToken, err := ioutil.ReadFile(KubernetesServiceAccountTokenPath)
+		kubernetesServiceAccountToken, err := os.ReadFile(KubernetesServiceAccountTokenPath)
 		if err != nil {
 			err = fmt.Errorf("can not create resource principal, error getting Kubernetes Service Account Token at %s",
 				KubernetesServiceAccountTokenPath)
 			return nil, resourcePrincipalError{err: err}
 		}
 
-		kubernetesServiceAccountCertRaw, err := ioutil.ReadFile(KubernetesServiceAccountCertPath)
+		kubernetesServiceAccountCertRaw, err := os.ReadFile(KubernetesServiceAccountCertPath)
 		if err != nil {
 			err = fmt.Errorf("can not create resource principal, error getting Kubernetes Service Account Token at %s",
 				KubernetesServiceAccountCertPath)

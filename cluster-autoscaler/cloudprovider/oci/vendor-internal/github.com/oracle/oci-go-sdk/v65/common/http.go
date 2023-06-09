@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -285,18 +284,18 @@ func addToBody(request *http.Request, value reflect.Value, field reflect.StructF
 	request.ContentLength = int64(bodyBytes.Len())
 	request.Header.Set(requestHeaderContentLength, strconv.FormatInt(request.ContentLength, 10))
 	request.Header.Set(requestHeaderContentType, "application/json")
-	request.Body = ioutil.NopCloser(bodyBytes)
+	request.Body = io.NopCloser(bodyBytes)
 	snapshot := *bodyBytes
 	request.GetBody = func() (io.ReadCloser, error) {
 		r := snapshot
-		return ioutil.NopCloser(&r), nil
+		return io.NopCloser(&r), nil
 	}
 
 	return
 }
 
 func checkBinaryBodyLength(request *http.Request) (contentLen int64, err error) {
-	if reflect.TypeOf(request.Body) == reflect.TypeOf(ioutil.NopCloser(nil)) {
+	if reflect.TypeOf(request.Body) == reflect.TypeOf(io.NopCloser(nil)) {
 		ioReader := reflect.ValueOf(request.Body).Field(0).Interface().(io.Reader)
 		switch t := ioReader.(type) {
 		case *bytes.Reader:
@@ -320,12 +319,12 @@ func checkBinaryBodyLength(request *http.Request) (contentLen int64, err error) 
 }
 
 func getNormalBinaryBodyLength(request *http.Request) (contentLen int64, err error) {
-	dumpRequestBody := ioutil.NopCloser(bytes.NewBuffer(nil))
+	dumpRequestBody := io.NopCloser(bytes.NewBuffer(nil))
 	if dumpRequestBody, request.Body, err = drainBody(request.Body); err != nil {
-		dumpRequestBody = ioutil.NopCloser(bytes.NewBuffer(nil))
+		dumpRequestBody = io.NopCloser(bytes.NewBuffer(nil))
 		return contentLen, err
 	}
-	contentBody, err := ioutil.ReadAll(dumpRequestBody)
+	contentBody, err := io.ReadAll(dumpRequestBody)
 	if err != nil {
 		return contentLen, err
 	}
@@ -895,7 +894,7 @@ func valueFromJSONBody(response *http.Response, value *reflect.Value, unmarshale
 	//Consumes the body, consider implementing it
 	//without body consumption
 	var content []byte
-	content, err = ioutil.ReadAll(response.Body)
+	content, err = io.ReadAll(response.Body)
 	if err != nil {
 		return
 	}
@@ -926,7 +925,7 @@ func addFromBody(response *http.Response, value *reflect.Value, field reflect.St
 		return
 	case "plain-text":
 		//Expects UTF-8
-		byteArr, e := ioutil.ReadAll(response.Body)
+		byteArr, e := io.ReadAll(response.Body)
 		if e != nil {
 			return e
 		}

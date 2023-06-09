@@ -6,7 +6,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -264,7 +264,7 @@ func setRegionMetadataFromCfgFile(region *string) bool {
 
 func readAndParseConfigFile(configFileName *string) (fileContent []map[string]string, ok bool) {
 
-	if content, err := ioutil.ReadFile(*configFileName); err == nil {
+	if content, err := os.ReadFile(*configFileName); err == nil {
 		Debugf("Raw content of region metadata config file content:", string(content[:]))
 		if err := json.Unmarshal(content, &fileContent); err != nil {
 			Debugf("Can't unmarshal config file, the error info is", err)
@@ -381,7 +381,7 @@ func getRegionInfoFromInstanceMetadataServiceProd() ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get region information from response body. Error: %v", err)
 	}

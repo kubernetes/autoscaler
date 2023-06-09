@@ -6,7 +6,6 @@ package common
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -76,7 +75,7 @@ func NewSDKLogger() (DefaultSDKLogger, error) {
 	logger.verboseLogger = log.New(os.Stderr, "VERBOSE ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	logger.debugLogger = log.New(os.Stderr, "DEBUG ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	logger.infoLogger = log.New(os.Stderr, "INFO ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-	logger.nullLogger = log.New(ioutil.Discard, "", log.Ldate|log.Lmicroseconds|log.Lshortfile)
+	logger.nullLogger = log.New(io.Discard, "", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 
 	configured, isLogEnabled := os.LookupEnv("OCI_GO_SDK_DEBUG")
 

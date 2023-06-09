@@ -6,7 +6,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -110,7 +110,7 @@ func newServiceFailureFromResponse(response *http.Response) error {
 	}
 
 	//If there is an error consume the body, entirely
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		se.Message = fmt.Sprintf("The body of the response was not readable, due to :%s", err.Error())
 		return se

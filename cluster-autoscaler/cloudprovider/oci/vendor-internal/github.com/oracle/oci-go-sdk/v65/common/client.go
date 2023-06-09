@@ -11,7 +11,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -443,7 +442,7 @@ func checkForSuccessfulResponse(res *http.Response, requestBody *io.ReadCloser) 
 			if defaultLogger.LogLevel() < verboseLogging {
 				logRequest(res.Request, Logf, noLogging)
 				if requestBody != nil && *requestBody != http.NoBody {
-					bodyContent, _ := ioutil.ReadAll(*requestBody)
+					bodyContent, _ := io.ReadAll(*requestBody)
 					Logf("Dump Request Body: \n%s", string(bodyContent))
 				}
 			}
@@ -528,7 +527,7 @@ func NewOCIReadSeekCloser(rc io.ReadCloser) *OCIReadSeekCloser {
 }
 
 // Seek is a thread-safe operation, it implements io.seek() interface, if the original request body implements io.seek()
-// interface, or implements "well-known" data type like os.File, io.SectionReader, or wrapped by ioutil.NopCloser can be supported
+// interface, or implements "well-known" data type like os.File, io.SectionReader, or wrapped by io.NopCloser can be supported
 func (rsc *OCIReadSeekCloser) Seek(offset int64, whence int) (int64, error) {
 	rsc.lock.Lock()
 	defer rsc.lock.Unlock()
@@ -536,8 +535,8 @@ func (rsc *OCIReadSeekCloser) Seek(offset int64, whence int) (int64, error) {
 	if _, ok := rsc.rc.(io.Seeker); ok {
 		return rsc.rc.(io.Seeker).Seek(offset, whence)
 	}
-	// once the binary request body is wrapped with ioutil.NopCloser:
-	if reflect.TypeOf(rsc.rc) == reflect.TypeOf(ioutil.NopCloser(nil)) {
+	// once the binary request body is wrapped with io.NopCloser:
+	if reflect.TypeOf(rsc.rc) == reflect.TypeOf(io.NopCloser(nil)) {
 		unwrappedInterface := reflect.ValueOf(rsc.rc).Field(0).Interface()
 		if _, ok := unwrappedInterface.(io.Seeker); ok {
 			return unwrappedInterface.(io.Seeker).Seek(offset, whence)
@@ -574,8 +573,8 @@ func (rsc *OCIReadSeekCloser) Seekable() bool {
 	if _, ok := rsc.rc.(io.Seeker); ok {
 		return true
 	}
-	// once the binary request body is wrapped with ioutil.NopCloser:
-	if reflect.TypeOf(rsc.rc) == reflect.TypeOf(ioutil.NopCloser(nil)) {
+	// once the binary request body is wrapped with io.NopCloser:
+	if reflect.TypeOf(rsc.rc) == reflect.TypeOf(io.NopCloser(nil)) {
 		if _, ok := reflect.ValueOf(rsc.rc).Field(0).Interface().(io.Seeker); ok {
 			return true
 		}
@@ -674,10 +673,10 @@ func (client BaseClient) IsRefreshableAuthType() bool {
 func (client BaseClient) httpDo(request *http.Request) (response *http.Response, err error) {
 
 	//Copy request body and save for logging
-	dumpRequestBody := ioutil.NopCloser(bytes.NewBuffer(nil))
+	dumpRequestBody := io.NopCloser(bytes.NewBuffer(nil))
 	if request.Body != nil && !checkBodyLengthExceedLimit(request.ContentLength) {
 		if dumpRequestBody, request.Body, err = drainBody(request.Body); err != nil {
-			dumpRequestBody = ioutil.NopCloser(bytes.NewBuffer(nil))
+			dumpRequestBody = io.NopCloser(bytes.NewBuffer(nil))
 		}
 	}
 	IfDebug(func() {
