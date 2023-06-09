@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"strconv"
@@ -148,7 +147,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg := &Config{}
 
 	if configReader != nil {
-		body, err := ioutil.ReadAll(configReader)
+		body, err := io.ReadAll(configReader)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read config: %v", err)
 		}

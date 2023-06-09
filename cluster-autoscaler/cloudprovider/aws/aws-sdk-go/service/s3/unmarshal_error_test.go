@@ -3,7 +3,7 @@ package s3_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -32,7 +32,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"abc123"},
 					"X-Amz-Id-2":       []string{"321cba"},
 				},
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 				ContentLength: -1,
 			}
 		},
@@ -48,7 +48,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"abc123"},
 					"X-Amz-Id-2":       []string{"321cba"},
 				},
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 				ContentLength: 0,
 			}
 		},
@@ -64,7 +64,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"abc123"},
 					"X-Amz-Id-2":       []string{"321cba"},
 				},
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 				ContentLength: 0,
 			}
 		},
@@ -80,7 +80,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"abc123"},
 					"X-Amz-Id-2":       []string{"321cba"},
 				},
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 				ContentLength: 0,
 			}
 		},
@@ -99,7 +99,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"taken-request-id"},
 					"X-Amz-Id-2":       []string{"taken-host-id"},
 				},
-				Body:          ioutil.NopCloser(strings.NewReader(body)),
+				Body:          io.NopCloser(strings.NewReader(body)),
 				ContentLength: int64(len(body)),
 			}
 		},
@@ -115,7 +115,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"abc123"},
 					"X-Amz-Id-2":       []string{"321cba"},
 				},
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 				ContentLength: -1,
 			}
 		},
@@ -131,7 +131,7 @@ var testUnmarshalCases = []testErrorCase{
 					"X-Amz-Request-Id": []string{"abc123"},
 					"X-Amz-Id-2":       []string{"321cba"},
 				},
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 				ContentLength: -1,
 			}
 		},
@@ -193,7 +193,7 @@ func Test200NoErrorUnmarshalError(t *testing.T) {
 				"X-Amz-Request-Id": []string{"abc123"},
 				"X-Amz-Id-2":       []string{"321cba"},
 			},
-			Body:          ioutil.NopCloser(strings.NewReader(completeMultiResp)),
+			Body:          io.NopCloser(strings.NewReader(completeMultiResp)),
 			ContentLength: -1,
 		}
 		r.HTTPResponse.Status = http.StatusText(r.HTTPResponse.StatusCode)
@@ -231,7 +231,7 @@ func Test200WithErrorUnmarshalError(t *testing.T) {
 				"X-Amz-Request-Id": []string{"abc123"},
 				"X-Amz-Id-2":       []string{"321cba"},
 			},
-			Body:          ioutil.NopCloser(strings.NewReader(completeMultiErrResp)),
+			Body:          io.NopCloser(strings.NewReader(completeMultiErrResp)),
 			ContentLength: -1,
 		}
 		r.HTTPResponse.Status = http.StatusText(r.HTTPResponse.StatusCode)

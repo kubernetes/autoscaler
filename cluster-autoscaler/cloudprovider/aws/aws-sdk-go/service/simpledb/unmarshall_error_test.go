@@ -2,7 +2,7 @@ package simpledb_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -31,7 +31,7 @@ func TestStatusCodeError(t *testing.T) {
 		s := simpledb.New(unit.Session)
 		s.Handlers.Send.Clear()
 		s.Handlers.Send.PushBack(func(r *request.Request) {
-			body := ioutil.NopCloser(bytes.NewReader([]byte{}))
+			body := io.NopCloser(bytes.NewReader([]byte{}))
 			r.HTTPResponse = &http.Response{
 				ContentLength: 0,
 				StatusCode:    test.scode,
@@ -103,7 +103,7 @@ func TestResponseError(t *testing.T) {
 		s.Handlers.Send.Clear()
 		s.Handlers.Send.PushBack(func(r *request.Request) {
 			xml := createXMLResponse(test.requestID, test.errors)
-			body := ioutil.NopCloser(bytes.NewReader([]byte(xml)))
+			body := io.NopCloser(bytes.NewReader([]byte(xml)))
 			r.HTTPResponse = &http.Response{
 				ContentLength: int64(len(xml)),
 				StatusCode:    test.scode,

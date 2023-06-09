@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	random "math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -88,7 +87,7 @@ func loggingSvc(ignoreOps []string) (*s3.S3, *[]string, *[]interface{}) {
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(respMsg))),
+			Body:       io.NopCloser(bytes.NewReader([]byte(respMsg))),
 		}
 
 		switch data := r.Data.(type) {
@@ -112,7 +111,7 @@ func loggingSvc(ignoreOps []string) (*s3.S3, *[]string, *[]interface{}) {
 
 func buflen(i interface{}) int {
 	r := i.(io.Reader)
-	b, _ := ioutil.ReadAll(r)
+	b, _ := io.ReadAll(r)
 	return len(b)
 }
 
@@ -916,7 +915,7 @@ func TestReaderAt(t *testing.T) {
 		contentLen = r.HTTPRequest.Header.Get("Content-Length")
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 	})
 
@@ -954,7 +953,7 @@ func TestSSE(t *testing.T) {
 		defer mutex.Unlock()
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(respMsg))),
+			Body:       io.NopCloser(bytes.NewReader([]byte(respMsg))),
 		}
 		switch data := r.Data.(type) {
 		case *s3.CreateMultipartUploadOutput:
@@ -1059,7 +1058,7 @@ func TestUploadMaxPartsEOF(t *testing.T) {
 }
 
 func createTempFile(t *testing.T, size int64) (*os.File, func(*testing.T), error) {
-	file, err := ioutil.TempFile(os.TempDir(), aws.SDKName+t.Name())
+	file, err := os.CreateTemp(os.TempDir(), aws.SDKName+t.Name())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1204,12 +1203,12 @@ func TestUploadBufferStrategy(t *testing.T) {
 			svc.Handlers.Send.Clear()
 			svc.Handlers.Send.PushBack(func(r *request.Request) {
 				if r.Body != nil {
-					io.Copy(ioutil.Discard, r.Body)
+					io.Copy(io.Discard, r.Body)
 				}
 
 				r.HTTPResponse = &http.Response{
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte(respMsg))),
+					Body:       io.NopCloser(bytes.NewReader([]byte(respMsg))),
 				}
 
 				switch data := r.Data.(type) {
@@ -1385,7 +1384,7 @@ type successPartHandler struct {
 func (h successPartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	n, err := io.Copy(ioutil.Discard, r.Body)
+	n, err := io.Copy(io.Discard, r.Body)
 	if err != nil {
 		failRequest(w, 400, "BadRequest",
 			fmt.Sprintf("failed to read body, %v", err))
@@ -1427,7 +1426,7 @@ func (h *failPartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	io.Copy(ioutil.Discard, r.Body)
+	io.Copy(io.Discard, r.Body)
 
 	failRequest(w, 500, "InternalException",
 		fmt.Sprintf("mock error, partNumber %v", r.URL.Query().Get("partNumber")))

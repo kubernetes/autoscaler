@@ -6,7 +6,6 @@ package s3_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -208,7 +207,7 @@ func newCopyTestSvc(errMsg string, responseBodyClosed *bool) *s3.S3 {
 		request.NamedHandler{
 			Name: "newCopyTestSvc",
 			Fn: func(r *request.Request) {
-				io.Copy(ioutil.Discard, r.HTTPRequest.Body)
+				io.Copy(io.Discard, r.HTTPRequest.Body)
 				r.HTTPRequest.Body.Close()
 				r.HTTPResponse = &http.Response{
 					Status:     http.StatusText(statusCode),

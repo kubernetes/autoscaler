@@ -3,7 +3,7 @@ package sts_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -62,14 +62,14 @@ func TestSTSCustomRetryErrorCodes(t *testing.T) {
 		{
 			StatusCode: 400,
 			Header:     http.Header{},
-			Body: ioutil.NopCloser(bytes.NewReader(
+			Body: io.NopCloser(bytes.NewReader(
 				[]byte(fmt.Sprintf(xmlErr, sts.ErrCodeIDPCommunicationErrorException)),
 			)),
 		},
 		{
 			StatusCode: 200,
 			Header:     http.Header{},
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		},
 	}
 

@@ -448,7 +448,7 @@ func TempFile(content []byte, dir, prefix string) (*os.File, error) {
 		}
 	}
 
-	tmpfile, err := ioutil.TempFile(dir, prefix)
+	tmpfile, err := os.CreateTemp(dir, prefix)
 
 	if err != nil {
 		return nil, err

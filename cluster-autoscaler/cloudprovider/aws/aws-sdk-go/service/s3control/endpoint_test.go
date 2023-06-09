@@ -6,7 +6,7 @@ package s3control
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -439,7 +439,7 @@ func runValidations(t *testing.T, cases map[string]testParams) {
 					r.HTTPResponse = &http.Response{
 						StatusCode:    200,
 						ContentLength: 0,
-						Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+						Body:          io.NopCloser(bytes.NewReader(nil)),
 					}
 				}()
 				if len(c.expectedErr) != 0 {
@@ -836,7 +836,7 @@ func runValidationsWithRequestFn(t *testing.T, c testParamsWithRequestFn) {
 			r.HTTPResponse = &http.Response{
 				StatusCode:    200,
 				ContentLength: 0,
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 			}
 		}()
 		if len(c.expectedErr) != 0 {
@@ -896,7 +896,7 @@ func TestInputIsNotModified(t *testing.T) {
 			r.HTTPResponse = &http.Response{
 				StatusCode:    200,
 				ContentLength: 0,
-				Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+				Body:          io.NopCloser(bytes.NewReader(nil)),
 			}
 		}()
 	})

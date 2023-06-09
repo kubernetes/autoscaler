@@ -21,11 +21,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
 	"sort"
 	"strconv"
@@ -74,7 +74,7 @@ func NewCredentials(AccessKeyID, secretAccessKey string) *Credentials {
 
 // NewCredentialsFromFile returns Credentials
 func NewCredentialsFromFile(filePath string) (*Credentials, error) {
-	bytes, err := ioutil.ReadFile(filePath)
+	bytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func NewConfigWithParams(accessKeyID, secretAccessKey, region string) *Config {
 
 // NewConfigFromFile create a new config from cloud config.
 func NewConfigFromFile(filePath string) (*Config, error) {
-	bytes, err := ioutil.ReadFile(filePath)
+	bytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -527,7 +527,7 @@ func (c *Client) SendRequest(req *Request, option *SignOption) (bceResponse *Res
 	}
 	var buf []byte
 	if req.Body != nil {
-		buf, _ = ioutil.ReadAll(req.Body)
+		buf, _ = os.ReadAll(req.Body)
 	}
 
 	for i := 0; ; i++ {
@@ -542,7 +542,7 @@ func (c *Client) SendRequest(req *Request, option *SignOption) (bceResponse *Res
 				req.Method, req.URL.String(), req.Header))
 		}
 		t0 := time.Now()
-		req.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
+		req.Body = os.NopCloser(bytes.NewBuffer(buf))
 		resp, httpError := c.httpClient.Do(req.raw())
 		t1 := time.Now()
 		bceResponse = NewResponse(resp)

@@ -2,7 +2,7 @@ package sqs_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -27,7 +27,7 @@ func TestSendMessageChecksum(t *testing.T) {
 		MessageBody: aws.String("test"),
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageOutput{
 			MD5OfMessageBody: aws.String("098f6bcd4621d373cade4e832627b4f6"),
@@ -45,7 +45,7 @@ func TestSendMessageChecksumInvalid(t *testing.T) {
 		MessageBody: aws.String("test"),
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageOutput{
 			MD5OfMessageBody: aws.String("000"),
@@ -76,7 +76,7 @@ func TestSendMessageChecksumInvalidNoValidation(t *testing.T) {
 		MessageBody: aws.String("test"),
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageOutput{
 			MD5OfMessageBody: aws.String("000"),
@@ -92,7 +92,7 @@ func TestSendMessageChecksumInvalidNoValidation(t *testing.T) {
 func TestSendMessageChecksumNoInput(t *testing.T) {
 	req, _ := svc.SendMessageRequest(&sqs.SendMessageInput{})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageOutput{}
 	})
@@ -114,7 +114,7 @@ func TestSendMessageChecksumNoOutput(t *testing.T) {
 		MessageBody: aws.String("test"),
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageOutput{}
 	})
@@ -135,7 +135,7 @@ func TestRecieveMessageChecksum(t *testing.T) {
 	req, _ := svc.ReceiveMessageRequest(&sqs.ReceiveMessageInput{})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
 		md5 := "098f6bcd4621d373cade4e832627b4f6"
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.ReceiveMessageOutput{
 			Messages: []*sqs.Message{
@@ -156,7 +156,7 @@ func TestRecieveMessageChecksumInvalid(t *testing.T) {
 	req, _ := svc.ReceiveMessageRequest(&sqs.ReceiveMessageInput{})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
 		md5 := "098f6bcd4621d373cade4e832627b4f6"
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.ReceiveMessageOutput{
 			Messages: []*sqs.Message{
@@ -192,7 +192,7 @@ func TestSendMessageBatchChecksum(t *testing.T) {
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
 		md5 := "098f6bcd4621d373cade4e832627b4f6"
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageBatchOutput{
 			Successful: []*sqs.SendMessageBatchResultEntry{
@@ -219,7 +219,7 @@ func TestSendMessageBatchChecksumFailed(t *testing.T) {
 		},
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageBatchOutput{
 			Failed: []*sqs.BatchResultErrorEntry{
@@ -266,7 +266,7 @@ func TestSendMessageBatchChecksumInvalid(t *testing.T) {
 	})
 	req.Handlers.Send.PushBack(func(r *request.Request) {
 		md5 := "098f6bcd4621d373cade4e832627b4f6"
-		body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+		body := io.NopCloser(bytes.NewReader([]byte("")))
 		r.HTTPResponse = &http.Response{StatusCode: 200, Body: body}
 		r.Data = &sqs.SendMessageBatchOutput{
 			Successful: []*sqs.SendMessageBatchResultEntry{

@@ -5,7 +5,7 @@ package transcribestreamingservice
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -34,7 +34,7 @@ func TestStartStreamTranscription_Error(t *testing.T) {
 		HTTPClient: newTestClient(func(req *http.Request) *http.Response {
 			return &http.Response{
 				StatusCode: http.StatusBadRequest,
-				Body:       ioutil.NopCloser(bytes.NewReader([]byte("{ \"code\" : \"BadRequestException\" }"))),
+				Body:       io.NopCloser(bytes.NewReader([]byte("{ \"code\" : \"BadRequestException\" }"))),
 				Header:     http.Header{},
 			}
 		}),

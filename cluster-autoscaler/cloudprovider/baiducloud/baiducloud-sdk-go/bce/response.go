@@ -17,7 +17,7 @@ limitations under the License.
 package bce
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -41,7 +41,7 @@ func (res *Response) GetBodyContent() ([]byte, error) {
 			}
 		}()
 
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 
 		if err != nil {
 			return nil, err

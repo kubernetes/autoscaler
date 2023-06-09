@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"time"
 
@@ -72,7 +71,7 @@ type asgTemplate struct {
 func CreateBaiducloudManager(configReader io.Reader) (*BaiducloudManager, error) {
 	cfg := &CloudConfig{}
 	if configReader != nil {
-		configContents, err := ioutil.ReadAll(configReader)
+		configContents, err := io.ReadAll(configReader)
 		if err != nil {
 			return nil, err
 		}
