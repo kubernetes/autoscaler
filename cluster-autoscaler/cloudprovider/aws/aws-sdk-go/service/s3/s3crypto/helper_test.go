@@ -2,7 +2,7 @@ package s3crypto
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -121,8 +121,8 @@ func TestGetWriterStore_TempFile(t *testing.T) {
 
 func TestGetWriterStore_TempFileWithRetry(t *testing.T) {
 	responses := []*http.Response{
-		{StatusCode: 500, Header: http.Header{}, Body: ioutil.NopCloser(&bytes.Buffer{})},
-		{StatusCode: 200, Header: http.Header{}, Body: ioutil.NopCloser(&bytes.Buffer{})},
+		{StatusCode: 500, Header: http.Header{}, Body: io.NopCloser(&bytes.Buffer{})},
+		{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(&bytes.Buffer{})},
 	}
 	s := awstesting.NewClient(aws.NewConfig().WithMaxRetries(10))
 	s.Handlers.Validate.Clear()

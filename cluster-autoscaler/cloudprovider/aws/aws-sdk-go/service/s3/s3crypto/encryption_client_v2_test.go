@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -177,7 +176,7 @@ func TestEncryptionClientV2_PutObject_KMSCONTEXT_AESGCM(t *testing.T) {
 
 	req.Handlers.Send.Clear()
 	req.Handlers.Send.PushFront(func(r *request.Request) {
-		all, err := ioutil.ReadAll(r.Body)
+		all, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

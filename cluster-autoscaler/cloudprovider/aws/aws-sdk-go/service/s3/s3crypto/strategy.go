@@ -3,7 +3,7 @@ package s3crypto
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -98,7 +98,7 @@ func (load S3LoadStrategy) Load(req *request.Request) (Envelope, error) {
 		return env, err
 	}
 
-	b, err := ioutil.ReadAll(out.Body)
+	b, err := io.ReadAll(out.Body)
 	if err != nil {
 		return env, err
 	}

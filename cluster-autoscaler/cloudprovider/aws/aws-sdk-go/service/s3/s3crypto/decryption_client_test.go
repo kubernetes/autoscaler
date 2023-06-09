@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -68,14 +68,14 @@ func TestGetObjectGCM(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{s3crypto.AESGCMNoPadding},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-tag-len"):  []string{"128"},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err := req.Send()
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
-	b, err := ioutil.ReadAll(out.Body)
+	b, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
@@ -135,14 +135,14 @@ func TestGetObjectCBC(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{strings.Join([]string{s3crypto.AESCBC, s3crypto.AESCBCPadder.Name()}, "/")},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err := req.Send()
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
-	b, err := ioutil.ReadAll(out.Body)
+	b, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
@@ -198,14 +198,14 @@ func TestGetObjectCBC2(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{strings.Join([]string{s3crypto.AESCBC, s3crypto.AESCBCPadder.Name()}, "/")},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err := req.Send()
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
-	b, err := ioutil.ReadAll(out.Body)
+	b, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
@@ -273,7 +273,7 @@ func TestDecryptionClient_GetObject_V2Artifact(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSContextWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{"AES/GCM/NoPadding"},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err := req.Send()
@@ -281,7 +281,7 @@ func TestDecryptionClient_GetObject_V2Artifact(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	actual, err := ioutil.ReadAll(out.Body)
+	actual, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

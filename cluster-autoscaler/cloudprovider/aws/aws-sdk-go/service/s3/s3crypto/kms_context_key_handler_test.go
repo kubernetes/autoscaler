@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -20,7 +20,7 @@ import (
 
 func TestKmsContextKeyHandler_GenerateCipherDataWithCEKAlg(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bodyBytes, err := ioutil.ReadAll(r.Body)
+		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(500)
 			return
@@ -96,7 +96,7 @@ func TestKmsContextKeyHandler_DecryptKey(t *testing.T) {
 	key, _ := hex.DecodeString("31bdadd96698c204aa9ce1448ea94ae1fb4a9a0b3c9d773b51bb1822666b8f22")
 	keyB64 := base64.URLEncoding.EncodeToString(key)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bodyBytes, err := ioutil.ReadAll(r.Body)
+		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("expected no error, got %v", err)
 			w.WriteHeader(500)
@@ -193,7 +193,7 @@ func TestKmsContextKeyHandler_DecryptKey_WithCMK(t *testing.T) {
 	key, _ := hex.DecodeString("31bdadd96698c204aa9ce1448ea94ae1fb4a9a0b3c9d773b51bb1822666b8f22")
 	keyB64 := base64.URLEncoding.EncodeToString(key)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("expected no error, got %v", err)
 			w.WriteHeader(500)

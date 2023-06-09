@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -57,7 +56,7 @@ func dlLoggingSvc(data []byte) (*s3.S3, *[]string, *[]string) {
 		bodyBytes := data[start:fin]
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader(bodyBytes)),
+			Body:       io.NopCloser(bytes.NewReader(bodyBytes)),
 			Header:     http.Header{},
 		}
 		r.HTTPResponse.Header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d",
@@ -82,7 +81,7 @@ func dlLoggingSvcNoChunk(data []byte) (*s3.S3, *[]string) {
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader(data[:])),
+			Body:       io.NopCloser(bytes.NewReader(data[:])),
 			Header:     http.Header{},
 		}
 		r.HTTPResponse.Header.Set("Content-Length", fmt.Sprintf("%d", len(data)))
@@ -116,7 +115,7 @@ func dlLoggingSvcNoContentRangeLength(data []byte, states []int) (*s3.S3, *[]str
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: states[index],
-			Body:       ioutil.NopCloser(body),
+			Body:       io.NopCloser(body),
 			Header:     http.Header{},
 		}
 		index++
@@ -161,7 +160,7 @@ func dlLoggingSvcContentRangeTotalAny(data []byte, states []int) (*s3.S3, *[]str
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: states[index],
-			Body:       ioutil.NopCloser(bytes.NewReader(bodyBytes)),
+			Body:       io.NopCloser(bytes.NewReader(bodyBytes)),
 			Header:     http.Header{},
 		}
 		r.HTTPResponse.Header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/*",
@@ -191,7 +190,7 @@ func dlLoggingSvcWithErrReader(cases []testErrReader) (*s3.S3, *[]string) {
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(&c),
+			Body:       io.NopCloser(&c),
 			Header:     http.Header{},
 		}
 		r.HTTPResponse.Header.Set("Content-Range",
@@ -302,7 +301,7 @@ func TestDownloadError(t *testing.T) {
 		num++
 		if num > 1 {
 			r.HTTPResponse.StatusCode = 400
-			r.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader([]byte{}))
+			r.HTTPResponse.Body = io.NopCloser(bytes.NewReader([]byte{}))
 		}
 	})
 
@@ -602,7 +601,7 @@ func TestDownload_WithFailure(t *testing.T) {
 
 			r.HTTPResponse = &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(&bytes.Buffer{}),
+				Body:   io.NopCloser(&bytes.Buffer{}),
 			}
 			r.Error = awserr.New("ConnectionError", "some connection error", nil)
 			r.Retryable = aws.Bool(false)
@@ -613,7 +612,7 @@ func TestDownload_WithFailure(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				Status:        http.StatusText(http.StatusOK),
 				ContentLength: int64(body.Len()),
-				Body:          ioutil.NopCloser(body),
+				Body:          io.NopCloser(body),
 				Header:        http.Header{},
 			}
 			r.HTTPResponse.Header.Set("Content-Length", strconv.Itoa(body.Len()))
@@ -775,7 +774,7 @@ func TestDownloadBufferStrategy_Errors(t *testing.T) {
 		start, _ := strconv.ParseInt(rng[1], 10, 64)
 		fin, _ := strconv.ParseInt(rng[2], 10, 64)
 
-		_, _ = io.Copy(ioutil.Discard, r.Body)
+		_, _ = io.Copy(io.Discard, r.Body)
 		r.HTTPResponse = &http.Response{
 			StatusCode:    200,
 			Body:          aws.ReadSeekCloser(&badReader{err: io.ErrUnexpectedEOF}),

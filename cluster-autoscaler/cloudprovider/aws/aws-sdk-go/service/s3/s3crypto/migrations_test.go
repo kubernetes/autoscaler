@@ -3,7 +3,7 @@ package s3crypto_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
@@ -148,7 +148,7 @@ func ExampleNewDecryptionClientV2_migration00() {
 		return
 	}
 
-	_, err = ioutil.ReadAll(getObject.Body)
+	_, err = io.ReadAll(getObject.Body)
 	if err != nil {
 		fmt.Printf("error reading object: %v\n", err)
 	}
@@ -197,7 +197,7 @@ func ExampleNewDecryptionClientV2_migration01() {
 		return
 	}
 
-	_, err = ioutil.ReadAll(getObject.Body)
+	_, err = io.ReadAll(getObject.Body)
 	if err != nil {
 		fmt.Printf("error reading object: %v\n", err)
 	}

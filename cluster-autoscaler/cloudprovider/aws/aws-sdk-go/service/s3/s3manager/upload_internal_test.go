@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	random "math/rand"
 	"net/http"
 	"strconv"
@@ -87,12 +86,12 @@ func TestUploadByteSlicePool(t *testing.T) {
 			svc.Handlers.Send.Clear()
 			svc.Handlers.Send.PushFront(func(r *request.Request) {
 				if r.Body != nil {
-					io.Copy(ioutil.Discard, r.Body)
+					io.Copy(io.Discard, r.Body)
 				}
 
 				r.HTTPResponse = &http.Response{
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte(respBody))),
+					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 				}
 
 				switch data := r.Data.(type) {
@@ -181,7 +180,7 @@ func TestUploadByteSlicePool_Failures(t *testing.T) {
 					svc.Handlers.Send.Clear()
 					svc.Handlers.Send.PushFront(func(r *request.Request) {
 						if r.Body != nil {
-							io.Copy(ioutil.Discard, r.Body)
+							io.Copy(io.Discard, r.Body)
 						}
 
 						if r.Operation.Name == operation {
@@ -189,14 +188,14 @@ func TestUploadByteSlicePool_Failures(t *testing.T) {
 							r.Error = fmt.Errorf("request error")
 							r.HTTPResponse = &http.Response{
 								StatusCode: 500,
-								Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+								Body:       io.NopCloser(bytes.NewReader([]byte{})),
 							}
 							return
 						}
 
 						r.HTTPResponse = &http.Response{
 							StatusCode: 200,
-							Body:       ioutil.NopCloser(bytes.NewReader([]byte(respBody))),
+							Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 						}
 
 						switch data := r.Data.(type) {
@@ -259,12 +258,12 @@ func TestUploadByteSlicePoolConcurrentMultiPartSize(t *testing.T) {
 	svc.Handlers.Send.Clear()
 	svc.Handlers.Send.PushFront(func(r *request.Request) {
 		if r.Body != nil {
-			io.Copy(ioutil.Discard, r.Body)
+			io.Copy(io.Discard, r.Body)
 		}
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(respBody))),
+			Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 		}
 
 		switch data := r.Data.(type) {
@@ -370,12 +369,12 @@ func BenchmarkPools(b *testing.B) {
 	svc.Handlers.Send.Clear()
 	svc.Handlers.Send.PushFront(func(r *request.Request) {
 		if r.Body != nil {
-			io.Copy(ioutil.Discard, r.Body)
+			io.Copy(io.Discard, r.Body)
 		}
 
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 
 		switch data := r.Data.(type) {

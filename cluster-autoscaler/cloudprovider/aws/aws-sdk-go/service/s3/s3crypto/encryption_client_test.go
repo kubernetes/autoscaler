@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -72,7 +72,7 @@ func TestPutObject(t *testing.T) {
 	if e, a := "stop", err.Error(); e != a {
 		t.Errorf("expected %s error, but received %s", e, a)
 	}
-	b, err := ioutil.ReadAll(req.HTTPRequest.Body)
+	b, err := io.ReadAll(req.HTTPRequest.Body)
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}

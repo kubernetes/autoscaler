@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"testing"
 )
@@ -62,7 +61,7 @@ func TestContentLengthReader(t *testing.T) {
 
 	for _, tt := range cases {
 		reader := newContentLengthReader(tt.reader)
-		_, err := ioutil.ReadAll(reader)
+		_, err := io.ReadAll(reader)
 		if err != nil {
 			if len(tt.expectedErr) == 0 {
 				t.Errorf("expected no error, got %v", err)

@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -87,7 +87,7 @@ func TestDecryptionClientV2_GetObject(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSContextWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{"AES/GCM/NoPadding"},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err = req.Send()
@@ -95,7 +95,7 @@ func TestDecryptionClientV2_GetObject(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	actual, err := ioutil.ReadAll(out.Body)
+	actual, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -153,7 +153,7 @@ func TestDecryptionClientV2_GetObject_V1Interop_KMS_AESCBC(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{"AES/CBC/PKCS5Padding"},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err = req.Send()
@@ -161,7 +161,7 @@ func TestDecryptionClientV2_GetObject_V1Interop_KMS_AESCBC(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	actual, err := ioutil.ReadAll(out.Body)
+	actual, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -219,7 +219,7 @@ func TestDecryptionClientV2_GetObject_V1Interop_KMS_AESGCM(t *testing.T) {
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{"AES/GCM/NoPadding"},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	})
 	err = req.Send()
@@ -227,7 +227,7 @@ func TestDecryptionClientV2_GetObject_V1Interop_KMS_AESGCM(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	actual, err := ioutil.ReadAll(out.Body)
+	actual, err := io.ReadAll(out.Body)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -258,7 +258,7 @@ func TestDecryptionClientV2_GetObject_OnlyDecryptsRegisteredAlgorithms(t *testin
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-wrap-alg"): []string{s3crypto.KMSWrap},
 				http.CanonicalHeaderKey("x-amz-meta-x-amz-cek-alg"):  []string{"AES/CBC/PKCS5Padding"},
 			},
-			Body: ioutil.NopCloser(bytes.NewBuffer(b)),
+			Body: io.NopCloser(bytes.NewBuffer(b)),
 		}
 	}
 

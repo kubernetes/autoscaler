@@ -3,7 +3,7 @@ package s3crypto_test
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"testing"
@@ -142,11 +142,11 @@ func TestS3SaveStrategy(t *testing.T) {
 		client.Handlers.UnmarshalMeta.Clear()
 		client.Handlers.UnmarshalError.Clear()
 		client.Handlers.Send.PushBack(func(r *request.Request) {
-			bodyBytes, err := ioutil.ReadAll(r.Body)
+			bodyBytes, err := io.ReadAll(r.Body)
 			if err != nil {
 				r.HTTPResponse = &http.Response{
 					StatusCode: 500,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte(err.Error()))),
+					Body:       io.NopCloser(bytes.NewReader([]byte(err.Error()))),
 				}
 				return
 			}
@@ -156,7 +156,7 @@ func TestS3SaveStrategy(t *testing.T) {
 			if err != nil {
 				r.HTTPResponse = &http.Response{
 					StatusCode: 500,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte(err.Error()))),
+					Body:       io.NopCloser(bytes.NewReader([]byte(err.Error()))),
 				}
 				return
 			}
@@ -167,7 +167,7 @@ func TestS3SaveStrategy(t *testing.T) {
 
 			r.HTTPResponse = &http.Response{
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewReader([]byte(""))),
+				Body:       io.NopCloser(bytes.NewReader([]byte(""))),
 			}
 		})
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/kms/kmsiface"
@@ -92,7 +91,7 @@ func (cipher *mockContentCipher) GetCipherData() CipherData {
 }
 
 func (cipher *mockContentCipher) EncryptContents(src io.Reader) (io.Reader, error) {
-	b, err := ioutil.ReadAll(src)
+	b, err := io.ReadAll(src)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +101,12 @@ func (cipher *mockContentCipher) EncryptContents(src io.Reader) (io.Reader, erro
 }
 
 func (cipher *mockContentCipher) DecryptContents(src io.ReadCloser) (io.ReadCloser, error) {
-	b, err := ioutil.ReadAll(src)
+	b, err := io.ReadAll(src)
 	if err != nil {
 		return nil, err
 	}
 	size := len(b)
-	return ioutil.NopCloser(bytes.NewReader(make([]byte, size))), nil
+	return io.NopCloser(bytes.NewReader(make([]byte, size))), nil
 }
 
 type mockKMS struct {

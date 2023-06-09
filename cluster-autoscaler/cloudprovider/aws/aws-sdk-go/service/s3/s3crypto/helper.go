@@ -3,7 +3,6 @@ package s3crypto
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
@@ -14,7 +13,7 @@ func getWriterStore(req *request.Request, path string, useTempFile bool) (io.Rea
 		return &bytesReadWriteSeeker{}, nil
 	}
 	// Create temp file to be used later for calculating the SHA256 header
-	f, err := ioutil.TempFile(path, "")
+	f, err := os.CreateTemp(path, "")
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -61,7 +61,7 @@ type KAT struct {
 }
 
 func TestAES_GCM_KATS(t *testing.T) {
-	fileContents, err := ioutil.ReadFile("testdata/aes_gcm.json")
+	fileContents, err := os.ReadFile("testdata/aes_gcm.json")
 	if err != nil {
 		t.Fatalf("failed to read KAT file: %v", err)
 	}
@@ -173,7 +173,7 @@ func aesgcmTest(t *testing.T, iv, key, plaintext, expected, tag []byte) {
 
 	cipherdata := gcm.Encrypt(bytes.NewReader(plaintext))
 
-	ciphertext, err := ioutil.ReadAll(cipherdata)
+	ciphertext, err := io.ReadAll(cipherdata)
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
@@ -188,7 +188,7 @@ func aesgcmTest(t *testing.T, iv, key, plaintext, expected, tag []byte) {
 	}
 
 	data := gcm.Decrypt(bytes.NewReader(ciphertext))
-	text, err := ioutil.ReadAll(data)
+	text, err := io.ReadAll(data)
 	if err != nil {
 		t.Errorf("expected no error, but received %v", err)
 	}
