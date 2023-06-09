@@ -16,7 +16,7 @@ metadata:
     k8s-app: cluster-autoscaler
 rules:
   - apiGroups: ["storage.k8s.io"]
-    resources: ["csidriver", "csistoragecapacities"]
+    resources: ["csidrivers", "csistoragecapacities"]
     verbs: ["watch", "list"]
   - apiGroups: [""]
     resources: ["events", "endpoints"]
