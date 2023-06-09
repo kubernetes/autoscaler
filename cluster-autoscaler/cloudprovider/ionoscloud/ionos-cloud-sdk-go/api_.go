@@ -13,7 +13,7 @@ package ionoscloud
 import (
 	_context "context"
 	"fmt"
-	_ioutil "io/ioutil"
+	_io "io"
 	_nethttp "net/http"
 	_neturl "net/url"
 )

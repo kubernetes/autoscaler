@@ -23,7 +23,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -475,7 +474,7 @@ func loadCustomCABundle(s *Session, bundle io.Reader) error {
 }
 
 func loadCertPool(r io.Reader) (*x509.CertPool, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, volcengineerr.New("LoadCustomCABundleError",
 			"failed to read custom CA bundle PEM file", err)

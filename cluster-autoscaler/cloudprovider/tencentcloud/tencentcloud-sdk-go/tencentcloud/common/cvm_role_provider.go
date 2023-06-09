@@ -19,7 +19,7 @@ package common
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -67,7 +67,7 @@ func get(url string) ([]byte, error) {
 		return nil, roleNotBound
 	}
 
-	body, err := ioutil.ReadAll(rsp.Body)
+	body, err := io.ReadAll(rsp.Body)
 	if err != nil {
 		return []byte{}, err
 	}

@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -52,7 +51,7 @@ func newManager(config io.Reader) (*manager, error) {
 	cfg := &Config{}
 
 	if config != nil {
-		body, err := ioutil.ReadAll(config)
+		body, err := io.ReadAll(config)
 		if err != nil {
 			return nil, err
 		}

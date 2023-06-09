@@ -104,7 +104,7 @@ func Get(url string) ([]byte, error) {
 		}
 
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}

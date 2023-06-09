@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -71,7 +70,7 @@ func NewClient(info *ServiceInfo, apiInfoList map[string]*ApiInfo) *Client {
 		client.ServiceInfo.Credentials.AccessKeyID = os.Getenv(accessKey)
 		client.ServiceInfo.Credentials.SecretAccessKey = os.Getenv(secretKey)
 	} else if _, err := os.Stat(os.Getenv("HOME") + "/.volc/config"); err == nil {
-		if content, err := ioutil.ReadFile(os.Getenv("HOME") + "/.volc/config"); err == nil {
+		if content, err := os.ReadFile(os.Getenv("HOME") + "/.volc/config"); err == nil {
 			m := make(map[string]string)
 			json.Unmarshal(content, &m)
 			if accessKey, ok := m["ak"]; ok {
@@ -288,7 +287,7 @@ func (client *Client) makeRequest(inputContext context.Context, api string, req 
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return []byte(""), resp.StatusCode, err, false
 	}
@@ -344,7 +343,7 @@ func (client *Client) request(ctx context.Context, api string, query url.Values,
 			// if seek failed, stop retry.
 			return backoff.Permanent(err)
 		}
-		req.Body = ioutil.NopCloser(requestBody)
+		req.Body = io.NopCloser(requestBody)
 		var needRetry bool
 		resp, code, err, needRetry = client.makeRequest(ctx, api, req, timeout)
 		if needRetry {

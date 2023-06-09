@@ -3,7 +3,6 @@ package request
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"testing"
@@ -66,7 +65,7 @@ func TestWithResponseReadTimeout(t *testing.T) {
 			URL: &url.URL{},
 		},
 		HTTPResponse: &http.Response{
-			Body: ioutil.NopCloser(bytes.NewReader(nil)),
+			Body: io.NopCloser(bytes.NewReader(nil)),
 		},
 	}
 	r.ApplyOptions(WithResponseReadTimeout(time.Second))

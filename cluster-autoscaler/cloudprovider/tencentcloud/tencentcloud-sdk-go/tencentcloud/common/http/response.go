@@ -19,7 +19,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	//"log"
 	"net/http"
@@ -98,7 +98,7 @@ func ParseErrorFromHTTPResponse(body []byte) (err error) {
 
 func ParseFromHttpResponse(hr *http.Response, response Response) (err error) {
 	defer hr.Body.Close()
-	body, err := ioutil.ReadAll(hr.Body)
+	body, err := io.ReadAll(hr.Body)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to read response body because %s", err)
 		return errors.NewTencentCloudSDKError("ClientError.IOError", msg, "")

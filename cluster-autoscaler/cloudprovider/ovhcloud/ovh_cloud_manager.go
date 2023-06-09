@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sync"
 	"time"
 
@@ -236,7 +235,7 @@ func (m *OvhCloudManager) ReAuthenticate() error {
 func readConfig(configFile io.Reader) (*Config, error) {
 	cfg := &Config{}
 	if configFile != nil {
-		body, err := ioutil.ReadAll(configFile)
+		body, err := io.ReadAll(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read content: %w", err)
 		}

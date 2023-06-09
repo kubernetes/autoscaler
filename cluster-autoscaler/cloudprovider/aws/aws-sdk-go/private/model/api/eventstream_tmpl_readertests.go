@@ -236,7 +236,7 @@ func (c *loopReader) Read(p []byte) (int, error) {
 						Status:     "200 OK",
 						StatusCode: 200,
 						Header:     http.Header{},
-						Body:       ioutil.NopCloser(stream),
+						Body:       io.NopCloser(stream),
 					}
 				},
 			},

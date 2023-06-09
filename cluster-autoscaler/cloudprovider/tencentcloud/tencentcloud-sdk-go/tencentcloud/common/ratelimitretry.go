@@ -19,7 +19,6 @@ package common
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -66,9 +65,9 @@ func (c *Client) sendWithRateLimitRetry(req *http.Request, retryable bool) (resp
 }
 
 func shadowRead(reader io.ReadCloser) (io.ReadCloser, []byte) {
-	val, err := ioutil.ReadAll(reader)
+	val, err := io.ReadAll(reader)
 	if err != nil {
 		return reader, nil
 	}
-	return ioutil.NopCloser(bytes.NewBuffer(val)), val
+	return io.NopCloser(bytes.NewBuffer(val)), val
 }

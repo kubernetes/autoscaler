@@ -22,7 +22,7 @@ package volcenginequery
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"reflect"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk/volcengine/custom"
@@ -58,7 +58,7 @@ func processUnmarshalError(info unmarshalErrorInfo) {
 	if info.Response == nil && info.Body == nil {
 		info.Response = &response.VolcengineResponse{}
 		if r.DataFilled() {
-			body, err = ioutil.ReadAll(r.HTTPResponse.Body)
+			body, err = io.ReadAll(r.HTTPResponse.Body)
 			if err != nil {
 				fmt.Printf("read volcenginebody err, %v\n", err)
 				r.Error = err

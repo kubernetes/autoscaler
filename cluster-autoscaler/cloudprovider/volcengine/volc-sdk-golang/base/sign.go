@@ -24,7 +24,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"sort"
@@ -283,8 +283,8 @@ func readAndReplaceBody(request *http.Request) []byte {
 	if request.Body == nil {
 		return []byte{}
 	}
-	payload, _ := ioutil.ReadAll(request.Body)
-	request.Body = ioutil.NopCloser(bytes.NewReader(payload))
+	payload, _ := io.ReadAll(request.Body)
+	request.Body = io.NopCloser(bytes.NewReader(payload))
 	return payload
 }
 

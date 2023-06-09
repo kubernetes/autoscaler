@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"time"
@@ -132,7 +131,7 @@ func doRequest(ctx context.Context, id int64, svc *s3.S3, config Config) *Reques
 	}
 	defer resp.Body.Close()
 
-	if n, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
+	if n, err := io.Copy(io.Discard, resp.Body); err != nil {
 		traceCtx.AppendError(fmt.Errorf("read request body failed, read %v, %v", n, err))
 		return traceCtx
 	}

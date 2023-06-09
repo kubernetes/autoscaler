@@ -42,7 +42,7 @@ Example to Create an Stack
 
 	// Create Template
 	t := make(map[string]interface{})
-	f, err := ioutil.ReadFile("template.yaml")
+	f, err := os.ReadFile("template.yaml")
 	if err != nil {
 	    panic(err)
 	}
@@ -57,7 +57,7 @@ Example to Create an Stack
 	}
 	// Create Environment if needed
 	t_env := make(map[string]interface{})
-	f_env, err := ioutil.ReadFile("env.yaml")
+	f_env, err := os.ReadFile("env.yaml")
 	if err != nil {
 	    panic(err)
 	}
@@ -155,7 +155,7 @@ raw_template value.
 Example to Update a Stack Using the Update (PUT) Method
 
 	t := make(map[string]interface{})
-	f, err := ioutil.ReadFile("template.yaml")
+	f, err := os.ReadFile("template.yaml")
 	if err != nil {
 		panic(err)
 	}

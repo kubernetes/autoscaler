@@ -22,9 +22,9 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -510,7 +510,7 @@ func getLastSegment(ID string) (string, error) {
 
 // readDeploymentParameters gets deployment parameters from paramFilePath.
 func readDeploymentParameters(paramFilePath string) (map[string]interface{}, error) {
-	contents, err := ioutil.ReadFile(paramFilePath)
+	contents, err := os.ReadFile(paramFilePath)
 	if err != nil {
 		klog.Errorf("Failed to read deployment parameters from file %q: %v", paramFilePath, err)
 		return nil, err

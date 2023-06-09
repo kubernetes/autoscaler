@@ -9,7 +9,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
@@ -45,7 +44,7 @@ func UniqueID() string {
 
 // CreateFileOfSize will return an *os.File that is of size bytes
 func CreateFileOfSize(dir string, size int64) (*os.File, error) {
-	file, err := ioutil.TempFile(dir, "s3Bench")
+	file, err := os.CreateTemp(dir, "s3Bench")
 	if err != nil {
 		return nil, err
 	}

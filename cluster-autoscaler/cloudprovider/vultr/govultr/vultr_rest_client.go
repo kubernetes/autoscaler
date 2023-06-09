@@ -21,7 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -97,7 +97,7 @@ func (c *Client) doWithContext(ctx context.Context, r *http.Request, data interf
 	//todo handle this
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}

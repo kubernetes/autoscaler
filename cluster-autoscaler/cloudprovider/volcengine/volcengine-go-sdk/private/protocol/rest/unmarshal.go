@@ -24,7 +24,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -74,7 +73,7 @@ func unmarshalBody(r *request.Request, v reflect.Value) {
 					switch payload.Interface().(type) {
 					case []byte:
 						defer r.HTTPResponse.Body.Close()
-						b, err := ioutil.ReadAll(r.HTTPResponse.Body)
+						b, err := io.ReadAll(r.HTTPResponse.Body)
 						if err != nil {
 							r.Error = volcengineerr.New(request.ErrCodeSerialization, "failed to decode REST response", err)
 						} else {
@@ -82,7 +81,7 @@ func unmarshalBody(r *request.Request, v reflect.Value) {
 						}
 					case *string:
 						defer r.HTTPResponse.Body.Close()
-						b, err := ioutil.ReadAll(r.HTTPResponse.Body)
+						b, err := io.ReadAll(r.HTTPResponse.Body)
 						if err != nil {
 							r.Error = volcengineerr.New(request.ErrCodeSerialization, "failed to decode REST response", err)
 						} else {
@@ -94,15 +93,15 @@ func unmarshalBody(r *request.Request, v reflect.Value) {
 						case "io.ReadCloser":
 							payload.Set(reflect.ValueOf(r.HTTPResponse.Body))
 						case "io.ReadSeeker":
-							b, err := ioutil.ReadAll(r.HTTPResponse.Body)
+							b, err := io.ReadAll(r.HTTPResponse.Body)
 							if err != nil {
 								r.Error = volcengineerr.New(request.ErrCodeSerialization,
 									"failed to read response volcenginebody", err)
 								return
 							}
-							payload.Set(reflect.ValueOf(ioutil.NopCloser(bytes.NewReader(b))))
+							payload.Set(reflect.ValueOf(io.NopCloser(bytes.NewReader(b))))
 						default:
-							io.Copy(ioutil.Discard, r.HTTPResponse.Body)
+							io.Copy(io.Discard, r.HTTPResponse.Body)
 							defer r.HTTPResponse.Body.Close()
 							r.Error = volcengineerr.New(request.ErrCodeSerialization,
 								"failed to decode REST response",

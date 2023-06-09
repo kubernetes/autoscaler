@@ -8,7 +8,6 @@ import (
 	"crypto/rand"
 	"flag"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -201,7 +200,7 @@ func getObjectAndCompare(t *testing.T, client Decryptor, key string, expected []
 		t.Fatalf("failed to get object: %v", err)
 	}
 
-	actual, err := ioutil.ReadAll(output.Body)
+	actual, err := io.ReadAll(output.Body)
 	if err != nil {
 		t.Fatalf("failed to read body response: %v", err)
 	}

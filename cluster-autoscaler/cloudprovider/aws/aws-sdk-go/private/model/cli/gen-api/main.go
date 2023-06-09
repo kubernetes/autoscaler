@@ -10,7 +10,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -205,7 +205,7 @@ package %s
 `
 
 func writeGoFile(file string, layout string, args ...interface{}) error {
-	return ioutil.WriteFile(file, []byte(util.GoFmt(fmt.Sprintf(layout, args...))), 0664)
+	return os.WriteFile(file, []byte(util.GoFmt(fmt.Sprintf(layout, args...))), 0664)
 }
 
 // writeServiceDocFile generates the documentation for service package.

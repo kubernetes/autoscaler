@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -132,7 +132,7 @@ func getFixtures(t *testing.T, s3Client *s3.S3, cekAlg, bucket string) testFixtu
 			t.Fatalf("unable to get fixture object %s, %v", *obj.Key, err)
 		}
 		caseKey := strings.TrimPrefix(*obj.Key, baseFolder+"/"+prefix)
-		plaintext, err := ioutil.ReadAll(ptObj.Body)
+		plaintext, err := io.ReadAll(ptObj.Body)
 		if err != nil {
 			t.Fatalf("unable to read fixture object %s, %v", *obj.Key, err)
 		}
@@ -245,7 +245,7 @@ func decryptFixtures(t *testing.T, decClient *s3crypto.DecryptionClient, s3Clien
 			t.Fatalf("failed to get encrypted object %v", err)
 		}
 
-		ciphertext, err := ioutil.ReadAll(ctObj.Body)
+		ciphertext, err := io.ReadAll(ctObj.Body)
 		if err != nil {
 			t.Fatalf("failed to read object data %v", err)
 		}

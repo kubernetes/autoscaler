@@ -22,7 +22,7 @@ package corehandlers
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -164,7 +164,7 @@ func handleSendError(r *request.Request, err error) {
 			r.HTTPResponse = &http.Response{
 				StatusCode: int(code),
 				Status:     http.StatusText(int(code)),
-				Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+				Body:       io.NopCloser(bytes.NewReader([]byte{})),
 			}
 			return
 		}
@@ -175,7 +175,7 @@ func handleSendError(r *request.Request, err error) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: int(0),
 			Status:     http.StatusText(int(0)),
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		}
 	}
 	// Catch all request errors, and let the default retrier determine

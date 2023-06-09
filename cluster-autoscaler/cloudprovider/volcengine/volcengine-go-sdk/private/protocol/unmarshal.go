@@ -21,7 +21,6 @@ package protocol
 
 import (
 	"io"
-	"io/ioutil"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk/volcengine/request"
 )
@@ -35,6 +34,6 @@ func UnmarshalDiscardBody(r *request.Request) {
 		return
 	}
 
-	io.Copy(ioutil.Discard, r.HTTPResponse.Body)
+	io.Copy(io.Discard, r.HTTPResponse.Body)
 	r.HTTPResponse.Body.Close()
 }

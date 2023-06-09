@@ -87,7 +87,7 @@ var _ json.Marshaler
 var _ time.Time
 var _ xmlutil.XMLNode
 var _ xml.Attr
-var _ = ioutil.Discard
+var _ = io.Discard
 var _ = util.Trim("")
 var _ = url.Values{}
 var _ = io.EOF
@@ -114,7 +114,7 @@ var extraImports = []string{
 	"encoding/xml",
 	"fmt",
 	"io",
-	"io/ioutil",
+	"io",
 	"net/http",
 	"testing",
 	"time",
@@ -236,7 +236,7 @@ func (t tplInputTestCaseData) BodyAssertions() string {
 	protocol := t.TestCase.TestSuite.API.Metadata.Protocol
 
 	// Extract the body bytes
-	fmt.Fprintln(code, "body, _ := ioutil.ReadAll(r.Body)")
+	fmt.Fprintln(code, "body, _ := io.ReadAll(r.Body)")
 
 	// Generate the body verification code
 	expectedBody := util.Trim(t.TestCase.InputTest.Body)
@@ -289,7 +289,7 @@ func Test{{ .OpName }}(t *testing.T) {
 
 	buf := bytes.NewReader([]byte({{ .Body }}))
 	req, out := svc.{{ .TestCase.Given.ExportedName }}Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 	{{ range $k, $v := .TestCase.OutputTest.Headers }}req.HTTPResponse.Header.Set("{{ $k }}", "{{ $v }}")

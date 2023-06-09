@@ -22,7 +22,7 @@ package main
 import (
 	"encoding/json"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"strconv"
@@ -96,7 +96,7 @@ func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, er
 	if err = cmd.Start(); err != nil {
 		return nil, err
 	}
-	bytes, err := ioutil.ReadAll(stdout)
+	bytes, err := io.ReadAll(stdout)
 	if err != nil {
 		return nil, err
 	}

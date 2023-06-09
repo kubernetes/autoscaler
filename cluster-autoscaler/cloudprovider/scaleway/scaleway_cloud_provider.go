@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"os"
 	"time"
@@ -53,7 +52,7 @@ type scalewayCloudProvider struct {
 }
 
 func readConf(config *scalewaygo.Config, configFile io.Reader) error {
-	body, err := ioutil.ReadAll(configFile)
+	body, err := io.ReadAll(configFile)
 	if err != nil {
 		return err
 	}

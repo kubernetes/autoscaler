@@ -15,7 +15,7 @@ func (a *API) APIEventStreamTestGoCode() string {
 
 	a.resetImports()
 	a.AddImport("bytes")
-	a.AddImport("io/ioutil")
+	a.AddImport("io")
 	a.AddImport("net/http")
 	a.AddImport("reflect")
 	a.AddImport("testing")

@@ -5,7 +5,7 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -404,8 +404,19 @@ func mergeServicesCustomizations(a *API) error {
 
 	if info.serviceVersion != "" {
 		index := strings.LastIndex(p, string(filepath.Separator))
-		files, _ := ioutil.ReadDir(p[:index])
-		if len(files) > 1 {
+		entries, err := os.ReadDir(p[:index])
+		if err != nil {
+			return err
+		}
+		infos := make([]fs.FileInfo, 0, len(entries))
+		for _, entry := range entries {
+			info, err := entry.Info()
+			if err != nil {
+				return err
+			}
+			infos = append(infos, info)
+		}
+		if len(infos) > 1 {
 			panic("New version was introduced")
 		}
 		p = p[:index] + "/" + info.serviceVersion
