@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -216,7 +215,7 @@ func (c *kubernetesEngineService) Delete(ctx context.Context, id string) error {
 		fmt.Println("error send req")
 		return err
 	}
-	_, _ = io.Copy(ioutil.Discard, resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp.Body.Close()
 }
 
@@ -248,7 +247,7 @@ func (c *kubernetesEngineService) RecycleNode(ctx context.Context, clusterUID st
 	if err != nil {
 		return err
 	}
-	_, _ = io.Copy(ioutil.Discard, resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp.Body.Close()
 }
 
@@ -261,7 +260,7 @@ func (c *kubernetesEngineService) DeleteClusterWorkerPool(ctx context.Context, c
 	if err != nil {
 		return err
 	}
-	_, _ = io.Copy(ioutil.Discard, resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp.Body.Close()
 }
 
@@ -291,7 +290,7 @@ func (c *kubernetesEngineService) UpdateClusterWorkerPool(ctx context.Context, c
 	if err != nil {
 		return err
 	}
-	_, _ = io.Copy(ioutil.Discard, resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp.Body.Close()
 }
 
@@ -304,7 +303,7 @@ func (c *kubernetesEngineService) DeleteClusterWorkerPoolNode(ctx context.Contex
 	if err != nil {
 		return err
 	}
-	_, _ = io.Copy(ioutil.Discard, resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp.Body.Close()
 }
 
@@ -318,7 +317,7 @@ func (c *kubernetesEngineService) GetKubeConfig(ctx context.Context, clusterUID 
 		return "", nil
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

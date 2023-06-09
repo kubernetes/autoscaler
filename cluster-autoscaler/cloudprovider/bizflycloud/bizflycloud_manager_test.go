@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,7 +33,7 @@ import (
 func newManagerTest(configReader io.Reader) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
-		body, err := ioutil.ReadAll(configReader)
+		body, err := io.ReadAll(configReader)
 		if err != nil {
 			return nil, err
 		}

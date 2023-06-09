@@ -15,7 +15,7 @@
 package k8ssdk
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -68,7 +68,7 @@ func GetAuthEnvTokenHandler(t *testing.T) *httptest.Server {
 		if r.URL.String() != expected {
 			t.Errorf("URL = %q; want %q", r.URL, expected)
 		}
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("Failed reading request body: %s.", err)
 		}

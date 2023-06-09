@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -217,7 +216,7 @@ func (c *Client) MakeApiRequest(method string, path string, reqBody interface{},
 		StatusCode: res.StatusCode,
 		Status:     res.Status,
 	}
-	body, _ := ioutil.ReadAll(res.Body)
+	body, _ := io.ReadAll(res.Body)
 	err = json.Unmarshal(body, &apierr)
 	apierr.ResponseBody = body
 	return res, apierr

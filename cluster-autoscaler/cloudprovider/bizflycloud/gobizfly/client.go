@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -237,7 +237,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (resp *http.Response
 	if resp.StatusCode == http.StatusUnauthorized {
 		tok, tokErr := c.Token.Refresh(ctx)
 		if tokErr != nil {
-			buf, _ := ioutil.ReadAll(resp.Body)
+			buf, _ := io.ReadAll(resp.Body)
 			err = fmt.Errorf("%s : %w", string(buf), tokErr)
 			return
 		}
@@ -247,7 +247,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (resp *http.Response
 	}
 	if resp.StatusCode >= http.StatusBadRequest {
 		defer resp.Body.Close()
-		buf, _ := ioutil.ReadAll(resp.Body)
+		buf, _ := io.ReadAll(resp.Body)
 		err = errorFromStatus(resp.StatusCode, string(buf))
 
 	}
