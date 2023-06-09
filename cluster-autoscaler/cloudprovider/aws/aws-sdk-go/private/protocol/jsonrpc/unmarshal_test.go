@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -34,7 +33,7 @@ var _ json.Marshaler
 var _ time.Time
 var _ xmlutil.XMLNode
 var _ xml.Attr
-var _ = ioutil.Discard
+var _ = io.Discard
 var _ = util.Trim("")
 var _ = url.Values{}
 var _ = io.EOF
@@ -1665,7 +1664,7 @@ func TestOutputService1ProtocolTestScalarMembersCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"Str\": \"myname\", \"Num\": 123, \"FalseBool\": false, \"TrueBool\": true, \"Float\": 1.2, \"Double\": 1.3, \"Long\": 200, \"Char\": \"a\"}"))
 	req, out := svc.OutputService1TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1712,7 +1711,7 @@ func TestOutputService2ProtocolTestBlobMembersCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"BlobMember\": \"aGkh\", \"StructMember\": {\"foo\": \"dGhlcmUh\"}}"))
 	req, out := svc.OutputService2TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1741,7 +1740,7 @@ func TestOutputService3ProtocolTestTimestampMembersCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"TimeArg\": 1398796238, \"TimeCustom\": \"Tue, 29 Apr 2014 18:30:38 GMT\", \"TimeFormat\": \"2014-04-29T18:30:38Z\", \"StructMember\": {\"foo\": 1398796238, \"bar\": \"2014-04-29T18:30:38Z\"}}"))
 	req, out := svc.OutputService3TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1779,7 +1778,7 @@ func TestOutputService4ProtocolTestListsCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"ListMember\": [\"a\", \"b\"]}"))
 	req, out := svc.OutputService4TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1808,7 +1807,7 @@ func TestOutputService4ProtocolTestListsCase2(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"ListMember\": [\"a\", null], \"ListMemberMap\": [{}, null, null, {}], \"ListMemberStruct\": [{}, null, null, {}]}"))
 	req, out := svc.OutputService4TestCaseOperation2Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1849,7 +1848,7 @@ func TestOutputService5ProtocolTestMapsCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"MapMember\": {\"a\": [1, 2], \"b\": [3, 4]}}"))
 	req, out := svc.OutputService5TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1884,7 +1883,7 @@ func TestOutputService6ProtocolTestIgnoresExtraDataCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"foo\": \"bar\"}"))
 	req, out := svc.OutputService6TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1907,7 +1906,7 @@ func TestOutputService7ProtocolTestEnumOutputCase1(t *testing.T) {
 
 	buf := bytes.NewReader([]byte("{\"FooEnum\": \"foo\", \"ListEnums\": [\"foo\", \"bar\"]}"))
 	req, out := svc.OutputService7TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1939,7 +1938,7 @@ func TestOutputService8ProtocolTestunmodeledNonjsonResponsePayloadCase1(t *testi
 
 	buf := bytes.NewReader([]byte("success"))
 	req, out := svc.OutputService8TestCaseOperation1Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1962,7 +1961,7 @@ func TestOutputService8ProtocolTestunmodeledNonjsonResponsePayloadCase2(t *testi
 
 	buf := bytes.NewReader([]byte("\"success\""))
 	req, out := svc.OutputService8TestCaseOperation2Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 
@@ -1985,7 +1984,7 @@ func TestOutputService8ProtocolTestunmodeledNonjsonResponsePayloadCase3(t *testi
 
 	buf := bytes.NewReader([]byte("{}"))
 	req, out := svc.OutputService8TestCaseOperation3Request(nil)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(buf), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(buf), Header: http.Header{}}
 
 	// set headers
 

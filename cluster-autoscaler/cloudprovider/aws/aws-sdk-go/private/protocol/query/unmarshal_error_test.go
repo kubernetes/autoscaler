@@ -4,7 +4,7 @@
 package query
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -25,7 +25,7 @@ func TestUnmarshalError(t *testing.T) {
 				HTTPResponse: &http.Response{
 					StatusCode: 400,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<ErrorResponse>
 							<Error>
 								<Code>codeAbc</Code><Message>msg123</Message>
@@ -42,7 +42,7 @@ func TestUnmarshalError(t *testing.T) {
 				HTTPResponse: &http.Response{
 					StatusCode: 502,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<ServiceUnavailableException>
 							<Something>else</Something>
 						</ServiceUnavailableException>`)),
@@ -57,7 +57,7 @@ func TestUnmarshalError(t *testing.T) {
 				HTTPResponse: &http.Response{
 					StatusCode: 400,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<Hello>
 							<World>.</World>
 						</Hello>`)),

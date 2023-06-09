@@ -2,7 +2,7 @@ package machinelearning_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -19,7 +19,7 @@ func TestPredictEndpoint(t *testing.T) {
 		r.HTTPResponse = &http.Response{
 			StatusCode: 200,
 			Header:     http.Header{},
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte("{}"))),
+			Body:       io.NopCloser(bytes.NewReader([]byte("{}"))),
 		}
 	})
 

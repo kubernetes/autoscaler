@@ -2,7 +2,7 @@ package dynamodb_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -37,7 +37,7 @@ func mockCRCResponse(svc *dynamodb.DynamoDB, status int, body, crc string) (req 
 		req.HTTPResponse = &http.Response{
 			ContentLength: int64(len(body)),
 			StatusCode:    status,
-			Body:          ioutil.NopCloser(bytes.NewReader([]byte(body))),
+			Body:          io.NopCloser(bytes.NewReader([]byte(body))),
 			Header:        header,
 		}
 	})

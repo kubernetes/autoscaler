@@ -8,7 +8,7 @@ package kinesis
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -198,7 +198,7 @@ func BenchmarkSubscribeToShard_Read(b *testing.B) {
 					Status:     "200 OK",
 					StatusCode: 200,
 					Header:     http.Header{},
-					Body:       ioutil.NopCloser(stream),
+					Body:       io.NopCloser(stream),
 				}
 			},
 		},

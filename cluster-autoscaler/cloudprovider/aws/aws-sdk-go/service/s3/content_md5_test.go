@@ -3,7 +3,7 @@ package s3_test
 import (
 	"crypto/md5"
 	"encoding/base64"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
@@ -18,7 +18,7 @@ func assertMD5(t *testing.T, req *request.Request) {
 		t.Errorf("expected no error, but received %v", err)
 	}
 
-	b, _ := ioutil.ReadAll(req.HTTPRequest.Body)
+	b, _ := io.ReadAll(req.HTTPRequest.Body)
 	out := md5.Sum(b)
 	if len(b) == 0 {
 		t.Error("expected non-empty value")

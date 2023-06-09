@@ -2,7 +2,7 @@ package s3_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -26,7 +26,7 @@ func TestGetBucketLocation(t *testing.T) {
 		s := s3.New(unit.Session)
 		s.Handlers.Send.Clear()
 		s.Handlers.Send.PushBack(func(r *request.Request) {
-			reader := ioutil.NopCloser(bytes.NewReader([]byte(test.body)))
+			reader := io.NopCloser(bytes.NewReader([]byte(test.body)))
 			r.HTTPResponse = &http.Response{StatusCode: 200, Body: reader}
 		})
 

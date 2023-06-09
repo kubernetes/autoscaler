@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -34,7 +33,7 @@ var _ json.Marshaler
 var _ time.Time
 var _ xmlutil.XMLNode
 var _ xml.Attr
-var _ = ioutil.Discard
+var _ = io.Discard
 var _ = util.Trim("")
 var _ = url.Values{}
 var _ = io.EOF
@@ -7122,7 +7121,7 @@ func TestInputService9ProtocolTestURIParameterQuerystringParamsAndJSONBodyCase1(
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Config": {"A": "one", "B": "two"}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7162,7 +7161,7 @@ func TestInputService10ProtocolTestURIParameterQuerystringParamsHeadersAndJSONBo
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Config": {"A": "one", "B": "two"}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7202,7 +7201,7 @@ func TestInputService11ProtocolTestStreamingPayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	if e, a := "contents", util.Trim(string(body)); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
@@ -7243,7 +7242,7 @@ func TestInputService12ProtocolTestSerializeBlobsInBodyCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Bar": "QmxvYiBwYXJhbQ=="}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7276,7 +7275,7 @@ func TestInputService13ProtocolTestBlobPayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	if e, a := "bar", util.Trim(string(body)); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
@@ -7333,7 +7332,7 @@ func TestInputService14ProtocolTestStructurePayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"baz": "bar"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7364,7 +7363,7 @@ func TestInputService14ProtocolTestStructurePayloadCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7441,7 +7440,7 @@ func TestInputService16ProtocolTestRecursiveShapesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"RecursiveStruct": {"NoRecurse": "foo"}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7478,7 +7477,7 @@ func TestInputService16ProtocolTestRecursiveShapesCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"RecursiveStruct": {"RecursiveStruct": {"NoRecurse": "foo"}}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7519,7 +7518,7 @@ func TestInputService16ProtocolTestRecursiveShapesCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"RecursiveStruct": {"RecursiveStruct": {"RecursiveStruct": {"RecursiveStruct": {"NoRecurse": "foo"}}}}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7561,7 +7560,7 @@ func TestInputService16ProtocolTestRecursiveShapesCase4(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"RecursiveStruct": {"RecursiveList": [{"NoRecurse": "foo"}, {"NoRecurse": "bar"}]}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7605,7 +7604,7 @@ func TestInputService16ProtocolTestRecursiveShapesCase5(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"RecursiveStruct": {"RecursiveList": [{"NoRecurse": "foo"}, {"RecursiveStruct": {"NoRecurse": "bar"}}]}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7647,7 +7646,7 @@ func TestInputService16ProtocolTestRecursiveShapesCase6(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"RecursiveStruct": {"RecursiveMap": {"foo": {"NoRecurse": "foo"}, "bar": {"NoRecurse": "bar"}}}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7688,7 +7687,7 @@ func TestInputService17ProtocolTestTimestampValuesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"TimeArg": 1422172800, "TimeCustom": "2015-01-25T08:00:00Z", "TimeFormat": "Sun, 25 Jan 2015 08:00:00 GMT"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7732,7 +7731,7 @@ func TestInputService18ProtocolTestNamedLocationsInJSONBodyCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"timestamp_location": 1422172800}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7765,7 +7764,7 @@ func TestInputService19ProtocolTestStringPayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	if e, a := "bar", util.Trim(string(body)); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
@@ -7800,7 +7799,7 @@ func TestInputService20ProtocolTestIdempotencyTokenAutoFillCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Token": "abc123"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7831,7 +7830,7 @@ func TestInputService20ProtocolTestIdempotencyTokenAutoFillCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Token": "00000000-0000-4000-8000-000000000000"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7874,7 +7873,7 @@ func TestInputService21ProtocolTestJSONValueTraitCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"BodyField":"{\"Foo\":\"Bar\"}"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7925,7 +7924,7 @@ func TestInputService21ProtocolTestJSONValueTraitCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"BodyListField":["{\"Foo\":\"Bar\"}"]}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7961,7 +7960,7 @@ func TestInputService21ProtocolTestJSONValueTraitCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8011,7 +8010,7 @@ func TestInputService22ProtocolTestEnumCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"FooEnum": "foo", "ListEnums": ["foo", "", "bar"]}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8069,7 +8068,7 @@ func TestInputService23ProtocolTestEndpointHostTraitCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Name": "myname"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8102,7 +8101,7 @@ func TestInputService23ProtocolTestEndpointHostTraitCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"Name": "myname"}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8137,7 +8136,7 @@ func TestInputService24ProtocolTestUnionTraitCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"OneOf": {"a": "hi"}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8172,7 +8171,7 @@ func TestInputService24ProtocolTestUnionTraitCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"OneOf": {"b": "hi"}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8209,7 +8208,7 @@ func TestInputService24ProtocolTestUnionTraitCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"OneOf": {"c": {"hello": "hi"}}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8246,7 +8245,7 @@ func TestInputService24ProtocolTestUnionTraitCase4(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"OneOf": {"d": {"hello": "hi"}}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8285,7 +8284,7 @@ func TestInputService24ProtocolTestUnionTraitCase5(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"OneOf": {"e": [{"hello": "hi"}]}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8321,7 +8320,7 @@ func TestInputService25ProtocolTestrestjsonContentTypeAndBodyCase1(t *testing.T)
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"testConfig": {"timeout": 10}}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8360,7 +8359,7 @@ func TestInputService25ProtocolTestrestjsonContentTypeAndBodyCase2(t *testing.T)
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8396,7 +8395,7 @@ func TestInputService25ProtocolTestrestjsonContentTypeAndBodyCase3(t *testing.T)
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8437,7 +8436,7 @@ func TestInputService25ProtocolTestrestjsonContentTypeAndBodyCase4(t *testing.T)
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{"data": 25}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8478,7 +8477,7 @@ func TestInputService25ProtocolTestrestjsonContentTypeAndBodyCase5(t *testing.T)
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertJSON(t, `{}`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -8520,7 +8519,7 @@ func TestInputService25ProtocolTestrestjsonContentTypeAndBodyCase6(t *testing.T)
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	if e, a := "1234", util.Trim(string(body)); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}

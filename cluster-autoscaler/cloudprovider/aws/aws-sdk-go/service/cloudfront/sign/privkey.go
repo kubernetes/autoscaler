@@ -6,7 +6,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -51,7 +50,7 @@ func LoadEncryptedPEMPrivKey(reader io.Reader, password []byte) (*rsa.PrivateKey
 }
 
 func loadPem(reader io.Reader) (*pem.Block, error) {
-	b, err := ioutil.ReadAll(reader)
+	b, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}

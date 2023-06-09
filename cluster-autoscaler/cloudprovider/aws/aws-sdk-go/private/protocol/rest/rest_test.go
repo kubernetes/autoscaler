@@ -5,7 +5,7 @@ package rest_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"testing"
@@ -55,7 +55,7 @@ func TestUnsetHeaders(t *testing.T) {
 	}{}
 
 	req := svc.NewRequest(op, input, output)
-	req.HTTPResponse = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBuffer(nil)), Header: http.Header{}}
+	req.HTTPResponse = &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewBuffer(nil)), Header: http.Header{}}
 	req.HTTPResponse.Header.Set("X-Amz-Foo", "e30=")
 
 	// unmarshal response
@@ -148,7 +148,7 @@ func TestNormalizedHeaders(t *testing.T) {
 			req := svc.NewRequest(op, input, output)
 			req.HTTPResponse = &http.Response{
 				StatusCode: 200,
-				Body:       ioutil.NopCloser(bytes.NewBuffer(nil)),
+				Body:       io.NopCloser(bytes.NewBuffer(nil)),
 				Header:     tt.outputValues,
 			}
 

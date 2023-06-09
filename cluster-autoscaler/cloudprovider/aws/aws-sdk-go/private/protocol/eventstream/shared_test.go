@@ -5,7 +5,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -106,19 +107,27 @@ func readPositiveTests(root string) ([]testCase, error) {
 }
 
 func readTests(root string) (map[string][]byte, error) {
-	items, err := ioutil.ReadDir(root)
+	entries, err := os.ReadDir(root)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read test suite %q dirs, %v", root, err)
+		return nil, err
+	}
+	infos := make([]fs.FileInfo, 0, len(entries))
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, info)
 	}
 
 	cases := map[string][]byte{}
-	for _, item := range items {
+	for _, item := range infos {
 		if item.IsDir() {
 			continue
 		}
 
 		filename := filepath.Join(root, item.Name())
-		data, err := ioutil.ReadFile(filename)
+		data, err := os.ReadFile(filename)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read test_data file %q, %v", filename, err)
 		}

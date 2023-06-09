@@ -6,7 +6,7 @@ package lexruntimeservice_test
 import (
 	"context"
 	"encoding/base64"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -42,7 +42,7 @@ func TestLexRunTimeService_suppressedJSONValue(t *testing.T) {
 						return h
 					}(),
 					ContentLength: 2,
-					Body:          ioutil.NopCloser(strings.NewReader(`{}`)),
+					Body:          io.NopCloser(strings.NewReader(`{}`)),
 				}
 			})
 		},

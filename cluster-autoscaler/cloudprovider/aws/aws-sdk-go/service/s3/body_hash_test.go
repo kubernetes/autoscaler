@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -258,7 +257,7 @@ func TestUseMD5ValidationReader(t *testing.T) {
 					}(),
 				},
 				Data: &GetObjectOutput{
-					Body:          ioutil.NopCloser(bytes.NewReader(bodyWithSum)),
+					Body:          io.NopCloser(bytes.NewReader(bodyWithSum)),
 					ContentLength: aws.Int64(int64(len(bodyWithSum))),
 				},
 			},
@@ -297,7 +296,7 @@ func TestUseMD5ValidationReader(t *testing.T) {
 					}(),
 				},
 				Data: &GetObjectOutput{
-					Body:          ioutil.NopCloser(bytes.NewReader(emptyBodySum[:])),
+					Body:          io.NopCloser(bytes.NewReader(emptyBodySum[:])),
 					ContentLength: aws.Int64(int64(len(emptyBodySum[:]))),
 				},
 			},
@@ -332,7 +331,7 @@ func TestUseMD5ValidationReader(t *testing.T) {
 					Header: http.Header{},
 				},
 				Data: &GetObjectOutput{
-					Body:          ioutil.NopCloser(bytes.NewReader(body)),
+					Body:          io.NopCloser(bytes.NewReader(body)),
 					ContentLength: aws.Int64(int64(len(body))),
 				},
 			},
@@ -384,7 +383,7 @@ func TestUseMD5ValidationReader(t *testing.T) {
 					}(),
 				},
 				Data: &GetObjectOutput{
-					Body:          ioutil.NopCloser(bytes.NewReader(bodyWithSum)),
+					Body:          io.NopCloser(bytes.NewReader(bodyWithSum)),
 					ContentLength: aws.Int64(-1),
 				},
 			},
@@ -410,7 +409,7 @@ func TestUseMD5ValidationReader(t *testing.T) {
 					}(),
 				},
 				Data: &GetObjectOutput{
-					Body:          ioutil.NopCloser(bytes.NewReader(make([]byte, 5))),
+					Body:          io.NopCloser(bytes.NewReader(make([]byte, 5))),
 					ContentLength: aws.Int64(5),
 				},
 			},
@@ -485,7 +484,7 @@ func TestReaderMD5Validation(t *testing.T) {
 			Error:      "unexpected EOF",
 		},
 		{
-			ContentReader: ioutil.NopCloser(errorReader{}),
+			ContentReader: io.NopCloser(errorReader{}),
 			PayloadLen:    int64(len(body)),
 			Error:         "errorReader error",
 		},
@@ -494,7 +493,7 @@ func TestReaderMD5Validation(t *testing.T) {
 	for i, c := range cases {
 		reader := c.ContentReader
 		if reader == nil {
-			reader = ioutil.NopCloser(bytes.NewReader(c.Content))
+			reader = io.NopCloser(bytes.NewReader(c.Content))
 		}
 		v := newMD5ValidationReader(reader, c.PayloadLen)
 

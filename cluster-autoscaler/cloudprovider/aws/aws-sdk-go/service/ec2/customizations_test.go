@@ -6,7 +6,7 @@ package ec2_test
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -39,7 +39,7 @@ func TestCopySnapshotPresignedURL(t *testing.T) {
 	})
 	req.Sign()
 
-	b, _ := ioutil.ReadAll(req.HTTPRequest.Body)
+	b, _ := io.ReadAll(req.HTTPRequest.Body)
 	q, _ := url.ParseQuery(string(b))
 	u, _ := url.QueryUnescape(q.Get("PresignedUrl"))
 	if e, a := "us-west-2", q.Get("DestinationRegion"); e != a {
@@ -101,7 +101,7 @@ func checkRetryerMaxRetries(t *testing.T, maxRetries int) func(*request.Request)
 			rr.HTTPResponse = &http.Response{
 				StatusCode: 200,
 				Header:     http.Header{},
-				Body:       ioutil.NopCloser(&bytes.Buffer{}),
+				Body:       io.NopCloser(&bytes.Buffer{}),
 			}
 		})
 	}

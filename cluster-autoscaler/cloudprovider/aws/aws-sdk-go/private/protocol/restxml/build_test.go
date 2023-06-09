@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -34,7 +33,7 @@ var _ json.Marshaler
 var _ time.Time
 var _ xmlutil.XMLNode
 var _ xml.Attr
-var _ = ioutil.Discard
+var _ = io.Discard
 var _ = util.Trim("")
 var _ = url.Values{}
 var _ = io.EOF
@@ -6126,7 +6125,7 @@ func TestInputService1ProtocolTestBasicXMLSerializationCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Name>foo</Name><Description>bar</Description></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6160,7 +6159,7 @@ func TestInputService1ProtocolTestBasicXMLSerializationCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><Name>foo</Name><Description>bar</Description></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6216,7 +6215,7 @@ func TestInputService2ProtocolTestSerializeOtherScalarTypesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><First>true</First><Second>false</Second><Third>1.2</Third><Fourth>3</Fourth></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6253,7 +6252,7 @@ func TestInputService3ProtocolTestNestedStructuresCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><SubStructure><Foo>a</Foo><Bar>b</Bar></SubStructure><Description>baz</Description></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6289,7 +6288,7 @@ func TestInputService3ProtocolTestNestedStructuresCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><SubStructure><Foo>a</Foo></SubStructure><Description>baz</Description></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6323,7 +6322,7 @@ func TestInputService4ProtocolTestNestedStructuresCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><SubStructure /><Description>baz</Description></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6360,7 +6359,7 @@ func TestInputService5ProtocolTestNonFlattenedListsCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><ListParam><member>one</member><member>two</member><member>three</member></ListParam></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6397,7 +6396,7 @@ func TestInputService6ProtocolTestNonFlattenedListsWithLocationNameCase1(t *test
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><AlternateName><NotMember>one</NotMember><NotMember>two</NotMember><NotMember>three</NotMember></AlternateName></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6434,7 +6433,7 @@ func TestInputService7ProtocolTestFlattenedListsCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><ListParam>one</ListParam><ListParam>two</ListParam><ListParam>three</ListParam></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6471,7 +6470,7 @@ func TestInputService8ProtocolTestFlattenedListsWithLocationNameCase1(t *testing
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><item>one</item><item>two</item><item>three</item></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6514,7 +6513,7 @@ func TestInputService9ProtocolTestListOfStructuresCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><item><value>one</value></item><item><value>two</value></item><item><value>three</value></item></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6549,7 +6548,7 @@ func TestInputService10ProtocolTestBlobShapesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><StructureParam><b>Zm9v</b></StructureParam></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6590,7 +6589,7 @@ func TestInputService11ProtocolTestTimestampShapesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<TimestampStructure xmlns="https://foo/"><TimeArg>2015-01-25T08:00:00Z</TimeArg><TimeCustom>Sun, 25 Jan 2015 08:00:00 GMT</TimeCustom><TimeFormat>Sun, 25 Jan 2015 08:00:00 GMT</TimeFormat></TimestampStructure>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6794,7 +6793,7 @@ func TestInputService17ProtocolTestStringPayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	if e, a := "bar", util.Trim(string(body)); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
@@ -6829,7 +6828,7 @@ func TestInputService18ProtocolTestBlobPayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	if e, a := "bar", util.Trim(string(body)); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
@@ -6886,7 +6885,7 @@ func TestInputService19ProtocolTestStructurePayloadCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<foo><baz>bar</baz></foo>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6939,7 +6938,7 @@ func TestInputService19ProtocolTestStructurePayloadCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<foo />`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -6997,7 +6996,7 @@ func TestInputService20ProtocolTestXMLAttributeCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><EmailAddress>foo@example.com</EmailAddress></Grantee></Grant>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7097,7 +7096,7 @@ func TestInputService23ProtocolTestRecursiveShapesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct><NoRecurse>foo</NoRecurse></RecursiveStruct></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7134,7 +7133,7 @@ func TestInputService23ProtocolTestRecursiveShapesCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct><RecursiveStruct><NoRecurse>foo</NoRecurse></RecursiveStruct></RecursiveStruct></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7175,7 +7174,7 @@ func TestInputService23ProtocolTestRecursiveShapesCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct><RecursiveStruct><RecursiveStruct><RecursiveStruct><NoRecurse>foo</NoRecurse></RecursiveStruct></RecursiveStruct></RecursiveStruct></RecursiveStruct></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7217,7 +7216,7 @@ func TestInputService23ProtocolTestRecursiveShapesCase4(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct><RecursiveList><member><NoRecurse>foo</NoRecurse></member><member><NoRecurse>bar</NoRecurse></member></RecursiveList></RecursiveStruct></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7261,7 +7260,7 @@ func TestInputService23ProtocolTestRecursiveShapesCase5(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct><RecursiveList><member><NoRecurse>foo</NoRecurse></member><member><RecursiveStruct><NoRecurse>bar</NoRecurse></RecursiveStruct></member></RecursiveList></RecursiveStruct></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7303,7 +7302,7 @@ func TestInputService23ProtocolTestRecursiveShapesCase6(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<OperationRequest xmlns="https://foo/"><RecursiveStruct><RecursiveMap><entry><key>bar</key><value><NoRecurse>bar</NoRecurse></value></entry><entry><key>foo</key><value><NoRecurse>foo</NoRecurse></value></entry></RecursiveMap></RecursiveStruct></OperationRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7336,7 +7335,7 @@ func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<InputShape><Token>abc123</Token></InputShape>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7367,7 +7366,7 @@ func TestInputService24ProtocolTestIdempotencyTokenAutoFillCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<InputShape><Token>00000000-0000-4000-8000-000000000000</Token></InputShape>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7412,7 +7411,7 @@ func TestInputService25ProtocolTestEnumCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<InputShape><FooEnum>foo</FooEnum><ListEnums><member>foo</member><member></member><member>bar</member></ListEnums></InputShape>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7472,7 +7471,7 @@ func TestInputService26ProtocolTestEndpointHostTraitCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<StaticOpRequest><Name>myname</Name></StaticOpRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -7505,7 +7504,7 @@ func TestInputService26ProtocolTestEndpointHostTraitCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertXML(t, `<MemberRefOpRequest><Name>myname</Name></MemberRefOpRequest>`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {

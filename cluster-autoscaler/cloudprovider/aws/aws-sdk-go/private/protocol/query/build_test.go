@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -34,7 +33,7 @@ var _ json.Marshaler
 var _ time.Time
 var _ xmlutil.XMLNode
 var _ xml.Attr
-var _ = ioutil.Discard
+var _ = io.Discard
 var _ = util.Trim("")
 var _ = url.Values{}
 var _ = io.EOF
@@ -3808,7 +3807,7 @@ func TestInputService1ProtocolTestScalarMembersCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Bar=val2&Foo=val1&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -3841,7 +3840,7 @@ func TestInputService1ProtocolTestScalarMembersCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Baz=true&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -3874,7 +3873,7 @@ func TestInputService1ProtocolTestScalarMembersCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Baz=false&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -3909,7 +3908,7 @@ func TestInputService2ProtocolTestNestedStructureMembersCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&StructArg.ScalarArg=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -3946,7 +3945,7 @@ func TestInputService3ProtocolTestListTypesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&ListArg.member.1=foo&ListArg.member.2=bar&ListArg.member.3=baz&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -3979,7 +3978,7 @@ func TestInputService3ProtocolTestListTypesCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&ListArg=&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4017,7 +4016,7 @@ func TestInputService4ProtocolTestFlattenedListCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&ListArg.1=a&ListArg.2=b&ListArg.3=c&ScalarArg=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4052,7 +4051,7 @@ func TestInputService4ProtocolTestFlattenedListCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Foo.1=a&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4088,7 +4087,7 @@ func TestInputService5ProtocolTestSerializeFlattenedMapTypeCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&MapArg.1.key=key1&MapArg.1.value=val1&MapArg.2.key=key2&MapArg.2.value=val2&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4125,7 +4124,7 @@ func TestInputService6ProtocolTestNonFlattenedListWithLocationNameCase1(t *testi
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&ListArg.item.1=a&ListArg.item.2=b&ListArg.item.3=c&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4163,7 +4162,7 @@ func TestInputService7ProtocolTestFlattenedListWithLocationNameCase1(t *testing.
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&ListArgLocation.1=a&ListArgLocation.2=b&ListArgLocation.3=c&ScalarArg=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4199,7 +4198,7 @@ func TestInputService8ProtocolTestSerializeMapTypeCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&MapArg.entry.1.key=key1&MapArg.entry.1.value=val1&MapArg.entry.2.key=key2&MapArg.entry.2.value=val2&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4235,7 +4234,7 @@ func TestInputService9ProtocolTestSerializeMapTypeWithLocationNameCase1(t *testi
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&MapArg.entry.1.TheKey=key1&MapArg.entry.1.TheValue=val1&MapArg.entry.2.TheKey=key2&MapArg.entry.2.TheValue=val2&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4268,7 +4267,7 @@ func TestInputService10ProtocolTestBase64EncodedBlobsCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&BlobArg=Zm9v&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4303,7 +4302,7 @@ func TestInputService11ProtocolTestBase64EncodedBlobsNestedCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&BlobArgs.1=Zm9v&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4338,7 +4337,7 @@ func TestInputService12ProtocolTestTimestampValuesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&TimeArg=2015-01-25T08%3A00%3A00Z&TimeCustom=1422172800&TimeFormat=1422172800&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4373,7 +4372,7 @@ func TestInputService13ProtocolTestRecursiveShapesCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&RecursiveStruct.NoRecurse=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4410,7 +4409,7 @@ func TestInputService13ProtocolTestRecursiveShapesCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&RecursiveStruct.RecursiveStruct.NoRecurse=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4451,7 +4450,7 @@ func TestInputService13ProtocolTestRecursiveShapesCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&RecursiveStruct.RecursiveStruct.RecursiveStruct.RecursiveStruct.NoRecurse=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4493,7 +4492,7 @@ func TestInputService13ProtocolTestRecursiveShapesCase4(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&RecursiveStruct.RecursiveList.member.1.NoRecurse=foo&RecursiveStruct.RecursiveList.member.2.NoRecurse=bar&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4537,7 +4536,7 @@ func TestInputService13ProtocolTestRecursiveShapesCase5(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&RecursiveStruct.RecursiveList.member.1.NoRecurse=foo&RecursiveStruct.RecursiveList.member.2.RecursiveStruct.NoRecurse=bar&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4579,7 +4578,7 @@ func TestInputService13ProtocolTestRecursiveShapesCase6(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&RecursiveStruct.RecursiveMap.entry.1.key=foo&RecursiveStruct.RecursiveMap.entry.1.value.NoRecurse=foo&RecursiveStruct.RecursiveMap.entry.2.key=bar&RecursiveStruct.RecursiveMap.entry.2.value.NoRecurse=bar&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4612,7 +4611,7 @@ func TestInputService14ProtocolTestIdempotencyTokenAutoFillCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Token=abc123&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4643,7 +4642,7 @@ func TestInputService14ProtocolTestIdempotencyTokenAutoFillCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Token=00000000-0000-4000-8000-000000000000&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4681,7 +4680,7 @@ func TestInputService15ProtocolTestEnumCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&FooEnum=foo&ListEnums.member.1=foo&ListEnums.member.2=&ListEnums.member.3=bar&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4714,7 +4713,7 @@ func TestInputService15ProtocolTestEnumCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&FooEnum=foo&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4745,7 +4744,7 @@ func TestInputService15ProtocolTestEnumCase3(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=OperationName&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4778,7 +4777,7 @@ func TestInputService16ProtocolTestEndpointHostTraitCase1(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=StaticOp&Name=myname&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {
@@ -4811,7 +4810,7 @@ func TestInputService16ProtocolTestEndpointHostTraitCase2(t *testing.T) {
 	if r.Body == nil {
 		t.Errorf("expect body not to be nil")
 	}
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	awstesting.AssertQuery(t, `Action=MemberRefOp&Name=myname&Version=2014-01-01`, util.Trim(string(body)))
 
 	if e, a := int64(len(body)), r.ContentLength; e != a {

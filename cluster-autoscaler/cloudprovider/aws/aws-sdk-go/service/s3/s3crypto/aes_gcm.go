@@ -5,7 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"io"
-	"io/ioutil"
 )
 
 // AESGCM Symmetric encryption algorithm. Since Golang designed this
@@ -60,7 +59,7 @@ type gcmEncryptReader struct {
 
 func (reader *gcmEncryptReader) Read(data []byte) (int, error) {
 	if reader.buf == nil {
-		b, err := ioutil.ReadAll(reader.src)
+		b, err := io.ReadAll(reader.src)
 		if err != nil {
 			return 0, err
 		}
@@ -89,7 +88,7 @@ type gcmDecryptReader struct {
 
 func (reader *gcmDecryptReader) Read(data []byte) (int, error) {
 	if reader.buf == nil {
-		b, err := ioutil.ReadAll(reader.src)
+		b, err := io.ReadAll(reader.src)
 		if err != nil {
 			return 0, err
 		}

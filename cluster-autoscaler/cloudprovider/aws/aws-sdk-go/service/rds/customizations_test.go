@@ -5,7 +5,7 @@ package rds
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"regexp"
 	"testing"
@@ -231,7 +231,7 @@ func TestPresignCrossRegionRequest(t *testing.T) {
 			if err := c.Req.Sign(); err != nil {
 				t.Fatalf("expect no error, got %v", err)
 			}
-			b, _ := ioutil.ReadAll(c.Req.HTTPRequest.Body)
+			b, _ := io.ReadAll(c.Req.HTTPRequest.Body)
 			q, _ := url.ParseQuery(string(b))
 
 			u, _ := url.QueryUnescape(q.Get("PreSignedUrl"))

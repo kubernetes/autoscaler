@@ -6,7 +6,7 @@ package s3
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -745,7 +745,7 @@ func runValidations(t *testing.T, cases map[string]testCase) {
 					r.HTTPResponse = &http.Response{
 						StatusCode:    200,
 						ContentLength: 0,
-						Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+						Body:          io.NopCloser(bytes.NewReader(nil)),
 					}
 				}()
 				if len(c.expectedErr) != 0 {
@@ -850,7 +850,7 @@ func TestWriteGetObjectResponse_UpdateEndpoint(t *testing.T) {
 					r.HTTPResponse = &http.Response{
 						StatusCode:    200,
 						ContentLength: 0,
-						Body:          ioutil.NopCloser(bytes.NewReader(nil)),
+						Body:          io.NopCloser(bytes.NewReader(nil)),
 					}
 				}()
 				if len(c.expectedErr) != 0 {
@@ -935,7 +935,7 @@ func TestWriteGetObjectResponse(t *testing.T) {
 						t.Errorf("expect %v, got %v", e, a)
 					}
 
-					all, err := ioutil.ReadAll(request.Body)
+					all, err := io.ReadAll(request.Body)
 					if err != nil {
 						t.Errorf("expect no error, got %v", err)
 					}
@@ -968,7 +968,7 @@ func TestWriteGetObjectResponse(t *testing.T) {
 						t.Errorf("expect %v, got %v", e, a)
 					}
 
-					all, err := ioutil.ReadAll(request.Body)
+					all, err := io.ReadAll(request.Body)
 					if err != nil {
 						t.Errorf("expect no error, got %v", err)
 					}
@@ -1001,7 +1001,7 @@ func TestWriteGetObjectResponse(t *testing.T) {
 						t.Errorf("expect %v, got %v", e, a)
 					}
 
-					all, err := ioutil.ReadAll(request.Body)
+					all, err := io.ReadAll(request.Body)
 					if err != nil {
 						t.Errorf("expect no error, got %v", err)
 					}
@@ -1039,7 +1039,7 @@ func TestWriteGetObjectResponse(t *testing.T) {
 						t.Errorf("expect %v, got %v", e, a)
 					}
 
-					all, err := ioutil.ReadAll(request.Body)
+					all, err := io.ReadAll(request.Body)
 					if err != nil {
 						t.Errorf("expect no error, got %v", err)
 					}

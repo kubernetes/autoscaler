@@ -6,7 +6,7 @@ package restjson
 import (
 	"bytes"
 	"encoding/hex"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -85,7 +85,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 		"simple error": {
 			Response: &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(strings.NewReader(simpleErrJSON)),
+				Body:   io.NopCloser(strings.NewReader(simpleErrJSON)),
 			},
 			Expect: &SimpleError{
 				Message2: aws.String("some message"),
@@ -95,7 +95,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 		"other error": {
 			Response: &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(strings.NewReader(otherErrJSON)),
+				Body:   io.NopCloser(strings.NewReader(otherErrJSON)),
 			},
 			Expect: &OtherError{
 				Message2: aws.String("some message"),
@@ -104,7 +104,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 		"other complex Code error": {
 			Response: &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(strings.NewReader(complexCodeErrJSON)),
+				Body:   io.NopCloser(strings.NewReader(complexCodeErrJSON)),
 			},
 			Expect: &OtherError{
 				Message2: aws.String("some message"),
@@ -116,7 +116,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 				Header: http.Header{
 					"Some-Header": []string{"headval"},
 				},
-				Body: ioutil.NopCloser(strings.NewReader(complexErrJSON)),
+				Body: io.NopCloser(strings.NewReader(complexErrJSON)),
 			},
 			Expect: &ComplexError{
 				Message2:  aws.String("some message"),
@@ -131,7 +131,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 		"unknown error": {
 			Response: &http.Response{
 				Header: http.Header{},
-				Body:   ioutil.NopCloser(strings.NewReader(unknownErrJSON)),
+				Body:   io.NopCloser(strings.NewReader(unknownErrJSON)),
 			},
 			Expect: awserr.NewRequestFailure(
 				awserr.New("UnknownError", "error message", nil),
@@ -143,7 +143,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 			Response: &http.Response{
 				StatusCode: 400,
 				Header:     http.Header{},
-				Body:       ioutil.NopCloser(strings.NewReader(`{`)),
+				Body:       io.NopCloser(strings.NewReader(`{`)),
 			},
 			Err: "failed decoding",
 		},
@@ -153,7 +153,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 					errorTypeHeader:    []string{"UnknownError"},
 					errorMessageHeader: []string{"error message"},
 				},
-				Body: ioutil.NopCloser(nil),
+				Body: io.NopCloser(nil),
 			},
 			Expect: awserr.NewRequestFailure(
 				awserr.New("UnknownError", "error message", nil),
@@ -166,7 +166,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 				Header: http.Header{
 					errorTypeHeader: []string{"SimpleError"},
 				},
-				Body: ioutil.NopCloser(strings.NewReader(simpleNoCodeJSON)),
+				Body: io.NopCloser(strings.NewReader(simpleNoCodeJSON)),
 			},
 			Expect: &SimpleError{
 				Message2: aws.String("some message"),
@@ -179,7 +179,7 @@ func TestUnmarshalTypedError(t *testing.T) {
 					errorTypeHeader:    []string{"SimpleError"},
 					errorMessageHeader: []string{"error message"},
 				},
-				Body: ioutil.NopCloser(strings.NewReader(simpleNoCodeJSON)),
+				Body: io.NopCloser(strings.NewReader(simpleNoCodeJSON)),
 			},
 			Expect: &SimpleError{
 				Message2: aws.String("some message"),
@@ -225,7 +225,7 @@ func TestUnmarshalError_SerializationError(t *testing.T) {
 					Header: http.Header{
 						"X-Amzn-Requestid": []string{"abc123"},
 					},
-					Body: ioutil.NopCloser(
+					Body: io.NopCloser(
 						bytes.NewReader([]byte{}),
 					),
 				},
@@ -240,7 +240,7 @@ func TestUnmarshalError_SerializationError(t *testing.T) {
 					Header: http.Header{
 						"X-Amzn-Requestid": []string{"abc123"},
 					},
-					Body: ioutil.NopCloser(
+					Body: io.NopCloser(
 						bytes.NewReader([]byte(`<html></html>`)),
 					),
 				},

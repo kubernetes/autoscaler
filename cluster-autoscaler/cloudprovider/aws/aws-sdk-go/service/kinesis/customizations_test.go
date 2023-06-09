@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
@@ -105,14 +104,14 @@ func TestKinesisCustomRetryErrorCodes(t *testing.T) {
 		{
 			StatusCode: 400,
 			Header:     http.Header{},
-			Body: ioutil.NopCloser(bytes.NewReader(
+			Body: io.NopCloser(bytes.NewReader(
 				[]byte(fmt.Sprintf(jsonErr, ErrCodeLimitExceededException)),
 			)),
 		},
 		{
 			StatusCode: 200,
 			Header:     http.Header{},
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			Body:       io.NopCloser(bytes.NewReader([]byte{})),
 		},
 	}
 

@@ -1,7 +1,7 @@
 package protocol_test
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -71,7 +71,7 @@ func TestUnmarshalSeriaizationError(t *testing.T) {
 				Data: &testOutput{},
 				HTTPResponse: &http.Response{
 					StatusCode: 502,
-					Body:       ioutil.NopCloser(strings.NewReader("invalid json")),
+					Body:       io.NopCloser(strings.NewReader("invalid json")),
 				},
 			},
 			unmarshalFn: jsonrpc.Unmarshal,
@@ -87,7 +87,7 @@ func TestUnmarshalSeriaizationError(t *testing.T) {
 				Data: &testOutput{},
 				HTTPResponse: &http.Response{
 					StatusCode: 111,
-					Body:       ioutil.NopCloser(strings.NewReader("<<>>>>>>")),
+					Body:       io.NopCloser(strings.NewReader("<<>>>>>>")),
 				},
 			},
 			unmarshalFn: ec2query.Unmarshal,
@@ -106,7 +106,7 @@ func TestUnmarshalSeriaizationError(t *testing.T) {
 				Data: &testOutput{},
 				HTTPResponse: &http.Response{
 					StatusCode: 1,
-					Body:       ioutil.NopCloser(strings.NewReader("<<>>>>>>")),
+					Body:       io.NopCloser(strings.NewReader("<<>>>>>>")),
 				},
 			},
 			unmarshalFn: query.Unmarshal,
@@ -122,7 +122,7 @@ func TestUnmarshalSeriaizationError(t *testing.T) {
 				Data: &testOutput{},
 				HTTPResponse: &http.Response{
 					StatusCode: 123,
-					Body:       ioutil.NopCloser(strings.NewReader("invalid json")),
+					Body:       io.NopCloser(strings.NewReader("invalid json")),
 				},
 			},
 			unmarshalFn: restjson.Unmarshal,
@@ -138,7 +138,7 @@ func TestUnmarshalSeriaizationError(t *testing.T) {
 				Data: &testOutput{},
 				HTTPResponse: &http.Response{
 					StatusCode: 456,
-					Body:       ioutil.NopCloser(strings.NewReader("<<>>>>>>")),
+					Body:       io.NopCloser(strings.NewReader("<<>>>>>>")),
 				},
 			},
 			unmarshalFn: restxml.Unmarshal,

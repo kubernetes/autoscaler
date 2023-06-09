@@ -4,7 +4,7 @@
 package route53
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -34,7 +34,7 @@ but it already exists
 				HTTPResponse: &http.Response{
 					StatusCode: 400,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<?xml version="1.0" encoding="UTF-8"?>
 <ErrorResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
   <Error>
@@ -53,7 +53,7 @@ but it already exists
 				HTTPResponse: &http.Response{
 					StatusCode: 400,
 					Header:     http.Header{},
-					Body: ioutil.NopCloser(strings.NewReader(
+					Body: io.NopCloser(strings.NewReader(
 						`<?xml version="1.0" encoding="UTF-8"?>
 <InvalidChangeBatch xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
   <Messages>

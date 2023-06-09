@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"hash/crc32"
 	"io"
-	"io/ioutil"
 	"strconv"
 	"time"
 
@@ -85,7 +84,7 @@ func validateCRC32(r *request.Request) {
 	}
 
 	// Reset body for subsequent reads
-	r.HTTPResponse.Body = ioutil.NopCloser(bytes.NewReader(buf.Bytes()))
+	r.HTTPResponse.Body = io.NopCloser(bytes.NewReader(buf.Bytes()))
 
 	// Compute the CRC checksum
 	crc := crc32.ChecksumIEEE(buf.Bytes())
