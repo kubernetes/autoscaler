@@ -24,7 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -174,7 +174,7 @@ func (client *client) newRequest(api string, args map[string]string, async bool,
 	}
 	klog.Info("NewAPIRequest response status code:", response.StatusCode)
 
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	var data map[string]interface{}
 	_ = json.Unmarshal([]byte(body), &data)
 

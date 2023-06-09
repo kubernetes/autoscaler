@@ -3,7 +3,7 @@ package iam
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"reflect"
 
 	jsoniter "github.com/json-iterator/go"
@@ -114,7 +114,7 @@ func GetResponseBody(resp *response.DefaultHttpResponse) ([]byte, error) {
 		return nil, sdkerr.NewServiceResponseError(resp.Response)
 	}
 
-	data, err := ioutil.ReadAll(resp.Response.Body)
+	data, err := io.ReadAll(resp.Response.Body)
 
 	if err != nil {
 		if closeErr := resp.Response.Body.Close(); closeErr != nil {
@@ -126,7 +126,7 @@ func GetResponseBody(resp *response.DefaultHttpResponse) ([]byte, error) {
 	if err := resp.Response.Body.Close(); err != nil {
 		return nil, err
 	} else {
-		resp.Response.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+		resp.Response.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 
 	return data, nil

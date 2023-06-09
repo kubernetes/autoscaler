@@ -21,7 +21,7 @@ package response
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -49,12 +49,12 @@ func (r *DefaultHttpResponse) GetHeaders() map[string]string {
 }
 
 func (r *DefaultHttpResponse) GetBody() string {
-	body, err := ioutil.ReadAll(r.Response.Body)
+	body, err := io.ReadAll(r.Response.Body)
 	if err != nil {
 		return ""
 	}
 	if err := r.Response.Body.Close(); err == nil {
-		r.Response.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.Response.Body = io.NopCloser(bytes.NewBuffer(body))
 	}
 	return string(body)
 }

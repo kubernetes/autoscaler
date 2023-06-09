@@ -22,7 +22,7 @@ package impl
 import (
 	"bytes"
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -85,7 +85,7 @@ func (client *DefaultHttpClient) SyncInvokeHttp(request *request.DefaultHttpRequ
 			return nil, err
 		}
 		reqClone := req.Clone(req.Context())
-		reqClone.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		reqClone.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		defer reqClone.Body.Close()
 		client.httpHandler.RequestHandlers(*reqClone)
 	}
@@ -111,7 +111,7 @@ func (client *DefaultHttpClient) SyncInvokeHttp(request *request.DefaultHttpRequ
 			return nil, err
 		}
 		respClone := http.Response{
-			Body:             ioutil.NopCloser(bytes.NewBuffer(bodyBytes)),
+			Body:             io.NopCloser(bytes.NewBuffer(bodyBytes)),
 			Status:           resp.Status,
 			StatusCode:       resp.StatusCode,
 			Proto:            resp.Proto,

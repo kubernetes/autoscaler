@@ -23,7 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -75,7 +75,7 @@ type Config struct {
 func newManager(configReader io.Reader) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
-		body, err := ioutil.ReadAll(configReader)
+		body, err := io.ReadAll(configReader)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +96,7 @@ func newManager(configReader io.Reader) (*Manager, error) {
 	}
 
 	if cfg.TokenFile != "" {
-		tokenData, err := ioutil.ReadFile(cfg.TokenFile)
+		tokenData, err := os.ReadFile(cfg.TokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read token file: %s", err)
 		}

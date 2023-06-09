@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -71,7 +70,7 @@ type Config struct {
 func newManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
-		body, err := ioutil.ReadAll(configReader)
+		body, err := io.ReadAll(configReader)
 		if err != nil {
 			return nil, err
 		}

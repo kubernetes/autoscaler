@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -103,13 +103,13 @@ func NewAdvancedClientForTesting(responses map[string]map[string]string) (*Clien
 	var responseSent bool
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		body, err := ioutil.ReadAll(req.Body)
+		body, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Printf("Error reading body: %v", err)
 			return
 		}
 
-		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		req.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		for url, criteria := range responses {
 			if strings.Contains(req.URL.String(), url) &&
@@ -199,7 +199,7 @@ func (c *Client) sendRequest(req *http.Request) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	c.LastJSONResponse = string(body)
 
 	if resp.StatusCode >= 300 {

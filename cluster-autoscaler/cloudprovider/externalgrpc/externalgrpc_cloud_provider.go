@@ -21,8 +21,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -310,7 +310,7 @@ func BuildExternalGrpc(
 	if opts.CloudConfig == "" {
 		klog.Fatal("No config file provided, please specify it via the --cloud-config flag")
 	}
-	config, err := ioutil.ReadFile(opts.CloudConfig)
+	config, err := os.ReadFile(opts.CloudConfig)
 	if err != nil {
 		klog.Fatalf("Could not open cloud provider configuration file %q: %v", opts.CloudConfig, err)
 	}
@@ -344,15 +344,15 @@ func newExternalGrpcCloudProviderClient(config []byte) (protos.CloudProviderClie
 		klog.V(5).Info("No certs specified in external gRPC provider config, using insecure mode")
 		dialOpt = grpc.WithInsecure()
 	} else {
-		certFile, err := ioutil.ReadFile(yamlConfig.Cert)
+		certFile, err := os.ReadFile(yamlConfig.Cert)
 		if err != nil {
 			return nil, fmt.Errorf("could not open Cert configuration file %q: %v", yamlConfig.Cert, err)
 		}
-		keyFile, err := ioutil.ReadFile(yamlConfig.Key)
+		keyFile, err := os.ReadFile(yamlConfig.Key)
 		if err != nil {
 			return nil, fmt.Errorf("could not open Key configuration file %q: %v", yamlConfig.Key, err)
 		}
-		cacertFile, err := ioutil.ReadFile(yamlConfig.Cacert)
+		cacertFile, err := os.ReadFile(yamlConfig.Cacert)
 		if err != nil {
 			return nil, fmt.Errorf("could not open Cacert configuration file %q: %v", yamlConfig.Cacert, err)
 		}

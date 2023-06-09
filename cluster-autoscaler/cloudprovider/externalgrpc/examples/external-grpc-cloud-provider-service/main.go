@@ -20,8 +20,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
-	"io/ioutil"
 	"net"
+	"os"
 	"strings"
 
 	"google.golang.org/grpc"
@@ -96,7 +96,7 @@ func main() {
 			klog.Fatalf("failed to read certificate files: %s", err)
 		}
 		certPool := x509.NewCertPool()
-		bs, err := ioutil.ReadFile(*cacert)
+		bs, err := os.ReadFile(*cacert)
 		if err != nil {
 			klog.Fatalf("failed to read client ca cert: %s", err)
 		}

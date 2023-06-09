@@ -24,7 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strings"
 
@@ -228,7 +228,7 @@ func (hc *HcHttpClient) deserializeResponse(resp *response.DefaultHttpResponse, 
 		return nil
 	}
 
-	data, err := ioutil.ReadAll(resp.Response.Body)
+	data, err := io.ReadAll(resp.Response.Body)
 	if err != nil {
 		if closeErr := resp.Response.Body.Close(); closeErr != nil {
 			return err
@@ -238,7 +238,7 @@ func (hc *HcHttpClient) deserializeResponse(resp *response.DefaultHttpResponse, 
 	if err := resp.Response.Body.Close(); err != nil {
 		return err
 	} else {
-		resp.Response.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+		resp.Response.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 
 	hasBody := false

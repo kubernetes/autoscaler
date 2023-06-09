@@ -24,7 +24,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strings"
@@ -78,7 +78,7 @@ func (s *SecurityProviderExoscale) signRequest(req *http.Request, expiration tim
 	// Request body if present
 	body := ""
 	if req.Body != nil {
-		data, err := ioutil.ReadAll(req.Body)
+		data, err := io.ReadAll(req.Body)
 		if err != nil {
 			return err
 		}
@@ -87,7 +87,7 @@ func (s *SecurityProviderExoscale) signRequest(req *http.Request, expiration tim
 			return err
 		}
 		body = string(data)
-		req.Body = ioutil.NopCloser(bytes.NewReader(data))
+		req.Body = io.NopCloser(bytes.NewReader(data))
 	}
 	sigParts = append(sigParts, body)
 

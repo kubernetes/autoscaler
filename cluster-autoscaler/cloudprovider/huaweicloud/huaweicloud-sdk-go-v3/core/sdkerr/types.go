@@ -22,7 +22,7 @@ package sdkerr
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
@@ -88,7 +88,7 @@ func NewServiceResponseError(resp *http.Response) *ServiceResponseError {
 		RequestId:  resp.Header.Get("X-Request-Id"),
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err == nil {
 		dataBuf := make(map[string]string)
 		err := jsoniter.Unmarshal(data, &dataBuf)
@@ -122,7 +122,7 @@ func NewServiceResponseError(resp *http.Response) *ServiceResponseError {
 	}
 
 	if err := resp.Body.Close(); err == nil {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+		resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 
 	return sr

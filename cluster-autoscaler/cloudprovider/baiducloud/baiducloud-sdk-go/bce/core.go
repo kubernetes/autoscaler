@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"net/http"
@@ -527,7 +528,7 @@ func (c *Client) SendRequest(req *Request, option *SignOption) (bceResponse *Res
 	}
 	var buf []byte
 	if req.Body != nil {
-		buf, _ = os.ReadAll(req.Body)
+		buf, _ = io.ReadAll(req.Body)
 	}
 
 	for i := 0; ; i++ {
@@ -542,7 +543,7 @@ func (c *Client) SendRequest(req *Request, option *SignOption) (bceResponse *Res
 				req.Method, req.URL.String(), req.Header))
 		}
 		t0 := time.Now()
-		req.Body = os.NopCloser(bytes.NewBuffer(buf))
+		req.Body = io.NopCloser(bytes.NewBuffer(buf))
 		resp, httpError := c.httpClient.Do(req.raw())
 		t1 := time.Now()
 		bceResponse = NewResponse(resp)
