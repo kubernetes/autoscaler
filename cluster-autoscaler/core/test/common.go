@@ -334,7 +334,6 @@ func (p *MockAutoprovisioningNodeGroupListProcessor) CleanUp() {
 // MockBinpackingLimiter is a fake BinpackingLimiter to be used in tests.
 type MockBinpackingLimiter struct {
 	requiredExpansionOptions int
-	T                        *testing.T
 }
 
 // InitBinpacking initialises the MockBinpackingLimiter and sets requiredExpansionOptions to 1.

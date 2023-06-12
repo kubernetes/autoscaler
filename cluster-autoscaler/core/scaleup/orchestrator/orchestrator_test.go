@@ -843,13 +843,8 @@ func TestBinpackingLimiter(t *testing.T) {
 
 	processors := NewTestProcessors(&context)
 
-	// We should stop binpacking after finding expansion option from first node.
-	// It is because we know that extra pod (requiring 500 cpu) is a good fit on
-	// node1. The pod can also be scheduled on node n2 but it's not a good fit.
-	// Hence we can use heuristics with BinpackingLimiter to stop binpacking early
-	// to save time on computation.
+	// We should stop binpacking after finding expansion option from first node group.
 	processors.BinpackingLimiter = &MockBinpackingLimiter{}
-	processors.BinpackingLimiter.InitBinpacking(&context, []cloudprovider.NodeGroup{})
 
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
