@@ -141,7 +141,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	validNodeGroups, skippedNodeGroups := o.filterValidScaleUpNodeGroups(nodeGroups, nodeInfos, resourcesLeft, now)
 
 	// Mark skipped node groups as processed.
-	for nodegroupID, _ := range skippedNodeGroups {
+	for nodegroupID := range skippedNodeGroups {
 		processedNodeGroups[nodegroupID] = true
 	}
 
