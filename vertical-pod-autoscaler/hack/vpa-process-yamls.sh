@@ -41,6 +41,9 @@ fi
 
 ACTION=$1
 COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+case ${ACTION} in
+delete|diff) COMPONENTS+=" vpa-beta2-crd" ;;
+esac
 
 if [ $# -gt 1 ]; then
   COMPONENTS="$2-deployment"
