@@ -320,7 +320,10 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 
 ### VerticalPodAutoscaler
 
-The chart can install a [`VerticalPodAutoscaler`](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md) for the Deployment if needed. A VPA can help minimize wasted resources when usage spikes periodically or remediate containers that are being OOMKilled.
+The CA Helm Chart can install a [`VerticalPodAutoscaler`](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md) object from Chart version `9.27.0`
+onwards for the Cluster Autoscaler Deployment to scale the CA as appropriate, but for that, we
+need to install the VPA to the cluster separately. A VPA can help minimize wasted resources
+when usage spikes periodically or remediate containers that are being OOMKilled.
 
 The following example snippet can be used to install VPA that allows scaling down from the default recommendations of the deployment template:
 
@@ -383,7 +386,7 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.27.1"` | Image tag |
+| image.tag | string | `"v1.27.2"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
 | magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
