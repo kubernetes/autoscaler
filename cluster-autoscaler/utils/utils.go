@@ -94,6 +94,16 @@ func dropProjectedVolumesAndMounts(podSpec *apiv1.PodSpec) {
 		}
 		podSpec.Containers[i].VolumeMounts = volumeMounts
 	}
+
+	for i := range podSpec.InitContainers {
+		var volumeMounts []apiv1.VolumeMount
+		for _, mount := range podSpec.InitContainers[i].VolumeMounts {
+			if ok := projectedVolumeNames[mount.Name]; !ok {
+				volumeMounts = append(volumeMounts, mount)
+			}
+		}
+		podSpec.InitContainers[i].VolumeMounts = volumeMounts
+	}
 }
 
 func dropHostname(podSpec *apiv1.PodSpec) {
