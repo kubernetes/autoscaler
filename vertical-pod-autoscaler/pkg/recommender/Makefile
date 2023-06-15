@@ -76,6 +76,11 @@ build-in-docker: $(addprefix build-in-docker-,$(ALL_ARCHITECTURES))
 
 .PHONY: build-in-docker-*
 build-in-docker-%: clean docker-builder
+	echo '=============== local git status ==============='
+	git status
+	echo '=============== last commit ==============='
+	git log -1
+	echo '=============== bulding from the above ==============='
 	docker run -v `pwd`/../..:/gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler vpa-autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler && make build-binary-with-vendor-$* -C pkg/recommender'
 
 release: build-in-docker docker-build docker-push
