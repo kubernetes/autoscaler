@@ -16,6 +16,7 @@ package interpreter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/cel-go/common/containers"
 	"github.com/google/cel-go/common/types"
@@ -231,7 +232,11 @@ type absoluteAttribute struct {
 
 // ID implements the Attribute interface method.
 func (a *absoluteAttribute) ID() int64 {
-	return a.id
+	qualCount := len(a.qualifiers)
+	if qualCount == 0 {
+		return a.id
+	}
+	return a.qualifiers[qualCount-1].ID()
 }
 
 // IsOptional returns trivially false for an attribute as the attribute represents a fully
@@ -289,7 +294,11 @@ func (a *absoluteAttribute) Resolve(vars Activation) (any, error) {
 				return nil, err
 			}
 			if isOpt {
-				return types.OptionalOf(a.adapter.NativeToValue(obj)), nil
+				val := a.adapter.NativeToValue(obj)
+				if types.IsUnknown(val) {
+					return val, nil
+				}
+				return types.OptionalOf(val), nil
 			}
 			return obj, nil
 		}
@@ -301,7 +310,14 @@ func (a *absoluteAttribute) Resolve(vars Activation) (any, error) {
 			}
 		}
 	}
-	return nil, missingAttribute(a.String())
+	var attrNames strings.Builder
+	for i, nm := range a.namespaceNames {
+		if i != 0 {
+			attrNames.WriteString(", ")
+		}
+		attrNames.WriteString(nm)
+	}
+	return nil, missingAttribute(attrNames.String())
 }
 
 type conditionalAttribute struct {
@@ -315,6 +331,11 @@ type conditionalAttribute struct {
 
 // ID is an implementation of the Attribute interface method.
 func (a *conditionalAttribute) ID() int64 {
+	// There's a field access after the conditional.
+	if a.truthy.ID() == a.falsy.ID() {
+		return a.truthy.ID()
+	}
+	// Otherwise return the conditional id as the consistent id being tracked.
 	return a.id
 }
 
@@ -379,7 +400,7 @@ type maybeAttribute struct {
 
 // ID is an implementation of the Attribute interface method.
 func (a *maybeAttribute) ID() int64 {
-	return a.id
+	return a.attrs[0].ID()
 }
 
 // IsOptional returns trivially false for an attribute as the attribute represents a fully
@@ -436,7 +457,9 @@ func (a *maybeAttribute) AddQualifier(qual Qualifier) (Attribute, error) {
 		}
 	}
 	// Next, ensure the most specific variable / type reference is searched first.
-	a.attrs = append([]NamespacedAttribute{a.fac.AbsoluteAttribute(qual.ID(), augmentedNames...)}, a.attrs...)
+	if len(augmentedNames) != 0 {
+		a.attrs = append([]NamespacedAttribute{a.fac.AbsoluteAttribute(qual.ID(), augmentedNames...)}, a.attrs...)
+	}
 	return a, nil
 }
 
@@ -494,7 +517,11 @@ type relativeAttribute struct {
 
 // ID is an implementation of the Attribute interface method.
 func (a *relativeAttribute) ID() int64 {
-	return a.id
+	qualCount := len(a.qualifiers)
+	if qualCount == 0 {
+		return a.id
+	}
+	return a.qualifiers[qualCount-1].ID()
 }
 
 // IsOptional returns trivially false for an attribute as the attribute represents a fully
@@ -535,7 +562,11 @@ func (a *relativeAttribute) Resolve(vars Activation) (any, error) {
 		return nil, err
 	}
 	if isOpt {
-		return types.OptionalOf(a.adapter.NativeToValue(obj)), nil
+		val := a.adapter.NativeToValue(obj)
+		if types.IsUnknown(val) {
+			return val, nil
+		}
+		return types.OptionalOf(val), nil
 	}
 	return obj, nil
 }
@@ -1148,6 +1179,9 @@ func applyQualifiers(vars Activation, obj any, qualifiers []Qualifier) (any, boo
 				return nil, false, err
 			}
 			if !present {
+				// We return optional none here with a presence of 'false' as the layers
+				// above will attempt to call types.OptionalOf() on a present value if any
+				// of the qualifiers is optional.
 				return types.OptionalNone, false, nil
 			}
 		} else {
@@ -1200,6 +1234,8 @@ func refQualify(adapter ref.TypeAdapter, obj any, idx ref.Val, presenceTest, pre
 		return nil, false, v
 	case traits.Mapper:
 		val, found := v.Find(idx)
+		// If the index is of the wrong type for the map, then it is possible
+		// for the Find call to produce an error.
 		if types.IsError(val) {
 			return nil, false, val.(*types.Err)
 		}
@@ -1211,6 +1247,8 @@ func refQualify(adapter ref.TypeAdapter, obj any, idx ref.Val, presenceTest, pre
 		}
 		return nil, false, missingKey(idx)
 	case traits.Lister:
+		// If the index argument is not a valid numeric type, then it is possible
+		// for the index operation to produce an error.
 		i, err := types.IndexOrError(idx)
 		if err != nil {
 			return nil, false, err
@@ -1231,6 +1269,8 @@ func refQualify(adapter ref.TypeAdapter, obj any, idx ref.Val, presenceTest, pre
 				if types.IsError(presence) {
 					return nil, false, presence.(*types.Err)
 				}
+				// If not found or presence only test, then return.
+				// Otherwise, if found, obtain the value later on.
 				if presenceOnly || presence == types.False {
 					return nil, presence == types.True, nil
 				}
@@ -1288,7 +1328,7 @@ func (e *resolutionError) Error() string {
 		return fmt.Sprintf("index out of bounds: %v", e.missingIndex)
 	}
 	if e.missingAttribute != "" {
-		return fmt.Sprintf("no such attribute: %s", e.missingAttribute)
+		return fmt.Sprintf("no such attribute(s): %s", e.missingAttribute)
 	}
 	return "invalid attribute"
 }
@@ -1296,18 +1336,4 @@ func (e *resolutionError) Error() string {
 // Is implements the errors.Is() method used by more recent versions of Go.
 func (e *resolutionError) Is(err error) bool {
 	return err.Error() == e.Error()
-}
-
-func findMin(x, y int64) int64 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func findMax(x, y int64) int64 {
-	if x > y {
-		return x
-	}
-	return y
 }
