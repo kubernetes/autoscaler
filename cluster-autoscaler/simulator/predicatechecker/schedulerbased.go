@@ -56,9 +56,9 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
 	framework, err := schedulerframeworkruntime.NewFramework(
+		context.TODO(),
 		scheduler_plugins.NewInTreeRegistry(),
 		&config.Profiles[0],
-		stop,
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)
