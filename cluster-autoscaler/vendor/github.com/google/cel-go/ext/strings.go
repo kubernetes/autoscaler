@@ -81,7 +81,7 @@ const (
 // `%X` - same as above, but with A-F capitalized.
 // `%o` - substitutes an integer with its equivalent in octal.
 //
-// <string>.format(<list>)` -> <string>
+//	<string>.format(<list>) -> <string>
 //
 // Examples:
 //
@@ -431,30 +431,12 @@ func (sl *stringLib) CompileOptions() []cel.EnvOption {
 					s := str.(types.String)
 					return stringOrError(upperASCII(string(s)))
 				}))),
-		cel.Function("join",
-			cel.MemberOverload("list_join", []*cel.Type{cel.ListType(cel.StringType)}, cel.StringType,
-				cel.UnaryBinding(func(list ref.Val) ref.Val {
-					l, err := list.ConvertToNative(stringListType)
-					if err != nil {
-						return types.NewErr(err.Error())
-					}
-					return stringOrError(join(l.([]string)))
-				})),
-			cel.MemberOverload("list_join_string", []*cel.Type{cel.ListType(cel.StringType), cel.StringType}, cel.StringType,
-				cel.BinaryBinding(func(list, delim ref.Val) ref.Val {
-					l, err := list.ConvertToNative(stringListType)
-					if err != nil {
-						return types.NewErr(err.Error())
-					}
-					d := delim.(types.String)
-					return stringOrError(joinSeparator(l.([]string), string(d)))
-				}))),
 	}
 	if sl.version >= 1 {
 		opts = append(opts, cel.Function("format",
 			cel.MemberOverload("string_format", []*cel.Type{cel.StringType, cel.ListType(cel.DynType)}, cel.StringType,
 				cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-					s := args[0].(types.String).Value().(string)
+					s := string(args[0].(types.String))
 					formatArgs := args[1].(traits.Lister)
 					return stringOrError(interpreter.ParseFormatString(s, &stringFormatter{}, &stringArgList{formatArgs}, formatLocale))
 				}))),
@@ -464,6 +446,43 @@ func (sl *stringLib) CompileOptions() []cel.EnvOption {
 					return stringOrError(quote(string(s)))
 				}))))
 
+	}
+	if sl.version >= 2 {
+		opts = append(opts,
+			cel.Function("join",
+				cel.MemberOverload("list_join", []*cel.Type{cel.ListType(cel.StringType)}, cel.StringType,
+					cel.UnaryBinding(func(list ref.Val) ref.Val {
+						l := list.(traits.Lister)
+						return stringOrError(joinValSeparator(l, ""))
+					})),
+				cel.MemberOverload("list_join_string", []*cel.Type{cel.ListType(cel.StringType), cel.StringType}, cel.StringType,
+					cel.BinaryBinding(func(list, delim ref.Val) ref.Val {
+						l := list.(traits.Lister)
+						d := delim.(types.String)
+						return stringOrError(joinValSeparator(l, string(d)))
+					}))),
+		)
+	} else {
+		opts = append(opts,
+			cel.Function("join",
+				cel.MemberOverload("list_join", []*cel.Type{cel.ListType(cel.StringType)}, cel.StringType,
+					cel.UnaryBinding(func(list ref.Val) ref.Val {
+						l, err := list.ConvertToNative(stringListType)
+						if err != nil {
+							return types.NewErr(err.Error())
+						}
+						return stringOrError(join(l.([]string)))
+					})),
+				cel.MemberOverload("list_join_string", []*cel.Type{cel.ListType(cel.StringType), cel.StringType}, cel.StringType,
+					cel.BinaryBinding(func(list, delim ref.Val) ref.Val {
+						l, err := list.ConvertToNative(stringListType)
+						if err != nil {
+							return types.NewErr(err.Error())
+						}
+						d := delim.(types.String)
+						return stringOrError(joinSeparator(l.([]string), string(d)))
+					}))),
+		)
 	}
 	return opts
 }
@@ -621,6 +640,23 @@ func joinSeparator(strs []string, separator string) (string, error) {
 
 func join(strs []string) (string, error) {
 	return strings.Join(strs, ""), nil
+}
+
+func joinValSeparator(strs traits.Lister, separator string) (string, error) {
+	sz := strs.Size().(types.Int)
+	var sb strings.Builder
+	for i := types.Int(0); i < sz; i++ {
+		if i != 0 {
+			sb.WriteString(separator)
+		}
+		elem := strs.Get(i)
+		str, ok := elem.(types.String)
+		if !ok {
+			return "", fmt.Errorf("join: invalid input: %v", elem)
+		}
+		sb.WriteString(string(str))
+	}
+	return sb.String(), nil
 }
 
 type clauseImpl func(ref.Val, string) (string, error)

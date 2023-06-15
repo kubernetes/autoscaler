@@ -568,3 +568,12 @@ func ParserRecursionLimit(limit int) EnvOption {
 		return e, nil
 	}
 }
+
+// ParserExpressionSizeLimit adjusts the number of code points the expression parser is allowed to parse.
+// Defaults defined in the parser package.
+func ParserExpressionSizeLimit(limit int) EnvOption {
+	return func(e *Env) (*Env, error) {
+		e.prsrOpts = append(e.prsrOpts, parser.ExpressionSizeCodePointLimit(limit))
+		return e, nil
+	}
+}

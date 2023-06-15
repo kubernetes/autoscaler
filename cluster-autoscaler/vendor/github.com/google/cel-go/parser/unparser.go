@@ -276,6 +276,9 @@ func (un *unparser) visitConst(expr *exprpb.Expr) error {
 		// represent the float using the minimum required digits
 		d := strconv.FormatFloat(c.GetDoubleValue(), 'g', -1, 64)
 		un.str.WriteString(d)
+		if !strings.Contains(d, ".") {
+			un.str.WriteString(".0")
+		}
 	case *exprpb.Constant_Int64Value:
 		i := strconv.FormatInt(c.GetInt64Value(), 10)
 		un.str.WriteString(i)
