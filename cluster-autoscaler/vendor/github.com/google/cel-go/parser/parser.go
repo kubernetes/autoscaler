@@ -47,6 +47,9 @@ func NewParser(opts ...Option) (*Parser, error) {
 			return nil, err
 		}
 	}
+	if p.errorReportingLimit == 0 {
+		p.errorReportingLimit = 100
+	}
 	if p.maxRecursionDepth == 0 {
 		p.maxRecursionDepth = 250
 	}
@@ -91,6 +94,7 @@ func (p *Parser) Parse(source common.Source) (*exprpb.ParsedExpr, *common.Errors
 		helper:                           newParserHelper(source),
 		macros:                           p.macros,
 		maxRecursionDepth:                p.maxRecursionDepth,
+		errorReportingLimit:              p.errorReportingLimit,
 		errorRecoveryLimit:               p.errorRecoveryLimit,
 		errorRecoveryLookaheadTokenLimit: p.errorRecoveryTokenLookaheadLimit,
 		populateMacroCalls:               p.populateMacroCalls,
@@ -200,6 +204,16 @@ func (rl *recursionListener) ExitEveryRule(ctx antlr.ParserRuleContext) {
 
 var _ antlr.ParseTreeListener = &recursionListener{}
 
+type tooManyErrors struct {
+	errorReportingLimit int
+}
+
+func (t *tooManyErrors) Error() string {
+	return fmt.Sprintf("More than %d syntax errors", t.errorReportingLimit)
+}
+
+var _ error = &tooManyErrors{}
+
 type recoveryLimitError struct {
 	message string
 }
@@ -274,7 +288,9 @@ type parser struct {
 	helper                           *parserHelper
 	macros                           map[string]Macro
 	recursionDepth                   int
+	errorReports                     int
 	maxRecursionDepth                int
+	errorReportingLimit              int
 	errorRecoveryLimit               int
 	errorRecoveryLookaheadTokenLimit int
 	populateMacroCalls               bool
@@ -306,14 +322,14 @@ func (p *parser) parse(expr runes.Buffer, desc string) *exprpb.Expr {
 	lexer := lexerPool.Get().(*gen.CELLexer)
 	prsr := parserPool.Get().(*gen.CELParser)
 
-	// Unfortunately ANTLR Go runtime is missing (*antlr.BaseParser).RemoveParseListeners, so this is
-	// good enough until that is exported.
 	prsrListener := &recursionListener{
 		maxDepth:      p.maxRecursionDepth,
 		ruleTypeDepth: map[int]*int{},
 	}
 
 	defer func() {
+		// Unfortunately ANTLR Go runtime is missing (*antlr.BaseParser).RemoveParseListeners,
+		// so this is good enough until that is exported.
 		// Reset the lexer and parser before putting them back in the pool.
 		lexer.RemoveErrorListeners()
 		prsr.RemoveParseListener(prsrListener)
@@ -344,6 +360,8 @@ func (p *parser) parse(expr runes.Buffer, desc string) *exprpb.Expr {
 				p.errors.ReportError(common.NoLocation, err.Error())
 			case *recursionError:
 				p.errors.ReportError(common.NoLocation, err.Error())
+			case *tooManyErrors:
+				// do nothing
 			case *recoveryLimitError:
 				// do nothing, listeners already notified and error reported.
 			default:
@@ -866,7 +884,6 @@ func (p *parser) reportError(ctx any, format string, args ...any) *exprpb.Expr {
 
 // ANTLR Parse listener implementations
 func (p *parser) SyntaxError(recognizer antlr.Recognizer, offendingSymbol any, line, column int, msg string, e antlr.RecognitionException) {
-	// TODO: Snippet
 	l := p.helper.source.NewLocation(line, column)
 	// Hack to keep existing error messages consistent with previous versions of CEL when a reserved word
 	// is used as an identifier. This behavior needs to be overhauled to provide consistent, normalized error
@@ -874,7 +891,16 @@ func (p *parser) SyntaxError(recognizer antlr.Recognizer, offendingSymbol any, l
 	if strings.Contains(msg, "no viable alternative") {
 		msg = reservedIdentifier.ReplaceAllString(msg, mismatchedReservedIdentifier)
 	}
-	p.errors.syntaxError(l, msg)
+	// Ensure that no more than 100 syntax errors are reported as this will halt attempts to recover from a
+	// seriously broken expression.
+	if p.errorReports < p.errorReportingLimit {
+		p.errorReports++
+		p.errors.syntaxError(l, msg)
+	} else {
+		tme := &tooManyErrors{errorReportingLimit: p.errorReportingLimit}
+		p.errors.syntaxError(l, tme.Error())
+		panic(tme)
+	}
 }
 
 func (p *parser) ReportAmbiguity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, exact bool, ambigAlts *antlr.BitSet, configs antlr.ATNConfigSet) {

@@ -259,7 +259,8 @@ func (p *parserHelper) buildMacroCallArg(expr *exprpb.Expr) *exprpb.Expr {
 			Id: expr.GetId(),
 			ExprKind: &exprpb.Expr_ListExpr{
 				ListExpr: &exprpb.Expr_CreateList{
-					Elements: macroListArgs,
+					Elements:        macroListArgs,
+					OptionalIndices: listExpr.GetOptionalIndices(),
 				},
 			},
 		}

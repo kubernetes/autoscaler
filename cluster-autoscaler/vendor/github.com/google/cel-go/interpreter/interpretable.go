@@ -15,6 +15,8 @@
 package interpreter
 
 import (
+	"fmt"
+
 	"github.com/google/cel-go/common/operators"
 	"github.com/google/cel-go/common/overloads"
 	"github.com/google/cel-go/common/types"
@@ -69,6 +71,7 @@ type InterpretableAttribute interface {
 	// to whether the qualifier is present.
 	QualifyIfPresent(vars Activation, obj any, presenceOnly bool) (any, bool, error)
 
+	// IsOptional indicates whether the resulting value is an optional type.
 	IsOptional() bool
 
 	// Resolve returns the value of the Attribute given the current Activation.
@@ -108,10 +111,8 @@ type InterpretableConstructor interface {
 // Core Interpretable implementations used during the program planning phase.
 
 type evalTestOnly struct {
-	id    int64
-	attr  InterpretableAttribute
-	qual  Qualifier
-	field types.String
+	id int64
+	InterpretableAttribute
 }
 
 // ID implements the Interpretable interface method.
@@ -121,28 +122,55 @@ func (test *evalTestOnly) ID() int64 {
 
 // Eval implements the Interpretable interface method.
 func (test *evalTestOnly) Eval(ctx Activation) ref.Val {
-	val, err := test.attr.Resolve(ctx)
+	val, err := test.Resolve(ctx)
+	// Return an error if the resolve step fails
 	if err != nil {
-		return types.NewErr(err.Error())
+		return types.WrapErr(err)
 	}
-	optVal, isOpt := val.(*types.Optional)
-	if isOpt {
-		if !optVal.HasValue() {
-			return types.False
-		}
-		val = optVal.GetValue()
+	if optVal, isOpt := val.(*types.Optional); isOpt {
+		return types.Bool(optVal.HasValue())
 	}
-	out, found, err := test.qual.QualifyIfPresent(ctx, val, true)
+	return test.Adapter().NativeToValue(val)
+}
+
+// AddQualifier appends a qualifier that will always and only perform a presence test.
+func (test *evalTestOnly) AddQualifier(q Qualifier) (Attribute, error) {
+	cq, ok := q.(ConstantQualifier)
+	if !ok {
+		return nil, fmt.Errorf("test only expressions must have constant qualifiers: %v", q)
+	}
+	return test.InterpretableAttribute.AddQualifier(&testOnlyQualifier{ConstantQualifier: cq})
+}
+
+type testOnlyQualifier struct {
+	ConstantQualifier
+}
+
+// Qualify determines whether the test-only qualifier is present on the input object.
+func (q *testOnlyQualifier) Qualify(vars Activation, obj any) (any, error) {
+	out, present, err := q.ConstantQualifier.QualifyIfPresent(vars, obj, true)
 	if err != nil {
-		return types.NewErr(err.Error())
+		return nil, err
 	}
 	if unk, isUnk := out.(types.Unknown); isUnk {
-		return unk
+		return unk, nil
 	}
-	if found {
-		return types.True
+	if opt, isOpt := out.(types.Optional); isOpt {
+		return opt.HasValue(), nil
 	}
-	return types.False
+	return present, nil
+}
+
+// QualifyIfPresent returns whether the target field in the test-only expression is present.
+func (q *testOnlyQualifier) QualifyIfPresent(vars Activation, obj any, presenceOnly bool) (any, bool, error) {
+	// Only ever test for presence.
+	return q.ConstantQualifier.QualifyIfPresent(vars, obj, true)
+}
+
+// QualifierValueEquals determines whether the test-only constant qualifier equals the input value.
+func (q *testOnlyQualifier) QualifierValueEquals(value any) bool {
+	// The input qualifier will always be of type string
+	return q.ConstantQualifier.Value().Value() == value
 }
 
 // NewConstValue creates a new constant valued Interpretable.
@@ -802,6 +830,9 @@ func (e *evalSetMembership) ID() int64 {
 // Eval implements the Interpretable interface method.
 func (e *evalSetMembership) Eval(ctx Activation) ref.Val {
 	val := e.arg.Eval(ctx)
+	if types.IsUnknownOrError(val) {
+		return val
+	}
 	if ret, found := e.valueSet[val]; found {
 		return ret
 	}
@@ -872,12 +903,29 @@ func (e *evalWatchConstQual) Qualify(vars Activation, obj any) (any, error) {
 	out, err := e.ConstantQualifier.Qualify(vars, obj)
 	var val ref.Val
 	if err != nil {
-		val = types.NewErr(err.Error())
+		val = types.WrapErr(err)
 	} else {
 		val = e.adapter.NativeToValue(out)
 	}
 	e.observer(e.ID(), e.ConstantQualifier, val)
 	return out, err
+}
+
+// QualifyIfPresent conditionally qualifies the variable and only records a value if one is present.
+func (e *evalWatchConstQual) QualifyIfPresent(vars Activation, obj any, presenceOnly bool) (any, bool, error) {
+	out, present, err := e.ConstantQualifier.QualifyIfPresent(vars, obj, presenceOnly)
+	var val ref.Val
+	if err != nil {
+		val = types.WrapErr(err)
+	} else if out != nil {
+		val = e.adapter.NativeToValue(out)
+	} else if presenceOnly {
+		val = types.Bool(present)
+	}
+	if present || presenceOnly {
+		e.observer(e.ID(), e.ConstantQualifier, val)
+	}
+	return out, present, err
 }
 
 // QualifierValueEquals tests whether the incoming value is equal to the qualifying constant.
@@ -898,12 +946,29 @@ func (e *evalWatchQual) Qualify(vars Activation, obj any) (any, error) {
 	out, err := e.Qualifier.Qualify(vars, obj)
 	var val ref.Val
 	if err != nil {
-		val = types.NewErr(err.Error())
+		val = types.WrapErr(err)
 	} else {
 		val = e.adapter.NativeToValue(out)
 	}
 	e.observer(e.ID(), e.Qualifier, val)
 	return out, err
+}
+
+// QualifyIfPresent conditionally qualifies the variable and only records a value if one is present.
+func (e *evalWatchQual) QualifyIfPresent(vars Activation, obj any, presenceOnly bool) (any, bool, error) {
+	out, present, err := e.Qualifier.QualifyIfPresent(vars, obj, presenceOnly)
+	var val ref.Val
+	if err != nil {
+		val = types.WrapErr(err)
+	} else if out != nil {
+		val = e.adapter.NativeToValue(out)
+	} else if presenceOnly {
+		val = types.Bool(present)
+	}
+	if present || presenceOnly {
+		e.observer(e.ID(), e.Qualifier, val)
+	}
+	return out, present, err
 }
 
 // evalWatchConst describes a watcher of an instConst Interpretable.
@@ -1025,12 +1090,12 @@ func (cond *evalExhaustiveConditional) Eval(ctx Activation) ref.Val {
 	}
 	if cBool {
 		if tErr != nil {
-			return types.NewErr(tErr.Error())
+			return types.WrapErr(tErr)
 		}
 		return cond.adapter.NativeToValue(tVal)
 	}
 	if fErr != nil {
-		return types.NewErr(fErr.Error())
+		return types.WrapErr(fErr)
 	}
 	return cond.adapter.NativeToValue(fVal)
 }
@@ -1041,6 +1106,8 @@ type evalAttr struct {
 	attr     Attribute
 	optional bool
 }
+
+var _ InterpretableAttribute = &evalAttr{}
 
 // ID of the attribute instruction.
 func (a *evalAttr) ID() int64 {
@@ -1068,7 +1135,7 @@ func (a *evalAttr) Adapter() ref.TypeAdapter {
 func (a *evalAttr) Eval(ctx Activation) ref.Val {
 	v, err := a.attr.Resolve(ctx)
 	if err != nil {
-		return types.NewErr(err.Error())
+		return types.WrapErr(err)
 	}
 	return a.adapter.NativeToValue(v)
 }
