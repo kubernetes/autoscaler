@@ -19,6 +19,7 @@ package processors
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/binpacking"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
@@ -38,6 +39,8 @@ type AutoscalingProcessors struct {
 	PodListProcessor pods.PodListProcessor
 	// NodeGroupListProcessor is used to process list of NodeGroups that can be used in scale-up.
 	NodeGroupListProcessor nodegroups.NodeGroupListProcessor
+	// BinpackingLimiter processes expansion options to stop binpacking early.
+	BinpackingLimiter binpacking.BinpackingLimiter
 	// NodeGroupSetProcessor is used to divide scale-up between similar NodeGroups.
 	NodeGroupSetProcessor nodegroupset.NodeGroupSetProcessor
 	// ScaleUpStatusProcessor is used to process the state of the cluster after a scale-up.
@@ -71,6 +74,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:       pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor: nodegroups.NewDefaultNodeGroupListProcessor(),
+		BinpackingLimiter:      binpacking.NewDefaultBinpackingLimiter(),
 		NodeGroupSetProcessor: nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{
 			MaxAllocatableDifferenceRatio:    config.DefaultMaxAllocatableDifferenceRatio,
 			MaxCapacityMemoryDifferenceRatio: config.DefaultMaxCapacityMemoryDifferenceRatio,

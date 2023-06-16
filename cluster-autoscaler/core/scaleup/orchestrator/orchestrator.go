@@ -119,6 +119,9 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 	}
 
+	// Initialise binpacking limiter.
+	o.processors.BinpackingLimiter.InitBinpacking(o.autoscalingContext, nodeGroups)
+
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
 		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
@@ -128,6 +131,11 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	// Filter out invalid node groups
 	validNodeGroups, skippedNodeGroups := o.filterValidScaleUpNodeGroups(nodeGroups, nodeInfos, resourcesLeft, now)
+
+	// Mark skipped node groups as processed.
+	for nodegroupID := range skippedNodeGroups {
+		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingContext, nodegroupID)
+	}
 
 	// Calculate expansion options
 	schedulablePods := map[string][]*apiv1.Pod{}
@@ -139,12 +147,17 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	for _, nodeGroup := range validNodeGroups {
 		option := o.ComputeExpansionOption(nodeGroup, schedulablePods, nodeInfos, upcomingNodes, now)
+		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingContext, nodeGroup.Id())
+
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
 			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-			continue
+		} else {
+			options = append(options, option)
 		}
 
-		options = append(options, option)
+		if o.processors.BinpackingLimiter.StopBinpacking(o.autoscalingContext, options) {
+			break
+		}
 	}
 
 	if len(options) == 0 {
