@@ -298,14 +298,29 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 		migs[piece], errors[piece] = c.gceClient.FetchAllMigs(zones[piece])
 	})
 
+	failedZones := map[string]error{}
+	failedZoneCount := 0
 	for idx, err := range errors {
 		if err != nil {
 			klog.Errorf("Error listing migs from zone %v; err=%v", zones[idx], err)
-			return fmt.Errorf("%v", errors)
+			failedZones[zones[idx]] = err
+			failedZoneCount++
 		}
 	}
 
+	if failedZoneCount > 0 && failedZoneCount == len(zones) {
+		return fmt.Errorf("%v", errors)
+	}
+
 	registeredMigRefs := c.getRegisteredMigRefs()
+
+	for migRef := range registeredMigRefs {
+		err, ok := failedZones[migRef.Zone]
+		if ok {
+			c.migLister.HandleMigIssue(migRef, err)
+		}
+	}
+
 	for idx, zone := range zones {
 		for _, zoneMig := range migs[idx] {
 			zoneMigRef := GceRef{
