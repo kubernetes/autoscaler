@@ -805,6 +805,64 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	assert.False(t, scaleUpStatus.WasSuccessful())
 }
 
+func TestBinpackingLimiter(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 1000)
+	n2 := BuildTestNode("n2", 100000, 100000)
+	now := time.Now()
+
+	SetNodeReadyState(n1, true, now.Add(-2*time.Minute))
+	SetNodeReadyState(n2, true, now.Add(-2*time.Minute))
+
+	nodes := []*apiv1.Node{n1, n2}
+
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+
+	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+		return nil
+	}, nil)
+
+	options := defaultOptions
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", n1)
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+	provider.AddNode("ng2", n2)
+	assert.NotNil(t, provider)
+
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	assert.NoError(t, err)
+
+	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).
+		Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	assert.NoError(t, err)
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+
+	extraPod := BuildTestPod("p-new", 500, 0)
+
+	processors := NewTestProcessors(&context)
+
+	// We should stop binpacking after finding expansion option from first node group.
+	processors.BinpackingLimiter = &MockBinpackingLimiter{}
+
+	suOrchestrator := New()
+	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
+
+	expander := NewMockRepotingStrategy(t, &GroupSizeChange{GroupName: "ng1", SizeChange: 1})
+	context.ExpanderStrategy = expander
+
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{extraPod}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
+	assert.NoError(t, err)
+	assert.True(t, scaleUpStatus.WasSuccessful())
+
+	expansionOptions := expander.LastInputOptions()
+	// Only 1 expansion option should be there. Without BinpackingLimiter there will be 2.
+	assert.True(t, len(expansionOptions) == 1)
+	assert.Equal(t, expansionOptions, []GroupSizeChange{{GroupName: "ng1", SizeChange: 1}})
+}
+
 func TestScaleUpNoHelp(t *testing.T) {
 	n1 := BuildTestNode("n1", 100, 1000)
 	now := time.Now()
