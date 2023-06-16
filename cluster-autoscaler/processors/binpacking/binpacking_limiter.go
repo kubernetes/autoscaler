@@ -31,7 +31,6 @@ type BinpackingLimiter interface {
 
 // NoOpBinpackingLimiter returns true without processing expansion options.
 type NoOpBinpackingLimiter struct {
-	processedNodeGroups map[string]bool
 }
 
 // NewDefaultBinpackingLimiter creates an instance of NoOpBinpackingLimiter.
@@ -41,10 +40,6 @@ func NewDefaultBinpackingLimiter() BinpackingLimiter {
 
 // InitBinpacking initialises the BinpackingLimiter.
 func (p *NoOpBinpackingLimiter) InitBinpacking(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
-	p.processedNodeGroups = make(map[string]bool)
-	for _, nodegroup := range nodeGroups {
-		p.processedNodeGroups[nodegroup.Id()] = true
-	}
 }
 
 // StopBinpacking is used to make decsions on the evaluated expansion options.
@@ -54,5 +49,4 @@ func (p *NoOpBinpackingLimiter) StopBinpacking(context *context.AutoscalingConte
 
 // MarkProcessed marks the nodegroup as processed.
 func (p *NoOpBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
-	p.processedNodeGroups[nodegroupId] = true
 }
