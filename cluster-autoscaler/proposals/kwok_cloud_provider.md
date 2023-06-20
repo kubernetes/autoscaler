@@ -126,7 +126,7 @@ The `kwok` provider can be used by setting `--cloudprovider=kwok` in the CA flag
 * `(nodeGroup *NodeGroup) IncreaseSize`: create nodes in the cluster based on template node for the nodegroup (every node created will have the name in the format `<nodegroup-name>-<5-letter-random-string>`) using kubernetes client. 
 * `(nodeGroup *NodeGroup) DeleteNodes`: delete nodes if the node has `kwok.x-k8s.io/node: fake` annotation (return error otherwise)
 
-You can see a PoC implementation of rest of the functions at https://github.com/kubernetes/autoscaler/blob/1e29c7f5352e6869077d55af300651f60ec6f7c3/cluster-autoscaler/cloudprovider/kwok/kwok.go#L393-L421 (only supports template nodes passed via env variable as of now)
+You can see a PoC implementation of rest of the functions at https://github.com/kubernetes/autoscaler/pull/5820/files#diff-44474ffb56eda61e9a6b16c3ca66461cdf8e02a7e89b659f5a45ca32f5fa8588 (only supports template nodes passed via env variable as of now)
 
 ### Things to note
 1. Once the user is done with using the `kwok` provider, `--cloudprovider` flag can be reset to any other cloud provider. Deleting the CA pod will cleanup all the fake nodes created by the `kwok` provider and restore the cluster to its original state. This behavior doesn't seem to be supported as of writing this (based on my tests). 
