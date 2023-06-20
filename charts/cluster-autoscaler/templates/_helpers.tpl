@@ -46,6 +46,7 @@ Return labels, including instance and name.
 {{ include "cluster-autoscaler.instance-name" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 helm.sh/chart: {{ include "cluster-autoscaler.chart" . | quote }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- if .Values.additionalLabels }}
 {{ toYaml .Values.additionalLabels }}
 {{- end -}}
