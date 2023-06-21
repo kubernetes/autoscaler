@@ -43,7 +43,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -665,7 +664,7 @@ func TestStartDeletion(t *testing.T) {
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
 				"test-node-0":     {ResultType: status.NodeDeleteOk},
 				"test-node-1":     {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
-				"atomic-2-node-0": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"atomic-2-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
 				"atomic-2-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
 			},
 		},
@@ -834,7 +833,7 @@ func TestStartDeletion(t *testing.T) {
 			evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
-				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, simulator.NodeDeleteOptions{}, evictor),
+				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
 				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx, ndt),
 			}
 			gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
@@ -1068,7 +1067,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
-				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, simulator.NodeDeleteOptions{}, evictor),
+				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
 				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx, ndt),
 			}
 
