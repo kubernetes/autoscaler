@@ -197,7 +197,7 @@ func TestRemove(t *testing.T) {
 				}
 			}
 
-			err = d.executeForBucket(nodeGroup)
+			err = d.remove(nodeGroup)
 			if test.err {
 				if err == nil {
 					t.Errorf("remove() should return error, but return nil")

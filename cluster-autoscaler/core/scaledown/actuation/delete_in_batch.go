@@ -86,7 +86,7 @@ func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovi
 	if first {
 		go func(nodeGroup cloudprovider.NodeGroup) {
 			time.Sleep(d.deleteInterval)
-			d.executeForBucket(nodeGroup)
+			d.remove(nodeGroup)
 		}(nodeGroup)
 	}
 }
@@ -107,8 +107,8 @@ func (d *NodeDeletionBatcher) addNodesToBucket(nodes []*apiv1.Node, nodeGroup cl
 	return false
 }
 
-// executeForBucket deletes nodes of a given nodeGroup, if successful, the deletion is recorded in CSR, and an event is emitted on the node.
-func (d *NodeDeletionBatcher) executeForBucket(nodeGroup cloudprovider.NodeGroup) error {
+// remove deletes nodes of a given nodeGroup, if successful, the deletion is recorded in CSR, and an event is emitted on the node.
+func (d *NodeDeletionBatcher) remove(nodeGroup cloudprovider.NodeGroup) error {
 	d.Lock()
 	defer d.Unlock()
 	nodes, ok := d.deletionsPerNodeGroup[nodeGroup.Id()]
