@@ -39,6 +39,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
@@ -56,8 +57,8 @@ func TestStartDeletion(t *testing.T) {
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
 
 	for tn, tc := range map[string]struct {
-		emptyNodes            []*nodeBucket
-		drainNodes            []*nodeBucket
+		emptyNodes            []*budgets.NodeGroupView
+		drainNodes            []*budgets.NodeGroupView
 		pods                  map[string][]*apiv1.Pod
 		failedPodDrain        map[string]bool
 		failedNodeDeletion    map[string]bool
@@ -77,7 +78,7 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"empty node deletion": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
@@ -110,7 +111,7 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"empty atomic node deletion": {
-			emptyNodes: generatenodeBucketList(atomic2, 0, 2),
+			emptyNodes: generateNodeGroupViewList(atomic2, 0, 2),
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
@@ -143,7 +144,7 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"deletion with drain": {
-			drainNodes: generatenodeBucketList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": removablePods(2, "test-node-0"),
 				"test-node-1": removablePods(2, "test-node-1"),
@@ -181,8 +182,8 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"empty and drain deletion work correctly together": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
-			drainNodes: generatenodeBucketList(testNg, 2, 4),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": removablePods(2, "test-node-3"),
@@ -240,8 +241,8 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"failure to taint empty node stops deletion and cleans already applied taints": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 4),
-			drainNodes: generatenodeBucketList(testNg, 4, 5),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 4),
+			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-4": removablePods(2, "test-node-4"),
 			},
@@ -263,8 +264,8 @@ func TestStartDeletion(t *testing.T) {
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint empty atomic node stops deletion and cleans already applied taints": {
-			emptyNodes: generatenodeBucketList(atomic4, 0, 4),
-			drainNodes: generatenodeBucketList(testNg, 4, 5),
+			emptyNodes: generateNodeGroupViewList(atomic4, 0, 4),
+			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-4": removablePods(2, "test-node-4"),
 			},
@@ -286,8 +287,8 @@ func TestStartDeletion(t *testing.T) {
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint drain node stops further deletion and cleans already applied taints": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
-			drainNodes: generatenodeBucketList(testNg, 2, 6),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 6),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": removablePods(2, "test-node-3"),
@@ -328,8 +329,8 @@ func TestStartDeletion(t *testing.T) {
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint drain atomic node stops further deletion and cleans already applied taints": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
-			drainNodes: generatenodeBucketList(atomic4, 2, 6),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(atomic4, 2, 6),
 			pods: map[string][]*apiv1.Pod{
 				"atomic-4-node-2": removablePods(2, "atomic-4-node-2"),
 				"atomic-4-node-3": removablePods(2, "atomic-4-node-3"),
@@ -370,7 +371,7 @@ func TestStartDeletion(t *testing.T) {
 			wantErr: cmpopts.AnyError,
 		},
 		"nodes that failed drain are correctly reported in results": {
-			drainNodes: generatenodeBucketList(testNg, 0, 4),
+			drainNodes: generateNodeGroupViewList(testNg, 0, 4),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": removablePods(3, "test-node-0"),
 				"test-node-1": removablePods(3, "test-node-1"),
@@ -458,8 +459,8 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"nodes that failed deletion are correctly reported in results": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
-			drainNodes: generatenodeBucketList(testNg, 2, 4),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": removablePods(2, "test-node-3"),
@@ -526,7 +527,7 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"DS pods are evicted from empty nodes, but don't block deletion on error": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": {generateDsPod("test-node-0-ds-pod-0", "test-node-0"), generateDsPod("test-node-0-ds-pod-1", "test-node-0")},
 				"test-node-1": {generateDsPod("test-node-1-ds-pod-0", "test-node-1"), generateDsPod("test-node-1-ds-pod-1", "test-node-1")},
@@ -565,7 +566,7 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"nodes with pods are not deleted if the node is passed as empty": {
-			emptyNodes: generatenodeBucketList(testNg, 0, 2),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": removablePods(2, "test-node-0"),
 				"test-node-1": removablePods(2, "test-node-1"),
@@ -606,8 +607,8 @@ func TestStartDeletion(t *testing.T) {
 		},
 		"atomic nodes with pods are not deleted if the node is passed as empty": {
 			emptyNodes: append(
-				generatenodeBucketList(testNg, 0, 2),
-				generatenodeBucketList(atomic2, 0, 2)...,
+				generateNodeGroupViewList(testNg, 0, 2),
+				generateNodeGroupViewList(atomic2, 0, 2)...,
 			),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-1":     removablePods(2, "test-node-1"),
@@ -678,14 +679,14 @@ func TestStartDeletion(t *testing.T) {
 			nodesByName := make(map[string]*apiv1.Node)
 			nodesLock := sync.Mutex{}
 			for _, bucket := range tc.emptyNodes {
-				allEmptyNodes = append(allEmptyNodes, bucket.nodes...)
+				allEmptyNodes = append(allEmptyNodes, bucket.Nodes...)
 				for _, node := range allEmptyNodes {
 					nodesByName[node.Name] = node
 				}
 			}
 			for _, bucket := range tc.drainNodes {
-				allDrainNodes = append(allDrainNodes, bucket.nodes...)
-				for _, node := range bucket.nodes {
+				allDrainNodes = append(allDrainNodes, bucket.Nodes...)
+				for _, node := range bucket.Nodes {
 					nodesByName[node.Name] = node
 				}
 			}
@@ -765,17 +766,17 @@ func TestStartDeletion(t *testing.T) {
 				return nil
 			})
 			for _, bucket := range tc.emptyNodes {
-				bucket.group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
-				provider.InsertNodeGroup(bucket.group)
-				for _, node := range bucket.nodes {
-					provider.AddNode(bucket.group.Id(), node)
+				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+				provider.InsertNodeGroup(bucket.Group)
+				for _, node := range bucket.Nodes {
+					provider.AddNode(bucket.Group.Id(), node)
 				}
 			}
 			for _, bucket := range tc.drainNodes {
-				bucket.group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
-				provider.InsertNodeGroup(bucket.group)
-				for _, node := range bucket.nodes {
-					provider.AddNode(bucket.group.Id(), node)
+				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+				provider.InsertNodeGroup(bucket.Group)
+				for _, node := range bucket.Nodes {
+					provider.AddNode(bucket.Group.Id(), node)
 				}
 			}
 
@@ -807,7 +808,7 @@ func TestStartDeletion(t *testing.T) {
 			}
 			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 			for _, bucket := range tc.emptyNodes {
-				for _, node := range bucket.nodes {
+				for _, node := range bucket.Nodes {
 					err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
 					if err != nil {
 						t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
@@ -815,7 +816,7 @@ func TestStartDeletion(t *testing.T) {
 				}
 			}
 			for _, bucket := range tc.drainNodes {
-				for _, node := range bucket.nodes {
+				for _, node := range bucket.Nodes {
 					pods, found := tc.pods[node.Name]
 					if !found {
 						t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
@@ -834,7 +835,7 @@ func TestStartDeletion(t *testing.T) {
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
 				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, simulator.NodeDeleteOptions{}, evictor),
-				budgetProcessor:       NewScaleDownBudgetProcessor(&ctx, ndt),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx, ndt),
 			}
 			gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
 			if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
@@ -1039,11 +1040,11 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				provider.InsertNodeGroup(ng)
 				ng.SetCloudProvider(provider)
 				for i, num := range numNodes {
-					singleBucketList := generatenodeBucketList(ng, 0, num)
+					singleBucketList := generateNodeGroupViewList(ng, 0, num)
 					bucket := singleBucketList[0]
-					deleteNodes[i] = append(deleteNodes[i], bucket.nodes...)
-					for _, node := range bucket.nodes {
-						provider.AddNode(bucket.group.Id(), node)
+					deleteNodes[i] = append(deleteNodes[i], bucket.Nodes...)
+					for _, node := range bucket.Nodes {
+						provider.AddNode(bucket.Group.Id(), node)
 					}
 				}
 			}
@@ -1068,7 +1069,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
 				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, simulator.NodeDeleteOptions{}, evictor),
-				budgetProcessor:       NewScaleDownBudgetProcessor(&ctx, ndt),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx, ndt),
 			}
 
 			for _, nodes := range deleteNodes {
@@ -1120,11 +1121,11 @@ func generateNodes(from, to int, prefix string) []*apiv1.Node {
 	return result
 }
 
-func generatenodeBucketList(ng cloudprovider.NodeGroup, from, to int) []*nodeBucket {
-	return []*nodeBucket{
+func generateNodeGroupViewList(ng cloudprovider.NodeGroup, from, to int) []*budgets.NodeGroupView {
+	return []*budgets.NodeGroupView{
 		{
-			group: ng,
-			nodes: generateNodes(from, to, ng.Id()),
+			Group: ng,
+			Nodes: generateNodes(from, to, ng.Id()),
 		},
 	}
 }

@@ -63,7 +63,7 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 	opts, err := nodeGroup.GetOptions(ds.ctx.NodeGroupDefaults)
 	if err != nil {
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "GetOptions returned error %v", err)}
-		ds.RollbackNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "failed to get autoscaling options for a node group", nodeDeleteResult)
+		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "failed to get autoscaling options for a node group", nodeDeleteResult)
 		return
 	}
 	if opts == nil {
@@ -72,7 +72,7 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 
 	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain)
 	if nodeDeleteResult.Err != nil {
-		ds.RollbackNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
+		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
 		return
 	}
 
@@ -117,8 +117,8 @@ func (ds *GroupDeletionScheduler) addToBatcher(nodeInfo *framework.NodeInfo, nod
 	ds.nodeQueue[nodeGroup.Id()] = []*apiv1.Node{}
 }
 
-// RollbackNodeDeletion frees up a node that couldn't be deleted successfully. If it was a part of a group, the same is applied for other nodes queued for deletion.
-func (ds *GroupDeletionScheduler) RollbackNodeDeletion(node *apiv1.Node, nodeGroupId string, drain bool, errMsg string, result status.NodeDeleteResult) {
+// AbortNodeDeletion frees up a node that couldn't be deleted successfully. If it was a part of a group, the same is applied for other nodes queued for deletion.
+func (ds *GroupDeletionScheduler) AbortNodeDeletion(node *apiv1.Node, nodeGroupId string, drain bool, errMsg string, result status.NodeDeleteResult) {
 	ds.Lock()
 	defer ds.Unlock()
 	ds.failuresForGroup[nodeGroupId] = true
