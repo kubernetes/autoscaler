@@ -61,7 +61,7 @@ func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterState
 		ctx:                   ctx,
 		clusterState:          csr,
 		nodeDeletionTracker:   ndt,
-		nodeDeletionScheduler: NewGroupDeletionScheduler(ctx, ndt, ndb, deleteOptions, NewDefaultEvictor(deleteOptions, ndt)),
+		nodeDeletionScheduler: NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
 		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(ctx, ndt),
 		deleteOptions:         deleteOptions,
 	}

@@ -29,9 +29,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
+
+type batcher interface {
+	AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool)
+}
 
 // GroupDeletionScheduler is a wrapper over NodeDeletionBatcher responsible for grouping nodes for deletion
 // and rolling back deletion of all nodes from a group in case deletion fails for any of the other nodes.
@@ -39,18 +42,18 @@ type GroupDeletionScheduler struct {
 	sync.Mutex
 	ctx                 *context.AutoscalingContext
 	nodeDeletionTracker *deletiontracker.NodeDeletionTracker
-	nodeDeletionBatcher *NodeDeletionBatcher
+	nodeDeletionBatcher batcher
 	evictor             Evictor
 	nodeQueue           map[string][]*apiv1.Node
 	failuresForGroup    map[string]bool
 }
 
 // NewGroupDeletionScheduler creates an instance of GroupDeletionScheduler.
-func NewGroupDeletionScheduler(ctx *context.AutoscalingContext, ndt *deletiontracker.NodeDeletionTracker, ndb *NodeDeletionBatcher, deleteOptions simulator.NodeDeleteOptions, evictor Evictor) *GroupDeletionScheduler {
+func NewGroupDeletionScheduler(ctx *context.AutoscalingContext, ndt *deletiontracker.NodeDeletionTracker, b batcher, evictor Evictor) *GroupDeletionScheduler {
 	return &GroupDeletionScheduler{
 		ctx:                 ctx,
 		nodeDeletionTracker: ndt,
-		nodeDeletionBatcher: ndb,
+		nodeDeletionBatcher: b,
 		evictor:             evictor,
 		nodeQueue:           map[string][]*apiv1.Node{},
 		failuresForGroup:    map[string]bool{},
@@ -83,7 +86,7 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.NodeInfo, drain bool) status.NodeDeleteResult {
 	node := nodeInfo.Node()
 	if drain {
-		if evictionResults, err := ds.evictor.DrainNode(ds.nodeDeletionBatcher.ctx, nodeInfo); err != nil {
+		if evictionResults, err := ds.evictor.DrainNode(ds.ctx, nodeInfo); err != nil {
 			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 		}
 	} else {
@@ -104,7 +107,7 @@ func (ds *GroupDeletionScheduler) addToBatcher(nodeInfo *framework.NodeInfo, nod
 	ds.nodeQueue[nodeGroup.Id()] = append(ds.nodeQueue[nodeGroup.Id()], nodeInfo.Node())
 	if atomic {
 		if ds.failuresForGroup[nodeGroup.Id()] {
-			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "couldn't scale down other nodes in this node group")}
+			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(errors.TransientError, "couldn't scale down other nodes in this node group")}
 			CleanUpAndRecordFailedScaleDownEvent(ds.ctx, nodeInfo.Node(), nodeGroup.Id(), drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult)
 			delete(ds.nodeQueue, nodeGroup.Id())
 		}
@@ -127,7 +130,7 @@ func (ds *GroupDeletionScheduler) AbortNodeDeletion(node *apiv1.Node, nodeGroupI
 		if otherNode == node {
 			continue
 		}
-		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "couldn't scale down other nodes in this node group")}
+		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(errors.TransientError, "couldn't scale down other nodes in this node group")}
 		CleanUpAndRecordFailedScaleDownEvent(ds.ctx, otherNode, nodeGroupId, drain, ds.nodeDeletionTracker, "scale down failed for node group as a whole", nodeDeleteResult)
 	}
 	delete(ds.nodeQueue, nodeGroupId)
