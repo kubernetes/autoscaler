@@ -115,7 +115,12 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.ExpanderStrategy = expanderStrategy
 	}
 	if opts.EstimatorBuilder == nil {
-		estimatorBuilder, err := estimator.NewEstimatorBuilder(opts.EstimatorName, estimator.NewThresholdBasedEstimationLimiter(opts.MaxNodesPerScaleUp, opts.MaxNodeGroupBinpackingDuration), estimator.NewDecreasingPodOrderer())
+		estimatorLimits := []estimator.BinpackingLimit{
+			estimator.NewThresholdBinpackingLimit(opts.MaxNodesPerScaleUp)}
+		estimatorBuilder, err := estimator.NewEstimatorBuilder(
+			opts.EstimatorName,
+			estimator.NewThresholdBasedEstimationLimiter(estimatorLimits, opts.MaxNodeGroupBinpackingDuration),
+			estimator.NewDecreasingPodOrderer())
 		if err != nil {
 			return err
 		}

@@ -185,7 +185,8 @@ func TestBinpackingEstimate(t *testing.T) {
 
 			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 			assert.NoError(t, err)
-			limiter := NewThresholdBasedEstimationLimiter(tc.maxNodes, time.Duration(0))
+			limit := []BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes)}
+			limiter := NewThresholdBasedEstimationLimiter(limit, time.Duration(0))
 			processor := NewDecreasingPodOrderer()
 			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor)
 
@@ -193,7 +194,7 @@ func TestBinpackingEstimate(t *testing.T) {
 			nodeInfo := schedulerframework.NewNodeInfo()
 			nodeInfo.SetNode(node)
 
-			estimatedNodes, estimatedPods := estimator.Estimate(tc.pods, nodeInfo, nil)
+			estimatedNodes, estimatedPods := estimator.Estimate(tc.pods, nodeInfo, nil, nil)
 			assert.Equal(t, tc.expectNodeCount, estimatedNodes)
 			assert.Equal(t, tc.expectPodCount, len(estimatedPods))
 			if tc.expectProcessedPods != nil {

@@ -463,7 +463,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	}
 
 	estimator := o.autoscalingContext.EstimatorBuilder(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot)
-	option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
+	option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup, nil)
 	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePods, now)
 	return option
 }

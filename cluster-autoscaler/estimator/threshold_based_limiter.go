@@ -25,18 +25,22 @@ import (
 )
 
 type thresholdBasedEstimationLimiter struct {
-	maxDuration time.Duration
-	maxNodes    int
-	nodes       int
-	start       time.Time
+	maxDuration     time.Duration
+	maxNodes        int
+	maxNodesDefault int
+	nodes           int
+	start           time.Time
 }
 
-func (tbel *thresholdBasedEstimationLimiter) StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup) {
+func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, _ cloudprovider.NodeGroup, runtimeLimits []BinpackingLimit) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
+	tbel.maxNodes = computeLimit(runtimeLimits, tbel.maxNodes)
 }
 
-func (*thresholdBasedEstimationLimiter) EndEstimation() {}
+func (tbel *thresholdBasedEstimationLimiter) EndEstimation() {
+	tbel.maxNodes = tbel.maxNodesDefault
+}
 
 func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 	if tbel.maxNodes > 0 && tbel.nodes >= tbel.maxNodes {
@@ -56,9 +60,24 @@ func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 // after either a node count- of time-based threshold is reached. This is meant to prevent cases
 // where binpacking of hundreds or thousands of nodes takes extremely long time rendering CA
 // incredibly slow or even completely crashing it.
-func NewThresholdBasedEstimationLimiter(maxNodes int, maxDuration time.Duration) EstimationLimiter {
+func NewThresholdBasedEstimationLimiter(limits []BinpackingLimit, maxDuration time.Duration) EstimationLimiter {
+	maxNodes := computeLimit(limits, 0)
 	return &thresholdBasedEstimationLimiter{
-		maxNodes:    maxNodes,
-		maxDuration: maxDuration,
+		maxNodes:        maxNodes,
+		maxNodesDefault: maxNodes,
+		maxDuration:     maxDuration,
 	}
+}
+
+func computeLimit(binpackingLimits []BinpackingLimit, currentLimit int) int {
+	if binpackingLimits == nil || len(binpackingLimits) == 0 {
+		return currentLimit
+	}
+	for _, binpackingLimit := range binpackingLimits {
+		limit := binpackingLimit.GetLimit()
+		if currentLimit == 0 || (currentLimit > limit && limit > 0) {
+			currentLimit = limit
+		}
+	}
+	return currentLimit
 }

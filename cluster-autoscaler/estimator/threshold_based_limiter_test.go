@@ -37,7 +37,7 @@ func expectAllow(t *testing.T, l EstimationLimiter) {
 
 func resetLimiter(t *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
-	l.StartEstimation([]*apiv1.Pod{}, nil)
+	l.StartEstimation([]*apiv1.Pod{}, nil, nil)
 }
 
 func TestThresholdBasedLimiter(t *testing.T) {
@@ -48,6 +48,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 		startDelta      time.Duration
 		operations      []limiterOperation
 		expectNodeCount int
+		runtimeLimits   []BinpackingLimit
 	}{
 		{
 			name:     "no limiting happens",
@@ -106,14 +107,47 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			},
 			expectNodeCount: 2,
 		},
+		{
+			name:     "node counter is reset to default value having runtime limit",
+			maxNodes: 3,
+			operations: []limiterOperation{
+				expectAllow,
+				expectAllow,
+				expectDeny,
+				resetLimiter,
+				expectAllow,
+				expectAllow,
+				expectAllow,
+				expectDeny,
+			},
+			expectNodeCount: 3,
+			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2)},
+		},
+		{
+			name:     "node cap sets to runtime limit",
+			maxNodes: 0,
+			operations: []limiterOperation{
+				expectAllow,
+				expectAllow,
+				expectDeny,
+				resetLimiter,
+				expectAllow,
+				expectAllow,
+				expectAllow,
+				expectAllow,
+				expectAllow,
+			},
+			expectNodeCount: 5,
+			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2)},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			limiter := &thresholdBasedEstimationLimiter{
-				maxNodes:    tc.maxNodes,
-				maxDuration: tc.maxDuration,
-			}
-			limiter.StartEstimation([]*apiv1.Pod{}, nil)
+			limiter := NewThresholdBasedEstimationLimiter(
+				[]BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes)},
+				tc.maxDuration,
+			).(*thresholdBasedEstimationLimiter)
+			limiter.StartEstimation([]*apiv1.Pod{}, nil, tc.runtimeLimits)
 
 			if tc.startDelta != time.Duration(0) {
 				limiter.start = limiter.start.Add(tc.startDelta)

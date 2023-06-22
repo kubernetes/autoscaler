@@ -39,7 +39,7 @@ var AvailableEstimators = []string{BinpackingEstimatorName}
 // It returns the number of new nodes needed as well as the list of pods it managed
 // to schedule on those nodes.
 type Estimator interface {
-	Estimate([]*apiv1.Pod, *schedulerframework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
+	Estimate([]*apiv1.Pod, *schedulerframework.NodeInfo, cloudprovider.NodeGroup, []BinpackingLimit) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.
@@ -63,7 +63,7 @@ func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer Estimat
 // scale-up is limited by external factors.
 type EstimationLimiter interface {
 	// StartEstimation is called at the start of estimation.
-	StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup)
+	StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup, []BinpackingLimit)
 	// EndEstimation is called at the end of estimation.
 	EndEstimation()
 	// PermissionToAddNode is called by an estimator when it wants to add additional
