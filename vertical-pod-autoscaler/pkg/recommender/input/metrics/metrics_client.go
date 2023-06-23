@@ -114,14 +114,13 @@ func newContainerMetricsSnapshot(containerMetrics v1beta1.ContainerMetrics, podM
 }
 
 func calculateUsage(containerUsage k8sapiv1.ResourceList) model.Resources {
-	cpuQuantity := containerUsage[k8sapiv1.ResourceCPU]
-	cpuMillicores := cpuQuantity.MilliValue()
-
-	memoryQuantity := containerUsage[k8sapiv1.ResourceMemory]
-	memoryBytes := memoryQuantity.Value()
-
-	return model.Resources{
-		model.ResourceCPU:    model.ResourceAmount(cpuMillicores),
-		model.ResourceMemory: model.ResourceAmount(memoryBytes),
+	result := map[model.ResourceName]model.ResourceAmount{}
+	for resourceName, quantity := range containerUsage {
+		value := quantity.Value()
+		if resourceName == k8sapiv1.ResourceCPU {
+			value = quantity.MilliValue()
+		}
+		result[model.ResourceName(resourceName)] = model.ResourceAmount(value)
 	}
+	return result
 }
