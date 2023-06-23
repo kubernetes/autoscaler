@@ -20,7 +20,7 @@ type thresholdBinpackingLimit struct {
 	maxNodes int
 }
 
-func (l *thresholdBinpackingLimit) GetLimit() int {
+func (l *thresholdBinpackingLimit) GetNodeLimit() int {
 	return l.maxNodes
 }
 

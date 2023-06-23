@@ -74,7 +74,7 @@ func computeLimit(binpackingLimits []BinpackingLimit, currentLimit int) int {
 		return currentLimit
 	}
 	for _, binpackingLimit := range binpackingLimits {
-		limit := binpackingLimit.GetLimit()
+		limit := binpackingLimit.GetNodeLimit()
 		if currentLimit == 0 || (currentLimit > limit && limit > 0) {
 			currentLimit = limit
 		}
