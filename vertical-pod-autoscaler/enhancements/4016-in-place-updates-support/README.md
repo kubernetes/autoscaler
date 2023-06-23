@@ -29,8 +29,8 @@ of in place updates in VPA with intention of gathering more feedback. Any more a
 (like applying different recommendations during pod initialization) will be introduced as separate enhancement
 proposals.
 
-[in-place update feature](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources)
-[available in Kubernetes 1.27.](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#api-change-3)
+[in-place update feature]: https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
+[available in Kubernetes 1.27.]: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.27.md#api-change-3
 
 ### Goals
 
@@ -165,7 +165,7 @@ the same conditions that apply to updates in the `Recreate` mode.
 [`UpdatePriorityCalculator.AddPod`]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L81
 [by default 12h]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L35
 [by default 10%]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L33
-[Outside recommendation range]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/priority_processor.go#L73
+[Outside recommended range]: https://github.com/kubernetes/autoscaler/blob/114a35961a85efdf3f36859350764e5e2c0c7013/vertical-pod-autoscaler/pkg/updater/priority/priority_processor.go#L73
 
 ### Test Plan
 
