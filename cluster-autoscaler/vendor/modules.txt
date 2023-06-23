@@ -1647,9 +1647,6 @@ k8s.io/csi-translation-lib/plugins
 # k8s.io/dynamic-resource-allocation v0.0.0 => k8s.io/dynamic-resource-allocation v0.26.3
 ## explicit; go 1.19
 k8s.io/dynamic-resource-allocation/resourceclaim
-# k8s.io/klog v1.0.0
-## explicit; go 1.12
-k8s.io/klog
 # k8s.io/klog/v2 v2.80.1
 ## explicit; go 1.13
 k8s.io/klog/v2

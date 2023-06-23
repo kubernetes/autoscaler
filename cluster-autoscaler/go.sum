@@ -1179,8 +1179,6 @@ k8s.io/csi-translation-lib v0.26.3 h1:XpC3yeBSz+qls9zk3Tqg6r2sZxFePGe1fIlSlmds5X
 k8s.io/csi-translation-lib v0.26.3/go.mod h1:i++hspfN3AZsA5cYQ1QFnflIQhirsoc/8bOLkaVJG/g=
 k8s.io/dynamic-resource-allocation v0.26.3 h1:WBI4xDoMySaH5VJe0y514O3rC4gyiJppC0EkDo6mHq0=
 k8s.io/dynamic-resource-allocation v0.26.3/go.mod h1:8nUg20y2DgAv8v+Yuv7O5+rLZa7jbjsU3KvDcBiv2b8=
-k8s.io/klog v1.0.0 h1:Pt+yjF5aB1xDSVbau4VsWe+dQNzA0qv1LlXdC2dF6Q8=
-k8s.io/klog v1.0.0/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
 k8s.io/klog/v2 v2.0.0/go.mod h1:PBfzABfn139FHAV07az/IF9Wp1bkk3vpT2XSJ76fSDE=
 k8s.io/klog/v2 v2.80.1 h1:atnLQ121W371wYYFawwYx1aEY2eUfs4l3J72wtgAwV4=
 k8s.io/klog/v2 v2.80.1/go.mod h1:y1WjHnz7Dj687irZUWR/WLkLc5N1YHtjLdmgWjndZn0=

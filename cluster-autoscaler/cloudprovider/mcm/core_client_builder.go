@@ -24,7 +24,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // CoreClientBuilder allows you to get clients and configs for core controllers
