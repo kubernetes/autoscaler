@@ -25,21 +25,21 @@ import (
 )
 
 type thresholdBasedEstimationLimiter struct {
-	maxDuration     time.Duration
-	maxNodes        int
-	maxNodesDefault int
-	nodes           int
-	start           time.Time
+	maxDuration time.Duration
+	maxNodes    int
+	limits      []BinpackingLimit
+	nodes       int
+	start       time.Time
 }
 
 func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, _ cloudprovider.NodeGroup, runtimeLimits []BinpackingLimit) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
+	tbel.maxNodes = computeLimit(tbel.limits, 0)
 	tbel.maxNodes = computeLimit(runtimeLimits, tbel.maxNodes)
 }
 
 func (tbel *thresholdBasedEstimationLimiter) EndEstimation() {
-	tbel.maxNodes = tbel.maxNodesDefault
 }
 
 func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
@@ -61,11 +61,9 @@ func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 // where binpacking of hundreds or thousands of nodes takes extremely long time rendering CA
 // incredibly slow or even completely crashing it.
 func NewThresholdBasedEstimationLimiter(limits []BinpackingLimit, maxDuration time.Duration) EstimationLimiter {
-	maxNodes := computeLimit(limits, 0)
 	return &thresholdBasedEstimationLimiter{
-		maxNodes:        maxNodes,
-		maxNodesDefault: maxNodes,
-		maxDuration:     maxDuration,
+		limits:      limits,
+		maxDuration: maxDuration,
 	}
 }
 
