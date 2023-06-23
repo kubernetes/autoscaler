@@ -36,6 +36,8 @@ import (
 const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "k8s.amazonaws.com/accelerator"
+	// nodeNotPresentErr indicates no node with the given identifier present in AWS
+	nodeNotPresentErr = "node is not present in aws"
 )
 
 var (
@@ -129,6 +131,14 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	// we haven't implemented a way to check if a fargate instance
+	// exists in the cloud provider
+	// returning 'true' because we are assuming the node exists in AWS
+	// this is the default behavior if the check is unimplemented
+	if strings.HasPrefix(node.GetName(), "fargate") {
+		return true, cloudprovider.ErrNotImplemented
+	}
+
 	awsRef, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
@@ -140,7 +150,7 @@ func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 		return true, nil
 	}
 
-	return false, fmt.Errorf("node is not present in aws: %v", err)
+	return false, fmt.Errorf("%s: %v", nodeNotPresentErr, err)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
