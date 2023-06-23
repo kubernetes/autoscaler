@@ -634,7 +634,7 @@ func TestHasInstance(t *testing.T) {
 	// Case 1: correct node - present in AWS
 	node1 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "node-XXX",
+			Name: "node-1",
 		},
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id",
@@ -647,7 +647,7 @@ func TestHasInstance(t *testing.T) {
 	// Case 2: incorrect node - fargate is unsupported
 	node2 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "fargate-XXX",
+			Name: "fargate-1",
 		},
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id",
@@ -660,7 +660,7 @@ func TestHasInstance(t *testing.T) {
 	// Case 3: correct node - not present in AWS
 	node3 := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "node-XXX",
+			Name: "node-2",
 		},
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id-2",
