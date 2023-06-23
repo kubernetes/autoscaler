@@ -35,8 +35,8 @@ type thresholdBasedEstimationLimiter struct {
 func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, _ cloudprovider.NodeGroup, runtimeLimits []BinpackingLimit) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
-	tbel.maxNodes = computeLimit(tbel.limits, 0)
-	tbel.maxNodes = computeLimit(runtimeLimits, tbel.maxNodes)
+	tbel.maxNodes = getNodeLimit(tbel.limits, 0)
+	tbel.maxNodes = getNodeLimit(runtimeLimits, tbel.maxNodes)
 }
 
 func (tbel *thresholdBasedEstimationLimiter) EndEstimation() {
@@ -67,10 +67,7 @@ func NewThresholdBasedEstimationLimiter(limits []BinpackingLimit, maxDuration ti
 	}
 }
 
-func computeLimit(binpackingLimits []BinpackingLimit, currentLimit int) int {
-	if binpackingLimits == nil || len(binpackingLimits) == 0 {
-		return currentLimit
-	}
+func getNodeLimit(binpackingLimits []BinpackingLimit, currentLimit int) int {
 	for _, binpackingLimit := range binpackingLimits {
 		limit := binpackingLimit.GetNodeLimit()
 		if currentLimit == 0 || (currentLimit > limit && limit > 0) {

@@ -35,9 +35,18 @@ func expectAllow(t *testing.T, l EstimationLimiter) {
 	assert.Equal(t, true, l.PermissionToAddNode())
 }
 
-func resetLimiter(t *testing.T, l EstimationLimiter) {
+func resetLimiter(_ *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
 	l.StartEstimation([]*apiv1.Pod{}, nil, nil)
+}
+
+type dynamicLimit struct {
+	nodeLimit int
+}
+
+func (d *dynamicLimit) GetNodeLimit() int {
+	d.nodeLimit += 1
+	return d.nodeLimit
 }
 
 func TestThresholdBasedLimiter(t *testing.T) {
@@ -49,6 +58,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 		operations      []limiterOperation
 		expectNodeCount int
 		runtimeLimits   []BinpackingLimit
+		staticLimits    []BinpackingLimit
 	}{
 		{
 			name:     "no limiting happens",
@@ -140,13 +150,32 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			expectNodeCount: 5,
 			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2)},
 		},
+		{
+			name:     "handles dynamic limits",
+			maxNodes: 0,
+			operations: []limiterOperation{
+				expectAllow,
+				expectAllow,
+				expectDeny,
+				resetLimiter,
+				expectAllow,
+				expectAllow,
+				expectAllow,
+				expectDeny,
+			},
+			expectNodeCount: 3,
+			staticLimits:    []BinpackingLimit{&dynamicLimit{nodeLimit: 1}},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			limiter := NewThresholdBasedEstimationLimiter(
-				[]BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes)},
-				tc.maxDuration,
-			).(*thresholdBasedEstimationLimiter)
+			var limits []BinpackingLimit
+			if tc.staticLimits != nil {
+				limits = tc.staticLimits
+			} else {
+				limits = []BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes)}
+			}
+			limiter := NewThresholdBasedEstimationLimiter(limits, tc.maxDuration).(*thresholdBasedEstimationLimiter)
 			limiter.StartEstimation([]*apiv1.Pod{}, nil, tc.runtimeLimits)
 
 			if tc.startDelta != time.Duration(0) {
