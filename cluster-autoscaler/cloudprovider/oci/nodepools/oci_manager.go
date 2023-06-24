@@ -25,10 +25,10 @@ import (
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/common/auth"
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/containerengine"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v55/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common/auth"
+	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
 )
 
 const (
@@ -82,7 +82,13 @@ func CreateNodePoolManager(cloudConfigPath string, discoveryOpts cloudprovider.N
 	var err error
 	var configProvider common.ConfigurationProvider
 
-	if os.Getenv(ipconsts.OciUseInstancePrincipalEnvVar) == "true" || os.Getenv(npconsts.OkeUseInstancePrincipalEnvVar) == "true" {
+	if os.Getenv(ipconsts.OciUseWorkloadIdentityEnvVar) == "true" {
+		klog.Info("using workload identity provider")
+		configProvider, err = auth.OkeWorkloadIdentityConfigurationProvider()
+		if err != nil {
+			return nil, err
+		}
+	} else if os.Getenv(ipconsts.OciUseInstancePrincipalEnvVar) == "true" || os.Getenv(npconsts.OkeUseInstancePrincipalEnvVar) == "true" {
 		klog.Info("using instance principal provider")
 		configProvider, err = auth.InstancePrincipalConfigurationProvider()
 		if err != nil {

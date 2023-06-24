@@ -18,10 +18,8 @@ package estimator
 
 import (
 	"fmt"
-	"sort"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -30,32 +28,32 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// podInfo contains Pod and score that corresponds to how important it is to handle the pod first.
-type podInfo struct {
-	score float64
-	pod   *apiv1.Pod
-}
-
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
 	predicateChecker predicatechecker.PredicateChecker
 	clusterSnapshot  clustersnapshot.ClusterSnapshot
 	limiter          EstimationLimiter
+	podOrderer       EstimationPodOrderer
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
 func NewBinpackingNodeEstimator(
 	predicateChecker predicatechecker.PredicateChecker,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
-	limiter EstimationLimiter) *BinpackingNodeEstimator {
+	limiter EstimationLimiter,
+	podOrderer EstimationPodOrderer) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,
 		clusterSnapshot:  clusterSnapshot,
 		limiter:          limiter,
+		podOrderer:       podOrderer,
 	}
 }
 
-// Estimate implements First Fit Decreasing bin-packing approximation algorithm.
+// Estimate implements First-Fit bin-packing approximation algorithm
+// The ordering of the pods depend on the EstimatePodOrderer, the default
+// order is DecreasingPodOrderer
+// First-Fit Decreasing bin-packing approximation algorithm.
 // See https://en.wikipedia.org/wiki/Bin_packing_problem for more details.
 // While it is a multi-dimensional bin packing (cpu, mem, ports) in most cases the main dimension
 // will be cpu thus the estimated overprovisioning of 11/9 * optimal + 6/9 should be
@@ -70,8 +68,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	e.limiter.StartEstimation(pods, nodeGroup)
 	defer e.limiter.EndEstimation()
 
-	podInfos := calculatePodScore(pods, nodeTemplate)
-	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
+	pods = e.podOrderer.Order(pods, nodeTemplate, nodeGroup)
 
 	newNodeNames := make(map[string]bool)
 	newNodesWithPods := make(map[string]bool)
@@ -85,19 +82,19 @@ func (e *BinpackingNodeEstimator) Estimate(
 	scheduledPods := []*apiv1.Pod{}
 	lastNodeName := ""
 
-	for _, podInfo := range podInfos {
+	for _, pod := range pods {
 		found := false
 
-		nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, podInfo.pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+		nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
 			return newNodeNames[nodeInfo.Node().Name]
 		})
 		if err == nil {
 			found = true
-			if err := e.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, nodeName, err)
+			if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
+				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
 				return 0, nil
 			}
-			scheduledPods = append(scheduledPods, podInfo.pod)
+			scheduledPods = append(scheduledPods, pod)
 			newNodesWithPods[nodeName] = true
 		}
 
@@ -129,15 +126,15 @@ func (e *BinpackingNodeEstimator) Estimate(
 			// Note that this may still fail (ex. if topology spreading with zonal topologyKey is used);
 			// in this case we can't help the pending pod. We keep the node in clusterSnapshot to avoid
 			// adding and removing node to snapshot for each such pod.
-			if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, podInfo.pod, newNodeName); err != nil {
+			if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, pod, newNodeName); err != nil {
 				continue
 			}
-			if err := e.clusterSnapshot.AddPod(podInfo.pod, newNodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, newNodeName, err)
+			if err := e.clusterSnapshot.AddPod(pod, newNodeName); err != nil {
+				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, newNodeName, err)
 				return 0, nil
 			}
 			newNodesWithPods[newNodeName] = true
-			scheduledPods = append(scheduledPods, podInfo.pod)
+			scheduledPods = append(scheduledPods, pod)
 		}
 	}
 	return len(newNodesWithPods), scheduledPods
@@ -156,38 +153,4 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 		return "", err
 	}
 	return newNodeInfo.Node().Name, nil
-}
-
-// Calculates score for all pods and returns podInfo structure.
-// Score is defined as cpu_sum/node_capacity + mem_sum/node_capacity.
-// Pods that have bigger requirements should be processed first, thus have higher scores.
-func calculatePodScore(pods []*apiv1.Pod, nodeTemplate *schedulerframework.NodeInfo) []*podInfo {
-	podInfos := make([]*podInfo, 0, len(pods))
-
-	for _, pod := range pods {
-		cpuSum := resource.Quantity{}
-		memorySum := resource.Quantity{}
-
-		for _, container := range pod.Spec.Containers {
-			if request, ok := container.Resources.Requests[apiv1.ResourceCPU]; ok {
-				cpuSum.Add(request)
-			}
-			if request, ok := container.Resources.Requests[apiv1.ResourceMemory]; ok {
-				memorySum.Add(request)
-			}
-		}
-		score := float64(0)
-		if cpuAllocatable, ok := nodeTemplate.Node().Status.Allocatable[apiv1.ResourceCPU]; ok && cpuAllocatable.MilliValue() > 0 {
-			score += float64(cpuSum.MilliValue()) / float64(cpuAllocatable.MilliValue())
-		}
-		if memAllocatable, ok := nodeTemplate.Node().Status.Allocatable[apiv1.ResourceMemory]; ok && memAllocatable.Value() > 0 {
-			score += float64(memorySum.Value()) / float64(memAllocatable.Value())
-		}
-
-		podInfos = append(podInfos, &podInfo{
-			score: score,
-			pod:   pod,
-		})
-	}
-	return podInfos
 }

@@ -25,6 +25,8 @@ We use the issue to communicate what is state of the release.
 1. [ ] Wait for all VPA changes that will be in the release to merge.
 2. [ ] Wait for [the end to end tests](https://k8s-testgrid.appspot.com/sig-autoscaling-vpa) to run with all VPA changes
    included.
+   To see what code was actually tested, look for `===== last commit =====`
+   entries in the full `build-log.txt` of a given test run.
 3. [ ] Make sure the end to end VPA tests are green.
 
 ### New minor release
@@ -45,8 +47,20 @@ We use the issue to communicate what is state of the release.
 
 ## Build and stage images
 
+Create a fresh clone of the repo and switch to the `vpa-release-0.${minor}`
+branch. This makes sure you have no local changes while building the images.
+
+For example:
 ```sh
-for component in recommender updater admission-controller ; do REGISTRY=gcr.io/k8s-staging-autoscaling TAG=[*vpa-version*] make release --directory=pkg/${component}; done
+git clone git@github.com:kubernetes/autoscaler.git
+git switch vpa-release-0.14
+```
+
+Once in the freshly cloned repo, build and stage the images.
+
+```sh
+cd vertical-pod-autoscaler/
+for component in recommender updater admission-controller ; do TAG=`grep 'const VerticalPodAutoscalerVersion = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
 ```
 
 ## Test the release

@@ -2,3 +2,6 @@ maintainers:
 - avorima
 - schegi
 - piepmatz
+
+labels:
+- area/provider/ionoscloud

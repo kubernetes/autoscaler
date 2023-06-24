@@ -70,6 +70,7 @@ const (
 var (
 	predefinedCpuPricePerHour = map[string]float64{
 		"a2":  0.031611,
+		"g2":  0.024988,
 		"c2":  0.03398,
 		"c2d": 0.029563,
 		"c3":  0.03398,
@@ -82,6 +83,7 @@ var (
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
+		"g2":  0.002927,
 		"c2":  0.00455,
 		"c2d": 0.003959,
 		"c3":  0.00456,
@@ -94,6 +96,7 @@ var (
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
+		"g2":  0.007496 / 0.024988,
 		"c2":  0.00822 / 0.03398,
 		"c2d": 0.007154 / 0.029563,
 		"c3":  0.003086 / 0.03398,
@@ -136,6 +139,14 @@ var (
 		"a2-ultragpu-1g":   5.0688,
 		"a2-ultragpu-2g":   10.1376,
 		"a2-ultragpu-4g":   20.2752,
+		"g2-standard-4":    0.76,
+		"g2-standard-8":    0.91,
+		"g2-standard-12":   1.06,
+		"g2-standard-16":   1.20,
+		"g2-standard-24":   2.11,
+		"g2-standard-32":   1.79,
+		"g2-standard-48":   4.23,
+		"g2-standard-96":   8.46,
 		"a2-ultragpu-8g":   40.5504,
 		"c2-standard-4":    0.2088,
 		"c2-standard-8":    0.4176,
@@ -309,6 +320,14 @@ var (
 		"a2-ultragpu-2g":   3.2,
 		"a2-ultragpu-4g":   6.4,
 		"a2-ultragpu-8g":   12.8,
+		"g2-standard-4":    0.23,
+		"g2-standard-8":    0.27,
+		"g2-standard-12":   0.32,
+		"g2-standard-16":   0.36,
+		"g2-standard-24":   0.63,
+		"g2-standard-32":   0.54,
+		"g2-standard-48":   1.27,
+		"g2-standard-96":   2.54,
 		"c2-standard-4":    0.0505,
 		"c2-standard-8":    0.1011,
 		"c2-standard-16":   0.2021,
@@ -476,6 +495,7 @@ var (
 		"nvidia-tesla-k80":  0.45,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
+		"nvidia-l4":         0, // price of this gpu is counted into G2 machine-type price
 	}
 	preemptibleGpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.11,
@@ -485,6 +505,7 @@ var (
 		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
+		"nvidia-l4":         0, // price of this gpu is counted into G2 machine-type price
 	}
 	bootDiskPricePerHour = map[string]float64{
 		"pd-standard": 0.04 / hoursInMonth,

@@ -128,6 +128,8 @@ type AutoscalingOptions struct {
 	OkTotalUnreadyCount int
 	// ScaleUpFromZero defines if CA should scale up when there 0 ready nodes.
 	ScaleUpFromZero bool
+	// ParallelScaleUp defines whether CA can scale up node groups in parallel.
+	ParallelScaleUp bool
 	// CloudConfig is the path to the cloud provider configuration file. Empty string for no configuration file.
 	CloudConfig string
 	// CloudProviderName sets the type of the cloud provider CA is about to run in. Allowed values: gce, aws

@@ -6,3 +6,6 @@ reviewers:
 - apricote
 #- LKaemmerling
 #- 4ND3R50N
+
+labels:
+- area/provider/hetzner
