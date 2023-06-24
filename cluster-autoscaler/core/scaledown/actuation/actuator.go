@@ -209,6 +209,9 @@ func (a *Actuator) deleteAsyncDrain(drain []*apiv1.Node) (scaledDownNodes []*sta
 	for _, drainNode := range drain {
 		if sdNode, err := a.scaleDownNodeToReport(drainNode, true); err == nil {
 			klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", drainNode.Name, sdNode.UtilInfo, joinPodNames(sdNode.EvictedPods))
+			for _, podToEvict := range sdNode.EvictedPods {
+				a.ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "PreScaleDown", "Scale-down: preparing to remove pod %s/%s", podToEvict.Namespace, podToEvict.Name)
+			}
 			a.ctx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", drainNode.Name, sdNode.UtilInfo, joinPodNames(sdNode.EvictedPods))
 			scaledDownNodes = append(scaledDownNodes, sdNode)
 		} else {

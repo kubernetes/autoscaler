@@ -18,8 +18,6 @@ package simulator
 
 import (
 	"fmt"
-	"time"
-
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,6 +28,13 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"strings"
+	"time"
+)
+
+const (
+	// IgnoreDuringDownscaleAnnotationPrefix causes cluster autoscaler to ignore a pdb.
+	IgnoreDuringDownscaleAnnotationPrefix = "ignore-during-downscale.cluster-autoscaler.kubernetes.io/"
 )
 
 // NodeDeleteOptions contains various options to customize how draining will behave
@@ -122,6 +127,9 @@ func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.
 			return nil, err
 		}
 		for _, pod := range pods {
+			if hasIgnoreDuringScaleDownAnnotation(pdb) {
+				continue
+			}
 			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
 				if pdb.Status.DisruptionsAllowed < 1 {
 					return &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
@@ -141,4 +149,13 @@ func drainabilityStatus(pod *apiv1.Pod, dr []drainability.Rule) drainability.Sta
 	return drainability.Status{
 		Outcome: drainability.UndefinedOutcome,
 	}
+}
+
+func hasIgnoreDuringScaleDownAnnotation(pdb *policyv1.PodDisruptionBudget) bool {
+	for annotation := range pdb.Annotations {
+		if strings.HasPrefix(annotation, IgnoreDuringDownscaleAnnotationPrefix) {
+			return true
+		}
+	}
+	return false
 }

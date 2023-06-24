@@ -40,6 +40,11 @@ import (
 )
 
 const (
+	// IgnoreDuringDownscaleAnnotationPrefix causes cluster autoscaler to ignore a pdb.
+	IgnoreDuringDownscaleAnnotationPrefix = "ignore-during-downscale.cluster-autoscaler.kubernetes.io/"
+)
+
+const (
 	// DefaultEvictionRetryTime is the time after CA retries failed pod eviction.
 	DefaultEvictionRetryTime = 10 * time.Second
 	// DefaultPodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
@@ -263,4 +268,13 @@ func podsToEvict(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo)
 	}
 	dsPodsToEvict := daemonset.PodsToEvict(dsPods, ctx.DaemonSetEvictionForOccupiedNodes)
 	return dsPodsToEvict, nonDsPods
+}
+
+func hasIgnoreDuringScaleDownAnnotation(pdb *policyv1.PodDisruptionBudget) bool {
+	for annotation := range pdb.Annotations {
+		if strings.HasPrefix(annotation, IgnoreDuringDownscaleAnnotationPrefix) {
+			return true
+		}
+	}
+	return false
 }

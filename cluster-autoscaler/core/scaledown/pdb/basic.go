@@ -22,6 +22,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"strings"
+)
+
+const (
+	// IgnoreDuringDownscaleAnnotationPrefix causes cluster autoscaler to ignore a pdb.
+	IgnoreDuringDownscaleAnnotationPrefix = "ignore-during-downscale.cluster-autoscaler.kubernetes.io/"
 )
 
 type pdbInfo struct {
@@ -42,6 +48,9 @@ func NewBasicRemainingPdbTracker() *basicRemainingPdbTracker {
 func (t *basicRemainingPdbTracker) SetPdbs(pdbs []*policyv1.PodDisruptionBudget) error {
 	t.Clear()
 	for _, pdb := range pdbs {
+		if hasIgnoreDuringScaleDownAnnotation(pdb) {
+			continue
+		}
 		pdbCopy := pdb.DeepCopy()
 		selector, err := metav1.LabelSelectorAsSelector(pdbCopy.Spec.Selector)
 		if err != nil {
@@ -70,6 +79,9 @@ func (t *basicRemainingPdbTracker) CanRemovePods(pods []*apiv1.Pod) (canRemove, 
 		for _, pod := range pods {
 			if pod.Namespace == pdbInfo.pdb.Namespace && pdbInfo.selector.Matches(labels.Set(pod.Labels)) {
 				count += 1
+				if hasIgnoreDuringScaleDownAnnotation(pdbInfo.pdb) {
+					continue
+				}
 				if pdbInfo.pdb.Status.DisruptionsAllowed < 1 {
 					return false, false, &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}
 				}
@@ -95,4 +107,13 @@ func (t *basicRemainingPdbTracker) RemovePods(pods []*apiv1.Pod) {
 
 func (t *basicRemainingPdbTracker) Clear() {
 	t.pdbInfos = nil
+}
+
+func hasIgnoreDuringScaleDownAnnotation(pdb *policyv1.PodDisruptionBudget) bool {
+	for annotation := range pdb.Annotations {
+		if strings.HasPrefix(annotation, IgnoreDuringDownscaleAnnotationPrefix) {
+			return true
+		}
+	}
+	return false
 }
