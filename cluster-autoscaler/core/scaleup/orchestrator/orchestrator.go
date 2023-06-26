@@ -447,8 +447,8 @@ func (o *ScaleUpOrchestrator) filterValidScaleUpNodeGroups(
 			klog.Errorf("Couldn't get autoscaling options for ng: %v", nodeGroup.Id())
 		}
 		if autoscalingOptions != nil && autoscalingOptions.AtomicScaleUp {
-			if o.autoscalingContext.MaxNodesTotal != 0 && currentNodeCount+nodeGroup.MaxSize() > o.autoscalingContext.MaxNodesTotal {
-				klog.V(4).Infof("Skipping node group %s - atomic scale-up exceetds cluster node count limit", nodeGroup.Id())
+			if o.autoscalingContext.MaxNodesTotal != 0 && currentNodeCount+(nodeGroup.MaxSize()-currentTargetSize) > o.autoscalingContext.MaxNodesTotal {
+				klog.V(4).Infof("Skipping node group %s - atomic scale-up exceeds cluster node count limit", nodeGroup.Id())
 				skippedNodeGroups[nodeGroup.Id()] = NewSkippedReasons("atomic scale-up exceeds cluster node count limit")
 				continue
 			}
@@ -503,14 +503,11 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		// When the node group has the atomic scale up option, the number of nodes
 		// that can be added to the node group should be capped according to the
 		// maximum size of the node group and not the 'MaxNodesPerScaleUp' option.
-		// Since we cannot change or update the limiter when we build the estimator
-		// with the 'autoscalingContext.EstimatorBuilder' we create a new estimator
-		// with a different limiter here.
 		nodeEstimationCap := nodeGroup.MaxSize() - currentTargetSize
 		limiter := estimator.NewThresholdBasedEstimationLimiter(nodeEstimationCap, 0)
 		estimator := estimator.NewBinpackingNodeEstimator(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot, limiter, estimator.NewDecreasingPodOrderer())
 		option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
-		if option.NodeCount != nodeGroup.MaxSize() {
+		if option.NodeCount > 0 && option.NodeCount != nodeGroup.MaxSize() {
 			option.NodeCount = nodeGroup.MaxSize()
 		}
 		return option

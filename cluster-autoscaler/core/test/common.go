@@ -125,7 +125,7 @@ type ScaleUpTestConfig struct {
 	OnScaleUp               testcloudprovider.OnScaleUpFunc
 	ExpansionOptionToChoose *GroupSizeChange
 	Options                 *config.AutoscalingOptions
-	NodeTemplateConfig      *NodeTemplateConfig
+	NodeTemplateConfigs     map[string]*NodeTemplateConfig
 }
 
 // ScaleUpTestResult represents a node groups scale up result
