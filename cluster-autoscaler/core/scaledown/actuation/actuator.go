@@ -360,7 +360,7 @@ func (a *Actuator) scheduleDeletion(nodeInfo *framework.NodeInfo, nodeGroupId st
 		CleanUpAndRecordFailedScaleDownEvent(a.ctx, node, nodeGroupId, drain, a.nodeDeletionTracker, "prepareNodeForDeletion failed", nodeDeleteResult)
 		return
 	}
-	err := a.nodeDeletionBatcher.AddNode(node, drain)
+	err := a.nodeDeletionBatcher.AddNode(node, nodeGroupId, drain)
 	if err != nil {
 		klog.Errorf("Couldn't add node to nodeDeletionBatcher, err: %v", err)
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "nodeDeletionBatcher.AddNode for %s returned error: %v", node.Name, err)}

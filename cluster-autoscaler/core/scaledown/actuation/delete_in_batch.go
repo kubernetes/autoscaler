@@ -68,13 +68,13 @@ func NewNodeDeletionBatcher(ctx *context.AutoscalingContext, csr *clusterstate.C
 }
 
 // AddNode adds node to delete candidates and schedule deletion.
-func (d *NodeDeletionBatcher) AddNode(node *apiv1.Node, drain bool) error {
+func (d *NodeDeletionBatcher) AddNode(node *apiv1.Node, nodeGroupId string, drain bool) error {
 	// If delete interval is 0, than instantly start node deletion.
 	if d.deleteInterval == 0 {
 		nodeGroup, err := deleteNodesFromCloudProvider(d.ctx, []*apiv1.Node{node})
 		if err != nil {
 			result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
+			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
 		} else {
 			RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
 		}
