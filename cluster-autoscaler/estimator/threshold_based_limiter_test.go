@@ -61,8 +61,8 @@ func TestThresholdBasedLimiter(t *testing.T) {
 		startDelta      time.Duration
 		operations      []limiterOperation
 		expectNodeCount int
-		runtimeLimits   []BinpackingLimit
-		staticLimits    []BinpackingLimit
+		runtimeLimits   []EstimationLimit
+		staticLimits    []EstimationLimit
 	}{
 		{
 			name:     "no limiting happens",
@@ -135,7 +135,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectDeny,
 			},
 			expectNodeCount: 3,
-			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2, 0)},
+			runtimeLimits:   []EstimationLimit{NewThresholdEstimationLimit(2, 0)},
 		},
 		{
 			name:     "node cap is set to runtime limit",
@@ -152,7 +152,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectAllow,
 			},
 			expectNodeCount: 5,
-			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2, 0)},
+			runtimeLimits:   []EstimationLimit{NewThresholdEstimationLimit(2, 0)},
 		},
 		{
 			name:     "handles dynamic limits",
@@ -168,7 +168,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectDeny,
 			},
 			expectNodeCount: 3,
-			staticLimits:    []BinpackingLimit{&dynamicLimit{nodeLimit: 1}},
+			staticLimits:    []EstimationLimit{&dynamicLimit{nodeLimit: 1}},
 		},
 		{
 			name: "duration limit is set to runtime limit",
@@ -181,16 +181,16 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			},
 			expectNodeCount: 2,
 			startDelta:      -120 * time.Second,
-			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2, 60*time.Second)},
+			runtimeLimits:   []EstimationLimit{NewThresholdEstimationLimit(2, 60*time.Second)},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var limits []BinpackingLimit
+			var limits []EstimationLimit
 			if tc.staticLimits != nil {
 				limits = tc.staticLimits
 			} else {
-				limits = []BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes, tc.maxDuration)}
+				limits = []EstimationLimit{NewThresholdEstimationLimit(tc.maxNodes, tc.maxDuration)}
 			}
 			limiter := NewThresholdBasedEstimationLimiter(limits).(*thresholdBasedEstimationLimiter)
 			limiter.StartEstimation([]*apiv1.Pod{}, nil, tc.runtimeLimits)

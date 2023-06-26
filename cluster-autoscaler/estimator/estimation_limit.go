@@ -18,9 +18,9 @@ package estimator
 
 import "time"
 
-// BinpackingLimit returns limits intended to be used as a cap for binpacking.
+// EstimationLimit provides resources configuration for EstimationLimiter.
 // Return value of 0 means that no limit is set.
-type BinpackingLimit interface {
+type EstimationLimit interface {
 	GetNodeLimit() int
 	GetDurationLimit() time.Duration
 }

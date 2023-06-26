@@ -27,18 +27,18 @@ import (
 type thresholdBasedEstimationLimiter struct {
 	maxDuration time.Duration
 	maxNodes    int
-	limits      []BinpackingLimit
+	limits      []EstimationLimit
 	nodes       int
 	start       time.Time
 }
 
-func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, _ cloudprovider.NodeGroup, runtimeLimits []BinpackingLimit) {
+func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, _ cloudprovider.NodeGroup, runtimeLimits []EstimationLimit) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
-	tbel.maxNodes, tbel.maxDuration = tbel.getLimits(&[2][]BinpackingLimit{tbel.limits, runtimeLimits})
+	tbel.maxNodes, tbel.maxDuration = tbel.getLimits(&[2][]EstimationLimit{tbel.limits, runtimeLimits})
 }
 
-func (tbel *thresholdBasedEstimationLimiter) getLimits(binpackingLimits *[2][]BinpackingLimit) (int, time.Duration) {
+func (tbel *thresholdBasedEstimationLimiter) getLimits(binpackingLimits *[2][]EstimationLimit) (int, time.Duration) {
 	var nodeLimit = 0
 	var durationLimit = time.Duration(0)
 	for _, limitGroup := range binpackingLimits {
@@ -78,6 +78,6 @@ func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 // after either a node count of time-based threshold is reached. This is meant to prevent cases
 // where binpacking of hundreds or thousands of nodes takes extremely long time rendering CA
 // incredibly slow or even completely crashing it.
-func NewThresholdBasedEstimationLimiter(limits []BinpackingLimit) EstimationLimiter {
+func NewThresholdBasedEstimationLimiter(limits []EstimationLimit) EstimationLimiter {
 	return &thresholdBasedEstimationLimiter{limits: limits}
 }

@@ -185,7 +185,7 @@ func TestBinpackingEstimate(t *testing.T) {
 
 			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 			assert.NoError(t, err)
-			limit := []BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes, time.Duration(0))}
+			limit := []EstimationLimit{NewThresholdEstimationLimit(tc.maxNodes, time.Duration(0))}
 			limiter := NewThresholdBasedEstimationLimiter(limit)
 			processor := NewDecreasingPodOrderer()
 			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor)

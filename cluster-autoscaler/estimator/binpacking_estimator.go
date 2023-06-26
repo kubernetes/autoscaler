@@ -64,7 +64,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	pods []*apiv1.Pod,
 	nodeTemplate *schedulerframework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
-	limits []BinpackingLimit) (int, []*apiv1.Pod) {
+	limits []EstimationLimit) (int, []*apiv1.Pod) {
 
 	e.limiter.StartEstimation(pods, nodeGroup, limits)
 	defer e.limiter.EndEstimation()

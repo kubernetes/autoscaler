@@ -18,23 +18,23 @@ package estimator
 
 import "time"
 
-type thresholdBinpackingLimit struct {
+type thresholdEstimationLimit struct {
 	maxNodes    int
 	maxDuration time.Duration
 }
 
-func (l *thresholdBinpackingLimit) GetNodeLimit() int {
+func (l *thresholdEstimationLimit) GetNodeLimit() int {
 	return l.maxNodes
 }
 
-func (l *thresholdBinpackingLimit) GetDurationLimit() time.Duration {
+func (l *thresholdEstimationLimit) GetDurationLimit() time.Duration {
 	return l.maxDuration
 }
 
-// NewThresholdBinpackingLimit returns a BinpackingLimit that caps maximum node
+// NewThresholdEstimationLimit returns a EstimationLimit that caps maximum node
 // count and maximum duration of binpacking by given static values
-func NewThresholdBinpackingLimit(maxNodes int, maxDuration time.Duration) BinpackingLimit {
-	return &thresholdBinpackingLimit{
+func NewThresholdEstimationLimit(maxNodes int, maxDuration time.Duration) EstimationLimit {
+	return &thresholdEstimationLimit{
 		maxNodes:    maxNodes,
 		maxDuration: maxDuration,
 	}
