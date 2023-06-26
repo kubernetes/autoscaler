@@ -172,16 +172,6 @@ func normalizedProviderString(s string) normalizedProviderID {
 	return normalizedProviderID(split[len(split)-1])
 }
 
-func scaleFromZeroAnnotationsEnabled(annotations map[string]string) bool {
-	cpu := annotations[cpuKey]
-	mem := annotations[memoryKey]
-
-	if cpu != "" && mem != "" {
-		return true
-	}
-	return false
-}
-
 func parseKey(annotations map[string]string, key string) (resource.Quantity, error) {
 	if val, exists := annotations[key]; exists && val != "" {
 		return resource.ParseQuantity(val)

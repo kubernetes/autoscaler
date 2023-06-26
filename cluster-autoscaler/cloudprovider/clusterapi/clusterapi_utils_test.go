@@ -430,47 +430,6 @@ func TestUtilNormalizedProviderID(t *testing.T) {
 	}
 }
 
-func TestScaleFromZeroEnabled(t *testing.T) {
-	for _, tc := range []struct {
-		description string
-		enabled     bool
-		annotations map[string]string
-	}{{
-		description: "nil annotations",
-		enabled:     false,
-	}, {
-		description: "empty annotations",
-		annotations: map[string]string{},
-		enabled:     false,
-	}, {
-		description: "non-matching annotation",
-		annotations: map[string]string{"foo": "bar"},
-		enabled:     false,
-	}, {
-		description: "matching key, incomplete annotations",
-		annotations: map[string]string{
-			"foo":  "bar",
-			cpuKey: "1",
-		},
-		enabled: false,
-	}, {
-		description: "matching key, complete annotations",
-		annotations: map[string]string{
-			"foo":     "bar",
-			cpuKey:    "1",
-			memoryKey: "2Mi",
-		},
-		enabled: true,
-	}} {
-		t.Run(tc.description, func(t *testing.T) {
-			got := scaleFromZeroAnnotationsEnabled(tc.annotations)
-			if tc.enabled != got {
-				t.Errorf("expected %t, got %t", tc.enabled, got)
-			}
-		})
-	}
-}
-
 func TestParseCPUCapacity(t *testing.T) {
 	for _, tc := range []struct {
 		description      string
