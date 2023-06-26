@@ -53,9 +53,8 @@ func (tbel *thresholdBasedEstimationLimiter) getLimits(binpackingLimits *[2][]Bi
 func getMinLimit[V int | time.Duration](baseLimit V, targetLimit V) V {
 	if baseLimit == 0 || (baseLimit > targetLimit && targetLimit > 0) {
 		return targetLimit
-	} else {
-		return baseLimit
 	}
+	return baseLimit
 }
 
 func (tbel *thresholdBasedEstimationLimiter) EndEstimation() {
