@@ -68,32 +68,36 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
 1.  [ ] Create a Kubernetes cluster. If you're using GKE you can use the following command:
 
     ```shell
-    $ gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
+    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
     ```
 
 1. [ ]  Create clusterrole. If you're using GKE you can use the following command:
 
     ```shell
-    $ kubectl create clusterrolebinding my-cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value account`
+    kubectl create clusterrolebinding my-cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value account`
     ```
 
 1.  [ ] Deploy VPA:
     ```shell
-    $ REGISTRY=gcr.io/k8s-staging-autoscaling TAG=[*vpa-version*] ./hack/vpa-up.sh
+    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=`grep 'const VerticalPodAutoscalerVersion = ' common/version.go | cut -d '"' -f 2` ./hack/vpa-up.sh
     ```
 
 1.  [ ] [Run](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-tests.sh)
     the `full-vpa` test suite:
 
     ```shell
-    $ ./hack/run-e2e-tests.sh full-vpa
+    ./hack/run-e2e-tests.sh full-vpa
     ```
 
 ## Promote image
 
 To promote image from staging repo send out PR updating
-[autoscaling images mapping](https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/images/k8s-staging-autoscaling/images.yaml)
+[autoscaling images mapping](https://github.com/kubernetes/k8s.io/blob/master/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml)
 ([example](https://github.com/kubernetes/k8s.io/pull/1318)).
+
+NOTE: Please use the [add-version.sh
+script](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/add-version.sh)
+to prepare the changes automatically.
 
 When PR merges the promoter will run automatically and upload the image from
 staging repo to final repo. The post submit job status can be tracked on
@@ -101,11 +105,8 @@ staging repo to final repo. The post submit job status can be tracked on
 To verify if the promoter finished its job one can use gcloud. E.g.:
 
 ```sh
-$ gcloud container images describe us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-recommender:[*vpa-version*]
+gcloud container images describe registry.k8s.io/autoscaling/vpa-recommender:[*vpa-version*]
 ```
-
-You can also take a look at the images in the
-[k8s-artifacts repo](https://us.gcr.io/k8s-artifacts-prod/autoscaling/).
 
 ## Finalize release
 
@@ -145,7 +146,7 @@ sure nothing we care about will break if we do.
 
 1.  [ ] To create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
-    press `Edit release`, complete release title and release notes, tick the
+    press `Create release from tag`, complete release title and release notes, tick the
     `This is a pre-release` box and press `Publish release`.
 
 ## Permissions
