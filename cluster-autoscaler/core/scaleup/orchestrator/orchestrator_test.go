@@ -126,7 +126,7 @@ func TestMixedScaleUp(t *testing.T) {
 
 func TestAtomicScaleUp(t *testing.T) {
 	options := defaultOptions
-	options.NodeGroupDefaults.AtomicScaleUp = true
+	options.NodeGroupDefaults.AtomicScaling = true
 
 	optionsWithLimitedMaxCores := options
 	optionsWithLimitedMaxCores.MaxCoresTotal = 3
