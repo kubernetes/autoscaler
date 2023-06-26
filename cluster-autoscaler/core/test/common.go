@@ -199,12 +199,12 @@ func NewScaleTestAutoscalingContext(
 		return context.AutoscalingContext{}, err
 	}
 	estimatorLimits := []estimator.BinpackingLimit{
-		estimator.NewThresholdBinpackingLimit(0)}
+		estimator.NewThresholdBinpackingLimit(0, 0)}
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(
 		options.EstimatorName,
-		estimator.NewThresholdBasedEstimationLimiter(estimatorLimits, 0),
+		estimator.NewThresholdBasedEstimationLimiter(estimatorLimits),
 		estimator.NewDecreasingPodOrderer())
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	if err != nil {

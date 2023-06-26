@@ -44,6 +44,10 @@ type dynamicLimit struct {
 	nodeLimit int
 }
 
+func (d *dynamicLimit) GetDurationLimit() time.Duration {
+	return 0
+}
+
 func (d *dynamicLimit) GetNodeLimit() int {
 	d.nodeLimit += 1
 	return d.nodeLimit
@@ -124,23 +128,23 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectAllow,
 				expectAllow,
 				expectDeny,
-				resetLimiter,
+				resetLimiter, // Drops runtime limit, falls back to limit from maxNodes
 				expectAllow,
 				expectAllow,
 				expectAllow,
 				expectDeny,
 			},
 			expectNodeCount: 3,
-			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2)},
+			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2, 0)},
 		},
 		{
-			name:     "node cap sets to runtime limit",
+			name:     "node cap is set to runtime limit",
 			maxNodes: 0,
 			operations: []limiterOperation{
 				expectAllow,
 				expectAllow,
 				expectDeny,
-				resetLimiter,
+				resetLimiter, // Drops runtime limits
 				expectAllow,
 				expectAllow,
 				expectAllow,
@@ -148,7 +152,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectAllow,
 			},
 			expectNodeCount: 5,
-			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2)},
+			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2, 0)},
 		},
 		{
 			name:     "handles dynamic limits",
@@ -166,6 +170,19 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			expectNodeCount: 3,
 			staticLimits:    []BinpackingLimit{&dynamicLimit{nodeLimit: 1}},
 		},
+		{
+			name: "duration limit is set to runtime limit",
+			operations: []limiterOperation{
+				expectDeny,
+				expectDeny,
+				resetLimiter, // resets startDelta
+				expectAllow,
+				expectAllow,
+			},
+			expectNodeCount: 2,
+			startDelta:      -120 * time.Second,
+			runtimeLimits:   []BinpackingLimit{NewThresholdBinpackingLimit(2, 60*time.Second)},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -173,9 +190,9 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			if tc.staticLimits != nil {
 				limits = tc.staticLimits
 			} else {
-				limits = []BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes)}
+				limits = []BinpackingLimit{NewThresholdBinpackingLimit(tc.maxNodes, tc.maxDuration)}
 			}
-			limiter := NewThresholdBasedEstimationLimiter(limits, tc.maxDuration).(*thresholdBasedEstimationLimiter)
+			limiter := NewThresholdBasedEstimationLimiter(limits).(*thresholdBasedEstimationLimiter)
 			limiter.StartEstimation([]*apiv1.Pod{}, nil, tc.runtimeLimits)
 
 			if tc.startDelta != time.Duration(0) {

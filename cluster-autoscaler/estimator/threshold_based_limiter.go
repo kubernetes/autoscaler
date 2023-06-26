@@ -35,8 +35,27 @@ type thresholdBasedEstimationLimiter struct {
 func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, _ cloudprovider.NodeGroup, runtimeLimits []BinpackingLimit) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
-	tbel.maxNodes = getNodeLimit(tbel.limits, 0)
-	tbel.maxNodes = getNodeLimit(runtimeLimits, tbel.maxNodes)
+	tbel.maxNodes, tbel.maxDuration = tbel.getLimits(&[2][]BinpackingLimit{tbel.limits, runtimeLimits})
+}
+
+func (tbel *thresholdBasedEstimationLimiter) getLimits(binpackingLimits *[2][]BinpackingLimit) (int, time.Duration) {
+	var nodeLimit = 0
+	var durationLimit = time.Duration(0)
+	for _, limitGroup := range binpackingLimits {
+		for _, limit := range limitGroup {
+			nodeLimit = getMinLimit(nodeLimit, limit.GetNodeLimit())
+			durationLimit = getMinLimit(durationLimit, limit.GetDurationLimit())
+		}
+	}
+	return nodeLimit, durationLimit
+}
+
+func getMinLimit[V int | time.Duration](baseLimit V, targetLimit V) V {
+	if baseLimit == 0 || (baseLimit > targetLimit && targetLimit > 0) {
+		return targetLimit
+	} else {
+		return baseLimit
+	}
 }
 
 func (tbel *thresholdBasedEstimationLimiter) EndEstimation() {
@@ -57,22 +76,9 @@ func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 }
 
 // NewThresholdBasedEstimationLimiter returns an EstimationLimiter that will prevent estimation
-// after either a node count- of time-based threshold is reached. This is meant to prevent cases
+// after either a node count of time-based threshold is reached. This is meant to prevent cases
 // where binpacking of hundreds or thousands of nodes takes extremely long time rendering CA
 // incredibly slow or even completely crashing it.
-func NewThresholdBasedEstimationLimiter(limits []BinpackingLimit, maxDuration time.Duration) EstimationLimiter {
-	return &thresholdBasedEstimationLimiter{
-		limits:      limits,
-		maxDuration: maxDuration,
-	}
-}
-
-func getNodeLimit(binpackingLimits []BinpackingLimit, currentLimit int) int {
-	for _, binpackingLimit := range binpackingLimits {
-		limit := binpackingLimit.GetNodeLimit()
-		if currentLimit == 0 || (currentLimit > limit && limit > 0) {
-			currentLimit = limit
-		}
-	}
-	return currentLimit
+func NewThresholdBasedEstimationLimiter(limits []BinpackingLimit) EstimationLimiter {
+	return &thresholdBasedEstimationLimiter{limits: limits}
 }

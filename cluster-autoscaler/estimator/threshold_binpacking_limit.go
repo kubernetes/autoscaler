@@ -16,18 +16,26 @@ limitations under the License.
 
 package estimator
 
+import "time"
+
 type thresholdBinpackingLimit struct {
-	maxNodes int
+	maxNodes    int
+	maxDuration time.Duration
 }
 
 func (l *thresholdBinpackingLimit) GetNodeLimit() int {
 	return l.maxNodes
 }
 
+func (l *thresholdBinpackingLimit) GetDurationLimit() time.Duration {
+	return l.maxDuration
+}
+
 // NewThresholdBinpackingLimit returns a BinpackingLimit that caps maximum node
-// count by the given static value
-func NewThresholdBinpackingLimit(maxNodes int) BinpackingLimit {
+// count and maximum duration of binpacking by given static values
+func NewThresholdBinpackingLimit(maxNodes int, maxDuration time.Duration) BinpackingLimit {
 	return &thresholdBinpackingLimit{
-		maxNodes: maxNodes,
+		maxNodes:    maxNodes,
+		maxDuration: maxDuration,
 	}
 }

@@ -16,8 +16,11 @@ limitations under the License.
 
 package estimator
 
+import "time"
+
 // BinpackingLimit returns limits intended to be used as a cap for binpacking.
 // Return value of 0 means that no limit is set.
 type BinpackingLimit interface {
 	GetNodeLimit() int
+	GetDurationLimit() time.Duration
 }
