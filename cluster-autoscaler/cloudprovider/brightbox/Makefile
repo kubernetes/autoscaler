@@ -1,5 +1,5 @@
 export BUILD_TAGS=brightbox
-export REGISTRY=brightbox
+export REGISTRY?=brightbox
 export GOARCH?=$(shell go env GOARCH)
 ifndef TAG
 	override TAG=dev
