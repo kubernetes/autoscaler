@@ -237,6 +237,17 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	// Recompute similar node groups in case they need to be updated
 	bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePods, now)
+	if bestOption.SimilarNodeGroups != nil {
+		// if similar node groups are found, log about them
+		similarNodeGroupIds := make([]string, 0)
+		for _, sng := range bestOption.SimilarNodeGroups {
+			similarNodeGroupIds = append(similarNodeGroupIds, sng.Id())
+		}
+		klog.V(2).Infof("Found %d similar node groups: %v", len(bestOption.SimilarNodeGroups), similarNodeGroupIds)
+	} else if o.autoscalingContext.BalanceSimilarNodeGroups {
+		// if no similar node groups are found and the flag is enabled, log about it
+		klog.V(2).Info("No similar node groups found")
+	}
 
 	nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
 	if !found {
