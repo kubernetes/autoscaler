@@ -52,8 +52,6 @@ func NewScaleDownBudgetProcessor(ctx *context.AutoscalingContext, as scaledown.A
 func (bp *ScaleDownBudgetProcessor) CropNodes(empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
 	emptyIndividual, emptyAtomic := bp.categorize(bp.group(empty))
 	drainIndividual, drainAtomic := bp.categorize(bp.group(drain))
-	//emptyIndividual, emptyAtomic := bp.groupByNodeGroup(empty)
-	//drainIndividual, drainAtomic := bp.groupByNodeGroup(drain)
 
 	emptyInProgress, drainInProgress := bp.actuationStatus.DeletionsInProgress()
 	parallelismBudget := bp.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
@@ -146,7 +144,7 @@ func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individ
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", view.Group.Id(), err)
 			continue
 		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaleDown {
+		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
 			atomic = append(atomic, view)
 		} else {
 			individual = append(individual, view)
@@ -169,7 +167,7 @@ func (bp *ScaleDownBudgetProcessor) groupByNodeGroup(nodes []*apiv1.Node) (indiv
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 			continue
 		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaleDown {
+		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
 			if idx, ok := atomicGroup[nodeGroup]; ok {
 				atomic[idx].Nodes = append(atomic[idx].Nodes, node)
 			} else {

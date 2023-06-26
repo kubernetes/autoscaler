@@ -79,7 +79,7 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 		return
 	}
 
-	ds.addToBatcher(nodeInfo, nodeGroup, batchSize, drain, opts.AtomicScaleDown)
+	ds.addToBatcher(nodeInfo, nodeGroup, batchSize, drain, opts.AtomicScaling)
 }
 
 // prepareNodeForDeletion is a long-running operation, so it needs to avoid locking the AtomicDeletionScheduler object
