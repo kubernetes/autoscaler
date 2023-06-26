@@ -32,7 +32,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
@@ -363,7 +362,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 			continue
 		}
 
-		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, ng, nodeInfo); skipReason != nil {
+		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, ng, nodeInfo, 1); skipReason != nil {
 			klog.Warning("ScaleUpToNodeGroupMinSize: node group resource excceded: %v", skipReason)
 			continue
 		}
@@ -446,8 +445,10 @@ func (o *ScaleUpOrchestrator) filterValidScaleUpNodeGroups(
 		if err != nil {
 			klog.Errorf("Couldn't get autoscaling options for ng: %v", nodeGroup.Id())
 		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaleUp {
-			if o.autoscalingContext.MaxNodesTotal != 0 && currentNodeCount+(nodeGroup.MaxSize()-currentTargetSize) > o.autoscalingContext.MaxNodesTotal {
+		numNodes := 1
+		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
+			numNodes = nodeGroup.MaxSize() - currentTargetSize
+			if o.autoscalingContext.MaxNodesTotal != 0 && currentNodeCount+numNodes > o.autoscalingContext.MaxNodesTotal {
 				klog.V(4).Infof("Skipping node group %s - atomic scale-up exceeds cluster node count limit", nodeGroup.Id())
 				skippedNodeGroups[nodeGroup.Id()] = NewSkippedReasons("atomic scale-up exceeds cluster node count limit")
 				continue
@@ -460,7 +461,7 @@ func (o *ScaleUpOrchestrator) filterValidScaleUpNodeGroups(
 			skippedNodeGroups[nodeGroup.Id()] = NotReadyReason
 			continue
 		}
-		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, nodeGroup, nodeInfo); skipReason != nil {
+		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, nodeGroup, nodeInfo, numNodes); skipReason != nil {
 			skippedNodeGroups[nodeGroup.Id()] = skipReason
 			continue
 		}
@@ -486,35 +487,19 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		return option
 	}
 
+	estimator := o.autoscalingContext.EstimatorBuilder(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot)
+	option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
+	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePods, now)
+
 	autoscalingOptions, err := nodeGroup.GetOptions(o.autoscalingContext.NodeGroupDefaults)
 	if err != nil {
 		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 	}
-	if autoscalingOptions != nil && autoscalingOptions.AtomicScaleUp {
-		// If atomic, there should be no similar node groups for balancing
-		// Also the number of pods should be capped according to the node count.
-
-		// Limit the number of nodes we estimate to the max scale up possible.
-		currentTargetSize, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Errorf("Failed to get node group size: %v", err)
-			return option
-		}
-		// When the node group has the atomic scale up option, the number of nodes
-		// that can be added to the node group should be capped according to the
-		// maximum size of the node group and not the 'MaxNodesPerScaleUp' option.
-		nodeEstimationCap := nodeGroup.MaxSize() - currentTargetSize
-		limiter := estimator.NewThresholdBasedEstimationLimiter(nodeEstimationCap, 0)
-		estimator := estimator.NewBinpackingNodeEstimator(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot, limiter, estimator.NewDecreasingPodOrderer())
-		option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
+	if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
 		if option.NodeCount > 0 && option.NodeCount != nodeGroup.MaxSize() {
 			option.NodeCount = nodeGroup.MaxSize()
 		}
-		return option
 	}
-	estimator := o.autoscalingContext.EstimatorBuilder(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot)
-	option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
-	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePods, now)
 	return option
 }
 
@@ -590,20 +575,15 @@ func (o *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.
 }
 
 // IsNodeGroupResourceExceeded returns nil if node group resource limits are not exceeded, otherwise a reason is provided.
-func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) status.Reasons {
+func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, numNodes int) status.Reasons {
 	resourcesDelta, err := o.resourceManager.DeltaForNode(o.autoscalingContext, nodeInfo, nodeGroup)
 	if err != nil {
 		klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
 		return NotReadyReason
 	}
-	autoscalingOptions, aErr := nodeGroup.GetOptions(o.autoscalingContext.NodeGroupDefaults)
-	if aErr != nil {
-		klog.Errorf("Couldn't get autoscaling options for ng: %v", nodeGroup.Id())
-	}
-	if autoscalingOptions != nil && autoscalingOptions.AtomicScaleUp {
-		for resource, delta := range resourcesDelta {
-			resourcesDelta[resource] = delta * int64(nodeGroup.MaxSize())
-		}
+
+	for resource, delta := range resourcesDelta {
+		resourcesDelta[resource] = delta * int64(numNodes)
 	}
 
 	checkResult := resource.CheckDeltaWithinLimits(resourcesLeft, resourcesDelta)
@@ -646,6 +626,14 @@ func (o *ScaleUpOrchestrator) ComputeSimilarNodeGroups(
 	now time.Time,
 ) []cloudprovider.NodeGroup {
 	if !o.autoscalingContext.BalanceSimilarNodeGroups {
+		return nil
+	}
+
+	autoscalingOptions, err := nodeGroup.GetOptions(o.autoscalingContext.NodeGroupDefaults)
+	if err != nil {
+		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
+	}
+	if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
 		return nil
 	}
 

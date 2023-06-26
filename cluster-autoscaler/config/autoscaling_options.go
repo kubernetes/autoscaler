@@ -46,8 +46,8 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 	// Maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration
-	// AtomicScaleUp means that a node group should be scaled up to maximum size in a scale up.
-	AtomicScaleUp bool
+	// AtomicScaling means that a node group should be scaled up or down all at once instead of one-by-one
+	AtomicScaling bool
 }
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
