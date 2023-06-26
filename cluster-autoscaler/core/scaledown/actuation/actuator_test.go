@@ -1103,7 +1103,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
 	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
 	ng.SetOptions(&config.NodeGroupAutoscalingOptions{
-		AtomicScaleDown: atomic,
+		AtomicScaling: atomic,
 	})
 	return ng
 }

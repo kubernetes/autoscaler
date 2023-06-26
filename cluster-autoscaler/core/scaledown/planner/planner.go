@@ -189,7 +189,7 @@ func (p *Planner) filterOutIncompleteAtomicNodeGroups(nodes []*apiv1.Node) ([]*a
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 			continue
 		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaleDown {
+		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
 			klog.V(2).Infof("Considering node %s for atomic scale down", node.Name)
 			nodesByGroup[nodeGroup] = append(nodesByGroup[nodeGroup], node)
 		} else {
