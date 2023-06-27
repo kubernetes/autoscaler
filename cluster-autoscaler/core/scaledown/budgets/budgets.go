@@ -35,25 +35,23 @@ type NodeGroupView struct {
 
 // ScaleDownBudgetProcessor is responsible for keeping the number of nodes deleted in parallel within defined limits.
 type ScaleDownBudgetProcessor struct {
-	ctx             *context.AutoscalingContext
-	actuationStatus scaledown.ActuationStatus
+	ctx *context.AutoscalingContext
 }
 
 // NewScaleDownBudgetProcessor creates a ScaleDownBudgetProcessor instance.
-func NewScaleDownBudgetProcessor(ctx *context.AutoscalingContext, as scaledown.ActuationStatus) *ScaleDownBudgetProcessor {
+func NewScaleDownBudgetProcessor(ctx *context.AutoscalingContext) *ScaleDownBudgetProcessor {
 	return &ScaleDownBudgetProcessor{
-		ctx:             ctx,
-		actuationStatus: as,
+		ctx: ctx,
 	}
 }
 
 // CropNodes crops the provided node lists to respect scale-down max parallelism budgets.
 // The returned nodes are grouped by a node group.
-func (bp *ScaleDownBudgetProcessor) CropNodes(empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
+func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
 	emptyIndividual, emptyAtomic := bp.categorize(bp.group(empty))
 	drainIndividual, drainAtomic := bp.categorize(bp.group(drain))
 
-	emptyInProgress, drainInProgress := bp.actuationStatus.DeletionsInProgress()
+	emptyInProgress, drainInProgress := as.DeletionsInProgress()
 	parallelismBudget := bp.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
 	drainBudget := bp.ctx.MaxDrainParallelism - len(drainInProgress)
 

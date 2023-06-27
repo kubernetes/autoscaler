@@ -62,7 +62,7 @@ func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterState
 		clusterState:          csr,
 		nodeDeletionTracker:   ndt,
 		nodeDeletionScheduler: NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
-		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(ctx, ndt),
+		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(ctx),
 		deleteOptions:         deleteOptions,
 	}
 }
@@ -85,7 +85,7 @@ func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (*status.ScaleDownS
 	results, ts := a.nodeDeletionTracker.DeletionResults()
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: results, NodeDeleteResultsAsOf: ts}
 
-	emptyToDelete, drainToDelete := a.budgetProcessor.CropNodes(empty, drain)
+	emptyToDelete, drainToDelete := a.budgetProcessor.CropNodes(a.nodeDeletionTracker, empty, drain)
 	if len(emptyToDelete) == 0 && len(drainToDelete) == 0 {
 		scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
 		return scaleDownStatus, nil
