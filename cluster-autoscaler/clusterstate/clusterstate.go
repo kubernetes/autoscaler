@@ -648,8 +648,9 @@ func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.
 			}
 			continue
 		}
-		if len(readiness.Registered) > acceptableRange.MaxNodes ||
-			len(readiness.Registered) < acceptableRange.MinNodes {
+		unregisteredNodes := len(readiness.Unregistered) + len(readiness.LongUnregistered)
+		if len(readiness.Registered) > acceptableRange.CurrentTarget ||
+			len(readiness.Registered) < acceptableRange.CurrentTarget-unregisteredNodes {
 			incorrect := IncorrectNodeGroupSize{
 				CurrentSize:   len(readiness.Registered),
 				ExpectedSize:  acceptableRange.CurrentTarget,
