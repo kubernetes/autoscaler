@@ -834,7 +834,7 @@ func TestStartDeletion(t *testing.T) {
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
 				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
-				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx, ndt),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 			}
 			gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
 			if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
@@ -1068,7 +1068,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
 				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
-				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx, ndt),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 			}
 
 			for _, nodes := range deleteNodes {

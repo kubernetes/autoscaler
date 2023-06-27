@@ -24,7 +24,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
@@ -169,49 +168,7 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 		}
 	}
 
-	empty, filteredOut := p.filterOutIncompleteAtomicNodeGroups(empty)
-	needDrain, _ = p.filterOutIncompleteAtomicNodeGroups(append(needDrain, filteredOut...))
 	return empty, needDrain
-}
-
-func (p *Planner) filterOutIncompleteAtomicNodeGroups(nodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
-	nodesByGroup := map[cloudprovider.NodeGroup][]*apiv1.Node{}
-	result := []*apiv1.Node{}
-	filteredOut := []*apiv1.Node{}
-	for _, node := range nodes {
-		nodeGroup, err := p.context.CloudProvider.NodeGroupForNode(node)
-		if err != nil {
-			klog.Errorf("Node %v will not scale down, failed to get node info: %s", node.Name, err)
-			continue
-		}
-		autoscalingOptions, err := nodeGroup.GetOptions(p.context.NodeGroupDefaults)
-		if err != nil {
-			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
-			continue
-		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
-			klog.V(2).Infof("Considering node %s for atomic scale down", node.Name)
-			nodesByGroup[nodeGroup] = append(nodesByGroup[nodeGroup], node)
-		} else {
-			klog.V(2).Infof("Considering node %s for standard scale down", node.Name)
-			result = append(result, node)
-		}
-	}
-	for nodeGroup, nodes := range nodesByGroup {
-		ngSize, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Errorf("Nodes from group %s will not scale down, failed to get target size: %s", nodeGroup.Id(), err)
-			continue
-		}
-		if ngSize == len(nodes) {
-			klog.V(2).Infof("Scheduling atomic scale down for all %v nodes from node group %s", len(nodes), nodeGroup.Id())
-			result = append(result, nodes...)
-		} else {
-			klog.V(2).Infof("Skipping scale down for %v nodes from node group %s, all %v nodes have to be scaled down atomically", len(nodes), nodeGroup.Id(), ngSize)
-			filteredOut = append(filteredOut, nodes...)
-		}
-	}
-	return result, filteredOut
 }
 
 func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {

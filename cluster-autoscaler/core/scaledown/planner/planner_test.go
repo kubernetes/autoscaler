@@ -623,7 +623,6 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 }
 
 func TestNodesToDelete(t *testing.T) {
-
 	testCases := []struct {
 		name      string
 		nodes     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
@@ -695,10 +694,11 @@ func TestNodesToDelete(t *testing.T) {
 					buildRemovableNode("node-3", 1),
 				},
 			},
-			wantEmpty: []*apiv1.Node{},
-			wantDrain: []*apiv1.Node{
+			wantEmpty: []*apiv1.Node{
 				buildRemovableNode("node-1", 0).Node,
 				buildRemovableNode("node-2", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{
 				buildRemovableNode("node-3", 1).Node,
 			},
 		},
@@ -743,6 +743,7 @@ func TestNodesToDelete(t *testing.T) {
 				buildRemovableNode("node-10", 0).Node,
 				buildRemovableNode("node-11", 0).Node,
 				buildRemovableNode("node-12", 0).Node,
+				buildRemovableNode("node-13", 0).Node,
 			},
 			wantDrain: []*apiv1.Node{
 				buildRemovableNode("node-4", 0).Node,
@@ -750,7 +751,6 @@ func TestNodesToDelete(t *testing.T) {
 				buildRemovableNode("node-6", 0).Node,
 				buildRemovableNode("node-8", 0).Node,
 				buildRemovableNode("node-9", 0).Node,
-				buildRemovableNode("node-13", 0).Node,
 				buildRemovableNode("node-14", 0).Node,
 				buildRemovableNode("node-15", 0).Node,
 			},

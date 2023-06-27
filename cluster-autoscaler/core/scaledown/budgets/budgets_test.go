@@ -335,8 +335,8 @@ func TestCropNodesToBudgets(t *testing.T) {
 				drainList = append(drainList, bucket.Nodes...)
 			}
 
-			budgeter := NewScaleDownBudgetProcessor(ctx, ndt)
-			gotEmpty, gotDrain := budgeter.CropNodes(emptyList, drainList)
+			budgeter := NewScaleDownBudgetProcessor(ctx)
+			gotEmpty, gotDrain := budgeter.CropNodes(ndt, emptyList, drainList)
 			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty(), transformNodeGroupView); diff != "" {
 				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)
 			}
