@@ -19,7 +19,7 @@ spec:
     - 'emptyDir'
     - 'projected'
     - 'downwardAPI'
-  hostNetwork: false
+  hostNetwork: {{ .Values.hostNetwork }}
   hostIPC: false
   hostPID: false
   runAsUser:

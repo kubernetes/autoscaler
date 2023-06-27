@@ -70,11 +70,8 @@ Return the appropriate apiVersion for podsecuritypolicy.
 {{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
 {{- if semverCompare "<1.10-0" $kubeTargetVersion -}}
 {{- print "extensions/v1beta1" -}}
-{{- if semverCompare ">1.21-0" $kubeTargetVersion -}}
-{{- print "policy/v1" -}}
 {{- else -}}
 {{- print "policy/v1beta1" -}}
-{{- end -}}
 {{- end -}}
 {{- end -}}
 

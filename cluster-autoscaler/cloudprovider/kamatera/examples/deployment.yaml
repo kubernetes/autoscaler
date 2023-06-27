@@ -171,7 +171,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
+        - image: registry.k8s.io/cluster-autoscaler:{{ ca_version }}
           name: cluster-autoscaler
           command:
             - ./cluster-autoscaler

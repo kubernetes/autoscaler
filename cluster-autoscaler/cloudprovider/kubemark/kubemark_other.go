@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 )
 
@@ -63,6 +64,12 @@ func (kubemark *KubemarkCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
 func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (kubemark *KubemarkCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(kubemark, node)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

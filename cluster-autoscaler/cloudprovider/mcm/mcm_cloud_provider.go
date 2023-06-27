@@ -208,6 +208,12 @@ func (mcm *mcmCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return nil
 }
 
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (mcm *mcmCloudProvider) GetNodeGpuConfig(*apiv1.Node) *cloudprovider.GpuConfig {
+	return nil
+}
+
 // Ref contains a reference to the name of the machine-deployment.
 type Ref struct {
 	Name      string

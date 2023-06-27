@@ -169,8 +169,7 @@ cluster-autoscaler --cloud-provider=clusterapi \
 
 To enable the automatic scaling of components in your cluster-api managed
 cloud there are a few annotations you need to provide. These annotations
-must be applied to either [MachineSet](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/machine-set.html)
-or [MachineDeployment](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/machine-deployment.html)
+must be applied to either [MachineSet](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/machine-set.html), [MachineDeployment](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/machine-deployment.html), or [MachinePool](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/machine-pool.html)
 resources depending on the type of cluster-api mechanism that you are using.
 
 There are two annotations that control how a cluster resource should be scaled:
@@ -185,8 +184,12 @@ There are two annotations that control how a cluster resource should be scaled:
   the maximum number of nodes for the associated resource group. The autoscaler
   will not scale the group above this number.
 
-The autoscaler will monitor any `MachineSet` or `MachineDeployment` containing
+The autoscaler will monitor any `MachineSet`, `MachineDeployment`, or `MachinePool` containing
 both of these annotations.
+
+> Note: `MachinePool` support in cluster-autoscaler requires a provider implementation
+> that supports the new "MachinePool Machines" feature. MachinePools in Cluster API are
+> considered an [experimental feature](https://cluster-api.sigs.k8s.io/tasks/experimental-features/experimental-features.html#active-experimental-features) and are not enabled by default.
 
 ### Scale from zero support
 
@@ -207,9 +210,9 @@ you must specify the CPU and memory annotations, these annotations should
 match the expected capacity of the nodes created from the infrastructure.
 
 For example, if my MachineDeployment will create nodes that have "16000m" CPU,
-"128G" memory, 2 NVidia GPUs, and can support 200 max pods, the folllowing
-annotations will instruct the autoscaler how to expand the node group from
-zero replicas:
+"128G" memory, "100Gi" ephemeral disk storage, 2 NVidia GPUs, and can support
+200 max pods, the following annotations will instruct the autoscaler how to
+expand the node group from zero replicas:
 
 ```yaml
 apiVersion: cluster.x-k8s.io/v1alpha4
@@ -220,6 +223,7 @@ metadata:
     cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
     capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
     capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    capacity.cluster-autoscaler.kubernetes.io/ephemeral-disk: "100Gi"
     capacity.cluster-autoscaler.kubernetes.io/gpu-type: "nvidia.com/gpu"
     capacity.cluster-autoscaler.kubernetes.io/gpu-count: "2"
     capacity.cluster-autoscaler.kubernetes.io/maxPods: "200"
@@ -254,10 +258,22 @@ rules:
 
 #### Pre-defined labels and taints on nodes scaled from zero
 
-The Cluster API provider currently does not support the addition of pre-defined
-labels and taints for node groups that are scaling from zero. This work is on-going
-and will be included in a future release once the API for specifying those
-labels and taints has been accepted by the community.
+To provide labels or taint information for scale from zero, the optional
+capacity annotations may be supplied as a comma separated list, as
+demonstrated in the example below:
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: MachineDeployment
+metadata:
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
+    capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
+    capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    capacity.cluster-autoscaler.kubernetes.io/labels: "key1=value1,key2=value2"
+    capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
+```
 
 ## Specifying a Custom Resource Group
 
@@ -334,12 +350,12 @@ spec:
     class: "quick-start"
     version: v1.24.0
     controlPlane:
-      replicas: 1 
+      replicas: 1
     workers:
       machineDeployments:
         - class: default-worker
           name: linux
-       ## replicas field is not set. 
+       ## replicas field is not set.
        ## replicas: 1
 ```
 

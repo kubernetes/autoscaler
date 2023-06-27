@@ -36,7 +36,7 @@ import (
 )
 
 // GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
@@ -45,6 +45,12 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 
 	labels.UpdateDeprecatedLabels(baseNodeInfo.Node().ObjectMeta.Labels)
 
+	sanitizedNode, typedErr := SanitizeNode(baseNodeInfo.Node(), id, taintConfig)
+	if err != nil {
+		return nil, typedErr
+	}
+	baseNodeInfo.SetNode(sanitizedNode)
+
 	pods, err := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
@@ -52,12 +58,9 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	for _, podInfo := range baseNodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
-	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := SanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
-	if typedErr != nil {
-		return nil, typedErr
-	}
+
+	sanitizedNodeInfo := schedulerframework.NewNodeInfo(SanitizePods(pods, sanitizedNode)...)
+	sanitizedNodeInfo.SetNode(sanitizedNode)
 	return sanitizedNodeInfo, nil
 }
 
@@ -88,7 +91,7 @@ func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cl
 }
 
 // DeepCopyNodeInfo clones the provided nodeInfo
-func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) *schedulerframework.NodeInfo {
 	newPods := make([]*apiv1.Pod, 0)
 	for _, podInfo := range nodeInfo.Pods {
 		newPods = append(newPods, podInfo.Pod.DeepCopy())
@@ -97,32 +100,11 @@ func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 	// Build a new node info.
 	newNodeInfo := schedulerframework.NewNodeInfo(newPods...)
 	newNodeInfo.SetNode(nodeInfo.Node().DeepCopy())
-	return newNodeInfo, nil
+	return newNodeInfo
 }
 
-// SanitizeNodeInfo modify nodeInfos generated from templates to avoid using duplicated host names
-func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
-	// Sanitize node name.
-	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update nodename in pods.
-	sanitizedPods := make([]*apiv1.Pod, 0)
-	for _, podInfo := range nodeInfo.Pods {
-		sanitizedPod := podInfo.Pod.DeepCopy()
-		sanitizedPod.Spec.NodeName = sanitizedNode.Name
-		sanitizedPods = append(sanitizedPods, sanitizedPod)
-	}
-
-	// Build a new node info.
-	sanitizedNodeInfo := schedulerframework.NewNodeInfo(sanitizedPods...)
-	sanitizedNodeInfo.SetNode(sanitizedNode)
-	return sanitizedNodeInfo, nil
-}
-
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints taints.TaintKeySet) (*apiv1.Node, errors.AutoscalerError) {
+// SanitizeNode cleans up nodes used for node group templates
+func SanitizeNode(node *apiv1.Node, nodeGroup string, taintConfig taints.TaintConfig) (*apiv1.Node, errors.AutoscalerError) {
 	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode.Labels = make(map[string]string, len(node.Labels))
@@ -134,8 +116,21 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints tain
 		}
 	}
 	newNode.Name = nodeName
-	newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, ignoredTaints)
+	newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, taintConfig)
 	return newNode, nil
+}
+
+// SanitizePods cleans up pods used for node group templates
+func SanitizePods(pods []*apiv1.Pod, sanitizedNode *apiv1.Node) []*apiv1.Pod {
+	// Update node name in pods.
+	sanitizedPods := make([]*apiv1.Pod, 0)
+	for _, pod := range pods {
+		sanitizedPod := pod.DeepCopy()
+		sanitizedPod.Spec.NodeName = sanitizedNode.Name
+		sanitizedPods = append(sanitizedPods, sanitizedPod)
+	}
+
+	return sanitizedPods
 }
 
 func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {
@@ -183,7 +178,7 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	}
 	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
-	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready, readiness.NotStarted, readiness.LongUnregistered, readiness.Unregistered)
+	metrics.UpdateNodesCount(len(readiness.Ready), len(readiness.Unready), len(readiness.NotStarted), len(readiness.LongUnregistered), len(readiness.Unregistered))
 }
 
 // GetOldestCreateTime returns oldest creation time out of the pods in the set

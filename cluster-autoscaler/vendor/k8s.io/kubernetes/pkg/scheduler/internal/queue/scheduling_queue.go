@@ -29,6 +29,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"sync"
 	"time"
@@ -37,10 +38,12 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/informers"
 	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/interpodaffinity"
 	"k8s.io/kubernetes/pkg/scheduler/internal/heap"
@@ -180,6 +183,10 @@ type PriorityQueue struct {
 	closed bool
 
 	nsLister listersv1.NamespaceLister
+
+	metricsRecorder metrics.MetricAsyncRecorder
+	// pluginMetricsSamplePercent is the percentage of plugin metrics to be sampled.
+	pluginMetricsSamplePercent int
 }
 
 type priorityQueueOptions struct {
@@ -188,6 +195,8 @@ type priorityQueueOptions struct {
 	podMaxBackoffDuration             time.Duration
 	podMaxInUnschedulablePodsDuration time.Duration
 	podLister                         listersv1.PodLister
+	metricsRecorder                   metrics.MetricAsyncRecorder
+	pluginMetricsSamplePercent        int
 	clusterEventMap                   map[framework.ClusterEvent]sets.String
 	preEnqueuePluginMap               map[string][]framework.PreEnqueuePlugin
 }
@@ -244,6 +253,20 @@ func WithPreEnqueuePluginMap(m map[string][]framework.PreEnqueuePlugin) Option {
 	}
 }
 
+// WithMetricsRecorder sets metrics recorder.
+func WithMetricsRecorder(recorder metrics.MetricAsyncRecorder) Option {
+	return func(o *priorityQueueOptions) {
+		o.metricsRecorder = recorder
+	}
+}
+
+// WithPluginMetricsSamplePercent sets the percentage of plugin metrics to be sampled.
+func WithPluginMetricsSamplePercent(percent int) Option {
+	return func(o *priorityQueueOptions) {
+		o.pluginMetricsSamplePercent = percent
+	}
+}
+
 var defaultPriorityQueueOptions = priorityQueueOptions{
 	clock:                             clock.RealClock{},
 	podInitialBackoffDuration:         DefaultPodInitialBackoffDuration,
@@ -296,6 +319,8 @@ func NewPriorityQueue(
 		moveRequestCycle:                  -1,
 		clusterEventMap:                   options.clusterEventMap,
 		preEnqueuePluginMap:               options.preEnqueuePluginMap,
+		metricsRecorder:                   options.metricsRecorder,
+		pluginMetricsSamplePercent:        options.pluginMetricsSamplePercent,
 	}
 	pq.cond.L = &pq.lock
 	pq.podBackoffQ = heap.NewWithRecorder(podInfoKeyFunc, pq.podsCompareBackoffCompleted, metrics.NewBackoffPodsRecorder())
@@ -323,8 +348,9 @@ func (p *PriorityQueue) runPreEnqueuePlugins(ctx context.Context, pInfo *framewo
 		metrics.FrameworkExtensionPointDuration.WithLabelValues(preEnqueue, s.Code().String(), pod.Spec.SchedulerName).Observe(metrics.SinceInSeconds(startTime))
 	}()
 
+	shouldRecordMetric := rand.Intn(100) < p.pluginMetricsSamplePercent
 	for _, pl := range p.preEnqueuePluginMap[pod.Spec.SchedulerName] {
-		s = pl.PreEnqueue(ctx, pod)
+		s = p.runPreEnqueuePlugin(ctx, pl, pod, shouldRecordMetric)
 		if s.IsSuccess() {
 			continue
 		}
@@ -338,6 +364,16 @@ func (p *PriorityQueue) runPreEnqueuePlugins(ctx context.Context, pInfo *framewo
 		return false
 	}
 	return true
+}
+
+func (p *PriorityQueue) runPreEnqueuePlugin(ctx context.Context, pl framework.PreEnqueuePlugin, pod *v1.Pod, shouldRecordMetric bool) *framework.Status {
+	if !shouldRecordMetric {
+		return pl.PreEnqueue(ctx, pod)
+	}
+	startTime := p.clock.Now()
+	s := pl.PreEnqueue(ctx, pod)
+	p.metricsRecorder.ObservePluginDurationAsync(preEnqueue, pl.Name(), s.Code().String(), p.clock.Since(startTime).Seconds())
+	return s
 }
 
 // addToActiveQ tries to add pod to active queue. It returns 2 parameters:
@@ -677,12 +713,45 @@ func (p *PriorityQueue) AssignedPodAdded(pod *v1.Pod) {
 	p.lock.Unlock()
 }
 
+// isPodResourcesResizedDown returns true if a pod CPU and/or memory resize request has been
+// admitted by kubelet, is 'InProgress', and results in a net sizing down of updated resources.
+// It returns false if either CPU or memory resource is net resized up, or if no resize is in progress.
+func isPodResourcesResizedDown(pod *v1.Pod) bool {
+	if utilfeature.DefaultFeatureGate.Enabled(features.InPlacePodVerticalScaling) {
+		// TODO(vinaykul,wangchen615,InPlacePodVerticalScaling): Fix this to determine when a
+		// pod is truly resized down (might need oldPod if we cannot determine from Status alone)
+		if pod.Status.Resize == v1.PodResizeStatusInProgress {
+			return true
+		}
+	}
+	return false
+}
+
 // AssignedPodUpdated is called when a bound pod is updated. Change of labels
 // may make pending pods with matching affinity terms schedulable.
 func (p *PriorityQueue) AssignedPodUpdated(pod *v1.Pod) {
 	p.lock.Lock()
-	p.movePodsToActiveOrBackoffQueue(p.getUnschedulablePodsWithMatchingAffinityTerm(pod), AssignedPodUpdate)
+	if isPodResourcesResizedDown(pod) {
+		p.moveAllToActiveOrBackoffQueue(AssignedPodUpdate, nil)
+	} else {
+		p.movePodsToActiveOrBackoffQueue(p.getUnschedulablePodsWithMatchingAffinityTerm(pod), AssignedPodUpdate)
+	}
 	p.lock.Unlock()
+}
+
+// NOTE: this function assumes a lock has been acquired in the caller.
+// moveAllToActiveOrBackoffQueue moves all pods from unschedulablePods to activeQ or backoffQ.
+// This function adds all pods and then signals the condition variable to ensure that
+// if Pop() is waiting for an item, it receives the signal after all the pods are in the
+// queue and the head is the highest priority pod.
+func (p *PriorityQueue) moveAllToActiveOrBackoffQueue(event framework.ClusterEvent, preCheck PreEnqueueCheck) {
+	unschedulablePods := make([]*framework.QueuedPodInfo, 0, len(p.unschedulablePods.podInfoMap))
+	for _, pInfo := range p.unschedulablePods.podInfoMap {
+		if preCheck == nil || preCheck(pInfo.Pod) {
+			unschedulablePods = append(unschedulablePods, pInfo)
+		}
+	}
+	p.movePodsToActiveOrBackoffQueue(unschedulablePods, event)
 }
 
 // MoveAllToActiveOrBackoffQueue moves all pods from unschedulablePods to activeQ or backoffQ.
@@ -692,13 +761,7 @@ func (p *PriorityQueue) AssignedPodUpdated(pod *v1.Pod) {
 func (p *PriorityQueue) MoveAllToActiveOrBackoffQueue(event framework.ClusterEvent, preCheck PreEnqueueCheck) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	unschedulablePods := make([]*framework.QueuedPodInfo, 0, len(p.unschedulablePods.podInfoMap))
-	for _, pInfo := range p.unschedulablePods.podInfoMap {
-		if preCheck == nil || preCheck(pInfo.Pod) {
-			unschedulablePods = append(unschedulablePods, pInfo)
-		}
-	}
-	p.movePodsToActiveOrBackoffQueue(unschedulablePods, event)
+	p.moveAllToActiveOrBackoffQueue(event, preCheck)
 }
 
 // NOTE: this function assumes lock has been acquired in caller

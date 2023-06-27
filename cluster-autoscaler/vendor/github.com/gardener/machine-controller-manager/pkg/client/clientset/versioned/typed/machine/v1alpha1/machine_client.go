@@ -19,6 +19,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"net/http"
+
 	v1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
@@ -26,37 +28,15 @@ import (
 
 type MachineV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	AWSMachineClassesGetter
-	AlicloudMachineClassesGetter
-	AzureMachineClassesGetter
-	GCPMachineClassesGetter
 	MachinesGetter
 	MachineClassesGetter
 	MachineDeploymentsGetter
 	MachineSetsGetter
-	OpenStackMachineClassesGetter
-	PacketMachineClassesGetter
 }
 
 // MachineV1alpha1Client is used to interact with features provided by the machine.sapcloud.io group.
 type MachineV1alpha1Client struct {
 	restClient rest.Interface
-}
-
-func (c *MachineV1alpha1Client) AWSMachineClasses(namespace string) AWSMachineClassInterface {
-	return newAWSMachineClasses(c, namespace)
-}
-
-func (c *MachineV1alpha1Client) AlicloudMachineClasses(namespace string) AlicloudMachineClassInterface {
-	return newAlicloudMachineClasses(c, namespace)
-}
-
-func (c *MachineV1alpha1Client) AzureMachineClasses(namespace string) AzureMachineClassInterface {
-	return newAzureMachineClasses(c, namespace)
-}
-
-func (c *MachineV1alpha1Client) GCPMachineClasses(namespace string) GCPMachineClassInterface {
-	return newGCPMachineClasses(c, namespace)
 }
 
 func (c *MachineV1alpha1Client) Machines(namespace string) MachineInterface {
@@ -75,21 +55,29 @@ func (c *MachineV1alpha1Client) MachineSets(namespace string) MachineSetInterfac
 	return newMachineSets(c, namespace)
 }
 
-func (c *MachineV1alpha1Client) OpenStackMachineClasses(namespace string) OpenStackMachineClassInterface {
-	return newOpenStackMachineClasses(c, namespace)
-}
-
-func (c *MachineV1alpha1Client) PacketMachineClasses(namespace string) PacketMachineClassInterface {
-	return newPacketMachineClasses(c, namespace)
-}
-
 // NewForConfig creates a new MachineV1alpha1Client for the given config.
+// NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
+// where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*MachineV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
 	}
-	client, err := rest.RESTClientFor(&config)
+	httpClient, err := rest.HTTPClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
+	return NewForConfigAndClient(&config, httpClient)
+}
+
+// NewForConfigAndClient creates a new MachineV1alpha1Client for the given config and http client.
+// Note the http client provided takes precedence over the configured transport values.
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*MachineV1alpha1Client, error) {
+	config := *c
+	if err := setConfigDefaults(&config); err != nil {
+		return nil, err
+	}
+	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}

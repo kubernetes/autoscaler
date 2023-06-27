@@ -351,7 +351,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		migLister:              migLister,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,
@@ -1520,6 +1520,7 @@ func TestGetMigOptions(t *testing.T) {
 		ScaleDownGpuUtilizationThreshold: 0.2,
 		ScaleDownUnneededTime:            time.Second,
 		ScaleDownUnreadyTime:             time.Minute,
+		MaxNodeProvisionTime:             15 * time.Minute,
 	}
 
 	cases := []struct {
@@ -1539,12 +1540,14 @@ func TestGetMigOptions(t *testing.T) {
 				config.DefaultScaleDownUtilizationThresholdKey:    "0.7",
 				config.DefaultScaleDownUnneededTimeKey:            "1h",
 				config.DefaultScaleDownUnreadyTimeKey:             "30m",
+				config.DefaultMaxNodeProvisionTimeKey:             "60m",
 			},
 			expected: &config.NodeGroupAutoscalingOptions{
 				ScaleDownGpuUtilizationThreshold: 0.6,
 				ScaleDownUtilizationThreshold:    0.7,
 				ScaleDownUnneededTime:            time.Hour,
 				ScaleDownUnreadyTime:             30 * time.Minute,
+				MaxNodeProvisionTime:             60 * time.Minute,
 			},
 		},
 		{
@@ -1558,6 +1561,7 @@ func TestGetMigOptions(t *testing.T) {
 				ScaleDownUtilizationThreshold:    defaultOptions.ScaleDownUtilizationThreshold,
 				ScaleDownUnneededTime:            time.Minute,
 				ScaleDownUnreadyTime:             defaultOptions.ScaleDownUnreadyTime,
+				MaxNodeProvisionTime:             15 * time.Minute,
 			},
 		},
 		{

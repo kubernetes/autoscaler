@@ -25,12 +25,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -85,6 +85,12 @@ func (aws *awsCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (aws *awsCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(aws, node)
+}
+
 // NodeGroups returns all node groups configured for this cloud provider.
 func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	asgs := aws.awsManager.getAsgs()
@@ -122,8 +128,19 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (aws *awsCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	awsRef, err := AwsRefFromProviderId(node.Spec.ProviderID)
+	if err != nil {
+		return false, err
+	}
+
+	// we don't care about the status
+	status, err := aws.awsManager.asgCache.InstanceStatus(*awsRef)
+	if status != nil {
+		return true, nil
+	}
+
+	return false, fmt.Errorf("node is not present in aws: %v", err)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

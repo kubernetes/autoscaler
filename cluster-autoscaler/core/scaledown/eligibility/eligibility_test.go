@@ -28,7 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -43,12 +43,15 @@ func TestFilterOutUnremovable(t *testing.T) {
 	SetNodeReadyState(regularNode, true, time.Time{})
 
 	justDeletedNode := BuildTestNode("justDeleted", 1000, 10)
-	justDeletedNode.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-30, 10)}}
+	justDeletedNode.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-30, 10)}}
 	SetNodeReadyState(justDeletedNode, true, time.Time{})
 
 	noScaleDownNode := BuildTestNode("noScaleDown", 1000, 10)
 	noScaleDownNode.Annotations = map[string]string{ScaleDownDisabledKey: "true"}
 	SetNodeReadyState(noScaleDownNode, true, time.Time{})
+
+	unreadyNode := BuildTestNode("unready", 1000, 10)
+	SetNodeReadyState(unreadyNode, false, time.Time{})
 
 	bigPod := BuildTestPod("bigPod", 600, 0)
 	bigPod.Spec.NodeName = "regular"
@@ -57,37 +60,55 @@ func TestFilterOutUnremovable(t *testing.T) {
 	smallPod.Spec.NodeName = "regular"
 
 	testCases := []struct {
-		desc  string
-		nodes []*apiv1.Node
-		pods  []*apiv1.Pod
-		want  []string
+		desc             string
+		nodes            []*apiv1.Node
+		pods             []*apiv1.Pod
+		want             []string
+		scaleDownUnready bool
 	}{
 		{
-			desc:  "regular node stays",
-			nodes: []*apiv1.Node{regularNode},
-			want:  []string{"regular"},
+			desc:             "regular node stays",
+			nodes:            []*apiv1.Node{regularNode},
+			want:             []string{"regular"},
+			scaleDownUnready: true,
 		},
 		{
-			desc:  "recently deleted node is filtered out",
-			nodes: []*apiv1.Node{regularNode, justDeletedNode},
-			want:  []string{"regular"},
+			desc:             "recently deleted node is filtered out",
+			nodes:            []*apiv1.Node{regularNode, justDeletedNode},
+			want:             []string{"regular"},
+			scaleDownUnready: true,
 		},
 		{
-			desc:  "marked no scale down is filtered out",
-			nodes: []*apiv1.Node{noScaleDownNode, regularNode},
-			want:  []string{"regular"},
+			desc:             "marked no scale down is filtered out",
+			nodes:            []*apiv1.Node{noScaleDownNode, regularNode},
+			want:             []string{"regular"},
+			scaleDownUnready: true,
 		},
 		{
-			desc:  "highly utilized node is filtered out",
-			nodes: []*apiv1.Node{regularNode},
-			pods:  []*apiv1.Pod{bigPod},
-			want:  []string{},
+			desc:             "highly utilized node is filtered out",
+			nodes:            []*apiv1.Node{regularNode},
+			pods:             []*apiv1.Pod{bigPod},
+			want:             []string{},
+			scaleDownUnready: true,
 		},
 		{
-			desc:  "underutilized node stays",
-			nodes: []*apiv1.Node{regularNode},
-			pods:  []*apiv1.Pod{smallPod},
-			want:  []string{"regular"},
+			desc:             "underutilized node stays",
+			nodes:            []*apiv1.Node{regularNode},
+			pods:             []*apiv1.Pod{smallPod},
+			want:             []string{"regular"},
+			scaleDownUnready: true,
+		},
+		{
+			desc:             "unready node stays",
+			nodes:            []*apiv1.Node{unreadyNode},
+			want:             []string{"unready"},
+			scaleDownUnready: true,
+		},
+		{
+			desc:             "unready node is filtered oud when scale-down of unready is disabled",
+			nodes:            []*apiv1.Node{unreadyNode},
+			want:             []string{},
+			scaleDownUnready: false,
 		},
 	}
 	for _, tc := range testCases {
@@ -97,6 +118,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 			c := NewChecker(&staticThresholdGetter{0.5})
 			options := config.AutoscalingOptions{
 				UnremovableNodeRecheckTimeout: 5 * time.Minute,
+				ScaleDownUnreadyEnabled:       tc.scaleDownUnready,
 			}
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 2)

@@ -53,14 +53,6 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=machine.sapcloud.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("awsmachineclasses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().AWSMachineClasses().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("alicloudmachineclasses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().AlicloudMachineClasses().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("azuremachineclasses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().AzureMachineClasses().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("gcpmachineclasses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().GCPMachineClasses().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("machines"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().Machines().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("machineclasses"):
@@ -69,10 +61,6 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().MachineDeployments().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("machinesets"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().MachineSets().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("openstackmachineclasses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().OpenStackMachineClasses().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("packetmachineclasses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Machine().V1alpha1().PacketMachineClasses().Informer()}, nil
 
 	}
 

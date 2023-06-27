@@ -18,14 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-type AWSMachineClassExpansion interface{}
-
-type AlicloudMachineClassExpansion interface{}
-
-type AzureMachineClassExpansion interface{}
-
-type GCPMachineClassExpansion interface{}
-
 type MachineExpansion interface{}
 
 type MachineClassExpansion interface{}
@@ -33,7 +25,3 @@ type MachineClassExpansion interface{}
 type MachineDeploymentExpansion interface{}
 
 type MachineSetExpansion interface{}
-
-type OpenStackMachineClassExpansion interface{}
-
-type PacketMachineClassExpansion interface{}

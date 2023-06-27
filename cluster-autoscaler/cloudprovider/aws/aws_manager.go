@@ -273,6 +273,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	}
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
+	klog.V(5).Infof("Extracted resources from ASG tags %v", resourcesFromTags)
 	for resourceName, val := range resourcesFromTags {
 		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
 	}
@@ -333,7 +334,7 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 }
 
 func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) error {
-	if policy == nil {
+	if policy == nil || len(policy.instanceTypesOverrides) > 0 {
 		return nil
 	}
 

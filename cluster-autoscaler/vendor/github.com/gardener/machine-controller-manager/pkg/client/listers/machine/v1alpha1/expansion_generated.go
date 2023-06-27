@@ -18,38 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-// AWSMachineClassListerExpansion allows custom methods to be added to
-// AWSMachineClassLister.
-type AWSMachineClassListerExpansion interface{}
-
-// AWSMachineClassNamespaceListerExpansion allows custom methods to be added to
-// AWSMachineClassNamespaceLister.
-type AWSMachineClassNamespaceListerExpansion interface{}
-
-// AlicloudMachineClassListerExpansion allows custom methods to be added to
-// AlicloudMachineClassLister.
-type AlicloudMachineClassListerExpansion interface{}
-
-// AlicloudMachineClassNamespaceListerExpansion allows custom methods to be added to
-// AlicloudMachineClassNamespaceLister.
-type AlicloudMachineClassNamespaceListerExpansion interface{}
-
-// AzureMachineClassListerExpansion allows custom methods to be added to
-// AzureMachineClassLister.
-type AzureMachineClassListerExpansion interface{}
-
-// AzureMachineClassNamespaceListerExpansion allows custom methods to be added to
-// AzureMachineClassNamespaceLister.
-type AzureMachineClassNamespaceListerExpansion interface{}
-
-// GCPMachineClassListerExpansion allows custom methods to be added to
-// GCPMachineClassLister.
-type GCPMachineClassListerExpansion interface{}
-
-// GCPMachineClassNamespaceListerExpansion allows custom methods to be added to
-// GCPMachineClassNamespaceLister.
-type GCPMachineClassNamespaceListerExpansion interface{}
-
 // MachineListerExpansion allows custom methods to be added to
 // MachineLister.
 type MachineListerExpansion interface{}
@@ -81,19 +49,3 @@ type MachineSetListerExpansion interface{}
 // MachineSetNamespaceListerExpansion allows custom methods to be added to
 // MachineSetNamespaceLister.
 type MachineSetNamespaceListerExpansion interface{}
-
-// OpenStackMachineClassListerExpansion allows custom methods to be added to
-// OpenStackMachineClassLister.
-type OpenStackMachineClassListerExpansion interface{}
-
-// OpenStackMachineClassNamespaceListerExpansion allows custom methods to be added to
-// OpenStackMachineClassNamespaceLister.
-type OpenStackMachineClassNamespaceListerExpansion interface{}
-
-// PacketMachineClassListerExpansion allows custom methods to be added to
-// PacketMachineClassLister.
-type PacketMachineClassListerExpansion interface{}
-
-// PacketMachineClassNamespaceListerExpansion allows custom methods to be added to
-// PacketMachineClassNamespaceLister.
-type PacketMachineClassNamespaceListerExpansion interface{}

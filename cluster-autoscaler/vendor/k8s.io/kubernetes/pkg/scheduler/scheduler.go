@@ -132,9 +132,6 @@ type ScheduleResult struct {
 	EvaluatedNodes int
 	// The number of nodes out of the evaluated ones that fit the pod.
 	FeasibleNodes int
-
-	// The reason records the failure in scheduling cycle.
-	reason string
 	// The nominating info for scheduling cycle.
 	nominatingInfo *framework.NominatingInfo
 }
@@ -286,6 +283,7 @@ func New(client clientset.Interface,
 
 	snapshot := internalcache.NewEmptySnapshot()
 	clusterEventMap := make(map[framework.ClusterEvent]sets.String)
+	metricsRecorder := metrics.NewMetricsAsyncRecorder(1000, time.Second, stopCh)
 
 	profiles, err := profile.NewMap(options.profiles, registry, recorderFactory, stopCh,
 		frameworkruntime.WithComponentConfigVersion(options.componentConfigVersion),
@@ -295,8 +293,10 @@ func New(client clientset.Interface,
 		frameworkruntime.WithSnapshotSharedLister(snapshot),
 		frameworkruntime.WithCaptureProfile(frameworkruntime.CaptureProfile(options.frameworkCapturer)),
 		frameworkruntime.WithClusterEventMap(clusterEventMap),
+		frameworkruntime.WithClusterEventMap(clusterEventMap),
 		frameworkruntime.WithParallelism(int(options.parallelism)),
 		frameworkruntime.WithExtenders(extenders),
+		frameworkruntime.WithMetricsRecorder(metricsRecorder),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("initializing profiles: %v", err)
@@ -319,6 +319,8 @@ func New(client clientset.Interface,
 		internalqueue.WithClusterEventMap(clusterEventMap),
 		internalqueue.WithPodMaxInUnschedulablePodsDuration(options.podMaxInUnschedulablePodsDuration),
 		internalqueue.WithPreEnqueuePluginMap(preEnqueuePluginMap),
+		internalqueue.WithPluginMetricsSamplePercent(pluginMetricsSamplePercent),
+		internalqueue.WithMetricsRecorder(*metricsRecorder),
 	)
 
 	for _, fwk := range profiles {
@@ -431,7 +433,7 @@ func buildExtenders(extenders []schedulerapi.Extender, profiles []schedulerapi.K
 	return fExtenders, nil
 }
 
-type FailureHandlerFn func(ctx context.Context, fwk framework.Framework, podInfo *framework.QueuedPodInfo, err error, reason string, nominatingInfo *framework.NominatingInfo, start time.Time)
+type FailureHandlerFn func(ctx context.Context, fwk framework.Framework, podInfo *framework.QueuedPodInfo, status *framework.Status, nominatingInfo *framework.NominatingInfo, start time.Time)
 
 func unionedGVKs(m map[framework.ClusterEvent]sets.String) map[framework.GVK]framework.ActionType {
 	gvkMap := make(map[framework.GVK]framework.ActionType)

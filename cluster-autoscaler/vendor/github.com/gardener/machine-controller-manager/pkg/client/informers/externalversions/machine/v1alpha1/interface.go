@@ -24,14 +24,6 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// AWSMachineClasses returns a AWSMachineClassInformer.
-	AWSMachineClasses() AWSMachineClassInformer
-	// AlicloudMachineClasses returns a AlicloudMachineClassInformer.
-	AlicloudMachineClasses() AlicloudMachineClassInformer
-	// AzureMachineClasses returns a AzureMachineClassInformer.
-	AzureMachineClasses() AzureMachineClassInformer
-	// GCPMachineClasses returns a GCPMachineClassInformer.
-	GCPMachineClasses() GCPMachineClassInformer
 	// Machines returns a MachineInformer.
 	Machines() MachineInformer
 	// MachineClasses returns a MachineClassInformer.
@@ -40,10 +32,6 @@ type Interface interface {
 	MachineDeployments() MachineDeploymentInformer
 	// MachineSets returns a MachineSetInformer.
 	MachineSets() MachineSetInformer
-	// OpenStackMachineClasses returns a OpenStackMachineClassInformer.
-	OpenStackMachineClasses() OpenStackMachineClassInformer
-	// PacketMachineClasses returns a PacketMachineClassInformer.
-	PacketMachineClasses() PacketMachineClassInformer
 }
 
 type version struct {
@@ -55,26 +43,6 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
-}
-
-// AWSMachineClasses returns a AWSMachineClassInformer.
-func (v *version) AWSMachineClasses() AWSMachineClassInformer {
-	return &aWSMachineClassInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// AlicloudMachineClasses returns a AlicloudMachineClassInformer.
-func (v *version) AlicloudMachineClasses() AlicloudMachineClassInformer {
-	return &alicloudMachineClassInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// AzureMachineClasses returns a AzureMachineClassInformer.
-func (v *version) AzureMachineClasses() AzureMachineClassInformer {
-	return &azureMachineClassInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// GCPMachineClasses returns a GCPMachineClassInformer.
-func (v *version) GCPMachineClasses() GCPMachineClassInformer {
-	return &gCPMachineClassInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Machines returns a MachineInformer.
@@ -95,14 +63,4 @@ func (v *version) MachineDeployments() MachineDeploymentInformer {
 // MachineSets returns a MachineSetInformer.
 func (v *version) MachineSets() MachineSetInformer {
 	return &machineSetInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// OpenStackMachineClasses returns a OpenStackMachineClassInformer.
-func (v *version) OpenStackMachineClasses() OpenStackMachineClassInformer {
-	return &openStackMachineClassInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// PacketMachineClasses returns a PacketMachineClassInformer.
-func (v *version) PacketMachineClasses() PacketMachineClassInformer {
-	return &packetMachineClassInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

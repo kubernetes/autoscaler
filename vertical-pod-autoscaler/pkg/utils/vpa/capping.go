@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // NewCappingRecommendationProcessor constructs new RecommendationsProcessor that adjusts recommendation
@@ -116,7 +116,7 @@ func getCappedRecommendationForContainer(
 	cappingAnnotations := make([]string, 0)
 
 	process := func(recommendation apiv1.ResourceList, genAnnotations bool) {
-		// TODO: Add anotation if limitRange is conflicting with VPA policy.
+		// TODO: Add annotation if limitRange is conflicting with VPA policy.
 		limitAnnotations := applyContainerLimitRange(recommendation, container, limitRange)
 		annotations := applyVPAPolicy(recommendation, containerPolicy)
 		if genAnnotations {

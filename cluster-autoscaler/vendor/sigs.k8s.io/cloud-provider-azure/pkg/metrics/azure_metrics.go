@@ -99,6 +99,9 @@ func (mc *MetricContext) ObserveOperationWithResult(isOperationSucceeded bool, l
 	resultCode := "succeeded"
 	if !isOperationSucceeded {
 		resultCode = "failed"
+		if len(mc.attributes) > 0 {
+			resultCode += mc.attributes[0][strings.Index(mc.attributes[0], "_"):]
+		}
 		mc.CountFailedOperation()
 	}
 	mc.logLatency(3, latency, append(labelAndValues, "result_code", resultCode)...)

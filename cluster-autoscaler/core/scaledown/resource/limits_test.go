@@ -23,7 +23,7 @@ import (
 
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -49,7 +49,7 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 
 	nodes[6].Spec.Taints = []apiv1.Taint{
 		{
-			Key:    deletetaint.ToBeDeletedTaint,
+			Key:    taints.ToBeDeletedTaint,
 			Value:  fmt.Sprint(time.Now().Unix()),
 			Effect: apiv1.TaintEffectNoSchedule,
 		},

@@ -8,17 +8,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vpa-recommender-performance
+  name: vpa-recommender-frugal
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vpa-recommender-performance
+      app: vpa-recommender-frugal
   template:
     metadata:
       labels:
-        app: vpa-recommender-performance
+        app: vpa-recommender-frugal
     spec:
       serviceAccountName: vpa-recommender
       securityContext:
@@ -26,7 +26,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: k8s.gcr.io/autoscaling/vpa-recommender:0.12.0
+        image: registry.k8s.io/autoscaling/vpa-recommender:0.13.0
         imagePullPolicy: Always
         args:
           - --name=frugal

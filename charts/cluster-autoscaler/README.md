@@ -2,20 +2,20 @@
 
 Scales Kubernetes worker nodes within autoscaling groups.
 
-## TL;DR:
+## TL;DR
 
 ```console
 $ helm repo add autoscaler https://kubernetes.github.io/autoscaler
 
 # Method 1 - Using Autodiscovery
 $ helm install my-release autoscaler/cluster-autoscaler \
---set 'autoDiscovery.clusterName'=<CLUSTER NAME>
+    --set 'autoDiscovery.clusterName'=<CLUSTER NAME>
 
 # Method 2 - Specifying groups manually
 $ helm install my-release autoscaler/cluster-autoscaler \
---set "autoscalingGroups[0].name=your-asg-name" \
---set "autoscalingGroups[0].maxSize=10" \
---set "autoscalingGroups[0].minSize=1"
+    --set "autoscalingGroups[0].name=your-asg-name" \
+    --set "autoscalingGroups[0].maxSize=10" \
+    --set "autoscalingGroups[0].minSize=1"
 ```
 
 ## Introduction
@@ -68,10 +68,10 @@ Either:
 
 To create a valid configuration, follow instructions for your cloud provider:
 
-* [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
-* [GCE](#gce)
-* [Azure AKS](#azure-aks)
-* [OpenStack Magnum](#openstack-magnum)
+- [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
+- [GCE](#gce)
+- [Azure AKS](#azure-aks)
+- [OpenStack Magnum](#openstack-magnum)
 
 ### AWS - Using auto-discovery of tagged instance groups
 
@@ -84,13 +84,19 @@ Auto-discovery finds ASGs tags as below and automatically manages them based on 
 - Set (option) `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION>
+$ helm install my-release autoscaler/cluster-autoscaler \
+    --set autoDiscovery.clusterName=<CLUSTER NAME> \
+    --set awsRegion=<YOUR AWS REGION>
 ```
 
 Alternatively with your own AWS credentials
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION> --set awsAccessKeyID=<YOUR AWS KEY ID> --set awsSecretAccessKey=<YOUR AWS SECRET KEY>
+$ helm install my-release autoscaler/cluster-autoscaler \
+    --set autoDiscovery.clusterName=<CLUSTER NAME> \
+    --set awsRegion=<YOUR AWS REGION> \
+    --set awsAccessKeyID=<YOUR AWS KEY ID> \
+    --set awsSecretAccessKey=<YOUR AWS SECRET KEY>
 ```
 
 #### Specifying groups manually
@@ -102,15 +108,14 @@ Without autodiscovery, specify an array of elements each containing ASG name, mi
 
 ```console
 $ helm install my-release autoscaler/cluster-autoscaler \
---set "autoscalingGroups[0].name=your-asg-name" \
---set "autoscalingGroups[0].maxSize=10" \
---set "autoscalingGroups[0].minSize=1"
+    --set "autoscalingGroups[0].name=your-asg-name" \
+    --set "autoscalingGroups[0].maxSize=10" \
+    --set "autoscalingGroups[0].minSize=1"
 ```
 
 #### Auto-discovery
 
-For auto-discovery of instances to work, they must be tagged with the keys in `.Values.autoDiscovery.tags`, which by default are
-`k8s.io/cluster-autoscaler/enabled` and `k8s.io/cluster-autoscaler/<ClusterName>`
+For auto-discovery of instances to work, they must be tagged with the keys in `.Values.autoDiscovery.tags`, which by default are `k8s.io/cluster-autoscaler/enabled` and `k8s.io/cluster-autoscaler/<ClusterName>`.
 
 The value of the tag does not matter, only the key.
 
@@ -147,7 +152,7 @@ spec:
 
 In this example you would need to `--set autoDiscovery.clusterName=my.cluster.internal` when installing.
 
-It is not recommended to try to mix this with setting `autoscalingGroups`
+It is not recommended to try to mix this with setting `autoscalingGroups`.
 
 See [autoscaler AWS documentation](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup) for a more discussion of the setup.
 
@@ -163,9 +168,9 @@ To use Managed Instance Group (MIG) auto-discovery, provide a YAML file setting 
 
 ```console
 $ helm install my-release autoscaler/cluster-autoscaler \
---set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefi[0].minSize=1" \
---set autoDiscovery.clusterName=<CLUSTER NAME> \
---set cloudProvider=gce
+    --set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefi[0].minSize=1" \
+    --set autoDiscovery.clusterName=<CLUSTER NAME> \
+    --set cloudProvider=gce
 ```
 
 Note that `your-ig-prefix` should be a _prefix_ matching one or more MIGs, and _not_ the full name of the MIG. For example, to match multiple instance groups - `k8s-node-group-a-standard`, `k8s-node-group-b-gpu`, you would use a prefix of `k8s-node-group-`.
@@ -174,7 +179,7 @@ In the event you want to explicitly specify MIGs instead of using auto-discovery
 
 ```
 # where 'n' is the index, starting at 0
--- set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
+--set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
 ```
 
 ### Azure AKS
@@ -199,28 +204,31 @@ The following parameters are required:
 - `magnumClusterName=<cluster name or ID>` and `autoscalingGroups` with the names of node groups and min/max node counts
 - or `autoDiscovery.clusterName=<cluster name or ID>` with one or more `autoDiscovery.roles`.
 
-Additionally, `cloudConfigPath: "/etc/kubernetes/cloud-config"` must be set as this should be the location
-of the cloud-config file on the host.
+Additionally, `cloudConfigPath: "/etc/kubernetes/cloud-config"` must be set as this should be the location of the cloud-config file on the host.
 
 Example values files can be found [here](../../cluster-autoscaler/cloudprovider/magnum/examples).
 
 Install the chart with
 
-```
+```console
 $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 ```
+
 ### Cluster-API
 
 `cloudProvider: clusterapi` must be set, and then one or more of
+
 - `autoDiscovery.clusterName`
 - or `autoDiscovery.labels`
-See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details
 
-Additional config parameters avaible, see the `values.yaml` for more details
-`clusterAPIMode`
-`clusterAPIKubeconfigSecret`
-`clusterAPIWorkloadKubeconfigPath`
-`clusterAPICloudConfigPath`
+See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details.
+
+Additional config parameters available, see the `values.yaml` for more details
+
+- `clusterAPIMode`
+- `clusterAPIKubeconfigSecret`
+- `clusterAPIWorkloadKubeconfigPath`
+- `clusterAPICloudConfigPath`
 
 ## Uninstalling the Chart
 
@@ -250,10 +258,39 @@ In order to accomplish this, you will first need to create a new IAM role with t
 
 Once you have the IAM role configured, you would then need to `--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
 
+### Azure - Using azure workload identity
+
+You can use the project [Azure workload identity](https://github.com/Azure/azure-workload-identity), to automatically configure the correct setup for your pods to used federated identity with Azure.
+
+You can also set the correct settings yourself instead of relying on this project.
+
+For example the following configuration will configure the Autoscaler to use your federated identity:
+
+```yaml
+azureUseWorkloadIdentityExtension: true
+extraEnv:
+  AZURE_CLIENT_ID: USER ASSIGNED IDENTITY CLIENT ID
+  AZURE_TENANT_ID: USER ASSIGNED IDENTITY TENANT ID
+  AZURE_FEDERATED_TOKEN_FILE: /var/run/secrets/tokens/azure-identity-token
+  AZURE_AUTHORITY_HOST: https://login.microsoftonline.com/
+extraVolumes:
+- name: azure-identity-token
+  projected:
+    defaultMode: 420
+    sources:
+    - serviceAccountToken:
+        audience: api://AzureADTokenExchange
+        expirationSeconds: 3600
+        path: azure-identity-token
+extraVolumeMounts:
+- mountPath: /var/run/secrets/tokens
+  name: azure-identity-token
+  readOnly: true
+```
+
 ## Troubleshooting
 
-The chart will succeed even if the container arguments are incorrect. A few minutes after starting
-`kubectl logs -l "app=aws-cluster-autoscaler" --tail=50` should loop through something like
+The chart will succeed even if the container arguments are incorrect. A few minutes after starting `kubectl logs -l "app=aws-cluster-autoscaler" --tail=50` should loop through something like
 
 ```
 polling_autoscaler.go:111] Poll finished
@@ -281,6 +318,21 @@ Containers:
 
 Though enough for the majority of installations, the default PodSecurityPolicy _could_ be too restrictive depending on the specifics of your release. Please make sure to check that the template fits with any customizations made or disable it by setting `rbac.pspEnabled` to `false`.
 
+### VerticalPodAutoscaler
+
+The chart can install a [`VerticalPodAutoscaler`](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/README.md) for the Deployment if needed. A VPA can help minimize wasted resources when usage spikes periodically or remediate containers that are being OOMKilled.
+
+The following example snippet can be used to install VPA that allows scaling down from the default recommendations of the deployment template:
+
+```yaml
+vpa:
+  enabled: true
+  containerPolicy:
+    minAllowed:
+      cpu: 20m
+      memory: 50Mi
+```
+
 ## Values
 
 | Key | Type | Default | Description |
@@ -303,7 +355,8 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
-| azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. |
+| azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
+| azureUseWorkloadIdentityExtension | bool | `false` | Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureVMType | string | `"AKS"` | Azure VM type. |
 | cloudConfigPath | string | `""` | Configuration file for cloud provider. |
 | cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. |
@@ -326,10 +379,11 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
 | extraVolumes | list | `[]` | Additional volumes. |
 | fullnameOverride | string | `""` | String to fully override `cluster-autoscaler.fullname` template. |
+| hostNetwork | bool | `false` | Whether to expose network interfaces of the host machine to pods. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
-| image.repository | string | `"k8s.gcr.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.23.0"` | Image tag |
+| image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
+| image.tag | string | `"v1.26.2"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
 | magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
@@ -374,3 +428,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | tolerations | list | `[]` | List of node taints to tolerate (requires Kubernetes >= 1.6). |
 | topologySpreadConstraints | list | `[]` | You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19). |
 | updateStrategy | object | `{}` | [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| vpa | object | `{"containerPolicy":{},"enabled":false,"updateMode":"Auto"}` | Configure a VerticalPodAutoscaler for the cluster-autoscaler Deployment. |
+| vpa.containerPolicy | object | `{}` | [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled. |
+| vpa.enabled | bool | `false` | If true, creates a VerticalPodAutoscaler. |
+| vpa.updateMode | string | `"Auto"` | [UpdateMode](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L124) |

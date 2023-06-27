@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 const (
@@ -158,10 +159,11 @@ func (provider *OVHCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // findNodeGroupFromCache tries to retrieve the associated node group from an already built mapping in cache
 func (provider *OVHCloudProvider) findNodeGroupFromCache(providerID string) cloudprovider.NodeGroup {
-	if ng, ok := provider.manager.NodeGroupPerProviderID[providerID]; ok {
-		return ng
+	nodeGroup := provider.manager.getNodeGroupPerProviderID(providerID)
+	if nodeGroup != nil {
+		return nodeGroup
 	}
-	return nil
+	return nil // To avoid returning a (*cloudprovider.NodeGroup)(nil), which is different from nil
 }
 
 // findNodeGroupFromLabel tries to find the associated node group from the nodepool label on the node
@@ -279,6 +281,12 @@ func (provider *OVHCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	}
 
 	return gpuTypes
+}
+
+// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
+// any GPUs, it returns nil.
+func (provider *OVHCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(provider, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,

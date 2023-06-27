@@ -31,7 +31,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -109,7 +109,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 			if singleGroupStats.running-singleGroupStats.evicted > shouldBeAlive {
 				return true
 			}
-			// If all pods are running and eviction tollerance is small evict 1 pod.
+			// If all pods are running and eviction tolerance is small evict 1 pod.
 			if singleGroupStats.running == singleGroupStats.configured &&
 				singleGroupStats.evictionTolerance == 0 &&
 				singleGroupStats.evicted == 0 {

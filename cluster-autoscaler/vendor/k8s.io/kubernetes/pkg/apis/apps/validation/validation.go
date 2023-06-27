@@ -37,10 +37,10 @@ import (
 // Prefix indicates this name will be used as part of generation, in which case
 // trailing dashes are allowed.
 func ValidateStatefulSetName(name string, prefix bool) []string {
-	// TODO: Validate that there's name for the suffix inserted by the pods.
+	// TODO: Validate that there's room for the suffix inserted by the pods.
 	// Currently this is just "-index". In the future we may allow a user
 	// specified list of suffixes and we need  to validate the longest one.
-	return apimachineryvalidation.NameIsDNSSubdomain(name, prefix)
+	return apimachineryvalidation.NameIsDNSLabel(name, prefix)
 }
 
 // ValidatePodTemplateSpecForStatefulSet validates the given template and ensures that it is in accordance with the desired selector.
@@ -169,10 +169,14 @@ func ValidateStatefulSet(statefulSet *apps.StatefulSet, opts apivalidation.PodVa
 
 // ValidateStatefulSetUpdate tests if required fields in the StatefulSet are set.
 func ValidateStatefulSetUpdate(statefulSet, oldStatefulSet *apps.StatefulSet, opts apivalidation.PodValidationOptions) field.ErrorList {
-	// first, validate that the new statefulset is valid
-	allErrs := ValidateStatefulSet(statefulSet, opts)
-
-	allErrs = append(allErrs, apivalidation.ValidateObjectMetaUpdate(&statefulSet.ObjectMeta, &oldStatefulSet.ObjectMeta, field.NewPath("metadata"))...)
+	// First, validate that the new statefulset is valid.  Don't call
+	// ValidateStatefulSet() because we don't want to revalidate the name on
+	// update.  This is important here because we used to allow DNS subdomain
+	// for name, but that can't actually create pods.  The only reasonable
+	// thing to do it delete such an instance, but if there is a finalizer, it
+	// would need to pass update validation.  Name can't change anyway.
+	allErrs := apivalidation.ValidateObjectMetaUpdate(&statefulSet.ObjectMeta, &oldStatefulSet.ObjectMeta, field.NewPath("metadata"))
+	allErrs = append(allErrs, ValidateStatefulSetSpec(&statefulSet.Spec, field.NewPath("spec"), opts)...)
 
 	// statefulset updates aren't super common and general updates are likely to be touching spec, so we'll do this
 	// deep copy right away.  This avoids mutating our inputs

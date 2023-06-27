@@ -141,7 +141,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:{{ ca_version }}
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
           name: cluster-autoscaler
           command:
             - ./cluster-autoscaler
@@ -158,5 +158,3 @@ spec:
           env:
             - name: OCI_USE_INSTANCE_PRINCIPAL
               value: "true"
-            - name: OCI_REGION
-              value: "us-phoenix-1"

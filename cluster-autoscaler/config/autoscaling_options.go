@@ -44,6 +44,18 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down
 	ScaleDownUnreadyTime time.Duration
+	// Maximum time CA waits for node to be provisioned
+	MaxNodeProvisionTime time.Duration
+}
+
+// GCEOptions contain autoscaling options specific to GCE cloud provider.
+type GCEOptions struct {
+	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	ConcurrentRefreshes int
+	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
+	MigInstancesMinRefreshWaitTime time.Duration
+	// ExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
+	ExpanderEphemeralStorageSupport bool
 }
 
 const (
@@ -110,8 +122,6 @@ type AutoscalingOptions struct {
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
 	MaxGracefulTerminationSec int
-	//  Maximum time CA waits for node to be provisioned
-	MaxNodeProvisionTime time.Duration
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
 	MaxTotalUnreadyPercentage float64
 	// OkTotalUnreadyCount is the number of allowed unready nodes, irrespective of max-total-unready-percentage
@@ -128,6 +138,8 @@ type AutoscalingOptions struct {
 	EnforceNodeGroupMinSize bool
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
+	// ScaleDownUnreadyEnabled is used to allow CA to scale down unready nodes of the cluster
+	ScaleDownUnreadyEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
 	ScaleDownDelayAfterAdd time.Duration
 	// ScaleDownDelayAfterDelete sets the duration between scale down attempts if scale down removes one or more nodes
@@ -182,8 +194,14 @@ type AutoscalingOptions struct {
 	MaxBulkSoftTaintTime time.Duration
 	// MaxPodEvictionTime sets the maximum time CA tries to evict a pod before giving up.
 	MaxPodEvictionTime time.Duration
-	// IgnoredTaints is a list of taints to ignore when considering a node template for scheduling.
+	// IgnoredTaints is a list of taints CA considers to reflect transient node
+	// status that should be removed when creating a node template for scheduling.
+	// The ignored taints are expected to appear during node startup.
 	IgnoredTaints []string
+	// StatusTaints is a list of taints CA considers to reflect transient node
+	// status that should be removed when creating a node template for scheduling.
+	// The status taints are expected to appear during node lifetime, after startup.
+	StatusTaints []string
 	// BalancingExtraIgnoredLabels is a list of labels to additionally ignore when comparing if two node groups are similar.
 	// Labels in BasicIgnoredLabels and the cloud provider-specific ignored labels are always ignored.
 	BalancingExtraIgnoredLabels []string
@@ -192,8 +210,8 @@ type AutoscalingOptions struct {
 	BalancingLabels []string
 	// AWSUseStaticInstanceList tells if AWS cloud provider use static instance type list or dynamically fetch from remote APIs.
 	AWSUseStaticInstanceList bool
-	// ConcurrentGceRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
-	ConcurrentGceRefreshes int
+	// GCEOptions contain autoscaling options specific to GCE cloud provider.
+	GCEOptions GCEOptions
 	// Path to kube configuration if available
 	KubeConfigPath string
 	// Burst setting for kubernetes client
@@ -221,8 +239,6 @@ type AutoscalingOptions struct {
 	MaxScaleDownParallelism int
 	// MaxDrainParallelism is the maximum number of nodes needing drain, that can be drained and deleted in parallel.
 	MaxDrainParallelism int
-	// GceExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
-	GceExpanderEphemeralStorageSupport bool
 	// RecordDuplicatedEvents controls whether events should be duplicated within a 5 minute window.
 	RecordDuplicatedEvents bool
 	// MaxNodesPerScaleUp controls how many nodes can be added in a single scale-up.
@@ -238,6 +254,8 @@ type AutoscalingOptions struct {
 	SkipNodesWithSystemPods bool
 	// SkipNodesWithLocalStorage tells if nodes with pods with local storage, e.g. EmptyDir or HostPath, should be deleted
 	SkipNodesWithLocalStorage bool
+	// SkipNodesWithCustomControllerPods tells if nodes with custom-controller owned pods should be skipped from deletion (skip if 'true')
+	SkipNodesWithCustomControllerPods bool
 	// MinReplicaCount controls the minimum number of replicas that a replica set or replication controller should have
 	// to allow their pods deletion in scale down
 	MinReplicaCount int

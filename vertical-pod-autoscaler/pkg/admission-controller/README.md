@@ -2,7 +2,7 @@
 
 - [Intro](#intro)
 - [Running](#running)
-- [Implementation](#implmentation)
+- [Implementation](#implementation)
 
 ## Intro
 

@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -146,7 +147,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
-		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
+		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
@@ -173,6 +174,7 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
+	remainingPdbTracker := pdb.NewBasicRemainingPdbTracker()
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
@@ -192,6 +194,7 @@ func NewScaleTestAutoscalingContext(
 		EstimatorBuilder:     estimatorBuilder,
 		ProcessorCallbacks:   processorCallbacks,
 		DebuggingSnapshotter: debuggingSnapshotter,
+		RemainingPdbTracker:  remainingPdbTracker,
 	}, nil
 }
 
