@@ -18,6 +18,7 @@ package test
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -136,6 +137,10 @@ func (tcp *TestCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	for _, group := range tcp.groups {
 		result = append(result, group)
 	}
+	// Sort the nodegroups in order of Id.
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Id() < result[j].Id()
+	})
 	return result
 }
 
