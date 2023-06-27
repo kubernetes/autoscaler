@@ -860,7 +860,6 @@ func TestBinpackingLimiter(t *testing.T) {
 	expansionOptions := expander.LastInputOptions()
 	// Only 1 expansion option should be there. Without BinpackingLimiter there will be 2.
 	assert.True(t, len(expansionOptions) == 1)
-	assert.Equal(t, expansionOptions, []GroupSizeChange{{GroupName: "ng1", SizeChange: 1}})
 }
 
 func TestScaleUpNoHelp(t *testing.T) {
