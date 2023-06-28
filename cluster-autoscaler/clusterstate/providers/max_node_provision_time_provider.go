@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clusterstate
+package providers
 
 import (
 	"time"
@@ -25,7 +25,7 @@ import (
 )
 
 // NewDefaultMaxNodeProvisionTimeProvider returns the default maxNodeProvisionTimeProvider which uses the NodeGroupConfigProcessor.
-func NewDefaultMaxNodeProvisionTimeProvider(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) maxNodeProvisionTimeProvider {
+func NewDefaultMaxNodeProvisionTimeProvider(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) *defultMaxNodeProvisionTimeProvider {
 	return &defultMaxNodeProvisionTimeProvider{context: context, nodeGroupConfigProcessor: nodeGroupConfigProcessor}
 }
 
@@ -37,18 +37,4 @@ type defultMaxNodeProvisionTimeProvider struct {
 // GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
 func (p *defultMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
 	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(p.context, nodeGroup)
-}
-
-// NewStaticMaxNodeProvisionTimeProvider returns static maxNodeProvisionTimeProvider which returns constant MaxNodeProvisionTime for every NodeGroup. Can be used for convenient testing.
-func NewStaticMaxNodeProvisionTimeProvider(maxNodeProvisionTime time.Duration) maxNodeProvisionTimeProvider {
-	return &staticMaxNodeProvisionTimeProvider{maxNodeProvisionTime}
-}
-
-type staticMaxNodeProvisionTimeProvider struct {
-	staticMaxNodeProvisionTime time.Duration
-}
-
-// GetMaxNodeProvisionTime returns constant MaxNodeProvisionTime value that should be used for every NodeGroup.
-func (p *staticMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return p.staticMaxNodeProvisionTime, nil
 }
