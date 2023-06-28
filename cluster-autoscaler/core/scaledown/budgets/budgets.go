@@ -47,23 +47,69 @@ func NewScaleDownBudgetProcessor(ctx *context.AutoscalingContext) *ScaleDownBudg
 
 // CropNodes crops the provided node lists to respect scale-down max parallelism budgets.
 // The returned nodes are grouped by a node group.
+// This function assumes that each node group may occur at most once in each of the "empty" and "drain" lists.
 func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
 	emptyIndividual, emptyAtomic := bp.categorize(bp.group(empty))
 	drainIndividual, drainAtomic := bp.categorize(bp.group(drain))
+
+	emptyAtomicMap := groupBuckets(emptyAtomic)
+	drainAtomicMap := groupBuckets(drainAtomic)
 
 	emptyInProgress, drainInProgress := as.DeletionsInProgress()
 	parallelismBudget := bp.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
 	drainBudget := bp.ctx.MaxDrainParallelism - len(drainInProgress)
 
-	emptyToDelete, allowedCount, canOverflow := cropAtomicNodes(emptyAtomic, parallelismBudget, true)
-	parallelismBudget -= allowedCount
+	canOverflow := true
+	emptyToDelete, drainToDelete = []*NodeGroupView{}, []*NodeGroupView{}
+	for _, bucket := range emptyAtomic {
+		drainNodes := []*apiv1.Node{}
+		drainBucket, drainFound := drainAtomicMap[bucket.Group.Id()]
+		if drainFound {
+			drainNodes = drainBucket.Nodes
+		}
+		// For node groups using atomic scaling, skip them if either the total number
+		// of empty and drain nodes exceeds the parallelism budget,
+		// or if the number of drain nodes exceeds the drain budget.
+		if parallelismBudget < len(bucket.Nodes)+len(drainNodes) ||
+			drainBudget < len(drainNodes) {
+			// One pod slice can sneak in even if it would exceed parallelism budget.
+			// This is to help avoid starvation of pod slices by regular nodes,
+			// also larger pod slices will immediately exceed parallelism budget.
+			if parallelismBudget == 0 || (len(drainNodes) > 0 && drainBudget == 0) || !canOverflow {
+				break
+			}
+		}
+		emptyToDelete = append(emptyToDelete, bucket)
+		if drainFound {
+			drainToDelete = append(drainToDelete, drainBucket)
+		}
+		parallelismBudget -= len(bucket.Nodes) + len(drainNodes)
+		drainBudget -= len(drainNodes)
+		canOverflow = false
+	}
 
 	drainBudget = min(parallelismBudget, drainBudget)
-	drainToDelete, allowedCount, _ = cropAtomicNodes(drainAtomic, drainBudget, canOverflow)
-	parallelismBudget -= allowedCount
-	drainBudget -= allowedCount
+	for _, bucket := range drainAtomic {
+		if _, found := emptyAtomicMap[bucket.Group.Id()]; found {
+			// This atomically-scaled node group should have been already processed
+			// in the previous loop.
+			break
+		}
+		if drainBudget < len(bucket.Nodes) {
+			// One pod slice can sneak in even if it would exceed parallelism budget.
+			// This is to help avoid starvation of pod slices by regular nodes,
+			// also larger pod slices will immediately exceed parallelism budget.
+			if drainBudget == 0 || !canOverflow {
+				break
+			}
+		}
+		drainToDelete = append(drainToDelete, bucket)
+		parallelismBudget -= len(bucket.Nodes)
+		drainBudget -= len(bucket.Nodes)
+		canOverflow = false
+	}
 
-	emptyToDelete, allowedCount = cropIndividualNodes(emptyToDelete, emptyIndividual, parallelismBudget)
+	emptyToDelete, allowedCount := cropIndividualNodes(emptyToDelete, emptyIndividual, parallelismBudget)
 	parallelismBudget -= allowedCount
 	drainBudget = min(parallelismBudget, drainBudget)
 
@@ -72,27 +118,12 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 	return emptyToDelete, drainToDelete
 }
 
-// cropAtomicNodes returns three values:
-// * nodes selected for deletion
-// * the number of nodes planned for deletion in this invocation
-// * whether a budget overflow is still allowed.
-func cropAtomicNodes(groups []*NodeGroupView, budget int, canOverflow bool) ([]*NodeGroupView, int, bool) {
-	toDelete := []*NodeGroupView{}
-	remainingBudget := budget
-	for _, bucket := range groups {
-		if remainingBudget < len(bucket.Nodes) {
-			// One pod slice can sneak in even if it would exceed parallelism budget.
-			// This is to help avoid starvation of pod slices by regular nodes,
-			// also larger pod slices will immediately exceed parallelism budget.
-			if remainingBudget == 0 || (len(bucket.Nodes) > 0 && !canOverflow) {
-				break
-			}
-		}
-		toDelete = append(toDelete, bucket)
-		remainingBudget -= len(bucket.Nodes)
-		canOverflow = false
+func groupBuckets(buckets []*NodeGroupView) map[string]*NodeGroupView {
+	grouped := map[string]*NodeGroupView{}
+	for _, bucket := range buckets {
+		grouped[bucket.Group.Id()] = bucket
 	}
-	return toDelete, budget - remainingBudget, canOverflow
+	return grouped
 }
 
 // cropIndividualNodes returns two values:
