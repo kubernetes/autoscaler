@@ -360,23 +360,6 @@ func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	vpaClientSet := getVpaClientSet(f)
 	_, err := vpaClientSet.AutoscalingV1beta2().VerticalPodAutoscalers(f.Namespace.Name).Create(context.TODO(), vpa, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error creating VPA")
-	// apiserver ignore status in vpa create, so need to update status
-	if !isStatusEmpty(&vpa.Status) {
-		if vpa.Status.Recommendation != nil {
-			PatchVpaRecommendation(f, vpa, vpa.Status.Recommendation)
-		}
-	}
-}
-
-func isStatusEmpty(status *vpa_types.VerticalPodAutoscalerStatus) bool {
-	if status == nil {
-		return true
-	}
-
-	if len(status.Conditions) == 0 && status.Recommendation == nil {
-		return true
-	}
-	return false
 }
 
 // InstallRawVPA installs a VPA object passed in as raw json in the test cluster.
@@ -401,7 +384,7 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 		Value: *newStatus,
 	}})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	_, err = getVpaClientSet(f).AutoscalingV1beta2().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{}, "status")
+	_, err = getVpaClientSet(f).AutoscalingV1beta2().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 

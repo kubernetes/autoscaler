@@ -299,9 +299,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 	ginkgo.It("does not act on injected sidecars", func() {
 		const (
-			// TODO(krzysied): Update the image url when the agnhost:2.10 image
-			// is promoted to the k8s-e2e-test-images repository.
-			agnhostImage  = "gcr.io/k8s-staging-e2e-test-images/agnhost:2.10"
+			agnhostImage  = "registry.k8s.io/e2e-test-images/agnhost:2.40"
 			sidecarParam  = "--sidecar-image=registry.k8s.io/pause:3.1"
 			sidecarName   = "webhook-added-sidecar"
 			servicePort   = int32(8443)
