@@ -15,4 +15,7 @@ FROM base AS cluster-autoscaler
 
 COPY --from=builder /go/src/github.com/gardener/autoscaler/cluster-autoscaler/cluster-autoscaler /cluster-autoscaler
 
+# Copy the VERSION file which helps in printing g/autoscaler version
+COPY --from=builder /go/src/github.com/gardener/autoscaler/VERSION /VERSION
+
 CMD ["/cluster-autoscaler"]
