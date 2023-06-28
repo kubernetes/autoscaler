@@ -33,7 +33,7 @@ test-unit: clean build
 docker-build: $(addprefix docker-build-,$(ALL_ARCHITECTURES))
 
 .PHONY: docker-build-*
-docker-build-%: 
+docker-build-%:
 ifndef REGISTRY
 	ERR = $(error REGISTRY is undefined)
 	$(ERR)
