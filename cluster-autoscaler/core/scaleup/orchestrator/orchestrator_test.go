@@ -970,7 +970,8 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 		Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	clusterState := clusterstate.
-		NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+		NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	processors := NewTestProcessors(&context)
 	orchestrator := New()
@@ -1071,7 +1072,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
 
@@ -1116,7 +1118,8 @@ func TestBinpackingLimiter(t *testing.T) {
 		Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	extraPod := BuildTestPod("p-new", 500, 0)
@@ -1171,7 +1174,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 
 	nodes := []*apiv1.Node{n1}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
 
@@ -1325,7 +1329,8 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			assert.NoError(t, err)
 
 			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
+			clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 			assert.NoError(t, clusterState.UpdateNodes(nodes, nodeInfos, time.Now()))
 
 			suOrchestrator := &ScaleUpOrchestrator{}
@@ -1389,7 +1394,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	pods := make([]*apiv1.Pod, 0)
@@ -1451,7 +1457,8 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 
 	processors := NewTestProcessors(&context)
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
@@ -1506,7 +1513,8 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 
 	processors := NewTestProcessors(&context)
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
@@ -1567,7 +1575,8 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 	processors := NewTestProcessors(&context)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
+	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	suOrchestrator := New()
