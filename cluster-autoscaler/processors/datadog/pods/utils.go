@@ -20,30 +20,15 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type ageCondition int
 
 const (
-	longPendingCutoff = time.Hour * 2
+	longPendingCutoff = time.Hour / 2
 	youngerThan       = iota
 	olderThan         = iota
 )
-
-func countDistinctOwnerReferences(pods []*apiv1.Pod) int {
-	distinctOwners := make(map[types.UID]struct{})
-	for _, pod := range pods {
-		controllerRef := metav1.GetControllerOf(pod)
-		if controllerRef == nil {
-			continue
-		}
-		distinctOwners[controllerRef.UID] = struct{}{}
-	}
-
-	return len(distinctOwners)
-}
 
 func filterByAge(pods []*apiv1.Pod, condition ageCondition, age time.Duration) []*apiv1.Pod {
 	var filtered []*apiv1.Pod
