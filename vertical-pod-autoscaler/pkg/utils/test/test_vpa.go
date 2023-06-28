@@ -22,6 +22,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
@@ -36,6 +37,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithResourceInTarget(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
@@ -128,6 +130,12 @@ func (b *verticalPodAutoscalerBuilder) WithControlledValues(mode vpa_types.Conta
 func (b *verticalPodAutoscalerBuilder) WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.recommendation = c.recommendation.WithTarget(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithResourceInTarget(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.recommendation = c.recommendation.WithResource(resource, value)
 	return &c
 }
 

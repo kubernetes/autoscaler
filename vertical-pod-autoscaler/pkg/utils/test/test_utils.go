@@ -26,12 +26,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/record"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
-	"k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/tools/record"
 )
 
 var (
@@ -87,6 +88,16 @@ func Resources(cpu, mem string) apiv1.ResourceList {
 		result[apiv1.ResourceMemory] = memVal
 	}
 	return result
+}
+
+// AddResource add a resource to the given resource list
+func AddResource(rl apiv1.ResourceList, resourceName apiv1.ResourceName, value string) apiv1.ResourceList {
+	val, _ := resource.ParseQuantity(value)
+	if rl == nil {
+		rl = apiv1.ResourceList{}
+	}
+	rl[resourceName] = val
+	return rl
 }
 
 // RecommenderAPIMock is a mock of RecommenderAPI
