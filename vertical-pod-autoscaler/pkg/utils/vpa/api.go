@@ -49,14 +49,14 @@ type patchRecord struct {
 	Value interface{} `json:"value"`
 }
 
-func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
+func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	bytes, err := json.Marshal(patches)
 	if err != nil {
 		klog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
 		return
 	}
 
-	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, meta.PatchOptions{}, "status")
+	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, meta.PatchOptions{})
 }
 
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
@@ -69,7 +69,7 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 	}}
 
 	if !apiequality.Semantic.DeepEqual(*oldStatus, *newStatus) {
-		return patchVpaStatus(vpaClient, vpaName, patches)
+		return patchVpa(vpaClient, vpaName, patches)
 	}
 	return nil, nil
 }
