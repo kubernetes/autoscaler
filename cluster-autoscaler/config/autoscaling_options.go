@@ -60,11 +60,19 @@ type GCEOptions struct {
 
 const (
 	// DefaultMaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between groups in the same NodeGroupSet
-	DefaultMaxAllocatableDifferenceRatio = 0.05
+	// FORK-CHANGE: changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
+	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
+	DefaultMaxAllocatableDifferenceRatio = 0.5
 	// DefaultMaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
-	DefaultMaxFreeDifferenceRatio = 0.05
-	// DefaultMaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory
-	DefaultMaxCapacityMemoryDifferenceRatio = 0.015
+	// can differ between groups in the same NodeGroupSet
+	// FORK-CHANGE: changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
+	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
+	DefaultMaxFreeDifferenceRatio = 0.5
+	// DefaultMaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between
+	// groups in the same NodeGroupSet
+	// FORK-CHANGE: changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
+	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
+	DefaultMaxCapacityMemoryDifferenceRatio = 0.5
 )
 
 // NodeGroupDifferenceRatios contains various ratios used to determine if two NodeGroups are similar and makes scaling decisions
