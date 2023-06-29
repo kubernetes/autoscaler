@@ -446,7 +446,7 @@ func (o *ScaleUpOrchestrator) filterValidScaleUpNodeGroups(
 			klog.Errorf("Couldn't get autoscaling options for ng: %v", nodeGroup.Id())
 		}
 		numNodes := 1
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
+		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
 			numNodes = nodeGroup.MaxSize() - currentTargetSize
 			if o.autoscalingContext.MaxNodesTotal != 0 && currentNodeCount+numNodes > o.autoscalingContext.MaxNodesTotal {
 				klog.V(4).Infof("Skipping node group %s - atomic scale-up exceeds cluster node count limit", nodeGroup.Id())
@@ -495,7 +495,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	if err != nil {
 		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 	}
-	if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
+	if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
 		if option.NodeCount > 0 && option.NodeCount != nodeGroup.MaxSize() {
 			option.NodeCount = nodeGroup.MaxSize()
 		}
@@ -633,7 +633,7 @@ func (o *ScaleUpOrchestrator) ComputeSimilarNodeGroups(
 	if err != nil {
 		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 	}
-	if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
+	if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
 		return nil
 	}
 
