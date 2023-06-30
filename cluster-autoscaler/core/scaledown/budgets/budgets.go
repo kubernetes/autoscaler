@@ -173,7 +173,7 @@ func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individ
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", view.Group.Id(), err)
 			continue
 		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
+		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
 			atomic = append(atomic, view)
 		} else {
 			individual = append(individual, view)
@@ -196,7 +196,7 @@ func (bp *ScaleDownBudgetProcessor) groupByNodeGroup(nodes []*apiv1.Node) (indiv
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
 			continue
 		}
-		if autoscalingOptions != nil && autoscalingOptions.AtomicScaling {
+		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
 			if idx, ok := atomicGroup[nodeGroup]; ok {
 				atomic[idx].Nodes = append(atomic[idx].Nodes, node)
 			} else {

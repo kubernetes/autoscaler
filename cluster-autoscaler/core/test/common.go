@@ -109,6 +109,13 @@ type NodeGroupConfig struct {
 	MaxSize int
 }
 
+// NodeTemplateConfig is a structure to provide node info in tests
+type NodeTemplateConfig struct {
+	MachineType   string
+	NodeInfo      *schedulerframework.NodeInfo
+	NodeGroupName string
+}
+
 // ScaleUpTestConfig represents a config of a scale test
 type ScaleUpTestConfig struct {
 	Groups                  []NodeGroupConfig
@@ -118,6 +125,7 @@ type ScaleUpTestConfig struct {
 	OnScaleUp               testcloudprovider.OnScaleUpFunc
 	ExpansionOptionToChoose *GroupSizeChange
 	Options                 *config.AutoscalingOptions
+	NodeTemplateConfigs     map[string]*NodeTemplateConfig
 }
 
 // ScaleUpTestResult represents a node groups scale up result
