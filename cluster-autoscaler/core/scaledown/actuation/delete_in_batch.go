@@ -18,7 +18,6 @@ package actuation
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 	"time"
 
@@ -26,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/klog/v2"
@@ -67,51 +67,48 @@ func NewNodeDeletionBatcher(ctx *context.AutoscalingContext, csr *clusterstate.C
 	}
 }
 
-// AddNode adds node to delete candidates and schedule deletion.
-func (d *NodeDeletionBatcher) AddNode(node *apiv1.Node, drain bool) error {
+// AddNodes adds node list to delete candidates and schedules deletion.
+func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
 	// If delete interval is 0, than instantly start node deletion.
 	if d.deleteInterval == 0 {
-		nodeGroup, err := deleteNodesFromCloudProvider(d.ctx, []*apiv1.Node{node})
-		if err != nil {
-			result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
-		} else {
-			RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
+		_, err := deleteNodesFromCloudProvider(d.ctx, nodes)
+		for _, node := range nodes {
+			if err != nil {
+				result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+				CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
+			} else {
+				RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
+			}
 		}
-		return nil
+		return
 	}
-	nodeGroupId, first, err := d.addNodeToBucket(node, drain)
-	if err != nil {
-		return err
-	}
+	first := d.addNodesToBucket(nodes, nodeGroup, drain)
 	if first {
+		// Just in case a node group implementation is not thread-safe, the async "remove" function will obtain a new instance of it to preform deletion.
 		go func(nodeGroupId string) {
 			time.Sleep(d.deleteInterval)
 			d.remove(nodeGroupId)
-		}(nodeGroupId)
+		}(nodeGroup.Id())
 	}
-	return nil
 }
 
 // AddToBucket adds node to delete candidates and return if it's a first node in the group.
-func (d *NodeDeletionBatcher) addNodeToBucket(node *apiv1.Node, drain bool) (string, bool, error) {
+func (d *NodeDeletionBatcher) addNodesToBucket(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) bool {
 	d.Lock()
 	defer d.Unlock()
-	nodeGroup, err := d.ctx.CloudProvider.NodeGroupForNode(node)
-	if err != nil {
-		return "", false, err
+	for _, node := range nodes {
+		d.drainedNodeDeletions[node.Name] = drain
 	}
-	d.drainedNodeDeletions[node.Name] = drain
 	val, ok := d.deletionsPerNodeGroup[nodeGroup.Id()]
 	if !ok || len(val) == 0 {
-		d.deletionsPerNodeGroup[nodeGroup.Id()] = []*apiv1.Node{node}
-		return nodeGroup.Id(), true, nil
+		d.deletionsPerNodeGroup[nodeGroup.Id()] = nodes
+		return true
 	}
-	d.deletionsPerNodeGroup[nodeGroup.Id()] = append(d.deletionsPerNodeGroup[nodeGroup.Id()], node)
-	return nodeGroup.Id(), false, nil
+	d.deletionsPerNodeGroup[nodeGroup.Id()] = append(d.deletionsPerNodeGroup[nodeGroup.Id()], nodes...)
+	return false
 }
 
-// remove delete nodes of a given nodeGroup, if successful, the deletion is recorded in CSR, and an event is emitted on the node.
+// remove deletes nodes of a given nodeGroup, if successful, the deletion is recorded in CSR, and an event is emitted on the node.
 func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 	d.Lock()
 	defer d.Unlock()
@@ -133,11 +130,10 @@ func (d *NodeDeletionBatcher) remove(nodeGroupId string) error {
 			drain := drainedNodeDeletions[node.Name]
 			if err != nil {
 				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-				CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
+				CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
 			} else {
 				RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
 			}
-
 		}
 	}(nodes, drainedNodeDeletions)
 	return nil
@@ -150,11 +146,8 @@ func deleteNodesFromCloudProvider(ctx *context.AutoscalingContext, nodes []*apiv
 	if err != nil {
 		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
 	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		return nodeGroup, errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", nodes[0].Name)
-	}
-	if err = nodeGroup.DeleteNodes(nodes); err != nil {
-		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete %s: %v", nodes[0].Name, err)
+	if err := nodeGroup.DeleteNodes(nodes); err != nil {
+		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete nodes from group %s: %v", nodeGroup.Id(), err)
 	}
 	return nodeGroup, nil
 }
@@ -179,4 +172,38 @@ func nodeScaleDownReason(node *apiv1.Node, drain bool) metrics.NodeScaleDownReas
 func IsNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
 	deleteTime, _ := taints.GetToBeDeletedTime(node)
 	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
+}
+
+// CleanUpAndRecordFailedScaleDownEvent record failed scale down event and log an error.
+func CleanUpAndRecordFailedScaleDownEvent(ctx *context.AutoscalingContext, node *apiv1.Node, nodeGroupId string, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, errMsg string, status status.NodeDeleteResult) {
+	if drain {
+		klog.Errorf("Scale-down: couldn't delete node %q with drain, %v, status error: %v", node.Name, errMsg, status.Err)
+		ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain and delete node: %v", status.Err)
+
+	} else {
+		klog.Errorf("Scale-down: couldn't delete empty node, %v, status error: %v", errMsg, status.Err)
+		ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete empty node: %v", status.Err)
+	}
+	taints.CleanToBeDeleted(node, ctx.ClientSet, ctx.CordonNodeBeforeTerminate)
+	nodeDeletionTracker.EndDeletion(nodeGroupId, node.Name, status)
+}
+
+// RegisterAndRecordSuccessfulScaleDownEvent register scale down and record successful scale down event.
+func RegisterAndRecordSuccessfulScaleDownEvent(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker) {
+	ctx.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "nodes removed by cluster autoscaler")
+	csr.RegisterScaleDown(&clusterstate.ScaleDownRequest{
+		NodeGroup:          nodeGroup,
+		NodeName:           node.Name,
+		Time:               time.Now(),
+		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),
+	})
+	gpuConfig := ctx.CloudProvider.GetNodeGpuConfig(node)
+	metricResourceName, metricGpuType := gpu.GetGpuInfoForMetrics(gpuConfig, ctx.CloudProvider.GetAvailableGPUTypes(), node, nodeGroup)
+	metrics.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain))
+	if drain {
+		ctx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: node %s removed with drain", node.Name)
+	} else {
+		ctx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: empty node %s removed", node.Name)
+	}
+	nodeDeletionTracker.EndDeletion(nodeGroup.Id(), node.Name, status.NodeDeleteResult{ResultType: status.NodeDeleteOk})
 }
