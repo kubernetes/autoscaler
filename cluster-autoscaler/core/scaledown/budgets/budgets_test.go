@@ -361,7 +361,7 @@ var transformNodeGroupView = cmp.Transformer("transformNodeGroupView", func(b No
 func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
 	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
 	ng.SetOptions(&config.NodeGroupAutoscalingOptions{
-		AtomicScaling: atomic,
+		ZeroOrMaxNodeScaling: atomic,
 	})
 	return ng
 }
