@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
-
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 type limiterOperation func(*testing.T, EstimationLimiter)
@@ -37,7 +37,20 @@ func expectAllow(t *testing.T, l EstimationLimiter) {
 
 func resetLimiter(t *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
-	l.StartEstimation([]*apiv1.Pod{}, nil)
+	l.StartEstimation([]*apiv1.Pod{}, nil, nil)
+}
+
+type dynamicThreshold struct {
+	nodeLimit int
+}
+
+func (d *dynamicThreshold) GetDurationLimit() time.Duration {
+	return 0
+}
+
+func (d *dynamicThreshold) GetNodeLimit(cloudprovider.NodeGroup, *EstimationContext) int {
+	d.nodeLimit += 1
+	return d.nodeLimit
 }
 
 func TestThresholdBasedLimiter(t *testing.T) {
@@ -48,6 +61,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 		startDelta      time.Duration
 		operations      []limiterOperation
 		expectNodeCount int
+		thresholds      []Threshold
 	}{
 		{
 			name:     "no limiting happens",
@@ -60,19 +74,17 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			expectNodeCount: 3,
 		},
 		{
-			name:        "time based trigger fires",
-			maxNodes:    20,
-			maxDuration: 5 * time.Second,
-			startDelta:  -10 * time.Second,
+			name:       "time based trigger fires",
+			startDelta: -10 * time.Second,
 			operations: []limiterOperation{
 				expectDeny,
 				expectDeny,
 			},
 			expectNodeCount: 0,
+			thresholds:      []Threshold{NewStaticThreshold(20, 5*time.Second)},
 		},
 		{
-			name:     "sequence of additions works until the threshold is hit",
-			maxNodes: 3,
+			name: "sequence of additions works until the threshold is hit",
 			operations: []limiterOperation{
 				expectAllow,
 				expectAllow,
@@ -80,10 +92,10 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectDeny,
 			},
 			expectNodeCount: 3,
+			thresholds:      []Threshold{NewStaticThreshold(3, 0)},
 		},
 		{
-			name:     "node counter is reset",
-			maxNodes: 2,
+			name: "node counter is reset",
 			operations: []limiterOperation{
 				expectAllow,
 				expectAllow,
@@ -92,12 +104,11 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectAllow,
 			},
 			expectNodeCount: 1,
+			thresholds:      []Threshold{NewStaticThreshold(2, 0)},
 		},
 		{
-			name:        "timer is reset",
-			maxNodes:    20,
-			maxDuration: 5 * time.Second,
-			startDelta:  -10 * time.Second,
+			name:       "timer is reset",
+			startDelta: -10 * time.Second,
 			operations: []limiterOperation{
 				expectDeny,
 				resetLimiter,
@@ -105,15 +116,42 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectAllow,
 			},
 			expectNodeCount: 2,
+			thresholds:      []Threshold{NewStaticThreshold(20, 5*time.Second)},
+		},
+		{
+			name:     "handles dynamic limits",
+			maxNodes: 0,
+			operations: []limiterOperation{
+				expectAllow,
+				expectAllow,
+				expectDeny,
+				resetLimiter,
+				expectAllow,
+				expectAllow,
+				expectAllow,
+				expectDeny,
+			},
+			expectNodeCount: 3,
+			thresholds:      []Threshold{&dynamicThreshold{1}},
+		},
+		{
+			name: "duration limit is set to runtime limit",
+			operations: []limiterOperation{
+				expectDeny,
+				expectDeny,
+				resetLimiter, // resets startDelta
+				expectAllow,
+				expectAllow,
+			},
+			expectNodeCount: 2,
+			startDelta:      -120 * time.Second,
+			thresholds:      []Threshold{NewStaticThreshold(2, 60*time.Second)},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			limiter := &thresholdBasedEstimationLimiter{
-				maxNodes:    tc.maxNodes,
-				maxDuration: tc.maxDuration,
-			}
-			limiter.StartEstimation([]*apiv1.Pod{}, nil)
+			limiter := NewThresholdBasedEstimationLimiter(tc.thresholds).(*thresholdBasedEstimationLimiter)
+			limiter.StartEstimation([]*apiv1.Pod{}, nil, nil)
 
 			if tc.startDelta != time.Duration(0) {
 				limiter.start = limiter.start.Add(tc.startDelta)

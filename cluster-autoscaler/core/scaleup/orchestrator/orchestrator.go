@@ -22,6 +22,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -102,7 +103,10 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		klogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
 	}
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
+
+	buildPodEquivalenceGroupsStart := time.Now()
 	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
+	metrics.UpdateDurationFromStart(metrics.BuildPodEquivalenceGroups, buildPodEquivalenceGroupsStart)
 
 	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)
 	if aErr != nil {
@@ -146,7 +150,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	}
 
 	for _, nodeGroup := range validNodeGroups {
-		option := o.ComputeExpansionOption(nodeGroup, schedulablePods, nodeInfos, upcomingNodes, now)
+		option := o.ComputeExpansionOption(nodeGroup, schedulablePods, nodeInfos, resourcesLeft, len(nodes)+len(upcomingNodes), now)
 		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingContext, nodeGroup.Id())
 
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
@@ -476,7 +480,8 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	nodeGroup cloudprovider.NodeGroup,
 	schedulablePods map[string][]*apiv1.Pod,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
-	upcomingNodes []*schedulerframework.NodeInfo,
+	resourceLeft resource.Limits,
+	currentNodeCount int,
 	now time.Time,
 ) expander.Option {
 	option := expander.Option{NodeGroup: nodeGroup}
@@ -487,9 +492,16 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		return option
 	}
 
-	estimator := o.autoscalingContext.EstimatorBuilder(o.autoscalingContext.PredicateChecker, o.autoscalingContext.ClusterSnapshot)
-	option.NodeCount, option.Pods = estimator.Estimate(pods, nodeInfo, nodeGroup)
 	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePods, now)
+
+	estimateStart := time.Now()
+	expansionEstimator := o.autoscalingContext.EstimatorBuilder(
+		o.autoscalingContext.PredicateChecker,
+		o.autoscalingContext.ClusterSnapshot,
+		estimator.NewEstimationContextUpdate(option.SimilarNodeGroups, currentNodeCount),
+	)
+	option.NodeCount, option.Pods = expansionEstimator.Estimate(pods, nodeInfo, nodeGroup)
+	metrics.UpdateDurationFromStart(metrics.Estimate, estimateStart)
 
 	autoscalingOptions, err := nodeGroup.GetOptions(o.autoscalingContext.NodeGroupDefaults)
 	if err != nil {
