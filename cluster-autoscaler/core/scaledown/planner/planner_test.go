@@ -27,9 +27,11 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
@@ -617,6 +619,195 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
 			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
+	}
+}
+
+func TestNodesToDelete(t *testing.T) {
+	testCases := []struct {
+		name      string
+		nodes     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
+		wantEmpty []*apiv1.Node
+		wantDrain []*apiv1.Node
+	}{
+		{
+			name:      "empty",
+			nodes:     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
+			name: "single empty",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNode("test-node", 0),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("test-node", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
+			name: "single drain",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNode("test-node", 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{
+				buildRemovableNode("test-node", 1).Node,
+			},
+		},
+		{
+			name: "single empty atomic",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("atomic-ng", 3, true): {
+					buildRemovableNode("node-1", 0),
+				},
+			},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
+			name: "all empty atomic",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("atomic-ng", 3, true): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 0),
+					buildRemovableNode("node-3", 0),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+				buildRemovableNode("node-2", 0).Node,
+				buildRemovableNode("node-3", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
+			name: "some drain atomic",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("atomic-ng", 3, true): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 0),
+					buildRemovableNode("node-3", 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+				buildRemovableNode("node-2", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{
+				buildRemovableNode("node-3", 1).Node,
+			},
+		},
+		{
+			name: "different groups",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("standard-empty-ng", 3, false): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 0),
+					buildRemovableNode("node-3", 0),
+				},
+				sizedNodeGroup("standard-drain-ng", 3, false): {
+					buildRemovableNode("node-4", 1),
+					buildRemovableNode("node-5", 2),
+					buildRemovableNode("node-6", 3),
+				},
+				sizedNodeGroup("standard-mixed-ng", 3, false): {
+					buildRemovableNode("node-7", 0),
+					buildRemovableNode("node-8", 1),
+					buildRemovableNode("node-9", 2),
+				},
+				sizedNodeGroup("atomic-empty-ng", 3, true): {
+					buildRemovableNode("node-10", 0),
+					buildRemovableNode("node-11", 0),
+					buildRemovableNode("node-12", 0),
+				},
+				sizedNodeGroup("atomic-mixed-ng", 3, true): {
+					buildRemovableNode("node-13", 0),
+					buildRemovableNode("node-14", 1),
+					buildRemovableNode("node-15", 2),
+				},
+				sizedNodeGroup("atomic-partial-ng", 3, true): {
+					buildRemovableNode("node-16", 0),
+					buildRemovableNode("node-17", 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+				buildRemovableNode("node-2", 0).Node,
+				buildRemovableNode("node-3", 0).Node,
+				buildRemovableNode("node-7", 0).Node,
+				buildRemovableNode("node-10", 0).Node,
+				buildRemovableNode("node-11", 0).Node,
+				buildRemovableNode("node-12", 0).Node,
+				buildRemovableNode("node-13", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{
+				buildRemovableNode("node-4", 0).Node,
+				buildRemovableNode("node-5", 0).Node,
+				buildRemovableNode("node-6", 0).Node,
+				buildRemovableNode("node-8", 0).Node,
+				buildRemovableNode("node-9", 0).Node,
+				buildRemovableNode("node-14", 0).Node,
+				buildRemovableNode("node-15", 0).Node,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			provider := testprovider.NewTestCloudProvider(nil, nil)
+			allNodes := []*apiv1.Node{}
+			allRemovables := []simulator.NodeToBeRemoved{}
+			for ng, nodes := range tc.nodes {
+				provider.InsertNodeGroup(ng)
+				for _, removable := range nodes {
+					allNodes = append(allNodes, removable.Node)
+					allRemovables = append(allRemovables, removable)
+					provider.AddNode(ng.Id(), removable.Node)
+				}
+			}
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUnneededTime: 10 * time.Minute,
+					ScaleDownUnreadyTime:  0 * time.Minute,
+				},
+			}, &fake.Clientset{}, nil, provider, nil, nil)
+			assert.NoError(t, err)
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, nil)
+			deleteOptions := simulator.NodeDeleteOptions{}
+			p := New(&context, NewTestProcessors(&context), deleteOptions)
+			p.latestUpdate = time.Now()
+			p.actuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
+			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
+			empty, drain := p.NodesToDelete(time.Now())
+			assert.ElementsMatch(t, tc.wantEmpty, empty)
+			assert.ElementsMatch(t, tc.wantDrain, drain)
+		})
+	}
+}
+
+func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
+	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
+	ng.SetOptions(&config.NodeGroupAutoscalingOptions{
+		ZeroOrMaxNodeScaling: atomic,
+	})
+	return ng
+}
+
+func buildRemovableNode(name string, podCount int) simulator.NodeToBeRemoved {
+	podsToReschedule := []*apiv1.Pod{}
+	for i := 0; i < podCount; i++ {
+		podsToReschedule = append(podsToReschedule, &apiv1.Pod{})
+	}
+	return simulator.NodeToBeRemoved{
+		Node:             BuildTestNode(name, 1000, 10),
+		PodsToReschedule: podsToReschedule,
 	}
 }
 

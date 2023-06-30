@@ -35,231 +35,29 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
-func TestCropNodesToBudgets(t *testing.T) {
-	for tn, tc := range map[string]struct {
-		emptyDeletionsInProgress int
-		drainDeletionsInProgress int
-		emptyNodes               []*apiv1.Node
-		drainNodes               []*apiv1.Node
-		wantEmpty                []*apiv1.Node
-		wantDrain                []*apiv1.Node
-	}{
-		"no nodes": {
-			emptyNodes: []*apiv1.Node{},
-			drainNodes: []*apiv1.Node{},
-			wantEmpty:  []*apiv1.Node{},
-			wantDrain:  []*apiv1.Node{},
-		},
-		// Empty nodes only.
-		"empty nodes within max limit, no deletions in progress": {
-			emptyNodes: generateNodes(10, "empty"),
-			wantEmpty:  generateNodes(10, "empty"),
-		},
-		"empty nodes exceeding max limit, no deletions in progress": {
-			emptyNodes: generateNodes(11, "empty"),
-			wantEmpty:  generateNodes(10, "empty"),
-		},
-		"empty nodes with deletions in progress, within budget": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 1,
-			emptyNodes:               generateNodes(8, "empty"),
-			wantEmpty:                generateNodes(8, "empty"),
-		},
-		"empty nodes with deletions in progress, exceeding budget": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 1,
-			emptyNodes:               generateNodes(10, "empty"),
-			wantEmpty:                generateNodes(8, "empty"),
-		},
-		"empty nodes with deletions in progress, 0 budget left": {
-			emptyDeletionsInProgress: 5,
-			drainDeletionsInProgress: 5,
-			emptyNodes:               generateNodes(10, "empty"),
-			wantEmpty:                []*apiv1.Node{},
-		},
-		"empty nodes with deletions in progress, budget exceeded (shouldn't happen, just a sanity check)": {
-			emptyDeletionsInProgress: 50,
-			drainDeletionsInProgress: 50,
-			emptyNodes:               generateNodes(10, "empty"),
-			wantEmpty:                []*apiv1.Node{},
-		},
-		// Drain nodes only.
-		"drain nodes within max limit, no deletions in progress": {
-			drainNodes: generateNodes(5, "drain"),
-			wantDrain:  generateNodes(5, "drain"),
-		},
-		"drain nodes exceeding max limit, no deletions in progress": {
-			drainNodes: generateNodes(6, "drain"),
-			wantDrain:  generateNodes(5, "drain"),
-		},
-		"drain nodes with deletions in progress, within budget": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 2,
-			drainNodes:               generateNodes(3, "drain"),
-			wantDrain:                generateNodes(3, "drain"),
-		},
-		"drain nodes with deletions in progress, exceeding drain budget": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 2,
-			drainNodes:               generateNodes(5, "drain"),
-			wantDrain:                generateNodes(3, "drain"),
-		},
-		"drain nodes with deletions in progress, 0 drain budget left": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 5,
-			drainNodes:               generateNodes(5, "drain"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		"drain nodes with deletions in progress, drain budget exceeded (shouldn't happen, just a sanity check)": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 50,
-			drainNodes:               generateNodes(5, "drain"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		"drain nodes with deletions in progress, exceeding overall budget": {
-			emptyDeletionsInProgress: 7,
-			drainDeletionsInProgress: 1,
-			drainNodes:               generateNodes(4, "drain"),
-			wantDrain:                generateNodes(2, "drain"),
-		},
-		"drain nodes with deletions in progress, 0 overall budget left": {
-			emptyDeletionsInProgress: 10,
-			drainNodes:               generateNodes(4, "drain"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		"drain nodes with deletions in progress, overall budget exceeded (shouldn't happen, just a sanity check)": {
-			emptyDeletionsInProgress: 50,
-			drainNodes:               generateNodes(4, "drain"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		// Empty and drain nodes together.
-		"empty&drain nodes within max limits, no deletions in progress": {
-			emptyNodes: generateNodes(5, "empty"),
-			drainNodes: generateNodes(5, "drain"),
-			wantDrain:  generateNodes(5, "drain"),
-			wantEmpty:  generateNodes(5, "empty"),
-		},
-		"empty&drain nodes exceeding overall limit, no deletions in progress": {
-			emptyNodes: generateNodes(8, "empty"),
-			drainNodes: generateNodes(8, "drain"),
-			wantDrain:  generateNodes(2, "drain"),
-			wantEmpty:  generateNodes(8, "empty"),
-		},
-		"empty&drain nodes exceeding drain limit, no deletions in progress": {
-			emptyNodes: generateNodes(2, "empty"),
-			drainNodes: generateNodes(8, "drain"),
-			wantDrain:  generateNodes(5, "drain"),
-			wantEmpty:  generateNodes(2, "empty"),
-		},
-		"empty&drain nodes with deletions in progress, 0 overall budget left": {
-			emptyDeletionsInProgress: 10,
-			emptyNodes:               generateNodes(5, "empty"),
-			drainNodes:               generateNodes(5, "drain"),
-			wantEmpty:                []*apiv1.Node{},
-			wantDrain:                []*apiv1.Node{},
-		},
-		"empty&drain nodes with deletions in progress, overall budget exceeded (shouldn't happen, just a sanity check)": {
-			emptyDeletionsInProgress: 50,
-			emptyNodes:               generateNodes(5, "empty"),
-			drainNodes:               generateNodes(5, "drain"),
-			wantEmpty:                []*apiv1.Node{},
-			wantDrain:                []*apiv1.Node{},
-		},
-		"empty&drain nodes with deletions in progress, 0 drain budget left": {
-			drainDeletionsInProgress: 5,
-			emptyNodes:               generateNodes(5, "empty"),
-			drainNodes:               generateNodes(5, "drain"),
-			wantEmpty:                generateNodes(5, "empty"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		"empty&drain nodes with deletions in progress, drain budget exceeded (shouldn't happen, just a sanity check)": {
-			drainDeletionsInProgress: 9,
-			emptyNodes:               generateNodes(5, "empty"),
-			drainNodes:               generateNodes(5, "drain"),
-			wantEmpty:                generateNodes(1, "empty"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		"empty&drain nodes with deletions in progress, overall budget exceeded, only empty nodes fit": {
-			emptyDeletionsInProgress: 5,
-			drainDeletionsInProgress: 3,
-			emptyNodes:               generateNodes(5, "empty"),
-			drainNodes:               generateNodes(2, "drain"),
-			wantEmpty:                generateNodes(2, "empty"),
-			wantDrain:                []*apiv1.Node{},
-		},
-		"empty&drain nodes with deletions in progress, overall budget exceeded, both empty&drain nodes fit": {
-			emptyDeletionsInProgress: 5,
-			drainDeletionsInProgress: 3,
-			emptyNodes:               generateNodes(1, "empty"),
-			drainNodes:               generateNodes(2, "drain"),
-			wantEmpty:                generateNodes(1, "empty"),
-			wantDrain:                generateNodes(1, "drain"),
-		},
-		"empty&drain nodes with deletions in progress, drain budget exceeded": {
-			emptyDeletionsInProgress: 1,
-			drainDeletionsInProgress: 3,
-			emptyNodes:               generateNodes(4, "empty"),
-			drainNodes:               generateNodes(5, "drain"),
-			wantEmpty:                generateNodes(4, "empty"),
-			wantDrain:                generateNodes(2, "drain"),
-		},
-	} {
-		t.Run(tn, func(t *testing.T) {
-			ctx := &context.AutoscalingContext{
-				AutoscalingOptions: config.AutoscalingOptions{
-					MaxScaleDownParallelism:     10,
-					MaxDrainParallelism:         5,
-					NodeDeletionBatcherInterval: 0 * time.Second,
-					NodeDeleteDelayAfterTaint:   1 * time.Second,
-				},
-			}
-			deleteOptions := simulator.NodeDeleteOptions{
-				SkipNodesWithSystemPods:           true,
-				SkipNodesWithLocalStorage:         true,
-				MinReplicaCount:                   0,
-				SkipNodesWithCustomControllerPods: true,
-			}
-			ndr := deletiontracker.NewNodeDeletionTracker(1 * time.Hour)
-			for i := 0; i < tc.emptyDeletionsInProgress; i++ {
-				ndr.StartDeletion("ng1", fmt.Sprintf("empty-node-%d", i))
-			}
-			for i := 0; i < tc.drainDeletionsInProgress; i++ {
-				ndr.StartDeletionWithDrain("ng2", fmt.Sprintf("drain-node-%d", i))
-			}
-
-			actuator := NewActuator(ctx, nil, ndr, deleteOptions)
-			gotEmpty, gotDrain := actuator.cropNodesToBudgets(tc.emptyNodes, tc.drainNodes)
-			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty()); diff != "" {
-				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.wantDrain, gotDrain, cmpopts.EquateEmpty()); diff != "" {
-				t.Errorf("cropNodesToBudgets drain nodes diff (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
 func TestStartDeletion(t *testing.T) {
-	testNg := testprovider.NewTestNodeGroup("test-ng", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+	testNg := testprovider.NewTestNodeGroup("test", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+	atomic2 := sizedNodeGroup("atomic-2", 2, true)
+	atomic4 := sizedNodeGroup("atomic-4", 4, true)
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
 
 	for tn, tc := range map[string]struct {
-		emptyNodes            []*apiv1.Node
-		drainNodes            []*apiv1.Node
+		emptyNodes            []*budgets.NodeGroupView
+		drainNodes            []*budgets.NodeGroupView
 		pods                  map[string][]*apiv1.Pod
 		failedPodDrain        map[string]bool
 		failedNodeDeletion    map[string]bool
@@ -279,152 +77,208 @@ func TestStartDeletion(t *testing.T) {
 			},
 		},
 		"empty node deletion": {
-			emptyNodes: generateNodes(2, "empty"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("empty-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("empty-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"empty-node-0", "empty-node-1"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 				},
-				"empty-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
+			},
+		},
+		"empty atomic node deletion": {
+			emptyNodes: generateNodeGroupViewList(atomic2, 0, 2),
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:        generateNode("atomic-2-node-0"),
+						NodeGroup:   atomic2,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("atomic-2-node-1"),
+						NodeGroup:   atomic2,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+				},
+			},
+			wantDeletedNodes: []string{"atomic-2-node-0", "atomic-2-node-1"},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-2-node-0": {
+					{toBeDeletedTaint},
+				},
+				"atomic-2-node-1": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"atomic-2-node-0": {ResultType: status.NodeDeleteOk},
+				"atomic-2-node-1": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"deletion with drain": {
-			drainNodes: generateNodes(2, "drain"),
+			drainNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": removablePods(2, "drain-node-0"),
-				"drain-node-1": removablePods(2, "drain-node-1"),
+				"test-node-0": removablePods(2, "test-node-0"),
+				"test-node-1": removablePods(2, "test-node-1"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("drain-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "drain-node-0"),
+						EvictedPods: removablePods(2, "test-node-0"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("drain-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "drain-node-1"),
+						EvictedPods: removablePods(2, "test-node-1"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"drain-node-0", "drain-node-1"},
-			wantDeletedPods:  []string{"drain-node-0-pod-0", "drain-node-0-pod-1", "drain-node-1-pod-0", "drain-node-1-pod-1"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1"},
+			wantDeletedPods:  []string{"test-node-0-pod-0", "test-node-0-pod-1", "test-node-1-pod-0", "test-node-1-pod-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"drain-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 				},
-				"drain-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"drain-node-0": {ResultType: status.NodeDeleteOk},
-				"drain-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"empty and drain deletion work correctly together": {
-			emptyNodes: generateNodes(2, "empty"),
-			drainNodes: generateNodes(2, "drain"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": removablePods(2, "drain-node-0"),
-				"drain-node-1": removablePods(2, "drain-node-1"),
+				"test-node-2": removablePods(2, "test-node-2"),
+				"test-node-3": removablePods(2, "test-node-3"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("empty-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("empty-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("drain-node-0"),
+						Node:        generateNode("test-node-2"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "drain-node-0"),
+						EvictedPods: removablePods(2, "test-node-2"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("drain-node-1"),
+						Node:        generateNode("test-node-3"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "drain-node-1"),
+						EvictedPods: removablePods(2, "test-node-3"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"empty-node-0", "empty-node-1", "drain-node-0", "drain-node-1"},
-			wantDeletedPods:  []string{"drain-node-0-pod-0", "drain-node-0-pod-1", "drain-node-1-pod-0", "drain-node-1-pod-1"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1", "test-node-2", "test-node-3"},
+			wantDeletedPods:  []string{"test-node-2-pod-0", "test-node-2-pod-1", "test-node-3-pod-0", "test-node-3-pod-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 				},
-				"empty-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 				},
-				"drain-node-0": {
+				"test-node-2": {
 					{toBeDeletedTaint},
 				},
-				"drain-node-1": {
+				"test-node-3": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-node-1": {ResultType: status.NodeDeleteOk},
-				"drain-node-0": {ResultType: status.NodeDeleteOk},
-				"drain-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-2": {ResultType: status.NodeDeleteOk},
+				"test-node-3": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"failure to taint empty node stops deletion and cleans already applied taints": {
-			emptyNodes: generateNodes(4, "empty"),
-			drainNodes: generateNodes(1, "drain"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 4),
+			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": removablePods(2, "drain-node-0"),
+				"test-node-4": removablePods(2, "test-node-4"),
 			},
-			failedNodeTaint: map[string]bool{"empty-node-2": true},
+			failedNodeTaint: map[string]bool{"test-node-2": true},
 			wantStatus: &status.ScaleDownStatus{
 				Result:          status.ScaleDownError,
 				ScaledDownNodes: nil,
 			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"empty-node-1": {
+				"test-node-1": {
+					{toBeDeletedTaint},
+					{},
+				},
+			},
+			wantErr: cmpopts.AnyError,
+		},
+		"failure to taint empty atomic node stops deletion and cleans already applied taints": {
+			emptyNodes: generateNodeGroupViewList(atomic4, 0, 4),
+			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
+			pods: map[string][]*apiv1.Pod{
+				"test-node-4": removablePods(2, "test-node-4"),
+			},
+			failedNodeTaint: map[string]bool{"atomic-4-node-2": true},
+			wantStatus: &status.ScaleDownStatus{
+				Result:          status.ScaleDownError,
+				ScaledDownNodes: nil,
+			},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-4-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
@@ -432,259 +286,301 @@ func TestStartDeletion(t *testing.T) {
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint drain node stops further deletion and cleans already applied taints": {
-			emptyNodes: generateNodes(2, "empty"),
-			drainNodes: generateNodes(4, "drain"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 6),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": removablePods(2, "drain-node-0"),
-				"drain-node-1": removablePods(2, "drain-node-1"),
-				"drain-node-2": removablePods(2, "drain-node-2"),
-				"drain-node-3": removablePods(2, "drain-node-3"),
+				"test-node-2": removablePods(2, "test-node-2"),
+				"test-node-3": removablePods(2, "test-node-3"),
+				"test-node-4": removablePods(2, "test-node-4"),
+				"test-node-5": removablePods(2, "test-node-5"),
 			},
-			failedNodeTaint: map[string]bool{"drain-node-2": true},
+			failedNodeTaint: map[string]bool{"test-node-2": true},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownError,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("empty-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("empty-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"empty-node-0", "empty-node-1"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 				},
-				"empty-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
+			},
+			wantErr: cmpopts.AnyError,
+		},
+		"failure to taint drain atomic node stops further deletion and cleans already applied taints": {
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(atomic4, 2, 6),
+			pods: map[string][]*apiv1.Pod{
+				"atomic-4-node-2": removablePods(2, "atomic-4-node-2"),
+				"atomic-4-node-3": removablePods(2, "atomic-4-node-3"),
+				"atomic-4-node-4": removablePods(2, "atomic-4-node-4"),
+				"atomic-4-node-5": removablePods(2, "atomic-4-node-5"),
+			},
+			failedNodeTaint: map[string]bool{"atomic-4-node-2": true},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownError,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:        generateNode("test-node-0"),
+						NodeGroup:   testNg,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("test-node-1"),
+						NodeGroup:   testNg,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+				},
+			},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1"},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-node-0": {
+					{toBeDeletedTaint},
+				},
+				"test-node-1": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
 			},
 			wantErr: cmpopts.AnyError,
 		},
 		"nodes that failed drain are correctly reported in results": {
-			drainNodes: generateNodes(4, "drain"),
+			drainNodes: generateNodeGroupViewList(testNg, 0, 4),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": removablePods(3, "drain-node-0"),
-				"drain-node-1": removablePods(3, "drain-node-1"),
-				"drain-node-2": removablePods(3, "drain-node-2"),
-				"drain-node-3": removablePods(3, "drain-node-3"),
+				"test-node-0": removablePods(3, "test-node-0"),
+				"test-node-1": removablePods(3, "test-node-1"),
+				"test-node-2": removablePods(3, "test-node-2"),
+				"test-node-3": removablePods(3, "test-node-3"),
 			},
 			failedPodDrain: map[string]bool{
-				"drain-node-0-pod-0": true,
-				"drain-node-0-pod-1": true,
-				"drain-node-2-pod-1": true,
+				"test-node-0-pod-0": true,
+				"test-node-0-pod-1": true,
+				"test-node-2-pod-1": true,
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("drain-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "drain-node-0"),
+						EvictedPods: removablePods(3, "test-node-0"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
-						Node:        generateNode("drain-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "drain-node-1"),
+						EvictedPods: removablePods(3, "test-node-1"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
-						Node:        generateNode("drain-node-2"),
+						Node:        generateNode("test-node-2"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "drain-node-2"),
+						EvictedPods: removablePods(3, "test-node-2"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
-						Node:        generateNode("drain-node-3"),
+						Node:        generateNode("test-node-3"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "drain-node-3"),
+						EvictedPods: removablePods(3, "test-node-3"),
 						UtilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"drain-node-1", "drain-node-3"},
+			wantDeletedNodes: []string{"test-node-1", "test-node-3"},
 			wantDeletedPods: []string{
-				"drain-node-0-pod-2",
-				"drain-node-1-pod-0", "drain-node-1-pod-1", "drain-node-1-pod-2",
-				"drain-node-2-pod-0", "drain-node-2-pod-2",
-				"drain-node-3-pod-0", "drain-node-3-pod-1", "drain-node-3-pod-2",
+				"test-node-0-pod-2",
+				"test-node-1-pod-0", "test-node-1-pod-1", "test-node-1-pod-2",
+				"test-node-2-pod-0", "test-node-2-pod-2",
+				"test-node-3-pod-0", "test-node-3-pod-1", "test-node-3-pod-2",
 			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"drain-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"drain-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 				},
-				"drain-node-2": {
+				"test-node-2": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"drain-node-3": {
+				"test-node-3": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"drain-node-0": {
+				"test-node-0": {
 					ResultType: status.NodeDeleteErrorFailedToEvictPods,
 					Err:        cmpopts.AnyError,
 					PodEvictionResults: map[string]status.PodEvictionResult{
-						"drain-node-0-pod-0": {Pod: removablePod("drain-node-0-pod-0", "drain-node-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-0-pod-1": {Pod: removablePod("drain-node-0-pod-1", "drain-node-0"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-0-pod-2": {Pod: removablePod("drain-node-0-pod-2", "drain-node-0")},
+						"test-node-0-pod-0": {Pod: removablePod("test-node-0-pod-0", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
+						"test-node-0-pod-1": {Pod: removablePod("test-node-0-pod-1", "test-node-0"), Err: cmpopts.AnyError, TimedOut: true},
+						"test-node-0-pod-2": {Pod: removablePod("test-node-0-pod-2", "test-node-0")},
 					},
 				},
-				"drain-node-1": {ResultType: status.NodeDeleteOk},
-				"drain-node-2": {
+				"test-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-2": {
 					ResultType: status.NodeDeleteErrorFailedToEvictPods,
 					Err:        cmpopts.AnyError,
 					PodEvictionResults: map[string]status.PodEvictionResult{
-						"drain-node-2-pod-0": {Pod: removablePod("drain-node-2-pod-0", "drain-node-2")},
-						"drain-node-2-pod-1": {Pod: removablePod("drain-node-2-pod-1", "drain-node-2"), Err: cmpopts.AnyError, TimedOut: true},
-						"drain-node-2-pod-2": {Pod: removablePod("drain-node-2-pod-2", "drain-node-2")},
+						"test-node-2-pod-0": {Pod: removablePod("test-node-2-pod-0", "test-node-2")},
+						"test-node-2-pod-1": {Pod: removablePod("test-node-2-pod-1", "test-node-2"), Err: cmpopts.AnyError, TimedOut: true},
+						"test-node-2-pod-2": {Pod: removablePod("test-node-2-pod-2", "test-node-2")},
 					},
 				},
-				"drain-node-3": {ResultType: status.NodeDeleteOk},
+				"test-node-3": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"nodes that failed deletion are correctly reported in results": {
-			emptyNodes: generateNodes(2, "empty"),
-			drainNodes: generateNodes(2, "drain"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
 			pods: map[string][]*apiv1.Pod{
-				"drain-node-0": removablePods(2, "drain-node-0"),
-				"drain-node-1": removablePods(2, "drain-node-1"),
+				"test-node-2": removablePods(2, "test-node-2"),
+				"test-node-3": removablePods(2, "test-node-3"),
 			},
 			failedNodeDeletion: map[string]bool{
-				"empty-node-1": true,
-				"drain-node-1": true,
+				"test-node-1": true,
+				"test-node-3": true,
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("empty-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("empty-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("drain-node-0"),
+						Node:        generateNode("test-node-2"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "drain-node-0"),
+						EvictedPods: removablePods(2, "test-node-2"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("drain-node-1"),
+						Node:        generateNode("test-node-3"),
 						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "drain-node-1"),
+						EvictedPods: removablePods(2, "test-node-3"),
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"empty-node-0", "drain-node-0"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-2"},
 			wantDeletedPods: []string{
-				"drain-node-0-pod-0", "drain-node-0-pod-1",
-				"drain-node-1-pod-0", "drain-node-1-pod-1",
+				"test-node-2-pod-0", "test-node-2-pod-1",
+				"test-node-3-pod-0", "test-node-3-pod-1",
 			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 				},
-				"empty-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"drain-node-0": {
+				"test-node-2": {
 					{toBeDeletedTaint},
 				},
-				"drain-node-1": {
+				"test-node-3": {
 					{toBeDeletedTaint},
 					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-node-1": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"drain-node-0": {ResultType: status.NodeDeleteOk},
-				"drain-node-1": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				"test-node-2": {ResultType: status.NodeDeleteOk},
+				"test-node-3": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
 			},
 		},
 		"DS pods are evicted from empty nodes, but don't block deletion on error": {
-			emptyNodes: generateNodes(2, "empty"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
-				"empty-node-0": {generateDsPod("empty-node-0-ds-pod-0", "empty-node-0"), generateDsPod("empty-node-0-ds-pod-1", "empty-node-0")},
-				"empty-node-1": {generateDsPod("empty-node-1-ds-pod-0", "empty-node-1"), generateDsPod("empty-node-1-ds-pod-1", "empty-node-1")},
+				"test-node-0": {generateDsPod("test-node-0-ds-pod-0", "test-node-0"), generateDsPod("test-node-0-ds-pod-1", "test-node-0")},
+				"test-node-1": {generateDsPod("test-node-1-ds-pod-0", "test-node-1"), generateDsPod("test-node-1-ds-pod-1", "test-node-1")},
 			},
-			failedPodDrain: map[string]bool{"empty-node-1-ds-pod-0": true},
+			failedPodDrain: map[string]bool{"test-node-1-ds-pod-0": true},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("empty-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("empty-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"empty-node-0", "empty-node-1"},
-			wantDeletedPods:  []string{"empty-node-0-ds-pod-0", "empty-node-0-ds-pod-1", "empty-node-1-ds-pod-1"},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1"},
+			wantDeletedPods:  []string{"test-node-0-ds-pod-0", "test-node-0-ds-pod-1", "test-node-1-ds-pod-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 				},
-				"empty-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-node-0": {ResultType: status.NodeDeleteOk},
-				"empty-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"nodes with pods are not deleted if the node is passed as empty": {
-			emptyNodes: generateNodes(2, "empty-but-with-pods"),
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
-				"empty-but-with-pods-node-0": removablePods(2, "empty-but-with-pods-node-0"),
-				"empty-but-with-pods-node-1": removablePods(2, "empty-but-with-pods-node-1"),
+				"test-node-0": removablePods(2, "test-node-0"),
+				"test-node-1": removablePods(2, "test-node-1"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
 				ScaledDownNodes: []*status.ScaleDownNode{
 					{
-						Node:        generateNode("empty-but-with-pods-node-0"),
+						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("empty-but-with-pods-node-1"),
+						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
@@ -694,18 +590,82 @@ func TestStartDeletion(t *testing.T) {
 			wantDeletedNodes: nil,
 			wantDeletedPods:  nil,
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"empty-but-with-pods-node-0": {
+				"test-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"empty-but-with-pods-node-1": {
+				"test-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"empty-but-with-pods-node-0": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
-				"empty-but-with-pods-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"test-node-0": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"test-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+			},
+		},
+		"atomic nodes with pods are not deleted if the node is passed as empty": {
+			emptyNodes: append(
+				generateNodeGroupViewList(testNg, 0, 2),
+				generateNodeGroupViewList(atomic2, 0, 2)...,
+			),
+			pods: map[string][]*apiv1.Pod{
+				"test-node-1":     removablePods(2, "test-node-1"),
+				"atomic-2-node-1": removablePods(2, "atomic-2-node-1"),
+			},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:        generateNode("test-node-0"),
+						NodeGroup:   testNg,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("test-node-1"),
+						NodeGroup:   testNg,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+					{
+						Node:        generateNode("atomic-2-node-0"),
+						NodeGroup:   atomic2,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("atomic-2-node-1"),
+						NodeGroup:   atomic2,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+				},
+			},
+			wantDeletedNodes: []string{"test-node-0"},
+			wantDeletedPods:  nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-node-0": {
+					{toBeDeletedTaint},
+				},
+				"test-node-1": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-2-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-2-node-1": {
+					{toBeDeletedTaint},
+					{},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-node-0":     {ResultType: status.NodeDeleteOk},
+				"test-node-1":     {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"atomic-2-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				"atomic-2-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
 			},
 		},
 	} {
@@ -714,13 +674,20 @@ func TestStartDeletion(t *testing.T) {
 			// of a single test case, and the goroutines eventually access tc in fakeClient hooks below.
 			tc := tc
 			// Insert all nodes into a map to support live node updates and GETs.
+			allEmptyNodes, allDrainNodes := []*apiv1.Node{}, []*apiv1.Node{}
 			nodesByName := make(map[string]*apiv1.Node)
 			nodesLock := sync.Mutex{}
-			for _, node := range tc.emptyNodes {
-				nodesByName[node.Name] = node
+			for _, bucket := range tc.emptyNodes {
+				allEmptyNodes = append(allEmptyNodes, bucket.Nodes...)
+				for _, node := range allEmptyNodes {
+					nodesByName[node.Name] = node
+				}
 			}
-			for _, node := range tc.drainNodes {
-				nodesByName[node.Name] = node
+			for _, bucket := range tc.drainNodes {
+				allDrainNodes = append(allDrainNodes, bucket.Nodes...)
+				for _, node := range bucket.Nodes {
+					nodesByName[node.Name] = node
+				}
 			}
 
 			// Set up a fake k8s client to hook and verify certain actions.
@@ -797,10 +764,19 @@ func TestStartDeletion(t *testing.T) {
 				deletedNodes <- node
 				return nil
 			})
-			testNg.SetCloudProvider(provider)
-			provider.InsertNodeGroup(testNg)
-			for _, node := range nodesByName {
-				provider.AddNode("test-ng", node)
+			for _, bucket := range tc.emptyNodes {
+				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+				provider.InsertNodeGroup(bucket.Group)
+				for _, node := range bucket.Nodes {
+					provider.AddNode(bucket.Group.Id(), node)
+				}
+			}
+			for _, bucket := range tc.drainNodes {
+				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+				provider.InsertNodeGroup(bucket.Group)
+				for _, node := range bucket.Nodes {
+					provider.AddNode(bucket.Group.Id(), node)
+				}
 			}
 
 			// Set up other needed structures and options.
@@ -830,31 +806,37 @@ func TestStartDeletion(t *testing.T) {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
 			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
-			for _, node := range tc.emptyNodes {
-				err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
-				if err != nil {
-					t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+			for _, bucket := range tc.emptyNodes {
+				for _, node := range bucket.Nodes {
+					err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
+					if err != nil {
+						t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+					}
 				}
 			}
-			for _, node := range tc.drainNodes {
-				pods, found := tc.pods[node.Name]
-				if !found {
-					t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
-				}
-				err := ctx.ClusterSnapshot.AddNodeWithPods(node, pods)
-				if err != nil {
-					t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+			for _, bucket := range tc.drainNodes {
+				for _, node := range bucket.Nodes {
+					pods, found := tc.pods[node.Name]
+					if !found {
+						t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
+					}
+					err := ctx.ClusterSnapshot.AddNodeWithPods(node, pods)
+					if err != nil {
+						t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+					}
 				}
 			}
 
 			// Create Actuator, run StartDeletion, and verify the error.
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
+			ndb := NewNodeDeletionBatcher(&ctx, csr, ndt, 0*time.Second)
+			evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
-				nodeDeletionBatcher: NewNodeDeletionBatcher(&ctx, csr, ndt, 0*time.Second),
-				evictor:             Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom},
+				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 			}
-			gotStatus, gotErr := actuator.StartDeletion(tc.emptyNodes, tc.drainNodes)
+			gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
 			if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("StartDeletion error diff (-want +got):\n%s", diff)
 			}
@@ -1057,10 +1039,11 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				provider.InsertNodeGroup(ng)
 				ng.SetCloudProvider(provider)
 				for i, num := range numNodes {
-					nodes := generateNodes(num, ng.Id())
-					deleteNodes[i] = append(deleteNodes[i], nodes...)
-					for _, node := range nodes {
-						provider.AddNode(ng.Id(), node)
+					singleBucketList := generateNodeGroupViewList(ng, 0, num)
+					bucket := singleBucketList[0]
+					deleteNodes[i] = append(deleteNodes[i], bucket.Nodes...)
+					for _, node := range bucket.Nodes {
+						provider.AddNode(bucket.Group.Id(), node)
 					}
 				}
 			}
@@ -1080,10 +1063,12 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), clusterstate.NewStaticMaxNodeProvisionTimeProvider(15*time.Minute))
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
+			ndb := NewNodeDeletionBatcher(&ctx, csr, ndt, deleteInterval)
+			evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
 			actuator := Actuator{
 				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
-				nodeDeletionBatcher: NewNodeDeletionBatcher(&ctx, csr, ndt, deleteInterval),
-				evictor:             Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom},
+				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
+				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 			}
 
 			for _, nodes := range deleteNodes {
@@ -1115,9 +1100,17 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 	}
 }
 
-func generateNodes(count int, prefix string) []*apiv1.Node {
+func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
+	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
+	ng.SetOptions(&config.NodeGroupAutoscalingOptions{
+		ZeroOrMaxNodeScaling: atomic,
+	})
+	return ng
+}
+
+func generateNodes(from, to int, prefix string) []*apiv1.Node {
 	var result []*apiv1.Node
-	for i := 0; i < count; i++ {
+	for i := from; i < to; i++ {
 		name := fmt.Sprintf("node-%d", i)
 		if prefix != "" {
 			name = prefix + "-" + name
@@ -1127,18 +1120,13 @@ func generateNodes(count int, prefix string) []*apiv1.Node {
 	return result
 }
 
-func generateNodesAndNodeGroupMap(count int, prefix string) map[string]*testprovider.TestNodeGroup {
-	result := make(map[string]*testprovider.TestNodeGroup)
-	for i := 0; i < count; i++ {
-		name := fmt.Sprintf("node-%d", i)
-		ngName := fmt.Sprintf("test-ng-%v", i)
-		if prefix != "" {
-			name = prefix + "-" + name
-			ngName = prefix + "-" + ngName
-		}
-		result[name] = testprovider.NewTestNodeGroup(ngName, 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+func generateNodeGroupViewList(ng cloudprovider.NodeGroup, from, to int) []*budgets.NodeGroupView {
+	return []*budgets.NodeGroupView{
+		{
+			Group: ng,
+			Nodes: generateNodes(from, to, ng.Id()),
+		},
 	}
-	return result
 }
 
 func generateNode(name string) *apiv1.Node {
