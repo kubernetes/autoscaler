@@ -18,6 +18,7 @@ package planner
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -132,6 +133,7 @@ func (p *Planner) CleanUpUnneededNodes() {
 // NodesToDelete returns all Nodes that could be removed right now, according
 // to the Planner.
 func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
+	empty, needDrain = []*apiv1.Node{}, []*apiv1.Node{}
 	nodes, err := allNodes(p.context.ClusterSnapshot)
 	if err != nil {
 		klog.Errorf("Nothing will scale down, failed to list nodes from ClusterSnapshot: %v", err)
@@ -154,7 +156,10 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 		// downs already in progress. If we pass the empty nodes first, they will be first
 		// to get deleted, thus we decrease chances of hitting the limit on non-empty scale down.
 		append(emptyRemovable, needDrainRemovable...),
-		p.context.AutoscalingOptions.MaxScaleDownParallelism)
+		// No need to limit the number of nodes, since it will happen later, in the actuation stage.
+		// It will make a more appropriate decision by using additional information about deletions
+		// in progress.
+		math.MaxInt)
 	for _, nodeToRemove := range nodesToRemove {
 		if len(nodeToRemove.PodsToReschedule) > 0 {
 			needDrain = append(needDrain, nodeToRemove.Node)
@@ -162,6 +167,7 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 			empty = append(empty, nodeToRemove.Node)
 		}
 	}
+
 	return empty, needDrain
 }
 

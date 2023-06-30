@@ -43,8 +43,8 @@ func TestAddNodeToBucket(t *testing.T) {
 	}
 	nodeGroup1 := "ng-1"
 	nodeGroup2 := "ng-2"
-	nodes1 := generateNodes(5, "ng-1")
-	nodes2 := generateNodes(5, "ng-2")
+	nodes1 := generateNodes(0, 5, "ng-1")
+	nodes2 := generateNodes(0, 5, "ng-2")
 	provider.AddNodeGroup(nodeGroup1, 1, 10, 5)
 	provider.AddNodeGroup(nodeGroup2, 1, 10, 5)
 	for _, node := range nodes1 {
@@ -91,10 +91,11 @@ func TestAddNodeToBucket(t *testing.T) {
 		}
 		batchCount := 0
 		for _, node := range test.nodes {
-			_, first, err := d.addNodeToBucket(node, test.drained)
+			nodeGroup, err := provider.NodeGroupForNode(node)
 			if err != nil {
-				t.Errorf("addNodeToBucket return error %q when addidng node %v", err, node)
+				t.Errorf("couldn't get node info for node %s: %s", node.Name, err)
 			}
+			first := d.addNodesToBucket([]*apiv1.Node{node}, nodeGroup, test.drained)
 			if first {
 				batchCount += 1
 			}
@@ -168,6 +169,7 @@ func TestRemove(t *testing.T) {
 
 			ng := "ng"
 			provider.AddNodeGroup(ng, 1, 10, test.numNodes)
+			nodeGroup := provider.GetNodeGroup(ng)
 
 			d := NodeDeletionBatcher{
 				ctx:                   &ctx,
@@ -176,7 +178,7 @@ func TestRemove(t *testing.T) {
 				deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
 				drainedNodeDeletions:  make(map[string]bool),
 			}
-			nodes := generateNodes(test.numNodes, ng)
+			nodes := generateNodes(0, test.numNodes, ng)
 			failedDeletion := test.failedDeletion
 			for _, node := range nodes {
 				if failedDeletion > 0 {
@@ -191,14 +193,11 @@ func TestRemove(t *testing.T) {
 						Key:    taints.ToBeDeletedTaint,
 						Effect: apiv1.TaintEffectNoSchedule,
 					})
-					_, _, err := d.addNodeToBucket(node, true)
-					if err != nil {
-						t.Errorf("addNodeToBucket return error %q when addidng node %v", err, node)
-					}
+					d.addNodesToBucket([]*apiv1.Node{node}, nodeGroup, true)
 				}
 			}
 
-			err = d.remove(ng)
+			err = d.remove(nodeGroup.Id())
 			if test.err {
 				if err == nil {
 					t.Errorf("remove() should return error, but return nil")
