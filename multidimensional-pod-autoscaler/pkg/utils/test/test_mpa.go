@@ -206,7 +206,7 @@ func (b *multidimPodAutoscalerBuilder) Get() *mpa_types.MultidimPodAutoscaler {
 			CreationTimestamp: meta.NewTime(b.creationTimestamp),
 		},
 		Spec: mpa_types.MultidimPodAutoscalerSpec{
-			UpdatePolicy:   b.updatePolicy,
+			Policy:         b.updatePolicy,
 			ResourcePolicy: &resourcePolicy,
 			ScaleTargetRef: b.scaleTargetRef,
 			Recommenders:   recommenders,

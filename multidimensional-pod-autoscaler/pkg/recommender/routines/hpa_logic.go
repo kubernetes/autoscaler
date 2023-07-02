@@ -99,8 +99,8 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 
 	var minReplicas int32
 
-	if mpa.Spec.Constraints.MinReplicas != nil {
-		minReplicas = *mpa.Spec.Constraints.MinReplicas
+	if mpa.Spec.Constraints.Global.MinReplicas != nil {
+		minReplicas = *mpa.Spec.Constraints.Global.MinReplicas
 	} else {
 		// Default value is 1.
 		minReplicas = 1
@@ -114,9 +114,9 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 		rescale = false
 		setCondition(mpa, mpa_types.ScalingActive, v1.ConditionFalse, "ScalingDisabled", "scaling is disabled since the replica count of the target is zero")
 		klog.V(4).Infof("Scaling is disabled since the replica count of the target is zero.")
-	} else if currentReplicas > *mpa.Spec.Constraints.MaxReplicas {
+	} else if currentReplicas > *mpa.Spec.Constraints.Global.MaxReplicas {
 		rescaleReason = "Current number of replicas above Spec.Constraints.MaxReplicas"
-		desiredReplicas = *mpa.Spec.Constraints.MaxReplicas
+		desiredReplicas = *mpa.Spec.Constraints.Global.MaxReplicas
 		klog.V(4).Infof("Current number of replicas above Spec.Constraints.MaxReplicas.")
 	} else if currentReplicas < minReplicas {
 		rescaleReason = "Current number of replicas below Spec.Constraints.MinReplicas"
@@ -124,7 +124,7 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 		klog.V(4).Infof("Current number of replicas below Spec.Constraints.MinReplicas.")
 	} else {
 		var metricTimestamp time.Time
-		metricDesiredReplicas, metricName, metricStatuses, metricTimestamp, err = r.computeReplicasForMetrics(ctx, mpa, scale, mpa.Spec.Metrics)
+		metricDesiredReplicas, metricName, metricStatuses, metricTimestamp, err = r.computeReplicasForMetrics(ctx, mpa, scale, mpa.Spec.Goals.Metrics)
 		if err != nil {
 			r.setCurrentReplicasInStatus(mpa, currentReplicas)
 			if err := r.updateStatusIfNeeded(ctx, mpaStatusOriginal, mpa); err != nil {
@@ -149,7 +149,7 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 		if desiredReplicas < currentReplicas {
 			rescaleReason = "All metrics below target"
 		}
-		if mpa.Spec.Constraints.Behavior == nil {
+		if mpa.Spec.Constraints.Global.Behavior == nil {
 			desiredReplicas = r.normalizeDesiredReplicas(mpa, key, currentReplicas, desiredReplicas, minReplicas)
 		} else {
 			desiredReplicas = r.normalizeDesiredReplicasWithBehaviors(mpa, key, currentReplicas, desiredReplicas, minReplicas)
@@ -180,7 +180,7 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 		setCondition(mpa, mpa_types.AbleToScale, v1.ConditionTrue, "SucceededRescale", "the MPA controller was able to update the target scale to %d", desiredReplicas)
 		r.eventRecorder.Eventf(mpa, v1.EventTypeNormal, "SuccessfulRescale", "New size: %d; reason: %s", desiredReplicas, rescaleReason)
 		// klog.V(4).Infof("%s: Successfully rescaled the number of replicas to %d for MPA %v", v1.EventTypeNormal, desiredReplicas, key)
-		r.storeScaleEvent(mpa.Spec.Constraints.Behavior, key, currentReplicas, desiredReplicas)
+		r.storeScaleEvent(mpa.Spec.Constraints.Global.Behavior, key, currentReplicas, desiredReplicas)
 		// klog.Infof("Successful rescaled of %s, old size: %d, new size: %d, reason: %s", mpa.Name, currentReplicas, desiredReplicas, rescaleReason)
 	} else {
 		klog.V(4).Infof("decided not to scale %s to %v (reason: %s) (the last scale time was %s)", reference, desiredReplicas, rescaleReason, mpa.Status.LastScaleTime)
@@ -192,13 +192,13 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 }
 
 // setCondition sets the specific condition type on the given MPA to the specified value with the
-// given reason and message. The message and args are treated like a format string. The condition 
+// given reason and message. The message and args are treated like a format string. The condition
 // will be added if it is not present.
 func setCondition(mpa *mpa_types.MultidimPodAutoscaler, conditionType mpa_types.MultidimPodAutoscalerConditionType, status v1.ConditionStatus, reason, message string, args ...interface{}) {
 	mpa.Status.Conditions = setConditionInList(mpa.Status.Conditions, conditionType, status, reason, message, args...)
 }
 
-// setConditionInList sets the specific condition type on the given MPA to the specified value with 
+// setConditionInList sets the specific condition type on the given MPA to the specified value with
 // the given reason and message. The message and args are treated like a format string. The
 // condition will be added if it is not present.  The new list will be returned.
 func setConditionInList(inputList []mpa_types.MultidimPodAutoscalerCondition, conditionType mpa_types.MultidimPodAutoscalerConditionType, status v1.ConditionStatus, reason, message string, args ...interface{}) []mpa_types.MultidimPodAutoscalerCondition {
@@ -642,7 +642,7 @@ func (r *recommender) setStatus(mpa *mpa_types.MultidimPodAutoscaler, currentRep
 		CurrentMetrics:  metricStatuses,
 		Conditions:      mpa.Status.Conditions,
 		// Keep VPA-related untouched.
-		Recommendation:  mpa.Status.Recommendation,
+		Recommendation: mpa.Status.Recommendation,
 	}
 
 	if rescale {
@@ -660,7 +660,7 @@ func (r *recommender) normalizeDesiredReplicas(mpa *mpa_types.MultidimPodAutosca
 		setCondition(mpa, mpa_types.AbleToScale, v1.ConditionTrue, "ReadyForNewScale", "recommended size matches current size")
 	}
 
-	desiredReplicas, condition, reason := convertDesiredReplicasWithRules(currentReplicas, stabilizedRecommendation, minReplicas, *mpa.Spec.Constraints.MaxReplicas)
+	desiredReplicas, condition, reason := convertDesiredReplicasWithRules(currentReplicas, stabilizedRecommendation, minReplicas, *mpa.Spec.Constraints.Global.MaxReplicas)
 
 	if desiredReplicas == stabilizedRecommendation {
 		setCondition(mpa, mpa_types.ScalingLimited, v1.ConditionFalse, condition, reason)
@@ -801,10 +801,10 @@ func (r *recommender) normalizeDesiredReplicasWithBehaviors(mpa *mpa_types.Multi
 	r.maybeInitScaleDownStabilizationWindow(mpa)
 	normalizationArg := NormalizationArg{
 		Key:               key,
-		ScaleUpBehavior:   mpa.Spec.Constraints.Behavior.ScaleUp,
-		ScaleDownBehavior: mpa.Spec.Constraints.Behavior.ScaleDown,
+		ScaleUpBehavior:   mpa.Spec.Constraints.Global.Behavior.ScaleUp,
+		ScaleDownBehavior: mpa.Spec.Constraints.Global.Behavior.ScaleDown,
 		MinReplicas:       minReplicas,
-		MaxReplicas:       *mpa.Spec.Constraints.MaxReplicas,
+		MaxReplicas:       *mpa.Spec.Constraints.Global.MaxReplicas,
 		CurrentReplicas:   currentReplicas,
 		DesiredReplicas:   prenormalizedDesiredReplicas}
 	stabilizedRecommendation, reason, message := r.stabilizeRecommendationWithBehaviors(normalizationArg)
@@ -826,10 +826,10 @@ func (r *recommender) normalizeDesiredReplicasWithBehaviors(mpa *mpa_types.Multi
 }
 
 func (r *recommender) maybeInitScaleDownStabilizationWindow(mpa *mpa_types.MultidimPodAutoscaler) {
-	behavior := mpa.Spec.Constraints.Behavior
+	behavior := mpa.Spec.Constraints.Global.Behavior
 	if behavior != nil && behavior.ScaleDown != nil && behavior.ScaleDown.StabilizationWindowSeconds == nil {
 		stabilizationWindowSeconds := (int32)(r.downscaleStabilisationWindow.Seconds())
-		mpa.Spec.Constraints.Behavior.ScaleDown.StabilizationWindowSeconds = &stabilizationWindowSeconds
+		mpa.Spec.Constraints.Global.Behavior.ScaleDown.StabilizationWindowSeconds = &stabilizationWindowSeconds
 	}
 }
 
@@ -983,7 +983,7 @@ func getReplicasChangePerPeriod(periodSeconds int32, scaleEvents []timestampedSc
 // outdated events to be replaced were marked as outdated in the `markScaleEventsOutdated` function
 func (r *recommender) storeScaleEvent(behavior *autoscalingv2.HorizontalPodAutoscalerBehavior, key model.MpaID, prevReplicas, newReplicas int32) {
 	if behavior == nil {
-		return  // we should not store any event as they will not be used
+		return // we should not store any event as they will not be used
 	}
 	var oldSampleIndex int
 	var longestPolicyPeriod int32

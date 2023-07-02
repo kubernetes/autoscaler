@@ -318,11 +318,11 @@ func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 			return
 		}
 		desiredReplicas := mpa.Status.DesiredReplicas
-		if (desiredReplicas == scale.Spec.Replicas) {
+		if desiredReplicas == scale.Spec.Replicas {
 			// No need to update the number of replicas.
 			klog.V(4).Infof("No need to change the number of replicas for MPA %v", mpa.Name)
 			continue
-		} else if (desiredReplicas > *mpa.Spec.Constraints.MaxReplicas || desiredReplicas < *mpa.Spec.Constraints.MinReplicas) {
+		} else if desiredReplicas > *mpa.Spec.Constraints.Global.MaxReplicas || desiredReplicas < *mpa.Spec.Constraints.Global.MinReplicas {
 			// Constraints not satisfied. Should not be out of bound because it should have been
 			// checked in the recommender.
 			continue

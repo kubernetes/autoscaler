@@ -91,7 +91,7 @@ func (h *resourceHandler) GetPatches(ar *v1.AdmissionRequest) ([]resource.PatchR
 
 	klog.V(4).Infof("Processing MPA: %v", mpa)
 	patches := []resource.PatchRecord{}
-	if mpa.Spec.UpdatePolicy == nil {
+	if mpa.Spec.Policy == nil {
 		// Sets the default updatePolicy.
 		defaultUpdateMode := vpa_types.UpdateModeAuto
 		patches = append(patches, resource.PatchRecord{
@@ -112,8 +112,8 @@ func parseMPA(raw []byte) (*mpa_types.MultidimPodAutoscaler, error) {
 
 // ValidateMPA checks the correctness of MPA Spec and returns an error if there is a problem.
 func ValidateMPA(mpa *mpa_types.MultidimPodAutoscaler, isCreate bool) error {
-	if mpa.Spec.UpdatePolicy != nil {
-		mode := mpa.Spec.UpdatePolicy.UpdateMode
+	if mpa.Spec.Policy != nil {
+		mode := mpa.Spec.Policy.UpdateMode
 		if mode == nil {
 			return fmt.Errorf("UpdateMode is required if UpdatePolicy is used")
 		}
@@ -121,7 +121,7 @@ func ValidateMPA(mpa *mpa_types.MultidimPodAutoscaler, isCreate bool) error {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
 		}
 
-		if minReplicas := mpa.Spec.Constraints.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
+		if minReplicas := mpa.Spec.Constraints.Global.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
 			return fmt.Errorf("MinReplicas has to be positive, got %v", *minReplicas)
 		}
 	}

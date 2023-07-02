@@ -124,10 +124,10 @@ func UpdateMpaStatusIfNeeded(mpaClient mpa_api.MultidimPodAutoscalerInterface, m
 // GetUpdateMode returns the updatePolicy.updateMode for a given MPA.
 // If the mode is not specified it returns the default (UpdateModeAuto).
 func GetUpdateMode(mpa *mpa_types.MultidimPodAutoscaler) vpa_types.UpdateMode {
-	if mpa.Spec.UpdatePolicy == nil || mpa.Spec.UpdatePolicy.UpdateMode == nil || *mpa.Spec.UpdatePolicy.UpdateMode == "" {
+	if mpa.Spec.Policy == nil || mpa.Spec.Policy.UpdateMode == nil || *mpa.Spec.Policy.UpdateMode == "" {
 		return vpa_types.UpdateModeAuto
 	}
-	return *mpa.Spec.UpdatePolicy.UpdateMode
+	return *mpa.Spec.Policy.UpdateMode
 }
 
 // PodMatchesMPA returns true iff the mpaWithSelector matches the Pod.

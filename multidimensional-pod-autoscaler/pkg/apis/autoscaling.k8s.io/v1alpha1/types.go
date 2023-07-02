@@ -49,17 +49,14 @@ type MultidimPodAutoscalerSpec struct {
 	// Describes the rules on how changes are applied to the pods.
 	// If not specified, all fields in the `PodUpdatePolicy` are set to their default values.
 	// +optional
-	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty"`
+	Policy *PodUpdatePolicy `json:"policy,omitempty"`
 
-	// Contains the specifications about the metric type and target in terms of resource
-	// utilization or workload performance. See the individual metric source types for
-	// more information about how each type of metric must respond.
-	// +listType=atomic
-	// +optional
-	Metrics []autoscalingv2.MetricSpec `json:"metrics,omitempty"`
+	// Describes the goals for autoscaling
+	Goals *Goals `json:"goals,omitempty"`
 
-	// Describes the constraints for the number of replicas.
-	Constraints *HorizontalScalingConstraints `json:"constraints,omitempty"`
+	// Describes the constraints for horizontal and vertical scaling.
+	Constraints *ScalingConstraints `json:"constraints,omitempty"`
+
 	// Controls how the VPA autoscaler computes recommended resources.
 	// The resource policy is also used to set constraints on the recommendations for individual
 	// containers. If not specified, the autoscaler computes recommended resources for all
@@ -113,6 +110,31 @@ type PodUpdatePolicy struct {
 	UpdateMode *vpa.UpdateMode `json:"updateMode,omitempty"`
 }
 
+// Goals describe the scaling goals
+type Goals struct {
+	// Contains the specifications about the metric type and target in terms of resource
+	// utilization or workload performance. See the individual metric source types for
+	// more information about how each type of metric must respond.
+	// +listType=atomic
+	// +optional
+	Metrics []autoscalingv2.MetricSpec `json:"metrics,omitempty"`
+}
+
+// ScalingConstraints describe the scaling constraints
+type ScalingConstraints struct {
+	Global *HorizontalScalingConstraints `json:"global,omitempty"`
+
+	// Defines controlled resources.
+	// If not specified, the default of [cpu, memory] will be used.
+	ContainerControlledResources []*v1.ResourceName `json:"containerControlledResources,omitempty"`
+
+	// Per-container resource policies.
+	// +optional
+	// +patchMergeKey=containerName
+	// +patchStrategy=merge
+	Container []*VerticalScalingConstraints `json:"container,omitempty"`
+}
+
 // HorizontalScalingConstraints describes the constraints for horizontal scaling.
 type HorizontalScalingConstraints struct {
 	// Lower limit for the number of pods that can be set by the autoscaler, default 1.
@@ -125,6 +147,31 @@ type HorizontalScalingConstraints struct {
 	// (scaleUp and scaleDown fields respectively).
 	// +optional
 	Behavior *autoscalingv2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
+}
+
+// VerticalScalingConstraints describes the constraints for vertical scaling.
+type VerticalScalingConstraints struct {
+	// Name of the container.
+	Name string `json:"name,omitempty"`
+
+	// Whether autoscaler is enabled for the container. The default is "Auto".
+	// +optional
+	Mode *vpa.ContainerScalingMode `json:"mode,omitempty"`
+
+	// Describes the vertical scaling limits.
+	Requests *MinMaxVerticalScalingLimits `json:"requests,omitempty"`
+}
+
+// MinMaxVerticalScalingLimits describes the min and max vertical scaling limits for the container.
+type MinMaxVerticalScalingLimits struct {
+	// Specifies the minimal amount of resources that will be recommended
+	// for the container. The default is no minimum.
+	// +optional
+	MinAllowed v1.ResourceList `json:"minAllowed,omitempty"`
+	// Specifies the maximum amount of resources that will be recommended
+	// for the container. The default is no maximum.
+	// +optional
+	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty"`
 }
 
 // MultidimPodAutoscalerRecommenderSelector points to a specific Multidimensional Pod Autoscaler

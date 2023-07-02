@@ -62,8 +62,8 @@ func TestValidateVPA(t *testing.T) {
 			name: "no update mode",
 			mpa: mpa_types.MultidimPodAutoscaler{
 				Spec: mpa_types.MultidimPodAutoscalerSpec{
-					UpdatePolicy: &mpa_types.PodUpdatePolicy{},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Policy:      &mpa_types.PodUpdatePolicy{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("UpdateMode is required if UpdatePolicy is used"),
@@ -72,10 +72,10 @@ func TestValidateVPA(t *testing.T) {
 			name: "bad update mode",
 			mpa: mpa_types.MultidimPodAutoscaler{
 				Spec: mpa_types.MultidimPodAutoscalerSpec{
-					UpdatePolicy: &mpa_types.PodUpdatePolicy{
+					Policy: &mpa_types.PodUpdatePolicy{
 						UpdateMode: &badUpdateMode,
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("unexpected UpdateMode value bad"),
@@ -84,11 +84,13 @@ func TestValidateVPA(t *testing.T) {
 			name: "zero minReplicas",
 			mpa: mpa_types.MultidimPodAutoscaler{
 				Spec: mpa_types.MultidimPodAutoscalerSpec{
-					UpdatePolicy: &mpa_types.PodUpdatePolicy{
-						UpdateMode:  &validUpdateMode,
+					Policy: &mpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{
-						MinReplicas: &badMinReplicas,
+					Constraints: &mpa_types.ScalingConstraints{
+						Global: &mpa_types.HorizontalScalingConstraints{
+							MinReplicas: &badMinReplicas,
+						},
 					},
 				},
 			},
@@ -101,7 +103,7 @@ func TestValidateVPA(t *testing.T) {
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{{}},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("ContainerPolicies.ContainerName is required"),
@@ -118,7 +120,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("unexpected Mode value bad"),
@@ -127,14 +129,14 @@ func TestValidateVPA(t *testing.T) {
 			name: "more than one recommender",
 			mpa: mpa_types.MultidimPodAutoscaler{
 				Spec: mpa_types.MultidimPodAutoscalerSpec{
-					UpdatePolicy: &mpa_types.PodUpdatePolicy{
+					Policy: &mpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
 					},
 					Recommenders: []*mpa_types.MultidimPodAutoscalerRecommenderSelector{
 						{Name: "test1"},
 						{Name: "test2"},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("The current version of MPA object shouldn't specify more than one recommenders."),
@@ -156,7 +158,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("max resource for cpu is lower than min"),
@@ -178,7 +180,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("MinAllowed: CPU [%v] must be a whole number of milli CPUs", badCPUResource.String()),
@@ -202,7 +204,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("MinAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("100m")),
@@ -222,7 +224,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("MaxAllowed: CPU [%s] must be a whole number of milli CPUs", badCPUResource.String()),
@@ -244,7 +246,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("MaxAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("500m")),
@@ -262,7 +264,7 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{},
+					Constraints: &mpa_types.ScalingConstraints{},
 				},
 			},
 			expectError: fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off."),
@@ -285,11 +287,13 @@ func TestValidateVPA(t *testing.T) {
 							},
 						},
 					},
-					UpdatePolicy: &mpa_types.PodUpdatePolicy{
-						UpdateMode:  &validUpdateMode,
+					Policy: &mpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
 					},
-					Constraints: &mpa_types.HorizontalScalingConstraints{
-						MinReplicas: &validMinReplicas,
+					Constraints: &mpa_types.ScalingConstraints{
+						Global: &mpa_types.HorizontalScalingConstraints{
+							MinReplicas: &validMinReplicas,
+						},
 					},
 				},
 			},

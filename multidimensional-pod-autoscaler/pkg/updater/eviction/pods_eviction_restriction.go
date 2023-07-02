@@ -214,8 +214,8 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 
 	// Use per-MPA minReplicas if present, fall back to the global setting.
 	required := f.minReplicas
-	if mpa.Spec.Constraints != nil && mpa.Spec.Constraints.MinReplicas != nil {
-		required = int(*mpa.Spec.Constraints.MinReplicas)
+	if mpa.Spec.Constraints != nil && mpa.Spec.Constraints.Global.MinReplicas != nil {
+		required = int(*mpa.Spec.Constraints.Global.MinReplicas)
 		klog.V(3).Infof("overriding minReplicas from global %v to per-MPA %v for MPA %v/%v",
 			f.minReplicas, required, mpa.Namespace, mpa.Name)
 	}
@@ -332,7 +332,7 @@ func (f *podsEvictionRestrictionFactoryImpl) getReplicaCount(creator podReplicaC
 			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", creator.Namespace, creator.Name)
 		}
 		return int(*ss.Spec.Replicas), nil
-	
+
 	case daemonSet:
 		dsObj, exists, err := f.dsInformer.GetStore().GetByKey(creator.Namespace + "/" + creator.Name)
 		if err != nil {

@@ -107,7 +107,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, mpa
 		return nil, nil, fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
 	var resourcePolicy *vpa_types.PodResourcePolicy
-	if mpa.Spec.UpdatePolicy == nil || mpa.Spec.UpdatePolicy.UpdateMode == nil || *mpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeOff {
+	if mpa.Spec.Policy == nil || mpa.Spec.Policy.UpdateMode == nil || *mpa.Spec.Policy.UpdateMode != vpa_types.UpdateModeOff {
 		resourcePolicy = mpa.Spec.ResourcePolicy
 	}
 	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)

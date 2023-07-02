@@ -27,12 +27,14 @@ spec:
           memory: 500Mi
         controlledResources: ["cpu", "memory"]
   constraints:
-    minReplicas: 1
-    maxReplicas: 6
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 30
+    global:
+      minReplicas: 1
+      maxReplicas: 6
+  goals:
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 30

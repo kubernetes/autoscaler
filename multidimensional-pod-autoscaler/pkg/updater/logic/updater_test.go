@@ -167,7 +167,7 @@ func testRunOnceBase(
 		WithMinAllowed("1", "100M").
 		WithMaxAllowed("3", "1G").
 		Get()
-	mpaObj.Spec.UpdatePolicy = &mpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
+	mpaObj.Spec.Policy = &mpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	mpaLister.On("List").Return([]*mpa_types.MultidimPodAutoscaler{mpaObj}, nil).Once()
 
 	mockSelectorFetcher := target_mock.NewMockMpaTargetSelectorFetcher(ctrl)
