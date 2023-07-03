@@ -450,6 +450,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 		resourcePolicy      *vpa_types.PodResourcePolicy
 		expectedScalingMode *vpa_types.ContainerScalingMode
 		expectedUpdateMode  *vpa_types.UpdateMode
+		expectedAPIVersion  string
 	}{
 		{
 			name:   "Defaults to auto",
@@ -459,6 +460,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			// hence the UpdateModeOff does not influence container scaling mode here.
 			expectedScalingMode: &scalingModeAuto,
 			expectedUpdateMode:  &updateModeOff,
+			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Default scaling mode set to Off",
 			oldVpa: nil,
@@ -473,6 +475,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			},
 			expectedScalingMode: &scalingModeOff,
 			expectedUpdateMode:  &updateModeAuto,
+			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Explicit scaling mode set to Off",
 			oldVpa: nil,
@@ -487,6 +490,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			},
 			expectedScalingMode: &scalingModeOff,
 			expectedUpdateMode:  &updateModeAuto,
+			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Other container has explicit scaling mode Off",
 			oldVpa: nil,
@@ -501,6 +505,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			},
 			expectedScalingMode: &scalingModeAuto,
 			expectedUpdateMode:  &updateModeAuto,
+			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Scaling mode to default Off",
 			oldVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
@@ -515,6 +520,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			},
 			expectedScalingMode: &scalingModeOff,
 			expectedUpdateMode:  &updateModeAuto,
+			expectedAPIVersion:  "v1",
 		}, {
 			name:   "Scaling mode to explicit Off",
 			oldVpa: testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
@@ -529,6 +535,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			},
 			expectedScalingMode: &scalingModeOff,
 			expectedUpdateMode:  &updateModeAuto,
+			expectedAPIVersion:  "v1",
 		},
 		// Tests checking changes to UpdateMode.
 		{
@@ -537,12 +544,49 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 			newVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
 			expectedScalingMode: &scalingModeAuto,
 			expectedUpdateMode:  &updateModeAuto,
+			expectedAPIVersion:  "v1",
 		}, {
 			name:                "UpdateMode from Auto to Off",
 			oldVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).Get(),
 			newVpa:              testVpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get(),
 			expectedScalingMode: &scalingModeAuto,
 			expectedUpdateMode:  &updateModeOff,
+			expectedAPIVersion:  "v1",
+		},
+		// Test different API versions being recorded.
+		// Note that this path for testing the apiVersions is not actively exercised
+		// in a running recommender. The GroupVersion is cleared before it reaches
+		// the recommenders code. These tests only test the propagation of version
+		// changes. When introducing new api versions that need to be differentiated
+		// in logic and/or metrics a dedicated detection mechanism is needed for
+		// those new versions. We can not get this information from the api request:
+		// https://github.com/kubernetes/kubernetes/pull/59264#issuecomment-362579495
+		{
+			name:                "Record APIVersion v1",
+			oldVpa:              nil,
+			newVpa:              testVpaBuilder.WithGroupVersion(metav1.GroupVersion(vpa_types.SchemeGroupVersion)).Get(),
+			expectedScalingMode: &scalingModeAuto,
+			expectedAPIVersion:  "v1",
+		},
+		{
+			name:   "Record APIVersion v1beta2",
+			oldVpa: nil,
+			newVpa: testVpaBuilder.WithGroupVersion(metav1.GroupVersion{
+				Group:   vpa_types.SchemeGroupVersion.Group,
+				Version: "v1beta2",
+			}).Get(),
+			expectedScalingMode: &scalingModeAuto,
+			expectedAPIVersion:  "v1beta2",
+		},
+		{
+			name:   "Record APIVersion v1beta1",
+			oldVpa: nil,
+			newVpa: testVpaBuilder.WithGroupVersion(metav1.GroupVersion{
+				Group:   vpa_types.SchemeGroupVersion.Group,
+				Version: "v1beta1",
+			}).Get(),
+			expectedScalingMode: &scalingModeAuto,
+			expectedAPIVersion:  "v1beta1",
 		},
 	}
 	for _, tc := range cases {
@@ -572,6 +616,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 				assert.Equal(t, tc.expectedUpdateMode, aggregation.UpdateMode, "Unexpected update mode for container %s", containerName)
 				assert.Equal(t, tc.expectedScalingMode, aggregation.GetScalingMode(), "Unexpected scaling mode for container %s", containerName)
 			}
+			assert.Equal(t, tc.expectedAPIVersion, vpa.APIVersion)
 		})
 	}
 }
