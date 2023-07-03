@@ -1,0 +1,88 @@
+concurrency:
+  group: autoscaler-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+name: cluster autoscaler image build
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - develop
+      - release/*
+      - feature/*
+      - feat/*
+  release:
+    types: [published]
+jobs:
+  multi-build:
+    defaults:
+      run:
+        shell: bash
+    container:
+      image: soxhub/docker-ci:latest
+    runs-on: ubuntu-latest
+    environment: main
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout the repository
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '^1.20' # The Go version to download (if necessary) and use.
+      - run: go version        
+
+      - name: Determine docker image tag
+        id: branch
+        run: |
+          DOCKER_TAG="$(tr '[A-Z]' '[a-z]' <<< ${GITHUB_HEAD_REF:=$GITHUB_REF_NAME} | tr '/' '_')"
+          if [[ $GITHUB_EVENT_NAME != 'release' ]] && [[ ${DOCKER_TAG} =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+              exit 1;
+          fi
+          echo "::set-output name=DOCKER_TAG::${DOCKER_TAG}"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          
+      - name: Login to ECR (docker cli)
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          aws-region: us-west-2
+          registry: 743287612805.dkr.ecr.us-west-2.amazonaws.com
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+      - name: Quay login
+        run: |
+          echo "${{secrets.QUAY_TOKEN}}" | docker login --username "${{secrets.QUAY_USERNAME}}"  --password-stdin quay.io
+          
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: 743287612805.dkr.ecr.us-west-2.amazonaws.com
+          username: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+      - name: Build builder
+        run: |
+          docker build ./builder -t builder:latest
+      - name: Build
+        run: |
+          docker 
+          
+      - name: Build autoscaler binary
+        run: |
+          go build -o cluster-autoscaler
+          
+      - name: Build autoscaler dockerfile
+        run: docker build -f cluster-autoscaler/Dockerfile.amd64  -t 743287612805.dkr.ecr.us-west-2.amazonaws.com/autoscalear:${{steps.branch.outputs.DOCKER_TAG}} .
+          
+      - name: Push soxhub-api
+        run: |
+          docker push 743287612805.dkr.ecr.us-west-2.amazonaws.com/autoscaler:${{steps.branch.outputs.DOCKER_TAG}}&
+          docker push quay.io/soxhub/autoscaler:${{steps.branch.outputs.DOCKER_TAG}}&
+          wait %1 %2
