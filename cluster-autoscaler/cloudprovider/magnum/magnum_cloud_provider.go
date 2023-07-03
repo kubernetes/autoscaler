@@ -125,6 +125,11 @@ func (mcp *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 		return nil, nil
 	}
 
+	// Ignore control-plane nodes
+	if _, found := node.ObjectMeta.Labels["node-role.kubernetes.io/control-plane"]; found {
+		return nil, nil
+	}
+
 	ngUUID, err := mcp.magnumManager.nodeGroupForNode(node)
 	if err != nil {
 		return nil, fmt.Errorf("error finding node group UUID for node %s: %v", node.Spec.ProviderID, err)
