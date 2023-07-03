@@ -104,8 +104,8 @@ type Vpa struct {
 	Created time.Time
 	// CheckpointWritten indicates when last checkpoint for the VPA object was stored.
 	CheckpointWritten time.Time
-	// IsV1Beta1API is set to true if VPA object has labelSelector defined as in v1beta1 api.
-	IsV1Beta1API bool
+	// APIVersion of the VPA object.
+	APIVersion string
 	// TargetRef points to the controller managing the set of pods.
 	TargetRef *autoscaling.CrossVersionObjectReference
 	// PodCount contains number of live Pods matching a given VPA object.
@@ -123,10 +123,25 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		Created:                         created,
 		Annotations:                     make(vpaAnnotationsMap),
 		Conditions:                      make(vpaConditionsMap),
-		IsV1Beta1API:                    false,
-		PodCount:                        0,
+		// APIVersion defaults to the version of the client used to read resources.
+		// If a new version is introduced that needs to be differentiated beyond the
+		// client conversion, this needs to be done based on the resource content.
+		// The K8s client will not return the resource apiVersion as it's converted
+		// to the version requested by the client server side.
+		APIVersion: vpa_types.SchemeGroupVersion.Version,
+		PodCount:   0,
 	}
 	return vpa
+}
+
+// SetAPIVersion to the version of the VPA API object.
+// Default API Version is the API version of the VPA client.
+// If the provided version is empty, no change is made.
+func (vpa *Vpa) SetAPIVersion(to string) {
+	if to == "" {
+		return
+	}
+	vpa.APIVersion = to
 }
 
 // UseAggregationIfMatching checks if the given aggregation matches (contributes to) this VPA

@@ -41,6 +41,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
 	WithRecommender(string2 string) VerticalPodAutoscalerBuilder
+	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -50,6 +51,7 @@ type VerticalPodAutoscalerBuilder interface {
 // VerticalPodAutoscaler returns a new VerticalPodAutoscalerBuilder.
 func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 	return &verticalPodAutoscalerBuilder{
+		groupVersion:            meta.GroupVersion(vpa_types.SchemeGroupVersion),
 		recommendation:          Recommendation(),
 		appendedRecommendations: []vpa_types.RecommendedContainerResources{},
 		namespace:               "default",
@@ -58,6 +60,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 }
 
 type verticalPodAutoscalerBuilder struct {
+	groupVersion            meta.GroupVersion
 	vpaName                 string
 	containerName           string
 	namespace               string
@@ -161,6 +164,12 @@ func (b *verticalPodAutoscalerBuilder) WithRecommender(recommender string) Verti
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.groupVersion = gv
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 	status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
 	c := *b
@@ -198,6 +207,10 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
 
 	return &vpa_types.VerticalPodAutoscaler{
+		TypeMeta: meta.TypeMeta{
+			APIVersion: b.groupVersion.String(),
+			Kind:       "VerticalPodAutoscaler",
+		},
 		ObjectMeta: meta.ObjectMeta{
 			Name:              b.vpaName,
 			Namespace:         b.namespace,
