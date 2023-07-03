@@ -53,7 +53,6 @@ func TestNewClusterCapacityThreshold(t *testing.T) {
 			context := &EstimationContext{
 				similarNodeGroups:   nil,
 				currentNodeCount:    tt.contextCurrentNodes,
-				nodeGroupCapacity:   0,
 				clusterMaxNodeLimit: tt.contextMaxNodes,
 			}
 			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().GetNodeLimit(nil, context))
