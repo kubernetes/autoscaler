@@ -34,7 +34,7 @@ type BinpackingNodeEstimator struct {
 	clusterSnapshot  clustersnapshot.ClusterSnapshot
 	limiter          EstimationLimiter
 	podOrderer       EstimationPodOrderer
-	context          *EstimationContext
+	context          EstimationContext
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
@@ -43,7 +43,7 @@ func NewBinpackingNodeEstimator(
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	limiter EstimationLimiter,
 	podOrderer EstimationPodOrderer,
-	context *EstimationContext,
+	context EstimationContext,
 ) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,

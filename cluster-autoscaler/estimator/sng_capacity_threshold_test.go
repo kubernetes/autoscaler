@@ -32,33 +32,47 @@ func TestSngCapacityThreshold(t *testing.T) {
 	tests := []struct {
 		name             string
 		nodeGroupsConfig []nodeGroupConfig
+		currentNodeGroup nodeGroupConfig
 		wantThreshold    int
 	}{
 		{
-			"Computes capacity correctly",
-			[]nodeGroupConfig{
-				{"ng1", 10, 5},
-				{"ng2", 100, 50},
-				{"ng3", 5, 3},
+			name: "returns available capacity",
+			nodeGroupsConfig: []nodeGroupConfig{
+				{name: "ng1", maxNodes: 10, nodesCount: 5},
+				{name: "ng2", maxNodes: 100, nodesCount: 50},
+				{name: "ng3", maxNodes: 5, nodesCount: 3},
 			},
-			57,
+			currentNodeGroup: nodeGroupConfig{name: "main-ng", maxNodes: 20, nodesCount: 10},
+			wantThreshold:    67,
 		},
 		{
-			"For empty capacity returns 0",
-			[]nodeGroupConfig{
-				{"ng1", 10, 10},
-				{"ng2", 100, 100},
+			name: "returns available capacity and skips over-provisioned groups",
+			nodeGroupsConfig: []nodeGroupConfig{
+				{name: "ng1", maxNodes: 10, nodesCount: 5},
+				{name: "ng3", maxNodes: 10, nodesCount: 11},
+				{name: "ng3", maxNodes: 0, nodesCount: 5},
 			},
-			0,
+			currentNodeGroup: nodeGroupConfig{name: "main-ng", maxNodes: 5, nodesCount: 10},
+			wantThreshold:    5,
 		},
 		{
-			"Skips over-provisioned groups",
-			[]nodeGroupConfig{
-				{"ng1", 10, 5},
-				{"ng3", 10, 11},
-				{"ng3", 0, 5},
+			name: "threshold is negative if cluster has no capacity",
+			nodeGroupsConfig: []nodeGroupConfig{
+				{name: "ng1", maxNodes: 10, nodesCount: 10},
+				{name: "ng2", maxNodes: 100, nodesCount: 100},
 			},
-			5,
+			currentNodeGroup: nodeGroupConfig{name: "main-ng", maxNodes: 5, nodesCount: 5},
+			wantThreshold:    -1,
+		},
+		{
+			name: "threshold is negative if all groups are over-provisioned",
+			nodeGroupsConfig: []nodeGroupConfig{
+				{name: "ng1", maxNodes: 10, nodesCount: 11},
+				{name: "ng3", maxNodes: 100, nodesCount: 111},
+				{name: "ng3", maxNodes: 0, nodesCount: 5},
+			},
+			currentNodeGroup: nodeGroupConfig{name: "main-ng", maxNodes: 5, nodesCount: 10},
+			wantThreshold:    -1,
 		},
 	}
 	for _, tt := range tests {
@@ -67,9 +81,12 @@ func TestSngCapacityThreshold(t *testing.T) {
 			for _, ng := range tt.nodeGroupsConfig {
 				provider.AddNodeGroup(ng.name, 0, ng.maxNodes, ng.nodesCount)
 			}
-			context := EstimationContext{similarNodeGroups: provider.NodeGroups()}
-			assert.Equalf(t, tt.wantThreshold, NewSngCapacityThreshold().GetNodeLimit(nil, &context), "NewSngCapacityThreshold()")
-			assert.True(t, NewClusterCapacityThreshold().GetDurationLimit() == 0)
+			// Context must be constructed first to exclude current node group passed from orchestrator
+			context := estimationContext{similarNodeGroups: provider.NodeGroups()}
+			provider.AddNodeGroup(tt.currentNodeGroup.name, 0, tt.currentNodeGroup.maxNodes, tt.currentNodeGroup.nodesCount)
+			currentNodeGroup := provider.GetNodeGroup(tt.currentNodeGroup.name)
+			assert.Equalf(t, tt.wantThreshold, NewSngCapacityThreshold().NodeLimit(currentNodeGroup, &context), "NewSngCapacityThreshold()")
+			assert.True(t, NewClusterCapacityThreshold().DurationLimit(currentNodeGroup, &context) == 0)
 		})
 	}
 }

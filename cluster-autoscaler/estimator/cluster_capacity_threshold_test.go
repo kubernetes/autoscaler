@@ -30,33 +30,39 @@ func TestNewClusterCapacityThreshold(t *testing.T) {
 		contextCurrentNodes int
 	}{
 		{
-			name:                "computes available capacity",
-			wantThreshold:       5,
+			name:                "returns available capacity",
 			contextMaxNodes:     10,
 			contextCurrentNodes: 5,
+			wantThreshold:       5,
 		},
 		{
-			name:                "for not defined cluster max nodes returns 0",
-			wantThreshold:       0,
+			name:                "no threshold is set if cluster capacity is unlimited",
 			contextMaxNodes:     0,
 			contextCurrentNodes: 10,
+			wantThreshold:       0,
 		},
 		{
-			name:                "for negative total capacity returns 0",
-			wantThreshold:       0,
+			name:                "threshold is negative if cluster has no capacity",
 			contextMaxNodes:     5,
 			contextCurrentNodes: 10,
+			wantThreshold:       -1,
+		},
+		{
+			name:                "threshold is negative if cluster node limit is negative",
+			contextMaxNodes:     -5,
+			contextCurrentNodes: 0,
+			wantThreshold:       -1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			context := &EstimationContext{
+			context := &estimationContext{
 				similarNodeGroups:   nil,
 				currentNodeCount:    tt.contextCurrentNodes,
 				clusterMaxNodeLimit: tt.contextMaxNodes,
 			}
-			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().GetNodeLimit(nil, context))
-			assert.True(t, NewClusterCapacityThreshold().GetDurationLimit() == 0)
+			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().NodeLimit(nil, context))
+			assert.True(t, NewClusterCapacityThreshold().DurationLimit(nil, nil) == 0)
 		})
 	}
 }
