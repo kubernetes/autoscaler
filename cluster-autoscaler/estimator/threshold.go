@@ -25,6 +25,6 @@ import (
 // Threshold provides resources configuration for threshold based estimation limiter.
 // Return value of 0 means that no limit is set.
 type Threshold interface {
-	GetNodeLimit(cloudprovider.NodeGroup, *EstimationContext) int
-	GetDurationLimit() time.Duration
+	NodeLimit(cloudprovider.NodeGroup, EstimationContext) int
+	DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration
 }

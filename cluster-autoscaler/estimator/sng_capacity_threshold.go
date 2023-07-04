@@ -26,29 +26,46 @@ import (
 type sngCapacityThreshold struct {
 }
 
-func (l *sngCapacityThreshold) GetNodeLimit(_ cloudprovider.NodeGroup, context *EstimationContext) int {
-	var totalCapacity int
-	for _, nodeGroup := range context.GetSimilarNodeGroups() {
-		nodeGroupTargetSize, err := nodeGroup.TargetSize()
-		// Should not ever happen as only valid node groups are passed to estimator
-		if err != nil {
-			klog.Errorf("Error while computing available capacity of a node group %v: can't get target size of the group", nodeGroup.Id(), err)
-			continue
-		}
-		groupCapacity := nodeGroup.MaxSize() - nodeGroupTargetSize
-		if groupCapacity > 0 {
-			totalCapacity += groupCapacity
-		}
+// NodeLimit returns maximum number of new nodes that can be added to the cluster
+// based on capacity of current node group and total capacity of similar node groups. Possible return values are:
+//   - -1 when this node group AND similar node groups have no available capacity
+//   - 0 when context is not set. Return value of 0 means that there is no limit.
+//   - Any positive number representing maximum possible number of new nodes
+func (t *sngCapacityThreshold) NodeLimit(nodeGroup cloudprovider.NodeGroup, context EstimationContext) int {
+	if context == nil {
+		return 0
 	}
-	return totalCapacity
+	totalAvailableCapacity := t.computeNodeGroupCapacity(nodeGroup)
+	for _, sng := range context.SimilarNodeGroups() {
+		totalAvailableCapacity += t.computeNodeGroupCapacity(sng)
+	}
+	if totalAvailableCapacity <= 0 {
+		return -1
+	}
+	return totalAvailableCapacity
 }
 
-func (l *sngCapacityThreshold) GetDurationLimit() time.Duration {
+func (t *sngCapacityThreshold) computeNodeGroupCapacity(nodeGroup cloudprovider.NodeGroup) int {
+	nodeGroupTargetSize, err := nodeGroup.TargetSize()
+	// Should not ever happen as only valid node groups are passed to estimator
+	if err != nil {
+		klog.Errorf("Error while computing available capacity of a node group %v: can't get target size of the group", nodeGroup.Id(), err)
+		return 0
+	}
+	groupCapacity := nodeGroup.MaxSize() - nodeGroupTargetSize
+	if groupCapacity > 0 {
+		return groupCapacity
+	}
 	return 0
 }
 
-// NewSngCapacityThreshold returns a Threshold that should be used to limit
-// result and duration of binpacking by given static values
+// DurationLimit always returns 0 for this threshold, meaning that no limit is set.
+func (t *sngCapacityThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
+	return 0
+}
+
+// NewSngCapacityThreshold returns a Threshold that can be used to limit binpacking
+// by available capacity of similar node groups
 func NewSngCapacityThreshold() Threshold {
 	return &sngCapacityThreshold{}
 }

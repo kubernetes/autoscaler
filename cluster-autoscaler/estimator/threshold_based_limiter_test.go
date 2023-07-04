@@ -35,7 +35,7 @@ func expectAllow(t *testing.T, l EstimationLimiter) {
 	assert.Equal(t, true, l.PermissionToAddNode())
 }
 
-func resetLimiter(t *testing.T, l EstimationLimiter) {
+func resetLimiter(_ *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
 	l.StartEstimation([]*apiv1.Pod{}, nil, nil)
 }
@@ -44,11 +44,11 @@ type dynamicThreshold struct {
 	nodeLimit int
 }
 
-func (d *dynamicThreshold) GetDurationLimit() time.Duration {
+func (d *dynamicThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
 	return 0
 }
 
-func (d *dynamicThreshold) GetNodeLimit(cloudprovider.NodeGroup, *EstimationContext) int {
+func (d *dynamicThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) int {
 	d.nodeLimit += 1
 	return d.nodeLimit
 }
@@ -93,6 +93,17 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			},
 			expectNodeCount: 3,
 			thresholds:      []Threshold{NewStaticThreshold(3, 0)},
+		},
+		{
+			name: "binpacking is stopped if at least one threshold is negative",
+			operations: []limiterOperation{
+				expectDeny,
+			},
+			expectNodeCount: 0,
+			thresholds: []Threshold{
+				NewStaticThreshold(-1, 0),
+				NewStaticThreshold(10, 0),
+			},
 		},
 		{
 			name: "node counter is reset",
@@ -162,6 +173,41 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			}
 			assert.Equal(t, tc.expectNodeCount, limiter.nodes)
 			limiter.EndEstimation()
+		})
+	}
+}
+
+func TestMinLimit(t *testing.T) {
+	type testCase[V interface{ int | time.Duration }] struct {
+		name        string
+		baseLimit   V
+		targetLimit V
+		want        V
+	}
+	tests := []testCase[int]{
+		{name: "At least one negative", baseLimit: -10, targetLimit: 10, want: -1},
+		{name: "Negative and not set", baseLimit: -10, targetLimit: 0, want: -1},
+		{name: "Both negative", baseLimit: -10, targetLimit: -10, want: -1},
+		{name: "Both not set", baseLimit: 0, targetLimit: 0, want: 0},
+		{name: "At least one not set", baseLimit: 0, targetLimit: 10, want: 10},
+		{name: "Both set", baseLimit: 5, targetLimit: 10, want: 5},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getMinLimit(tt.baseLimit, tt.targetLimit), "getMinLimit(%v, %v)", tt.baseLimit, tt.targetLimit)
+		})
+	}
+	testsTime := []testCase[time.Duration]{
+		{name: "At least one negative duration", baseLimit: time.Now().Sub(time.Now().Add(5 * time.Minute)), targetLimit: time.Duration(10), want: -1},
+		{name: "Negative and not set durations", baseLimit: time.Now().Sub(time.Now().Add(5 * time.Minute)), targetLimit: time.Duration(0), want: -1},
+		{name: "Both negative durations", baseLimit: time.Now().Sub(time.Now().Add(5 * time.Minute)), targetLimit: time.Duration(-10), want: -1},
+		{name: "Both not set durations", baseLimit: time.Duration(0), targetLimit: time.Duration(0)},
+		{name: "At least one not set duration", baseLimit: time.Duration(0), targetLimit: time.Duration(10), want: 10},
+		{name: "Both set durations", baseLimit: time.Duration(5), targetLimit: time.Duration(10), want: 5},
+	}
+	for _, tt := range testsTime {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getMinLimit(tt.baseLimit, tt.targetLimit), "getMinLimit(%v, %v)", tt.baseLimit, tt.targetLimit)
 		})
 	}
 }

@@ -21,48 +21,39 @@ import (
 )
 
 // EstimationContext stores static and runtime state of autoscaling, used by Estimator
-type EstimationContext struct {
+type EstimationContext interface {
+	SimilarNodeGroups() []cloudprovider.NodeGroup
+	ClusterMaxNodeLimit() int
+	CurrentNodeCount() int
+}
+
+type estimationContext struct {
 	similarNodeGroups   []cloudprovider.NodeGroup
 	currentNodeCount    int
 	clusterMaxNodeLimit int
 }
 
-// NewEstimationContext creates new estimation context with static properties
-func NewEstimationContext(clusterMaxNodeLimit int) *EstimationContext {
-	return &EstimationContext{clusterMaxNodeLimit: clusterMaxNodeLimit}
-}
-
-// NewEstimationContextUpdate creates a patch for estimation context with runtime properties.
+// NewEstimationContext creates a patch for estimation context with runtime properties.
 // This patch is used to update existing context.
-func NewEstimationContextUpdate(similarNodeGroups []cloudprovider.NodeGroup, currentNodeCount int) *EstimationContext {
-	return &EstimationContext{
-		similarNodeGroups: similarNodeGroups,
-		currentNodeCount:  currentNodeCount,
+func NewEstimationContext(clusterMaxNodeLimit int, similarNodeGroups []cloudprovider.NodeGroup, currentNodeCount int) EstimationContext {
+	return &estimationContext{
+		similarNodeGroups:   similarNodeGroups,
+		currentNodeCount:    currentNodeCount,
+		clusterMaxNodeLimit: clusterMaxNodeLimit,
 	}
 }
 
-// GetSimilarNodeGroups returns array of similar node groups
-func (c *EstimationContext) GetSimilarNodeGroups() []cloudprovider.NodeGroup {
+// SimilarNodeGroups returns array of similar node groups
+func (c *estimationContext) SimilarNodeGroups() []cloudprovider.NodeGroup {
 	return c.similarNodeGroups
 }
 
-// GetClusterMaxNodeLimit returns maximum node number allowed for the cluster
-func (c *EstimationContext) GetClusterMaxNodeLimit() int {
+// ClusterMaxNodeLimit returns maximum node number allowed for the cluster
+func (c *estimationContext) ClusterMaxNodeLimit() int {
 	return c.clusterMaxNodeLimit
 }
 
-// GetCurrentNodeCount returns current number of nodes in the cluster
-func (c *EstimationContext) GetCurrentNodeCount() int {
+// CurrentNodeCount returns current number of nodes in the cluster
+func (c *estimationContext) CurrentNodeCount() int {
 	return c.currentNodeCount
-}
-
-func updateContext(baseContext *EstimationContext, otherContext *EstimationContext) *EstimationContext {
-	if baseContext == nil {
-		return otherContext
-	} else if otherContext == nil {
-		return baseContext
-	}
-	baseContext.similarNodeGroups = otherContext.similarNodeGroups
-	baseContext.currentNodeCount = otherContext.currentNodeCount
-	return baseContext
 }

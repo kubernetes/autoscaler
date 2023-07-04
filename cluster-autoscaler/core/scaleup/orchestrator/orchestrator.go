@@ -150,7 +150,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	}
 
 	for _, nodeGroup := range validNodeGroups {
-		option := o.ComputeExpansionOption(nodeGroup, schedulablePods, nodeInfos, resourcesLeft, len(nodes)+len(upcomingNodes), now)
+		option := o.ComputeExpansionOption(nodeGroup, schedulablePods, nodeInfos, len(nodes)+len(upcomingNodes), now)
 		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingContext, nodeGroup.Id())
 
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
@@ -480,7 +480,6 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	nodeGroup cloudprovider.NodeGroup,
 	schedulablePods map[string][]*apiv1.Pod,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
-	resourceLeft resource.Limits,
 	currentNodeCount int,
 	now time.Time,
 ) expander.Option {
@@ -498,7 +497,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	expansionEstimator := o.autoscalingContext.EstimatorBuilder(
 		o.autoscalingContext.PredicateChecker,
 		o.autoscalingContext.ClusterSnapshot,
-		estimator.NewEstimationContextUpdate(option.SimilarNodeGroups, currentNodeCount),
+		estimator.NewEstimationContext(o.autoscalingContext.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
 	option.NodeCount, option.Pods = expansionEstimator.Estimate(pods, nodeInfo, nodeGroup)
 	metrics.UpdateDurationFromStart(metrics.Estimate, estimateStart)
