@@ -825,6 +825,7 @@ var defaultScaleDownOptions = config.AutoscalingOptions{
 	},
 	MaxGracefulTerminationSec: 60,
 	MaxEmptyBulkDelete:        10,
+	MaxScaleDownParallelism:   10,
 	MinCoresTotal:             0,
 	MinMemoryTotal:            0,
 	MaxCoresTotal:             config.DefaultMaxClusterCores,
