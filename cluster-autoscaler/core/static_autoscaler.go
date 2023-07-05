@@ -172,7 +172,7 @@ func NewStaticAutoscaler(
 	// during the struct creation rather than here.
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, ndt, deleteOptions)
-	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions, processors)
+	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions, processors.NodeGroupConfigProcessor)
 	autoscalingContext.ScaleDownActuator = actuator
 
 	var scaleDownPlanner scaledown.Planner
