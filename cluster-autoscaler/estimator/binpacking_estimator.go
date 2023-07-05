@@ -34,6 +34,7 @@ type BinpackingNodeEstimator struct {
 	clusterSnapshot  clustersnapshot.ClusterSnapshot
 	limiter          EstimationLimiter
 	podOrderer       EstimationPodOrderer
+	context          EstimationContext
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
@@ -41,12 +42,15 @@ func NewBinpackingNodeEstimator(
 	predicateChecker predicatechecker.PredicateChecker,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	limiter EstimationLimiter,
-	podOrderer EstimationPodOrderer) *BinpackingNodeEstimator {
+	podOrderer EstimationPodOrderer,
+	context EstimationContext,
+) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,
 		clusterSnapshot:  clusterSnapshot,
 		limiter:          limiter,
 		podOrderer:       podOrderer,
+		context:          context,
 	}
 }
 
@@ -65,7 +69,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	nodeTemplate *schedulerframework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup) (int, []*apiv1.Pod) {
 
-	e.limiter.StartEstimation(pods, nodeGroup)
+	e.limiter.StartEstimation(pods, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
 
 	pods = e.podOrderer.Order(pods, nodeTemplate, nodeGroup)
