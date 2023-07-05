@@ -61,7 +61,7 @@ func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 		return false
 	}
 	timeDefined := tbel.maxDuration > 0 && tbel.start != time.Time{}
-	if timeDefined && time.Now().After(tbel.start.Add(tbel.maxDuration)) {
+	if tbel.maxDuration < 0 || (timeDefined && time.Now().After(tbel.start.Add(tbel.maxDuration))) {
 		klog.V(4).Infof("Capping binpacking after exceeding max duration of %v", tbel.maxDuration)
 		return false
 	}
