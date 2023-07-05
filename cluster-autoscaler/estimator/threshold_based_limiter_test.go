@@ -95,7 +95,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			thresholds:      []Threshold{NewStaticThreshold(3, 0)},
 		},
 		{
-			name: "binpacking is stopped if at least one threshold is negative",
+			name: "binpacking is stopped if at least one threshold has negative max nodes limit",
 			operations: []limiterOperation{
 				expectDeny,
 			},
@@ -103,6 +103,17 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			thresholds: []Threshold{
 				NewStaticThreshold(-1, 0),
 				NewStaticThreshold(10, 0),
+			},
+		},
+		{
+			name: "binpacking is stopped if at least one threshold has negative max duration limit",
+			operations: []limiterOperation{
+				expectDeny,
+			},
+			expectNodeCount: 0,
+			thresholds: []Threshold{
+				NewStaticThreshold(100, -1),
+				NewStaticThreshold(10, 60*time.Minute),
 			},
 		},
 		{
@@ -171,7 +182,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 			for _, op := range tc.operations {
 				op(t, limiter)
 			}
-			assert.Equal(t, tc.expectNodeCount, limiter.nodes)
+			assert.Equalf(t, tc.expectNodeCount, limiter.nodes, "Number of allowed nodes does not match expectation")
 			limiter.EndEstimation()
 		})
 	}
