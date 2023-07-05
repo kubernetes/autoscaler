@@ -43,32 +43,40 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
-func TestStartDeletion(t *testing.T) {
-	testNg := testprovider.NewTestNodeGroup("test", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+type startDeletionTestCase struct {
+	emptyNodes            []*budgets.NodeGroupView
+	drainNodes            []*budgets.NodeGroupView
+	pods                  map[string][]*apiv1.Pod
+	failedPodDrain        map[string]bool
+	failedNodeDeletion    map[string]bool
+	failedNodeTaint       map[string]bool
+	wantStatus            *status.ScaleDownStatus
+	wantErr               error
+	wantDeletedPods       []string
+	wantDeletedNodes      []string
+	wantTaintUpdates      map[string][][]apiv1.Taint
+	wantNodeDeleteResults map[string]status.NodeDeleteResult
+}
+
+func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonSetsUtilization bool, suffix string) map[string]startDeletionTestCase {
+	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
+	dsUtilInfo := generateUtilInfo(2./8., 2./8.)
+
+	if ignoreDaemonSetsUtilization {
+		dsUtilInfo = generateUtilInfo(0./8., 0./8.)
+	}
+
 	atomic2 := sizedNodeGroup("atomic-2", 2, true)
 	atomic4 := sizedNodeGroup("atomic-4", 4, true)
-	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
 
-	for tn, tc := range map[string]struct {
-		emptyNodes            []*budgets.NodeGroupView
-		drainNodes            []*budgets.NodeGroupView
-		pods                  map[string][]*apiv1.Pod
-		failedPodDrain        map[string]bool
-		failedNodeDeletion    map[string]bool
-		failedNodeTaint       map[string]bool
-		wantStatus            *status.ScaleDownStatus
-		wantErr               error
-		wantDeletedPods       []string
-		wantDeletedNodes      []string
-		wantTaintUpdates      map[string][][]apiv1.Taint
-		wantNodeDeleteResults map[string]status.NodeDeleteResult
-	}{
+	testCases := map[string]startDeletionTestCase{
 		"nothing to delete": {
 			emptyNodes: nil,
 			drainNodes: nil,
@@ -528,8 +536,8 @@ func TestStartDeletion(t *testing.T) {
 		"DS pods are evicted from empty nodes, but don't block deletion on error": {
 			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
 			pods: map[string][]*apiv1.Pod{
-				"test-node-0": {generateDsPod("test-node-0-ds-pod-0", "test-node-0"), generateDsPod("test-node-0-ds-pod-1", "test-node-0")},
-				"test-node-1": {generateDsPod("test-node-1-ds-pod-0", "test-node-1"), generateDsPod("test-node-1-ds-pod-1", "test-node-1")},
+				"test-node-0": generateDsPods(2, "test-node-0"),
+				"test-node-1": generateDsPods(2, "test-node-1"),
 			},
 			failedPodDrain: map[string]bool{"test-node-1-ds-pod-0": true},
 			wantStatus: &status.ScaleDownStatus{
@@ -539,13 +547,13 @@ func TestStartDeletion(t *testing.T) {
 						Node:        generateNode("test-node-0"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						UtilInfo:    dsUtilInfo,
 					},
 					{
 						Node:        generateNode("test-node-1"),
 						NodeGroup:   testNg,
 						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						UtilInfo:    dsUtilInfo,
 					},
 				},
 			},
@@ -562,6 +570,111 @@ func TestStartDeletion(t *testing.T) {
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
 				"test-node-0": {ResultType: status.NodeDeleteOk},
 				"test-node-1": {ResultType: status.NodeDeleteOk},
+			},
+		},
+		"DS pods and deletion with drain": {
+			drainNodes: generateNodeGroupViewList(testNg, 0, 2),
+			pods: map[string][]*apiv1.Pod{
+				"test-node-0": generateDsPods(2, "test-node-0"),
+				"test-node-1": generateDsPods(2, "test-node-1"),
+			},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:      generateNode("test-node-0"),
+						NodeGroup: testNg,
+						// this is nil because DaemonSetEvictionForOccupiedNodes is
+						// not enabled for drained nodes in this test suite
+						EvictedPods: nil,
+						UtilInfo:    dsUtilInfo,
+					},
+					{
+						Node:      generateNode("test-node-1"),
+						NodeGroup: testNg,
+						// this is nil because DaemonSetEvictionForOccupiedNodes is
+						// not enabled for drained nodes in this test suite
+						EvictedPods: nil,
+						UtilInfo:    dsUtilInfo,
+					},
+				},
+			},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1"},
+			// same as evicted pods
+			wantDeletedPods: nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-node-0": {
+					{toBeDeletedTaint},
+				},
+				"test-node-1": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
+			},
+		},
+		"DS pods and empty and drain deletion work correctly together": {
+			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
+			pods: map[string][]*apiv1.Pod{
+				"test-node-2": removablePods(2, "test-node-2"),
+				"test-node-3": generateDsPods(2, "test-node-3"),
+			},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:        generateNode("test-node-0"),
+						NodeGroup:   testNg,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("test-node-1"),
+						NodeGroup:   testNg,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("test-node-2"),
+						NodeGroup:   testNg,
+						EvictedPods: removablePods(2, "test-node-2"),
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+					{
+						Node:      generateNode("test-node-3"),
+						NodeGroup: testNg,
+						// this is nil because DaemonSetEvictionForOccupiedNodes is
+						// not enabled for drained nodes in this test suite
+						EvictedPods: nil,
+						UtilInfo:    dsUtilInfo,
+					},
+				},
+			},
+			wantDeletedNodes: []string{"test-node-0", "test-node-1", "test-node-2", "test-node-3"},
+			// same as evicted pods
+			wantDeletedPods: nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-node-0": {
+					{toBeDeletedTaint},
+				},
+				"test-node-1": {
+					{toBeDeletedTaint},
+				},
+				"test-node-2": {
+					{toBeDeletedTaint},
+				},
+				"test-node-3": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-node-0": {ResultType: status.NodeDeleteOk},
+				"test-node-1": {ResultType: status.NodeDeleteOk},
+				"test-node-2": {ResultType: status.NodeDeleteOk},
+				"test-node-3": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"nodes with pods are not deleted if the node is passed as empty": {
@@ -668,262 +781,294 @@ func TestStartDeletion(t *testing.T) {
 				"atomic-2-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
 			},
 		},
-	} {
-		t.Run(tn, func(t *testing.T) {
-			// This is needed because the tested code starts goroutines that can technically live longer than the execution
-			// of a single test case, and the goroutines eventually access tc in fakeClient hooks below.
-			tc := tc
-			// Insert all nodes into a map to support live node updates and GETs.
-			allEmptyNodes, allDrainNodes := []*apiv1.Node{}, []*apiv1.Node{}
-			nodesByName := make(map[string]*apiv1.Node)
-			nodesLock := sync.Mutex{}
-			for _, bucket := range tc.emptyNodes {
-				allEmptyNodes = append(allEmptyNodes, bucket.Nodes...)
-				for _, node := range allEmptyNodes {
-					nodesByName[node.Name] = node
-				}
-			}
-			for _, bucket := range tc.drainNodes {
-				allDrainNodes = append(allDrainNodes, bucket.Nodes...)
-				for _, node := range bucket.Nodes {
-					nodesByName[node.Name] = node
-				}
-			}
+	}
 
-			// Set up a fake k8s client to hook and verify certain actions.
-			fakeClient := &fake.Clientset{}
-			type nodeTaints struct {
-				nodeName string
-				taints   []apiv1.Taint
-			}
-			taintUpdates := make(chan nodeTaints, 10)
-			deletedNodes := make(chan string, 10)
-			deletedPods := make(chan string, 10)
+	testCasesWithNGNames := map[string]startDeletionTestCase{}
+	for k, v := range testCases {
+		testCasesWithNGNames[k+" "+suffix] = v
+	}
 
-			ds := generateDaemonSet()
+	return testCasesWithNGNames
+}
 
-			// We're faking the whole k8s client, and some of the code needs to get live nodes and pods, so GET on nodes and pods has to be set up.
-			fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-				nodesLock.Lock()
-				defer nodesLock.Unlock()
-				getAction := action.(core.GetAction)
-				node, found := nodesByName[getAction.GetName()]
-				if !found {
-					return true, nil, fmt.Errorf("node %q not found", getAction.GetName())
+func TestStartDeletion(t *testing.T) {
+	testNg1 := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
+	opts1 := &config.NodeGroupAutoscalingOptions{
+		IgnoreDaemonSetsUtilization: false,
+	}
+	testNg1.SetOptions(opts1)
+	testNg2 := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
+	opts2 := &config.NodeGroupAutoscalingOptions{
+		IgnoreDaemonSetsUtilization: true,
+	}
+	testNg2.SetOptions(opts2)
+
+	testSets := []map[string]startDeletionTestCase{
+		// IgnoreDaemonSetsUtilization is false
+		getStartDeletionTestCases(testNg1, opts1.IgnoreDaemonSetsUtilization, "testNg1"),
+		// IgnoreDaemonSetsUtilization is true
+		getStartDeletionTestCases(testNg2, opts2.IgnoreDaemonSetsUtilization, "testNg2"),
+	}
+
+	for _, testSet := range testSets {
+		for tn, tc := range testSet {
+			t.Run(tn, func(t *testing.T) {
+				// This is needed because the tested code starts goroutines that can technically live longer than the execution
+				// of a single test case, and the goroutines eventually access tc in fakeClient hooks below.
+				tc := tc
+				// Insert all nodes into a map to support live node updates and GETs.
+				allEmptyNodes, allDrainNodes := []*apiv1.Node{}, []*apiv1.Node{}
+				nodesByName := make(map[string]*apiv1.Node)
+				nodesLock := sync.Mutex{}
+				for _, bucket := range tc.emptyNodes {
+					allEmptyNodes = append(allEmptyNodes, bucket.Nodes...)
+					for _, node := range allEmptyNodes {
+						nodesByName[node.Name] = node
+					}
 				}
-				return true, node, nil
-			})
-			fakeClient.Fake.AddReactor("get", "pods",
-				func(action core.Action) (bool, runtime.Object, error) {
-					return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
-				})
-			// Hook node update to gather all taint updates, and to fail the update for certain nodes to simulate errors.
-			fakeClient.Fake.AddReactor("update", "nodes",
-				func(action core.Action) (bool, runtime.Object, error) {
+				for _, bucket := range tc.drainNodes {
+					allDrainNodes = append(allDrainNodes, bucket.Nodes...)
+					for _, node := range bucket.Nodes {
+						nodesByName[node.Name] = node
+					}
+				}
+
+				// Set up a fake k8s client to hook and verify certain actions.
+				fakeClient := &fake.Clientset{}
+				type nodeTaints struct {
+					nodeName string
+					taints   []apiv1.Taint
+				}
+				taintUpdates := make(chan nodeTaints, 10)
+				deletedNodes := make(chan string, 10)
+				deletedPods := make(chan string, 10)
+
+				ds := generateDaemonSet()
+
+				// We're faking the whole k8s client, and some of the code needs to get live nodes and pods, so GET on nodes and pods has to be set up.
+				fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 					nodesLock.Lock()
 					defer nodesLock.Unlock()
-					update := action.(core.UpdateAction)
-					obj := update.GetObject().(*apiv1.Node)
-					if tc.failedNodeTaint[obj.Name] {
-						return true, nil, fmt.Errorf("SIMULATED ERROR: won't taint")
-					}
-					nt := nodeTaints{
-						nodeName: obj.Name,
-					}
-					for _, taint := range obj.Spec.Taints {
-						nt.taints = append(nt.taints, taint)
-					}
-					taintUpdates <- nt
-					nodesByName[obj.Name] = obj.DeepCopy()
-					return true, obj, nil
-				})
-			// Hook eviction creation to gather which pods were evicted, and to fail the eviction for certain pods to simulate errors.
-			fakeClient.Fake.AddReactor("create", "pods",
-				func(action core.Action) (bool, runtime.Object, error) {
-					createAction := action.(core.CreateAction)
-					if createAction == nil {
-						return false, nil, nil
-					}
-					eviction := createAction.GetObject().(*policyv1beta1.Eviction)
-					if eviction == nil {
-						return false, nil, nil
-					}
-					if tc.failedPodDrain[eviction.Name] {
-						return true, nil, fmt.Errorf("SIMULATED ERROR: won't evict")
-					}
-					deletedPods <- eviction.Name
-					return true, nil, nil
-				})
-
-			// Hook node deletion at the level of cloud provider, to gather which nodes were deleted, and to fail the deletion for
-			// certain nodes to simulate errors.
-			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
-				if tc.failedNodeDeletion[node] {
-					return fmt.Errorf("SIMULATED ERROR: won't remove node")
-				}
-				deletedNodes <- node
-				return nil
-			})
-			for _, bucket := range tc.emptyNodes {
-				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
-				provider.InsertNodeGroup(bucket.Group)
-				for _, node := range bucket.Nodes {
-					provider.AddNode(bucket.Group.Id(), node)
-				}
-			}
-			for _, bucket := range tc.drainNodes {
-				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
-				provider.InsertNodeGroup(bucket.Group)
-				for _, node := range bucket.Nodes {
-					provider.AddNode(bucket.Group.Id(), node)
-				}
-			}
-
-			// Set up other needed structures and options.
-			opts := config.AutoscalingOptions{
-				MaxScaleDownParallelism:        10,
-				MaxDrainParallelism:            5,
-				MaxPodEvictionTime:             0,
-				DaemonSetEvictionForEmptyNodes: true,
-			}
-
-			allPods := []*apiv1.Pod{}
-
-			for _, pods := range tc.pods {
-				allPods = append(allPods, pods...)
-			}
-
-			podLister := kube_util.NewTestPodLister(allPods)
-			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
-			dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{ds})
-			if err != nil {
-				t.Fatalf("Couldn't create daemonset lister")
-			}
-
-			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, dsLister, nil, nil, nil, nil)
-			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
-			if err != nil {
-				t.Fatalf("Couldn't set up autoscaling context: %v", err)
-			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
-			csr.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
-			for _, bucket := range tc.emptyNodes {
-				for _, node := range bucket.Nodes {
-					err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
-					if err != nil {
-						t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
-					}
-				}
-			}
-			for _, bucket := range tc.drainNodes {
-				for _, node := range bucket.Nodes {
-					pods, found := tc.pods[node.Name]
+					getAction := action.(core.GetAction)
+					node, found := nodesByName[getAction.GetName()]
 					if !found {
-						t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
+						return true, nil, fmt.Errorf("node %q not found", getAction.GetName())
 					}
-					err := ctx.ClusterSnapshot.AddNodeWithPods(node, pods)
-					if err != nil {
-						t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+					return true, node, nil
+				})
+				fakeClient.Fake.AddReactor("get", "pods",
+					func(action core.Action) (bool, runtime.Object, error) {
+						return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+					})
+				// Hook node update to gather all taint updates, and to fail the update for certain nodes to simulate errors.
+				fakeClient.Fake.AddReactor("update", "nodes",
+					func(action core.Action) (bool, runtime.Object, error) {
+						nodesLock.Lock()
+						defer nodesLock.Unlock()
+						update := action.(core.UpdateAction)
+						obj := update.GetObject().(*apiv1.Node)
+						if tc.failedNodeTaint[obj.Name] {
+							return true, nil, fmt.Errorf("SIMULATED ERROR: won't taint")
+						}
+						nt := nodeTaints{
+							nodeName: obj.Name,
+						}
+						for _, taint := range obj.Spec.Taints {
+							nt.taints = append(nt.taints, taint)
+						}
+						taintUpdates <- nt
+						nodesByName[obj.Name] = obj.DeepCopy()
+						return true, obj, nil
+					})
+				// Hook eviction creation to gather which pods were evicted, and to fail the eviction for certain pods to simulate errors.
+				fakeClient.Fake.AddReactor("create", "pods",
+					func(action core.Action) (bool, runtime.Object, error) {
+						createAction := action.(core.CreateAction)
+						if createAction == nil {
+							return false, nil, nil
+						}
+						eviction := createAction.GetObject().(*policyv1beta1.Eviction)
+						if eviction == nil {
+							return false, nil, nil
+						}
+						if tc.failedPodDrain[eviction.Name] {
+							return true, nil, fmt.Errorf("SIMULATED ERROR: won't evict")
+						}
+						deletedPods <- eviction.Name
+						return true, nil, nil
+					})
+
+				// Hook node deletion at the level of cloud provider, to gather which nodes were deleted, and to fail the deletion for
+				// certain nodes to simulate errors.
+				provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+					if tc.failedNodeDeletion[node] {
+						return fmt.Errorf("SIMULATED ERROR: won't remove node")
+					}
+					deletedNodes <- node
+					return nil
+				})
+				for _, bucket := range tc.emptyNodes {
+					bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+					provider.InsertNodeGroup(bucket.Group)
+					for _, node := range bucket.Nodes {
+						provider.AddNode(bucket.Group.Id(), node)
 					}
 				}
-			}
-
-			// Create Actuator, run StartDeletion, and verify the error.
-			ndt := deletiontracker.NewNodeDeletionTracker(0)
-			ndb := NewNodeDeletionBatcher(&ctx, csr, ndt, 0*time.Second)
-			evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
-			actuator := Actuator{
-				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
-				nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
-				budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
-			}
-			gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
-			if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
-				t.Errorf("StartDeletion error diff (-want +got):\n%s", diff)
-			}
-
-			// Verify ScaleDownStatus looks as expected.
-			ignoreSdNodeOrder := cmpopts.SortSlices(func(a, b *status.ScaleDownNode) bool { return a.Node.Name < b.Node.Name })
-			ignoreTimestamps := cmpopts.IgnoreFields(status.ScaleDownStatus{}, "NodeDeleteResultsAsOf")
-			cmpNg := cmp.Comparer(func(a, b *testprovider.TestNodeGroup) bool { return a.Id() == b.Id() })
-			statusCmpOpts := cmp.Options{ignoreSdNodeOrder, ignoreTimestamps, cmpNg, cmpopts.EquateEmpty()}
-			if diff := cmp.Diff(tc.wantStatus, gotStatus, statusCmpOpts); diff != "" {
-				t.Errorf("StartDeletion status diff (-want +got):\n%s", diff)
-			}
-
-			// Verify that all expected nodes were deleted using the cloud provider hook.
-			var gotDeletedNodes []string
-		nodesLoop:
-			for i := 0; i < len(tc.wantDeletedNodes); i++ {
-				select {
-				case deletedNode := <-deletedNodes:
-					gotDeletedNodes = append(gotDeletedNodes, deletedNode)
-				case <-time.After(3 * time.Second):
-					t.Errorf("Timeout while waiting for deleted nodes.")
-					break nodesLoop
+				for _, bucket := range tc.drainNodes {
+					bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+					provider.InsertNodeGroup(bucket.Group)
+					for _, node := range bucket.Nodes {
+						provider.AddNode(bucket.Group.Id(), node)
+					}
 				}
-			}
-			ignoreStrOrder := cmpopts.SortSlices(func(a, b string) bool { return a < b })
-			if diff := cmp.Diff(tc.wantDeletedNodes, gotDeletedNodes, ignoreStrOrder); diff != "" {
-				t.Errorf("deletedNodes diff (-want +got):\n%s", diff)
-			}
 
-			// Verify that all expected pods were deleted using the fake k8s client hook.
-			var gotDeletedPods []string
-		podsLoop:
-			for i := 0; i < len(tc.wantDeletedPods); i++ {
-				select {
-				case deletedPod := <-deletedPods:
-					gotDeletedPods = append(gotDeletedPods, deletedPod)
-				case <-time.After(3 * time.Second):
-					t.Errorf("Timeout while waiting for deleted pods.")
-					break podsLoop
+				// Set up other needed structures and options.
+				opts := config.AutoscalingOptions{
+					MaxScaleDownParallelism:        10,
+					MaxDrainParallelism:            5,
+					MaxPodEvictionTime:             0,
+					DaemonSetEvictionForEmptyNodes: true,
 				}
-			}
-			if diff := cmp.Diff(tc.wantDeletedPods, gotDeletedPods, ignoreStrOrder); diff != "" {
-				t.Errorf("deletedPods diff (-want +got):\n%s", diff)
-			}
 
-			// Verify that all expected taint updates happened using the fake k8s client hook.
-			allUpdatesCount := 0
-			for _, updates := range tc.wantTaintUpdates {
-				allUpdatesCount += len(updates)
-			}
-			gotTaintUpdates := make(map[string][][]apiv1.Taint)
-		taintsLoop:
-			for i := 0; i < allUpdatesCount; i++ {
-				select {
-				case taintUpdate := <-taintUpdates:
-					gotTaintUpdates[taintUpdate.nodeName] = append(gotTaintUpdates[taintUpdate.nodeName], taintUpdate.taints)
-				case <-time.After(3 * time.Second):
-					t.Errorf("Timeout while waiting for taint updates.")
-					break taintsLoop
+				allPods := []*apiv1.Pod{}
+
+				for _, pods := range tc.pods {
+					allPods = append(allPods, pods...)
 				}
-			}
-			ignoreTaintValue := cmpopts.IgnoreFields(apiv1.Taint{}, "Value")
-			if diff := cmp.Diff(tc.wantTaintUpdates, gotTaintUpdates, ignoreTaintValue, cmpopts.EquateEmpty()); diff != "" {
-				t.Errorf("taintUpdates diff (-want +got):\n%s", diff)
-			}
 
-			// Wait for all expected deletions to be reported in NodeDeletionTracker. Reporting happens shortly after the deletion
-			// in cloud provider we sync to above and so this will usually not wait at all. However, it can still happen
-			// that there is a delay between cloud provider deletion and reporting, in which case the results are not there yet
-			// and we need to wait for them before asserting.
-			err = waitForDeletionResultsCount(actuator.nodeDeletionTracker, len(tc.wantNodeDeleteResults), 3*time.Second, 200*time.Millisecond)
-			if err != nil {
-				t.Errorf("Timeout while waiting for node deletion results")
-			}
+				podLister := kube_util.NewTestPodLister(allPods)
+				pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
+				dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{ds})
+				if err != nil {
+					t.Fatalf("Couldn't create daemonset lister")
+				}
 
-			// Run StartDeletion again to gather node deletion results for deletions started in the previous call, and verify
-			// that they look as expected.
-			gotNextStatus, gotNextErr := actuator.StartDeletion(nil, nil)
-			if gotNextErr != nil {
-				t.Errorf("StartDeletion unexpected error: %v", gotNextErr)
-			}
-			if diff := cmp.Diff(tc.wantNodeDeleteResults, gotNextStatus.NodeDeleteResults, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
-				t.Errorf("NodeDeleteResults diff (-want +got):\n%s", diff)
-			}
-		})
+				registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, dsLister, nil, nil, nil, nil)
+				ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
+				if err != nil {
+					t.Fatalf("Couldn't set up autoscaling context: %v", err)
+				}
+				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
+				csr.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
+				for _, bucket := range tc.emptyNodes {
+					for _, node := range bucket.Nodes {
+						err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
+						if err != nil {
+							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+						}
+					}
+				}
+				for _, bucket := range tc.drainNodes {
+					for _, node := range bucket.Nodes {
+						pods, found := tc.pods[node.Name]
+						if !found {
+							t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
+						}
+						err := ctx.ClusterSnapshot.AddNodeWithPods(node, pods)
+						if err != nil {
+							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
+						}
+					}
+				}
+
+				// Create Actuator, run StartDeletion, and verify the error.
+				ndt := deletiontracker.NewNodeDeletionTracker(0)
+				ndb := NewNodeDeletionBatcher(&ctx, csr, ndt, 0*time.Second)
+				evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+				actuator := Actuator{
+					ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
+					nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
+					budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
+					configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+				}
+				gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
+				if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
+					t.Errorf("StartDeletion error diff (-want +got):\n%s", diff)
+				}
+
+				// Verify ScaleDownStatus looks as expected.
+				ignoreSdNodeOrder := cmpopts.SortSlices(func(a, b *status.ScaleDownNode) bool { return a.Node.Name < b.Node.Name })
+				ignoreTimestamps := cmpopts.IgnoreFields(status.ScaleDownStatus{}, "NodeDeleteResultsAsOf")
+				cmpNg := cmp.Comparer(func(a, b *testprovider.TestNodeGroup) bool { return a.Id() == b.Id() })
+				statusCmpOpts := cmp.Options{ignoreSdNodeOrder, ignoreTimestamps, cmpNg, cmpopts.EquateEmpty()}
+				if diff := cmp.Diff(tc.wantStatus, gotStatus, statusCmpOpts); diff != "" {
+					t.Errorf("StartDeletion status diff (-want +got):\n%s", diff)
+				}
+
+				// Verify that all expected nodes were deleted using the cloud provider hook.
+				var gotDeletedNodes []string
+			nodesLoop:
+				for i := 0; i < len(tc.wantDeletedNodes); i++ {
+					select {
+					case deletedNode := <-deletedNodes:
+						gotDeletedNodes = append(gotDeletedNodes, deletedNode)
+					case <-time.After(3 * time.Second):
+						t.Errorf("Timeout while waiting for deleted nodes.")
+						break nodesLoop
+					}
+				}
+				ignoreStrOrder := cmpopts.SortSlices(func(a, b string) bool { return a < b })
+				if diff := cmp.Diff(tc.wantDeletedNodes, gotDeletedNodes, ignoreStrOrder); diff != "" {
+					t.Errorf("deletedNodes diff (-want +got):\n%s", diff)
+				}
+
+				// Verify that all expected pods were deleted using the fake k8s client hook.
+				var gotDeletedPods []string
+			podsLoop:
+				for i := 0; i < len(tc.wantDeletedPods); i++ {
+					select {
+					case deletedPod := <-deletedPods:
+						gotDeletedPods = append(gotDeletedPods, deletedPod)
+					case <-time.After(3 * time.Second):
+						t.Errorf("Timeout while waiting for deleted pods.")
+						break podsLoop
+					}
+				}
+				if diff := cmp.Diff(tc.wantDeletedPods, gotDeletedPods, ignoreStrOrder); diff != "" {
+					t.Errorf("deletedPods diff (-want +got):\n%s", diff)
+				}
+
+				// Verify that all expected taint updates happened using the fake k8s client hook.
+				allUpdatesCount := 0
+				for _, updates := range tc.wantTaintUpdates {
+					allUpdatesCount += len(updates)
+				}
+				gotTaintUpdates := make(map[string][][]apiv1.Taint)
+			taintsLoop:
+				for i := 0; i < allUpdatesCount; i++ {
+					select {
+					case taintUpdate := <-taintUpdates:
+						gotTaintUpdates[taintUpdate.nodeName] = append(gotTaintUpdates[taintUpdate.nodeName], taintUpdate.taints)
+					case <-time.After(3 * time.Second):
+						t.Errorf("Timeout while waiting for taint updates.")
+						break taintsLoop
+					}
+				}
+				ignoreTaintValue := cmpopts.IgnoreFields(apiv1.Taint{}, "Value")
+				if diff := cmp.Diff(tc.wantTaintUpdates, gotTaintUpdates, ignoreTaintValue, cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf("taintUpdates diff (-want +got):\n%s", diff)
+				}
+
+				// Wait for all expected deletions to be reported in NodeDeletionTracker. Reporting happens shortly after the deletion
+				// in cloud provider we sync to above and so this will usually not wait at all. However, it can still happen
+				// that there is a delay between cloud provider deletion and reporting, in which case the results are not there yet
+				// and we need to wait for them before asserting.
+				err = waitForDeletionResultsCount(actuator.nodeDeletionTracker, len(tc.wantNodeDeleteResults), 3*time.Second, 200*time.Millisecond)
+				if err != nil {
+					t.Errorf("Timeout while waiting for node deletion results")
+				}
+
+				// Run StartDeletion again to gather node deletion results for deletions started in the previous call, and verify
+				// that they look as expected.
+				gotNextStatus, gotNextErr := actuator.StartDeletion(nil, nil)
+				if gotNextErr != nil {
+					t.Errorf("StartDeletion unexpected error: %v", gotNextErr)
+				}
+				if diff := cmp.Diff(tc.wantNodeDeleteResults, gotNextStatus.NodeDeleteResults, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
+					t.Errorf("NodeDeleteResults diff (-want +got):\n%s", diff)
+				}
+			})
+		}
 	}
 }
 
@@ -1181,8 +1326,18 @@ func removablePod(name string, node string) *apiv1.Pod {
 	}
 }
 
+func generateDsPods(count int, node string) []*apiv1.Pod {
+
+	var result []*apiv1.Pod
+	for i := 0; i < count; i++ {
+		name := fmt.Sprintf("ds-pod-%d", i)
+		result = append(result, generateDsPod(name, node))
+	}
+	return result
+}
+
 func generateDsPod(name string, node string) *apiv1.Pod {
-	pod := removablePod(name, node)
+	pod := removablePod(fmt.Sprintf("%s-%s", node, name), node)
 	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "some-uid")
 	return pod
 }
