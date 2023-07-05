@@ -21,19 +21,21 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	"k8s.io/apimachinery/pkg/types"
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+	"sigs.k8s.io/cloud-provider-azure/pkg/util/deepcopy"
 )
 
 var (
@@ -63,9 +65,9 @@ func checkResourceExistsFromError(err *retry.Error) (bool, *retry.Error) {
 	return false, err
 }
 
-/// getVirtualMachine calls 'VirtualMachinesClient.Get' with a timed cache
-/// The service side has throttling control that delays responses if there are multiple requests onto certain vm
-/// resource request in short period.
+// getVirtualMachine calls 'VirtualMachinesClient.Get' with a timed cache
+// The service side has throttling control that delays responses if there are multiple requests onto certain vm
+// resource request in short period.
 func (az *Cloud) getVirtualMachine(nodeName types.NodeName, crt azcache.AzureCacheReadType) (vm compute.VirtualMachine, err error) {
 	vmName := string(nodeName)
 	cachedVM, err := az.vmCache.Get(vmName, crt)
@@ -83,10 +85,10 @@ func (az *Cloud) getVirtualMachine(nodeName types.NodeName, crt azcache.AzureCac
 
 func (az *Cloud) getRouteTable(crt azcache.AzureCacheReadType) (routeTable network.RouteTable, exists bool, err error) {
 	if len(az.RouteTableName) == 0 {
-		return routeTable, false, fmt.Errorf("Route table name is not configured")
+		return routeTable, false, fmt.Errorf("route table name is not configured")
 	}
 
-	cachedRt, err := az.rtCache.Get(az.RouteTableName, crt)
+	cachedRt, err := az.rtCache.GetWithDeepCopy(az.RouteTableName, crt)
 	if err != nil {
 		return routeTable, false, err
 	}
@@ -98,27 +100,44 @@ func (az *Cloud) getRouteTable(crt azcache.AzureCacheReadType) (routeTable netwo
 	return *(cachedRt.(*network.RouteTable)), true, nil
 }
 
-func (az *Cloud) getPIPCacheKey(pipResourceGroup string, pipName string) string {
-	resourceGroup := az.ResourceGroup
-	if pipResourceGroup != "" {
-		resourceGroup = pipResourceGroup
+func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string, crt azcache.AzureCacheReadType) (network.PublicIPAddress, bool, error) {
+	cached, err := az.pipCache.Get(pipResourceGroup, crt)
+	if err != nil {
+		return network.PublicIPAddress{}, false, err
 	}
-	return fmt.Sprintf("%s%s%s", resourceGroup, consts.PIPCacheKeySeparator, pipName)
+
+	pips := cached.(*sync.Map)
+	pip, ok := pips.Load(pipName)
+	if !ok {
+		// pip not found, refresh cache and retry
+		cached, err = az.pipCache.Get(pipResourceGroup, azcache.CacheReadTypeForceRefresh)
+		if err != nil {
+			return network.PublicIPAddress{}, false, err
+		}
+		pips = cached.(*sync.Map)
+		pip, ok = pips.Load(pipName)
+		if !ok {
+			return network.PublicIPAddress{}, false, nil
+		}
+	}
+
+	pip = pip.(*network.PublicIPAddress)
+	return *(deepcopy.Copy(pip).(*network.PublicIPAddress)), true, nil
 }
 
-func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string, crt azcache.AzureCacheReadType) (network.PublicIPAddress, bool, error) {
-	pip := network.PublicIPAddress{}
-	cacheKey := az.getPIPCacheKey(pipResourceGroup, pipName)
-	cachedPIP, err := az.pipCache.Get(cacheKey, crt)
+func (az *Cloud) listPIP(pipResourceGroup string, crt azcache.AzureCacheReadType) ([]network.PublicIPAddress, error) {
+	cached, err := az.pipCache.Get(pipResourceGroup, crt)
 	if err != nil {
-		return pip, false, err
+		return nil, err
 	}
-
-	if cachedPIP == nil {
-		return pip, false, nil
-	}
-
-	return *(cachedPIP.(*network.PublicIPAddress)), true, nil
+	pips := cached.(*sync.Map)
+	var ret []network.PublicIPAddress
+	pips.Range(func(key, value interface{}) bool {
+		pip := value.(*network.PublicIPAddress)
+		ret = append(ret, *pip)
+		return true
+	})
+	return ret, nil
 }
 
 func (az *Cloud) getSubnet(virtualNetworkName string, subnetName string) (network.Subnet, bool, error) {
@@ -145,8 +164,8 @@ func (az *Cloud) getSubnet(virtualNetworkName string, subnetName string) (networ
 	return subnet, exists, nil
 }
 
-func (az *Cloud) getAzureLoadBalancer(name string, crt azcache.AzureCacheReadType) (lb network.LoadBalancer, exists bool, err error) {
-	cachedLB, err := az.lbCache.Get(name, crt)
+func (az *Cloud) getAzureLoadBalancer(name string, crt azcache.AzureCacheReadType) (lb *network.LoadBalancer, exists bool, err error) {
+	cachedLB, err := az.lbCache.GetWithDeepCopy(name, crt)
 	if err != nil {
 		return lb, false, err
 	}
@@ -155,7 +174,7 @@ func (az *Cloud) getAzureLoadBalancer(name string, crt azcache.AzureCacheReadTyp
 		return lb, false, nil
 	}
 
-	return *(cachedLB.(*network.LoadBalancer)), true, nil
+	return cachedLB.(*network.LoadBalancer), true, nil
 }
 
 func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.SecurityGroup, error) {
@@ -164,7 +183,7 @@ func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.Secur
 		return nsg, fmt.Errorf("securityGroupName is not configured")
 	}
 
-	securityGroup, err := az.nsgCache.Get(az.SecurityGroupName, crt)
+	securityGroup, err := az.nsgCache.GetWithDeepCopy(az.SecurityGroupName, crt)
 	if err != nil {
 		return nsg, err
 	}
@@ -177,7 +196,7 @@ func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.Secur
 }
 
 func (az *Cloud) getPrivateLinkService(frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
-	cachedPLS, err := az.plsCache.Get(*frontendIPConfigID, crt)
+	cachedPLS, err := az.plsCache.GetWithDeepCopy(*frontendIPConfigID, crt)
 	if err != nil {
 		return pls, err
 	}
@@ -212,7 +231,7 @@ func (az *Cloud) newVMCache() (*azcache.TimedCache, error) {
 		}
 
 		if vm.VirtualMachineProperties != nil &&
-			strings.EqualFold(to.String(vm.VirtualMachineProperties.ProvisioningState), string(compute.ProvisioningStateDeleting)) {
+			strings.EqualFold(pointer.StringDeref(vm.VirtualMachineProperties.ProvisioningState, ""), string(compute.ProvisioningStateDeleting)) {
 			klog.V(2).Infof("Virtual machine %q is under deleting", key)
 			return nil, nil
 		}
@@ -304,24 +323,18 @@ func (az *Cloud) newPIPCache() (*azcache.TimedCache, error) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
 
-		parsedKey := strings.Split(strings.TrimSpace(key), consts.PIPCacheKeySeparator)
-		if len(parsedKey) != 2 {
-			return nil, fmt.Errorf("failed to parse public ip rg and name from cache key %q", key)
-		}
-		pipResourceGroup, pipName := strings.TrimSpace(parsedKey[0]), strings.TrimSpace(parsedKey[1])
-
-		pip, err := az.PublicIPAddressesClient.Get(ctx, pipResourceGroup, pipName, "")
-		exists, rerr := checkResourceExistsFromError(err)
+		pipResourceGroup := key
+		pipList, rerr := az.PublicIPAddressesClient.List(ctx, pipResourceGroup)
 		if rerr != nil {
 			return nil, rerr.Error()
 		}
 
-		if !exists {
-			klog.V(2).Infof("Public IP %q in rg %q not found", pipName, pipResourceGroup)
-			return nil, nil
+		pipMap := &sync.Map{}
+		for _, pip := range pipList {
+			pip := pip
+			pipMap.Store(pointer.StringDeref(pip.Name, ""), &pip)
 		}
-
-		return &pip, nil
+		return pipMap, nil
 	}
 
 	if az.PublicIPCacheTTLInSeconds == 0 {
@@ -405,8 +418,8 @@ func (az *Cloud) IsNodeUnmanagedByProviderID(providerID string) bool {
 	return !azureNodeProviderIDRE.Match([]byte(providerID))
 }
 
-// convertResourceGroupNameToLower converts the resource group name in the resource ID to be lowered.
-func convertResourceGroupNameToLower(resourceID string) (string, error) {
+// ConvertResourceGroupNameToLower converts the resource group name in the resource ID to be lowered.
+func ConvertResourceGroupNameToLower(resourceID string) (string, error) {
 	matches := azureResourceGroupNameRE.FindStringSubmatch(resourceID)
 	if len(matches) != 2 {
 		return "", fmt.Errorf("%q isn't in Azure resource ID format %q", resourceID, azureResourceGroupNameRE.String())

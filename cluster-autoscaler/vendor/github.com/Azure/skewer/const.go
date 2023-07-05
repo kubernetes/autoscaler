@@ -49,3 +49,8 @@ const (
 	// Generation 2.
 	HyperVGeneration2 = "V2"
 )
+
+const (
+	ten       = 10
+	sixtyFour = 64
+)
