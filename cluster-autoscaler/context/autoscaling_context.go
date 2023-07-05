@@ -18,6 +18,7 @@ package context
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
@@ -60,6 +61,8 @@ type AutoscalingContext struct {
 	ScaleDownActuator scaledown.Actuator
 	// RemainingPdbTracker tracks the remaining pod disruption budget
 	RemainingPdbTracker pdb.RemainingPdbTracker
+	// ClusterStateRegistry tracks the health of the node groups and pending scale-ups and scale-downs
+	ClusterStateRegistry *clusterstate.ClusterStateRegistry
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -105,7 +108,9 @@ func NewAutoscalingContext(
 	estimatorBuilder estimator.EstimatorBuilder,
 	processorCallbacks processor_callbacks.ProcessorCallbacks,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
-	remainingPdbTracker pdb.RemainingPdbTracker) *AutoscalingContext {
+	remainingPdbTracker pdb.RemainingPdbTracker,
+	clusterStateRegistry *clusterstate.ClusterStateRegistry,
+) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:     options,
 		CloudProvider:          cloudProvider,
@@ -117,6 +122,7 @@ func NewAutoscalingContext(
 		ProcessorCallbacks:     processorCallbacks,
 		DebuggingSnapshotter:   debuggingSnapshotter,
 		RemainingPdbTracker:    remainingPdbTracker,
+		ClusterStateRegistry:   clusterStateRegistry,
 	}
 }
 

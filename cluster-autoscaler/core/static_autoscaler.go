@@ -35,6 +35,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -142,6 +143,11 @@ func NewStaticAutoscaler(
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	scaleUpOrchestrator scaleup.Orchestrator) *StaticAutoscaler {
 
+	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
+	}
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
 		opts,
@@ -153,15 +159,11 @@ func NewStaticAutoscaler(
 		estimatorBuilder,
 		processorCallbacks,
 		debuggingSnapshotter,
-		remainingPdbTracker)
-
-	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
-	}
+		remainingPdbTracker,
+		clusterStateRegistry)
 
 	taintConfig := taints.NewTaintConfig(opts)
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff, clusterstate.NewDefaultMaxNodeProvisionTimeProvider(autoscalingContext, processors.NodeGroupConfigProcessor))
+	clusterStateRegistry.RegisterProviders(providers.NewDefaultMaxNodeProvisionTimeProvider(autoscalingContext, processors.NodeGroupConfigProcessor))
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 
 	deleteOptions := simulator.NewNodeDeleteOptions(opts)
