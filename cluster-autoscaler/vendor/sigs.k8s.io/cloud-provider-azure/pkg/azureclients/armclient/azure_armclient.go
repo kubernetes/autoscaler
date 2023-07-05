@@ -75,7 +75,7 @@ func sender() autorest.Sender {
 				Timeout:   30 * time.Second, // the same as default transport
 				KeepAlive: 30 * time.Second, // the same as default transport
 			}).DialContext,
-			ForceAttemptHTTP2:     true,             // always attempt HTTP/2 even though custom dialer is provided
+			ForceAttemptHTTP2:     false,            // respect custom dialer (default is true)
 			MaxIdleConns:          100,              // Zero means no limit, the same as default transport
 			MaxIdleConnsPerHost:   100,              // Default is 2, ref:https://cs.opensource.google/go/go/+/go1.18.4:src/net/http/transport.go;l=58
 			IdleConnTimeout:       90 * time.Second, // the same as default transport
@@ -393,6 +393,40 @@ func (c *Client) PutResource(ctx context.Context, resourceID string, parameters 
 	return response, nil
 }
 
+func (c *Client) waitAsync(ctx context.Context, futures map[string]*azure.Future, previousResponses map[string]*PutResourcesResponse) {
+	wg := sync.WaitGroup{}
+	var responseLock sync.Mutex
+	for resourceID, future := range futures {
+		wg.Add(1)
+		go func(resourceID string, future *azure.Future) {
+			defer wg.Done()
+			response, err := c.WaitForAsyncOperationResult(ctx, future, "armclient.PutResource")
+			if err != nil {
+				if response != nil {
+					klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', response code %d", err.Error(), response.StatusCode)
+				} else {
+					klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', no response", err.Error())
+				}
+
+				retriableErr := retry.GetError(response, err)
+				if !retriableErr.Retriable &&
+					strings.Contains(strings.ToUpper(err.Error()), strings.ToUpper("InternalServerError")) {
+					klog.V(5).Infof("Received InternalServerError in WaitForAsyncOperationResult: '%s', setting error retriable", err.Error())
+					retriableErr.Retriable = true
+				}
+
+				responseLock.Lock()
+				previousResponses[resourceID] = &PutResourcesResponse{
+					Error: retriableErr,
+				}
+				responseLock.Unlock()
+				return
+			}
+		}(resourceID, future)
+	}
+	wg.Wait()
+}
+
 // PutResourcesInBatches is similar with PutResources, but it sends sync request concurrently in batches.
 func (c *Client) PutResourcesInBatches(ctx context.Context, resources map[string]interface{}, batchSize int) map[string]*PutResourcesResponse {
 	if len(resources) == 0 {
@@ -413,26 +447,36 @@ func (c *Client) PutResourcesInBatches(ctx context.Context, resources map[string
 	rateLimiter := make(chan struct{}, batchSize)
 
 	// Concurrent sync requests in batches.
+	futures := make(map[string]*azure.Future)
 	responses := make(map[string]*PutResourcesResponse)
 	wg := sync.WaitGroup{}
-	var responseLock sync.Mutex
+	var responseLock, futuresLock sync.Mutex
 	for resourceID, parameters := range resources {
 		rateLimiter <- struct{}{}
 		wg.Add(1)
 		go func(resourceID string, parameters interface{}) {
 			defer wg.Done()
 			defer func() { <-rateLimiter }()
-			resp, rerr := c.PutResource(ctx, resourceID, parameters)
-			responseLock.Lock()
-			defer responseLock.Unlock()
-			responses[resourceID] = &PutResourcesResponse{
-				Error:    rerr,
-				Response: resp,
+			future, rerr := c.PutResourceAsync(ctx, resourceID, parameters)
+			if rerr != nil {
+				responseLock.Lock()
+				responses[resourceID] = &PutResourcesResponse{
+					Error: rerr,
+				}
+				responseLock.Unlock()
+				return
 			}
+
+			futuresLock.Lock()
+			futures[resourceID] = future
+			futuresLock.Unlock()
 		}(resourceID, parameters)
 	}
 	wg.Wait()
 	close(rateLimiter)
+
+	// Concurrent async requests.
+	c.waitAsync(ctx, futures, responses)
 
 	return responses
 }

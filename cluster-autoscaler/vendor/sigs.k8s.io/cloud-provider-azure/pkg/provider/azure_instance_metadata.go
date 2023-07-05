@@ -19,8 +19,9 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strings"
 
 	"k8s.io/klog/v2"
 
@@ -119,6 +120,33 @@ func NewInstanceMetadataService(imdsServer string) (*InstanceMetadataService, er
 	return ims, nil
 }
 
+// fillNetInterfacePublicIPs finds PIPs from imds load balancer and fills them into net interface config.
+func fillNetInterfacePublicIPs(publicIPs []PublicIPMetadata, netInterface *NetworkInterface) {
+	// IPv6 IPs from imds load balancer are wrapped by brackets while those from imds are not.
+	trimIP := func(ip string) string {
+		return strings.Trim(strings.Trim(ip, "["), "]")
+	}
+
+	if len(netInterface.IPV4.IPAddress) > 0 && len(netInterface.IPV4.IPAddress[0].PrivateIP) > 0 {
+		for _, pip := range publicIPs {
+			if pip.PrivateIPAddress == netInterface.IPV4.IPAddress[0].PrivateIP {
+				netInterface.IPV4.IPAddress[0].PublicIP = pip.FrontendIPAddress
+				break
+			}
+		}
+	}
+	if len(netInterface.IPV6.IPAddress) > 0 && len(netInterface.IPV6.IPAddress[0].PrivateIP) > 0 {
+		for _, pip := range publicIPs {
+			privateIP := trimIP(pip.PrivateIPAddress)
+			frontendIP := trimIP(pip.FrontendIPAddress)
+			if privateIP == netInterface.IPV6.IPAddress[0].PrivateIP {
+				netInterface.IPV6.IPAddress[0].PublicIP = frontendIP
+				break
+			}
+		}
+	}
+}
+
 func (ims *InstanceMetadataService) getMetadata(key string) (interface{}, error) {
 	instanceMetadata, err := ims.getInstanceMetadata(key)
 	if err != nil {
@@ -142,22 +170,7 @@ func (ims *InstanceMetadataService) getMetadata(key string) (interface{}, error)
 		}
 
 		publicIPs := loadBalancerMetadata.LoadBalancer.PublicIPAddresses
-		if len(netInterface.IPV4.IPAddress) > 0 && len(netInterface.IPV4.IPAddress[0].PrivateIP) > 0 {
-			for _, pip := range publicIPs {
-				if pip.PrivateIPAddress == netInterface.IPV4.IPAddress[0].PrivateIP {
-					netInterface.IPV4.IPAddress[0].PublicIP = pip.FrontendIPAddress
-					break
-				}
-			}
-		}
-		if len(netInterface.IPV6.IPAddress) > 0 && len(netInterface.IPV6.IPAddress[0].PrivateIP) > 0 {
-			for _, pip := range publicIPs {
-				if pip.PrivateIPAddress == netInterface.IPV6.IPAddress[0].PrivateIP {
-					netInterface.IPV6.IPAddress[0].PublicIP = pip.FrontendIPAddress
-					break
-				}
-			}
-		}
+		fillNetInterfacePublicIPs(publicIPs, &netInterface)
 	}
 
 	return instanceMetadata, nil
@@ -187,7 +200,7 @@ func (ims *InstanceMetadataService) getInstanceMetadata(key string) (*InstanceMe
 		return nil, fmt.Errorf("failure of getting instance metadata with response %q", resp.Status)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +238,7 @@ func (ims *InstanceMetadataService) getLoadBalancerMetadata() (*LoadBalancerMeta
 		return nil, fmt.Errorf("failure of getting loadbalancer metadata with response %q", resp.Status)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

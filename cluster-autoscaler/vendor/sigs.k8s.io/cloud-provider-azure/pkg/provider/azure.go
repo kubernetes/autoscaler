@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -78,11 +77,6 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	nodemanager "sigs.k8s.io/cloud-provider-azure/pkg/nodemanager"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
-
-	// ensure the newly added package from azure-sdk-for-go is in vendor/
-	_ "sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient"
-	// ensure the newly added package from azure-sdk-for-go is in vendor/
-	_ "sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient"
 
 	"sigs.k8s.io/yaml"
 )
@@ -265,6 +259,12 @@ type Config struct {
 	PutVMSSVMBatchSize int `json:"putVMSSVMBatchSize" yaml:"putVMSSVMBatchSize"`
 	// PrivateLinkServiceResourceGroup determines the specific resource group of the private link services user want to use
 	PrivateLinkServiceResourceGroup string `json:"privateLinkServiceResourceGroup,omitempty" yaml:"privateLinkServiceResourceGroup,omitempty"`
+
+	// EnableMigrateToIPBasedBackendPoolAPI uses the migration API to migrate from NIC-based to IP-based backend pool.
+	// The migration API can provide a migration from NIC-based to IP-based backend pool without service downtime.
+	// If the API is not used, the migration will be done by decoupling all nodes on the backend pool and then re-attaching
+	// node IPs, which will introduce service downtime. The downtime increases with the number of nodes in the backend pool.
+	EnableMigrateToIPBasedBackendPoolAPI bool `json:"enableMigrateToIPBasedBackendPoolAPI" yaml:"enableMigrateToIPBasedBackendPoolAPI"`
 }
 
 type InitSecretConfig struct {
@@ -331,17 +331,17 @@ type Cloud struct {
 	// Lock for access to node caches, includes nodeZones, nodeResourceGroups, and unmanagedNodes.
 	nodeCachesLock sync.RWMutex
 	// nodeNames holds current nodes for tracking added nodes in VM caches.
-	nodeNames sets.String
-	// nodeZones is a mapping from Zone to a sets.String of Node's names in the Zone
+	nodeNames sets.Set[string]
+	// nodeZones is a mapping from Zone to a sets.Set[string] of Node's names in the Zone
 	// it is updated by the nodeInformer
-	nodeZones map[string]sets.String
+	nodeZones map[string]sets.Set[string]
 	// nodeResourceGroups holds nodes external resource groups
 	nodeResourceGroups map[string]string
 	// unmanagedNodes holds a list of nodes not managed by Azure cloud provider.
-	unmanagedNodes sets.String
+	unmanagedNodes sets.Set[string]
 	// excludeLoadBalancerNodes holds a list of nodes that should be excluded from LoadBalancer.
-	excludeLoadBalancerNodes sets.String
-	nodePrivateIPs           map[string]sets.String
+	excludeLoadBalancerNodes sets.Set[string]
+	nodePrivateIPs           map[string]sets.Set[string]
 	// nodeInformerSynced is for determining if the informer has synced.
 	nodeInformerSynced cache.InformerSynced
 
@@ -363,6 +363,9 @@ type Cloud struct {
 	lbCache  *azcache.TimedCache
 	nsgCache *azcache.TimedCache
 	rtCache  *azcache.TimedCache
+	// public ip cache
+	// key: [resourceGroupName]
+	// Value: sync.Map of [pipName]*PublicIPAddress
 	pipCache *azcache.TimedCache
 	// use LB frontEndIpConfiguration ID as the key and search for PLS attached to the frontEnd
 	plsCache *azcache.TimedCache
@@ -439,13 +442,13 @@ func (az *Cloud) configSecretMetadata(secretName, secretNamespace, cloudConfigKe
 
 func NewCloudFromSecret(ctx context.Context, clientBuilder cloudprovider.ControllerClientBuilder, secretName, secretNamespace, cloudConfigKey string) (cloudprovider.Interface, error) {
 	az := &Cloud{
-		nodeNames:                sets.NewString(),
-		nodeZones:                map[string]sets.String{},
+		nodeNames:                sets.New[string](),
+		nodeZones:                map[string]sets.Set[string]{},
 		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.NewString(),
+		unmanagedNodes:           sets.New[string](),
 		routeCIDRs:               map[string]string{},
-		excludeLoadBalancerNodes: sets.NewString(),
-		nodePrivateIPs:           map[string]sets.String{},
+		excludeLoadBalancerNodes: sets.New[string](),
+		nodePrivateIPs:           map[string]sets.Set[string]{},
 	}
 
 	az.configSecretMetadata(secretName, secretNamespace, cloudConfigKey)
@@ -471,13 +474,13 @@ func NewCloudWithoutFeatureGates(ctx context.Context, configReader io.Reader, ca
 	}
 
 	az := &Cloud{
-		nodeNames:                sets.NewString(),
-		nodeZones:                map[string]sets.String{},
+		nodeNames:                sets.New[string](),
+		nodeZones:                map[string]sets.Set[string]{},
 		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.NewString(),
+		unmanagedNodes:           sets.New[string](),
 		routeCIDRs:               map[string]string{},
-		excludeLoadBalancerNodes: sets.NewString(),
-		nodePrivateIPs:           map[string]sets.String{},
+		excludeLoadBalancerNodes: sets.New[string](),
+		nodePrivateIPs:           map[string]sets.Set[string]{},
 	}
 
 	err = az.InitializeCloudFromConfig(ctx, config, false, callFromCCM)
@@ -524,12 +527,12 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 		// The default cloud config type is cloudConfigTypeMerge.
 		config.CloudConfigType = cloudConfigTypeMerge
 	} else {
-		supportedCloudConfigTypes := sets.NewString(
+		supportedCloudConfigTypes := sets.New(
 			string(cloudConfigTypeMerge),
 			string(cloudConfigTypeFile),
 			string(cloudConfigTypeSecret))
 		if !supportedCloudConfigTypes.Has(string(config.CloudConfigType)) {
-			return fmt.Errorf("cloudConfigType %v is not supported, supported values are %v", config.CloudConfigType, supportedCloudConfigTypes.List())
+			return fmt.Errorf("cloudConfigType %v is not supported, supported values are %v", config.CloudConfigType, supportedCloudConfigTypes.UnsortedList())
 		}
 	}
 
@@ -538,12 +541,12 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 		strings.EqualFold(config.LoadBalancerBackendPoolConfigurationType, consts.LoadBalancerBackendPoolConfigurationTypePODIP) {
 		config.LoadBalancerBackendPoolConfigurationType = consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration
 	} else {
-		supportedLoadBalancerBackendPoolConfigurationTypes := sets.NewString(
+		supportedLoadBalancerBackendPoolConfigurationTypes := sets.New(
 			strings.ToLower(consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration),
 			strings.ToLower(consts.LoadBalancerBackendPoolConfigurationTypeNodeIP),
 			strings.ToLower(consts.LoadBalancerBackendPoolConfigurationTypePODIP))
 		if !supportedLoadBalancerBackendPoolConfigurationTypes.Has(strings.ToLower(config.LoadBalancerBackendPoolConfigurationType)) {
-			return fmt.Errorf("loadBalancerBackendPoolConfigurationType %s is not supported, supported values are %v", config.LoadBalancerBackendPoolConfigurationType, supportedLoadBalancerBackendPoolConfigurationTypes.List())
+			return fmt.Errorf("loadBalancerBackendPoolConfigurationType %s is not supported, supported values are %v", config.LoadBalancerBackendPoolConfigurationType, supportedLoadBalancerBackendPoolConfigurationTypes.UnsortedList())
 		}
 	}
 
@@ -709,6 +712,10 @@ func (az *Cloud) initCaches() (err error) {
 }
 
 func (az *Cloud) setLBDefaults(config *Config) error {
+	if config.LoadBalancerSku == "" {
+		config.LoadBalancerSku = consts.LoadBalancerSkuStandard
+	}
+
 	if strings.EqualFold(config.LoadBalancerSku, consts.LoadBalancerSkuStandard) {
 		// Do not add master nodes to standard LB by default.
 		if config.ExcludeMasterFromStandardLB == nil {
@@ -921,7 +928,7 @@ func ParseConfig(configReader io.Reader) (*Config, error) {
 		return nil, nil
 	}
 
-	configContents, err := ioutil.ReadAll(configReader)
+	configContents, err := io.ReadAll(configReader)
 	if err != nil {
 		return nil, err
 	}
@@ -1007,20 +1014,10 @@ func initDiskControllers(az *Cloud) error {
 	klog.V(2).Infof("attach/detach disk operation rate limit QPS: %f, Bucket: %d", qps, bucket)
 
 	common := &controllerCommon{
-		location:              az.Location,
-		storageEndpointSuffix: az.Environment.StorageEndpointSuffix,
-		resourceGroup:         az.ResourceGroup,
-		subscriptionID:        az.SubscriptionID,
-		cloud:                 az,
-		lockMap:               newLockMap(),
-		diskOpRateLimiter:     flowcontrol.NewTokenBucketRateLimiter(qps, bucket),
-	}
-
-	if az.HasExtendedLocation() {
-		common.extendedLocation = &ExtendedLocation{
-			Name: az.ExtendedLocationName,
-			Type: az.ExtendedLocationType,
-		}
+		cloud:                        az,
+		lockMap:                      newLockMap(),
+		diskOpRateLimiter:            flowcontrol.NewTokenBucketRateLimiter(qps, bucket),
+		AttachDetachInitialDelayInMs: defaultAttachDetachInitialDelayInMs,
 	}
 
 	az.ManagedDiskController = &ManagedDiskController{common: common}
@@ -1125,7 +1122,7 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		newZone, ok := newNode.ObjectMeta.Labels[consts.LabelFailureDomainBetaZone]
 		if ok && az.isAvailabilityZone(newZone) {
 			if az.nodeZones[newZone] == nil {
-				az.nodeZones[newZone] = sets.NewString()
+				az.nodeZones[newZone] = sets.New[string]()
 			}
 			az.nodeZones[newZone].Insert(newNode.ObjectMeta.Name)
 		}
@@ -1170,7 +1167,7 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		// Add to nodePrivateIPs cache
 		for _, address := range getNodePrivateIPAddresses(newNode) {
 			if az.nodePrivateIPs[newNode.Name] == nil {
-				az.nodePrivateIPs[newNode.Name] = sets.NewString()
+				az.nodePrivateIPs[newNode.Name] = sets.New[string]()
 			}
 
 			klog.V(4).Infof("adding IP address %s of the node %s", address, newNode.Name)
@@ -1180,7 +1177,7 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 }
 
 // GetActiveZones returns all the zones in which k8s nodes are currently running.
-func (az *Cloud) GetActiveZones() (sets.String, error) {
+func (az *Cloud) GetActiveZones() (sets.Set[string], error) {
 	if az.nodeInformerSynced == nil {
 		return nil, fmt.Errorf("azure cloud provider doesn't have informers set")
 	}
@@ -1191,7 +1188,7 @@ func (az *Cloud) GetActiveZones() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetActiveZones")
 	}
 
-	zones := sets.NewString()
+	zones := sets.New[string]()
 	for zone, nodes := range az.nodeZones {
 		if len(nodes) > 0 {
 			zones.Insert(zone)
@@ -1228,7 +1225,7 @@ func (az *Cloud) GetNodeResourceGroup(nodeName string) (string, error) {
 }
 
 // GetNodeNames returns a set of all node names in the k8s cluster.
-func (az *Cloud) GetNodeNames() (sets.String, error) {
+func (az *Cloud) GetNodeNames() (sets.Set[string], error) {
 	// Kubelet won't set az.nodeInformerSynced, return nil.
 	if az.nodeInformerSynced == nil {
 		return nil, nil
@@ -1240,14 +1237,14 @@ func (az *Cloud) GetNodeNames() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetNodeNames")
 	}
 
-	return sets.NewString(az.nodeNames.List()...), nil
+	return sets.New(az.nodeNames.UnsortedList()...), nil
 }
 
 // GetResourceGroups returns a set of resource groups that all nodes are running on.
-func (az *Cloud) GetResourceGroups() (sets.String, error) {
+func (az *Cloud) GetResourceGroups() (sets.Set[string], error) {
 	// Kubelet won't set az.nodeInformerSynced, always return configured resourceGroup.
 	if az.nodeInformerSynced == nil {
-		return sets.NewString(az.ResourceGroup), nil
+		return sets.New(az.ResourceGroup), nil
 	}
 
 	az.nodeCachesLock.RLock()
@@ -1256,7 +1253,7 @@ func (az *Cloud) GetResourceGroups() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetResourceGroups")
 	}
 
-	resourceGroups := sets.NewString(az.ResourceGroup)
+	resourceGroups := sets.New(az.ResourceGroup)
 	for _, rg := range az.nodeResourceGroups {
 		resourceGroups.Insert(rg)
 	}
@@ -1265,7 +1262,7 @@ func (az *Cloud) GetResourceGroups() (sets.String, error) {
 }
 
 // GetUnmanagedNodes returns a list of nodes not managed by Azure cloud provider (e.g. on-prem nodes).
-func (az *Cloud) GetUnmanagedNodes() (sets.String, error) {
+func (az *Cloud) GetUnmanagedNodes() (sets.Set[string], error) {
 	// Kubelet won't set az.nodeInformerSynced, always return nil.
 	if az.nodeInformerSynced == nil {
 		return nil, nil
@@ -1277,7 +1274,7 @@ func (az *Cloud) GetUnmanagedNodes() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetUnmanagedNodes")
 	}
 
-	return sets.NewString(az.unmanagedNodes.List()...), nil
+	return sets.New(az.unmanagedNodes.UnsortedList()...), nil
 }
 
 // ShouldNodeExcludedFromLoadBalancer returns true if node is unmanaged, in external resource group or labeled with "node.kubernetes.io/exclude-from-external-load-balancers".

@@ -23,14 +23,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
+	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -168,13 +168,13 @@ func (d *delayedRouteUpdater) updateRoutes() {
 		routeMatch := false
 		onlyUpdateTags = false
 		for i, existingRoute := range routes {
-			if strings.EqualFold(to.String(existingRoute.Name), to.String(rt.route.Name)) {
+			if strings.EqualFold(pointer.StringDeref(existingRoute.Name, ""), pointer.StringDeref(rt.route.Name, "")) {
 				// delete the name-matched routes here (missing routes would be added later if the operation is add).
 				routes = append(routes[:i], routes[i+1:]...)
 				if existingRoute.RoutePropertiesFormat != nil &&
 					rt.route.RoutePropertiesFormat != nil &&
-					strings.EqualFold(to.String(existingRoute.AddressPrefix), to.String(rt.route.AddressPrefix)) &&
-					strings.EqualFold(to.String(existingRoute.NextHopIPAddress), to.String(rt.route.NextHopIPAddress)) {
+					strings.EqualFold(pointer.StringDeref(existingRoute.AddressPrefix, ""), pointer.StringDeref(rt.route.AddressPrefix, "")) &&
+					strings.EqualFold(pointer.StringDeref(existingRoute.NextHopIPAddress, ""), pointer.StringDeref(rt.route.NextHopIPAddress, "")) {
 					routeMatch = true
 				}
 				if rt.operation == routeOperationDelete {
@@ -184,7 +184,7 @@ func (d *delayedRouteUpdater) updateRoutes() {
 			}
 		}
 		if rt.operation == routeOperationDelete && !dirty {
-			klog.Warningf("updateRoutes: route to be deleted %s does not match any of the existing route", to.String(rt.route.Name))
+			klog.Warningf("updateRoutes: route to be deleted %s does not match any of the existing route", pointer.StringDeref(rt.route.Name, ""))
 		}
 
 		// Add missing routes if the operation is add.
@@ -217,7 +217,7 @@ func (d *delayedRouteUpdater) updateRoutes() {
 // and deletes all dualstack routes when dualstack is not enabled.
 func (d *delayedRouteUpdater) cleanupOutdatedRoutes(existingRoutes []network.Route) (routes []network.Route, changed bool) {
 	for i := len(existingRoutes) - 1; i >= 0; i-- {
-		existingRouteName := to.String(existingRoutes[i].Name)
+		existingRouteName := pointer.StringDeref(existingRoutes[i].Name, "")
 		split := strings.Split(existingRouteName, consts.RouteNameSeparator)
 
 		klog.V(4).Infof("cleanupOutdatedRoutes: checking route %s", existingRouteName)
@@ -287,7 +287,7 @@ func (az *Cloud) ListRoutes(ctx context.Context, clusterName string) ([]*cloudpr
 	}
 	az.routeCIDRsLock.Lock()
 	defer az.routeCIDRsLock.Unlock()
-	for _, nodeName := range unmanagedNodes.List() {
+	for _, nodeName := range unmanagedNodes.UnsortedList() {
 		if cidr, ok := az.routeCIDRs[nodeName]; ok {
 			routes = append(routes, &cloudprovider.Route{
 				Name:            nodeName,
@@ -300,7 +300,7 @@ func (az *Cloud) ListRoutes(ctx context.Context, clusterName string) ([]*cloudpr
 	// ensure the route table is tagged as configured
 	tags, changed := az.ensureRouteTableTagged(&routeTable)
 	if changed {
-		klog.V(2).Infof("ListRoutes: updating tags on route table %s", to.String(routeTable.Name))
+		klog.V(2).Infof("ListRoutes: updating tags on route table %s", pointer.StringDeref(routeTable.Name, ""))
 		op, err := az.routeUpdater.addUpdateRouteTableTagsOperation(routeTableOperationUpdateTags, tags)
 		if err != nil {
 			klog.Errorf("ListRoutes: failed to add route table operation with error: %v", err)
@@ -349,8 +349,8 @@ func processRoutes(ipv6DualStackEnabled bool, routeTable network.RouteTable, exi
 
 func (az *Cloud) createRouteTable() error {
 	routeTable := network.RouteTable{
-		Name:                       to.StringPtr(az.RouteTableName),
-		Location:                   to.StringPtr(az.Location),
+		Name:                       pointer.String(az.RouteTableName),
+		Location:                   pointer.String(az.Location),
 		RouteTablePropertiesFormat: &network.RouteTablePropertiesFormat{},
 	}
 
@@ -417,11 +417,11 @@ func (az *Cloud) CreateRoute(ctx context.Context, clusterName string, nameHint s
 	}
 	routeName := mapNodeNameToRouteName(az.ipv6DualStackEnabled, kubeRoute.TargetNode, kubeRoute.DestinationCIDR)
 	route := network.Route{
-		Name: to.StringPtr(routeName),
+		Name: pointer.String(routeName),
 		RoutePropertiesFormat: &network.RoutePropertiesFormat{
-			AddressPrefix:    to.StringPtr(kubeRoute.DestinationCIDR),
+			AddressPrefix:    pointer.String(kubeRoute.DestinationCIDR),
 			NextHopType:      network.RouteNextHopTypeVirtualAppliance,
-			NextHopIPAddress: to.StringPtr(targetIP),
+			NextHopIPAddress: pointer.String(targetIP),
 		},
 	}
 
@@ -471,7 +471,7 @@ func (az *Cloud) DeleteRoute(ctx context.Context, clusterName string, kubeRoute 
 	routeName := mapNodeNameToRouteName(az.ipv6DualStackEnabled, kubeRoute.TargetNode, kubeRoute.DestinationCIDR)
 	klog.V(2).Infof("DeleteRoute: deleting route. clusterName=%q instance=%q cidr=%q routeName=%q", clusterName, kubeRoute.TargetNode, kubeRoute.DestinationCIDR, routeName)
 	route := network.Route{
-		Name:                  to.StringPtr(routeName),
+		Name:                  pointer.String(routeName),
 		RoutePropertiesFormat: &network.RoutePropertiesFormat{},
 	}
 	op, err := az.routeUpdater.addRouteOperation(routeOperationDelete, route)
@@ -492,7 +492,7 @@ func (az *Cloud) DeleteRoute(ctx context.Context, clusterName string, kubeRoute 
 		routeNameWithoutIPV6Suffix := strings.Split(routeName, consts.RouteNameSeparator)[0]
 		klog.V(2).Infof("DeleteRoute: deleting route. clusterName=%q instance=%q cidr=%q routeName=%q", clusterName, kubeRoute.TargetNode, kubeRoute.DestinationCIDR, routeNameWithoutIPV6Suffix)
 		route := network.Route{
-			Name:                  to.StringPtr(routeNameWithoutIPV6Suffix),
+			Name:                  pointer.String(routeNameWithoutIPV6Suffix),
 			RoutePropertiesFormat: &network.RoutePropertiesFormat{},
 		}
 		op, err := az.routeUpdater.addRouteOperation(routeOperationDelete, route)

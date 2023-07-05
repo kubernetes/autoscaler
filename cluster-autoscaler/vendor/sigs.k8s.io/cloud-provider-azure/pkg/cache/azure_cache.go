@@ -189,9 +189,16 @@ func (t *TimedCache) Set(key string, data interface{}) {
 
 // Update updates the data cache for the key.
 func (t *TimedCache) Update(key string, data interface{}) {
-	_ = t.Store.Update(&AzureCacheEntry{
-		Key:       key,
-		Data:      data,
-		CreatedOn: time.Now().UTC(),
-	})
+	if entry, err := t.getInternal(key); err == nil {
+		entry.Lock.Lock()
+		defer entry.Lock.Unlock()
+		entry.Data = data
+		entry.CreatedOn = time.Now().UTC()
+	} else {
+		_ = t.Store.Update(&AzureCacheEntry{
+			Key:       key,
+			Data:      data,
+			CreatedOn: time.Now().UTC(),
+		})
+	}
 }
