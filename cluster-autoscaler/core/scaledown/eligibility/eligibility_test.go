@@ -44,8 +44,7 @@ type testCase struct {
 	ignoreDaemonSetsUtilization bool
 }
 
-func TestFilterOutUnremovable(t *testing.T) {
-	now := time.Now()
+func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time) []testCase {
 
 	regularNode := BuildTestNode("regular", 1000, 10)
 	SetNodeReadyState(regularNode, true, time.Time{})
@@ -117,17 +116,17 @@ func TestFilterOutUnremovable(t *testing.T) {
 		},
 	}
 
-	allTestCases := testCases
-
-	// run all test cases again with `IgnoreDaemonSetsUtilization` set to true
+	finalTestCases := []testCase{}
 	for _, tc := range testCases {
-		t := tc // shallow copy
-		t.ignoreDaemonSetsUtilization = true
-		allTestCases = append(allTestCases, t)
+		tc.desc = tc.desc + " " + suffix
+		if ignoreDaemonSetsUtilization {
+			tc.ignoreDaemonSetsUtilization = true
+		}
+		finalTestCases = append(finalTestCases, tc)
 	}
 
-	ignoreDsCases := []testCase{
-		{
+	if ignoreDaemonSetsUtilization {
+		finalTestCases = append(testCases, testCase{
 			desc:                        "high utilization daemonsets node is filtered out",
 			nodes:                       []*apiv1.Node{regularNode},
 			pods:                        []*apiv1.Pod{smallPod, dsPod},
@@ -135,19 +134,23 @@ func TestFilterOutUnremovable(t *testing.T) {
 			scaleDownUnready:            true,
 			ignoreDaemonSetsUtilization: false,
 		},
-		{
-			desc:                        "high utilization daemonsets node stays",
-			nodes:                       []*apiv1.Node{regularNode},
-			pods:                        []*apiv1.Pod{smallPod, dsPod},
-			want:                        []string{"regular"},
-			scaleDownUnready:            true,
-			ignoreDaemonSetsUtilization: true,
-		},
+			testCase{
+				desc:                        "high utilization daemonsets node stays",
+				nodes:                       []*apiv1.Node{regularNode},
+				pods:                        []*apiv1.Pod{smallPod, dsPod},
+				want:                        []string{"regular"},
+				scaleDownUnready:            true,
+				ignoreDaemonSetsUtilization: true,
+			})
 	}
 
-	allTestCases = append(allTestCases, ignoreDsCases...)
+	return finalTestCases
+}
 
-	for _, tc := range allTestCases {
+func TestFilterOutUnremovable(t *testing.T) {
+	now := time.Now()
+	for _, tc := range append(getTestCases(false, "IgnoreDaemonSetUtilization=false", now),
+		getTestCases(true, "IgnoreDaemonsetUtilization=true", now)...) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
