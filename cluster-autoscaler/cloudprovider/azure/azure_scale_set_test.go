@@ -233,14 +233,14 @@ func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 	}{
 		"out of resources when no power state exists": {},
 		"out of resources when VM is stopped": {
-			statuses: []compute.InstanceViewStatus{{Code: to.StringPtr(PowerStateStopped)}},
+			statuses: []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateStopped)}},
 		},
-		"out of resources when VM reports unknown power state": {
+		"out of resources when VM reports invalid power state": {
 			statuses: []compute.InstanceViewStatus{{Code: to.StringPtr("PowerState/invalid")}},
 		},
 		"instance running when power state is running": {
 			expectInstanceRunning: true,
-			statuses:              []compute.InstanceViewStatus{{Code: to.StringPtr(PowerStateRunning)}},
+			statuses:              []compute.InstanceViewStatus{{Code: to.StringPtr(vmPowerStateRunning)}},
 		},
 		"instance running if instance view cannot be retrieved": {
 			expectInstanceRunning: true,
