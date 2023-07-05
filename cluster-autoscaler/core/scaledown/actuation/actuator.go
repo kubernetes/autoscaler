@@ -33,7 +33,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
@@ -64,7 +63,7 @@ type actuatorNodeGroupConfigGetter interface {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions, processors *processors.AutoscalingProcessors) *Actuator {
+func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions, configGetter actuatorNodeGroupConfigGetter) *Actuator {
 	ndb := NewNodeDeletionBatcher(ctx, csr, ndt, ctx.NodeDeletionBatcherInterval)
 	return &Actuator{
 		ctx:                   ctx,
@@ -73,7 +72,7 @@ func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterState
 		nodeDeletionScheduler: NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
 		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(ctx),
 		deleteOptions:         deleteOptions,
-		configGetter:          processors.NodeGroupConfigProcessor,
+		configGetter:          configGetter,
 	}
 }
 
