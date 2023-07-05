@@ -28,7 +28,8 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
@@ -226,6 +227,15 @@ func (az *Cloud) InstanceExists(ctx context.Context, node *v1.Node) (bool, error
 	if node == nil {
 		return false, nil
 	}
+	unmanaged, err := az.IsNodeUnmanaged(node.Name)
+	if err != nil {
+		return false, err
+	}
+	if unmanaged {
+		klog.V(4).Infof("InstanceExists: omitting unmanaged node %q", node.Name)
+		return false, nil
+	}
+
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
 		var err error
@@ -294,6 +304,14 @@ func (az *Cloud) InstanceShutdownByProviderID(ctx context.Context, providerID st
 // Use the node.name or node.spec.providerID field to find the node in the cloud provider.
 func (az *Cloud) InstanceShutdown(ctx context.Context, node *v1.Node) (bool, error) {
 	if node == nil {
+		return false, nil
+	}
+	unmanaged, err := az.IsNodeUnmanaged(node.Name)
+	if err != nil {
+		return false, err
+	}
+	if unmanaged {
+		klog.V(4).Infof("InstanceShutdown: omitting unmanaged node %q", node.Name)
 		return false, nil
 	}
 	providerID := node.Spec.ProviderID
@@ -433,7 +451,7 @@ func (az *Cloud) InstanceTypeByProviderID(ctx context.Context, providerID string
 // InstanceType returns the type of the specified instance.
 // Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
 // (Implementer Note): This is used by kubelet. Kubelet will label the node. Real log from kubelet:
-//       Adding node label from cloud provider: beta.kubernetes.io/instance-type=[value]
+// Adding node label from cloud provider: beta.kubernetes.io/instance-type=[value]
 func (az *Cloud) InstanceType(ctx context.Context, name types.NodeName) (string, error) {
 	// Returns "" for unmanaged nodes because azure cloud provider couldn't fetch information for them.
 	unmanaged, err := az.IsNodeUnmanaged(string(name))
@@ -497,11 +515,18 @@ func (az *Cloud) CurrentNodeName(ctx context.Context, hostname string) (types.No
 // translated into specific fields in the Node object on registration.
 // Use the node.name or node.spec.providerID field to find the node in the cloud provider.
 func (az *Cloud) InstanceMetadata(ctx context.Context, node *v1.Node) (*cloudprovider.InstanceMetadata, error) {
-	if node == nil {
-		return &cloudprovider.InstanceMetadata{}, nil
-	}
-
 	meta := cloudprovider.InstanceMetadata{}
+	if node == nil {
+		return &meta, nil
+	}
+	unmanaged, err := az.IsNodeUnmanaged(node.Name)
+	if err != nil {
+		return &meta, err
+	}
+	if unmanaged {
+		klog.V(4).Infof("InstanceMetadata: omitting unmanaged node %q", node.Name)
+		return &meta, nil
+	}
 
 	if node.Spec.ProviderID != "" {
 		meta.ProviderID = node.Spec.ProviderID

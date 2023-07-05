@@ -22,17 +22,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/metrics"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
@@ -216,7 +217,7 @@ func (c *Client) listVMSSVM(ctx context.Context, resourceGroupName string, virtu
 		result = append(result, page.Values()...)
 
 		// Abort the loop when there's no nextLink in the response.
-		if to.String(page.Response().NextLink) == "" {
+		if pointer.StringDeref(page.Response().NextLink, "") == "" {
 			break
 		}
 
@@ -305,6 +306,8 @@ func (c *Client) WaitForUpdateResult(ctx context.Context, future *azure.Future, 
 	mc := metrics.NewMetricContext("vmss", "wait_for_update_result", resourceGroupName, c.subscriptionID, source)
 	response, err := c.armClient.WaitForAsyncOperationResult(ctx, future, "VMSSWaitForUpdateResult")
 	mc.Observe(retry.NewErrorOrNil(false, err))
+	defer c.armClient.CloseResponse(ctx, response)
+
 	if err != nil {
 		if response != nil {
 			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', response code %d", err.Error(), response.StatusCode)
@@ -368,12 +371,12 @@ func (c *Client) listResponder(resp *http.Response) (result compute.VirtualMachi
 // virtualMachineScaleSetListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (c *Client) virtualMachineScaleSetVMListResultPreparer(ctx context.Context, vmssvmlr compute.VirtualMachineScaleSetVMListResult) (*http.Request, error) {
-	if vmssvmlr.NextLink == nil || len(to.String(vmssvmlr.NextLink)) < 1 {
+	if vmssvmlr.NextLink == nil || len(pointer.StringDeref(vmssvmlr.NextLink, "")) < 1 {
 		return nil, nil
 	}
 
 	decorators := []autorest.PrepareDecorator{
-		autorest.WithBaseURL(to.String(vmssvmlr.NextLink)),
+		autorest.WithBaseURL(pointer.StringDeref(vmssvmlr.NextLink, "")),
 	}
 	return c.armClient.PrepareGetRequest(ctx, decorators...)
 }
@@ -503,6 +506,22 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 		defer c.armClient.CloseResponse(ctx, resp.Response)
 		if resp.Error != nil {
 			klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.put.request", resourceID, resp.Error.Error())
+
+			errMsg := resp.Error.Error().Error()
+			if strings.Contains(errMsg, consts.VmssVMNotActiveErrorMessage) {
+				klog.V(2).Infof("VMSS VM %s is not active, skip updating it.", resourceID)
+				continue
+			}
+			if strings.Contains(errMsg, consts.ParentResourceNotFoundMessageCode) {
+				klog.V(2).Info("The parent resource of VMSS VM %s is not found, skip updating it.", resourceID)
+				continue
+			}
+			if strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessagePrefix) &&
+				strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessageSuffix) {
+				klog.V(2).Infof("The VM %s is being deleted, skip updating it.", resourceID)
+				continue
+			}
+
 			errors = append(errors, resp.Error)
 			continue
 		}
@@ -521,7 +540,12 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 		rerr := &retry.Error{}
 		errs := make([]error, 0)
 		for _, err := range errors {
-			if err.IsThrottled() && err.RetryAfter.After(err.RetryAfter) {
+			if !err.Retriable && strings.Contains(err.Error().Error(), consts.ConcurrentRequestConflictMessage) {
+				err.Retriable = true
+				err.RetryAfter = time.Now().Add(5 * time.Second)
+			}
+
+			if err.IsThrottled() && err.RetryAfter.After(rerr.RetryAfter) {
 				rerr.RetryAfter = err.RetryAfter
 			}
 			errs = append(errs, err.Error())

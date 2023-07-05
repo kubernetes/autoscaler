@@ -19,14 +19,14 @@ package loadbalancerclient
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
 	// APIVersion is the API version for network.
-	APIVersion = "2021-08-01"
+	APIVersion = "2022-07-01"
 	// AzureStackCloudAPIVersion is the API version for Azure Stack
 	AzureStackCloudAPIVersion = "2018-11-01"
 	// AzureStackCloudName is the cloud name of Azure Stack
@@ -51,6 +51,12 @@ type Interface interface {
 	// Delete deletes a LoadBalancer by name.
 	Delete(ctx context.Context, resourceGroupName string, loadBalancerName string) *retry.Error
 
+	// GetLBBackendPool gets a LoadBalancer backend pool.
+	GetLBBackendPool(ctx context.Context, resourceGroupName string, loadBalancerName string, backendPoolName string, expand string) (network.BackendAddressPool, *retry.Error)
+
 	// DeleteLBBackendPool deletes a LoadBalancer backend pool by name.
 	DeleteLBBackendPool(ctx context.Context, resourceGroupName, loadBalancerName, backendPoolName string) *retry.Error
+
+	// MigrateToIPBasedBackendPool migrates a NIC-based backend pool to IP-based.
+	MigrateToIPBasedBackendPool(ctx context.Context, resourceGroupName string, loadBalancerName string, backendPoolNames []string) *retry.Error
 }

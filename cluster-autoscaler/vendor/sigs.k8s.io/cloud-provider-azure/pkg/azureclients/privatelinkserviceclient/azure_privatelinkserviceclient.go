@@ -23,13 +23,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient"
@@ -214,7 +214,7 @@ func (c *Client) getPLS(ctx context.Context, resourceGroupName string, privateLi
 	return result, nil
 }
 
-/// List gets a list of PrivateLinkServices in the resource group.
+// List gets a list of PrivateLinkServices in the resource group.
 func (c *Client) List(ctx context.Context, resourceGroupName string) ([]network.PrivateLinkService, *retry.Error) {
 	mc := metrics.NewMetricContext("private_link_services", "list", resourceGroupName, c.subscriptionID, "")
 
@@ -270,7 +270,7 @@ func (c *Client) listPLS(ctx context.Context, resourceGroupName string) ([]netwo
 		result = append(result, page.Values()...)
 
 		// Abort the loop when there's no nextLink in the response.
-		if to.String(page.Response().NextLink) == "" {
+		if pointer.StringDeref(page.Response().NextLink, "") == "" {
 			break
 		}
 
@@ -382,12 +382,12 @@ func (c *Client) listResponder(resp *http.Response) (result network.PrivateLinkS
 // privateLinkServiceListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (c *Client) privateLinkServiceListResultPreparer(ctx context.Context, plslr network.PrivateLinkServiceListResult) (*http.Request, error) {
-	if plslr.NextLink == nil || len(to.String(plslr.NextLink)) < 1 {
+	if plslr.NextLink == nil || len(pointer.StringDeref(plslr.NextLink, "")) < 1 {
 		return nil, nil
 	}
 
 	decorators := []autorest.PrepareDecorator{
-		autorest.WithBaseURL(to.String(plslr.NextLink)),
+		autorest.WithBaseURL(pointer.StringDeref(plslr.NextLink, "")),
 	}
 	return c.armClient.PrepareGetRequest(ctx, decorators...)
 }

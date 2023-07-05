@@ -27,7 +27,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 
 	"k8s.io/apimachinery/pkg/types"
 	kwait "k8s.io/apimachinery/pkg/util/wait"
@@ -189,8 +189,8 @@ func (c *controllerCommon) AttachDisk(ctx context.Context, async bool, diskName,
 				diskEncryptionSetID = *disk.DiskProperties.Encryption.DiskEncryptionSetID
 			}
 
-			if disk.DiskProperties.DiskState != compute.DiskStateUnattached && (disk.MaxShares == nil || *disk.MaxShares <= 1) {
-				return -1, fmt.Errorf("state of disk(%s) is %s, not in expected %s state", diskURI, disk.DiskProperties.DiskState, compute.DiskStateUnattached)
+			if disk.DiskProperties.DiskState != compute.Unattached && (disk.MaxShares == nil || *disk.MaxShares <= 1) {
+				return -1, fmt.Errorf("state of disk(%s) is %s, not in expected %s state", diskURI, disk.DiskProperties.DiskState, compute.Unattached)
 			}
 		}
 
@@ -353,7 +353,7 @@ func (c *controllerCommon) DetachDisk(ctx context.Context, diskName, diskURI str
 	} else {
 		lun, _, errGetLun := c.GetDiskLun(diskName, diskURI, nodeName)
 		if errGetLun == nil || !strings.Contains(errGetLun.Error(), consts.CannotFindDiskLUN) {
-			return fmt.Errorf("disk(%s) is still attatched to node(%s) on lun(%d), error: %v", diskURI, nodeName, lun, errGetLun)
+			return fmt.Errorf("disk(%s) is still attached to node(%s) on lun(%d), error: %w", diskURI, nodeName, lun, errGetLun)
 		}
 	}
 
@@ -617,7 +617,7 @@ func (c *controllerCommon) checkDiskExists(ctx context.Context, diskURI string) 
 func getValidCreationData(subscriptionID, resourceGroup, sourceResourceID, sourceType string) (compute.CreationData, error) {
 	if sourceResourceID == "" {
 		return compute.CreationData{
-			CreateOption: compute.DiskCreateOptionEmpty,
+			CreateOption: compute.Empty,
 		}, nil
 	}
 
@@ -633,7 +633,7 @@ func getValidCreationData(subscriptionID, resourceGroup, sourceResourceID, sourc
 		}
 	default:
 		return compute.CreationData{
-			CreateOption: compute.DiskCreateOptionEmpty,
+			CreateOption: compute.Empty,
 		}, nil
 	}
 
@@ -645,7 +645,7 @@ func getValidCreationData(subscriptionID, resourceGroup, sourceResourceID, sourc
 		return compute.CreationData{}, fmt.Errorf("sourceResourceID(%s) is invalid, correct format: %s", sourceResourceID, managedDiskPathRE)
 	}
 	return compute.CreationData{
-		CreateOption:     compute.DiskCreateOptionCopy,
+		CreateOption:     compute.Copy,
 		SourceResourceID: &sourceResourceID,
 	}, nil
 }
