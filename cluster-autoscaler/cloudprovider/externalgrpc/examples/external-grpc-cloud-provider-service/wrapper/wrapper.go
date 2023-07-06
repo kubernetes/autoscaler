@@ -351,6 +351,7 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		ScaleDownGpuUtilizationThreshold: pbDefaults.GetScaleDownGpuUtilizationThreshold(),
 		ScaleDownUnneededTime:            pbDefaults.GetScaleDownUnneededTime().Duration,
 		ScaleDownUnreadyTime:             pbDefaults.GetScaleDownUnneededTime().Duration,
+		MaxNodeProvisionTime:             pbDefaults.GetMaxNodeProvisionTime().Duration,
 	}
 	opts, err := ng.GetOptions(defaults)
 	if err != nil {
@@ -368,6 +369,9 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 			},
 			ScaleDownUnreadyTime: &metav1.Duration{
 				Duration: opts.ScaleDownUnreadyTime,
+			},
+			MaxNodeProvisionTime: &metav1.Duration{
+				Duration: opts.MaxNodeProvisionTime,
 			},
 		},
 	}, nil

@@ -226,6 +226,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 				ScaleDownGpuUtilizationThreshold: 0.7,
 				ScaleDownUnneededTime:            &v1.Duration{Duration: time.Minute},
 				ScaleDownUnreadyTime:             &v1.Duration{Duration: time.Hour},
+				MaxNodeProvisionTime:             &v1.Duration{Duration: time.Minute},
 			},
 		},
 		nil,
@@ -240,6 +241,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		ScaleDownGpuUtilizationThreshold: 0.7,
 		ScaleDownUnneededTime:            time.Minute,
 		ScaleDownUnreadyTime:             time.Hour,
+		MaxNodeProvisionTime:             time.Minute,
 	}
 
 	opts, err := ng1.GetOptions(defaultsOpts)
@@ -248,6 +250,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, 0.7, opts.ScaleDownGpuUtilizationThreshold)
 	assert.Equal(t, time.Minute, opts.ScaleDownUnneededTime)
 	assert.Equal(t, time.Hour, opts.ScaleDownUnreadyTime)
+	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
 
 	// test grpc error
 	m.On(
@@ -264,8 +267,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		client: client,
 	}
 
-	_, err = ng2.GetOptions(defaultsOpts)
+	opts, err = ng2.GetOptions(defaultsOpts)
 	assert.Error(t, err)
+	assert.Nil(t, opts)
 
 	// test no opts
 	m.On(
