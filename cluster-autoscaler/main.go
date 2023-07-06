@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 
 	"github.com/spf13/pflag"
@@ -404,6 +405,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	if err != nil {
 		return nil, err
 	}
+	deleteOptions := simulator.NewNodeDeleteOptions(autoscalingOptions)
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
@@ -412,6 +414,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
 		PredicateChecker:     predicateChecker,
+		DeleteOptions:        deleteOptions,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors()
@@ -421,7 +424,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	if autoscalingOptions.ParallelDrain {
 		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
 		scaleDownCandidatesComparers = []scaledowncandidates.CandidatesComparer{
-			emptycandidates.NewEmptySortingProcessor(&autoscalingOptions, emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot)),
+			emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions),
 			sdCandidatesSorting,
 		}
 		opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
