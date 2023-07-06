@@ -258,9 +258,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
 			ScaleDownUnneededTime:            *scaleDownUnneededTime,
 			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
-			// per nodegroup setting, defaulted to global setting
-			IgnoreDaemonSetsUtilization: *ignoreDaemonSetsUtilization,
-			MaxNodeProvisionTime:        *maxNodeProvisionTime,
+			IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
+			MaxNodeProvisionTime:             *maxNodeProvisionTime,
 		},
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
