@@ -67,10 +67,60 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	return pod
 }
 
+func WithCPU(cpu int64) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+
+		for i := range pod.Spec.Containers {
+			pod.Spec.Containers[i].Resources.Requests[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
+		}
+	}
+}
+
+func WithMemory(mem int64) func(*apiv1.Pod) {
+
+	return func(pod *apiv1.Pod) {
+
+		for i := range pod.Spec.Containers {
+			pod.Spec.Containers[i].Resources.Requests[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+		}
+	}
+}
+
+func WithAnnotations(anns map[string]string) func(*apiv1.Pod) {
+
+	return func(pod *apiv1.Pod) {
+
+		for k, v := range anns {
+			pod.Annotations[k] = v
+		}
+	}
+}
+
+func WithOwnerRef(mem int64) func(*apiv1.Pod) {
+
+	return func(pod *apiv1.Pod) {
+
+		for i := range pod.Spec.Containers {
+			pod.Spec.Containers[i].Resources.Requests[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+		}
+	}
+}
+
+func NewDSPod(name string, options ...func(*apiv1.Pod)) *apiv1.Pod {
+	pod := BuildDSTestPod(name, 0, 0)
+
+	for _, o := range options {
+		o(pod)
+	}
+
+	return pod
+}
+
 // BuildDSTestPod creates a DaemonSet pod with cpu and memory.
 func BuildDSTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 
 	pod := BuildTestPod(name, cpu, mem)
+
 	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "some-uid")
 
 	return pod
