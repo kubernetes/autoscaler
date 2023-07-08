@@ -20,6 +20,8 @@ import (
 	"context"
 	"sync"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -206,6 +208,10 @@ func (n *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 		Id: n.id,
 	})
 	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unimplemented {
+			return nil, cloudprovider.ErrNotImplemented
+		}
 		klog.V(1).Infof("Error on gRPC call NodeGroupTemplateNodeInfo: %v", err)
 		return nil, err
 	}
@@ -269,6 +275,10 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 		},
 	})
 	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unimplemented {
+			return nil, cloudprovider.ErrNotImplemented
+		}
 		klog.V(1).Infof("Error on gRPC call NodeGroupGetOptions: %v", err)
 		return nil, err
 	}

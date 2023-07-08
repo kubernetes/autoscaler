@@ -27,7 +27,9 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 	"gopkg.in/yaml.v2"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -158,6 +160,10 @@ func (m *pricingModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime 
 		EndTime:   &end,
 	})
 	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unimplemented {
+			return 0, cloudprovider.ErrNotImplemented
+		}
 		klog.V(1).Infof("Error on gRPC call PricingNodePrice: %v", err)
 		return 0, err
 	}
@@ -178,6 +184,10 @@ func (m *pricingModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime tim
 		EndTime:   &end,
 	})
 	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unimplemented {
+			return 0, cloudprovider.ErrNotImplemented
+		}
 		klog.V(1).Infof("Error on gRPC call PricingPodPrice: %v", err)
 		return 0, err
 	}

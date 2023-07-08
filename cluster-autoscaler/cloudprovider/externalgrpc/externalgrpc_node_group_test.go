@@ -23,6 +23,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -208,6 +210,27 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	_, err = ng4.TemplateNodeInfo()
 	assert.Error(t, err)
 
+	// test notImplemented
+	m.On(
+		"NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+			return req.Id == "nodeGroup5"
+		}),
+	).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeInfo: nil,
+		},
+		status.Error(codes.Unimplemented, "mock error"),
+	).Once()
+
+	ng5 := NodeGroup{
+		id:     "nodeGroup5",
+		client: client,
+	}
+
+	_, err = ng5.TemplateNodeInfo()
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
 }
 
 func TestCloudProvider_GetOptions(t *testing.T) {
@@ -289,6 +312,26 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	opts, err = ng3.GetOptions(defaultsOpts)
 	assert.NoError(t, err)
 	assert.Nil(t, opts)
+
+	// test notImplemented
+	m.On(
+		"NodeGroupGetOptions", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupAutoscalingOptionsRequest) bool {
+			return req.Id == "nodeGroup4"
+		}),
+	).Return(
+		&protos.NodeGroupAutoscalingOptionsResponse{},
+		status.Error(codes.Unimplemented, "mock error"),
+	)
+
+	ng4 := NodeGroup{
+		id:     "nodeGroup4",
+		client: client,
+	}
+
+	_, err = ng4.GetOptions(defaultsOpts)
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
 }
 
 func TestCloudProvider_TargetSize(t *testing.T) {
