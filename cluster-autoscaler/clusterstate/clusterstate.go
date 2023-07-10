@@ -988,7 +988,9 @@ func (csr *ClusterStateRegistry) getCloudProviderNodeInstances() (map[string][]c
 	return csr.cloudProviderNodeInstancesCache.GetCloudProviderNodeInstances()
 }
 
-// Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
+// Calculates which of the existing cloud provider nodes are not yet registered in Kubernetes.
+// As we are expecting for those instances to be Ready soon (O(~minutes)), to speed up the scaling process,
+// we are injecting a temporary, fake nodes to continue scaling based on in-memory cluster state.
 func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time) []UnregisteredNode {
 	registered := sets.NewString()
 	for _, node := range allNodes {
@@ -997,7 +999,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 	notRegistered := make([]UnregisteredNode, 0)
 	for _, instances := range cloudProviderNodeInstances {
 		for _, instance := range instances {
-			if !registered.Has(instance.Id) {
+			if !registered.Has(instance.Id) && expectedToRegister(instance) {
 				notRegistered = append(notRegistered, UnregisteredNode{
 					Node:              fakeNode(instance, cloudprovider.FakeNodeUnregistered),
 					UnregisteredSince: time,
@@ -1006,6 +1008,10 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 		}
 	}
 	return notRegistered
+}
+
+func expectedToRegister(instance cloudprovider.Instance) bool {
+	return instance.Status != nil && instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
