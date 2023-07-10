@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
@@ -39,9 +40,9 @@ var testAwsManager = &AwsManager{
 	awsService: testAwsService,
 }
 
-func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2I, mockEKS eksI, autoDiscoverySpecs []asgAutoDiscoveryConfig) *AwsManager {
+func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2I, mockEKS eksI, autoDiscoverySpecs []asgAutoDiscoveryConfig, instanceStatus map[AwsInstanceRef]*string) *AwsManager {
 	awsService := awsWrapper{mockAutoScaling, mockEC2, mockEKS}
-	return &AwsManager{
+	mgr := &AwsManager{
 		awsService: awsService,
 		asgCache: &asgCache{
 			registeredAsgs:        make(map[AwsRef]*asg, 0),
@@ -55,16 +56,21 @@ func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2
 			autoscalingOptions:    make(map[AwsRef]map[string]string),
 		},
 	}
+
+	if instanceStatus != nil {
+		mgr.asgCache.instanceStatus = instanceStatus
+	}
+	return mgr
 }
 
 func newTestAwsManagerWithAsgs(t *testing.T, mockAutoScaling autoScalingI, mockEC2 ec2I, specs []string) *AwsManager {
-	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil)
+	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil, nil)
 	m.asgCache.parseExplicitAsgs(specs)
 	return m
 }
 
 func newTestAwsManagerWithAutoAsgs(t *testing.T, mockAutoScaling autoScalingI, mockEC2 ec2I, specs []string, autoDiscoverySpecs []asgAutoDiscoveryConfig) *AwsManager {
-	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, autoDiscoverySpecs)
+	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, autoDiscoverySpecs, nil)
 	m.asgCache.parseExplicitAsgs(specs)
 	return m
 }
@@ -592,7 +598,7 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 func TestGetResourceLimiter(t *testing.T) {
 	mockAutoScaling := &autoScalingMock{}
 	mockEC2 := &ec2Mock{}
-	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil)
+	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil, nil)
 
 	provider := testProvider(t, m)
 	_, err := provider.GetResourceLimiter()
@@ -603,4 +609,65 @@ func TestCleanup(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
 	err := provider.Cleanup()
 	assert.NoError(t, err)
+}
+
+func TestHasInstance(t *testing.T) {
+	nodeStatus := "Healthy"
+	mgr := &AwsManager{
+		asgCache: &asgCache{
+			registeredAsgs: make(map[AwsRef]*asg, 0),
+			asgToInstances: make(map[AwsRef][]AwsInstanceRef),
+			instanceToAsg:  make(map[AwsInstanceRef]*asg),
+			interrupt:      make(chan struct{}),
+			awsService:     &testAwsService,
+			instanceStatus: map[AwsInstanceRef]*string{
+				{
+					ProviderID: "aws:///us-east-1a/test-instance-id",
+					Name:       "test-instance-id",
+				}: &nodeStatus,
+			},
+		},
+		awsService: testAwsService,
+	}
+	provider := testProvider(t, mgr)
+
+	// Case 1: correct node - present in AWS
+	node1 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "node-1",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id",
+		},
+	}
+	present, err := provider.HasInstance(node1)
+	assert.NoError(t, err)
+	assert.True(t, present)
+
+	// Case 2: incorrect node - fargate is unsupported
+	node2 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "fargate-1",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id",
+		},
+	}
+	present, err = provider.HasInstance(node2)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+	assert.True(t, present)
+
+	// Case 3: correct node - not present in AWS
+	node3 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "node-2",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id-2",
+		},
+	}
+	present, err = provider.HasInstance(node3)
+	assert.ErrorContains(t, err, nodeNotPresentErr)
+	assert.False(t, present)
+
 }
