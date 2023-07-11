@@ -141,7 +141,8 @@ func NewStaticAutoscaler(
 	backoff backoff.Backoff,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
 	remainingPdbTracker pdb.RemainingPdbTracker,
-	scaleUpOrchestrator scaleup.Orchestrator) *StaticAutoscaler {
+	scaleUpOrchestrator scaleup.Orchestrator,
+	deleteOptions simulator.NodeDeleteOptions) *StaticAutoscaler {
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -165,8 +166,6 @@ func NewStaticAutoscaler(
 	taintConfig := taints.NewTaintConfig(opts)
 	clusterStateRegistry.RegisterProviders(providers.NewDefaultMaxNodeProvisionTimeProvider(autoscalingContext, processors.NodeGroupConfigProcessor))
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
-
-	deleteOptions := simulator.NewNodeDeleteOptions(opts)
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
