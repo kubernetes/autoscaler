@@ -35,6 +35,8 @@ type NodeGroupConfigProcessor interface {
 	GetScaleDownGpuUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetMaxNodeProvisionTime return MaxNodeProvisionTime value that should be used for a given NodeGroup.
 	GetMaxNodeProvisionTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
+	GetIgnoreDaemonSetsUtilization(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (bool, error)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
@@ -103,6 +105,18 @@ func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(context *co
 		return context.NodeGroupDefaults.MaxNodeProvisionTime, nil
 	}
 	return ngConfig.MaxNodeProvisionTime, nil
+}
+
+// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
+func (p *DelegatingNodeGroupConfigProcessor) GetIgnoreDaemonSetsUtilization(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (bool, error) {
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupDefaults)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return false, err
+	}
+	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+		return context.NodeGroupDefaults.IgnoreDaemonSetsUtilization, nil
+	}
+	return ngConfig.IgnoreDaemonSetsUtilization, nil
 }
 
 // CleanUp cleans up processor's internal structures.

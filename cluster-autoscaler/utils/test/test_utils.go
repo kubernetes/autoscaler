@@ -67,6 +67,15 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	return pod
 }
 
+// BuildDSTestPod creates a DaemonSet pod with cpu and memory.
+func BuildDSTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
+
+	pod := BuildTestPod(name, cpu, mem)
+	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "some-uid")
+
+	return pod
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
