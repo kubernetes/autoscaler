@@ -182,45 +182,6 @@ func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individ
 	return individual, atomic
 }
 
-func (bp *ScaleDownBudgetProcessor) groupByNodeGroup(nodes []*apiv1.Node) (individual, atomic []*NodeGroupView) {
-	individualGroup, atomicGroup := map[cloudprovider.NodeGroup]int{}, map[cloudprovider.NodeGroup]int{}
-	individual, atomic = []*NodeGroupView{}, []*NodeGroupView{}
-	for _, node := range nodes {
-		nodeGroup, err := bp.ctx.CloudProvider.NodeGroupForNode(node)
-		if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
-			continue
-		}
-		autoscalingOptions, err := nodeGroup.GetOptions(bp.ctx.NodeGroupDefaults)
-		if err != nil {
-			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
-			continue
-		}
-		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
-			if idx, ok := atomicGroup[nodeGroup]; ok {
-				atomic[idx].Nodes = append(atomic[idx].Nodes, node)
-			} else {
-				atomicGroup[nodeGroup] = len(atomic)
-				atomic = append(atomic, &NodeGroupView{
-					Group: nodeGroup,
-					Nodes: []*apiv1.Node{node},
-				})
-			}
-		} else {
-			if idx, ok := individualGroup[nodeGroup]; ok {
-				individual[idx].Nodes = append(individual[idx].Nodes, node)
-			} else {
-				individualGroup[nodeGroup] = len(individual)
-				individual = append(individual, &NodeGroupView{
-					Group: nodeGroup,
-					Nodes: []*apiv1.Node{node},
-				})
-			}
-		}
-	}
-	return individual, atomic
-}
-
 func min(x, y int) int {
 	if x <= y {
 		return x
