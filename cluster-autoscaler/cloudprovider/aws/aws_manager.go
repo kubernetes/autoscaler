@@ -245,6 +245,15 @@ func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscaling
 		}
 	}
 
+	if stringOpt, found := options[config.DefaultIgnoreDaemonSetsUtilizationKey]; found {
+		if opt, err := strconv.ParseBool(stringOpt); err != nil {
+			klog.Warningf("failed to convert asg %s %s tag to bool: %v",
+				asg.Name, config.DefaultIgnoreDaemonSetsUtilizationKey, err)
+		} else {
+			defaults.IgnoreDaemonSetsUtilization = opt
+		}
+	}
+
 	return &defaults
 }
 

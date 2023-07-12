@@ -49,6 +49,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		ScaleDownGpuUtilizationThreshold: 0.6,
 		ScaleDownUtilizationThreshold:    0.5,
 		MaxNodeProvisionTime:             15 * time.Minute,
+		IgnoreDaemonSetsUtilization:      true,
 	}
 	ngOpts := &config.NodeGroupAutoscalingOptions{
 		ScaleDownUnneededTime:            10 * time.Minute,
@@ -56,6 +57,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		ScaleDownGpuUtilizationThreshold: 0.85,
 		ScaleDownUtilizationThreshold:    0.75,
 		MaxNodeProvisionTime:             60 * time.Minute,
+		IgnoreDaemonSetsUtilization:      false,
 	}
 
 	testUnneededTime := func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
@@ -109,24 +111,41 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		assert.Equal(t, res, results[w])
 	}
 
+	// for IgnoreDaemonSetsUtilization
+	testIgnoreDSUtilization := func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
+		res, err := p.GetIgnoreDaemonSetsUtilization(c, ng)
+		assert.Equal(t, err, we)
+		results := map[Want]bool{
+			NIL:    false,
+			GLOBAL: true,
+			NG:     false,
+		}
+		assert.Equal(t, res, results[w])
+	}
+
 	funcs := map[string]func(*testing.T, DelegatingNodeGroupConfigProcessor, *context.AutoscalingContext, cloudprovider.NodeGroup, Want, error){
 		"ScaleDownUnneededTime":            testUnneededTime,
 		"ScaleDownUnreadyTime":             testUnreadyTime,
 		"ScaleDownUtilizationThreshold":    testUtilizationThreshold,
 		"ScaleDownGpuUtilizationThreshold": testGpuThreshold,
 		"MaxNodeProvisionTime":             testMaxNodeProvisionTime,
+		"IgnoreDaemonSetsUtilization":      testIgnoreDSUtilization,
 		"MultipleOptions": func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
 			testUnneededTime(t, p, c, ng, w, we)
 			testUnreadyTime(t, p, c, ng, w, we)
 			testUtilizationThreshold(t, p, c, ng, w, we)
 			testGpuThreshold(t, p, c, ng, w, we)
 			testMaxNodeProvisionTime(t, p, c, ng, w, we)
+			testIgnoreDSUtilization(t, p, c, ng, w, we)
 		},
 		"RepeatingTheSameCallGivesConsistentResults": func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
 			testUnneededTime(t, p, c, ng, w, we)
 			testUnneededTime(t, p, c, ng, w, we)
 			// throw in a different call
 			testGpuThreshold(t, p, c, ng, w, we)
+			testUnneededTime(t, p, c, ng, w, we)
+			// throw in another different call
+			testIgnoreDSUtilization(t, p, c, ng, w, we)
 			testUnneededTime(t, p, c, ng, w, we)
 		},
 	}

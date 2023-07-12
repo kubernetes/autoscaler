@@ -48,6 +48,8 @@ type NodeGroupAutoscalingOptions struct {
 	MaxNodeProvisionTime time.Duration
 	// ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
 	ZeroOrMaxNodeScaling bool
+	// IgnoreDaemonSetsUtilization sets if daemonsets utilization should be considered during node scale-down
+	IgnoreDaemonSetsUtilization bool
 }
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
@@ -117,8 +119,6 @@ type AutoscalingOptions struct {
 	GRPCExpanderCert string
 	// GRPCExpanderURL is the url of the gRPC server when using the gRPC expander
 	GRPCExpanderURL string
-	// IgnoreDaemonSetsUtilization is whether CA will ignore DaemonSet pods when calculating resource utilization for scaling down
-	IgnoreDaemonSetsUtilization bool
 	// IgnoreMirrorPodsUtilization is whether CA will ignore Mirror pods when calculating resource utilization for scaling down
 	IgnoreMirrorPodsUtilization bool
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before

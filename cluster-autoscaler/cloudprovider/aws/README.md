@@ -246,6 +246,8 @@ as string). Currently supported autoscaling options (and example values) are:
   (overrides `--scale-down-unneeded-time` value for that specific ASG)
 * `k8s.io/cluster-autoscaler/node-template/autoscaling-options/scaledownunreadytime`: `20m0s`
   (overrides `--scale-down-unready-time` value for that specific ASG)
+* `k8s.io/cluster-autoscaler/node-template/autoscaling-options/ignoredaemonsetsutilization`: `true`
+  (overrides `--ignore-daemonsets-utilization` value for that specific ASG) 
 
 **NOTE:** It is your responsibility to ensure such labels and/or taints are
 applied via the node's kubelet configuration at startup. Cluster Autoscaler will not set the node taints for you.
