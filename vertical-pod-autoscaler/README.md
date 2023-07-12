@@ -342,8 +342,7 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
   (when configured in `Auto` and `Recreate` modes) will be successfully
   recreated. This can be partly
   addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
-* VPA does not evict pods which are not run under a controller. For such pods
-  `Auto` mode is currently equivalent to `Initial`.
+* VPA does not update resources of pods which are not run under a controller.
 * Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics) (HPA) on CPU or memory** at this moment.
   However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-on-custom-metrics).
 * The VPA admission controller is an admission webhook. If you add other admission webhooks
