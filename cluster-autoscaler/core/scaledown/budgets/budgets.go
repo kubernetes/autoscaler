@@ -145,7 +145,7 @@ func cropIndividualNodes(toDelete []*NodeGroupView, groups []*NodeGroupView, bud
 }
 
 func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView {
-	groupMap := map[cloudprovider.NodeGroup]int{}
+	groupMap := map[string]int{}
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
 		nodeGroup, err := bp.ctx.CloudProvider.NodeGroupForNode(node)
@@ -153,10 +153,10 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
 			continue
 		}
-		if idx, ok := groupMap[nodeGroup]; ok {
+		if idx, ok := groupMap[nodeGroup.Id()]; ok {
 			grouped[idx].Nodes = append(grouped[idx].Nodes, node)
 		} else {
-			groupMap[nodeGroup] = len(grouped)
+			groupMap[nodeGroup.Id()] = len(grouped)
 			grouped = append(grouped, &NodeGroupView{
 				Group: nodeGroup,
 				Nodes: []*apiv1.Node{node},
