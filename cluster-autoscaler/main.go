@@ -273,8 +273,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		*maxScaleDownParallelismFlag = *maxEmptyBulkDeleteFlag
 		klog.Warning("The max-empty-bulk-delete flag will be deprecated in k8s version 1.29. Please use max-scale-down-parallelism instead.")
 		klog.Infof("Setting max-scale-down-parallelism to %d, based on the max-empty-bulk-delete value %d", *maxScaleDownParallelismFlag, *maxEmptyBulkDeleteFlag)
-	} else if !isFlagPassed("max-empty-bulk-delete") && isFlagPassed("max-scale-down-parallelism") {
-		*maxEmptyBulkDeleteFlag = *maxScaleDownParallelismFlag
 	}
 
 	var parsedSchedConfig *scheduler_config.KubeSchedulerConfiguration
@@ -309,7 +307,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxBulkSoftTaintCount:            *maxBulkSoftTaintCount,
 		MaxBulkSoftTaintTime:             *maxBulkSoftTaintTime,
-		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxPodEvictionTime:               *maxPodEvictionTime,
 		MaxNodesTotal:                    *maxNodesTotal,

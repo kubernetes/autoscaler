@@ -97,8 +97,6 @@ type AutoscalingOptions struct {
 	// NodeGroupDefaults are default values for per NodeGroup options.
 	// They will be used any time a specific value is not provided for a given NodeGroup.
 	NodeGroupDefaults NodeGroupAutoscalingOptions
-	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
-	MaxEmptyBulkDelete int
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
 	// MaxCoresTotal sets the maximum number of cores in the whole cluster
