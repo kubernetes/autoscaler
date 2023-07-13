@@ -32,6 +32,12 @@ import (
 	kube_types "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
+// BuildTestPod creates a pod with specified resources.
+// [DEPRECATED]: use `NewTestPod` instead
+func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
+	return NewTestPod(name, WithCPU(cpu), WithMemory(mem))
+}
+
 func basePod(name string) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
 	pod := &apiv1.Pod{
