@@ -67,19 +67,11 @@ func NewNodeDeletionBatcher(ctx *context.AutoscalingContext, csr *clusterstate.C
 	}
 }
 
-// AddNodes adds node list to delete candidates and schedules deletion.
+// AddNodes adds node list to delete candidates and schedules deletion. The deletion is performed asynchronously.
 func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
 	// If delete interval is 0, than instantly start node deletion.
 	if d.deleteInterval == 0 {
-		_, err := deleteNodesFromCloudProvider(d.ctx, nodes)
-		for _, node := range nodes {
-			if err != nil {
-				result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-				CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
-			} else {
-				RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
-			}
-		}
+		go d.deleteNodesAndRegisterStatus(nodes, drain)
 		return
 	}
 	first := d.addNodesToBucket(nodes, nodeGroup, drain)
@@ -89,6 +81,18 @@ func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovi
 			time.Sleep(d.deleteInterval)
 			d.remove(nodeGroupId)
 		}(nodeGroup.Id())
+	}
+}
+
+func (d *NodeDeletionBatcher) deleteNodesAndRegisterStatus(nodes []*apiv1.Node, drain bool) {
+	nodeGroup, err := deleteNodesFromCloudProvider(d.ctx, nodes)
+	for _, node := range nodes {
+		if err != nil {
+			result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
+		} else {
+			RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.clusterState, node, nodeGroup, drain, d.nodeDeletionTracker)
+		}
 	}
 }
 

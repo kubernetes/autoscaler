@@ -145,7 +145,7 @@ func cropIndividualNodes(toDelete []*NodeGroupView, groups []*NodeGroupView, bud
 }
 
 func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView {
-	groupMap := map[cloudprovider.NodeGroup]int{}
+	groupMap := map[string]int{}
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
 		nodeGroup, err := bp.ctx.CloudProvider.NodeGroupForNode(node)
@@ -153,10 +153,10 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
 			continue
 		}
-		if idx, ok := groupMap[nodeGroup]; ok {
+		if idx, ok := groupMap[nodeGroup.Id()]; ok {
 			grouped[idx].Nodes = append(grouped[idx].Nodes, node)
 		} else {
-			groupMap[nodeGroup] = len(grouped)
+			groupMap[nodeGroup.Id()] = len(grouped)
 			grouped = append(grouped, &NodeGroupView{
 				Group: nodeGroup,
 				Nodes: []*apiv1.Node{node},
@@ -177,45 +177,6 @@ func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individ
 			atomic = append(atomic, view)
 		} else {
 			individual = append(individual, view)
-		}
-	}
-	return individual, atomic
-}
-
-func (bp *ScaleDownBudgetProcessor) groupByNodeGroup(nodes []*apiv1.Node) (individual, atomic []*NodeGroupView) {
-	individualGroup, atomicGroup := map[cloudprovider.NodeGroup]int{}, map[cloudprovider.NodeGroup]int{}
-	individual, atomic = []*NodeGroupView{}, []*NodeGroupView{}
-	for _, node := range nodes {
-		nodeGroup, err := bp.ctx.CloudProvider.NodeGroupForNode(node)
-		if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
-			continue
-		}
-		autoscalingOptions, err := nodeGroup.GetOptions(bp.ctx.NodeGroupDefaults)
-		if err != nil {
-			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
-			continue
-		}
-		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
-			if idx, ok := atomicGroup[nodeGroup]; ok {
-				atomic[idx].Nodes = append(atomic[idx].Nodes, node)
-			} else {
-				atomicGroup[nodeGroup] = len(atomic)
-				atomic = append(atomic, &NodeGroupView{
-					Group: nodeGroup,
-					Nodes: []*apiv1.Node{node},
-				})
-			}
-		} else {
-			if idx, ok := individualGroup[nodeGroup]; ok {
-				individual[idx].Nodes = append(individual[idx].Nodes, node)
-			} else {
-				individualGroup[nodeGroup] = len(individual)
-				individual = append(individual, &NodeGroupView{
-					Group: nodeGroup,
-					Nodes: []*apiv1.Node{node},
-				})
-			}
 		}
 	}
 	return individual, atomic
