@@ -849,7 +849,7 @@ func TestBinpackingLimiter(t *testing.T) {
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
 
-	expander := NewMockRepotingStrategy(t, &GroupSizeChange{GroupName: "ng1", SizeChange: 1})
+	expander := NewMockRepotingStrategy(t, nil)
 	context.ExpanderStrategy = expander
 
 	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{extraPod}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
