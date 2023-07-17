@@ -60,13 +60,13 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 	unreadyNode := BuildTestNode("unready", 1000, 10)
 	SetNodeReadyState(unreadyNode, false, time.Time{})
 
-	bigPod := BuildTestPod("bigPod", 600, 0)
+	bigPod := NewTestPod("bigPod", WithMilliCPU(600), WithMemory(0))
 	bigPod.Spec.NodeName = "regular"
 
-	smallPod := BuildTestPod("smallPod", 100, 0)
+	smallPod := NewTestPod("smallPod", WithMilliCPU(100), WithMemory(0))
 	smallPod.Spec.NodeName = "regular"
 
-	dsPod := BuildDSTestPod("dsPod", 500, 0)
+	dsPod := NewTestPod("dsPod", WithMilliCPU(500), WithMemory(0))
 	dsPod.Spec.NodeName = "regular"
 
 	testCases := []testCase{
