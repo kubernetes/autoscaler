@@ -165,6 +165,10 @@ cluster-autoscaler --cloud-provider=clusterapi \
                    --kubeconfig=/mnt/workload.kubeconfig
 ```
 
+### A note on kubeconfig credentials
+
+When the cluster autoscaler is configured to read kubeconfig(s) from a path, by passing a `--kubeconfig` or `--cloud-config` option, the autoscaler will re-read the contents of the kubeconfig file after it detects the file was modified by it's modtime. This was added to support EKS clusters with the Cluster API Provider for AWS, where CAPA would provide the cluster with a kubernetes secret resource populated with a short-lived EKS kubeconfig credential, but may be useful for other Cluster API providers as well. In the past, it was not possible to use the Cluster API's kubeconfig credential directly as a secret volume, because when the short-lived contents were refreshed by the CAPA controller, the cluster autoscaler would not re-read the secret mount. There were various work arounds, for example manually creating a longer-lived kubeconfig from a service account. This is no longer necessary, cluster autoscaler will automatically refresh the kubeconfig credentials as needed.
+
 ## Enabling Autoscaling
 
 To enable the automatic scaling of components in your cluster-api managed

@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"net/http"
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
@@ -158,12 +159,21 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 	if err != nil {
 		klog.Fatalf("cannot build management cluster config: %v", err)
 	}
+	if managementConfig.BearerToken != "" && !opts.ClusterAPICloudConfigAuthoritative {
+		managementConfig.Wrap(func(rt http.RoundTripper) http.RoundTripper {
+			return config.NewDynamicKubeConfigRoundTripper(managementKubeconfig, rt)
+		})
+	}
 
 	workloadKubeconfig := opts.KubeConfigPath
-
 	workloadConfig, err := clientcmd.BuildConfigFromFlags("", workloadKubeconfig)
 	if err != nil {
 		klog.Fatalf("cannot build workload cluster config: %v", err)
+	}
+	if workloadConfig.BearerToken != "" && workloadKubeconfig != "" {
+		workloadConfig.Wrap(func(rt http.RoundTripper) http.RoundTripper {
+			return config.NewDynamicKubeConfigRoundTripper(workloadKubeconfig, rt)
+		})
 	}
 
 	// Grab a dynamic interface that we can create informers from

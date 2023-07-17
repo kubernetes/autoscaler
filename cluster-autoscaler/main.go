@@ -373,11 +373,14 @@ func getKubeConfig() *rest.Config {
 	if *kubeConfigFile != "" {
 		klog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
 		// use the current context in kubeconfig
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
+		kubeConfig, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
 		if err != nil {
 			klog.Fatalf("Failed to build config: %v", err)
 		}
-		return config
+		kubeConfig.Wrap(func(rt http.RoundTripper) http.RoundTripper {
+			return config.NewDynamicKubeConfigRoundTripper(*kubeConfigFile, rt)
+		})
+		return kubeConfig
 	}
 	url, err := url.Parse(*kubernetes)
 	if err != nil {

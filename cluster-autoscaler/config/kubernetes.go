@@ -19,9 +19,13 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
+	"os"
 	"strconv"
+	"time"
 
+	utilnet "k8s.io/apimachinery/pkg/util/net"
 	kube_rest "k8s.io/client-go/rest"
 	kube_client_cmd "k8s.io/client-go/tools/clientcmd"
 )
@@ -113,3 +117,39 @@ func GetKubeClientConfig(uri *url.URL) (*kube_rest.Config, error) {
 
 	return kubeConfig, nil
 }
+
+// NewDynamicKubeConfigRoundTripper wraps the http.RoundTripper to provide the latest bearer token from the kube config on disk
+func NewDynamicKubeConfigRoundTripper(kubeconfigPath string, rt http.RoundTripper) http.RoundTripper {
+	return &bearerAuthRoundTripper{
+		kubeconfigPath: kubeconfigPath,
+		rt:             rt,
+	}
+}
+
+type bearerAuthRoundTripper struct {
+	kubeconfigPath string
+	rt             http.RoundTripper
+
+	lastModified time.Time
+	bearerToken  string
+}
+
+func (rt *bearerAuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	stat, err := os.Stat(rt.kubeconfigPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to stat kubeconfig path: %w", err)
+	}
+	if stat.ModTime().After(rt.lastModified) {
+		kubeConfig, err := kube_client_cmd.BuildConfigFromFlags("", rt.kubeconfigPath)
+		if err != nil {
+			return nil, fmt.Errorf("cannot build kube cluster config: %w", err)
+		}
+		rt.bearerToken = kubeConfig.BearerToken
+		rt.lastModified = stat.ModTime()
+	}
+	req = utilnet.CloneRequest(req)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", rt.bearerToken))
+	return rt.rt.RoundTrip(req)
+}
+
+var _ http.RoundTripper = &bearerAuthRoundTripper{}
