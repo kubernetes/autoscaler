@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -31,7 +15,7 @@ import (
 
 // Volume represents a volume in the Hetzner Cloud.
 type Volume struct {
-	ID          int
+	ID          int64
 	Name        string
 	Status      VolumeStatus
 	Server      *Server
@@ -65,7 +49,7 @@ const (
 )
 
 // GetByID retrieves a volume by its ID. If the volume does not exist, nil is returned.
-func (c *VolumeClient) GetByID(ctx context.Context, id int) (*Volume, *Response, error) {
+func (c *VolumeClient) GetByID(ctx context.Context, id int64) (*Volume, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/volumes/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -97,8 +81,8 @@ func (c *VolumeClient) GetByName(ctx context.Context, name string) (*Volume, *Re
 // Get retrieves a volume by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a volume by its name. If the volume does not exist, nil is returned.
 func (c *VolumeClient) Get(ctx context.Context, idOrName string) (*Volume, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -112,7 +96,7 @@ type VolumeListOpts struct {
 }
 
 func (l VolumeListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
