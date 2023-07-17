@@ -41,8 +41,6 @@ const (
 	// DeletionCandidateTaint is a taint used to mark unneeded node as preferably unschedulable.
 	DeletionCandidateTaint = "DeletionCandidateOfClusterAutoscaler"
 
-	// ReschedulerTaintKey is the name of the taint created by rescheduler.
-	ReschedulerTaintKey = "CriticalAddonsOnly"
 	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
 	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
 
@@ -329,13 +327,7 @@ func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder 
 func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint {
 	var newTaints []apiv1.Taint
 	for _, taint := range taints {
-		// Rescheduler can put this taint on a node while evicting non-critical pods.
-		// New nodes will not have this taint and so we should strip it when creating
-		// template node.
 		switch taint.Key {
-		case ReschedulerTaintKey:
-			klog.V(4).Info("Removing rescheduler taint when creating template")
-			continue
 		case ToBeDeletedTaint:
 			klog.V(4).Infof("Removing autoscaler taint when creating template from node")
 			continue
