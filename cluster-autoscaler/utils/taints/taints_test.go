@@ -486,11 +486,6 @@ func TestSanitizeTaints(t *testing.T) {
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
 				{
-					Key:    ReschedulerTaintKey,
-					Value:  "test1",
-					Effect: apiv1.TaintEffectNoSchedule,
-				},
-				{
 					Key:    "test-taint",
 					Value:  "test2",
 					Effect: apiv1.TaintEffectNoSchedule,
