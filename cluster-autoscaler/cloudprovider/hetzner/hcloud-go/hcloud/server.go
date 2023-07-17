@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -33,7 +17,7 @@ import (
 
 // Server represents a server in the Hetzner Cloud.
 type Server struct {
-	ID              int
+	ID              int64
 	Name            string
 	Status          ServerStatus
 	Created         time.Time
@@ -114,7 +98,7 @@ type ServerPublicNet struct {
 
 // ServerPublicNetIPv4 represents a server's public IPv4 address.
 type ServerPublicNetIPv4 struct {
-	ID      int
+	ID      int64
 	IP      net.IP
 	Blocked bool
 	DNSPtr  string
@@ -126,7 +110,7 @@ func (n *ServerPublicNetIPv4) IsUnspecified() bool {
 
 // ServerPublicNetIPv6 represents a Server's public IPv6 network and address.
 type ServerPublicNetIPv6 struct {
-	ID      int
+	ID      int64
 	IP      net.IP
 	Network *net.IPNet
 	Blocked bool
@@ -210,7 +194,7 @@ type ServerClient struct {
 }
 
 // GetByID retrieves a server by its ID. If the server does not exist, nil is returned.
-func (c *ServerClient) GetByID(ctx context.Context, id int) (*Server, *Response, error) {
+func (c *ServerClient) GetByID(ctx context.Context, id int64) (*Server, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/servers/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -242,8 +226,8 @@ func (c *ServerClient) GetByName(ctx context.Context, name string) (*Server, *Re
 // Get retrieves a server by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a server by its name. If the server does not exist, nil is returned.
 func (c *ServerClient) Get(ctx context.Context, idOrName string) (*Server, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -257,7 +241,7 @@ type ServerListOpts struct {
 }
 
 func (l ServerListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -433,14 +417,14 @@ func (c *ServerClient) Create(ctx context.Context, opts ServerCreateOpts) (Serve
 	}
 	if opts.Location != nil {
 		if opts.Location.ID != 0 {
-			reqBody.Location = strconv.Itoa(opts.Location.ID)
+			reqBody.Location = strconv.FormatInt(opts.Location.ID, 10)
 		} else {
 			reqBody.Location = opts.Location.Name
 		}
 	}
 	if opts.Datacenter != nil {
 		if opts.Datacenter.ID != 0 {
-			reqBody.Datacenter = strconv.Itoa(opts.Datacenter.ID)
+			reqBody.Datacenter = strconv.FormatInt(opts.Datacenter.ID, 10)
 		} else {
 			reqBody.Datacenter = opts.Datacenter.Name
 		}

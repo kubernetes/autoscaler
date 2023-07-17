@@ -1,25 +1,9 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package schema
 
 import "time"
 
 type LoadBalancer struct {
-	ID               int                      `json:"id"`
+	ID               int64                    `json:"id"`
 	Name             string                   `json:"name"`
 	PublicNet        LoadBalancerPublicNet    `json:"public_net"`
 	PrivateNet       []LoadBalancerPrivateNet `json:"private_net"`
@@ -53,7 +37,7 @@ type LoadBalancerPublicNetIPv6 struct {
 }
 
 type LoadBalancerPrivateNet struct {
-	Network int    `json:"network"`
+	Network int64  `json:"network"`
 	IP      string `json:"ip"`
 }
 
@@ -75,11 +59,11 @@ type LoadBalancerService struct {
 }
 
 type LoadBalancerServiceHTTP struct {
-	CookieName     string `json:"cookie_name"`
-	CookieLifetime int    `json:"cookie_lifetime"`
-	Certificates   []int  `json:"certificates"`
-	RedirectHTTP   bool   `json:"redirect_http"`
-	StickySessions bool   `json:"sticky_sessions"`
+	CookieName     string  `json:"cookie_name"`
+	CookieLifetime int     `json:"cookie_lifetime"`
+	Certificates   []int64 `json:"certificates"`
+	RedirectHTTP   bool    `json:"redirect_http"`
+	StickySessions bool    `json:"sticky_sessions"`
 }
 
 type LoadBalancerServiceHealthCheck struct {
@@ -115,7 +99,7 @@ type LoadBalancerTargetHealthStatus struct {
 }
 
 type LoadBalancerTargetServer struct {
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 }
 
 type LoadBalancerTargetLabelSelector struct {
@@ -143,7 +127,7 @@ type LoadBalancerActionAddTargetRequest struct {
 }
 
 type LoadBalancerActionAddTargetRequestServer struct {
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 }
 
 type LoadBalancerActionAddTargetRequestLabelSelector struct {
@@ -166,7 +150,7 @@ type LoadBalancerActionRemoveTargetRequest struct {
 }
 
 type LoadBalancerActionRemoveTargetRequestServer struct {
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 }
 
 type LoadBalancerActionRemoveTargetRequestLabelSelector struct {
@@ -191,11 +175,11 @@ type LoadBalancerActionAddServiceRequest struct {
 }
 
 type LoadBalancerActionAddServiceRequestHTTP struct {
-	CookieName     *string `json:"cookie_name,omitempty"`
-	CookieLifetime *int    `json:"cookie_lifetime,omitempty"`
-	Certificates   *[]int  `json:"certificates,omitempty"`
-	RedirectHTTP   *bool   `json:"redirect_http,omitempty"`
-	StickySessions *bool   `json:"sticky_sessions,omitempty"`
+	CookieName     *string  `json:"cookie_name,omitempty"`
+	CookieLifetime *int     `json:"cookie_lifetime,omitempty"`
+	Certificates   *[]int64 `json:"certificates,omitempty"`
+	RedirectHTTP   *bool    `json:"redirect_http,omitempty"`
+	StickySessions *bool    `json:"sticky_sessions,omitempty"`
 }
 
 type LoadBalancerActionAddServiceRequestHealthCheck struct {
@@ -229,11 +213,11 @@ type LoadBalancerActionUpdateServiceRequest struct {
 }
 
 type LoadBalancerActionUpdateServiceRequestHTTP struct {
-	CookieName     *string `json:"cookie_name,omitempty"`
-	CookieLifetime *int    `json:"cookie_lifetime,omitempty"`
-	Certificates   *[]int  `json:"certificates,omitempty"`
-	RedirectHTTP   *bool   `json:"redirect_http,omitempty"`
-	StickySessions *bool   `json:"sticky_sessions,omitempty"`
+	CookieName     *string  `json:"cookie_name,omitempty"`
+	CookieLifetime *int     `json:"cookie_lifetime,omitempty"`
+	Certificates   *[]int64 `json:"certificates,omitempty"`
+	RedirectHTTP   *bool    `json:"redirect_http,omitempty"`
+	StickySessions *bool    `json:"sticky_sessions,omitempty"`
 }
 
 type LoadBalancerActionUpdateServiceRequestHealthCheck struct {
@@ -275,7 +259,7 @@ type LoadBalancerCreateRequest struct {
 	Targets          []LoadBalancerCreateRequestTarget   `json:"targets,omitempty"`
 	Services         []LoadBalancerCreateRequestService  `json:"services,omitempty"`
 	PublicInterface  *bool                               `json:"public_interface,omitempty"`
-	Network          *int                                `json:"network,omitempty"`
+	Network          *int64                              `json:"network,omitempty"`
 }
 
 type LoadBalancerCreateRequestAlgorithm struct {
@@ -291,7 +275,7 @@ type LoadBalancerCreateRequestTarget struct {
 }
 
 type LoadBalancerCreateRequestTargetServer struct {
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 }
 
 type LoadBalancerCreateRequestTargetLabelSelector struct {
@@ -312,11 +296,11 @@ type LoadBalancerCreateRequestService struct {
 }
 
 type LoadBalancerCreateRequestServiceHTTP struct {
-	CookieName     *string `json:"cookie_name,omitempty"`
-	CookieLifetime *int    `json:"cookie_lifetime,omitempty"`
-	Certificates   *[]int  `json:"certificates,omitempty"`
-	RedirectHTTP   *bool   `json:"redirect_http,omitempty"`
-	StickySessions *bool   `json:"sticky_sessions,omitempty"`
+	CookieName     *string  `json:"cookie_name,omitempty"`
+	CookieLifetime *int     `json:"cookie_lifetime,omitempty"`
+	Certificates   *[]int64 `json:"certificates,omitempty"`
+	RedirectHTTP   *bool    `json:"redirect_http,omitempty"`
+	StickySessions *bool    `json:"sticky_sessions,omitempty"`
 }
 
 type LoadBalancerCreateRequestServiceHealthCheck struct {
@@ -367,7 +351,7 @@ type LoadBalancerActionChangeAlgorithmResponse struct {
 }
 
 type LoadBalancerActionAttachToNetworkRequest struct {
-	Network int     `json:"network"`
+	Network int64   `json:"network"`
 	IP      *string `json:"ip,omitempty"`
 }
 
@@ -376,7 +360,7 @@ type LoadBalancerActionAttachToNetworkResponse struct {
 }
 
 type LoadBalancerActionDetachFromNetworkRequest struct {
-	Network int `json:"network"`
+	Network int64 `json:"network"`
 }
 
 type LoadBalancerActionDetachFromNetworkResponse struct {

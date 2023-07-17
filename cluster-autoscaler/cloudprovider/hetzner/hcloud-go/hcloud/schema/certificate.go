@@ -1,26 +1,10 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package schema
 
 import "time"
 
 // CertificateUsedByRef defines the schema of a resource using a certificate.
 type CertificateUsedByRef struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -32,7 +16,7 @@ type CertificateStatusRef struct {
 
 // Certificate defines the schema of an certificate.
 type Certificate struct {
-	ID             int                    `json:"id"`
+	ID             int64                  `json:"id"`
 	Name           string                 `json:"name"`
 	Labels         map[string]string      `json:"labels"`
 	Type           string                 `json:"type"`
