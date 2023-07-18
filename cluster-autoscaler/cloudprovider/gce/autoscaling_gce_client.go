@@ -59,6 +59,11 @@ const (
 	// is facing errors caused by vmExternalIpAccess policy constraint misconfiguration.
 	ErrorCodeVmExternalIpAccessPolicyConstraint = "VM_EXTERNAL_IP_ACCESS_POLICY_CONSTRAINT"
 
+	// ErrorInvalidReservation is an error code for InstanceErrorInfo if the node group couldn't
+	// be scaled up because no reservation was found, or the reservation associated with the MIG
+	// was invalid.
+	ErrorInvalidReservation = "INVALID_RESERVATION"
+
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
 )
@@ -381,6 +386,11 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorCodeOther,
 		}
+	} else if isInvalidReservationError(errorCode, errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorInvalidReservation,
+		}
 	}
 	return nil
 }
@@ -426,6 +436,23 @@ func isVmExternalIpAccessPolicyConstraintError(errorCode, errorMessage string) b
 
 func isInstanceStatusNotRunningYet(instanceStatus string) bool {
 	return instanceStatus == "" || instanceStatus == "PROVISIONING" || instanceStatus == "STAGING"
+}
+
+func isInvalidReservationError(errorCode, errorMessage string) bool {
+	reservationErrors := []string{
+		"Incompatible AggregateReservation VMFamily",
+		"Could not find the given reservation with the following name",
+		"must use ReservationAffinity of",
+		"The reservation must exist in the same project as the instance",
+		"it requires reservation to be in READY state",
+		"only compatible with Aggregate Reservations",
+	}
+	for _, rErr := range reservationErrors {
+		if strings.Contains(errorMessage, rErr) {
+			return true
+		}
+	}
+	return false
 }
 
 func generateInstanceName(baseName string, existingNames map[string]bool) string {

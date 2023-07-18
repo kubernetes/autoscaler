@@ -181,6 +181,12 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  "OTHER",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"OTHER"},
+			errorMessage:       "Instance 'myinst' creation failed: Could not find the given reservation with the following name: myres",
+			expectedErrorCode:  "INVALID_RESERVATION",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
