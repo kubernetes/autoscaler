@@ -1,11 +1,10 @@
 approvers:
-- jaypipes
 - gjtempleton
 - drmorr0
 emeritus_approvers:
 - Jeffwan
-reviewers:
 - jaypipes
+reviewers:
 - gjtempleton
 - drmorr0
 
