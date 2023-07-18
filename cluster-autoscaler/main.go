@@ -234,9 +234,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
-	if *maxDrainParallelismFlag > 1 && !*parallelDrain {
-		klog.Fatalf("Invalid configuration, could not use --max-drain-parallelism > 1 if --parallel-drain is false")
-	}
 
 	// in order to avoid inconsistent deletion thresholds for the legacy planner and the new actuator, the max-empty-bulk-delete,
 	// and max-scale-down-parallelism flags must be set to the same value.
