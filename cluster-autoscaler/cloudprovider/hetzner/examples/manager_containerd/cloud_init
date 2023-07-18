@@ -1,0 +1,281 @@
+#!/bin/bash
+export CP1=10.0.0.1 #examle/have to change
+export CP2=10.0.0.2 #examle/have to change
+export CP3=10.0.0.3 #examle/have to change
+export TOKEN=sv0xn7.pyl6kakhon296itl  #examle/have to change
+export SHA=sha256:d094f629fd1249c6fa78c2eca9fc2a82f38aab648d55c3962e8e30312d0bf1ee  #examle/have to change
+
+modprobe br_netfilter
+cat <<EOF | tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+cat <<EOF | tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+echo 1 > /proc/sys/net/ipv4/ip_forward
+sysctl --system
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl
+sudo mkdir -p /etc/apt/keyrings
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg
+apt update
+apt install -y kubeadm=1.25.6-00 kubectl=1.25.6-00 kubelet=1.25.6-00
+apt install -y containerd
+sudo apt-mark hold kubelet kubeadm kubectl
+cat <<EOF | tee /etc/cni/net.d/calico.conflist.template
+{
+  "name": "pod-network",
+  "cniVersion":"0.3.1",
+  "plugins":[
+    {
+      "datastore_type": "kubernetes",
+      "nodename": "__KUBERNETES_NODE_NAME__",
+      "type": "calico",
+      "log_level": "info",
+      "log_file_path": "/var/log/calico/cni/cni.log",
+      "ipam": {
+        "type": "calico-ipam",
+        "ipv4_pools": ["10.233.64.0/18"],
+        "assign_ipv4": "true"
+      },
+      "policy": {
+        "type": "k8s"
+      },
+      "kubernetes": {
+        "kubeconfig": "__KUBECONFIG_FILEPATH__"
+      }
+    },
+    {
+      "type":"portmap",
+      "capabilities": {
+        "portMappings": true
+      }
+    },
+    {
+      "type":"bandwidth",
+      "capabilities": {
+        "bandwidth": true
+      }
+    }
+  ]
+}
+EOF
+
+
+
+cat <<EOF | tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
+Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
+# This is a file that "kubeadm init" and "kubeadm join" generates at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically
+EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
+# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use
+# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.
+EnvironmentFile=-/etc/kubernetes/kubelet.env
+ExecStart=
+ExecStart=/usr/bin/kubelet \\
+                \$KUBE_LOGTOSTDERR \\
+                \$KUBE_LOG_LEVEL \\
+                \$KUBELET_API_SERVER \\
+                \$KUBELET_ADDRESS \\
+                \$KUBELET_PORT \\
+                \$KUBELET_HOSTNAME \\
+                \$KUBELET_ARGS \\
+                \$DOCKER_SOCKET \\
+                \$KUBELET_NETWORK_PLUGIN \\
+                \$KUBELET_VOLUME_PLUGIN \\
+                \$KUBELET_CLOUDPROVIDER
+EOF
+
+export KUBELET_ADDRESS=$(ip route get $CP1 | awk '{print $7}')
+
+cat <<EOF | tee /etc/kubernetes/kubelet-config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+nodeStatusUpdateFrequency: "10s"
+failSwapOn: True
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: True
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+authorization:
+  mode: Webhook
+staticPodPath: /etc/kubernetes/manifests
+cgroupDriver: systemd
+containerLogMaxFiles: 5
+containerLogMaxSize: 1Gi
+maxPods: 110
+podPidsLimit: -1
+address: $KUBELET_ADDRESS
+readOnlyPort: 0
+healthzPort: 10248
+healthzBindAddress: 127.0.0.1
+kubeletCgroups: /kube.slice/kubelet.service
+clusterDomain: cluster.local
+protectKernelDefaults: true
+rotateCertificates: true
+clusterDNS:
+- 169.254.25.10
+systemReservedCgroup: /system.slice
+systemReserved:
+  cpu: 250m
+  memory: 256Mi
+resolvConf: "/run/systemd/resolve/resolv.conf"
+eventRecordQPS: 5
+shutdownGracePeriod: 60s
+shutdownGracePeriodCriticalPods: 20s
+EOF
+
+export TRIMNAME=$(hs=`hostname`; trim=${hs%-*}; echo $trim)
+
+cat <<EOF | tee /etc/kubernetes/kubelet.env
+KUBE_LOGTOSTDERR="--logtostderr=true"
+KUBE_LOG_LEVEL="--v=2"
+KUBELET_ADDRESS="--node-ip=$KUBELET_ADDRESS"
+
+KUBELET_ARGS="--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf \
+--config=/etc/kubernetes/kubelet-config.yaml \
+--kubeconfig=/etc/kubernetes/kubelet.conf \
+--container-runtime=remote \
+--node-labels=hcloud/node-group=$TRIMNAME  
+--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \
+--runtime-cgroups=/kube.slice/containerd.service \
+  "
+KUBELET_CLOUDPROVIDER="--cloud-provider=external --cloud-config=/etc/kubernetes/cloud_config"
+
+PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EOF
+
+cat <<EOF | tee /etc/sysctl.d/99-sysctl.conf
+net.ipv4.ip_forward=1
+kernel.keys.root_maxbytes=25000000
+kernel.keys.root_maxkeys=1000000
+kernel.panic=10
+kernel.panic_on_oops=1
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+net.ipv4.ip_local_reserved_ports=30000-32767
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-arptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+EOF
+sleep 5
+# /usr/bin/kubeadm join --config /root/kubeadm.conf
+sysctl -p /etc/sysctl.d/99-sysctl.conf
+
+
+kubeadm join $CP1:6443 --token $TOKEN --discovery-token-ca-cert-hash $SHA
+
+wait
+
+cat <<EOF | tee /etc/kubernetes/manifests/nginx-proxy.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-proxy
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    k8s-app: kube-nginx
+  annotations:
+    nginx-cfg-checksum: "65dcf97977d3552239686092dee26063eb9271b2"
+spec:
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  nodeSelector:
+    kubernetes.io/os: linux
+  priorityClassName: system-node-critical
+  containers:
+  - name: nginx-proxy
+    image: docker.io/library/nginx:1.19
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32M
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+    volumeMounts:
+    - mountPath: /etc/nginx
+      name: etc-nginx
+      readOnly: true
+  volumes:
+  - name: etc-nginx
+    hostPath:
+      path: /etc/nginx
+EOF
+
+sleep 10
+mkdir /etc/nginx/
+
+  cat <<EOF | tee /etc/nginx/nginx.conf
+error_log stderr notice;
+
+worker_processes 2;
+worker_rlimit_nofile 130048;
+worker_shutdown_timeout 10s;
+
+events {
+  multi_accept on;
+  use epoll;
+  worker_connections 16384;
+}
+
+stream {
+  upstream kube_apiserver {
+    least_conn;
+    server $CP1:6443;
+    server $CP2:6443;
+    server $CP3:6443;
+    }
+
+  server {
+    listen        127.0.0.1:6443;
+    proxy_pass    kube_apiserver;
+    proxy_timeout 10m;
+    proxy_connect_timeout 1s;
+  }
+}
+
+http {
+  aio threads;
+  aio_write on;
+  tcp_nopush on;
+  tcp_nodelay on;
+
+  keepalive_timeout 5m;
+  keepalive_requests 100;
+  reset_timedout_connection on;
+  server_tokens off;
+  autoindex off;
+
+  server {
+    listen 8081;
+    location /healthz {
+      access_log off;
+      return 200;
+    }
+    location /stub_status {
+      stub_status on;
+      access_log off;
+    }
+  }
+  }
+EOF
+
+sleep 20
+echo $(hostname) >> /var/lib/calico/nodename
+echo 1430 >> /var/lib/calico/mtu
+
