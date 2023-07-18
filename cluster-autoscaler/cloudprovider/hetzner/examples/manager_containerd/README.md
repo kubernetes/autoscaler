@@ -1,6 +1,6 @@
 # Cluster Autoscaler Deployment/Configuration
 This documnet describes how to deploy/change ClusterAutascaler
-In the document cloud_init described simple script responcible to install required packages, generate config files and join new node to cluster
+In the document cloud_init described simple script responsible to install required packages, generate config files and join new node to cluster
 For new deployment there is necessary to change some values inside this cloud_init script:
 First need to change data related to new cluser join credentials (token and cacert hashes):
 * get the join data from the master:
@@ -19,7 +19,7 @@ kubectl -n kube-system create secret generic hcloud --from-literal=token=<hcloud
 nodeSelector:
   hcloud/node-group: pool2
 ```
-or for first poll
+or for first pooll
 ```yaml
 nodeSelector:
   hcloud/node-group: pool1
