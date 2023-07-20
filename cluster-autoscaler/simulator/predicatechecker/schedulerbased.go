@@ -27,6 +27,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
@@ -44,21 +45,26 @@ type SchedulerBasedPredicateChecker struct {
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
-func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
+func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, schedConfig *config.KubeSchedulerConfiguration, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-	config, err := scheduler_config.Default()
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create scheduler config: %v", err)
+
+	if schedConfig == nil {
+		var err error
+		schedConfig, err = scheduler_config.Default()
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create scheduler config: %v", err)
+		}
 	}
-	if len(config.Profiles) != 1 || config.Profiles[0].SchedulerName != apiv1.DefaultSchedulerName {
-		return nil, fmt.Errorf("unexpected scheduler config: expected default scheduler profile only (found %d profiles)", len(config.Profiles))
+
+	if len(schedConfig.Profiles) != 1 {
+		return nil, fmt.Errorf("unexpected scheduler config: expected one scheduler profile only (found %d profiles)", len(schedConfig.Profiles))
 	}
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
 	framework, err := schedulerframeworkruntime.NewFramework(
 		context.TODO(),
 		scheduler_plugins.NewInTreeRegistry(),
-		&config.Profiles[0],
+		&schedConfig.Profiles[0],
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)
@@ -181,6 +187,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 			filterReasons,
 			p.buildDebugInfo(filterName, nodeInfo))
 	}
+
 	return nil
 }
 

@@ -18,6 +18,8 @@ package config
 
 import (
 	"time"
+
+	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
 
 // GpuLimits define lower and upper bound on GPU instances of given type in cluster
@@ -166,6 +168,9 @@ type AutoscalingOptions struct {
 	// ScaleDownSimulationTimeout defines the maximum time that can be
 	// spent on scale down simulation.
 	ScaleDownSimulationTimeout time.Duration
+	// SchedulerConfig allows changing configuration of in-tree
+	// scheduler plugins acting on PreFilter and Filter extension points
+	SchedulerConfig *scheduler_config.KubeSchedulerConfiguration
 	// NodeDeletionDelayTimeout is maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
