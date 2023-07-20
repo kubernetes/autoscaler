@@ -212,6 +212,7 @@ func NewScaleTestAutoscalingContext(
 		options.EstimatorName,
 		estimator.NewThresholdBasedEstimationLimiter(nil),
 		estimator.NewDecreasingPodOrderer(),
+		/* EstimationAnalyserFunc */ nil,
 	)
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	if err != nil {

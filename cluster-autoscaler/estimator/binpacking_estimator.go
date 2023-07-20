@@ -30,11 +30,12 @@ import (
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
-	predicateChecker predicatechecker.PredicateChecker
-	clusterSnapshot  clustersnapshot.ClusterSnapshot
-	limiter          EstimationLimiter
-	podOrderer       EstimationPodOrderer
-	context          EstimationContext
+	predicateChecker       predicatechecker.PredicateChecker
+	clusterSnapshot        clustersnapshot.ClusterSnapshot
+	limiter                EstimationLimiter
+	podOrderer             EstimationPodOrderer
+	context                EstimationContext
+	estimationAnalyserFunc EstimationAnalyserFunc // optional
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
@@ -44,13 +45,15 @@ func NewBinpackingNodeEstimator(
 	limiter EstimationLimiter,
 	podOrderer EstimationPodOrderer,
 	context EstimationContext,
+	estimationAnalyserFunc EstimationAnalyserFunc,
 ) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
-		predicateChecker: predicateChecker,
-		clusterSnapshot:  clusterSnapshot,
-		limiter:          limiter,
-		podOrderer:       podOrderer,
-		context:          context,
+		predicateChecker:       predicateChecker,
+		clusterSnapshot:        clusterSnapshot,
+		limiter:                limiter,
+		podOrderer:             podOrderer,
+		context:                context,
+		estimationAnalyserFunc: estimationAnalyserFunc,
 	}
 }
 
@@ -141,6 +144,11 @@ func (e *BinpackingNodeEstimator) Estimate(
 			scheduledPods = append(scheduledPods, pod)
 		}
 	}
+
+	if e.estimationAnalyserFunc != nil {
+		e.estimationAnalyserFunc(e.clusterSnapshot, nodeGroup, newNodesWithPods)
+	}
+
 	return len(newNodesWithPods), scheduledPods
 }
 
