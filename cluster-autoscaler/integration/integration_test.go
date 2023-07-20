@@ -251,10 +251,9 @@ func (driver *Driver) controllerTests() {
 				By("Creating StorageClass with topology restrictions")
 				class := "myclass"
 				provider := os.Getenv("CLUSTER_PROVIDER")
-				if provider != "aws" {
+				if provider != "aws" && provider != "gcp" {
 					return
 				}
-				//TODO: support this testcase for GKE once nodeTemplate in machinedeployment has the label `topology.gke.io/zone`: <zone-name>
 				storageClass, err1 := getStorageClassObject(class)
 
 				if err1 != nil {

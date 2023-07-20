@@ -217,10 +217,13 @@ func getStorageClassObject(class string) (*v1storage.StorageClass, error) {
 	allowExpansion := true
 	volumeReclaimPolicy := v1.PersistentVolumeReclaimDelete
 	volumeBindingMode := v1storage.VolumeBindingImmediate
-	var zone []string = []string{os.Getenv("VOLUME_ZONE")}
-	var expressions []v1.TopologySelectorLabelRequirement = []v1.TopologySelectorLabelRequirement{{Key: "topology.kubernetes.io/zone", Values: zone}}
-	// for GKE
-	// var expressions []v1.TopologySelectorLabelRequirement = []v1.TopologySelectorLabelRequirement{{Key: "topology.gke.io/zone", Values: zone}}
+	var zone = []string{os.Getenv("VOLUME_ZONE")}
+	var expressions []v1.TopologySelectorLabelRequirement
+	if provider == "aws" {
+		expressions = []v1.TopologySelectorLabelRequirement{{Key: "topology.ebs.csi.aws.com/zone", Values: zone}}
+	} else if provider == "gcp" {
+		expressions = []v1.TopologySelectorLabelRequirement{{Key: "topology.gke.io/zone", Values: zone}}
+	}
 	var topologies []v1.TopologySelectorTerm = []v1.TopologySelectorTerm{{MatchLabelExpressions: expressions}}
 
 	storageClass := &v1storage.StorageClass{
