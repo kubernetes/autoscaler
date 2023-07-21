@@ -229,7 +229,7 @@ var (
 	minReplicaCount                   = flag.Int("min-replica-count", 0, "Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 	nodeDeleteDelayAfterTaint         = flag.Duration("node-delete-delay-after-taint", 5*time.Second, "How long to wait before deleting a node after tainting it")
 	scaleDownSimulationTimeout        = flag.Duration("scale-down-simulation-timeout", 30*time.Second, "How long should we run scale down simulation.")
-	parallelDrain                     = flag.Bool("parallel-drain", false, "Whether to allow parallel drain of nodes.")
+	parallelDrain                     = flag.Bool("parallel-drain", true, "Whether to allow parallel drain of nodes. This flag is deprecated and will be removed in future releases.")
 	maxCapacityMemoryDifferenceRatio  = flag.Float64("memory-difference-ratio", config.DefaultMaxCapacityMemoryDifferenceRatio, "Maximum difference in memory capacity between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's memory capacity.")
 	maxFreeDifferenceRatio            = flag.Float64("max-free-difference-ratio", config.DefaultMaxFreeDifferenceRatio, "Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource.")
 	maxAllocatableDifferenceRatio     = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
