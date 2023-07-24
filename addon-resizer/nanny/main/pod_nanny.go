@@ -24,19 +24,18 @@ import (
 
 	flag "github.com/spf13/pflag"
 
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/addon-resizer/nanny"
+
+	"path/filepath"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
 	nannyscheme "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/scheme"
 	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"path/filepath"
 )
 
 var (
@@ -72,17 +71,17 @@ func main() {
 	flag.Parse()
 
 	// Perform further validation of flags.
-	if *deployment == "" {
-		glog.Fatal("Must specify a deployment.")
-	}
+	// if *deployment == "" {
+	// 	glog.Fatal("Must specify a deployment.")
+	// }
 
-	if *threshold < 0 || *threshold > 100 {
-		glog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
-	}
+	// if *threshold < 0 || *threshold > 100 {
+	// 	glog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
+	// }
 
-	if *minClusterSize < 2 {
-		glog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
-	}
+	// if *minClusterSize < 2 {
+	// 	glog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
+	// }
 
 	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
 	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerNode)
@@ -105,68 +104,71 @@ func main() {
 
 	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics)
 
-	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
-		BaseCPU:       *baseCPU,
-		CPUPerNode:    *cpuPerNode,
-		BaseMemory:    *baseMemory,
-		MemoryPerNode: *memoryPerNode,
-	}
-	nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
-	if err != nil {
-		glog.Fatal(err)
-	}
-	glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
+	a, err := k8s.CountContainers()
+	fmt.Println(a)
+	fmt.Println(err)
+	// nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
+	// 	BaseCPU:       *baseCPU,
+	// 	CPUPerNode:    *cpuPerNode,
+	// 	BaseMemory:    *baseMemory,
+	// 	MemoryPerNode: *memoryPerNode,
+	// }
+	// nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
+	// if err != nil {
+	// 	glog.Fatal(err)
+	// }
+	// glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
 
-	var resources []nanny.Resource
+	// var resources []nanny.Resource
 
-	// Monitor only the resources specified.
-	if nannycfg.BaseCPU != nannyconfig.NoValue {
-		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(nannycfg.BaseCPU),
-			ExtraPerNode: resource.MustParse(nannycfg.CPUPerNode),
-			Name:         "cpu",
-		})
-	}
+	// // Monitor only the resources specified.
+	// if nannycfg.BaseCPU != nannyconfig.NoValue {
+	// 	resources = append(resources, nanny.Resource{
+	// 		Base:         resource.MustParse(nannycfg.BaseCPU),
+	// 		ExtraPerNode: resource.MustParse(nannycfg.CPUPerNode),
+	// 		Name:         "cpu",
+	// 	})
+	// }
 
-	if nannycfg.BaseMemory != nannyconfig.NoValue {
-		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(nannycfg.BaseMemory),
-			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:         "memory",
-		})
-	}
+	// if nannycfg.BaseMemory != nannyconfig.NoValue {
+	// 	resources = append(resources, nanny.Resource{
+	// 		Base:         resource.MustParse(nannycfg.BaseMemory),
+	// 		ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
+	// 		Name:         "memory",
+	// 	})
+	// }
 
-	if *baseStorage != nannyconfig.NoValue {
-		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(*baseStorage),
-			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:         "storage",
-		})
-	}
+	// if *baseStorage != nannyconfig.NoValue {
+	// 	resources = append(resources, nanny.Resource{
+	// 		Base:         resource.MustParse(*baseStorage),
+	// 		ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
+	// 		Name:         "storage",
+	// 	})
+	// }
 
-	glog.Infof("Resources: %+v", resources)
+	// glog.Infof("Resources: %+v", resources)
 
-	var est nanny.ResourceEstimator
-	if *estimator == "linear" {
-		est = nanny.LinearEstimator{
-			Resources: resources,
-		}
-	} else if *estimator == "exponential" {
-		est = nanny.ExponentialEstimator{
-			Resources:      resources,
-			ScaleFactor:    1.5,
-			MinClusterSize: *minClusterSize,
-		}
-	} else {
-		glog.Fatalf("Estimator %s not supported", *estimator)
-	}
+	// var est nanny.ResourceEstimator
+	// if *estimator == "linear" {
+	// 	est = nanny.LinearEstimator{
+	// 		Resources: resources,
+	// 	}
+	// } else if *estimator == "exponential" {
+	// 	est = nanny.ExponentialEstimator{
+	// 		Resources:      resources,
+	// 		ScaleFactor:    1.5,
+	// 		MinClusterSize: *minClusterSize,
+	// 	}
+	// } else {
+	// 	glog.Fatalf("Estimator %s not supported", *estimator)
+	// }
 
-	period := time.Duration(*pollPeriod) * time.Millisecond
-	hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
-	hc.Serve()
+	// period := time.Duration(*pollPeriod) * time.Millisecond
+	// hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
+	// hc.Serve()
 
-	// Begin nannying.
-	nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
+	// // Begin nannying.
+	// nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
 }
 
 func userAgent() string {

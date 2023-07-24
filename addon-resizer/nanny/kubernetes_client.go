@@ -27,6 +27,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
@@ -39,6 +40,8 @@ const (
 	objectCountFallbackMetricName = "etcd_object_counts"
 	// nodeResourceName is the label value for Nodes in objectCountFallbackMetricName and objectCountMetricName metrics.
 	nodeResourceName = "nodes"
+	// podResourceName is the label value for Pods in objectCountFallbackMetricName and objectCountMetricName metrics.
+	podResourceName = "pods"
 	// resourceLabel is the label name for resource.
 	resourceLabel = "resource"
 )
@@ -57,9 +60,33 @@ type kubernetesClient struct {
 // 2) using etcd_object_count metric exposed by kube-apiserver
 func (k *kubernetesClient) CountNodes() (uint64, error) {
 	if k.useMetrics {
-		return k.countNodesThroughMetrics()
+		return k.countResourcesThroughMetrics(nodeResourceName)
 	}
 	return k.countNodesThroughAPI()
+}
+
+// CountContainers returns the number of containers in the cluster:
+// 1) by listing Pods (excluding terminated pods) using API (default) and calculating the sum of initContainers, ephemeralContainers, and containers.
+// 2) using etcd_object_count metric exposed by kube-apiserver
+func (k *kubernetesClient) CountContainers() (uint64, error) {
+	if k.useMetrics {
+		k.countResourcesThroughMetrics(podResourceName)
+	}
+	return k.countContainersThroughAPI()
+}
+
+func (k *kubernetesClient) countContainersThroughAPI() (uint64, error) {
+	// Set ResourceVersion = 0 to use cached versions.
+	options := metav1.ListOptions{
+		ResourceVersion: "0",
+		FieldSelector:   getPodSelectorExcludingDonePodsOrDie(),
+	}
+	pods, err := k.clientset.CoreV1().Pods("").List(context.TODO(), options)
+	result := 0
+	for _, pod := range pods.Items {
+		result += len(pod.Spec.Containers) + len(pod.Spec.InitContainers) + len(pod.Spec.EphemeralContainers)
+	}
+	return uint64(result), err
 }
 
 func (k *kubernetesClient) countNodesThroughAPI() (uint64, error) {
@@ -85,7 +112,7 @@ func hasEqualValues(a string, b *string) bool {
 	return b != nil && a == *b
 }
 
-func extractMetricValueForNodeCount(mf dto.MetricFamily, metricName string) (uint64, error) {
+func extractMetricValueForResourceCount(mf dto.MetricFamily, resourceName, metricName string) (uint64, error) {
 	for _, metric := range mf.Metric {
 		hasLabel := false
 		for _, label := range metric.Label {
@@ -109,7 +136,7 @@ func extractMetricValueForNodeCount(mf dto.MetricFamily, metricName string) (uin
 	return 0, fmt.Errorf("%s: no valid metric values", metricName)
 }
 
-func getNodeCountFromDecoder(decoder expfmt.Decoder) (uint64, error) {
+func getResourceCountFromDecoder(resourceName string, decoder expfmt.Decoder) (uint64, error) {
 	var mf dto.MetricFamily
 	var preferredMetricValue, fallbackMetricValue uint64
 	var preferredMetricError, fallbackMetricError error
@@ -123,11 +150,11 @@ func getNodeCountFromDecoder(decoder expfmt.Decoder) (uint64, error) {
 			return 0, fmt.Errorf("decoding error: %v", err)
 		}
 		if hasEqualValues(objectCountMetricName, mf.Name) {
-			preferredMetricValue, preferredMetricError = extractMetricValueForNodeCount(mf, *mf.Name)
+			preferredMetricValue, preferredMetricError = extractMetricValueForResourceCount(mf, resourceName, *mf.Name)
 			gotPrefferedMetric = true
 		}
 		if hasEqualValues(objectCountFallbackMetricName, mf.Name) {
-			fallbackMetricValue, fallbackMetricError = extractMetricValueForNodeCount(mf, *mf.Name)
+			fallbackMetricValue, fallbackMetricError = extractMetricValueForResourceCount(mf, resourceName, *mf.Name)
 			gotFallbackMetric = true
 		}
 	}
@@ -144,14 +171,14 @@ func getNodeCountFromDecoder(decoder expfmt.Decoder) (uint64, error) {
 	return 0, fmt.Errorf("no metric set")
 }
 
-func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
-	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
+func (k *kubernetesClient) countResourcesThroughMetrics(resourceName string) (uint64, error) {
+	// Similarly as for listing resources, permissions for /metrics endpoint are needed.
 	// Other than that, endpoint is visible from everywhere.
 	reader, err := k.clientset.CoreV1().RESTClient().Get().RequestURI("/metrics").Stream(context.Background())
 	if err != nil {
 		return 0, err
 	}
-	return getNodeCountFromDecoder(expfmt.NewDecoder(reader, expfmt.FmtText))
+	return getResourceCountFromDecoder(resourceName, expfmt.NewDecoder(reader, expfmt.FmtText))
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
@@ -223,6 +250,13 @@ func mergeResources(current, new *corev1.ResourceRequirements) *corev1.ResourceR
 		res.Requests[resource] = value
 	}
 	return res
+}
+
+func getPodSelectorExcludingDonePodsOrDie() string {
+	stringSelector := "status.phase!=" + string(corev1.PodSucceeded) +
+		",status.phase!=" + string(corev1.PodFailed)
+	selector := fields.ParseSelectorOrDie(stringSelector)
+	return selector.String()
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.

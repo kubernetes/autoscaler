@@ -88,6 +88,7 @@ func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs 
 // KubernetesClient is an object that performs the nanny's requisite interactions with Kubernetes.
 type KubernetesClient interface {
 	CountNodes() (uint64, error)
+	CountContainers() (uint64, error)
 	ContainerResources() (*corev1.ResourceRequirements, error)
 	UpdateDeployment(resources *corev1.ResourceRequirements) error
 }

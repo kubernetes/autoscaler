@@ -188,7 +188,7 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotCount, gotErr := extractMetricValueForNodeCount(tc.mf, "metric name")
+			gotCount, gotErr := extractMetricValueForResourceCount(tc.mf, nodeResourceName, "metric name")
 			expectErrorOrCount(t, tc.expectErr, tc.expectCount, gotErr, gotCount)
 		})
 	}
@@ -337,7 +337,7 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 				metricValues: tc.metricValues,
 				finalResult:  tc.finalResult,
 			}
-			gotCount, gotErr := getNodeCountFromDecoder(&fd)
+			gotCount, gotErr := getResourceCountFromDecoder(nodeResourceName, &fd)
 			expectErrorOrCount(t, tc.expectErr, tc.expectValue, gotErr, gotCount)
 		})
 	}
@@ -375,6 +375,6 @@ func TestGetNodeCountFromDecoder_MultpleLabels(t *testing.T) {
 		},
 		finalResult: io.EOF,
 	}
-	gotCount, gotErr := getNodeCountFromDecoder(&fd)
+	gotCount, gotErr := getResourceCountFromDecoder(nodeResourceName, &fd)
 	expectErrorOrCount(t, nil, 3.0, gotErr, gotCount)
 }
