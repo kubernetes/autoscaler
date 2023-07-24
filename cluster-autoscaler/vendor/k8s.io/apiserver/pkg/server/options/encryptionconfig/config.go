@@ -376,17 +376,25 @@ func (h *kmsv2PluginProbe) rotateDEKOnKeyIDChange(ctx context.Context, statusKey
 			ExpirationTimestamp: expirationTimestamp,
 			CacheKey:            cacheKey,
 		})
-		klog.V(6).InfoS("successfully rotated DEK",
-			"uid", uid,
-			"newKeyID", resp.KeyID,
-			"oldKeyID", state.KeyID,
-			"expirationTimestamp", expirationTimestamp.Format(time.RFC3339),
-		)
-		return nil
+
+		// it should be logically impossible for the new state to be invalid but check just in case
+		_, errGen = h.getCurrentState()
+		if errGen == nil {
+			klogV6 := klog.V(6)
+			if klogV6.Enabled() {
+				klogV6.InfoS("successfully rotated DEK",
+					"uid", uid,
+					"newKeyIDHash", envelopekmsv2.GetHashIfNotEmpty(resp.KeyID),
+					"oldKeyIDHash", envelopekmsv2.GetHashIfNotEmpty(state.KeyID),
+					"expirationTimestamp", expirationTimestamp.Format(time.RFC3339),
+				)
+			}
+			return nil
+		}
 	}
 
-	return fmt.Errorf("failed to rotate DEK uid=%q, errState=%v, errGen=%v, statusKeyID=%q, encryptKeyID=%q, stateKeyID=%q, expirationTimestamp=%s",
-		uid, errState, errGen, statusKeyID, resp.KeyID, state.KeyID, state.ExpirationTimestamp.Format(time.RFC3339))
+	return fmt.Errorf("failed to rotate DEK uid=%q, errState=%v, errGen=%v, statusKeyIDHash=%q, encryptKeyIDHash=%q, stateKeyIDHash=%q, expirationTimestamp=%s",
+		uid, errState, errGen, envelopekmsv2.GetHashIfNotEmpty(statusKeyID), envelopekmsv2.GetHashIfNotEmpty(resp.KeyID), envelopekmsv2.GetHashIfNotEmpty(state.KeyID), state.ExpirationTimestamp.Format(time.RFC3339))
 }
 
 // getCurrentState returns the latest state from the last status and encrypt calls.
@@ -429,7 +437,7 @@ func (h *kmsv2PluginProbe) isKMSv2ProviderHealthyAndMaybeRotateDEK(ctx context.C
 
 	if errCode, err := envelopekmsv2.ValidateKeyID(response.KeyID); err != nil {
 		metrics.RecordInvalidKeyIDFromStatus(h.name, string(errCode))
-		errs = append(errs, fmt.Errorf("got invalid KMSv2 KeyID %q: %w", response.KeyID, err))
+		errs = append(errs, fmt.Errorf("got invalid KMSv2 KeyID hash %q: %w", envelopekmsv2.GetHashIfNotEmpty(response.KeyID), err))
 	} else {
 		metrics.RecordKeyIDFromStatus(h.name, response.KeyID)
 		// unconditionally append as we filter out nil errors below
@@ -669,6 +677,11 @@ func kmsPrefixTransformer(ctx context.Context, config *apiserverconfig.KMSConfig
 	kmsName := config.Name
 	switch config.APIVersion {
 	case kmsAPIVersionV1:
+		if !utilfeature.DefaultFeatureGate.Enabled(features.KMSv1) {
+			return storagevalue.PrefixTransformer{}, nil, nil, fmt.Errorf("KMSv1 is deprecated and will only receive security updates going forward. Use KMSv2 instead.  Set --feature-gates=KMSv1=true to use the deprecated KMSv1 feature.")
+		}
+		klog.InfoS("KMSv1 is deprecated and will only receive security updates going forward. Use KMSv2 instead.")
+
 		envelopeService, err := envelopeServiceFactory(ctx, config.Endpoint, config.Timeout.Duration)
 		if err != nil {
 			return storagevalue.PrefixTransformer{}, nil, nil, fmt.Errorf("could not configure KMSv1-Plugin's probe %q, error: %w", kmsName, err)
@@ -710,44 +723,8 @@ func kmsPrefixTransformer(ctx context.Context, config *apiserverconfig.KMSConfig
 		// initialize state so that Load always works
 		probe.state.Store(&envelopekmsv2.State{})
 
-		runProbeCheckAndLog := func(ctx context.Context) error {
-			if err := probe.check(ctx); err != nil {
-				klog.VDepth(1, 2).ErrorS(err, "kms plugin failed health check probe", "name", kmsName)
-				return err
-			}
-			return nil
-		}
+		primeAndProbeKMSv2(ctx, probe, kmsName)
 
-		// on the happy path where the plugin is healthy and available on server start,
-		// prime keyID and DEK by running the check inline once (this also prevents unit tests from flaking)
-		// ignore the error here since we want to support the plugin starting up async with the API server
-		_ = runProbeCheckAndLog(ctx)
-		// make sure that the plugin's key ID is reasonably up-to-date
-		// also, make sure that our DEK is up-to-date to with said key ID (if it expires the server will fail all writes)
-		// if this background loop ever stops running, the server will become unfunctional after kmsv2PluginWriteDEKMaxTTL
-		go wait.PollUntilWithContext(
-			ctx,
-			kmsv2PluginHealthzPositiveInterval,
-			func(ctx context.Context) (bool, error) {
-				if err := runProbeCheckAndLog(ctx); err == nil {
-					return false, nil
-				}
-
-				// TODO add integration test for quicker error poll on failure
-				// if we fail, block the outer polling and start a new quicker poll inline
-				// this limits the chance that our DEK expires during a transient failure
-				_ = wait.PollUntilWithContext(
-					ctx,
-					kmsv2PluginHealthzNegativeInterval,
-					func(ctx context.Context) (bool, error) {
-						return runProbeCheckAndLog(ctx) == nil, nil
-					},
-				)
-
-				return false, nil
-			})
-
-		// using AES-GCM by default for encrypting data with KMSv2
 		transformer := storagevalue.PrefixTransformer{
 			Transformer: envelopekmsv2.NewEnvelopeTransformer(envelopeService, kmsName, probe.getCurrentState),
 			Prefix:      []byte(kmsTransformerPrefixV2 + kmsName + ":"),
@@ -761,6 +738,56 @@ func kmsPrefixTransformer(ctx context.Context, config *apiserverconfig.KMSConfig
 	default:
 		return storagevalue.PrefixTransformer{}, nil, nil, fmt.Errorf("could not configure KMS plugin %q, unsupported KMS API version %q", kmsName, config.APIVersion)
 	}
+}
+
+func primeAndProbeKMSv2(ctx context.Context, probe *kmsv2PluginProbe, kmsName string) {
+	runProbeCheckAndLog := func(ctx context.Context, depth int) error {
+		if err := probe.check(ctx); err != nil {
+			klog.VDepth(1+depth, 2).ErrorS(err, "kms plugin failed health check probe", "name", kmsName)
+			return err
+		}
+		return nil
+	}
+
+	blockAndProbeFastUntilSuccess := func(ctx context.Context) {
+		_ = wait.PollUntilWithContext(
+			ctx,
+			kmsv2PluginHealthzNegativeInterval,
+			func(ctx context.Context) (bool, error) {
+				return runProbeCheckAndLog(ctx, 1) == nil, nil
+			},
+		)
+	}
+
+	// on the happy path where the plugin is healthy and available on server start,
+	// prime keyID and DEK by running the check inline once (this also prevents unit tests from flaking)
+	errPrime := runProbeCheckAndLog(ctx, 0)
+
+	// if our initial attempt to prime failed, start trying to get to a valid state in the background ASAP
+	// this prevents a slow start when the external healthz checker is configured to ignore the KMS healthz endpoint
+	// since we want to support the plugin starting up async with the API server, this error is not fatal
+	if errPrime != nil {
+		go blockAndProbeFastUntilSuccess(ctx) // separate go routine to avoid blocking
+	}
+
+	// make sure that the plugin's key ID is reasonably up-to-date
+	// also, make sure that our DEK is up-to-date to with said key ID (if it expires the server will fail all writes)
+	// if this background loop ever stops running, the server will become unfunctional after kmsv2PluginWriteDEKMaxTTL
+	go wait.PollUntilWithContext(
+		ctx,
+		kmsv2PluginHealthzPositiveInterval,
+		func(ctx context.Context) (bool, error) {
+			if err := runProbeCheckAndLog(ctx, 0); err == nil {
+				return false, nil
+			}
+
+			// TODO add integration test for quicker error poll on failure
+			// if we fail, block the outer polling and start a new quicker poll inline
+			// this limits the chance that our DEK expires during a transient failure
+			blockAndProbeFastUntilSuccess(ctx)
+
+			return false, nil
+		})
 }
 
 func envelopePrefixTransformer(config *apiserverconfig.KMSConfiguration, envelopeService envelope.Service, prefix string) storagevalue.PrefixTransformer {

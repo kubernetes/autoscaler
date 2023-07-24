@@ -17,7 +17,9 @@ limitations under the License.
 package scheduler
 
 import (
+	"container/heap"
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -56,17 +58,27 @@ const (
 	// to ensure that a certain minimum of nodes are checked for feasibility.
 	// This in turn helps ensure a minimum level of spreading.
 	minFeasibleNodesPercentageToFind = 5
+	// numberOfHighestScoredNodesToReport is the number of node scores
+	// to be included in ScheduleResult.
+	numberOfHighestScoredNodesToReport = 3
 )
 
 // scheduleOne does the entire scheduling workflow for a single pod. It is serialized on the scheduling algorithm's host fitting.
 func (sched *Scheduler) scheduleOne(ctx context.Context) {
 	logger := klog.FromContext(ctx)
-	podInfo := sched.NextPod()
+	podInfo, err := sched.NextPod()
+	if err != nil {
+		logger.Error(err, "Error while retrieving next pod from scheduling queue")
+		return
+	}
 	// pod could be nil when schedulerQueue is closed
 	if podInfo == nil || podInfo.Pod == nil {
 		return
 	}
+
 	pod := podInfo.Pod
+	logger.V(4).Info("About to try and schedule pod", "pod", klog.KObj(pod))
+
 	fwk, err := sched.frameworkForPod(pod)
 	if err != nil {
 		// This shouldn't happen, because we only accept for scheduling the pods
@@ -110,6 +122,9 @@ func (sched *Scheduler) scheduleOne(ctx context.Context) {
 		if !status.IsSuccess() {
 			sched.handleBindingCycleError(bindingCycleCtx, state, fwk, assumedPodInfo, start, scheduleResult, status)
 		}
+		// Usually, DonePod is called inside the scheduling queue,
+		// but in this case, we need to call it here because this Pod won't go back to the scheduling queue.
+		sched.SchedulingQueue.Done(assumedPodInfo.Pod.UID)
 	}()
 }
 
@@ -179,9 +194,7 @@ func (sched *Scheduler) schedulingCycle(
 		// This relies on the fact that Error will check if the pod has been bound
 		// to a node and if so will not add it back to the unscheduled pods queue
 		// (otherwise this would cause an infinite loop).
-		return ScheduleResult{nominatingInfo: clearNominatedNode},
-			assumedPodInfo,
-			framework.AsStatus(err)
+		return ScheduleResult{nominatingInfo: clearNominatedNode}, assumedPodInfo, framework.AsStatus(err)
 	}
 
 	// Run the Reserve method of reserve plugins.
@@ -192,9 +205,18 @@ func (sched *Scheduler) schedulingCycle(
 			logger.Error(forgetErr, "Scheduler cache ForgetPod failed")
 		}
 
-		return ScheduleResult{nominatingInfo: clearNominatedNode},
-			assumedPodInfo,
-			sts
+		if sts.IsUnschedulable() {
+			fitErr := &framework.FitError{
+				NumAllNodes: 1,
+				Pod:         pod,
+				Diagnosis: framework.Diagnosis{
+					NodeToStatusMap:      framework.NodeToStatusMap{scheduleResult.SuggestedHost: sts},
+					UnschedulablePlugins: sets.New(sts.FailedPlugin()),
+				},
+			}
+			return ScheduleResult{nominatingInfo: clearNominatedNode}, assumedPodInfo, framework.NewStatus(sts.Code()).WithError(fitErr)
+		}
+		return ScheduleResult{nominatingInfo: clearNominatedNode}, assumedPodInfo, sts
 	}
 
 	// Run "permit" plugins.
@@ -206,9 +228,19 @@ func (sched *Scheduler) schedulingCycle(
 			logger.Error(forgetErr, "Scheduler cache ForgetPod failed")
 		}
 
-		return ScheduleResult{nominatingInfo: clearNominatedNode},
-			assumedPodInfo,
-			runPermitStatus
+		if runPermitStatus.IsUnschedulable() {
+			fitErr := &framework.FitError{
+				NumAllNodes: 1,
+				Pod:         pod,
+				Diagnosis: framework.Diagnosis{
+					NodeToStatusMap:      framework.NodeToStatusMap{scheduleResult.SuggestedHost: runPermitStatus},
+					UnschedulablePlugins: sets.New(runPermitStatus.FailedPlugin()),
+				},
+			}
+			return ScheduleResult{nominatingInfo: clearNominatedNode}, assumedPodInfo, framework.NewStatus(runPermitStatus.Code()).WithError(fitErr)
+		}
+
+		return ScheduleResult{nominatingInfo: clearNominatedNode}, assumedPodInfo, runPermitStatus
 	}
 
 	// At the end of a successful scheduling cycle, pop and move up Pods if needed.
@@ -253,8 +285,9 @@ func (sched *Scheduler) bindingCycle(
 	logger.V(2).Info("Successfully bound pod to node", "pod", klog.KObj(assumedPod), "node", scheduleResult.SuggestedHost, "evaluatedNodes", scheduleResult.EvaluatedNodes, "feasibleNodes", scheduleResult.FeasibleNodes)
 	metrics.PodScheduled(fwk.ProfileName(), metrics.SinceInSeconds(start))
 	metrics.PodSchedulingAttempts.Observe(float64(assumedPodInfo.Attempts))
-	metrics.PodSchedulingDuration.WithLabelValues(getAttemptsLabel(assumedPodInfo)).Observe(metrics.SinceInSeconds(assumedPodInfo.InitialAttemptTimestamp))
-
+	if assumedPodInfo.InitialAttemptTimestamp != nil {
+		metrics.PodSchedulingDuration.WithLabelValues(getAttemptsLabel(assumedPodInfo)).Observe(metrics.SinceInSeconds(*assumedPodInfo.InitialAttemptTimestamp))
+	}
 	// Run "postbind" plugins.
 	fwk.RunPostBindPlugins(ctx, state, assumedPod, scheduleResult.SuggestedHost)
 
@@ -291,11 +324,11 @@ func (sched *Scheduler) handleBindingCycleError(
 		// It's intentional to "defer" this operation; otherwise MoveAllToActiveOrBackoffQueue() would
 		// update `q.moveRequest` and thus move the assumed pod to backoffQ anyways.
 		if status.IsUnschedulable() {
-			defer sched.SchedulingQueue.MoveAllToActiveOrBackoffQueue(logger, internalqueue.AssignedPodDelete, func(pod *v1.Pod) bool {
+			defer sched.SchedulingQueue.MoveAllToActiveOrBackoffQueue(logger, internalqueue.AssignedPodDelete, assumedPod, nil, func(pod *v1.Pod) bool {
 				return assumedPod.UID != pod.UID
 			})
 		} else {
-			sched.SchedulingQueue.MoveAllToActiveOrBackoffQueue(logger, internalqueue.AssignedPodDelete, nil)
+			sched.SchedulingQueue.MoveAllToActiveOrBackoffQueue(logger, internalqueue.AssignedPodDelete, assumedPod, nil, nil)
 		}
 	}
 
@@ -374,7 +407,7 @@ func (sched *Scheduler) schedulePod(ctx context.Context, fwk framework.Framework
 		return result, err
 	}
 
-	host, err := selectHost(priorityList)
+	host, _, err := selectHost(priorityList, numberOfHighestScoredNodesToReport)
 	trace.Step("Prioritizing done")
 
 	return ScheduleResult{
@@ -747,29 +780,81 @@ func prioritizeNodes(
 	return nodesScores, nil
 }
 
+var errEmptyPriorityList = errors.New("empty priorityList")
+
 // selectHost takes a prioritized list of nodes and then picks one
 // in a reservoir sampling manner from the nodes that had the highest score.
-func selectHost(nodeScores []framework.NodePluginScores) (string, error) {
-	if len(nodeScores) == 0 {
-		return "", fmt.Errorf("empty priorityList")
+// It also returns the top {count} Nodes,
+// and the top of the list will be always the selected host.
+func selectHost(nodeScoreList []framework.NodePluginScores, count int) (string, []framework.NodePluginScores, error) {
+	if len(nodeScoreList) == 0 {
+		return "", nil, errEmptyPriorityList
 	}
-	maxScore := nodeScores[0].TotalScore
-	selected := nodeScores[0].Name
+
+	var h nodeScoreHeap = nodeScoreList
+	heap.Init(&h)
 	cntOfMaxScore := 1
-	for _, ns := range nodeScores[1:] {
-		if ns.TotalScore > maxScore {
-			maxScore = ns.TotalScore
-			selected = ns.Name
-			cntOfMaxScore = 1
-		} else if ns.TotalScore == maxScore {
+	selectedIndex := 0
+	// The top of the heap is the NodeScoreResult with the highest score.
+	sortedNodeScoreList := make([]framework.NodePluginScores, 0, count)
+	sortedNodeScoreList = append(sortedNodeScoreList, heap.Pop(&h).(framework.NodePluginScores))
+
+	// This for-loop will continue until all Nodes with the highest scores get checked for a reservoir sampling,
+	// and sortedNodeScoreList gets (count - 1) elements.
+	for ns := heap.Pop(&h).(framework.NodePluginScores); ; ns = heap.Pop(&h).(framework.NodePluginScores) {
+		if ns.TotalScore != sortedNodeScoreList[0].TotalScore && len(sortedNodeScoreList) == count {
+			break
+		}
+
+		if ns.TotalScore == sortedNodeScoreList[0].TotalScore {
 			cntOfMaxScore++
 			if rand.Intn(cntOfMaxScore) == 0 {
 				// Replace the candidate with probability of 1/cntOfMaxScore
-				selected = ns.Name
+				selectedIndex = cntOfMaxScore - 1
 			}
 		}
+
+		sortedNodeScoreList = append(sortedNodeScoreList, ns)
+
+		if h.Len() == 0 {
+			break
+		}
 	}
-	return selected, nil
+
+	if selectedIndex != 0 {
+		// replace the first one with selected one
+		previous := sortedNodeScoreList[0]
+		sortedNodeScoreList[0] = sortedNodeScoreList[selectedIndex]
+		sortedNodeScoreList[selectedIndex] = previous
+	}
+
+	if len(sortedNodeScoreList) > count {
+		sortedNodeScoreList = sortedNodeScoreList[:count]
+	}
+
+	return sortedNodeScoreList[0].Name, sortedNodeScoreList, nil
+}
+
+// nodeScoreHeap is a heap of framework.NodePluginScores.
+type nodeScoreHeap []framework.NodePluginScores
+
+// nodeScoreHeap implements heap.Interface.
+var _ heap.Interface = &nodeScoreHeap{}
+
+func (h nodeScoreHeap) Len() int           { return len(h) }
+func (h nodeScoreHeap) Less(i, j int) bool { return h[i].TotalScore > h[j].TotalScore }
+func (h nodeScoreHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *nodeScoreHeap) Push(x interface{}) {
+	*h = append(*h, x.(framework.NodePluginScores))
+}
+
+func (h *nodeScoreHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
 // assume signals to the cache that a pod is already in the cache, so that binding can be asynchronous.
@@ -847,6 +932,16 @@ func getAttemptsLabel(p *framework.QueuedPodInfo) string {
 // handleSchedulingFailure records an event for the pod that indicates the
 // pod has failed to schedule. Also, update the pod condition and nominated node name if set.
 func (sched *Scheduler) handleSchedulingFailure(ctx context.Context, fwk framework.Framework, podInfo *framework.QueuedPodInfo, status *framework.Status, nominatingInfo *framework.NominatingInfo, start time.Time) {
+	calledDone := false
+	defer func() {
+		if !calledDone {
+			// Basically, AddUnschedulableIfNotPresent calls DonePod internally.
+			// But, AddUnschedulableIfNotPresent isn't called in some corner cases.
+			// Here, we call DonePod explicitly to avoid leaking the pod.
+			sched.SchedulingQueue.Done(podInfo.Pod.UID)
+		}
+	}()
+
 	logger := klog.FromContext(ctx)
 	reason := v1.PodReasonSchedulerError
 	if status.IsUnschedulable() {
@@ -865,7 +960,6 @@ func (sched *Scheduler) handleSchedulingFailure(ctx context.Context, fwk framewo
 	errMsg := status.Message()
 
 	if err == ErrNoNodesAvailable {
-
 		logger.V(2).Info("Unable to schedule pod; no nodes are registered to the cluster; waiting", "pod", klog.KObj(pod))
 	} else if fitError, ok := err.(*framework.FitError); ok { // Inject UnschedulablePlugins to PodInfo, which will be used later for moving Pods between queues efficiently.
 		podInfo.UnschedulablePlugins = fitError.Diagnosis.UnschedulablePlugins
@@ -893,11 +987,13 @@ func (sched *Scheduler) handleSchedulingFailure(ctx context.Context, fwk framewo
 	cachedPod, e := podLister.Pods(pod.Namespace).Get(pod.Name)
 	if e != nil {
 		logger.Info("Pod doesn't exist in informer cache", "pod", klog.KObj(pod), "err", e)
+		// We need to call DonePod here because we don't call AddUnschedulableIfNotPresent in this case.
 	} else {
 		// In the case of extender, the pod may have been bound successfully, but timed out returning its response to the scheduler.
 		// It could result in the live version to carry .spec.nodeName, and that's inconsistent with the internal-queued version.
 		if len(cachedPod.Spec.NodeName) != 0 {
 			logger.Info("Pod has been assigned to node. Abort adding it back to queue.", "pod", klog.KObj(pod), "node", cachedPod.Spec.NodeName)
+			// We need to call DonePod here because we don't call AddUnschedulableIfNotPresent in this case.
 		} else {
 			// As <cachedPod> is from SharedInformer, we need to do a DeepCopy() here.
 			// ignore this err since apiserver doesn't properly validate affinity terms
@@ -906,6 +1002,7 @@ func (sched *Scheduler) handleSchedulingFailure(ctx context.Context, fwk framewo
 			if err := sched.SchedulingQueue.AddUnschedulableIfNotPresent(logger, podInfo, sched.SchedulingQueue.SchedulingCycle()); err != nil {
 				logger.Error(err, "Error occurred")
 			}
+			calledDone = true
 		}
 	}
 
