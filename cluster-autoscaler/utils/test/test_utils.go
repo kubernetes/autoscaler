@@ -221,21 +221,7 @@ const (
 
 // BuildTestNode creates a node with specified capacity.
 func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
-	node := &apiv1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:     name,
-			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
-			Labels:   map[string]string{},
-		},
-		Spec: apiv1.NodeSpec{
-			ProviderID: name,
-		},
-		Status: apiv1.NodeStatus{
-			Capacity: apiv1.ResourceList{
-				apiv1.ResourcePods: *resource.NewQuantity(100, resource.DecimalSI),
-			},
-		},
-	}
+	node := baseNode(name)
 
 	if millicpu >= 0 {
 		node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewMilliQuantity(millicpu, resource.DecimalSI)
@@ -250,6 +236,24 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 	}
 
 	return node
+}
+
+func baseNode(name string) *apiv1.Node {
+	return &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:     name,
+			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
+			Labels:   map[string]string{},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: name,
+		},
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourcePods: *resource.NewQuantity(100, resource.DecimalSI),
+			},
+		},
+	}
 }
 
 // AddEphemeralStorageToNode adds ephemeral storage capacity to a given node.
