@@ -1,5 +1,5 @@
-//go:build exoscale
-// +build exoscale
+//go:build ovhcloud
+// +build ovhcloud
 
 /*
 Copyright 2020 The Kubernetes Authors.
@@ -24,7 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
-// AvailableCloudProviders supported by the Hetzner cloud provider builder.
+// AvailableCloudProviders supported by the OVHcloud cloud provider builder.
 var AvailableCloudProviders = []string{
 	cloudprovider.OVHcloudProviderName,
 }
