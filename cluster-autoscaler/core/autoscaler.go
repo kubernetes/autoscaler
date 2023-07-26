@@ -127,6 +127,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 			opts.EstimatorName,
 			estimator.NewThresholdBasedEstimationLimiter(thresholds),
 			estimator.NewDecreasingPodOrderer(),
+			/* EstimationAnalyserFunc */ nil,
 		)
 		if err != nil {
 			return err
