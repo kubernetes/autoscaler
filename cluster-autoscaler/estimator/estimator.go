@@ -45,15 +45,18 @@ type Estimator interface {
 // EstimatorBuilder creates a new estimator object.
 type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
 
+// EstimationAnalyserFunc to be run at the end of the estimation logic.
+type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
+
 // NewEstimatorBuilder creates a new estimator object from flag.
-func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer) (EstimatorBuilder, error) {
+func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer, estimationAnalyserFunc EstimationAnalyserFunc) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
 			predicateChecker predicatechecker.PredicateChecker,
 			clusterSnapshot clustersnapshot.ClusterSnapshot,
 			context EstimationContext) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context)
+			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)
