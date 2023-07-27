@@ -259,7 +259,7 @@ func TestUpdateResources(t *testing.T) {
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, tc.x, tc.x)
 		est := newFakeResourceEstimator(tc.y, tc.x)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange)
+		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, NodeProportional)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}
@@ -312,6 +312,6 @@ func newFakeResourceEstimator(limits, reqs corev1.ResourceList) *fakeResourceEst
 	}
 }
 
-func (f *fakeResourceEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements {
+func (f *fakeResourceEstimator) scale(numNodes uint64) *corev1.ResourceRequirements {
 	return f.resources
 }

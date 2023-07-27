@@ -33,9 +33,11 @@ import (
 type operation int
 
 const (
-	unknown   operation = iota
-	scaleDown operation = iota
-	scaleUp   operation = iota
+	unknown               operation = iota
+	scaleDown             operation = iota
+	scaleUp               operation = iota
+	ContainerProportional           = "container-proportional"
+	NodeProportional                = "node-proportional"
 )
 
 type updateResult int
@@ -95,13 +97,13 @@ type KubernetesClient interface {
 
 // ResourceEstimator estimates ResourceRequirements for a given criteria.
 type ResourceEstimator interface {
-	scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements
+	scale(clusterSize uint64) *corev1.ResourceRequirements
 }
 
-// PollAPIServer periodically counts the number of nodes, estimates the expected
+// PollAPIServer periodically counts the size of the cluster, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, scalingMode string) {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -111,27 +113,34 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.
 			time.Sleep(pollPeriod)
 		}
 
-		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult); lastResult == overwrite {
+		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult, scalingMode); lastResult == overwrite {
 			lastChange = time.Now()
 		}
 		hc.UpdateLastActivity()
 	}
 }
 
-// updateResources counts the number of nodes, estimates the expected
+// updateResources counts the cluster size, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
 // It returns overwrite if deployment has been updated, postpone if the change
 // could not be applied due to scale up/down delay and noChange if the estimated
 // expected ResourceRequirements are in line with the actual ResourceRequirements.
-func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, prevResult updateResult) updateResult {
-	// Query the apiserver for the number of nodes.
-	num, err := k8s.CountNodes()
+func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, prevResult updateResult, scalingMode string) updateResult {
+	// Query the apiserver for the cluster size.
+	var num uint64
+	var err error
+	if scalingMode == ContainerProportional {
+		num, err = k8s.CountNodes()
+	} else {
+		num, err = k8s.CountContainers()
+	}
+
 	if err != nil {
 		log.Error(err)
 		return noChange
 	}
-	log.V(4).Infof("The number of nodes is %d", num)
+	log.V(4).Infof("The cluster size is %d", num)
 
 	// Query the apiserver for this pod's information.
 	resources, err := k8s.ContainerResources()
@@ -141,7 +150,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	}
 
 	// Get the expected resource limits.
-	expResources := est.scaleWithNodes(num)
+	expResources := est.scale(num)
 
 	// If there's a difference, go ahead and set the new values.
 	overwriteRes, op := shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests)

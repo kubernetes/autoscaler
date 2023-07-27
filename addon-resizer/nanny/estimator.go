@@ -30,8 +30,8 @@ const (
 
 // Resource defines the name of a resource, the quantity, and the marginal value.
 type Resource struct {
-	Base, ExtraPerNode resource.Quantity
-	Name               corev1.ResourceName
+	Base, ExtraPerResource resource.Quantity
+	Name                   corev1.ResourceName
 }
 
 // LinearEstimator estimates the amount of resources as r = base + extra*nodes.
@@ -39,8 +39,8 @@ type LinearEstimator struct {
 	Resources []Resource
 }
 
-func (e LinearEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements {
-	return calculateResources(numNodes, e.Resources)
+func (e LinearEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
+	return calculateResources(clusterSize, e.Resources)
 }
 
 // ExponentialEstimator estimates resource requirements in a way that prevents
@@ -59,9 +59,9 @@ type ExponentialEstimator struct {
 	ScaleFactor float64
 }
 
-func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements {
+func (e ExponentialEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
 	n := e.MinClusterSize
-	for n < numNodes {
+	for n < clusterSize {
 		n = uint64(float64(n)*e.ScaleFactor + eps)
 	}
 
@@ -69,33 +69,33 @@ func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRe
 }
 
 // Generates and returns a resource value string describing the overhead when
-// running on a cluster with the given number of nodes. The per node overhead
+// running on a cluster with the given the cluster size. The per resource overhead
 // is taken from the Resource instance.
 //
 // Note this function takes into account resource units allowing it to compute
 // resource overhead values even with fractional values. For example, it can
 // handle incremental values of 0.5m for cpu resources.
-func computeResourceOverheadValueString(numNodes uint64, resource Resource) string {
-	perNodeOverhead := resource.ExtraPerNode.String()
-	var perNodeValue float64
-	var perNodeUnit string
-	_, err := fmt.Sscanf(perNodeOverhead, "%f%s", &perNodeValue, &perNodeUnit)
+func computeResourceOverheadValueString(clusterSize uint64, resource Resource) string {
+	perResourceOverhead := resource.ExtraPerResource.String()
+	var perResourceValue float64
+	var perResourceUnit string
+	_, err := fmt.Sscanf(perResourceOverhead, "%f%s", &perResourceValue, &perResourceUnit)
 	if err != nil && err.Error() != "EOF" {
 		log.Warningf(
-			"Failed to parse the per node overhead string '%s'; error=%s",
-			perNodeOverhead, err)
+			"Failed to parse the per resource overhead string '%s'; error=%s",
+			perResourceOverhead, err)
 		// Default to not specifying any unit to maintain existing
 		// behaviour.
-		perNodeUnit = ""
+		perResourceUnit = ""
 	}
-	return fmt.Sprintf("%f%s", perNodeValue*float64(numNodes), perNodeUnit)
+	return fmt.Sprintf("%f%s", perResourceValue*float64(clusterSize), perResourceUnit)
 }
 
-func calculateResources(numNodes uint64, resources []Resource) *corev1.ResourceRequirements {
+func calculateResources(clusterSize uint64, resources []Resource) *corev1.ResourceRequirements {
 	limits := make(corev1.ResourceList)
 	requests := make(corev1.ResourceList)
 	for _, r := range resources {
-		overhead := computeResourceOverheadValueString(numNodes, r)
+		overhead := computeResourceOverheadValueString(clusterSize, r)
 		newRes := r.Base
 		newRes.Add(resource.MustParse(overhead))
 		limits[r.Name] = newRes

@@ -71,6 +71,8 @@ spec:
             - --memory=200Mi
             - --extra-memory=10Mi
             - --threshold=5
+            - --use-metrics=true
+            - --scaling-mode=container-proportional
             - --deployment=nanny-v1
       volumes:
         - name: nanny-config-volume
@@ -90,10 +92,10 @@ rules:
     verbs:
       - "*"
 ### --use-metrics=true
-# - nonResourceURLs:
-#   - /metrics
-#   verbs:
-#   - get
+  - nonResourceURLs:
+    - /metrics
+    verbs:
+    - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

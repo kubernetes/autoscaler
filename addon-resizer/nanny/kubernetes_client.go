@@ -70,7 +70,7 @@ func (k *kubernetesClient) CountNodes() (uint64, error) {
 // 2) using etcd_object_count metric exposed by kube-apiserver
 func (k *kubernetesClient) CountContainers() (uint64, error) {
 	if k.useMetrics {
-		k.countResourcesThroughMetrics(podResourceName)
+		return k.countResourcesThroughMetrics(podResourceName)
 	}
 	return k.countContainersThroughAPI()
 }
@@ -116,7 +116,7 @@ func extractMetricValueForResourceCount(mf dto.MetricFamily, resourceName, metri
 	for _, metric := range mf.Metric {
 		hasLabel := false
 		for _, label := range metric.Label {
-			if hasEqualValues(resourceLabel, label.Name) && hasEqualValues(nodeResourceName, label.Value) {
+			if hasEqualValues(resourceLabel, label.Name) && hasEqualValues(resourceName, label.Value) {
 				hasLabel = true
 				break
 			}
@@ -130,6 +130,7 @@ func extractMetricValueForResourceCount(mf dto.MetricFamily, resourceName, metri
 		if *metric.Gauge.Value < 0 {
 			return 0, fmt.Errorf("%s: metric unknown", metricName)
 		}
+		fmt.Println(metric)
 		value := uint64(*metric.Gauge.Value)
 		return value, nil
 	}

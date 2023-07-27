@@ -33,70 +33,70 @@ var (
 	fullEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
 	}
 	noCPUEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
 	}
 	noMemoryEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
 	}
 	noStorageEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 		},
 	}
 	lessThanMilliEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("0.5m"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("0.5m"),
+				Name:             "cpu",
 			},
 		},
 	}
@@ -107,19 +107,19 @@ var (
 	exponentialEstimator = ExponentialEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
 		ScaleFactor:    DefaultScaleFactor,
@@ -128,9 +128,9 @@ var (
 	exponentialLessThanMilliEstimator = ExponentialEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("0.5m"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("0.5m"),
+				Name:             "cpu",
 			},
 		},
 		ScaleFactor:    DefaultScaleFactor,
@@ -139,19 +139,19 @@ var (
 	exponentialSmallClusterEstimator = ExponentialEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("10m"),
-				ExtraPerNode: resource.MustParse("0.5m"),
-				Name:         "cpu",
+				Base:             resource.MustParse("10m"),
+				ExtraPerResource: resource.MustParse("0.5m"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("50Mi"),
-				ExtraPerNode: resource.MustParse("4.5Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("50Mi"),
+				ExtraPerResource: resource.MustParse("4.5Mi"),
+				Name:             "memory",
 			},
 			{
-				Base:         resource.MustParse("500Mi"),
-				ExtraPerNode: resource.MustParse("100Mi"),
-				Name:         "storage",
+				Base:             resource.MustParse("500Mi"),
+				ExtraPerResource: resource.MustParse("100Mi"),
+				Name:             "storage",
 			},
 		},
 		ScaleFactor:    DefaultScaleFactor,
@@ -266,7 +266,7 @@ func TestEstimateResources(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		got := tc.e.scaleWithNodes(tc.numNodes)
+		got := tc.e.scale(tc.numNodes)
 		want := &corev1.ResourceRequirements{
 			Limits:   tc.limits,
 			Requests: tc.requests,
@@ -282,10 +282,10 @@ func TestComputeResourceOverheadValueString(t *testing.T) {
 		resource         Resource
 		expectedOverhead string
 	}{
-		{1, Resource{ExtraPerNode: resource.MustParse("1"), Name: "cpu"}, "1.000000"},
-		{1, Resource{ExtraPerNode: resource.MustParse("1m"), Name: "cpu"}, "1.000000m"},
-		{1, Resource{ExtraPerNode: resource.MustParse("0.5m"), Name: "cpu"}, "500.000000u"},
-		{3, Resource{ExtraPerNode: resource.MustParse("0.5m"), Name: "cpu"}, "1500.000000u"},
+		{1, Resource{ExtraPerResource: resource.MustParse("1"), Name: "cpu"}, "1.000000"},
+		{1, Resource{ExtraPerResource: resource.MustParse("1m"), Name: "cpu"}, "1.000000m"},
+		{1, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "500.000000u"},
+		{3, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "1500.000000u"},
 	}
 
 	for _, tc := range testCases {

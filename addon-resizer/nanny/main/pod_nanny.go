@@ -24,11 +24,13 @@ import (
 
 	flag "github.com/spf13/pflag"
 
+	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny"
 
 	"path/filepath"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
@@ -38,19 +40,22 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const ContainerProportional = "container-proportional"
+const NodeProportional = "node-proportional"
+
 var (
 	// Flags to define the resource requirements.
 	configDir = flag.String("config-dir", nannyconfig.NoValue, "Path of configuration containing base resource requirements.")
 	// Following empty values ("") will be overwritten by defaults specified in apis/nannyconfig/v1alpha1/defaults.go
-	baseCPU        = flag.String("cpu", "", "The base CPU resource requirement.")
-	cpuPerNode     = flag.String("extra-cpu", "", "The amount of CPU to add per node.")
-	baseMemory     = flag.String("memory", "", "The base memory resource requirement.")
-	memoryPerNode  = flag.String("extra-memory", "", "The amount of memory to add per node.")
-	baseStorage    = flag.String("storage", nannyconfig.NoValue, "The base storage resource requirement.")
-	storagePerNode = flag.String("extra-storage", "0Gi", "The amount of storage to add per node.")
-	scaleDownDelay = flag.Duration("scale-down-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale down can be performed.")
-	scaleUpDelay   = flag.Duration("scale-up-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale up can be performed.")
-	threshold      = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
+	baseCPU            = flag.String("cpu", "", "The base CPU resource requirement.")
+	cpuPerResource     = flag.String("extra-cpu", "", "The amount of CPU to add per Resource.")
+	baseMemory         = flag.String("memory", "", "The base memory resource requirement.")
+	memoryPerResource  = flag.String("extra-memory", "", "The amount of memory to add per Resource.")
+	baseStorage        = flag.String("storage", nannyconfig.NoValue, "The base storage resource requirement.")
+	storagePerResource = flag.String("extra-storage", "0Gi", "The amount of storage to add per Resource.")
+	scaleDownDelay     = flag.Duration("scale-down-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale down can be performed.")
+	scaleUpDelay       = flag.Duration("scale-up-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale up can be performed.")
+	threshold          = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
 	// Flags to identify the container to nanny.
 	podNamespace  = flag.String("namespace", os.Getenv("MY_POD_NAMESPACE"), "The namespace of the ward. This defaults to the nanny pod's own namespace.")
 	deployment    = flag.String("deployment", "", "The name of the deployment being monitored. This is required.")
@@ -59,9 +64,10 @@ var (
 	// Flags to control runtime behavior.
 	pollPeriod     = flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container.")
 	estimator      = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
-	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of nodes resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
-	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.")
+	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
+	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing objects from the Kubernetes API.")
 	hcAddress      = flag.String("healthcheck-address", ":8080", "The address to expose an HTTP health-check on.")
+	scalingMode    = flag.String("scaling-mode", "node-proportional", "The mode of scaling to be used. Possible values: 'node-proportional' or 'container-proportional'")
 )
 
 func main() {
@@ -71,20 +77,20 @@ func main() {
 	flag.Parse()
 
 	// Perform further validation of flags.
-	// if *deployment == "" {
-	// 	glog.Fatal("Must specify a deployment.")
-	// }
+	if *deployment == "" {
+		glog.Fatal("Must specify a deployment.")
+	}
 
-	// if *threshold < 0 || *threshold > 100 {
-	// 	glog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
-	// }
+	if *threshold < 0 || *threshold > 100 {
+		glog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
+	}
 
-	// if *minClusterSize < 2 {
-	// 	glog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
-	// }
+	if *minClusterSize < 2 {
+		glog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
+	}
 
 	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
-	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerNode)
+	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerResource)
 
 	// Set up work objects.
 	config, err := rest.InClusterConfig()
@@ -104,71 +110,72 @@ func main() {
 
 	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics)
 
-	a, err := k8s.CountContainers()
-	fmt.Println(a)
-	fmt.Println(err)
-	// nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
-	// 	BaseCPU:       *baseCPU,
-	// 	CPUPerNode:    *cpuPerNode,
-	// 	BaseMemory:    *baseMemory,
-	// 	MemoryPerNode: *memoryPerNode,
-	// }
-	// nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
-	// if err != nil {
-	// 	glog.Fatal(err)
-	// }
-	// glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
+	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
+		BaseCPU:       *baseCPU,
+		CPUPerNode:    *cpuPerResource,
+		BaseMemory:    *baseMemory,
+		MemoryPerNode: *memoryPerResource,
+	}
+	nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
+	if err != nil {
+		glog.Fatal(err)
+	}
+	glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
 
-	// var resources []nanny.Resource
+	var resources []nanny.Resource
 
-	// // Monitor only the resources specified.
-	// if nannycfg.BaseCPU != nannyconfig.NoValue {
-	// 	resources = append(resources, nanny.Resource{
-	// 		Base:         resource.MustParse(nannycfg.BaseCPU),
-	// 		ExtraPerNode: resource.MustParse(nannycfg.CPUPerNode),
-	// 		Name:         "cpu",
-	// 	})
-	// }
+	// Monitor only the resources specified.
+	if nannycfg.BaseCPU != nannyconfig.NoValue {
+		resources = append(resources, nanny.Resource{
+			Base:             resource.MustParse(nannycfg.BaseCPU),
+			ExtraPerResource: resource.MustParse(nannycfg.CPUPerNode),
+			Name:             "cpu",
+		})
+	}
 
-	// if nannycfg.BaseMemory != nannyconfig.NoValue {
-	// 	resources = append(resources, nanny.Resource{
-	// 		Base:         resource.MustParse(nannycfg.BaseMemory),
-	// 		ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-	// 		Name:         "memory",
-	// 	})
-	// }
+	if nannycfg.BaseMemory != nannyconfig.NoValue {
+		resources = append(resources, nanny.Resource{
+			Base:             resource.MustParse(nannycfg.BaseMemory),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "memory",
+		})
+	}
 
-	// if *baseStorage != nannyconfig.NoValue {
-	// 	resources = append(resources, nanny.Resource{
-	// 		Base:         resource.MustParse(*baseStorage),
-	// 		ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-	// 		Name:         "storage",
-	// 	})
-	// }
+	if *baseStorage != nannyconfig.NoValue {
+		resources = append(resources, nanny.Resource{
+			Base:             resource.MustParse(*baseStorage),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "storage",
+		})
+	}
 
-	// glog.Infof("Resources: %+v", resources)
+	glog.Infof("Resources: %+v", resources)
 
-	// var est nanny.ResourceEstimator
-	// if *estimator == "linear" {
-	// 	est = nanny.LinearEstimator{
-	// 		Resources: resources,
-	// 	}
-	// } else if *estimator == "exponential" {
-	// 	est = nanny.ExponentialEstimator{
-	// 		Resources:      resources,
-	// 		ScaleFactor:    1.5,
-	// 		MinClusterSize: *minClusterSize,
-	// 	}
-	// } else {
-	// 	glog.Fatalf("Estimator %s not supported", *estimator)
-	// }
+	var est nanny.ResourceEstimator
+	if *estimator == "linear" {
+		est = nanny.LinearEstimator{
+			Resources: resources,
+		}
+	} else if *estimator == "exponential" {
+		est = nanny.ExponentialEstimator{
+			Resources:      resources,
+			ScaleFactor:    1.5,
+			MinClusterSize: *minClusterSize,
+		}
+	} else {
+		glog.Fatalf("Estimator %s not supported", *estimator)
+	}
 
-	// period := time.Duration(*pollPeriod) * time.Millisecond
-	// hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
-	// hc.Serve()
+	if *scalingMode != NodeProportional && *scalingMode != ContainerProportional {
+		glog.Fatalf("scaling mode %s not supported", *scalingMode)
+	}
 
-	// // Begin nannying.
-	// nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
+	period := time.Duration(*pollPeriod) * time.Millisecond
+	hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
+	hc.Serve()
+
+	// Begin nannying.
+	nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold), *scalingMode)
 }
 
 func userAgent() string {
