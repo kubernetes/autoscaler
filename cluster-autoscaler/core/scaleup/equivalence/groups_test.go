@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -67,27 +68,27 @@ func TestGroupSchedulablePodsForNode(t *testing.T) {
 	}
 
 	projectedSAVol := BuildServiceTokenProjectedVolumeSource("path")
-	p1 := BuildTestPod("p1", 1500, 200000)
-	p2_1 := BuildTestPod("p2_1", 3000, 200000)
+	p1 := po.BuildTestPod("p1", 1500, 200000)
+	p2_1 := po.BuildTestPod("p2_1", 3000, 200000)
 	p2_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	p2_2 := BuildTestPod("p2_2", 3000, 200000)
+	p2_2 := po.BuildTestPod("p2_2", 3000, 200000)
 	p2_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	p3_1 := BuildTestPod("p3_1", 100, 200000)
+	p3_1 := po.BuildTestPod("p3_1", 100, 200000)
 	p3_1.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-	p3_2 := BuildTestPod("p3_2", 100, 200000)
+	p3_2 := po.BuildTestPod("p3_2", 100, 200000)
 	p3_2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
 	// Two pods with projected volume sources should be in the same equivalence group
-	p4_1 := BuildTestPod("p4_1", 100, 200000)
+	p4_1 := po.BuildTestPod("p4_1", 100, 200000)
 	p4_1.OwnerReferences = GenerateOwnerReferences(rc3.Name, "ReplicationController", "extensions/v1beta1", rc3.UID)
 	p4_1.Spec.Volumes = []apiv1.Volume{{Name: "kube-api-access-nz94b", VolumeSource: apiv1.VolumeSource{Projected: projectedSAVol}}}
-	p4_2 := BuildTestPod("p4_2", 100, 200000)
+	p4_2 := po.BuildTestPod("p4_2", 100, 200000)
 	p4_2.OwnerReferences = GenerateOwnerReferences(rc3.Name, "ReplicationController", "extensions/v1beta1", rc3.UID)
 	p4_2.Spec.Volumes = []apiv1.Volume{{Name: "kube-api-access-mo25i", VolumeSource: apiv1.VolumeSource{Projected: projectedSAVol}}}
 	// Two pods with flex volume sources should be in different equivalence groups
-	p5_1 := BuildTestPod("p5_1", 100, 200000)
+	p5_1 := po.BuildTestPod("p5_1", 100, 200000)
 	p5_1.Spec.Volumes = []apiv1.Volume{{Name: "volume-nz94b", VolumeSource: apiv1.VolumeSource{FlexVolume: &apiv1.FlexVolumeSource{Driver: "testDriver"}}}}
 	p5_1.OwnerReferences = GenerateOwnerReferences(rc4.Name, "ReplicationController", "extensions/v1beta1", rc4.UID)
-	p5_2 := BuildTestPod("p5_2", 100, 200000)
+	p5_2 := po.BuildTestPod("p5_2", 100, 200000)
 	p5_2.Spec.Volumes = []apiv1.Volume{{Name: "volume-mo25i", VolumeSource: apiv1.VolumeSource{FlexVolume: &apiv1.FlexVolumeSource{Driver: "testDriver"}}}}
 	p5_2.OwnerReferences = GenerateOwnerReferences(rc4.Name, "ReplicationController", "extensions/v1beta1", rc4.UID)
 	unschedulablePods := []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2, p4_1, p4_2, p5_1, p5_2}
@@ -151,7 +152,7 @@ func TestEquivalenceGroupSizeLimiting(t *testing.T) {
 	}
 	pods := make([]*apiv1.Pod, 0, maxEquivalenceGroupsByController+1)
 	for i := 0; i < maxEquivalenceGroupsByController+1; i += 1 {
-		p := BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
+		p := po.BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
 		p.OwnerReferences = GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", rc.UID)
 		label := fmt.Sprintf("l%d", i)
 		if i > maxEquivalenceGroupsByController {
@@ -177,9 +178,9 @@ func TestEquivalenceGroupIgnoresDaemonSets(t *testing.T) {
 		},
 	}
 	pods := make([]*apiv1.Pod, 2)
-	pods[0] = BuildTestPod("p1", 3000, 200000)
+	pods[0] = po.BuildTestPod("p1", 3000, 200000)
 	pods[0].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
-	pods[1] = BuildTestPod("p2", 3000, 200000)
+	pods[1] = po.BuildTestPod("p2", 3000, 200000)
 	pods[1].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
 	podGroups := groupPodsBySchedulingProperties(pods)
 	assert.Equal(t, 2, len(podGroups))

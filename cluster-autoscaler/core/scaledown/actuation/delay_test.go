@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestWaitForDelayDeletion(t *testing.T) {
@@ -67,8 +68,8 @@ func TestWaitForDelayDeletion(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			node := BuildTestNode("n1", 1000, 10)
-			nodeWithAnnotation := BuildTestNode("n1", 1000, 10)
+			node := no.BuildTestNode("n1", 1000, 10)
+			nodeWithAnnotation := no.BuildTestNode("n1", 1000, 10)
 			nodeWithAnnotation.Annotations = map[string]string{DelayDeletionAnnotationPrefix + "ingress": "true"}
 			allNodeLister := kubernetes.NewTestNodeLister(nil)
 			if test.addAnnotation {

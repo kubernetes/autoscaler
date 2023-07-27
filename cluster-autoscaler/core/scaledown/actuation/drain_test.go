@@ -44,6 +44,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 )
 
 func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
@@ -118,11 +120,11 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			waitBetweenRetries := 10 * time.Millisecond
 
 			fakeClient := &fake.Clientset{}
-			n1 := BuildTestNode("n1", 1000, 1000)
+			n1 := no.BuildTestNode("n1", 1000, 1000)
 			SetNodeReadyState(n1, true, time.Time{})
 			dsPods := make([]*apiv1.Pod, len(scenario.dsPods))
 			for i, dsName := range scenario.dsPods {
-				ds := BuildTestPod(dsName, 100, 0)
+				ds := po.BuildTestPod(dsName, 100, 0)
 				ds.Spec.NodeName = "n1"
 				ds.OwnerReferences = GenerateOwnerReferences("", "DaemonSet", "", "")
 				if v, ok := scenario.extraAnnotationValue[dsName]; ok {
@@ -192,10 +194,10 @@ func TestDrainNodeWithPods(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	d1 := BuildTestPod("d1", 150, 0)
-	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := po.BuildTestPod("p1", 100, 0)
+	p2 := po.BuildTestPod("p2", 300, 0)
+	d1 := po.BuildTestPod("d1", 150, 0)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 
 	SetNodeReadyState(n1, true, time.Time{})
 
@@ -240,11 +242,11 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	p2Rescheduled := BuildTestPod("p2", 300, 0)
+	p1 := po.BuildTestPod("p1", 100, 0)
+	p2 := po.BuildTestPod("p2", 300, 0)
+	p2Rescheduled := po.BuildTestPod("p2", 300, 0)
 	p2Rescheduled.Spec.NodeName = "n2"
-	n1 := BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -297,11 +299,11 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	ticket := make(chan bool, 1)
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	p3 := BuildTestPod("p3", 300, 0)
-	d1 := BuildTestPod("d1", 150, 0)
-	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := po.BuildTestPod("p1", 100, 0)
+	p2 := po.BuildTestPod("p2", 300, 0)
+	p3 := po.BuildTestPod("p3", 300, 0)
+	d1 := po.BuildTestPod("d1", 150, 0)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -354,11 +356,11 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	d1 := BuildTestPod("d1", 150, 0)
-	d2 := BuildTestPod("d2", 250, 0)
-	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := po.BuildTestPod("p1", 100, 0)
+	p2 := po.BuildTestPod("p2", 300, 0)
+	d1 := po.BuildTestPod("d1", 150, 0)
+	d2 := po.BuildTestPod("d2", 250, 0)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	e1 := fmt.Errorf("eviction_error: d1")
 	e2 := fmt.Errorf("eviction_error: d2")
 
@@ -407,11 +409,11 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 100, 0)
-	p3 := BuildTestPod("p3", 100, 0)
-	p4 := BuildTestPod("p4", 100, 0)
-	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := po.BuildTestPod("p1", 100, 0)
+	p2 := po.BuildTestPod("p2", 100, 0)
+	p3 := po.BuildTestPod("p3", 100, 0)
+	p4 := po.BuildTestPod("p4", 100, 0)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	e2 := fmt.Errorf("eviction_error: p2")
 	e4 := fmt.Errorf("eviction_error: p4")
 	SetNodeReadyState(n1, true, time.Time{})
@@ -468,12 +470,12 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 100, 0)
-	p3 := BuildTestPod("p3", 100, 0)
-	p4 := BuildTestPod("p4", 100, 0)
+	p1 := po.BuildTestPod("p1", 100, 0)
+	p2 := po.BuildTestPod("p2", 100, 0)
+	p3 := po.BuildTestPod("p3", 100, 0)
+	p4 := po.BuildTestPod("p4", 100, 0)
 	e2 := fmt.Errorf("disappearance_error: p2")
-	n1 := BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -574,7 +576,7 @@ func TestPodsToEvict(t *testing.T) {
 	} {
 		t.Run(tn, func(t *testing.T) {
 			snapshot := clustersnapshot.NewBasicClusterSnapshot()
-			node := BuildTestNode("test-node", 1000, 1000)
+			node := no.BuildTestNode("test-node", 1000, 1000)
 			err := snapshot.AddNodeWithPods(node, tc.pods)
 			if err != nil {
 				t.Errorf("AddNodeWithPods unexpected error: %v", err)

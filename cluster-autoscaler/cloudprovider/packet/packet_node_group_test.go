@@ -24,6 +24,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -135,12 +136,12 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	nodesPool3 := []*apiv1.Node{}
 	for _, node := range n2Pool2 {
 		if _, ok := existingNodesPool2[node]; !ok {
-			nodesPool2 = append(nodesPool2, BuildTestNode(node, 1000, 1000))
+			nodesPool2 = append(nodesPool2, no.BuildTestNode(node, 1000, 1000))
 		}
 	}
 	for _, node := range n2Pool3 {
 		if _, ok := existingNodesPool3[node]; !ok {
-			nodesPool3 = append(nodesPool3, BuildTestNode(node, 1000, 1000))
+			nodesPool3 = append(nodesPool3, no.BuildTestNode(node, 1000, 1000))
 		}
 	}
 

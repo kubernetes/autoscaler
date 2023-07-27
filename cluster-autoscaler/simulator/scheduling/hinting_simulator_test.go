@@ -22,7 +22,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
@@ -49,13 +50,13 @@ func TestTrySchedulePods(t *testing.T) {
 				buildScheduledPod("p1", 300, 500000, "n1"),
 			},
 			newPods: []*apiv1.Pod{
-				BuildTestPod("p2", 800, 500000),
-				BuildTestPod("p3", 500, 500000),
+				po.BuildTestPod("p2", 800, 500000),
+				po.BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: ScheduleAnywhere,
 			wantStatuses: []Status{
-				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
-				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
+				{Pod: po.BuildTestPod("p2", 800, 500000), NodeName: "n2"},
+				{Pod: po.BuildTestPod("p3", 500, 500000), NodeName: "n1"},
 			},
 		},
 		{
@@ -68,14 +69,14 @@ func TestTrySchedulePods(t *testing.T) {
 				buildScheduledPod("p1", 300, 500000, "n1"),
 			},
 			newPods: []*apiv1.Pod{
-				BuildTestPod("p2", 800, 500000),
-				BuildTestPod("p3", 500, 500000),
-				BuildTestPod("p4", 700, 500000),
+				po.BuildTestPod("p2", 800, 500000),
+				po.BuildTestPod("p3", 500, 500000),
+				po.BuildTestPod("p4", 700, 500000),
 			},
 			acceptableNodes: ScheduleAnywhere,
 			wantStatuses: []Status{
-				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
-				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
+				{Pod: po.BuildTestPod("p2", 800, 500000), NodeName: "n2"},
+				{Pod: po.BuildTestPod("p3", 500, 500000), NodeName: "n1"},
 			},
 		},
 		{
@@ -100,13 +101,13 @@ func TestTrySchedulePods(t *testing.T) {
 				buildScheduledPod("p1", 300, 500000, "n1"),
 			},
 			newPods: []*apiv1.Pod{
-				BuildTestPod("p2", 500, 500000),
-				BuildTestPod("p3", 500, 500000),
+				po.BuildTestPod("p2", 500, 500000),
+				po.BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: singleNodeOk("n2"),
 			wantStatuses: []Status{
-				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n2"},
-				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n2"},
+				{Pod: po.BuildTestPod("p2", 500, 500000), NodeName: "n2"},
+				{Pod: po.BuildTestPod("p3", 500, 500000), NodeName: "n2"},
 			},
 		},
 		{
@@ -119,12 +120,12 @@ func TestTrySchedulePods(t *testing.T) {
 				buildScheduledPod("p1", 300, 500000, "n1"),
 			},
 			newPods: []*apiv1.Pod{
-				BuildTestPod("p2", 500, 500000),
-				BuildTestPod("p3", 500, 500000),
+				po.BuildTestPod("p2", 500, 500000),
+				po.BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: singleNodeOk("n1"),
 			wantStatuses: []Status{
-				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n1"},
+				{Pod: po.BuildTestPod("p2", 500, 500000), NodeName: "n1"},
 			},
 		},
 	}
@@ -222,7 +223,7 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 			s := NewHintingSimulator(predicateChecker)
 			var expectedStatuses []Status
 			for p, n := range tc.podNodes {
-				pod := BuildTestPod(p, 1, 1)
+				pod := po.BuildTestPod(p, 1, 1)
 				pods = append(pods, pod)
 				s.hints.Set(HintKeyFromPod(pod), n)
 				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
@@ -240,13 +241,13 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 }
 
 func buildReadyNode(name string, cpu, mem int64) *apiv1.Node {
-	n := BuildTestNode(name, cpu, mem)
-	SetNodeReadyState(n, true, time.Time{})
+	n := no.BuildTestNode(name, cpu, mem)
+	no.SetNodeReadyState(n, true, time.Time{})
 	return n
 }
 
 func buildScheduledPod(name string, cpu, mem int64, nodeName string) *apiv1.Pod {
-	p := BuildTestPod(name, cpu, mem)
+	p := po.BuildTestPod(name, cpu, mem)
 	p.Spec.NodeName = nodeName
 	return p
 }

@@ -22,7 +22,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	apiv1 "k8s.io/api/core/v1"
 )
@@ -30,8 +31,8 @@ import (
 func createTestNodesWithPrefix(prefix string, n int) []*apiv1.Node {
 	nodes := make([]*apiv1.Node, n, n)
 	for i := 0; i < n; i++ {
-		nodes[i] = BuildTestNode(fmt.Sprintf("%s-%d", prefix, i), 2000, 2000000)
-		SetNodeReadyState(nodes[i], true, time.Time{})
+		nodes[i] = no.BuildTestNode(fmt.Sprintf("%s-%d", prefix, i), 2000, 2000000)
+		no.SetNodeReadyState(nodes[i], true, time.Time{})
 	}
 	return nodes
 }
@@ -43,7 +44,7 @@ func createTestNodes(n int) []*apiv1.Node {
 func createTestPodsWithPrefix(prefix string, n int) []*apiv1.Pod {
 	pods := make([]*apiv1.Pod, n, n)
 	for i := 0; i < n; i++ {
-		pods[i] = BuildTestPod(fmt.Sprintf("%s-%d", prefix, i), 1000, 2000000)
+		pods[i] = po.BuildTestPod(fmt.Sprintf("%s-%d", prefix, i), 1000, 2000000)
 	}
 	return pods
 }
@@ -188,8 +189,8 @@ func BenchmarkForkAddRevert(b *testing.B) {
 					err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
 					assert.NoError(b, err)
 				}
-				tmpNode1 := BuildTestNode("tmp-1", 2000, 2000000)
-				tmpNode2 := BuildTestNode("tmp-2", 2000, 2000000)
+				tmpNode1 := no.BuildTestNode("tmp-1", 2000, 2000000)
+				tmpNode2 := no.BuildTestNode("tmp-2", 2000, 2000000)
 				b.ResetTimer()
 				b.Run(fmt.Sprintf("%s: ForkAddRevert (%d nodes, %d pods)", snapshotName, ntc, ptc), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {

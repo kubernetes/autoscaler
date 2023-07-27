@@ -25,11 +25,12 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestPreFilteringScaleDownNodeProcessor_GetPodDestinationCandidates(t *testing.T) {
-	n1 := BuildTestNode("n1", 100, 1000)
-	n2 := BuildTestNode("n2", 100, 1000)
+	n1 := no.BuildTestNode("n1", 100, 1000)
+	n2 := no.BuildTestNode("n2", 100, 1000)
 	ctx := &context.AutoscalingContext{}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	expectedNodes := []*apiv1.Node{n1, n2}
@@ -41,10 +42,10 @@ func TestPreFilteringScaleDownNodeProcessor_GetPodDestinationCandidates(t *testi
 }
 
 func TestPreFilteringScaleDownNodeProcessor_GetScaleDownCandidateNodes(t *testing.T) {
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
-	noNg := BuildTestNode("no-ng", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
+	ng1_2 := no.BuildTestNode("ng1-2", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
+	noNg := no.BuildTestNode("no-ng", 1000, 1000)
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNodeGroup("ng2", 1, 10, 1)

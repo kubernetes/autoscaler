@@ -22,7 +22,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -42,23 +43,23 @@ func (t *testNodeInfoGetter) GetNodeInfo(nodeName string) (*schedulerframework.N
 func TestScaleDownEarlierThan(t *testing.T) {
 	niEmpty := schedulerframework.NewNodeInfo()
 	nodeEmptyName := "nodeEmpty"
-	nodeEmpty := BuildTestNode(nodeEmptyName, 0, 100)
+	nodeEmpty := no.BuildTestNode(nodeEmptyName, 0, 100)
 	niEmpty.SetNode(nodeEmpty)
 
 	niEmpty2 := schedulerframework.NewNodeInfo()
 	nodeEmptyName2 := "nodeEmpty2"
-	nodeEmpty2 := BuildTestNode(nodeEmptyName2, 0, 100)
+	nodeEmpty2 := no.BuildTestNode(nodeEmptyName2, 0, 100)
 	niEmpty.SetNode(nodeEmpty2)
 
 	niNonEmpty := schedulerframework.NewNodeInfo()
 	nodeNonEmptyName := "nodeNonEmpty"
-	nodeNonEmpty := BuildTestNode(nodeNonEmptyName, 0, 100)
+	nodeNonEmpty := no.BuildTestNode(nodeNonEmptyName, 0, 100)
 	niNonEmpty.SetNode(nodeNonEmpty)
-	pod := BuildTestPod("p1", 0, 100)
+	pod := po.BuildTestPod("p1", 0, 100)
 	pi, _ := schedulerframework.NewPodInfo(pod)
 	niNonEmpty.AddPodInfo(pi)
 
-	noNodeInfoNode := BuildTestNode("n1", 0, 100)
+	noNodeInfoNode := no.BuildTestNode("n1", 0, 100)
 
 	niGetter := testNodeInfoGetter{map[string]*schedulerframework.NodeInfo{nodeEmptyName: niEmpty, nodeNonEmptyName: niNonEmpty, nodeEmptyName2: niEmpty2}}
 

@@ -29,6 +29,8 @@ import (
 	cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
@@ -74,12 +76,12 @@ func optionsToDebug(options []expander.Option) []string {
 }
 
 func TestPriceExpander(t *testing.T) {
-	n1 := BuildTestNode("n1", 1000, 1000)
-	n2 := BuildTestNode("n2", 4000, 1000)
-	n3 := BuildTestNode("n3", 4000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 4000, 1000)
+	n3 := no.BuildTestNode("n3", 4000, 1000)
 
-	p1 := BuildTestPod("p1", 1000, 0)
-	p2 := BuildTestPod("p2", 500, 0)
+	p1 := po.BuildTestPod("p1", 1000, 0)
+	p2 := po.BuildTestPod("p2", 500, 0)
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 1)

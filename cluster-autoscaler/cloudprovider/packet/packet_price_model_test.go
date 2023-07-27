@@ -22,6 +22,8 @@ import (
 	"time"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	"github.com/stretchr/testify/assert"
@@ -37,12 +39,12 @@ func TestGetNodePrice(t *testing.T) {
 	model := &PacketPriceModel{}
 	now := time.Now()
 
-	node1 := BuildTestNode("node1", plan1.CPU*1000, plan1.MemoryMb*1024*1024)
+	node1 := no.BuildTestNode("node1", plan1.CPU*1000, plan1.MemoryMb*1024*1024)
 	node1.Labels = labelsPool1
 	price1, err := model.NodePrice(node1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 
-	node2 := BuildTestNode("node2", plan2.CPU*1000, plan2.MemoryMb*1024*1024)
+	node2 := no.BuildTestNode("node2", plan2.CPU*1000, plan2.MemoryMb*1024*1024)
 	node2.Labels = labelsPool2
 	price2, err := model.NodePrice(node2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
@@ -52,8 +54,8 @@ func TestGetNodePrice(t *testing.T) {
 }
 
 func TestGetPodPrice(t *testing.T) {
-	pod1 := BuildTestPod("pod1", 100, 500*units.MiB)
-	pod2 := BuildTestPod("pod2", 2*100, 2*500*units.MiB)
+	pod1 := po.BuildTestPod("pod1", 100, 500*units.MiB)
+	pod2 := po.BuildTestPod("pod2", 2*100, 2*500*units.MiB)
 
 	model := &PacketPriceModel{}
 	now := time.Now()

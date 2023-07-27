@@ -19,25 +19,25 @@ package labels
 import (
 	"testing"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 )
 
 func TestCalculateNodeSelectorStats(t *testing.T) {
-	p1 := BuildTestPod("p1", 500, 0)
+	p1 := po.BuildTestPod("p1", 500, 0)
 	p1.Spec.NodeSelector = map[string]string{
 		"A": "X",
 		"B": "Y",
 	}
 
-	p2 := BuildTestPod("p2", 800, 0)
+	p2 := po.BuildTestPod("p2", 800, 0)
 	p2.Spec.NodeSelector = map[string]string{
 		"A": "Z12345",
 	}
 
-	p3 := BuildTestPod("p3", 100, 0)
+	p3 := po.BuildTestPod("p3", 100, 0)
 	p3.Spec.NodeSelector = map[string]string{
 		"A": "X",
 		"B": "Y",
@@ -55,24 +55,24 @@ func TestCalculateNodeSelectorStats(t *testing.T) {
 }
 
 func TestBestLabelSet(t *testing.T) {
-	p1 := BuildTestPod("p1", 500, 0)
+	p1 := po.BuildTestPod("p1", 500, 0)
 	p1.Spec.NodeSelector = map[string]string{
 		"A": "X",
 		"C": "Y",
 	}
 
-	p2 := BuildTestPod("p2", 200, 0)
+	p2 := po.BuildTestPod("p2", 200, 0)
 	p2.Spec.NodeSelector = map[string]string{
 		"A": "Z12345",
 	}
 
-	p3 := BuildTestPod("p3", 100, 0)
+	p3 := po.BuildTestPod("p3", 100, 0)
 	p3.Spec.NodeSelector = map[string]string{
 		"A": "X",
 		"B": "Y",
 	}
 
-	p4 := BuildTestPod("p3", 100, 0)
+	p4 := po.BuildTestPod("p3", 100, 0)
 	p4.Spec.NodeSelector = map[string]string{
 		"A":                    "X",
 		"cloud.google.com/gke": "true",

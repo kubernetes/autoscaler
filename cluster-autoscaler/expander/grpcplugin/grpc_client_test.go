@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mocks"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -36,10 +37,10 @@ import (
 
 var (
 	nodes = []*v1.Node{
-		BuildTestNode("n1", 1000, 1000),
-		BuildTestNode("n2", 1000, 1000),
-		BuildTestNode("n3", 1000, 1000),
-		BuildTestNode("n4", 1000, 1000),
+		no.BuildTestNode("n1", 1000, 1000),
+		no.BuildTestNode("n2", 1000, 1000),
+		no.BuildTestNode("n3", 1000, 1000),
+		no.BuildTestNode("n4", 1000, 1000),
 	}
 
 	eoT2Micro = expander.Option{

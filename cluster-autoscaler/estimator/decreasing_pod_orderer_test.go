@@ -21,14 +21,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func TestPodPriorityProcessor(t *testing.T) {
-	p1 := test.BuildTestPod("p1", 1, 1)
-	p2 := test.BuildTestPod("p2", 2, 1)
-	p3 := test.BuildTestPod("p3", 2, 100)
+	p1 := test.po.BuildTestPod("p1", 1, 1)
+	p2 := test.po.BuildTestPod("p2", 2, 1)
+	p3 := test.po.BuildTestPod("p3", 2, 100)
 	node := makeNode(4, 600, "node1", "zone-sun")
 	testCases := map[string]struct {
 		inputPods    []*apiv1.Pod

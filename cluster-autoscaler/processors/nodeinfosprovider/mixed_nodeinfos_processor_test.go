@@ -26,6 +26,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,18 +40,18 @@ var (
 
 func TestGetNodeInfosForGroups(t *testing.T) {
 	now := time.Now()
-	ready1 := BuildTestNode("n1", 1000, 1000)
+	ready1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
-	ready2 := BuildTestNode("n2", 2000, 2000)
+	ready2 := no.BuildTestNode("n2", 2000, 2000)
 	SetNodeReadyState(ready2, true, now.Add(-2*time.Minute))
-	unready3 := BuildTestNode("n3", 3000, 3000)
+	unready3 := no.BuildTestNode("n3", 3000, 3000)
 	SetNodeReadyState(unready3, false, now)
-	unready4 := BuildTestNode("n4", 4000, 4000)
+	unready4 := no.BuildTestNode("n4", 4000, 4000)
 	SetNodeReadyState(unready4, false, now)
-	justReady5 := BuildTestNode("n5", 5000, 5000)
+	justReady5 := no.BuildTestNode("n5", 5000, 5000)
 	SetNodeReadyState(justReady5, true, now)
 
-	tn := BuildTestNode("tn", 5000, 5000)
+	tn := no.BuildTestNode("tn", 5000, 5000)
 	tni := schedulerframework.NewNodeInfo()
 	tni.SetNode(tn)
 
@@ -120,20 +121,20 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	now := time.Now()
-	ready1 := BuildTestNode("n1", 1000, 1000)
+	ready1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
-	ready2 := BuildTestNode("n2", 2000, 2000)
+	ready2 := no.BuildTestNode("n2", 2000, 2000)
 	SetNodeReadyState(ready2, true, now.Add(-2*time.Minute))
-	unready3 := BuildTestNode("n3", 3000, 3000)
+	unready3 := no.BuildTestNode("n3", 3000, 3000)
 	SetNodeReadyState(unready3, false, now)
-	unready4 := BuildTestNode("n4", 4000, 4000)
+	unready4 := no.BuildTestNode("n4", 4000, 4000)
 	SetNodeReadyState(unready4, false, now.Add(-2*time.Minute))
-	ready5 := BuildTestNode("n5", 5000, 5000)
+	ready5 := no.BuildTestNode("n5", 5000, 5000)
 	SetNodeReadyState(ready5, true, now.Add(-2*time.Minute))
-	ready6 := BuildTestNode("n6", 6000, 6000)
+	ready6 := no.BuildTestNode("n6", 6000, 6000)
 	SetNodeReadyState(ready6, true, now.Add(-2*time.Minute))
 
-	tn := BuildTestNode("tn", 10000, 10000)
+	tn := no.BuildTestNode("tn", 10000, 10000)
 	tni := schedulerframework.NewNodeInfo()
 	tni.SetNode(tn)
 
@@ -243,7 +244,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 func TestGetNodeInfosCacheExpired(t *testing.T) {
 	now := time.Now()
-	ready1 := BuildTestNode("n1", 1000, 1000)
+	ready1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))
 
 	// Cloud provider with TemplateNodeInfo not implemented.
@@ -260,7 +261,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	tn := BuildTestNode("tn", 5000, 5000)
+	tn := no.BuildTestNode("tn", 5000, 5000)
 	tni := schedulerframework.NewNodeInfo()
 	tni.SetNode(tn)
 	// Cache expire time is set.

@@ -32,6 +32,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/stretchr/testify/assert"
@@ -118,7 +120,7 @@ func TestUpdate(t *testing.T) {
 const testVersion = "testVersion"
 
 func makeNode(name, version string) simulator.NodeToBeRemoved {
-	n := BuildTestNode(name, 1000, 10)
+	n := no.BuildTestNode(name, 1000, 10)
 	n.Annotations = map[string]string{testVersion: version}
 	return simulator.NodeToBeRemoved{Node: n}
 }
@@ -176,14 +178,14 @@ func TestRemovableAt(t *testing.T) {
 			empty := []simulator.NodeToBeRemoved{}
 			for i := 0; i < tc.numEmpty; i++ {
 				empty = append(empty, simulator.NodeToBeRemoved{
-					Node: BuildTestNode(fmt.Sprintf("empty-%d", i), 10, 100),
+					Node: no.BuildTestNode(fmt.Sprintf("empty-%d", i), 10, 100),
 				})
 			}
 			drain := []simulator.NodeToBeRemoved{}
 			for i := 0; i < tc.numDrain; i++ {
 				drain = append(drain, simulator.NodeToBeRemoved{
-					Node:             BuildTestNode(fmt.Sprintf("drain-%d", i), 10, 100),
-					PodsToReschedule: []*apiv1.Pod{BuildTestPod(fmt.Sprintf("pod-%d", i), 1, 1)},
+					Node:             no.BuildTestNode(fmt.Sprintf("drain-%d", i), 10, 100),
+					PodsToReschedule: []*apiv1.Pod{po.BuildTestPod(fmt.Sprintf("pod-%d", i), 1, 1)},
 				})
 			}
 

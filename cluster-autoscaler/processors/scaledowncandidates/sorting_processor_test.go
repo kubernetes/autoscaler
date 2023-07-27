@@ -23,7 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	apiv1 "k8s.io/api/core/v1"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 type scoreProcessor struct {
@@ -81,7 +81,7 @@ func TestSort(t *testing.T) {
 	for _, test := range testCases {
 		nodes := []*apiv1.Node{}
 		for i := 0; i < test.numNodes; i++ {
-			node := BuildTestNode(fmt.Sprintf("node-%d", i), 10, 100)
+			node := no.BuildTestNode(fmt.Sprintf("node-%d", i), 10, 100)
 			nodes = append(nodes, node)
 		}
 		processors := []CandidatesComparer{}

@@ -21,7 +21,8 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	"github.com/stretchr/testify/assert"
 
@@ -29,13 +30,13 @@ import (
 )
 
 func TestCheckPredicate(t *testing.T) {
-	p450 := BuildTestPod("p450", 450, 500000)
-	p600 := BuildTestPod("p600", 600, 500000)
-	p8000 := BuildTestPod("p8000", 8000, 0)
-	p500 := BuildTestPod("p500", 500, 500000)
+	p450 := po.BuildTestPod("p450", 450, 500000)
+	p600 := po.BuildTestPod("p600", 600, 500000)
+	p8000 := po.BuildTestPod("p8000", 8000, 0)
+	p500 := po.BuildTestPod("p500", 500, 500000)
 
-	n1000 := BuildTestNode("n1000", 1000, 2000000)
-	SetNodeReadyState(n1000, true, time.Time{})
+	n1000 := no.BuildTestNode("n1000", 1000, 2000000)
+	no.SetNodeReadyState(n1000, true, time.Time{})
 
 	tests := []struct {
 		name          string
@@ -95,12 +96,12 @@ func TestCheckPredicate(t *testing.T) {
 }
 
 func TestFitsAnyNode(t *testing.T) {
-	p900 := BuildTestPod("p900", 900, 1000)
-	p1900 := BuildTestPod("p1900", 1900, 1000)
-	p2100 := BuildTestPod("p2100", 2100, 1000)
+	p900 := po.BuildTestPod("p900", 900, 1000)
+	p1900 := po.BuildTestPod("p1900", 1900, 1000)
+	p2100 := po.BuildTestPod("p2100", 2100, 1000)
 
-	n1000 := BuildTestNode("n1000", 1000, 2000000)
-	n2000 := BuildTestNode("n2000", 2000, 2000000)
+	n1000 := no.BuildTestNode("n1000", 1000, 2000000)
+	n2000 := no.BuildTestNode("n2000", 2000, 2000000)
 
 	var err error
 
@@ -126,8 +127,8 @@ func TestFitsAnyNode(t *testing.T) {
 }
 
 func TestDebugInfo(t *testing.T) {
-	p1 := BuildTestPod("p1", 0, 0)
-	node1 := BuildTestNode("n1", 1000, 2000000)
+	p1 := po.BuildTestPod("p1", 0, 0)
+	node1 := no.BuildTestNode("n1", 1000, 2000000)
 	node1.Spec.Taints = []apiv1.Taint{
 		{
 			Key:    "SomeTaint",
@@ -140,7 +141,7 @@ func TestDebugInfo(t *testing.T) {
 			Effect: apiv1.TaintEffectNoExecute,
 		},
 	}
-	SetNodeReadyState(node1, true, time.Time{})
+	no.SetNodeReadyState(node1, true, time.Time{})
 
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)

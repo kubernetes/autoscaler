@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -41,7 +41,7 @@ import (
 
 func TestMarkNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 	err := MarkToBeDeleted(node, fakeClient, false)
 	assert.NoError(t, err)
@@ -53,7 +53,7 @@ func TestMarkNodes(t *testing.T) {
 
 func TestSoftMarkNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 	err := MarkDeletionCandidate(node, fakeClient)
 	assert.NoError(t, err)
@@ -65,7 +65,7 @@ func TestSoftMarkNodes(t *testing.T) {
 
 func TestCheckNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	taint := apiv1.Taint{
 		Key:    ToBeDeletedTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -81,7 +81,7 @@ func TestCheckNodes(t *testing.T) {
 
 func TestSoftCheckNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	taint := apiv1.Taint{
 		Key:    DeletionCandidateTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -97,7 +97,7 @@ func TestSoftCheckNodes(t *testing.T) {
 
 func TestQueryNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 	err := MarkToBeDeleted(node, fakeClient, false)
 	assert.NoError(t, err)
@@ -113,7 +113,7 @@ func TestQueryNodes(t *testing.T) {
 
 func TestSoftQueryNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 	err := MarkDeletionCandidate(node, fakeClient)
 	assert.NoError(t, err)
@@ -129,7 +129,7 @@ func TestSoftQueryNodes(t *testing.T) {
 
 func TestCleanNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	taint := apiv1.Taint{
 		Key:    ToBeDeletedTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -154,7 +154,7 @@ func TestCleanNodes(t *testing.T) {
 
 func TestCleanNodesWithCordon(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	taint := apiv1.Taint{
 		Key:    ToBeDeletedTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -179,7 +179,7 @@ func TestCleanNodesWithCordon(t *testing.T) {
 
 func TestCleanNodesWithCordonOnOff(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	taint := apiv1.Taint{
 		Key:    ToBeDeletedTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -204,7 +204,7 @@ func TestCleanNodesWithCordonOnOff(t *testing.T) {
 
 func TestSoftCleanNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
-	node := BuildTestNode("node", 1000, 1000)
+	node := no.BuildTestNode("node", 1000, 1000)
 	taint := apiv1.Taint{
 		Key:    DeletionCandidateTaint,
 		Value:  fmt.Sprint(time.Now().Unix()),
@@ -226,8 +226,8 @@ func TestSoftCleanNodes(t *testing.T) {
 }
 
 func TestCleanAllToBeDeleted(t *testing.T) {
-	n1 := BuildTestNode("n1", 1000, 10)
-	n2 := BuildTestNode("n2", 1000, 10)
+	n1 := no.BuildTestNode("n1", 1000, 10)
+	n2 := no.BuildTestNode("n2", 1000, 10)
 	n2.Spec.Taints = []apiv1.Taint{{Key: ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)
@@ -242,8 +242,8 @@ func TestCleanAllToBeDeleted(t *testing.T) {
 }
 
 func TestCleanAllDeletionCandidates(t *testing.T) {
-	n1 := BuildTestNode("n1", 1000, 10)
-	n2 := BuildTestNode("n2", 1000, 10)
+	n1 := no.BuildTestNode("n1", 1000, 10)
+	n2 := no.BuildTestNode("n2", 1000, 10)
 	n2.Spec.Taints = []apiv1.Taint{{Key: DeletionCandidateTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)

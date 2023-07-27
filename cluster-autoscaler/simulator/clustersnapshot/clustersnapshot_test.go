@@ -23,7 +23,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
@@ -91,8 +92,8 @@ type modificationTestCase struct {
 }
 
 func validTestCases(t *testing.T) []modificationTestCase {
-	node := BuildTestNode("specialNode", 10, 100)
-	pod := BuildTestPod("specialPod", 1, 1)
+	node := no.BuildTestNode("specialNode", 10, 100)
+	pod := po.BuildTestPod("specialPod", 1, 1)
 	pod.Spec.NodeName = node.Name
 
 	testCases := []modificationTestCase{
@@ -162,7 +163,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 
 func TestForking(t *testing.T) {
 	testCases := validTestCases(t)
-	node := BuildTestNode("specialNode-2", 10, 100)
+	node := no.BuildTestNode("specialNode-2", 10, 100)
 
 	for name, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
@@ -351,7 +352,7 @@ func TestNode404(t *testing.T) {
 		op   func(ClusterSnapshot) error
 	}{
 		{"add pod", func(snapshot ClusterSnapshot) error {
-			return snapshot.AddPod(BuildTestPod("p1", 0, 0), "node")
+			return snapshot.AddPod(po.BuildTestPod("p1", 0, 0), "node")
 		}},
 		{"remove pod", func(snapshot ClusterSnapshot) error {
 			return snapshot.RemovePod("default", "p1", "node")
@@ -380,7 +381,7 @@ func TestNode404(t *testing.T) {
 				func(t *testing.T) {
 					snapshot := snapshotFactory()
 
-					node := BuildTestNode("node", 10, 100)
+					node := no.BuildTestNode("node", 10, 100)
 					err := snapshot.AddNode(node)
 					assert.NoError(t, err)
 
@@ -406,7 +407,7 @@ func TestNode404(t *testing.T) {
 				func(t *testing.T) {
 					snapshot := snapshotFactory()
 
-					node := BuildTestNode("node", 10, 100)
+					node := no.BuildTestNode("node", 10, 100)
 					err := snapshot.AddNode(node)
 					assert.NoError(t, err)
 
@@ -422,8 +423,8 @@ func TestNode404(t *testing.T) {
 }
 
 func TestNodeAlreadyExists(t *testing.T) {
-	node := BuildTestNode("node", 10, 100)
-	pod := BuildTestPod("pod", 1, 1)
+	node := no.BuildTestNode("node", 10, 100)
+	pod := po.BuildTestPod("pod", 1, 1)
 	pod.Spec.NodeName = node.Name
 
 	ops := []struct {
@@ -501,8 +502,8 @@ func TestNodeAlreadyExists(t *testing.T) {
 }
 
 func TestPVCUsedByPods(t *testing.T) {
-	node := BuildTestNode("node", 10, 10)
-	pod1 := BuildTestPod("pod1", 10, 10)
+	node := no.BuildTestNode("node", 10, 10)
+	pod1 := po.BuildTestPod("pod1", 10, 10)
 	pod1.Spec.NodeName = node.Name
 	pod1.Spec.Volumes = []apiv1.Volume{
 		{
@@ -514,7 +515,7 @@ func TestPVCUsedByPods(t *testing.T) {
 			},
 		},
 	}
-	pod2 := BuildTestPod("pod2", 10, 10)
+	pod2 := po.BuildTestPod("pod2", 10, 10)
 	pod2.Spec.NodeName = node.Name
 	pod2.Spec.Volumes = []apiv1.Volume{
 		{
@@ -534,7 +535,7 @@ func TestPVCUsedByPods(t *testing.T) {
 			},
 		},
 	}
-	nonPvcPod := BuildTestPod("pod3", 10, 10)
+	nonPvcPod := po.BuildTestPod("pod3", 10, 10)
 	nonPvcPod.Spec.NodeName = node.Name
 	nonPvcPod.Spec.Volumes = []apiv1.Volume{
 		{
@@ -642,8 +643,8 @@ func TestPVCUsedByPods(t *testing.T) {
 }
 
 func TestPVCClearAndFork(t *testing.T) {
-	node := BuildTestNode("node", 10, 10)
-	pod1 := BuildTestPod("pod1", 10, 10)
+	node := no.BuildTestNode("node", 10, 10)
+	pod1 := po.BuildTestPod("pod1", 10, 10)
 	pod1.Spec.NodeName = node.Name
 	pod1.Spec.Volumes = []apiv1.Volume{
 		{
@@ -655,7 +656,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			},
 		},
 	}
-	pod2 := BuildTestPod("pod2", 10, 10)
+	pod2 := po.BuildTestPod("pod2", 10, 10)
 	pod2.Spec.NodeName = node.Name
 	pod2.Spec.Volumes = []apiv1.Volume{
 		{
@@ -675,7 +676,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			},
 		},
 	}
-	nonPvcPod := BuildTestPod("pod3", 10, 10)
+	nonPvcPod := po.BuildTestPod("pod3", 10, 10)
 	nonPvcPod.Spec.NodeName = node.Name
 	nonPvcPod.Spec.Volumes = []apiv1.Volume{
 		{

@@ -28,6 +28,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 )
 
 func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
@@ -46,61 +48,61 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 		{
 			name: "no nodes, some unschedulable pods",
 			unschedulablePods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
 			},
 		},
 		{
 			name:         "single node undergoing deletion",
 			drainedNodes: []string{"n"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n", 1000, 10),
+				no.BuildTestNode("n", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n"),
 				BuildScheduledTestPod("p2", 200, 1, "n"),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
 			},
 		},
 		{
 			name:         "single empty node undergoing deletion",
 			drainedNodes: []string{"n"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n", 1000, 10),
+				no.BuildTestNode("n", 1000, 10),
 			},
 		},
 		{
 			name:         "single node undergoing deletion, unschedulable pods",
 			drainedNodes: []string{"n"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n", 1000, 10),
+				no.BuildTestNode("n", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n"),
 				BuildScheduledTestPod("p2", 200, 1, "n"),
 			},
 			unschedulablePods: []*apiv1.Pod{
-				BuildTestPod("p3", 300, 1),
-				BuildTestPod("p4", 400, 1),
+				po.BuildTestPod("p3", 300, 1),
+				po.BuildTestPod("p4", 400, 1),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
-				BuildTestPod("p3", 300, 1),
-				BuildTestPod("p4", 400, 1),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
+				po.BuildTestPod("p3", 300, 1),
+				po.BuildTestPod("p4", 400, 1),
 			},
 		},
 		{
 			name: "single ready node",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n", 1000, 10),
+				no.BuildTestNode("n", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n"),
@@ -110,27 +112,27 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 		{
 			name: "single ready node, unschedulable pods",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n", 1000, 10),
+				no.BuildTestNode("n", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n"),
 				BuildScheduledTestPod("p2", 200, 1, "n"),
 			},
 			unschedulablePods: []*apiv1.Pod{
-				BuildTestPod("p3", 300, 1),
-				BuildTestPod("p4", 400, 1),
+				po.BuildTestPod("p3", 300, 1),
+				po.BuildTestPod("p4", 400, 1),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p3", 300, 1),
-				BuildTestPod("p4", 400, 1),
+				po.BuildTestPod("p3", 300, 1),
+				po.BuildTestPod("p4", 400, 1),
 			},
 		},
 		{
 			name:         "multiple nodes, all undergoing deletion",
 			drainedNodes: []string{"n1", "n2"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n1"),
@@ -139,18 +141,18 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 				BuildScheduledTestPod("p4", 400, 1, "n2"),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
-				BuildTestPod("p3", 300, 1),
-				BuildTestPod("p4", 400, 1),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
+				po.BuildTestPod("p3", 300, 1),
+				po.BuildTestPod("p4", 400, 1),
 			},
 		},
 		{
 			name:         "multiple nodes, some undergoing deletion",
 			drainedNodes: []string{"n1"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n1"),
@@ -159,15 +161,15 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 				BuildScheduledTestPod("p4", 400, 1, "n2"),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
 			},
 		},
 		{
 			name: "multiple nodes, no undergoing deletion",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n1"),
@@ -180,7 +182,7 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 			name:         "single node, non-recreatable pods filtered out",
 			drainedNodes: []string{"n"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n", 1000, 10),
+				no.BuildTestNode("n", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n"),
@@ -190,36 +192,36 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 				SetStaticPodSpec(BuildScheduledTestPod("p5", 500, 1, "n")),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				SetRSPodSpec(BuildTestPod("p2", 200, 1), "rs"),
+				po.BuildTestPod("p1", 100, 1),
+				SetRSPodSpec(po.BuildTestPod("p2", 200, 1), "rs"),
 			},
 		},
 		{
 			name: "unschedulable pods, non-recreatable pods not filtered out",
 			unschedulablePods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				SetRSPodSpec(BuildTestPod("p2", 200, 1), "rs"),
-				SetDSPodSpec(BuildTestPod("p3", 300, 1)),
-				SetMirrorPodSpec(BuildTestPod("p4", 400, 1)),
-				SetStaticPodSpec(BuildTestPod("p5", 500, 1)),
+				po.BuildTestPod("p1", 100, 1),
+				SetRSPodSpec(po.BuildTestPod("p2", 200, 1), "rs"),
+				SetDSPodSpec(po.BuildTestPod("p3", 300, 1)),
+				SetMirrorPodSpec(po.BuildTestPod("p4", 400, 1)),
+				SetStaticPodSpec(po.BuildTestPod("p5", 500, 1)),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				SetRSPodSpec(BuildTestPod("p2", 200, 1), "rs"),
-				SetDSPodSpec(BuildTestPod("p3", 300, 1)),
-				SetMirrorPodSpec(BuildTestPod("p4", 400, 1)),
-				SetStaticPodSpec(BuildTestPod("p5", 500, 1)),
+				po.BuildTestPod("p1", 100, 1),
+				SetRSPodSpec(po.BuildTestPod("p2", 200, 1), "rs"),
+				SetDSPodSpec(po.BuildTestPod("p3", 300, 1)),
+				SetMirrorPodSpec(po.BuildTestPod("p4", 400, 1)),
+				SetStaticPodSpec(po.BuildTestPod("p5", 500, 1)),
 			},
 		},
 		{
 			name:         "everything works together",
 			drainedNodes: []string{"n1", "n3", "n5"},
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
-				BuildTestNode("n4", 1000, 10),
-				BuildTestNode("n5", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n4", 1000, 10),
+				no.BuildTestNode("n5", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n1"),
@@ -233,18 +235,18 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 				SetMirrorPodSpec(BuildScheduledTestPod("p9", 900, 1, "n3")),
 			},
 			unschedulablePods: []*apiv1.Pod{
-				BuildTestPod("p10", 1000, 1),
-				SetMirrorPodSpec(BuildTestPod("p11", 1100, 1)),
-				SetStaticPodSpec(BuildTestPod("p12", 1200, 1)),
+				po.BuildTestPod("p10", 1000, 1),
+				SetMirrorPodSpec(po.BuildTestPod("p11", 1100, 1)),
+				SetStaticPodSpec(po.BuildTestPod("p12", 1200, 1)),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				BuildTestPod("p2", 200, 1),
-				SetRSPodSpec(BuildTestPod("p3", 300, 1), "rs"),
-				BuildTestPod("p7", 700, 1),
-				BuildTestPod("p10", 1000, 1),
-				SetMirrorPodSpec(BuildTestPod("p11", 1100, 1)),
-				SetStaticPodSpec(BuildTestPod("p12", 1200, 1)),
+				po.BuildTestPod("p1", 100, 1),
+				po.BuildTestPod("p2", 200, 1),
+				SetRSPodSpec(po.BuildTestPod("p3", 300, 1), "rs"),
+				po.BuildTestPod("p7", 700, 1),
+				po.BuildTestPod("p10", 1000, 1),
+				SetMirrorPodSpec(po.BuildTestPod("p11", 1100, 1)),
+				SetStaticPodSpec(po.BuildTestPod("p12", 1200, 1)),
 			},
 		},
 	}

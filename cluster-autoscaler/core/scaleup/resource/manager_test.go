@@ -268,7 +268,7 @@ func newContext(t *testing.T, provider cloudprovider.CloudProvider) context.Auto
 }
 
 func newNode(t *testing.T, name string, cpu, mem int64) *corev1.Node {
-	return utils_test.BuildTestNode(name, cpu*1000, mem)
+	return utils_test.no.BuildTestNode(name, cpu*1000, mem)
 }
 
 func newNodeGroup(t *testing.T, provider *testprovider.TestCloudProvider, name string, min, max, size int, cpu, mem int64) (cloudprovider.NodeGroup, []*corev1.Node) {

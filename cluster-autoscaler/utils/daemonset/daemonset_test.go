@@ -21,7 +21,8 @@ import (
 	"testing"
 	"time"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -33,8 +34,8 @@ import (
 )
 
 func TestGetDaemonSetPodsForNode(t *testing.T) {
-	node := BuildTestNode("node", 1000, 1000)
-	SetNodeReadyState(node, true, time.Now())
+	node := no.BuildTestNode("node", 1000, 1000)
+	no.SetNodeReadyState(node, true, time.Now())
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
@@ -125,7 +126,7 @@ func TestEvictedPodsFilter(t *testing.T) {
 			t.Parallel()
 			var dsPods []*apiv1.Pod
 			for n, av := range tc.pods {
-				p := BuildTestPod(n, 100, 0)
+				p := po.BuildTestPod(n, 100, 0)
 				if av != "" {
 					p.Annotations[EnableDsEvictionKey] = av
 				}

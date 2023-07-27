@@ -20,13 +20,14 @@ import (
 	"testing"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestNodeLabelComparison(t *testing.T) {
 	labels := []string{"node.kubernetes.io/instance-type", "kubernetes.io/arch"}
 	comparator := CreateLabelNodeInfoComparator(labels)
-	node1 := BuildTestNode("node1", 1000, 2000)
-	node2 := BuildTestNode("node2", 1000, 2000)
+	node1 := no.BuildTestNode("node1", 1000, 2000)
+	node2 := no.BuildTestNode("node2", 1000, 2000)
 
 	for _, tc := range []struct {
 		description string

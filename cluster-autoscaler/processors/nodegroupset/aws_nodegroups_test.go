@@ -22,12 +22,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestIsAwsNodeInfoSimilar(t *testing.T) {
 	comparator := CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})
-	node1 := BuildTestNode("node1", 1000, 2000)
-	node2 := BuildTestNode("node2", 1000, 2000)
+	node1 := no.BuildTestNode("node1", 1000, 2000)
+	node2 := no.BuildTestNode("node2", 1000, 2000)
 
 	for _, tc := range []struct {
 		description    string

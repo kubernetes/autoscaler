@@ -24,24 +24,25 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestCloudProviderNodeInstancesCache(t *testing.T) {
 	// Fresh entry for node group in cache.
-	nodeNg1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	nodeNg1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	instanceNg1_1 := cloudprovider.Instance{Id: nodeNg1_1.Name}
 	// Fresh entry for node group in cache - checks Invalidate function.
-	nodeNg2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	nodeNg2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	instanceNg2_1 := cloudprovider.Instance{Id: nodeNg2_1.Name}
-	nodeNg2_2 := BuildTestNode("ng2-2", 1000, 1000)
+	nodeNg2_2 := no.BuildTestNode("ng2-2", 1000, 1000)
 	instanceNg2_2 := cloudprovider.Instance{Id: nodeNg2_2.Name}
 	// Stale entry for node group in cache - check Refresh function.
-	nodeNg3_1 := BuildTestNode("ng3-1", 1000, 1000)
+	nodeNg3_1 := no.BuildTestNode("ng3-1", 1000, 1000)
 	instanceNg3_1 := cloudprovider.Instance{Id: nodeNg3_1.Name}
-	nodeNg3_2 := BuildTestNode("ng3-2", 1000, 1000)
+	nodeNg3_2 := no.BuildTestNode("ng3-2", 1000, 1000)
 	instanceNg3_2 := cloudprovider.Instance{Id: nodeNg3_2.Name}
 	// Removed node group.
-	nodeNg4_1 := BuildTestNode("ng4-1", 1000, 1000)
+	nodeNg4_1 := no.BuildTestNode("ng4-1", 1000, 1000)
 	instanceNg4_1 := cloudprovider.Instance{Id: nodeNg4_1.Name}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)

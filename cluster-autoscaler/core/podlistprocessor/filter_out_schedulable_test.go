@@ -26,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -47,63 +49,63 @@ func TestFilterOutSchedulable(t *testing.T) {
 		"single empty node, single schedulable pod": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod", 500, 10),
+				po.BuildTestPod("pod", 500, 10),
 			},
 			expectedScheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod", 500, 10),
+				po.BuildTestPod("pod", 500, 10),
 			},
 			nodeMatches: matchesAllNodes,
 		},
 		"single empty node, many schedulable pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod1", 200, 10),
-				BuildTestPod("pod2", 500, 10),
-				BuildTestPod("pod3", 800, 10),
+				po.BuildTestPod("pod1", 200, 10),
+				po.BuildTestPod("pod2", 500, 10),
+				po.BuildTestPod("pod3", 800, 10),
 			},
 			expectedScheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod1", 200, 10),
-				BuildTestPod("pod2", 500, 10),
-				BuildTestPod("pod3", 800, 10),
+				po.BuildTestPod("pod1", 200, 10),
+				po.BuildTestPod("pod2", 500, 10),
+				po.BuildTestPod("pod3", 800, 10),
 			},
 			nodeMatches: matchesAllNodes,
 		},
 		"single empty node, single unschedulable pod": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod1", 3000, 10),
+				po.BuildTestPod("pod1", 3000, 10),
 			},
 			expectedUnscheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod1", 3000, 10),
+				po.BuildTestPod("pod1", 3000, 10),
 			},
 			nodeMatches: matchesAllNodes,
 		},
 		"single empty node, various pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod1", 200, 10),
-				BuildTestPod("pod2", 500, 10),
-				BuildTestPod("pod3", 1800, 10),
+				po.BuildTestPod("pod1", 200, 10),
+				po.BuildTestPod("pod2", 500, 10),
+				po.BuildTestPod("pod3", 1800, 10),
 			},
 			expectedScheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod1", 200, 10),
-				BuildTestPod("pod2", 500, 10),
+				po.BuildTestPod("pod1", 200, 10),
+				po.BuildTestPod("pod2", 500, 10),
 			},
 			expectedUnscheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod3", 1800, 10),
+				po.BuildTestPod("pod3", 1800, 10),
 			},
 			nodeMatches: matchesAllNodes,
 		},
 		"single empty node, some priority pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod1", 200, 10),
+				po.BuildTestPod("pod1", 200, 10),
 				buildPriorityTestPod("pod2", 500, 10, 10),
 				buildPriorityTestPod("pod3", 1800, 10, 20),
 			},
 			expectedScheduledPods: []*apiv1.Pod{
 				buildPriorityTestPod("pod3", 1800, 10, 20),
-				BuildTestPod("pod1", 200, 10),
+				po.BuildTestPod("pod1", 200, 10),
 			},
 			expectedUnscheduledPods: []*apiv1.Pod{
 				buildPriorityTestPod("pod2", 500, 10, 10),
@@ -113,41 +115,41 @@ func TestFilterOutSchedulable(t *testing.T) {
 		"non-empty node with a single pods scheduled": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
 				node: {
-					BuildTestPod("pod1", 500, 10),
+					po.BuildTestPod("pod1", 500, 10),
 				},
 			},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod2", 1000, 10),
-				BuildTestPod("pod3", 300, 10),
-				BuildTestPod("pod4", 300, 10),
+				po.BuildTestPod("pod2", 1000, 10),
+				po.BuildTestPod("pod3", 300, 10),
+				po.BuildTestPod("pod4", 300, 10),
 			},
 			expectedScheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod2", 1000, 10),
-				BuildTestPod("pod3", 300, 10),
+				po.BuildTestPod("pod2", 1000, 10),
+				po.BuildTestPod("pod3", 300, 10),
 			},
 			expectedUnscheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod4", 300, 10),
+				po.BuildTestPod("pod4", 300, 10),
 			},
 			nodeMatches: matchesAllNodes,
 		},
 		"non-empty node with many pods scheduled": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
 				node: {
-					BuildTestPod("pod1", 500, 10),
-					BuildTestPod("pod2", 1000, 10),
+					po.BuildTestPod("pod1", 500, 10),
+					po.BuildTestPod("pod2", 1000, 10),
 				},
 			},
 			unschedulableCandidates: []*apiv1.Pod{
-				BuildTestPod("pod3", 1000, 10),
-				BuildTestPod("pod4", 300, 10),
-				BuildTestPod("pod5", 300, 10),
+				po.BuildTestPod("pod3", 1000, 10),
+				po.BuildTestPod("pod4", 300, 10),
+				po.BuildTestPod("pod5", 300, 10),
 			},
 			expectedScheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod4", 300, 10),
+				po.BuildTestPod("pod4", 300, 10),
 			},
 			expectedUnscheduledPods: []*apiv1.Pod{
-				BuildTestPod("pod3", 1000, 10),
-				BuildTestPod("pod5", 300, 10),
+				po.BuildTestPod("pod3", 1000, 10),
+				po.BuildTestPod("pod5", 300, 10),
 			},
 			nodeMatches: matchesAllNodes,
 		},
@@ -244,17 +246,17 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 			b.Run(fmt.Sprintf("%s: %d nodes %d scheduled %d pending", snapshotName, tc.nodes, tc.scheduledPods, tc.pendingPods), func(b *testing.B) {
 				pendingPods := make([]*apiv1.Pod, tc.pendingPods, tc.pendingPods)
 				for i := 0; i < tc.pendingPods; i++ {
-					pendingPods[i] = BuildTestPod(fmt.Sprintf("p-%d", i), 1000, 2000000)
+					pendingPods[i] = po.BuildTestPod(fmt.Sprintf("p-%d", i), 1000, 2000000)
 				}
 				nodes := make([]*apiv1.Node, tc.nodes, tc.nodes)
 				for i := 0; i < tc.nodes; i++ {
-					nodes[i] = BuildTestNode(fmt.Sprintf("n-%d", i), 2000, 200000)
+					nodes[i] = no.BuildTestNode(fmt.Sprintf("n-%d", i), 2000, 200000)
 					SetNodeReadyState(nodes[i], true, time.Time{})
 				}
 				scheduledPods := make([]*apiv1.Pod, tc.scheduledPods, tc.scheduledPods)
 				j := 0
 				for i := 0; i < tc.scheduledPods; i++ {
-					scheduledPods[i] = BuildTestPod(fmt.Sprintf("s-%d", i), 1000, 200000)
+					scheduledPods[i] = po.BuildTestPod(fmt.Sprintf("s-%d", i), 1000, 200000)
 					scheduledPods[i].Spec.NodeName = nodes[j].Name
 					j++
 					if j >= tc.nodes {
@@ -291,13 +293,13 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 }
 
 func buildReadyTestNode(name string, cpu, mem int64) *apiv1.Node {
-	node := BuildTestNode(name, cpu, mem)
+	node := no.BuildTestNode(name, cpu, mem)
 	SetNodeReadyState(node, true, time.Time{})
 	return node
 }
 
 func buildPriorityTestPod(name string, cpu, mem int64, priority int32) *apiv1.Pod {
-	pod := BuildTestPod(name, cpu, mem)
+	pod := po.BuildTestPod(name, cpu, mem)
 	pod.Spec.Priority = &priority
 	return pod
 }

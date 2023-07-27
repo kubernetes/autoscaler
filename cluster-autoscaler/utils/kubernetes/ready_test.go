@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestGetReadiness(t *testing.T) {
@@ -46,13 +46,13 @@ func TestGetReadiness(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		createTestNode := func(timeSinceCreation time.Duration) *apiv1.Node {
-			node := BuildTestNode("n1", 1000, 1000)
+			node := no.BuildTestNode("n1", 1000, 1000)
 			node.CreationTimestamp.Time = time.Time{}
 			testedTime := node.CreationTimestamp.Time.Add(timeSinceCreation)
 
-			SetNodeCondition(node, tc.condition, tc.status, testedTime)
+			no.SetNodeCondition(node, tc.condition, tc.status, testedTime)
 			if tc.condition != apiv1.NodeReady {
-				SetNodeCondition(node, apiv1.NodeReady, apiv1.ConditionTrue, testedTime)
+				no.SetNodeCondition(node, apiv1.NodeReady, apiv1.ConditionTrue, testedTime)
 			}
 
 			if tc.taintKey != "" {

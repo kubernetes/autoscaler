@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
 
@@ -54,9 +55,9 @@ func GetCloudProviderDeletedNodeNames(csr *ClusterStateRegistry) []string {
 func TestOKWithScaleUp(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -138,9 +139,9 @@ func TestEmptyOK(t *testing.T) {
 func TestOKOneUnreadyNode(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -184,7 +185,7 @@ func TestOKOneUnreadyNode(t *testing.T) {
 func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
 	now := time.Now()
 
-	noNgNode := BuildTestNode("no_ng", 1000, 1000)
+	noNgNode := no.BuildTestNode("no_ng", 1000, 1000)
 	SetNodeReadyState(noNgNode, true, now.Add(-time.Minute))
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNode("no_ng", noNgNode)
@@ -205,9 +206,9 @@ func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
 func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -270,9 +271,9 @@ func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 func TestMissingNodes(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -314,9 +315,9 @@ func TestMissingNodes(t *testing.T) {
 func TestTooManyUnready(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, false, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -343,9 +344,9 @@ func TestTooManyUnready(t *testing.T) {
 func TestUnreadyLongAfterCreation(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 	ng2_1.CreationTimestamp = metav1.Time{Time: now.Add(-30 * time.Minute)}
 
@@ -375,9 +376,9 @@ func TestUnreadyLongAfterCreation(t *testing.T) {
 func TestNotStarted(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-4*time.Minute))
 	SetNodeNotReadyTaint(ng2_1)
 	ng2_1.CreationTimestamp = metav1.Time{Time: now.Add(-10 * time.Minute)}
@@ -419,7 +420,7 @@ func TestNotStarted(t *testing.T) {
 func TestExpiredScaleUp(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -447,7 +448,7 @@ func TestExpiredScaleUp(t *testing.T) {
 }
 
 func TestRegisterScaleDown(t *testing.T) {
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", ng1_1)
@@ -480,36 +481,36 @@ func TestUpcomingNodes(t *testing.T) {
 	now := time.Now()
 
 	// 6 nodes are expected to come.
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng1", 1, 10, 7)
 	provider.AddNode("ng1", ng1_1)
 
 	// One node is expected to come. One node is unready for the long time
 	// but this should not make any difference.
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng2", 1, 10, 2)
 	provider.AddNode("ng2", ng2_1)
 
 	// Two nodes are expected to come. One is just being started for the first time,
 	// the other one is not there yet.
-	ng3_1 := BuildTestNode("ng3-1", 1000, 1000)
+	ng3_1 := no.BuildTestNode("ng3-1", 1000, 1000)
 	SetNodeReadyState(ng3_1, false, now.Add(-time.Minute))
 	ng3_1.CreationTimestamp = metav1.Time{Time: now.Add(-time.Minute)}
 	provider.AddNodeGroup("ng3", 1, 10, 2)
 	provider.AddNode("ng3", ng3_1)
 
 	// Nothing should be added here.
-	ng4_1 := BuildTestNode("ng4-1", 1000, 1000)
+	ng4_1 := no.BuildTestNode("ng4-1", 1000, 1000)
 	SetNodeReadyState(ng4_1, false, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng4", 1, 10, 1)
 	provider.AddNode("ng4", ng4_1)
 
 	// One node is already there, for a second nde deletion / draining was already started.
-	ng5_1 := BuildTestNode("ng5-1", 1000, 1000)
+	ng5_1 := no.BuildTestNode("ng5-1", 1000, 1000)
 	SetNodeReadyState(ng5_1, true, now.Add(-time.Minute))
-	ng5_2 := BuildTestNode("ng5-2", 1000, 1000)
+	ng5_2 := no.BuildTestNode("ng5-2", 1000, 1000)
 	SetNodeReadyState(ng5_2, true, now.Add(-time.Minute))
 	ng5_2.Spec.Taints = []apiv1.Taint{
 		{
@@ -555,9 +556,9 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 	now := time.Now()
 
 	// One node is already there, for a second nde deletion / draining was already started.
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2 := no.BuildTestNode("ng1-2", 1000, 1000)
 	SetNodeReadyState(ng1_2, true, now.Add(-time.Minute))
 	ng1_2.Spec.Taints = []apiv1.Taint{
 		{
@@ -588,7 +589,7 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 }
 
 func TestIncorrectSize(t *testing.T) {
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 5)
 	provider.AddNode("ng1", ng1_1)
@@ -621,9 +622,9 @@ func TestIncorrectSize(t *testing.T) {
 }
 
 func TestUnregisteredNodes(t *testing.T) {
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	ng1_1.Spec.ProviderID = "ng1-1"
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2 := no.BuildTestNode("ng1-2", 1000, 1000)
 	ng1_2.Spec.ProviderID = "ng1-2"
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -663,14 +664,14 @@ func TestUnregisteredNodes(t *testing.T) {
 
 func TestCloudProviderDeletedNodes(t *testing.T) {
 	now := time.Now()
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	ng1_1.Spec.ProviderID = "ng1-1"
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2 := no.BuildTestNode("ng1-2", 1000, 1000)
 	SetNodeReadyState(ng1_2, true, now.Add(-time.Minute))
 	ng1_2.Spec.ProviderID = "ng1-2"
 	// No Node Group - Not Autoscaled Node
-	noNgNode := BuildTestNode("no-ng", 1000, 1000)
+	noNgNode := no.BuildTestNode("no-ng", 1000, 1000)
 	SetNodeReadyState(noNgNode, true, now.Add(-time.Minute))
 
 	noNgNode.Spec.ProviderID = "no-ng"
@@ -716,7 +717,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	assert.Equal(t, 0, len(GetCloudProviderDeletedNodeNames(clusterstate)))
 
 	// New Node is added afterwards
-	ng1_3 := BuildTestNode("ng1-3", 1000, 1000)
+	ng1_3 := no.BuildTestNode("ng1-3", 1000, 1000)
 	SetNodeReadyState(ng1_3, true, now.Add(-time.Minute))
 	ng1_3.Spec.ProviderID = "ng1-3"
 	provider.AddNode("ng1", ng1_3)
@@ -867,11 +868,11 @@ func TestUpdateLastTransitionTimes(t *testing.T) {
 func TestScaleUpBackoff(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2 := no.BuildTestNode("ng1-2", 1000, 1000)
 	SetNodeReadyState(ng1_2, true, now.Add(-time.Minute))
-	ng1_3 := BuildTestNode("ng1-3", 1000, 1000)
+	ng1_3 := no.BuildTestNode("ng1-3", 1000, 1000)
 	SetNodeReadyState(ng1_3, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -918,7 +919,7 @@ func TestScaleUpBackoff(t *testing.T) {
 
 	// The backoff should be cleared after a successful scale-up
 	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), 1, now)
-	ng1_4 := BuildTestNode("ng1-4", 1000, 1000)
+	ng1_4 := no.BuildTestNode("ng1-4", 1000, 1000)
 	SetNodeReadyState(ng1_4, true, now.Add(-1*time.Minute))
 	provider.AddNode("ng1", ng1_4)
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, ng1_3, ng1_4}, nil, now)
@@ -932,11 +933,11 @@ func TestScaleUpBackoff(t *testing.T) {
 func TestGetClusterSize(t *testing.T) {
 	now := time.Now()
 
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
-	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	ng2_1 := no.BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
-	notAutoscaledNode := BuildTestNode("notAutoscaledNode", 1000, 1000)
+	notAutoscaledNode := no.BuildTestNode("notAutoscaledNode", 1000, 1000)
 	SetNodeReadyState(notAutoscaledNode, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)

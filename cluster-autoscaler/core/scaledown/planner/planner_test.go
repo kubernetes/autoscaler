@@ -41,6 +41,8 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -59,9 +61,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "empty nodes, all eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2", "n3"},
@@ -70,9 +72,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "empty nodes, some eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
@@ -82,9 +84,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "empty nodes, none eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{},
@@ -94,7 +96,7 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "single utilised node, not eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
@@ -107,7 +109,7 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "pods cannot schedule on node undergoing deletion, not eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 				nodeUndergoingDeletion("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
@@ -122,8 +124,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "pods can schedule on non-eligible node, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
@@ -137,8 +139,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "pods can schedule on eligible node, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
@@ -152,9 +154,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "pods cannot schedule anywhere, not eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 2000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 500, 10),
+				no.BuildTestNode("n1", 2000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 500, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
@@ -169,9 +171,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "all pods from multiple nodes can schedule elsewhere, all eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 2000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
@@ -187,9 +189,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "some pods from multiple nodes can schedule elsewhere, some eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 2000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 2000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
@@ -205,9 +207,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "no pods from multiple nodes can schedule elsewhere, no eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 500, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 500, 10),
 			},
 			pods: []*apiv1.Pod{
 				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
@@ -223,7 +225,7 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted RS pod, not eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 				nodeUndergoingDeletion("n2", 2000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -238,11 +240,11 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted pod without owner, not eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					BuildTestPod("p1", 1000, 1),
+					po.BuildTestPod("p1", 1000, 1),
 				},
 			},
 			eligible:        []string{"n1"},
@@ -252,7 +254,7 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted static pod, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 				nodeUndergoingDeletion("n2", 2000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -267,7 +269,7 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted mirror pod, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 				nodeUndergoingDeletion("n2", 2000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -282,7 +284,7 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted DS pod, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
 				nodeUndergoingDeletion("n2", 2000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -297,8 +299,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted pod can schedule on non-eligible node, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 				nodeUndergoingDeletion("n3", 1000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -313,8 +315,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted pod can schedule on eligible node, eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 				nodeUndergoingDeletion("n3", 1000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -329,8 +331,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "recently evicted pod too large to schedule anywhere, all eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 				nodeUndergoingDeletion("n3", 2000, 10),
 			},
 			actuationStatus: &fakeActuationStatus{
@@ -345,8 +347,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "all recently evicted pod got rescheduled, all eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 				nodeUndergoingDeletion("n3", 2000, 10),
 			},
 			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 2, nil), generateReplicaSets("rs", 5)...),
@@ -363,8 +365,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "some recently evicted pod got rescheduled, some eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 				nodeUndergoingDeletion("n3", 2000, 10),
 			},
 			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 1, nil), generateReplicaSets("rs", 5)...),
@@ -381,8 +383,8 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "no recently evicted pod got rescheduled, no eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
 				nodeUndergoingDeletion("n3", 2000, 10),
 			},
 			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 0, nil), generateReplicaSets("rs", 5)...),
@@ -399,9 +401,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "all scheduled and recently evicted pods can schedule elsewhere, all eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
@@ -420,9 +422,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "some scheduled and recently evicted pods can schedule elsewhere, some eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
@@ -441,9 +443,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "scheduled and recently evicted pods take all capacity, no eligible",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
@@ -462,9 +464,9 @@ func TestUpdateClusterState(t *testing.T) {
 		{
 			name: "Simulation timeout is hitted",
 			nodes: []*apiv1.Node{
-				BuildTestNode("n1", 1000, 10),
-				BuildTestNode("n2", 1000, 10),
-				BuildTestNode("n3", 1000, 10),
+				no.BuildTestNode("n1", 1000, 10),
+				no.BuildTestNode("n2", 1000, 10),
+				no.BuildTestNode("n3", 1000, 10),
 			},
 			actuationStatus:     &fakeActuationStatus{},
 			eligible:            []string{"n1", "n2", "n3"},
@@ -595,7 +597,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			t.Parallel()
 			nodes := make([]*apiv1.Node, tc.nodes)
 			for i := 0; i < tc.nodes; i++ {
-				nodes[i] = BuildTestNode(fmt.Sprintf("n%d", i), 1000, 10)
+				nodes[i] = no.BuildTestNode(fmt.Sprintf("n%d", i), 1000, 10)
 			}
 			previouslyUnneeded := make([]simulator.NodeToBeRemoved, tc.previouslyUnneeded)
 			for i := 0; i < tc.previouslyUnneeded; i++ {
@@ -806,7 +808,7 @@ func buildRemovableNode(name string, podCount int) simulator.NodeToBeRemoved {
 		podsToReschedule = append(podsToReschedule, &apiv1.Pod{})
 	}
 	return simulator.NodeToBeRemoved{
-		Node:             BuildTestNode(name, 1000, 10),
+		Node:             no.BuildTestNode(name, 1000, 10),
 		PodsToReschedule: podsToReschedule,
 	}
 }
@@ -850,7 +852,7 @@ func generateReplicaSetWithReplicas(name string, specReplicas, statusReplicas in
 }
 
 func nodeUndergoingDeletion(name string, cpu, memory int64) *apiv1.Node {
-	n := BuildTestNode(name, cpu, memory)
+	n := no.BuildTestNode(name, cpu, memory)
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
 	n.Spec.Taints = append(n.Spec.Taints, toBeDeletedTaint)
 	return n

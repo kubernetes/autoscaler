@@ -21,8 +21,6 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
-	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -30,11 +28,11 @@ import (
 )
 
 func TestSanitizePods(t *testing.T) {
-	pod := po.BuildTestPod("p1", 80, 0)
+	pod := po.po.BuildTestPod("p1", 80, 0)
 	pod.Spec.NodeName = "n1"
 	pods := []*apiv1.Pod{pod}
 
-	node := no.BuildTestNode("node", 1000, 1000)
+	node := no.no.BuildTestNode("node", 1000, 1000)
 
 	resNode, err := SanitizeNode(node, "test-group", taints.TaintConfig{})
 	assert.NoError(t, err)
@@ -43,7 +41,7 @@ func TestSanitizePods(t *testing.T) {
 }
 
 func TestSanitizeLabels(t *testing.T) {
-	oldNode := no.BuildTestNode("ng1-1", 1000, 1000)
+	oldNode := no.no.BuildTestNode("ng1-1", 1000, 1000)
 	oldNode.Labels = map[string]string{
 		apiv1.LabelHostname: "abc",
 		"x":                 "y",
@@ -57,7 +55,7 @@ func TestSanitizeLabels(t *testing.T) {
 }
 
 func TestGetNodeResource(t *testing.T) {
-	node := no.BuildTestNode("n1", 1000, 2*MiB)
+	node := no.no.BuildTestNode("n1", 1000, 2*MiB)
 
 	cores := getNodeResource(node, apiv1.ResourceCPU)
 	assert.Equal(t, int64(1), cores)
@@ -69,7 +67,7 @@ func TestGetNodeResource(t *testing.T) {
 	assert.Equal(t, int64(0), unknownResourceValue)
 
 	// if we have no resources in capacity we expect getNodeResource to return 0
-	nodeWithMissingCapacity := no.BuildTestNode("n1", 1000, 2*MiB)
+	nodeWithMissingCapacity := no.no.BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores = getNodeResource(nodeWithMissingCapacity, apiv1.ResourceCPU)
@@ -79,7 +77,7 @@ func TestGetNodeResource(t *testing.T) {
 	assert.Equal(t, int64(0), memory)
 
 	// if we have negative values in resources we expect getNodeResource to return 0
-	nodeWithNegativeCapacity := no.BuildTestNode("n1", -1000, -2*MiB)
+	nodeWithNegativeCapacity := no.no.BuildTestNode("n1", -1000, -2*MiB)
 	nodeWithNegativeCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores = getNodeResource(nodeWithNegativeCapacity, apiv1.ResourceCPU)
@@ -91,14 +89,14 @@ func TestGetNodeResource(t *testing.T) {
 }
 
 func TestGetNodeCoresAndMemory(t *testing.T) {
-	node := no.BuildTestNode("n1", 2000, 2048*MiB)
+	node := no.no.BuildTestNode("n1", 2000, 2048*MiB)
 
 	cores, memory := GetNodeCoresAndMemory(node)
 	assert.Equal(t, int64(2), cores)
 	assert.Equal(t, int64(2048*MiB), memory)
 
 	// if we have no cpu/memory defined in capacity we expect getNodeCoresAndMemory to return 0s
-	nodeWithMissingCapacity := no.BuildTestNode("n1", 1000, 2*MiB)
+	nodeWithMissingCapacity := no.no.BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores, memory = GetNodeCoresAndMemory(nodeWithMissingCapacity)
@@ -107,11 +105,11 @@ func TestGetNodeCoresAndMemory(t *testing.T) {
 }
 
 func TestGetOldestPod(t *testing.T) {
-	p1 := po.BuildTestPod("p1", 500, 1000)
+	p1 := po.po.BuildTestPod("p1", 500, 1000)
 	p1.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
-	p2 := po.BuildTestPod("p2", 500, 1000)
+	p2 := po.po.BuildTestPod("p2", 500, 1000)
 	p2.CreationTimestamp = metav1.NewTime(time.Now().Add(+1 * time.Minute))
-	p3 := po.BuildTestPod("p3", 500, 1000)
+	p3 := po.po.BuildTestPod("p3", 500, 1000)
 	p3.CreationTimestamp = metav1.NewTime(time.Now())
 
 	assert.Equal(t, p1.CreationTimestamp.Time, GetOldestCreateTime([]*apiv1.Pod{p1, p2, p3}))

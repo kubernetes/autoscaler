@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -137,7 +138,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
-	n := BuildTestNode("n1", 1000, 1000)
+	n := no.BuildTestNode("n1", 1000, 1000)
 	n.Spec.ProviderID = "gce://project1/us-central1-b/n1"
 	mig := gceMig{gceRef: GceRef{Name: "ng1"}}
 	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return(&mig, nil).Once()
@@ -345,7 +346,7 @@ func TestMig(t *testing.T) {
 
 	// Test Belongs - true.
 	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return(mig1, nil).Once()
-	node := BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
+	node := no.BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
 	node.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"
 
 	belongs, err := mig1.Belongs(node)
@@ -372,10 +373,10 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test DeleteNodes.
-	n1 := BuildTestNode("gke-cluster-1-default-pool-f7607aac-9j4g", 1000, 1000)
+	n1 := no.BuildTestNode("gke-cluster-1-default-pool-f7607aac-9j4g", 1000, 1000)
 	n1.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g"
 	n1ref := GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-9j4g"}
-	n2 := BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
+	n2 := no.BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
 	n2.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"
 	n2ref := GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-dck1"}
 	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()

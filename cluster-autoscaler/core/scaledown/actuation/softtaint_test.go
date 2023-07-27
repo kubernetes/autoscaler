@@ -27,6 +27,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -42,9 +43,9 @@ func TestSoftTaintUpdate(t *testing.T) {
 	if t != nil {
 		return
 	}
-	n1000 := BuildTestNode("n1000", 1000, 1000)
+	n1000 := no.BuildTestNode("n1000", 1000, 1000)
 	SetNodeReadyState(n1000, true, time.Time{})
-	n2000 := BuildTestNode("n2000", 2000, 1000)
+	n2000 := no.BuildTestNode("n2000", 2000, 1000)
 	SetNodeReadyState(n2000, true, time.Time{})
 
 	fakeClient := fake.NewSimpleClientset()
@@ -115,9 +116,9 @@ func TestSoftTaintUpdate(t *testing.T) {
 }
 
 func TestSoftTaintTimeLimit(t *testing.T) {
-	n1 := BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
-	n2 := BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Time{})
 
 	currentTime := time.Now()

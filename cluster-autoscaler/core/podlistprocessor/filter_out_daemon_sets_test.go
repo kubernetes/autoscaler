@@ -36,32 +36,32 @@ func TestFilterOutDaemonSetPodListProcessor(t *testing.T) {
 		{
 			name: "single non-DS pod",
 			pods: []*apiv1.Pod{
-				test.BuildTestPod("p", 1000, 1),
+				test.po.BuildTestPod("p", 1000, 1),
 			},
 			wantPods: []*apiv1.Pod{
-				test.BuildTestPod("p", 1000, 1),
+				test.po.BuildTestPod("p", 1000, 1),
 			},
 		},
 		{
 			name: "single DS pod",
 			pods: []*apiv1.Pod{
-				test.SetDSPodSpec(test.BuildTestPod("p", 1000, 1)),
+				test.SetDSPodSpec(test.po.BuildTestPod("p", 1000, 1)),
 			},
 		},
 		{
 			name: "mixed DS and non-DS pods",
 			pods: []*apiv1.Pod{
-				test.BuildTestPod("p1", 1000, 1),
-				test.SetDSPodSpec(test.BuildTestPod("p2", 1000, 1)),
-				test.SetDSPodSpec(test.BuildTestPod("p3", 1000, 1)),
-				test.BuildTestPod("p4", 1000, 1),
-				test.BuildTestPod("p5", 1000, 1),
-				test.SetDSPodSpec(test.BuildTestPod("p6", 1000, 1)),
+				test.po.BuildTestPod("p1", 1000, 1),
+				test.SetDSPodSpec(test.po.BuildTestPod("p2", 1000, 1)),
+				test.SetDSPodSpec(test.po.BuildTestPod("p3", 1000, 1)),
+				test.po.BuildTestPod("p4", 1000, 1),
+				test.po.BuildTestPod("p5", 1000, 1),
+				test.SetDSPodSpec(test.po.BuildTestPod("p6", 1000, 1)),
 			},
 			wantPods: []*apiv1.Pod{
-				test.BuildTestPod("p1", 1000, 1),
-				test.BuildTestPod("p4", 1000, 1),
-				test.BuildTestPod("p5", 1000, 1),
+				test.po.BuildTestPod("p1", 1000, 1),
+				test.po.BuildTestPod("p4", 1000, 1),
+				test.po.BuildTestPod("p5", 1000, 1),
 			},
 		},
 	}

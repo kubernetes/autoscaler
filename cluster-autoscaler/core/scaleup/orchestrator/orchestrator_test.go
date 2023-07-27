@@ -47,6 +47,8 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
+no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -137,7 +139,7 @@ func TestZeroOrMaxNodeScaling(t *testing.T) {
 	optionsWithLimitedMaxNodes := options
 	optionsWithLimitedMaxNodes.MaxNodesTotal = 5
 
-	n := BuildTestNode("n", 1000, 1000)
+	n := no.BuildTestNode("n", 1000, 1000)
 	SetNodeReadyState(n, true, time.Time{})
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(n)
@@ -890,7 +892,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	// build nodes
 	nodes := make([]*apiv1.Node, 0, len(config.Nodes))
 	for _, n := range config.Nodes {
-		node := buildTestNode(n, now)
+		node := no.BuildTestNode(n, now)
 		nodes = append(nodes, node)
 		if n.Group != "" {
 			groupNodes[n.Group] = append(groupNodes[n.Group], node)
@@ -1014,8 +1016,8 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	}
 }
 
-func buildTestNode(n NodeConfig, now time.Time) *apiv1.Node {
-	node := BuildTestNode(n.Name, n.Cpu, n.Memory)
+func no.BuildTestNode(n NodeConfig, now time.Time) *apiv1.Node {
+	node := no.BuildTestNode(n.Name, n.Cpu, n.Memory)
 	if n.Gpu > 0 {
 		AddGpusToNode(node, n.Gpu)
 	}
@@ -1024,7 +1026,7 @@ func buildTestNode(n NodeConfig, now time.Time) *apiv1.Node {
 }
 
 func buildTestPod(p PodConfig) *apiv1.Pod {
-	pod := BuildTestPod(p.Name, p.Cpu, p.Memory)
+	pod := po.BuildTestPod(p.Name, p.Cpu, p.Memory)
 	if p.Gpu > 0 {
 		RequestGpuForPod(pod, p.Gpu)
 	}
@@ -1040,13 +1042,13 @@ func buildTestPod(p PodConfig) *apiv1.Pod {
 func TestScaleUpUnhealthy(t *testing.T) {
 	now := time.Now()
 	someTimeAgo := now.Add(-2 * time.Minute)
-	n1 := BuildTestNode("n1", 100, 1000)
+	n1 := no.BuildTestNode("n1", 100, 1000)
 	SetNodeReadyState(n1, true, someTimeAgo)
-	n2 := BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, someTimeAgo)
 
-	p1 := BuildTestPod("p1", 80, 0)
-	p2 := BuildTestPod("p2", 800, 0)
+	p1 := po.BuildTestPod("p1", 80, 0)
+	p2 := po.BuildTestPod("p2", 800, 0)
 	p1.Spec.NodeName = "n1"
 	p2.Spec.NodeName = "n2"
 
@@ -1075,7 +1077,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
-	p3 := BuildTestPod("p-new", 550, 0)
+	p3 := po.BuildTestPod("p-new", 550, 0)
 
 	processors := NewTestProcessors(&context)
 	suOrchestrator := New()
@@ -1088,8 +1090,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 }
 
 func TestBinpackingLimiter(t *testing.T) {
-	n1 := BuildTestNode("n1", 1000, 1000)
-	n2 := BuildTestNode("n2", 100000, 100000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 100000, 100000)
 	now := time.Now()
 
 	SetNodeReadyState(n1, true, now.Add(-2*time.Minute))
@@ -1122,7 +1124,7 @@ func TestBinpackingLimiter(t *testing.T) {
 	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
-	extraPod := BuildTestPod("p-new", 500, 0)
+	extraPod := po.BuildTestPod("p-new", 500, 0)
 
 	processors := NewTestProcessors(&context)
 
@@ -1146,11 +1148,11 @@ func TestBinpackingLimiter(t *testing.T) {
 }
 
 func TestScaleUpNoHelp(t *testing.T) {
-	n1 := BuildTestNode("n1", 100, 1000)
+	n1 := no.BuildTestNode("n1", 100, 1000)
 	now := time.Now()
 	SetNodeReadyState(n1, true, now.Add(-2*time.Minute))
 
-	p1 := BuildTestPod("p1", 80, 0)
+	p1 := po.BuildTestPod("p1", 80, 0)
 	p1.Spec.NodeName = "n1"
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1})
@@ -1177,7 +1179,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff())
 	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
-	p3 := BuildTestPod("p-new", 500, 0)
+	p3 := po.BuildTestPod("p-new", 500, 0)
 
 	processors := NewTestProcessors(&context)
 	suOrchestrator := New()
@@ -1211,9 +1213,9 @@ func (p *constNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(_ *context.Auto
 func (p *constNodeGroupSetProcessor) CleanUp() {}
 
 func TestComputeSimilarNodeGroups(t *testing.T) {
-	pod1 := BuildTestPod("p1", 100, 1000)
-	pod2 := BuildTestPod("p2", 100, 1000)
-	pod3 := BuildTestPod("p3", 100, 1000)
+	pod1 := po.BuildTestPod("p1", 100, 1000)
+	pod2 := po.BuildTestPod("p2", 100, 1000)
+	pod3 := po.BuildTestPod("p3", 100, 1000)
 
 	testCases := []struct {
 		name                  string
@@ -1312,7 +1314,7 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			var nodes []*apiv1.Node
 			for _, ng := range allNodeGroups {
 				nodeName := fmt.Sprintf("%s-node", ng)
-				node := BuildTestNode(nodeName, 100, 1000)
+				node := no.BuildTestNode(nodeName, 100, 1000)
 				SetNodeReadyState(node, true, now.Add(-2*time.Minute))
 				nodes = append(nodes, node)
 
@@ -1369,11 +1371,11 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		provider.AddNodeGroup(gid, gconf.min, gconf.max, gconf.size)
 		for i := 0; i < gconf.size; i++ {
 			nodeName := fmt.Sprintf("%v-node-%v", gid, i)
-			node := BuildTestNode(nodeName, 100, 1000)
+			node := no.BuildTestNode(nodeName, 100, 1000)
 			SetNodeReadyState(node, true, now.Add(-2*time.Minute))
 			nodes = append(nodes, node)
 
-			pod := BuildTestPod(fmt.Sprintf("%v-pod-%v", gid, i), 80, 0)
+			pod := po.BuildTestPod(fmt.Sprintf("%v-pod-%v", gid, i), 80, 0)
 			pod.Spec.NodeName = nodeName
 			podList = append(podList, pod)
 
@@ -1400,7 +1402,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 2; i++ {
-		pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
+		pods = append(pods, po.BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
 	}
 
 	processors := NewTestProcessors(&context)
@@ -1427,11 +1429,11 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	createdGroups := make(chan string, 10)
 	expandedGroups := make(chan string, 10)
 
-	p1 := BuildTestPod("p1", 80, 0)
+	p1 := po.BuildTestPod("p1", 80, 0)
 
 	fakeClient := &fake.Clientset{}
 
-	t1 := BuildTestNode("t1", 4000, 1000000)
+	t1 := no.BuildTestNode("t1", 4000, 1000000)
 	SetNodeReadyState(t1, true, time.Time{})
 	ti1 := schedulerframework.NewNodeInfo()
 	ti1.SetNode(t1)
@@ -1480,13 +1482,13 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	createdGroups := make(chan string, 10)
 	expandedGroups := make(chan string, 10)
 
-	p1 := BuildTestPod("p1", 80, 0)
-	p2 := BuildTestPod("p2", 80, 0)
-	p3 := BuildTestPod("p3", 80, 0)
+	p1 := po.BuildTestPod("p1", 80, 0)
+	p2 := po.BuildTestPod("p2", 80, 0)
+	p3 := po.BuildTestPod("p3", 80, 0)
 
 	fakeClient := &fake.Clientset{}
 
-	t1 := BuildTestNode("t1", 100, 1000000)
+	t1 := no.BuildTestNode("t1", 100, 1000000)
 	SetNodeReadyState(t1, true, time.Time{})
 	ti1 := schedulerframework.NewNodeInfo()
 	ti1.SetNode(t1)
@@ -1555,9 +1557,9 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	// Test cases:
 	// ng1: current size 1, min size 3, cores limit 48, memory limit 1000 => scale up with 1 new node.
 	// ng2: current size 1, min size 1, cores limit 48, memory limit 1000 => no scale up.
-	n1 := BuildTestNode("n1", 16000, 32)
+	n1 := no.BuildTestNode("n1", 16000, 32)
 	SetNodeReadyState(n1, true, time.Now())
-	n2 := BuildTestNode("n2", 16000, 32)
+	n2 := no.BuildTestNode("n2", 16000, 32)
 	SetNodeReadyState(n2, true, time.Now())
 	provider.AddNodeGroup("ng1", 3, 10, 1)
 	provider.AddNode("ng1", n1)

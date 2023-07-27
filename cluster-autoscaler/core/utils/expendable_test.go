@@ -19,9 +19,6 @@ package utils
 import (
 	"testing"
 
-	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
-	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
-
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 )
@@ -30,17 +27,17 @@ func TestFilterOutExpendableAndSplit(t *testing.T) {
 	var priority1 int32 = 1
 	var priority100 int32 = 100
 
-	p1 := po.BuildTestPod("p1", 1000, 200000)
+	p1 := po.po.BuildTestPod("p1", 1000, 200000)
 	p1.Spec.Priority = &priority1
-	p2 := po.BuildTestPod("p2", 1000, 200000)
+	p2 := po.po.BuildTestPod("p2", 1000, 200000)
 	p2.Spec.Priority = &priority100
-	n1 := no.BuildTestNode("node1", 10, 10)
-	n2 := no.BuildTestNode("node2", 10, 10)
+	n1 := no.no.BuildTestNode("node1", 10, 10)
+	n2 := no.no.BuildTestNode("node2", 10, 10)
 
-	podWaitingForPreemption1 := po.BuildTestPod("w1", 1000, 200000)
+	podWaitingForPreemption1 := po.po.BuildTestPod("w1", 1000, 200000)
 	podWaitingForPreemption1.Spec.Priority = &priority1
 	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
-	podWaitingForPreemption2 := po.BuildTestPod("w2", 1000, 200000)
+	podWaitingForPreemption2 := po.po.BuildTestPod("w2", 1000, 200000)
 	podWaitingForPreemption2.Spec.Priority = &priority100
 	podWaitingForPreemption2.Status.NominatedNodeName = "node2"
 
@@ -69,15 +66,15 @@ func TestFilterOutExpendableAndSplit(t *testing.T) {
 }
 
 func TestFilterOutExpendablePods(t *testing.T) {
-	p1 := po.BuildTestPod("p1", 1500, 200000)
-	p2 := po.BuildTestPod("p2", 3000, 200000)
+	p1 := po.po.BuildTestPod("p1", 1500, 200000)
+	p2 := po.po.BuildTestPod("p2", 3000, 200000)
 
-	podWaitingForPreemption1 := po.BuildTestPod("w1", 1500, 200000)
+	podWaitingForPreemption1 := po.po.BuildTestPod("w1", 1500, 200000)
 	var priority1 int32 = -10
 	podWaitingForPreemption1.Spec.Priority = &priority1
 	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
 
-	podWaitingForPreemption2 := po.BuildTestPod("w1", 1500, 200000)
+	podWaitingForPreemption2 := po.po.BuildTestPod("w1", 1500, 200000)
 	var priority2 int32 = 10
 	podWaitingForPreemption2.Spec.Priority = &priority2
 	podWaitingForPreemption2.Status.NominatedNodeName = "node1"
@@ -90,8 +87,8 @@ func TestFilterOutExpendablePods(t *testing.T) {
 }
 
 func TestIsExpendablePod(t *testing.T) {
-	pod1 := po.BuildTestPod("p1", 1500, 200000)
-	pod2 := po.BuildTestPod("w1", 1500, 200000)
+	pod1 := po.po.BuildTestPod("p1", 1500, 200000)
+	pod2 := po.po.BuildTestPod("w1", 1500, 200000)
 	var priority1 int32 = -10
 	pod2.Spec.Priority = &priority1
 	pod2.Status.NominatedNodeName = "node1"

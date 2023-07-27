@@ -24,6 +24,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
@@ -43,32 +45,32 @@ func checkNodesSimilarWithPods(t *testing.T, n1, n2 *apiv1.Node, pods1, pods2 []
 
 func TestIdenticalNodesSimilar(t *testing.T) {
 	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
-	n1 := BuildTestNode("node1", 1000, 2000)
-	n2 := BuildTestNode("node2", 1000, 2000)
+	n1 := no.BuildTestNode("node1", 1000, 2000)
+	n2 := no.BuildTestNode("node2", 1000, 2000)
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }
 
 func TestNodesSimilarVariousRequirements(t *testing.T) {
 	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
-	n1 := BuildTestNode("node1", 1000, 2000)
+	n1 := no.BuildTestNode("node1", 1000, 2000)
 
 	// Different CPU capacity
-	n2 := BuildTestNode("node2", 1000, 2000)
+	n2 := no.BuildTestNode("node2", 1000, 2000)
 	n2.Status.Capacity[apiv1.ResourceCPU] = *resource.NewMilliQuantity(1001, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n2, comparator, false)
 
 	// Same CPU capacity, but slightly different allocatable
-	n3 := BuildTestNode("node3", 1000, 2000)
+	n3 := no.BuildTestNode("node3", 1000, 2000)
 	n3.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(999, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n3, comparator, true)
 
 	// Same CPU capacity, significantly different allocatable
-	n4 := BuildTestNode("node4", 1000, 2000)
+	n4 := no.BuildTestNode("node4", 1000, 2000)
 	n4.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(500, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n4, comparator, false)
 
 	// One with GPU, one without
-	n5 := BuildTestNode("node5", 1000, 2000)
+	n5 := no.BuildTestNode("node5", 1000, 2000)
 	n5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	n5.Status.Allocatable[gpu.ResourceNvidiaGPU] = n5.Status.Capacity[gpu.ResourceNvidiaGPU]
 	checkNodesSimilar(t, n1, n5, comparator, false)
@@ -76,41 +78,41 @@ func TestNodesSimilarVariousRequirements(t *testing.T) {
 
 func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
-	n1 := BuildTestNode("node1", 1000, 2000)
-	p1 := BuildTestPod("pod1", 500, 1000)
+	n1 := no.BuildTestNode("node1", 1000, 2000)
+	p1 := po.BuildTestPod("pod1", 500, 1000)
 	p1.Spec.NodeName = "node1"
 
 	// Different allocatable, but same free
-	n2 := BuildTestNode("node2", 1000, 2000)
+	n2 := no.BuildTestNode("node2", 1000, 2000)
 	n2.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(500, resource.DecimalSI)
 	n2.Status.Allocatable[apiv1.ResourceMemory] = *resource.NewQuantity(1000, resource.DecimalSI)
 	checkNodesSimilarWithPods(t, n1, n2, []*apiv1.Pod{p1}, []*apiv1.Pod{}, comparator, false)
 
 	// Same requests of pods
-	n3 := BuildTestNode("node3", 1000, 2000)
-	p3 := BuildTestPod("pod3", 500, 1000)
+	n3 := no.BuildTestNode("node3", 1000, 2000)
+	p3 := po.BuildTestPod("pod3", 500, 1000)
 	p3.Spec.NodeName = "node3"
 	checkNodesSimilarWithPods(t, n1, n3, []*apiv1.Pod{p1}, []*apiv1.Pod{p3}, comparator, true)
 
 	// Similar allocatable, similar pods
-	n4 := BuildTestNode("node4", 1000, 2000)
+	n4 := no.BuildTestNode("node4", 1000, 2000)
 	n4.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(999, resource.DecimalSI)
-	p4 := BuildTestPod("pod4", 501, 1001)
+	p4 := po.BuildTestPod("pod4", 501, 1001)
 	p4.Spec.NodeName = "node4"
 	checkNodesSimilarWithPods(t, n1, n4, []*apiv1.Pod{p1}, []*apiv1.Pod{p4}, comparator, true)
 }
 
 func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
 	comparator := CreateGenericNodeInfoComparator([]string{}, config.NewDefaultNodeGroupDifferenceRatios())
-	n1 := BuildTestNode("node1", 1000, 1000)
+	n1 := no.BuildTestNode("node1", 1000, 1000)
 
 	// Different memory capacity within tolerance
-	n2 := BuildTestNode("node2", 1000, 1000)
+	n2 := no.BuildTestNode("node2", 1000, 1000)
 	n2.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*config.DefaultMaxCapacityMemoryDifferenceRatio)+1, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
 	// Different memory capacity exceeds tolerance
-	n3 := BuildTestNode("node3", 1000, 1000)
+	n3 := no.BuildTestNode("node3", 1000, 1000)
 	n3.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*config.DefaultMaxCapacityMemoryDifferenceRatio)-1, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }
@@ -123,17 +125,17 @@ func TestNodesSimilarVariousLargeMemoryRequirementsM5XLarge(t *testing.T) {
 	q1 := resource.MustParse("16116152Ki")
 	q2 := resource.MustParse("15944120Ki")
 
-	n1 := BuildTestNode("node1", 1000, q1.Value())
+	n1 := no.BuildTestNode("node1", 1000, q1.Value())
 
 	// Different memory capacity within tolerance
 	// Value taken from another m5.xLarge in a different zone
-	n2 := BuildTestNode("node2", 1000, q2.Value())
+	n2 := no.BuildTestNode("node2", 1000, q2.Value())
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
 	// Different memory capacity exceeds tolerance
 	// Value of q1 * 1.02
 	q3 := resource.MustParse("16438475Ki")
-	n3 := BuildTestNode("node3", 1000, q3.Value())
+	n3 := no.BuildTestNode("node3", 1000, q3.Value())
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }
 
@@ -145,27 +147,27 @@ func TestNodesSimilarVariousLargeMemoryRequirementsM516XLarge(t *testing.T) {
 	q1 := resource.MustParse("259970052Ki")
 	q2 := resource.MustParse("257217528Ki")
 
-	n1 := BuildTestNode("node1", 1000, q1.Value())
+	n1 := no.BuildTestNode("node1", 1000, q1.Value())
 
 	// Different memory capacity within tolerance
 	// Value taken from another m5.xLarge in a different zone
-	n2 := BuildTestNode("node2", 1000, q2.Value())
+	n2 := no.BuildTestNode("node2", 1000, q2.Value())
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
 	// Different memory capacity exceeds tolerance
 	// Value of q1 * 1.02
 	q3 := resource.MustParse("265169453Ki")
-	n3 := BuildTestNode("node3", 1000, q3.Value())
+	n3 := no.BuildTestNode("node3", 1000, q3.Value())
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }
 
 func TestNodesSimilarVariousLabels(t *testing.T) {
 	comparator := CreateGenericNodeInfoComparator([]string{"example.com/ready"}, config.NewDefaultNodeGroupDifferenceRatios())
-	n1 := BuildTestNode("node1", 1000, 2000)
+	n1 := no.BuildTestNode("node1", 1000, 2000)
 	n1.ObjectMeta.Labels["test-label"] = "test-value"
 	n1.ObjectMeta.Labels["character"] = "winnie the pooh"
 
-	n2 := BuildTestNode("node2", 1000, 2000)
+	n2 := no.BuildTestNode("node2", 1000, 2000)
 	n2.ObjectMeta.Labels["test-label"] = "test-value"
 
 	// Missing character label

@@ -45,6 +45,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
@@ -58,55 +60,55 @@ import (
 func TestFindUnneededNodes(t *testing.T) {
 	var autoscalererr autoscaler_errors.AutoscalerError
 
-	p1 := BuildTestPod("p1", 100, 0)
+	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 	replicaSets := generateReplicaSets()
 
-	p2 := BuildTestPod("p2", 300, 0)
+	p2 := po.BuildTestPod("p2", 300, 0)
 	p2.Spec.NodeName = "n2"
 	p2.OwnerReferences = ownerRef
 
-	p3 := BuildTestPod("p3", 400, 0)
+	p3 := po.BuildTestPod("p3", 400, 0)
 	p3.OwnerReferences = ownerRef
 	p3.Spec.NodeName = "n3"
 
-	p4 := BuildTestPod("p4", 2000, 0)
+	p4 := po.BuildTestPod("p4", 2000, 0)
 	p4.OwnerReferences = ownerRef
 	p4.Spec.NodeName = "n4"
 
-	p5 := BuildTestPod("p5", 100, 0)
+	p5 := po.BuildTestPod("p5", 100, 0)
 	p5.OwnerReferences = ownerRef
 	p5.Spec.NodeName = "n5"
 
-	p6 := BuildTestPod("p6", 500, 0)
+	p6 := po.BuildTestPod("p6", 500, 0)
 	p6.OwnerReferences = ownerRef
 	p6.Spec.NodeName = "n7"
 
 	// Node with not replicated pod.
-	n1 := BuildTestNode("n1", 1000, 10)
+	n1 := no.BuildTestNode("n1", 1000, 10)
 	// Node can be deleted.
-	n2 := BuildTestNode("n2", 1000, 10)
+	n2 := no.BuildTestNode("n2", 1000, 10)
 	// Node with high utilization.
-	n3 := BuildTestNode("n3", 1000, 10)
+	n3 := no.BuildTestNode("n3", 1000, 10)
 	// Node with big pod.
-	n4 := BuildTestNode("n4", 10000, 10)
+	n4 := no.BuildTestNode("n4", 10000, 10)
 	// No scale down node.
-	n5 := BuildTestNode("n5", 1000, 10)
+	n5 := no.BuildTestNode("n5", 1000, 10)
 	n5.Annotations = map[string]string{
 		eligibility.ScaleDownDisabledKey: "true",
 	}
 	// Node info not found.
-	n6 := BuildTestNode("n6", 1000, 10)
+	n6 := no.BuildTestNode("n6", 1000, 10)
 	// Node without utilization.
-	n7 := BuildTestNode("n7", 0, 10)
+	n7 := no.BuildTestNode("n7", 0, 10)
 	// Node being deleted.
-	n8 := BuildTestNode("n8", 1000, 10)
+	n8 := no.BuildTestNode("n8", 1000, 10)
 	n8.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 	// Nod being deleted recently.
-	n9 := BuildTestNode("n9", 1000, 10)
+	n9 := no.BuildTestNode("n9", 1000, 10)
 	n9.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-60, 10)}}
 
 	SetNodeReadyState(n1, true, time.Time{})
@@ -222,19 +224,19 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 	replicaSets := generateReplicaSets()
 
-	p1 := BuildTestPod("p1", 100, 0)
+	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
 	p1.OwnerReferences = ownerRef
 	RequestGpuForPod(p1, 1)
 	TolerateGpuForPod(p1)
 
-	p2 := BuildTestPod("p2", 400, 0)
+	p2 := po.BuildTestPod("p2", 400, 0)
 	p2.Spec.NodeName = "n2"
 	p2.OwnerReferences = ownerRef
 	RequestGpuForPod(p2, 1)
 	TolerateGpuForPod(p2)
 
-	p3 := BuildTestPod("p3", 300, 0)
+	p3 := po.BuildTestPod("p3", 300, 0)
 	p3.Spec.NodeName = "n3"
 	p3.OwnerReferences = ownerRef
 	p3.ObjectMeta.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "false"
@@ -242,13 +244,13 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	TolerateGpuForPod(p3)
 
 	// Node with low cpu utilization and high gpu utilization
-	n1 := BuildTestNode("n1", 1000, 10)
+	n1 := no.BuildTestNode("n1", 1000, 10)
 	AddGpusToNode(n1, 2)
 	// Node with high cpu utilization and low gpu utilization
-	n2 := BuildTestNode("n2", 1000, 10)
+	n2 := no.BuildTestNode("n2", 1000, 10)
 	AddGpusToNode(n2, 4)
 	// Node with low gpu utilization and pods on node can not be interrupted
-	n3 := BuildTestNode("n3", 1000, 10)
+	n3 := no.BuildTestNode("n3", 1000, 10)
 	AddGpusToNode(n3, 8)
 
 	SetNodeReadyState(n1, true, time.Time{})
@@ -307,7 +309,7 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 
 	// this test focuses on utilization checks
 	// add a super large node, so every pod always has a place to drain
-	sink := BuildTestNode("sink", 100000, 100000)
+	sink := no.BuildTestNode("sink", 100000, 100000)
 	AddGpusToNode(sink, 20)
 	SetNodeReadyState(sink, true, time.Time{})
 	provider.AddNodeGroup("sink_group", 1, 1, 1)
@@ -324,12 +326,12 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 		provider.AddNodeGroup(ngName, 0, len(cpuUtilizations), len(cpuUtilizations))
 		for _, u := range cpuUtilizations {
 			nodeName := fmt.Sprintf("%s_%d", ngName, u)
-			node := BuildTestNode(nodeName, 1000, 10)
+			node := no.BuildTestNode(nodeName, 1000, 10)
 			SetNodeReadyState(node, true, time.Time{})
 			provider.AddNode(ngName, node)
 			allNodes = append(allNodes, node)
 			scaleDownCandidates = append(scaleDownCandidates, node)
-			pod := BuildTestPod(fmt.Sprintf("p_%s", nodeName), u*10, 0)
+			pod := po.BuildTestPod(fmt.Sprintf("p_%s", nodeName), u*10, 0)
 			pod.Spec.NodeName = nodeName
 			pod.OwnerReferences = ownerRef
 			allPods = append(allPods, pod)
@@ -423,33 +425,33 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	replicaSets := generateReplicaSets()
 	var priority100 int32 = 100
 
-	p1 := BuildTestPod("p1", 600, 0)
+	p1 := po.BuildTestPod("p1", 600, 0)
 	p1.OwnerReferences = ownerRef
 	p1.Spec.Priority = &priority100
 	p1.Status.NominatedNodeName = "n1"
 
-	p2 := BuildTestPod("p2", 100, 0)
+	p2 := po.BuildTestPod("p2", 100, 0)
 	p2.OwnerReferences = ownerRef
 	p2.Spec.NodeName = "n2"
 
-	p3 := BuildTestPod("p3", 100, 0)
+	p3 := po.BuildTestPod("p3", 100, 0)
 	p3.OwnerReferences = ownerRef
 	p3.Spec.Priority = &priority100
 	p3.Status.NominatedNodeName = "n2"
 
-	p4 := BuildTestPod("p4", 1200, 0)
+	p4 := po.BuildTestPod("p4", 1200, 0)
 	p4.OwnerReferences = ownerRef
 	p4.Spec.Priority = &priority100
 	p4.Status.NominatedNodeName = "n4"
 
 	// Node with pod waiting for lower priority pod preemption, highly utilized. Can't be deleted.
-	n1 := BuildTestNode("n1", 1000, 10)
+	n1 := no.BuildTestNode("n1", 1000, 10)
 	// Node with two small pods that can be moved.
-	n2 := BuildTestNode("n2", 1000, 10)
+	n2 := no.BuildTestNode("n2", 1000, 10)
 	// Node without pods.
-	n3 := BuildTestNode("n3", 1000, 10)
+	n3 := no.BuildTestNode("n3", 1000, 10)
 	// Node with big pod waiting for lower priority pod preemption. Can't be deleted.
-	n4 := BuildTestNode("n4", 10000, 10)
+	n4 := no.BuildTestNode("n4", 10000, 10)
 
 	SetNodeReadyState(n1, true, time.Time{})
 	SetNodeReadyState(n2, true, time.Time{})
@@ -505,7 +507,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	numNodes := 100
 	nodes := make([]*apiv1.Node, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
-		n := BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
+		n := no.BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
 		SetNodeReadyState(n, true, time.Time{})
 		provider.AddNode("ng1", n)
 		nodes = append(nodes, n)
@@ -517,7 +519,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
-		p := BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
+		p := po.BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
 		p.Spec.NodeName = fmt.Sprintf("n%v", i)
 		p.OwnerReferences = ownerRef
 		pods = append(pods, p)
@@ -590,7 +592,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 	numEmpty := 30
 	nodes := make([]*apiv1.Node, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
-		n := BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
+		n := no.BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
 		SetNodeReadyState(n, true, time.Time{})
 		provider.AddNode("ng1", n)
 		nodes = append(nodes, n)
@@ -602,7 +604,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes-numEmpty; i++ {
-		p := BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
+		p := po.BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
 		p.Spec.NodeName = fmt.Sprintf("n%v", i)
 		p.OwnerReferences = ownerRef
 		pods = append(pods, p)
@@ -648,7 +650,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 	numNodes := 100
 	nodes := make([]*apiv1.Node, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
-		n := BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
+		n := no.BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
 		SetNodeReadyState(n, true, time.Time{})
 		provider.AddNode("ng1", n)
 		nodes = append(nodes, n)
@@ -660,7 +662,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
-		p := BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
+		p := po.BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
 		p.Spec.NodeName = fmt.Sprintf("n%v", i)
 		p.OwnerReferences = ownerRef
 		pods = append(pods, p)
@@ -711,14 +713,14 @@ func TestScaleDown(t *testing.T) {
 			SelfLink:  "/apivs/batch/v1/namespaces/default/jobs/job",
 		},
 	}
-	n1 := BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
-	n2 := BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Time{})
-	p1 := BuildTestPod("p1", 100, 0)
+	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "batch/v1", "")
 
-	p2 := BuildTestPod("p2", 800, 0)
+	p2 := po.BuildTestPod("p2", 800, 0)
 
 	p1.Spec.NodeName = "n1"
 	p2.Spec.NodeName = "n2"
@@ -985,7 +987,7 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 	})
 
 	for i, n := range config.Nodes {
-		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
+		node := no.BuildTestNode(n.Name, n.Cpu, n.Memory)
 		if n.Gpu > 0 {
 			AddGpusToNode(node, n.Gpu)
 			node.Labels[provider.GPULabel()] = gpu.DefaultGPUType
@@ -1080,11 +1082,11 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 func TestNoScaleDownUnready(t *testing.T) {
 	var autoscalererr autoscaler_errors.AutoscalerError
 	fakeClient := &fake.Clientset{}
-	n1 := BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Minute))
-	n2 := BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Time{})
-	p2 := BuildTestPod("p2", 800, 0)
+	p2 := po.BuildTestPod("p2", 800, 0)
 	p2.Spec.NodeName = "n2"
 
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -1183,17 +1185,17 @@ func TestScaleDownNoMove(t *testing.T) {
 			SelfLink:  "/apivs/extensions/v1beta1/namespaces/default/jobs/job",
 		},
 	}
-	n1 := BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
 
 	// N2 is unready so no pods can be moved there.
-	n2 := BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, false, time.Time{})
 
-	p1 := BuildTestPod("p1", 100, 0)
+	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", "")
 
-	p2 := BuildTestPod("p2", 800, 0)
+	p2 := po.BuildTestPod("p2", 800, 0)
 	p1.Spec.NodeName = "n1"
 	p2.Spec.NodeName = "n2"
 

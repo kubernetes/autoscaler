@@ -27,7 +27,7 @@ import (
 	cp_test "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -42,9 +42,9 @@ func (tr *testReason) Reasons() []string {
 
 func TestEventingScaleUpStatusProcessor(t *testing.T) {
 	p := &EventingScaleUpStatusProcessor{}
-	p1 := BuildTestPod("p1", 0, 0)
-	p2 := BuildTestPod("p2", 0, 0)
-	p3 := BuildTestPod("p3", 0, 0)
+	p1 := po.BuildTestPod("p1", 0, 0)
+	p2 := po.BuildTestPod("p2", 0, 0)
+	p3 := po.BuildTestPod("p3", 0, 0)
 
 	notSchedulableReason := &testReason{"not schedulable"}
 	alsoNotSchedulableReason := &testReason{"also not schedulable"}

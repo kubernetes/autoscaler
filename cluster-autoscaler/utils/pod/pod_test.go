@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -211,38 +212,38 @@ func TestFilterRecreatablePods(t *testing.T) {
 		},
 		{
 			name:     "keep single pod",
-			pods:     []*apiv1.Pod{BuildTestPod("p", 100, 1)},
-			wantPods: []*apiv1.Pod{BuildTestPod("p", 100, 1)},
+			pods:     []*apiv1.Pod{po.BuildTestPod("p", 100, 1)},
+			wantPods: []*apiv1.Pod{po.BuildTestPod("p", 100, 1)},
 		},
 		{
 			name:     "keep single RS pod",
-			pods:     []*apiv1.Pod{SetRSPodSpec(BuildTestPod("p", 100, 1), "rs")},
-			wantPods: []*apiv1.Pod{SetRSPodSpec(BuildTestPod("p", 100, 1), "rs")},
+			pods:     []*apiv1.Pod{po.SetRSPodSpec(po.BuildTestPod("p", 100, 1), "rs")},
+			wantPods: []*apiv1.Pod{po.SetRSPodSpec(po.BuildTestPod("p", 100, 1), "rs")},
 		},
 		{
 			name: "filter-out single DS pod",
-			pods: []*apiv1.Pod{SetDSPodSpec(BuildTestPod("p", 100, 1))},
+			pods: []*apiv1.Pod{SetDSPodSpec(po.BuildTestPod("p", 100, 1))},
 		},
 		{
 			name: "filter-out single mirror pod",
-			pods: []*apiv1.Pod{SetMirrorPodSpec(BuildTestPod("p", 100, 1))},
+			pods: []*apiv1.Pod{SetMirrorPodSpec(po.BuildTestPod("p", 100, 1))},
 		},
 		{
 			name: "filter-out single static pod",
-			pods: []*apiv1.Pod{SetStaticPodSpec(BuildTestPod("p", 100, 1))},
+			pods: []*apiv1.Pod{SetStaticPodSpec(po.BuildTestPod("p", 100, 1))},
 		},
 		{
 			name: "all pods together",
 			pods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				SetRSPodSpec(BuildTestPod("p2", 100, 1), "rs"),
-				SetDSPodSpec(BuildTestPod("p3", 100, 1)),
-				SetMirrorPodSpec(BuildTestPod("p4", 100, 1)),
-				SetStaticPodSpec(BuildTestPod("p5", 100, 1)),
+				po.BuildTestPod("p1", 100, 1),
+				po.SetRSPodSpec(po.BuildTestPod("p2", 100, 1), "rs"),
+				SetDSPodSpec(po.BuildTestPod("p3", 100, 1)),
+				SetMirrorPodSpec(po.BuildTestPod("p4", 100, 1)),
+				SetStaticPodSpec(po.BuildTestPod("p5", 100, 1)),
 			},
 			wantPods: []*apiv1.Pod{
-				BuildTestPod("p1", 100, 1),
-				SetRSPodSpec(BuildTestPod("p2", 100, 1), "rs"),
+				po.BuildTestPod("p1", 100, 1),
+				po.SetRSPodSpec(po.BuildTestPod("p2", 100, 1), "rs"),
 			},
 		},
 	}
@@ -268,13 +269,13 @@ func TestClearPodNodeNames(t *testing.T) {
 		},
 		{
 			name: "single not scheduled pod",
-			pods: []*apiv1.Pod{BuildTestPod("p", 100, 1)},
+			pods: []*apiv1.Pod{po.BuildTestPod("p", 100, 1)},
 		},
 		{
 			name: "mixed scheduled and not scheduled pod",
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p", 100, 1, "n"),
-				BuildTestPod("p", 100, 1),
+				po.BuildTestPod("p", 100, 1),
 			},
 		},
 	}

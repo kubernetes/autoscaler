@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -50,10 +51,10 @@ func TestSimilarPodsScheduling(t *testing.T) {
 
 	similarPods := NewSimilarPodsScheduling()
 
-	podInRc1_1 := BuildTestPod("podInRc1_1", 500, 1000)
+	podInRc1_1 := po.BuildTestPod("podInRc1_1", 500, 1000)
 	podInRc1_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 
-	podInRc2 := BuildTestPod("podInRc2", 500, 1000)
+	podInRc2 := po.BuildTestPod("podInRc2", 500, 1000)
 	podInRc2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
 
 	// Basic sanity checks
@@ -67,31 +68,31 @@ func TestSimilarPodsScheduling(t *testing.T) {
 	assert.True(t, similarPods.IsSimilarUnschedulable(podInRc2))
 
 	// Another replica in rc1
-	podInRc1_2 := BuildTestPod("podInRc1_2", 500, 1000)
+	podInRc1_2 := po.BuildTestPod("podInRc1_2", 500, 1000)
 	podInRc1_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	assert.True(t, similarPods.IsSimilarUnschedulable(podInRc1_2))
 
 	// A replica in rc1 with a projected volume
-	podInRc1ProjectedVol := BuildTestPod("podInRc1_ProjectedVol", 500, 1000)
+	podInRc1ProjectedVol := po.BuildTestPod("podInRc1_ProjectedVol", 500, 1000)
 	podInRc1ProjectedVol.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	podInRc1ProjectedVol.Spec.Volumes = []apiv1.Volume{{Name: "kube-api-access-nz94b", VolumeSource: apiv1.VolumeSource{Projected: BuildServiceTokenProjectedVolumeSource("path")}}}
 	assert.True(t, similarPods.IsSimilarUnschedulable(podInRc1ProjectedVol))
 
 	// A replica in rc1 with a non-projected volume
-	podInRc1FlexVol := BuildTestPod("podInRc1_FlexVol", 500, 1000)
+	podInRc1FlexVol := po.BuildTestPod("podInRc1_FlexVol", 500, 1000)
 	podInRc1FlexVol.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	podInRc1FlexVol.Spec.Volumes = []apiv1.Volume{{Name: "volume-mo25i", VolumeSource: apiv1.VolumeSource{FlexVolume: &apiv1.FlexVolumeSource{Driver: "testDriver"}}}}
 	assert.False(t, similarPods.IsSimilarUnschedulable(podInRc1FlexVol))
 
 	// A pod in rc1, but with different requests
-	differentPodInRc1 := BuildTestPod("differentPodInRc1", 1000, 1000)
+	differentPodInRc1 := po.BuildTestPod("differentPodInRc1", 1000, 1000)
 	differentPodInRc1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	assert.False(t, similarPods.IsSimilarUnschedulable(differentPodInRc1))
 	similarPods.SetUnschedulable(differentPodInRc1)
 	assert.True(t, similarPods.IsSimilarUnschedulable(differentPodInRc1))
 
 	// A non-replicated pod
-	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
+	nonReplicatedPod := po.BuildTestPod("nonReplicatedPod", 1000, 1000)
 	assert.False(t, similarPods.IsSimilarUnschedulable(nonReplicatedPod))
 	similarPods.SetUnschedulable(nonReplicatedPod)
 	assert.False(t, similarPods.IsSimilarUnschedulable(nonReplicatedPod))
@@ -113,7 +114,7 @@ func TestSimilarPodsSchedulingLimiting(t *testing.T) {
 	similarPods := NewSimilarPodsScheduling()
 	pods := make([]*apiv1.Pod, 0, maxPodsPerOwnerRef+1)
 	for i := 0; i < maxPodsPerOwnerRef+1; i += 1 {
-		p := BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
+		p := po.BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
 		p.OwnerReferences = GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", rc.UID)
 		p.Labels = map[string]string{"uniqueLabel": fmt.Sprintf("l%d", i)}
 		pods = append(pods, p)
@@ -142,7 +143,7 @@ func TestSimilarPodsSchedulingIgnoreDaemonSets(t *testing.T) {
 		},
 	}
 	similarPods := NewSimilarPodsScheduling()
-	pod := BuildTestPod("pod", 3000, 200000)
+	pod := po.BuildTestPod("pod", 3000, 200000)
 	pod.OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
 	similarPods.SetUnschedulable(pod)
 	assert.False(t, similarPods.IsSimilarUnschedulable(pod))

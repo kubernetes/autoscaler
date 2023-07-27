@@ -26,6 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -87,7 +88,7 @@ func TestContains(t *testing.T) {
 
 	n.Add(makeUnremovableNode(nodes[0]))
 	n.AddTimeout(makeUnremovableNode(nodes[1]), time.Now())
-	n.AddReason(BuildTestNode(nodes[2], 0, 0), simulator.UnremovableReason(1))
+	n.AddReason(no.BuildTestNode(nodes[2], 0, 0), simulator.UnremovableReason(1))
 
 	for _, node := range nodes {
 		if !n.Contains(node) {

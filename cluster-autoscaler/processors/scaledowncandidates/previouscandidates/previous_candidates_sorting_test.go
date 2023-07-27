@@ -22,14 +22,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 
 func TestScaleDownEarlierThan(t *testing.T) {
-	candidate1 := BuildTestNode("candidate1", 100, 0)
-	candidate2 := BuildTestNode("candidate2", 100, 0)
-	nonCandidate1 := BuildTestNode("non-candidate1", 100, 0)
-	nonCandidate2 := BuildTestNode("non-candidate2", 100, 0)
+	candidate1 := no.BuildTestNode("candidate1", 100, 0)
+	candidate2 := no.BuildTestNode("candidate2", 100, 0)
+	nonCandidate1 := no.BuildTestNode("non-candidate1", 100, 0)
+	nonCandidate2 := no.BuildTestNode("non-candidate2", 100, 0)
 
 	p := NewPreviousCandidates()
 	p.UpdateScaleDownCandidates([]*apiv1.Node{candidate1, candidate2}, time.Now())

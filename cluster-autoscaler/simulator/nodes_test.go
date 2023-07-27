@@ -26,7 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	"k8s.io/kubernetes/pkg/controller/daemon"
 )
 
@@ -74,40 +74,40 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 	}{
 		{
 			name: "node without any pods",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 		},
 		{
 			name: "node with non-DS/mirror pods",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.BuildScheduledTestPod("p1", 100, 1, "n"),
-				test.BuildScheduledTestPod("p2", 100, 1, "n"),
+				po.BuildScheduledTestPod("p1", 100, 1, "n"),
+				po.BuildScheduledTestPod("p2", 100, 1, "n"),
 			},
 		},
 		{
 			name: "node with a mirror pod",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: test.no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
 		},
 		{
 			name: "node with a deleted mirror pod",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
-				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p2", 100, 1, "n"))),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p1", 100, 1, "n")),
+				setDeletionTimestamp(po.SetMirrorPodSpec(po.BuildScheduledTestPod("p2", 100, 1, "n"))),
 			},
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
 		},
 		{
 			name: "node with DS pods [forceDS=false, no daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -118,7 +118,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with DS pods [forceDS=false, some daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -130,7 +130,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with a DS pod [forceDS=true, no daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -142,7 +142,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with a DS pod [forceDS=true, some daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: test.no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -156,36 +156,36 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "everything together [forceDS=false]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.BuildScheduledTestPod("p1", 100, 1, "n"),
-				test.BuildScheduledTestPod("p2", 100, 1, "n"),
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
-				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p4", 100, 1, "n"))),
+				po.BuildScheduledTestPod("p1", 100, 1, "n"),
+				po.BuildScheduledTestPod("p2", 100, 1, "n"),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p3", 100, 1, "n")),
+				setDeletionTimestamp(po.SetMirrorPodSpec(po.BuildScheduledTestPod("p4", 100, 1, "n"))),
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
 			},
 			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
 			},
 		},
 		{
 			name: "everything together [forceDS=true]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.BuildScheduledTestPod("p1", 100, 1, "n"),
-				test.BuildScheduledTestPod("p2", 100, 1, "n"),
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
-				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p4", 100, 1, "n"))),
+				po.BuildScheduledTestPod("p1", 100, 1, "n"),
+				po.BuildScheduledTestPod("p2", 100, 1, "n"),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p3", 100, 1, "n")),
+				setDeletionTimestamp(po.SetMirrorPodSpec(po.BuildScheduledTestPod("p4", 100, 1, "n"))),
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
 			},
 			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
 			forceDS:    true,
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
 				buildDSPod(ds2, "n"),
 			},
