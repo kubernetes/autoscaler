@@ -110,7 +110,7 @@ func expectErrorOrCount(t *testing.T, expectErr error, expectCount uint64, gotEr
 			t.Errorf("expected no error, got %v", gotErr)
 		}
 		if gotCount != expectCount {
-			t.Errorf("expected node count %v, got %v", expectCount, gotCount)
+			t.Errorf("expected resource count %v, got %v", expectCount, gotCount)
 		}
 		return
 	}
@@ -137,20 +137,23 @@ func getMetric(labelName, labelValue string, value float64) *dto.Metric {
 	}
 }
 
-func TestExtractMetricValueForNodeCount(t *testing.T) {
+func TestExtractMetricValueForResourceCount(t *testing.T) {
 	testCases := []struct {
-		name        string
-		mf          dto.MetricFamily
-		expectCount uint64
-		expectErr   error
+		name         string
+		mf           dto.MetricFamily
+		resourceName string
+		expectCount  uint64
+		expectErr    error
 	}{
 		{
-			name:      "empty",
-			mf:        dto.MetricFamily{},
-			expectErr: fmt.Errorf("metric name: no valid metric values"),
+			name:         "(nodes) empty",
+			resourceName: nodeResourceName,
+			mf:           dto.MetricFamily{},
+			expectErr:    fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name: "with proper value",
+			name:         "(nodes) with proper value",
+			resourceName: nodeResourceName,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "nodes", 4.0),
@@ -159,7 +162,8 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 			expectCount: 4,
 		},
 		{
-			name: "only wrong label",
+			name:         "(nodes) only wrong label",
+			resourceName: nodeResourceName,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("wrong", "nodes", 4.0),
@@ -168,16 +172,18 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name: "only wrong label value",
+			name:         "(nodes) only wrong label value",
+			resourceName: nodeResourceName,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
-					getMetric("resource", "pods", 4.0),
+					getMetric("resource", "services", 4.0),
 				},
 			},
 			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name: "with negative value",
+			name:         "(nodes) with negative value",
+			resourceName: nodeResourceName,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "nodes", -4.0),
@@ -185,10 +191,56 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 			},
 			expectErr: fmt.Errorf("metric name: metric unknown"),
 		},
+		{
+			name:         "(pods) empty",
+			resourceName: podResourceName,
+			mf:           dto.MetricFamily{},
+			expectErr:    fmt.Errorf("metric name: no valid metric values"),
+		},
+		{
+			name:         "(pods) with proper value",
+			resourceName: podResourceName,
+			mf: dto.MetricFamily{
+				Metric: []*dto.Metric{
+					getMetric("resource", "pods", 6.0),
+				},
+			},
+			expectCount: 6,
+		},
+		{
+			name:         "(pods) only wrong label",
+			resourceName: podResourceName,
+			mf: dto.MetricFamily{
+				Metric: []*dto.Metric{
+					getMetric("wrong", "pods", 4.0),
+				},
+			},
+			expectErr: fmt.Errorf("metric name: no valid metric values"),
+		},
+		{
+			name:         "(pods) only wrong label value",
+			resourceName: podResourceName,
+			mf: dto.MetricFamily{
+				Metric: []*dto.Metric{
+					getMetric("resource", "services", 4.0),
+				},
+			},
+			expectErr: fmt.Errorf("metric name: no valid metric values"),
+		},
+		{
+			name:         "(pods) with negative value",
+			resourceName: podResourceName,
+			mf: dto.MetricFamily{
+				Metric: []*dto.Metric{
+					getMetric("resource", "pods", -4.0),
+				},
+			},
+			expectErr: fmt.Errorf("metric name: metric unknown"),
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotCount, gotErr := extractMetricValueForResourceCount(tc.mf, nodeResourceName, "metric name")
+			gotCount, gotErr := extractMetricValueForResourceCount(tc.mf, tc.resourceName, "metric name")
 			expectErrorOrCount(t, tc.expectErr, tc.expectCount, gotErr, gotCount)
 		})
 	}
@@ -208,12 +260,13 @@ func (fd *fakeDecoder) Decode(output *dto.MetricFamily) error {
 	return nil
 }
 
-func TestGetNodeCountFromDecoder(t *testing.T) {
+func TestGetResourceCountFromDecoder(t *testing.T) {
 	preferredMetric := objectCountMetricName
 	fallbackMetric := objectCountFallbackMetricName
 	testCases := []struct {
 		name         string
 		metricValues []dto.MetricFamily
+		resourceName string
 		finalResult  error
 		expectValue  uint64
 		expectErr    error
@@ -224,8 +277,9 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectErr:   fmt.Errorf("no metric set"),
 		},
 		{
-			name:        "with preferred metric",
-			finalResult: io.EOF,
+			name:         "(nodes) with preferred metric",
+			finalResult:  io.EOF,
+			resourceName: nodeResourceName,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &preferredMetric,
@@ -237,8 +291,9 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectValue: 4,
 		},
 		{
-			name:        "with fallback metric",
-			finalResult: io.EOF,
+			name:         "(nodes) with fallback metric",
+			finalResult:  io.EOF,
+			resourceName: nodeResourceName,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -250,8 +305,9 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectValue: 4,
 		},
 		{
-			name:        "with preferred and fallback metrics",
-			finalResult: io.EOF,
+			name:         "(nodes) with preferred and fallback metrics",
+			finalResult:  io.EOF,
+			resourceName: nodeResourceName,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -274,8 +330,9 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectErr:   fmt.Errorf("decoding error: oops"),
 		},
 		{
-			name:        "falls back on error in preferred metric",
-			finalResult: io.EOF,
+			name:         "(nodes) falls back on error in preferred metric",
+			finalResult:  io.EOF,
+			resourceName: nodeResourceName,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -293,8 +350,9 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectValue: 4,
 		},
 		{
-			name:        "reports error on both metrics",
-			finalResult: io.EOF,
+			name:         "(nodes) reports error on both metrics",
+			finalResult:  io.EOF,
+			resourceName: nodeResourceName,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -312,8 +370,9 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
 		},
 		{
-			name:        "multiple metrics in preferred metric family",
-			finalResult: io.EOF,
+			name:         "(nodes) multiple metrics in preferred metric family",
+			finalResult:  io.EOF,
+			resourceName: nodeResourceName,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &preferredMetric,
@@ -330,6 +389,114 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			},
 			expectValue: 5.0,
 		},
+		{
+			name:         "(pods) with preferred metric",
+			finalResult:  io.EOF,
+			resourceName: podResourceName,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "pods", 10.0),
+					},
+				},
+			},
+			expectValue: 10,
+		},
+		{
+			name:         "(pods) with fallback metric",
+			finalResult:  io.EOF,
+			resourceName: podResourceName,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &fallbackMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "pods", 10.0),
+					},
+				},
+			},
+			expectValue: 10,
+		},
+		{
+			name:         "(pods) with preferred and fallback metrics",
+			finalResult:  io.EOF,
+			resourceName: podResourceName,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &fallbackMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "pods", 10.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "pods", 15.0),
+					},
+				},
+			},
+			expectValue: 15,
+		},
+		{
+			name:         "(pods) falls back on error in preferred metric",
+			finalResult:  io.EOF,
+			resourceName: podResourceName,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &fallbackMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "pods", 10.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("wrong", "nodes", 5.0),
+					},
+				},
+			},
+			expectValue: 10,
+		},
+		{
+			name:         "(pods) reports error on both metrics",
+			finalResult:  io.EOF,
+			resourceName: podResourceName,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &fallbackMetric,
+					Metric: []*dto.Metric{
+						getMetric("wrong", "pods", 10.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("wrong", "pods", 15.0),
+					},
+				},
+			},
+			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
+		},
+		{
+			name:         "(pods) multiple metrics in preferred metric family",
+			finalResult:  io.EOF,
+			resourceName: podResourceName,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "pods", 10.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "foobars", 3.0),
+					},
+				},
+			},
+			expectValue: 10.0,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -337,44 +504,70 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 				metricValues: tc.metricValues,
 				finalResult:  tc.finalResult,
 			}
-			gotCount, gotErr := getResourceCountFromDecoder(nodeResourceName, &fd)
+			gotCount, gotErr := getResourceCountFromDecoder(tc.resourceName, &fd)
 			expectErrorOrCount(t, tc.expectErr, tc.expectValue, gotErr, gotCount)
 		})
 	}
 }
 
-func TestGetNodeCountFromDecoder_MultpleLabels(t *testing.T) {
+func TestGetResourceCountFromDecoder_MultpleLabels(t *testing.T) {
 	preferredMetric := objectCountMetricName
-	labelName1 := resourceLabel
-	labelValue1 := nodeResourceName
-	labelName2 := "flavor"
-	labelValue2 := "up"
 	value := 3.0
-	fd := fakeDecoder{
-		metricValues: []dto.MetricFamily{
-			{
-				Name: &preferredMetric,
-				Metric: []*dto.Metric{
+	testCases := []struct {
+		name         string
+		labelName1   string
+		labelValue1  string
+		labelName2   string
+		labelValue2  string
+		resourceName string
+	}{
+		{
+			name:         "(nodes) get metric count with multiple labels",
+			labelName1:   resourceLabel,
+			labelValue1:  nodeResourceName,
+			labelName2:   "flavor",
+			labelValue2:  "up",
+			resourceName: nodeResourceName,
+		},
+		{
+			name:         "(pods) get metric count with multiple labels",
+			labelName1:   resourceLabel,
+			labelValue1:  podResourceName,
+			labelName2:   "flavor",
+			labelValue2:  "up",
+			resourceName: podResourceName,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fd := fakeDecoder{
+				metricValues: []dto.MetricFamily{
 					{
-						Label: []*dto.LabelPair{
+						Name: &preferredMetric,
+						Metric: []*dto.Metric{
 							{
-								Name:  &labelName1,
-								Value: &labelValue1,
+								Label: []*dto.LabelPair{
+									{
+										Name:  &tc.labelName1,
+										Value: &tc.labelValue1,
+									},
+									{
+										Name:  &tc.labelName2,
+										Value: &tc.labelValue2,
+									},
+								},
+								Gauge: &dto.Gauge{
+									Value: &value,
+								},
 							},
-							{
-								Name:  &labelName2,
-								Value: &labelValue2,
-							},
-						},
-						Gauge: &dto.Gauge{
-							Value: &value,
 						},
 					},
 				},
-			},
-		},
-		finalResult: io.EOF,
+				finalResult: io.EOF,
+			}
+			gotCount, gotErr := getResourceCountFromDecoder(tc.resourceName, &fd)
+			expectErrorOrCount(t, nil, 3.0, gotErr, gotCount)
+		})
 	}
-	gotCount, gotErr := getResourceCountFromDecoder(nodeResourceName, &fd)
-	expectErrorOrCount(t, nil, 3.0, gotErr, gotCount)
 }

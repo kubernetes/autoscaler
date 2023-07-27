@@ -278,7 +278,7 @@ func TestEstimateResources(t *testing.T) {
 
 func TestComputeResourceOverheadValueString(t *testing.T) {
 	testCases := []struct {
-		numNodes         uint64
+		clusterSize         uint64
 		resource         Resource
 		expectedOverhead string
 	}{
@@ -289,7 +289,7 @@ func TestComputeResourceOverheadValueString(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		got := computeResourceOverheadValueString(tc.numNodes, tc.resource)
+		got := computeResourceOverheadValueString(tc.clusterSize, tc.resource)
 		if got != tc.expectedOverhead {
 			t.Errorf("Overhead is incorrect, got: '%s', want: '%s'", got, tc.expectedOverhead)
 		}

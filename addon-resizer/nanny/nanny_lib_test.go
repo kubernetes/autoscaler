@@ -232,34 +232,35 @@ func TestUpdateResources(t *testing.T) {
 	oneMinuteAgo := now.Add(-time.Minute)
 	oneHourAgo := now.Add(-time.Hour)
 	testCases := []struct {
-		th   uint64
-		x, y corev1.ResourceList
-		lc   time.Time
-		sud  time.Duration
-		sdd  time.Duration
-		want updateResult
+		th          uint64
+		x, y        corev1.ResourceList
+		lc          time.Time
+		sud         time.Duration
+		sdd         time.Duration
+		scalingMode string
+		want        updateResult
 	}{
 		// No changes to the resources
-		{0, standard, standard, now, noDelay, noDelay, noChange},
-		{0, standard, standard, oneHourAgo, noDelay, noDelay, noChange},
-		{0, standard, standard, oneHourAgo, oneMinuteDelay, noDelay, noChange},
-		{0, standard, standard, oneHourAgo, noDelay, oneMinuteDelay, noChange},
-		{10, standard, siStandard, now, noDelay, noDelay, noChange},
+		{0, standard, standard, now, noDelay, noDelay, NodeProportional, noChange},
+		{0, standard, standard, oneHourAgo, noDelay, noDelay, NodeProportional, noChange},
+		{0, standard, standard, oneHourAgo, oneMinuteDelay, noDelay, ContainerProportional, noChange},
+		{0, standard, standard, oneHourAgo, noDelay, oneMinuteDelay, ContainerProportional, noChange},
+		{10, standard, siStandard, now, noDelay, noDelay, ContainerProportional, noChange},
 		// Delay has not passed
-		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, noDelay, postpone},
-		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, postpone},
-		{0, standard, smallCPU, tenSecondsAgo, noDelay, oneMinuteDelay, postpone},
-		{0, standard, smallCPU, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, postpone},
+		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, noDelay, NodeProportional, postpone},
+		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, NodeProportional, postpone},
+		{0, standard, smallCPU, tenSecondsAgo, noDelay, oneMinuteDelay, ContainerProportional, postpone},
+		{0, standard, smallCPU, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, ContainerProportional, postpone},
 		// Delay has passed
-		{0, standard, bigCPU, oneMinuteAgo, oneMinuteDelay, noDelay, overwrite},
-		{0, standard, smallCPU, oneMinuteAgo, noDelay, oneMinuteDelay, overwrite},
-		{0, standard, bigCPU, oneHourAgo, oneMinuteDelay, noDelay, overwrite},
-		{0, standard, smallCPU, oneHourAgo, noDelay, oneMinuteDelay, overwrite},
+		{0, standard, bigCPU, oneMinuteAgo, oneMinuteDelay, noDelay, NodeProportional, overwrite},
+		{0, standard, smallCPU, oneMinuteAgo, noDelay, oneMinuteDelay, NodeProportional, overwrite},
+		{0, standard, bigCPU, oneHourAgo, oneMinuteDelay, noDelay, NodeProportional, overwrite},
+		{0, standard, smallCPU, oneHourAgo, noDelay, oneMinuteDelay, ContainerProportional, overwrite},
 	}
 	for i, tc := range testCases {
-		k8s := newFakeKubernetesClient(10, tc.x, tc.x)
+		k8s := newFakeKubernetesClient(10, 50, tc.x, tc.x)
 		est := newFakeResourceEstimator(tc.y, tc.x)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, NodeProportional)
+		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, tc.scalingMode)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}
@@ -271,18 +272,24 @@ func TestUpdateResources(t *testing.T) {
 
 type fakeKubernetesClient struct {
 	nodes        uint64
+	containers   uint64
 	resources    *corev1.ResourceRequirements
 	newResources *corev1.ResourceRequirements
 }
 
-func newFakeKubernetesClient(nodes uint64, limits, reqs corev1.ResourceList) *fakeKubernetesClient {
+func newFakeKubernetesClient(nodes uint64, containers uint64, limits, reqs corev1.ResourceList) *fakeKubernetesClient {
 	return &fakeKubernetesClient{
-		nodes: 10,
+		nodes:      nodes,
+		containers: containers,
 		resources: &corev1.ResourceRequirements{
 			Limits:   limits,
 			Requests: reqs,
 		},
 	}
+}
+
+func (f *fakeKubernetesClient) CountContainers() (uint64, error) {
+	return f.containers, nil
 }
 
 func (f *fakeKubernetesClient) CountNodes() (uint64, error) {
@@ -312,6 +319,6 @@ func newFakeResourceEstimator(limits, reqs corev1.ResourceList) *fakeResourceEst
 	}
 }
 
-func (f *fakeResourceEstimator) scale(numNodes uint64) *corev1.ResourceRequirements {
+func (f *fakeResourceEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
 	return f.resources
 }
