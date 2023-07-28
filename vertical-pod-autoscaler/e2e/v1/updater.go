@@ -66,6 +66,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		err := WaitForPodsEvicted(f, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+
 	ginkgo.It("evicts pods for downscaling", func() {
 		const statusUpdateInterval = 10 * time.Second
 
