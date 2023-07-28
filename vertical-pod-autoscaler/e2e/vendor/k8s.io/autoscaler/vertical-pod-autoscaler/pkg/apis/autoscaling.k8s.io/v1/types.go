@@ -40,6 +40,7 @@ type VerticalPodAutoscalerList struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=vpa
+// +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Mode",type="string",JSONPath=".spec.updatePolicy.updateMode"
 // +kubebuilder:printcolumn:name="CPU",type="string",JSONPath=".status.recommendation.containerRecommendations[0].target.cpu"
 // +kubebuilder:printcolumn:name="Mem",type="string",JSONPath=".status.recommendation.containerRecommendations[0].target.memory"
@@ -106,26 +107,22 @@ type VerticalPodAutoscalerSpec struct {
 }
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
-// +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetHigherThanOrEqualToRequests;TargetLowerThanRequests;TargetLowerThanOrEqualToRequests
+// +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetLowerThanRequests
 type EvictionChangeRequirement string
 
 const (
 	// TargetHigherThanRequests means the new target recommendation for a Pod is higher than its current requests, i.e. the Pod is scaled up
 	TargetHigherThanRequests EvictionChangeRequirement = "TargetHigherThanRequests"
-	// TargetHigherThanOrEqualToRequests means the new target recommendation for a Pod is higher or equal than its current requests
-	TargetHigherThanOrEqualToRequests EvictionChangeRequirement = "TargetHigherThanOrEqualToRequests"
 	// TargetLowerThanRequests means the new target recommendation for a Pod is lower than its current requests, i.e. the Pod is scaled down
 	TargetLowerThanRequests EvictionChangeRequirement = "TargetLowerThanRequests"
-	// TargetLowerThanOrEqualToRequests means the new target recommendation for a Pod is lower than or equal to its current requests
-	TargetLowerThanOrEqualToRequests EvictionChangeRequirement = "TargetLowerThanOrEqualToRequests"
 )
 
 // EvictionRequirement defines a single condition which needs to be true in
 // order to evict a Pod
 type EvictionRequirement struct {
 	// Resources is a list of one or more resources that the condition applies
-	// to. If more than one resource is given, they are combined with OR, not
-	// with AND.
+	// to. If more than one resource is given, the EvictionRequirement is fulfilled
+	// if at least one resource meets `changeRequirement`.
 	Resources         []v1.ResourceName         `json:"resource" protobuf:"bytes,1,name=resources"`
 	ChangeRequirement EvictionChangeRequirement `json:"changeRequirement" protobuf:"bytes,2,name=changeRequirement"`
 }
@@ -145,12 +142,12 @@ type PodUpdatePolicy struct {
 
 	// EvictionRequirements is a list of EvictionRequirements that need to
 	// evaluate to true in order for a Pod to be evicted. If more than one
-	// EvictionRequirement is specified, they are combined with AND.
+	// EvictionRequirement is specified, all of them need to be fulfilled to allow eviction.
 	// +optional
 	EvictionRequirements []*EvictionRequirement `json:"evictionRequirements,omitempty" protobuf:"bytes,3,opt,name=evictionRequirements"`
 }
 
-// UpdateMode controls when autoscaler applies changes to the pod resoures.
+// UpdateMode controls when autoscaler applies changes to the pod resources.
 // +kubebuilder:validation:Enum=Off;Initial;Recreate;Auto
 type UpdateMode string
 
