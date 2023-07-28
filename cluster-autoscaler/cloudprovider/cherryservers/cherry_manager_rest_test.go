@@ -24,7 +24,7 @@ import (
 	"strings"
 	"testing"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	test_utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -91,7 +91,8 @@ func newTestCherryManagerRest(t *testing.T, serverUrl string) *cherryManagerRest
 	return manager
 }
 func TestListCherryServers(t *testing.T) {
-	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
+	server := test_utils.NewHttpServerMock(test_utils.MockFieldContentType,
+		test_utils.MockFieldResponse)
 	defer server.Close()
 
 	var m *cherryManagerRest

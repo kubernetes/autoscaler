@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	test_utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -255,7 +255,7 @@ var gceInstanceTemplate = &gcev1.InstanceTemplate{
 }
 
 func TestMig(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	gceManagerMock := &gceManagerMock{}
 	client := &http.Client{}

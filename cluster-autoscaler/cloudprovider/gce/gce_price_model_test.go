@@ -25,8 +25,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	"github.com/stretchr/testify/assert"
@@ -64,9 +64,9 @@ func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64
 func testNodeEphemeralStorage(t *testing.T, nodeName string, isEphemeralStorageLocalSsd bool, localSsdCount int, bootDiskType string, bootDiskSize int, isSpot bool) *apiv1.Node {
 	node := testNode(t, nodeName, "", 8000, 30*units.GiB, "", 0, false, isSpot)
 	if isEphemeralStorageLocalSsd {
-		AddEphemeralStorageToNode(node, int64(localSsdCount)*LocalSSDDiskSizeInGiB)
+		no.AddEphemeralStorageToNode(node, int64(localSsdCount)*LocalSSDDiskSizeInGiB)
 	} else {
-		AddEphemeralStorageToNode(node, int64(bootDiskSize))
+		no.AddEphemeralStorageToNode(node, int64(bootDiskSize))
 	}
 	if isEphemeralStorageLocalSsd {
 		node.Labels[ephemeralStorageLocalSsdLabel] = "true"
@@ -239,9 +239,9 @@ func TestGetNodePrice(t *testing.T) {
 }
 
 func TestGetPodPrice(t *testing.T) {
-	pod1 := BuildTestPodWithEphemeralStorage("a1", 100, 500*units.MiB, 100*units.GiB)
-	pod2 := BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 2*100*units.GiB)
-	pod3 := BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 100*units.GiB)
+	pod1 := po.BuildTestPodWithEphemeralStorage("a1", 100, 500*units.MiB, 100*units.GiB)
+	pod2 := po.BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 2*100*units.GiB)
+	pod3 := po.BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 100*units.GiB)
 
 	model := NewGcePriceModel(NewGcePriceInfo(), true)
 	now := time.Now()

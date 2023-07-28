@@ -21,7 +21,7 @@ import (
 	"os"
 	"testing"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	test_utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -77,7 +77,7 @@ func newTestPacketManagerRest(t *testing.T, url string) *packetManagerRest {
 }
 func TestListPacketDevices(t *testing.T) {
 	var m *packetManagerRest
-	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
+	server := test_utils.NewHttpServerMock(test_utils.MockFieldContentType, test_utils.MockFieldResponse)
 	defer server.Close()
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
 		// If auth token set in env, hit the actual Packet API

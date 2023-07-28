@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	test_utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -459,7 +459,7 @@ func setupTestExtraPool2(manager *gceManagerImpl, setupBaseName bool) *gceMig {
 }
 
 func TestDeleteInstances(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
@@ -552,7 +552,7 @@ const setMigSizeOperationResponse = `{
 }`
 
 func TestGetAndSetMigSize(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
@@ -642,7 +642,7 @@ func TestGetAndSetMigSize(t *testing.T) {
 }
 
 func TestGetMigSizeListCallFails(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
@@ -678,7 +678,7 @@ func TestGetMigSizeListCallFails(t *testing.T) {
 }
 
 func TestGetMigForInstance(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
@@ -717,7 +717,7 @@ func TestGetMigForInstance(t *testing.T) {
 }
 
 func TestGetMigNodesBasic(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
@@ -892,7 +892,7 @@ func buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart(zone string, 
 }
 
 func TestGetMigNodesComplex(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
@@ -1145,7 +1145,7 @@ const getRegionResponse = `{
 }`
 
 func TestFetchAutoMigsZonal(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 
 	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroups").Return(buildListInstanceGroupsResponse(zoneB, gceMigA, gceMigB)).Once()
@@ -1176,7 +1176,7 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 }
 
 func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 
 	// Register explicit instance group
@@ -1217,7 +1217,7 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 }
 
 func TestFetchAutoMigsRegional(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 
 	server.On("handle", "/projects/project1/regions/us-central1").Return(getRegionResponse).Once()
@@ -1249,7 +1249,7 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 }
 
 func TestFetchExplicitMigs(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 
 	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA, 3)).Once()
@@ -1319,7 +1319,7 @@ const listMachineTypesResponse = `{
 }`
 
 func TestGetMigTemplateNode(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/default-pool").Return(getInstanceGroupManagerResponse).Once()
@@ -1502,7 +1502,7 @@ const createInstancesOperationResponse = `{
 }`
 
 func TestAppendInstances(t *testing.T) {
-	server := NewHttpServerMock()
+	server := test_utils.NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 

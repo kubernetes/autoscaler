@@ -23,7 +23,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	test_utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	"github.com/stretchr/testify/assert"
@@ -38,7 +38,8 @@ const deletePacketDeviceResponsePool3 = ``
 
 func TestIncreaseDecreaseSize(t *testing.T) {
 	var m *packetManagerRest
-	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
+	server := test_utils.NewHttpServerMock(test_utils.MockFieldContentType,
+		test_utils.MockFieldResponse)
 	defer server.Close()
 	assert.Equal(t, true, true)
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {

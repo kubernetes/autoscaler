@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
