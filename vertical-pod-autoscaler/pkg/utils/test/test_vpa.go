@@ -45,6 +45,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithRecommender(string2 string) VerticalPodAutoscalerBuilder
 	WithGroupVersion(gv meta.GroupVersion) VerticalPodAutoscalerBuilder
 	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
+	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -187,6 +188,15 @@ func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirem
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
 	}
 	c.updatePolicy.EvictionRequirements = evictionRequirements
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder {
+	c := *b
+	if c.updatePolicy == nil {
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+	}
+	c.updatePolicy.MinReplicas = minReplicas
 	return &c
 }
 
