@@ -338,7 +338,7 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
 
 ### Controlling eviction behavior based on scaling direction and resource
  To limit disruptions caused by evictions, you can put additional constraints on the Updater's eviction behavior by specifying `.updatePolicy.EvictionRequirements` in the VPA spec. An `EvictionRequirement` contains a resource and a `ChangeRequirement`, which is evaluated by comparing a new recommendation against the currently set resources for a container.
- Here is an example configuration which allows evictions only when CPU or memory get scaled up, not when they are scaled down
+ Here is an example configuration which allows evictions only when CPU or memory get scaled up, but not when they both are scaled down
  ```
  updatePolicy:
    evictionRequirements:
