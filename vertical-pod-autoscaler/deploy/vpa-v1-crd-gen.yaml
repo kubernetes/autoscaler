@@ -382,8 +382,8 @@ spec:
                   evictionRequirements:
                     description: EvictionRequirements is a list of EvictionRequirements
                       that need to evaluate to true in order for a Pod to be evicted.
-                      If more than one EvictionRequirement is specified, they are
-                      combined with AND.
+                      If more than one EvictionRequirement is specified, all of them
+                      need to be fulfilled to allow eviction.
                     items:
                       description: EvictionRequirement defines a single condition
                         which needs to be true in order to evict a Pod
@@ -400,7 +400,8 @@ spec:
                         resource:
                           description: Resources is a list of one or more resources
                             that the condition applies to. If more than one resource
-                            is given, they are combined with OR, not with AND.
+                            is given, the EvictionRequirement is fulfilled if at least
+                            one resource meets `changeRequirement`.
                           items:
                             description: ResourceName is the name identifying various
                               resources in a ResourceList.

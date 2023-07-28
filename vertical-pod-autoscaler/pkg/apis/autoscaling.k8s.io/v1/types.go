@@ -121,8 +121,8 @@ const (
 // order to evict a Pod
 type EvictionRequirement struct {
 	// Resources is a list of one or more resources that the condition applies
-	// to. If more than one resource is given, they are combined with OR, not
-	// with AND.
+	// to. If more than one resource is given, the EvictionRequirement is fulfilled
+	// if at least one resource meets `changeRequirement`.
 	Resources         []v1.ResourceName         `json:"resource" protobuf:"bytes,1,name=resources"`
 	ChangeRequirement EvictionChangeRequirement `json:"changeRequirement" protobuf:"bytes,2,name=changeRequirement"`
 }
@@ -142,7 +142,7 @@ type PodUpdatePolicy struct {
 
 	// EvictionRequirements is a list of EvictionRequirements that need to
 	// evaluate to true in order for a Pod to be evicted. If more than one
-	// EvictionRequirement is specified, they are combined with AND.
+	// EvictionRequirement is specified, all of them need to be fulfilled to allow eviction.
 	// +optional
 	EvictionRequirements []*EvictionRequirement `json:"evictionRequirements,omitempty" protobuf:"bytes,3,opt,name=evictionRequirements"`
 }
