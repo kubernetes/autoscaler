@@ -110,7 +110,7 @@ Note: the commands will differ if you deploy VPA in a different namespace.
 
 ### How can I apply VPA to my Custom Resource?
 
-The VPA cannot only scale the built-in resources like Deployment or StatefulSet, but also Custom Resources which manage
+The VPA can scale not only the built-in resources like Deployment or StatefulSet, but also Custom Resources which manage
 Pods. Just like the Horizontal Pod Autoscaler, the [VPA requires that the Custom Resource implements the `/scale`
 subresource with the optional field `labelSelector`](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#scale-subresource),
 which corresponds to `.scale.status.selector`. VPA doesn't use the `/scale` subresource for the actual scaling, but uses
