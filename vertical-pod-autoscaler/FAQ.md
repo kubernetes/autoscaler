@@ -111,8 +111,9 @@ Note: the commands will differ if you deploy VPA in a different namespace.
 ### How can I apply VPA to my Custom Resource?
 
 The VPA can scale not only the built-in resources like Deployment or StatefulSet, but also Custom Resources which manage
-Pods. Just like the Horizontal Pod Autoscaler, the [VPA requires that the Custom Resource implements the `/scale`
-subresource with the optional field `labelSelector`](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#scale-subresource),
+Pods. Just like the Horizontal Pod Autoscaler, the VPA requires that the Custom Resource implements the
+[`/scale` subresource](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#scale-subresource)
+with the optional field `labelSelector`,
 which corresponds to `.scale.status.selector`. VPA doesn't use the `/scale` subresource for the actual scaling, but uses
 this label selector to identify the Pods managed by a Custom Resource. As VPA relies on Pod eviction to apply new
 resource recommendations, this ensures that all Pods with a matching VPA object are managed by a controller that will
