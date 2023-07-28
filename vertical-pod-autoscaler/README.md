@@ -345,7 +345,7 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
      - resources: ["cpu", "memory"]
        changeRequirement: TargetHigherThanRequests
  ```
- Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original KEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
+ Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original AEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
 
 # Known limitations
 
