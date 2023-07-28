@@ -40,9 +40,6 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const ContainerProportional = "container-proportional"
-const NodeProportional = "node-proportional"
-
 var (
 	// Flags to define the resource requirements.
 	configDir = flag.String("config-dir", nannyconfig.NoValue, "Path of configuration containing base resource requirements.")
@@ -67,7 +64,7 @@ var (
 	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
 	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing objects from the Kubernetes API.")
 	hcAddress      = flag.String("healthcheck-address", ":8080", "The address to expose an HTTP health-check on.")
-	scalingMode    = flag.String("scaling-mode", "node-proportional", "The mode of scaling to be used. Possible values: 'node-proportional' or 'container-proportional'")
+	scalingMode    = flag.String("scaling-mode", nanny.NodeProportional, "The mode of scaling to be used. Possible values: 'node-proportional' or 'container-proportional'")
 )
 
 func main() {
@@ -166,7 +163,7 @@ func main() {
 		glog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
-	if *scalingMode != NodeProportional && *scalingMode != ContainerProportional {
+	if *scalingMode != nanny.NodeProportional && *scalingMode != nanny.ContainerProportional {
 		glog.Fatalf("scaling mode %s not supported", *scalingMode)
 	}
 

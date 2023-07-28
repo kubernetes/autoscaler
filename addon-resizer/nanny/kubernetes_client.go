@@ -81,7 +81,7 @@ func (k *kubernetesClient) countContainersThroughAPI() (uint64, error) {
 		ResourceVersion: "0",
 		FieldSelector:   getPodSelectorExcludingDonePodsOrDie(),
 	}
-	pods, err := k.clientset.CoreV1().Pods("").List(context.TODO(), options)
+	pods, err := k.clientset.CoreV1().Pods(corev1.NamespaceAll).List(context.TODO(), options)
 	result := 0
 	for _, pod := range pods.Items {
 		result += len(pod.Spec.Containers) + len(pod.Spec.InitContainers) + len(pod.Spec.EphemeralContainers)
@@ -130,7 +130,7 @@ func extractMetricValueForResourceCount(mf dto.MetricFamily, resourceName, metri
 		if *metric.Gauge.Value < 0 {
 			return 0, fmt.Errorf("%s: metric unknown", metricName)
 		}
-		fmt.Println(metric)
+
 		value := uint64(*metric.Gauge.Value)
 		return value, nil
 	}

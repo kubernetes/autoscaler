@@ -243,18 +243,34 @@ func TestUpdateResources(t *testing.T) {
 		// No changes to the resources
 		{0, standard, standard, now, noDelay, noDelay, NodeProportional, noChange},
 		{0, standard, standard, oneHourAgo, noDelay, noDelay, NodeProportional, noChange},
+		{0, standard, standard, oneHourAgo, oneMinuteDelay, noDelay, NodeProportional, noChange},
+		{0, standard, standard, oneHourAgo, noDelay, oneMinuteDelay, NodeProportional, noChange},
+		{10, standard, siStandard, now, noDelay, noDelay, NodeProportional, noChange},
+
+		{0, standard, standard, now, noDelay, noDelay, ContainerProportional, noChange},
+		{0, standard, standard, oneHourAgo, noDelay, noDelay, ContainerProportional, noChange},
 		{0, standard, standard, oneHourAgo, oneMinuteDelay, noDelay, ContainerProportional, noChange},
 		{0, standard, standard, oneHourAgo, noDelay, oneMinuteDelay, ContainerProportional, noChange},
 		{10, standard, siStandard, now, noDelay, noDelay, ContainerProportional, noChange},
 		// Delay has not passed
 		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, noDelay, NodeProportional, postpone},
 		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, NodeProportional, postpone},
+		{0, standard, smallCPU, tenSecondsAgo, noDelay, oneMinuteDelay, NodeProportional, postpone},
+		{0, standard, smallCPU, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, NodeProportional, postpone},
+
+		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, noDelay, ContainerProportional, postpone},
+		{0, standard, bigCPU, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, ContainerProportional, postpone},
 		{0, standard, smallCPU, tenSecondsAgo, noDelay, oneMinuteDelay, ContainerProportional, postpone},
 		{0, standard, smallCPU, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, ContainerProportional, postpone},
 		// Delay has passed
 		{0, standard, bigCPU, oneMinuteAgo, oneMinuteDelay, noDelay, NodeProportional, overwrite},
 		{0, standard, smallCPU, oneMinuteAgo, noDelay, oneMinuteDelay, NodeProportional, overwrite},
 		{0, standard, bigCPU, oneHourAgo, oneMinuteDelay, noDelay, NodeProportional, overwrite},
+		{0, standard, smallCPU, oneHourAgo, noDelay, oneMinuteDelay, NodeProportional, overwrite},
+
+		{0, standard, bigCPU, oneMinuteAgo, oneMinuteDelay, noDelay, ContainerProportional, overwrite},
+		{0, standard, smallCPU, oneMinuteAgo, noDelay, oneMinuteDelay, ContainerProportional, overwrite},
+		{0, standard, bigCPU, oneHourAgo, oneMinuteDelay, noDelay, ContainerProportional, overwrite},
 		{0, standard, smallCPU, oneHourAgo, noDelay, oneMinuteDelay, ContainerProportional, overwrite},
 	}
 	for i, tc := range testCases {
