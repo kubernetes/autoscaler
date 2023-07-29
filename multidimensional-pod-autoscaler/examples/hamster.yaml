@@ -1,0 +1,36 @@
+# This config creates a deployment with two pods, each requesting 100 millicores
+# and trying to utilize slightly above 500 millicores (repeatedly using CPU for
+# 0.5s and sleeping 0.5s).
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamster
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hamster
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+        - name: hamster
+          image: k8s.gcr.io/ubuntu-slim:0.1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+            limits:
+              cpu: 200m
+              memory: 100Mi
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"
