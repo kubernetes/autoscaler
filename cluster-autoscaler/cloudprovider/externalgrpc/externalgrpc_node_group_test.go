@@ -240,6 +240,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		ScaleDownGpuUtilizationThreshold: 0.7,
 		ScaleDownUnneededTime:            time.Minute,
 		ScaleDownUnreadyTime:             time.Hour,
+		MaxNodeProvisionTime:             time.Minute,
+		ZeroOrMaxNodeScaling:             true,
 	}
 
 	opts, err := ng1.GetOptions(defaultsOpts)
@@ -248,6 +250,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, 0.7, opts.ScaleDownGpuUtilizationThreshold)
 	assert.Equal(t, time.Minute, opts.ScaleDownUnneededTime)
 	assert.Equal(t, time.Hour, opts.ScaleDownUnreadyTime)
+	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
+	assert.Equal(t, true, opts.ZeroOrMaxNodeScaling)
 
 	// test grpc error
 	m.On(
