@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mpa-updater
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mpa-updater
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mpa-updater
+  template:
+    metadata:
+      labels:
+        app: mpa-updater
+    spec:
+      serviceAccountName: mpa-updater
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534  # nobody
+      containers:
+        - name: updater
+          image: haoranq4/mpa-updater-amd64:latest
+          imagePullPolicy: Always
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            limits:
+              cpu: 200m
+              memory: 1000Mi
+            requests:
+              cpu: 50m
+              memory: 500Mi
+          ports:
+            - name: prometheus
+              containerPort: 8943
