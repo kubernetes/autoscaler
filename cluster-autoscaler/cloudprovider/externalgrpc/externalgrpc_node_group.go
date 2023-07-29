@@ -278,6 +278,8 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 		ScaleDownGpuUtilizationThreshold: pbOpts.GetScaleDownGpuUtilizationThreshold(),
 		ScaleDownUnneededTime:            pbOpts.GetScaleDownUnneededTime().Duration,
 		ScaleDownUnreadyTime:             pbOpts.GetScaleDownUnreadyTime().Duration,
+		MaxNodeProvisionTime:             defaults.MaxNodeProvisionTime,
+		ZeroOrMaxNodeScaling:             defaults.ZeroOrMaxNodeScaling,
 	}
 	return opts, nil
 }
