@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mpa-admission-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mpa-admission-controller
+  template:
+    metadata:
+      labels:
+        app: mpa-admission-controller
+    spec:
+      serviceAccountName: mpa-admission-controller
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+        - name: admission-controller
+          image: haoranq4/mpa-admission-controller-amd64:latest
+          imagePullPolicy: Always
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: tls-certs
+              mountPath: "/etc/tls-certs"
+              readOnly: true
+          resources:
+            limits:
+              cpu: 200m
+              memory: 500Mi
+            requests:
+              cpu: 50m
+              memory: 200Mi
+          ports:
+            - containerPort: 8000
+            - name: prometheus
+              containerPort: 8944
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: mpa-tls-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mpa-webhook
+  namespace: kube-system
+spec:
+  ports:
+    - port: 443
+      targetPort: 8000
+  selector:
+    app: mpa-admission-controller
