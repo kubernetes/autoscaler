@@ -18,6 +18,8 @@ package externalgrpc
 
 import (
 	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -263,9 +265,20 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 			ScaleDownUnreadyTime: &metav1.Duration{
 				Duration: defaults.ScaleDownUnreadyTime,
 			},
+			MaxNodeProvisionTime: &metav1.Duration{
+				Duration: defaults.MaxNodeProvisionTime,
+			},
+			ZeroOrMaxNodeScaling: &defaults.ZeroOrMaxNodeScaling,
 		},
 	})
 	if err != nil {
+		resStatus, ok := status.FromError(err)
+
+		if ok && resStatus.Code() == codes.Unimplemented {
+			klog.V(5).Infof("%s: using default options", resStatus.Message())
+			return &defaults, nil
+		}
+
 		klog.V(1).Infof("Error on gRPC call NodeGroupGetOptions: %v", err)
 		return nil, err
 	}
@@ -278,8 +291,15 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 		ScaleDownGpuUtilizationThreshold: pbOpts.GetScaleDownGpuUtilizationThreshold(),
 		ScaleDownUnneededTime:            pbOpts.GetScaleDownUnneededTime().Duration,
 		ScaleDownUnreadyTime:             pbOpts.GetScaleDownUnreadyTime().Duration,
-		MaxNodeProvisionTime:             defaults.MaxNodeProvisionTime,
-		ZeroOrMaxNodeScaling:             defaults.ZeroOrMaxNodeScaling,
 	}
+
+	if pbOpts.GetMaxNodeProvisionTime() != nil {
+		opts.MaxNodeProvisionTime = pbOpts.GetMaxNodeProvisionTime().Duration
+	}
+
+	if pbOpts.ZeroOrMaxNodeScaling != nil {
+		opts.ZeroOrMaxNodeScaling = pbOpts.GetZeroOrMaxNodeScaling()
+	}
+
 	return opts, nil
 }
