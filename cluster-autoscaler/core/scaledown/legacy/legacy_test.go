@@ -111,15 +111,15 @@ func TestFindUnneededNodes(t *testing.T) {
 	n9 := no.BuildTestNode("n9", 1000, 10)
 	n9.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-60, 10)}}
 
-	SetNodeReadyState(n1, true, time.Time{})
-	SetNodeReadyState(n2, true, time.Time{})
-	SetNodeReadyState(n3, true, time.Time{})
-	SetNodeReadyState(n4, true, time.Time{})
-	SetNodeReadyState(n5, true, time.Time{})
-	SetNodeReadyState(n6, true, time.Time{})
-	SetNodeReadyState(n7, true, time.Time{})
-	SetNodeReadyState(n8, true, time.Time{})
-	SetNodeReadyState(n9, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n2, true, time.Time{})
+	no.SetNodeReadyState(n3, true, time.Time{})
+	no.SetNodeReadyState(n4, true, time.Time{})
+	no.SetNodeReadyState(n5, true, time.Time{})
+	no.SetNodeReadyState(n6, true, time.Time{})
+	no.SetNodeReadyState(n7, true, time.Time{})
+	no.SetNodeReadyState(n8, true, time.Time{})
+	no.SetNodeReadyState(n9, true, time.Time{})
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -227,21 +227,21 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
 	p1.OwnerReferences = ownerRef
-	RequestGpuForPod(p1, 1)
-	TolerateGpuForPod(p1)
+	po.RequestGpuForPod(p1, 1)
+	po.TolerateGpuForPod(p1)
 
 	p2 := po.BuildTestPod("p2", 400, 0)
 	p2.Spec.NodeName = "n2"
 	p2.OwnerReferences = ownerRef
-	RequestGpuForPod(p2, 1)
-	TolerateGpuForPod(p2)
+	po.RequestGpuForPod(p2, 1)
+	po.TolerateGpuForPod(p2)
 
 	p3 := po.BuildTestPod("p3", 300, 0)
 	p3.Spec.NodeName = "n3"
 	p3.OwnerReferences = ownerRef
 	p3.ObjectMeta.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "false"
-	RequestGpuForPod(p3, 1)
-	TolerateGpuForPod(p3)
+	po.RequestGpuForPod(p3, 1)
+	po.TolerateGpuForPod(p3)
 
 	// Node with low cpu utilization and high gpu utilization
 	n1 := no.BuildTestNode("n1", 1000, 10)
@@ -253,9 +253,9 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	n3 := no.BuildTestNode("n3", 1000, 10)
 	AddGpusToNode(n3, 8)
 
-	SetNodeReadyState(n1, true, time.Time{})
-	SetNodeReadyState(n2, true, time.Time{})
-	SetNodeReadyState(n3, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n2, true, time.Time{})
+	no.SetNodeReadyState(n3, true, time.Time{})
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -310,8 +310,8 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 	// this test focuses on utilization checks
 	// add a super large node, so every pod always has a place to drain
 	sink := no.BuildTestNode("sink", 100000, 100000)
-	AddGpusToNode(sink, 20)
-	SetNodeReadyState(sink, true, time.Time{})
+	no.AddGpusToNode(sink, 20)
+	no.SetNodeReadyState(sink, true, time.Time{})
 	provider.AddNodeGroup("sink_group", 1, 1, 1)
 	provider.AddNode("sink_group", sink)
 
@@ -327,7 +327,7 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 		for _, u := range cpuUtilizations {
 			nodeName := fmt.Sprintf("%s_%d", ngName, u)
 			node := no.BuildTestNode(nodeName, 1000, 10)
-			SetNodeReadyState(node, true, time.Time{})
+			no.SetNodeReadyState(node, true, time.Time{})
 			provider.AddNode(ngName, node)
 			allNodes = append(allNodes, node)
 			scaleDownCandidates = append(scaleDownCandidates, node)
@@ -453,10 +453,10 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	// Node with big pod waiting for lower priority pod preemption. Can't be deleted.
 	n4 := no.BuildTestNode("n4", 10000, 10)
 
-	SetNodeReadyState(n1, true, time.Time{})
-	SetNodeReadyState(n2, true, time.Time{})
-	SetNodeReadyState(n3, true, time.Time{})
-	SetNodeReadyState(n4, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n2, true, time.Time{})
+	no.SetNodeReadyState(n3, true, time.Time{})
+	no.SetNodeReadyState(n4, true, time.Time{})
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -508,7 +508,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	nodes := make([]*apiv1.Node, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
 		n := no.BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
-		SetNodeReadyState(n, true, time.Time{})
+		no.SetNodeReadyState(n, true, time.Time{})
 		provider.AddNode("ng1", n)
 		nodes = append(nodes, n)
 	}
@@ -593,7 +593,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 	nodes := make([]*apiv1.Node, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
 		n := no.BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
-		SetNodeReadyState(n, true, time.Time{})
+		no.SetNodeReadyState(n, true, time.Time{})
 		provider.AddNode("ng1", n)
 		nodes = append(nodes, n)
 	}
@@ -651,7 +651,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 	nodes := make([]*apiv1.Node, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
 		n := no.BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
-		SetNodeReadyState(n, true, time.Time{})
+		no.SetNodeReadyState(n, true, time.Time{})
 		provider.AddNode("ng1", n)
 		nodes = append(nodes, n)
 	}
@@ -714,9 +714,9 @@ func TestScaleDown(t *testing.T) {
 		},
 	}
 	n1 := no.BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 	n2 := no.BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Time{})
+	no.SetNodeReadyState(n2, true, time.Time{})
 	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "batch/v1", "")
 
@@ -989,10 +989,10 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 	for i, n := range config.Nodes {
 		node := no.BuildTestNode(n.Name, n.Cpu, n.Memory)
 		if n.Gpu > 0 {
-			AddGpusToNode(node, n.Gpu)
+			no.AddGpusToNode(node, n.Gpu)
 			node.Labels[provider.GPULabel()] = gpu.DefaultGPUType
 		}
-		SetNodeReadyState(node, n.Ready, time.Time{})
+		no.SetNodeReadyState(node, n.Ready, time.Time{})
 		nodesMap[n.Name] = node
 		nodes[i] = node
 		groups[n.Group] = append(groups[n.Group], node)
@@ -1083,9 +1083,9 @@ func TestNoScaleDownUnready(t *testing.T) {
 	var autoscalererr autoscaler_errors.AutoscalerError
 	fakeClient := &fake.Clientset{}
 	n1 := no.BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Minute))
+	no.SetNodeReadyState(n1, false, time.Now().Add(-3*time.Minute))
 	n2 := no.BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Time{})
+	no.SetNodeReadyState(n2, true, time.Time{})
 	p2 := po.BuildTestPod("p2", 800, 0)
 	p2.Spec.NodeName = "n2"
 
@@ -1153,7 +1153,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 		deletedNodes <- node
 		return nil
 	})
-	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Hour))
+	no.SetNodeReadyState(n1, false, time.Now().Add(-3*time.Hour))
 	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng1", n2)
@@ -1186,11 +1186,11 @@ func TestScaleDownNoMove(t *testing.T) {
 		},
 	}
 	n1 := no.BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 
 	// N2 is unready so no pods can be moved there.
 	n2 := no.BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, false, time.Time{})
+	no.SetNodeReadyState(n2, false, time.Time{})
 
 	p1 := po.BuildTestPod("p1", 100, 0)
 	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", "")

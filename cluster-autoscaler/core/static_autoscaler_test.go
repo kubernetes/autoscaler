@@ -51,6 +51,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	kube_record "k8s.io/client-go/tools/record"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -174,18 +175,18 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	onScaleDownMock := &onScaleDownMock{}
 	deleteFinished := make(chan bool, 1)
 
-	n1 := no.no.BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	no.SetNodeReadyState(n1, true, time.Now())
-	n2 := no.no.BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	no.SetNodeReadyState(n2, true, time.Now())
-	n3 := no.no.BuildTestNode("n3", 1000, 1000)
-	n4 := no.no.BuildTestNode("n4", 1000, 1000)
+	n3 := no.BuildTestNode("n3", 1000, 1000)
+	n4 := no.BuildTestNode("n4", 1000, 1000)
 
-	p1 := po.po.BuildTestPod("p1", 600, 100)
+	p1 := po.BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
-	p2 := po.po.BuildTestPod("p2", 600, 100)
+	p2 := po.BuildTestPod("p2", 600, 100)
 
-	tn := no.no.BuildTestNode("tn", 1000, 1000)
+	tn := no.BuildTestNode("tn", 1000, 1000)
 	tni := schedulerframework.NewNodeInfo()
 	tni.SetNode(tn)
 
@@ -377,24 +378,24 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	nodeGroupListProcessor := &MockAutoprovisioningNodeGroupListProcessor{t}
 	deleteFinished := make(chan bool, 1)
 
-	n1 := no.no.BuildTestNode("n1", 100, 1000)
+	n1 := no.BuildTestNode("n1", 100, 1000)
 	no.SetNodeReadyState(n1, true, time.Now())
-	n2 := no.no.BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	no.SetNodeReadyState(n2, true, time.Now())
 
-	p1 := po.po.BuildTestPod("p1", 100, 100)
+	p1 := po.BuildTestPod("p1", 100, 100)
 	p1.Spec.NodeName = "n1"
-	p2 := po.po.BuildTestPod("p2", 600, 100)
+	p2 := po.BuildTestPod("p2", 600, 100)
 
-	tn1 := no.no.BuildTestNode("tn1", 100, 1000)
+	tn1 := no.BuildTestNode("tn1", 100, 1000)
 	no.SetNodeReadyState(tn1, true, time.Now())
 	tni1 := schedulerframework.NewNodeInfo()
 	tni1.SetNode(tn1)
-	tn2 := no.no.BuildTestNode("tn2", 1000, 1000)
+	tn2 := no.BuildTestNode("tn2", 1000, 1000)
 	no.SetNodeReadyState(tn2, true, time.Now())
 	tni2 := schedulerframework.NewNodeInfo()
 	tni2.SetNode(tn2)
-	tn3 := no.no.BuildTestNode("tn3", 100, 1000)
+	tn3 := no.BuildTestNode("tn3", 100, 1000)
 	no.SetNodeReadyState(tn2, true, time.Now())
 	tni3 := schedulerframework.NewNodeInfo()
 	tni3.SetNode(tn3)
@@ -541,14 +542,14 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	now := time.Now()
 	later := now.Add(1 * time.Minute)
 
-	n1 := no.no.BuildTestNode("n1", 1000, 1000)
+	n1 := no.BuildTestNode("n1", 1000, 1000)
 	no.SetNodeReadyState(n1, true, time.Now())
-	n2 := no.no.BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	no.SetNodeReadyState(n2, true, time.Now())
 
-	p1 := po.po.BuildTestPod("p1", 600, 100)
+	p1 := po.BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
-	p2 := po.po.BuildTestPod("p2", 600, 100)
+	p2 := po.BuildTestPod("p2", 600, 100)
 
 	provider := testprovider.NewTestCloudProvider(
 		func(id string, delta int) error {
@@ -563,7 +564,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	// broken node, that will be just hanging out there during
 	// the test (it can't be removed since that would validate group min size)
-	brokenNode := no.no.BuildTestNode("broken", 1000, 1000)
+	brokenNode := no.BuildTestNode("broken", 1000, 1000)
 	provider.AddNode("ng1", brokenNode)
 
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -672,11 +673,11 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	onScaleDownMock := &onScaleDownMock{}
 	deleteFinished := make(chan bool, 1)
 
-	n1 := no.no.BuildTestNode("n1", 100, 1000)
+	n1 := no.BuildTestNode("n1", 100, 1000)
 	no.SetNodeReadyState(n1, true, time.Now())
-	n2 := no.no.BuildTestNode("n2", 1000, 1000)
+	n2 := no.BuildTestNode("n2", 1000, 1000)
 	no.SetNodeReadyState(n2, true, time.Now())
-	n3 := no.no.BuildTestNode("n3", 1000, 1000)
+	n3 := no.BuildTestNode("n3", 1000, 1000)
 	no.SetNodeReadyState(n3, true, time.Now())
 
 	// shared owner reference
@@ -684,31 +685,31 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	var priority100 int32 = 100
 	var priority1 int32 = 1
 
-	p1 := po.po.BuildTestPod("p1", 40, 0)
+	p1 := po.BuildTestPod("p1", 40, 0)
 	p1.OwnerReferences = ownerRef
 	p1.Spec.NodeName = "n1"
 	p1.Spec.Priority = &priority1
 
-	p2 := po.po.BuildTestPod("p2", 400, 0)
+	p2 := po.BuildTestPod("p2", 400, 0)
 	p2.OwnerReferences = ownerRef
 	p2.Spec.NodeName = "n2"
 	p2.Spec.Priority = &priority1
 
-	p3 := po.po.BuildTestPod("p3", 400, 0)
+	p3 := po.BuildTestPod("p3", 400, 0)
 	p3.OwnerReferences = ownerRef
 	p3.Spec.NodeName = "n2"
 	p3.Spec.Priority = &priority100
 
-	p4 := po.po.BuildTestPod("p4", 500, 0)
+	p4 := po.BuildTestPod("p4", 500, 0)
 	p4.OwnerReferences = ownerRef
 	p4.Spec.Priority = &priority100
 
-	p5 := po.po.BuildTestPod("p5", 800, 0)
+	p5 := po.BuildTestPod("p5", 800, 0)
 	p5.OwnerReferences = ownerRef
 	p5.Spec.Priority = &priority100
 	p5.Status.NominatedNodeName = "n3"
 
-	p6 := po.po.BuildTestPod("p6", 1000, 0)
+	p6 := po.BuildTestPod("p6", 1000, 0)
 	p6.OwnerReferences = ownerRef
 	p6.Spec.Priority = &priority100
 
@@ -837,20 +838,20 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	onScaleUpMock := &onScaleUpMock{}
 	onScaleDownMock := &onScaleDownMock{}
 
-	n1 := no.no.BuildTestNode("n1", 2000, 1000)
+	n1 := no.BuildTestNode("n1", 2000, 1000)
 	no.SetNodeReadyState(n1, true, time.Now())
-	n2 := no.no.BuildTestNode("n2", 2000, 1000)
+	n2 := no.BuildTestNode("n2", 2000, 1000)
 	no.SetNodeReadyState(n2, true, time.Now())
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 
-	p1 := po.po.BuildTestPod("p1", 1400, 0)
+	p1 := po.BuildTestPod("p1", 1400, 0)
 	p1.OwnerReferences = ownerRef
-	p3 := po.po.BuildTestPod("p3", 1400, 0)
+	p3 := po.BuildTestPod("p3", 1400, 0)
 	p3.Spec.NodeName = "n1"
 	p3.OwnerReferences = ownerRef
-	p4 := po.po.BuildTestPod("p4", 1400, 0)
+	p4 := po.BuildTestPod("p4", 1400, 0)
 	p4.Spec.NodeName = "n2"
 	p4.OwnerReferences = ownerRef
 
@@ -938,20 +939,20 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	onScaleUpMock := &onScaleUpMock{}
 	onScaleDownMock := &onScaleDownMock{}
 
-	n2 := no.no.BuildTestNode("n2", 2000, 1000)
+	n2 := no.BuildTestNode("n2", 2000, 1000)
 	no.SetNodeReadyState(n2, true, time.Now())
-	n3 := no.no.BuildTestNode("n3", 2000, 1000)
+	n3 := no.BuildTestNode("n3", 2000, 1000)
 	no.SetNodeReadyState(n3, true, time.Now())
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 
-	p1 := po.po.BuildTestPod("p1", 1400, 0)
+	p1 := po.BuildTestPod("p1", 1400, 0)
 	p1.OwnerReferences = ownerRef
-	p2 := po.po.BuildTestPod("p2", 1400, 0)
+	p2 := po.BuildTestPod("p2", 1400, 0)
 	p2.Spec.NodeName = "n2"
 	p2.OwnerReferences = ownerRef
-	p3 := po.po.BuildTestPod("p3", 1400, 0)
+	p3 := po.BuildTestPod("p3", 1400, 0)
 	p3.Spec.NodeName = "n3"
 	p3.OwnerReferences = ownerRef
 
@@ -1388,7 +1389,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 		provider.AddNodeGroup(ngName, 0, 1000, readyNodesCount+unreadyNodesCount)
 
 		for i := 0; i < readyNodesCount; i++ {
-			node := no.no.BuildTestNode(fmt.Sprintf("%s-ready-node-%d", ngName, i), 2000, 1000)
+			node := no.BuildTestNode(fmt.Sprintf("%s-ready-node-%d", ngName, i), 2000, 1000)
 			node.CreationTimestamp = metav1.NewTime(startTime)
 			no.SetNodeReadyState(node, true, startTime)
 			provider.AddNode(ngName, node)
@@ -1400,7 +1401,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 			readyNodeNames[node.Name] = true
 		}
 		for i := 0; i < unreadyNodesCount; i++ {
-			node := no.no.BuildTestNode(fmt.Sprintf("%s-unready-node-%d", ngName, i), 2000, 1000)
+			node := no.BuildTestNode(fmt.Sprintf("%s-unready-node-%d", ngName, i), 2000, 1000)
 			node.CreationTimestamp = metav1.NewTime(startTime)
 			no.SetNodeReadyState(node, false, startTime)
 			provider.AddNode(ngName, node)
@@ -1504,7 +1505,7 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	sizeChanges := make(chan string, 10)
 	now := time.Now()
 
-	ng1_1 := no.no.BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	ng1_1.Spec.ProviderID = "ng1-1"
 	provider := testprovider.NewTestCloudProvider(func(nodegroup string, delta int) error {
 		sizeChanges <- fmt.Sprintf("%s/%d", nodegroup, delta)
@@ -1551,9 +1552,9 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 
 	now := time.Now()
 
-	ng1_1 := no.no.BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1 := no.BuildTestNode("ng1-1", 1000, 1000)
 	ng1_1.Spec.ProviderID = "ng1-1"
-	ng1_2 := no.no.BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2 := no.BuildTestNode("ng1-2", 1000, 1000)
 	ng1_2.Spec.ProviderID = "ng1-2"
 	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
 		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
@@ -1601,7 +1602,7 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 func TestSubtractNodes(t *testing.T) {
 	ns := make([]*apiv1.Node, 5)
 	for i := 0; i < len(ns); i++ {
-		ns[i] = no.no.BuildTestNode(fmt.Sprintf("n%d", i), 1000, 1000)
+		ns[i] = no.BuildTestNode(fmt.Sprintf("n%d", i), 1000, 1000)
 	}
 	testCases := []struct {
 		a []*apiv1.Node
@@ -1648,19 +1649,19 @@ func TestFilterOutYoungPods(t *testing.T) {
 	klog.InitFlags(nil)
 	flag.CommandLine.Parse([]string{"--logtostderr=false"})
 
-	p1 := po.po.BuildTestPod("p1", 500, 1000)
+	p1 := po.BuildTestPod("p1", 500, 1000)
 	p1.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
-	p2 := po.po.BuildTestPod("p2", 500, 1000)
+	p2 := po.BuildTestPod("p2", 500, 1000)
 	p2.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
 	p2.Annotations = map[string]string{
 		podScaleUpDelayAnnotationKey: "5m",
 	}
-	p3 := po.po.BuildTestPod("p3", 500, 1000)
+	p3 := po.BuildTestPod("p3", 500, 1000)
 	p3.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
 	p3.Annotations = map[string]string{
 		podScaleUpDelayAnnotationKey: "2m",
 	}
-	p4 := po.po.BuildTestPod("p4", 500, 1000)
+	p4 := po.BuildTestPod("p4", 500, 1000)
 	p4.CreationTimestamp = metav1.NewTime(now.Add(-1 * time.Minute))
 	p4.Annotations = map[string]string{
 		podScaleUpDelayAnnotationKey: "error",

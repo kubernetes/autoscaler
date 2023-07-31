@@ -25,7 +25,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -251,7 +250,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				nodes := make([]*apiv1.Node, tc.nodes, tc.nodes)
 				for i := 0; i < tc.nodes; i++ {
 					nodes[i] = no.BuildTestNode(fmt.Sprintf("n-%d", i), 2000, 200000)
-					SetNodeReadyState(nodes[i], true, time.Time{})
+					no.SetNodeReadyState(nodes[i], true, time.Time{})
 				}
 				scheduledPods := make([]*apiv1.Pod, tc.scheduledPods, tc.scheduledPods)
 				j := 0
@@ -294,7 +293,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 
 func buildReadyTestNode(name string, cpu, mem int64) *apiv1.Node {
 	node := no.BuildTestNode(name, cpu, mem)
-	SetNodeReadyState(node, true, time.Time{})
+	no.SetNodeReadyState(node, true, time.Time{})
 	return node
 }
 

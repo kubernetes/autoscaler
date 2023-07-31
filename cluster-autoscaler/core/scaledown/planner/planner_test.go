@@ -40,7 +40,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	"k8s.io/client-go/kubernetes/fake"
@@ -99,7 +98,7 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n1", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1"},
@@ -113,8 +112,8 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1"},
@@ -128,8 +127,8 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1"},
@@ -143,8 +142,8 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n2", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
@@ -159,9 +158,9 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n3", 500, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p3", 1000, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 1000, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 1000, 1, "n2"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
@@ -176,10 +175,10 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n3", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
@@ -194,10 +193,10 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n3", 1000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 1000, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
@@ -212,10 +211,10 @@ func TestUpdateClusterState(t *testing.T) {
 				no.BuildTestNode("n3", 500, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
-				SetRSPodSpec(BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 500, 1, "n2"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p4", 500, 1, "n2"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{},
 			eligible:        []string{"n1", "n2"},
@@ -230,7 +229,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n2"), "rs"),
 				},
 			},
 			eligible:        []string{"n1"},
@@ -259,7 +258,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetStaticPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
+					po.SetStaticPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n2")),
 				},
 			},
 			eligible:        []string{"n1"},
@@ -274,7 +273,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetMirrorPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
+					po.SetMirrorPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n2")),
 				},
 			},
 			eligible:        []string{"n1"},
@@ -289,7 +288,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetDSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n2")),
+					po.SetDSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n2")),
 				},
 			},
 			eligible:        []string{"n1"},
@@ -305,7 +304,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
 				},
 			},
 			eligible:        []string{"n1"},
@@ -321,7 +320,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n3"), "rs"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -337,7 +336,7 @@ func TestUpdateClusterState(t *testing.T) {
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 2000, 1, "n3"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 2000, 1, "n3"), "rs"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -354,8 +353,8 @@ func TestUpdateClusterState(t *testing.T) {
 			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 2, nil), generateReplicaSets("rs", 5)...),
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
-					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -372,8 +371,8 @@ func TestUpdateClusterState(t *testing.T) {
 			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 1, nil), generateReplicaSets("rs", 5)...),
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
-					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -390,8 +389,8 @@ func TestUpdateClusterState(t *testing.T) {
 			replicasSets: append(generateReplicaSetWithReplicas("rs1", 2, 0, nil), generateReplicaSets("rs", 5)...),
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
-					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 1000, 1, "n3"), "rs1"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 1000, 1, "n3"), "rs1"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -407,12 +406,12 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 250, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 250, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p2", 250, 1, "n4"), "rs"),
-					SetRSPodSpec(BuildScheduledTestPod("p3", 250, 1, "n4"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 250, 1, "n4"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 250, 1, "n4"), "rs"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -428,12 +427,12 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 500, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p2", 500, 1, "n4"), "rs"),
-					SetRSPodSpec(BuildScheduledTestPod("p3", 500, 1, "n4"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 500, 1, "n4"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 500, 1, "n4"), "rs"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},
@@ -449,12 +448,12 @@ func TestUpdateClusterState(t *testing.T) {
 				nodeUndergoingDeletion("n4", 2000, 10),
 			},
 			pods: []*apiv1.Pod{
-				SetRSPodSpec(BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
+				po.SetRSPodSpec(po.BuildScheduledTestPod("p1", 1000, 1, "n1"), "rs"),
 			},
 			actuationStatus: &fakeActuationStatus{
 				recentEvictions: []*apiv1.Pod{
-					SetRSPodSpec(BuildScheduledTestPod("p2", 1000, 1, "n4"), "rs"),
-					SetRSPodSpec(BuildScheduledTestPod("p3", 1000, 1, "n4"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p2", 1000, 1, "n4"), "rs"),
+					po.SetRSPodSpec(po.BuildScheduledTestPod("p3", 1000, 1, "n4"), "rs"),
 				},
 			},
 			eligible:        []string{"n1", "n2"},

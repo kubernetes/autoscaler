@@ -121,7 +121,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 
 			fakeClient := &fake.Clientset{}
 			n1 := no.BuildTestNode("n1", 1000, 1000)
-			SetNodeReadyState(n1, true, time.Time{})
+			no.SetNodeReadyState(n1, true, time.Time{})
 			dsPods := make([]*apiv1.Pod, len(scenario.dsPods))
 			for i, dsName := range scenario.dsPods {
 				ds := po.BuildTestPod(dsName, 100, 0)
@@ -199,7 +199,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 	d1 := po.BuildTestPod("d1", 150, 0)
 	n1 := no.BuildTestNode("n1", 1000, 1000)
 
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
@@ -247,7 +247,7 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	p2Rescheduled := po.BuildTestPod("p2", 300, 0)
 	p2Rescheduled.Spec.NodeName = "n2"
 	n1 := no.BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		getAction := action.(core.GetAction)
@@ -304,7 +304,7 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	p3 := po.BuildTestPod("p3", 300, 0)
 	d1 := po.BuildTestPod("d1", 150, 0)
 	n1 := no.BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
@@ -416,7 +416,7 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	n1 := no.BuildTestNode("n1", 1000, 1000)
 	e2 := fmt.Errorf("eviction_error: p2")
 	e4 := fmt.Errorf("eviction_error: p4")
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		createAction := action.(core.CreateAction)
@@ -476,7 +476,7 @@ func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	p4 := po.BuildTestPod("p4", 100, 0)
 	e2 := fmt.Errorf("disappearance_error: p2")
 	n1 := no.BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
+	no.SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		getAction := action.(core.GetAction)

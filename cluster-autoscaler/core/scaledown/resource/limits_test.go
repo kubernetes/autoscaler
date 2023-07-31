@@ -24,7 +24,6 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 
 	"github.com/stretchr/testify/assert"
@@ -44,7 +43,7 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {
 		node := no.BuildTestNode(n.Name, n.Cpu, n.Memory)
-		SetNodeReadyState(node, n.Ready, time.Now())
+		no.SetNodeReadyState(node, n.Ready, time.Now())
 		nodes[i] = node
 	}
 

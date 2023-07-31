@@ -32,7 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	utils_test "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -218,7 +218,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	processors := test.NewTestProcessors(&context)
 
 	n1 := newNode(t, "n1", 8, 16)
-	utils_test.AddGpusToNode(n1, 4)
+	no.AddGpusToNode(n1, 4)
 	n1.Labels[provider.GPULabel()] = "gpu"
 	provider.AddNodeGroup("ng1", 3, 10, 1)
 	provider.AddNode("ng1", n1)
@@ -268,7 +268,7 @@ func newContext(t *testing.T, provider cloudprovider.CloudProvider) context.Auto
 }
 
 func newNode(t *testing.T, name string, cpu, mem int64) *corev1.Node {
-	return utils_test.no.BuildTestNode(name, cpu*1000, mem)
+	return no.BuildTestNode(name, cpu*1000, mem)
 }
 
 func newNodeGroup(t *testing.T, provider *testprovider.TestCloudProvider, name string, min, max, size int, cpu, mem int64) (cloudprovider.NodeGroup, []*corev1.Node) {

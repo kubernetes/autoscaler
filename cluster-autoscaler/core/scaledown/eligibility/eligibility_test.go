@@ -28,8 +28,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -48,26 +48,26 @@ type testCase struct {
 func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time) []testCase {
 
 	regularNode := no.BuildTestNode("regular", 1000, 10)
-	SetNodeReadyState(regularNode, true, time.Time{})
+	no.SetNodeReadyState(regularNode, true, time.Time{})
 
 	justDeletedNode := no.BuildTestNode("justDeleted", 1000, 10)
 	justDeletedNode.Spec.Taints = []apiv1.Taint{{Key: taints.ToBeDeletedTaint, Value: strconv.FormatInt(now.Unix()-30, 10)}}
-	SetNodeReadyState(justDeletedNode, true, time.Time{})
+	no.SetNodeReadyState(justDeletedNode, true, time.Time{})
 
 	noScaleDownNode := no.BuildTestNode("noScaleDown", 1000, 10)
 	noScaleDownNode.Annotations = map[string]string{ScaleDownDisabledKey: "true"}
-	SetNodeReadyState(noScaleDownNode, true, time.Time{})
+	no.SetNodeReadyState(noScaleDownNode, true, time.Time{})
 
 	unreadyNode := no.BuildTestNode("unready", 1000, 10)
-	SetNodeReadyState(unreadyNode, false, time.Time{})
+	no.SetNodeReadyState(unreadyNode, false, time.Time{})
 
-	bigPod := NewTestPod("bigPod", WithMilliCPU(600), WithMemory(0))
+	bigPod := po.NewTestPod("bigPod", po.WithMilliCPU(600), po.WithMemory(0))
 	bigPod.Spec.NodeName = "regular"
 
-	smallPod := NewTestPod("smallPod", WithMilliCPU(100), WithMemory(0))
+	smallPod := po.NewTestPod("smallPod", po.WithMilliCPU(100), po.WithMemory(0))
 	smallPod.Spec.NodeName = "regular"
 
-	dsPod := NewTestPod("dsPod", WithMilliCPU(500), WithMemory(0))
+	dsPod := po.NewTestPod("dsPod", po.WithMilliCPU(500), po.WithMemory(0))
 	dsPod.Spec.NodeName = "regular"
 
 	testCases := []testCase{
