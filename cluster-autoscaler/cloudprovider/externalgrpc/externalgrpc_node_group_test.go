@@ -289,6 +289,42 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	opts, err = ng3.GetOptions(defaultsOpts)
 	assert.NoError(t, err)
 	assert.Nil(t, opts)
+
+	// test MaxNodeProvisionTime and ZeroOrMaxNodeScaling options
+	bTrue := true
+
+	m.On(
+		"NodeGroupGetOptions", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupAutoscalingOptionsRequest) bool {
+			return req.Id == "nodeGroup4"
+		}),
+	).Return(
+		&protos.NodeGroupAutoscalingOptionsResponse{
+			NodeGroupAutoscalingOptions: &protos.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.6,
+				ScaleDownGpuUtilizationThreshold: 0.7,
+				ScaleDownUnneededTime:            &v1.Duration{Duration: time.Minute},
+				ScaleDownUnreadyTime:             &v1.Duration{Duration: time.Hour},
+				MaxNodeProvisionTime:             &v1.Duration{Duration: time.Hour},
+				ZeroOrMaxNodeScaling:             &bTrue,
+			},
+		},
+		nil,
+	)
+
+	ng4 := NodeGroup{
+		id:     "nodeGroup4",
+		client: client,
+	}
+	defaultsOpts = config.NodeGroupAutoscalingOptions{
+		MaxNodeProvisionTime: time.Minute,
+		ZeroOrMaxNodeScaling: false,
+	}
+
+	opts, err = ng4.GetOptions(defaultsOpts)
+	assert.NoError(t, err)
+	assert.Equal(t, time.Hour, opts.MaxNodeProvisionTime)
+	assert.Equal(t, true, opts.ZeroOrMaxNodeScaling)
+
 }
 
 func TestCloudProvider_TargetSize(t *testing.T) {
