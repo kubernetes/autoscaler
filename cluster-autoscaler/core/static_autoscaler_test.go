@@ -33,6 +33,7 @@ import (
 	clusterstate_utils "k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
@@ -235,8 +236,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		OkTotalUnreadyCount: 1,
 	}
 	processors := NewTestProcessors(&context)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 	suOrchestrator := orchestrator.New()
 	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
@@ -453,8 +454,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		OkTotalUnreadyCount: 0,
 	}
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 	suOrchestrator := orchestrator.New()
@@ -598,8 +599,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		OkTotalUnreadyCount: 1,
 	}
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 	// broken node detected as unregistered
 
 	nodes := []*apiv1.Node{n1}
@@ -761,8 +762,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	}
 
 	processors := NewTestProcessors(&context)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 	suOrchestrator := orchestrator.New()
 	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
@@ -897,8 +898,8 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	}
 
 	processors := NewTestProcessors(&context)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
@@ -998,8 +999,8 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	}
 
 	processors := NewTestProcessors(&context)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
@@ -1056,9 +1057,8 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 		OkTotalUnreadyCount: 1,
 	}
 
-	staticMaxNodeProvisionTimeProvider := clusterstate.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(staticMaxNodeProvisionTimeProvider)
+	staticMaxNodeProvisionTimeProvider := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), staticMaxNodeProvisionTimeProvider)
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
@@ -1296,8 +1296,8 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			return false
 		}, nil)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(staticMaxNodeProvisionTimeProvider)
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(options.NodeGroupDefaults.MaxNodeProvisionTime)
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nptProv)
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	autoscaler.clusterStateRegistry = clusterState
 
@@ -1354,8 +1354,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			return nil
 		}, nil).Times(3)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	clusterState.RegisterProviders(staticMaxNodeProvisionTimeProvider)
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), staticMaxNodeProvisionTimeProvider)
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	autoscaler.CloudProvider = provider
 	autoscaler.clusterStateRegistry = clusterState
@@ -1498,8 +1497,8 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 
 	// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
 	csrConfig := clusterstate.ClusterStateRegistryConfig{OkTotalUnreadyCount: nodeGroupCount * unreadyNodesCount}
-	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, ctx.LogRecorder, NewBackoff())
-	csr.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute)
+	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, ctx.LogRecorder, NewBackoff(), nptProv)
 
 	// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
 	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), simulator.NodeDeleteOptions{}, NewTestProcessors(&ctx).NodeGroupConfigProcessor)
@@ -1593,11 +1592,11 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 		CloudProvider: provider,
 	}
 
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime))
+	}, fakeLogRecorder, NewBackoff(), nptProv)
 	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
@@ -1642,11 +1641,11 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 		},
 		CloudProvider: provider,
 	}
+	nptProv := providers.NewMockMaxNodeProvisionTimeProvider(context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime))
+	}, fakeLogRecorder, NewBackoff(), nptProv)
 	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
@@ -1702,11 +1701,11 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 		},
 		CloudProvider: provider,
 	}
+	nptProv := clusterstate.NewMockMaxNodeProvisionTimeProvider(context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime, context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, NewBackoff())
-	clusterState.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(context.AutoscalingOptions.NodeGroupDefaults.MaxNodeProvisionTime))
+	}, fakeLogRecorder, NewBackoff(), nptProv)
 	err := clusterState.UpdateNodes([]*apiv1.Node{regNode}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 

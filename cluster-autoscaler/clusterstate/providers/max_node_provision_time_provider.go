@@ -17,6 +17,7 @@ limitations under the License.
 package providers
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -25,16 +26,35 @@ import (
 )
 
 // NewDefaultMaxNodeProvisionTimeProvider returns the default maxNodeProvisionTimeProvider which uses the NodeGroupConfigProcessor.
-func NewDefaultMaxNodeProvisionTimeProvider(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) *defultMaxNodeProvisionTimeProvider {
-	return &defultMaxNodeProvisionTimeProvider{context: context, nodeGroupConfigProcessor: nodeGroupConfigProcessor}
+func NewDefaultMaxNodeProvisionTimeProvider() *defultMaxNodeProvisionTimeProvider {
+	return &defultMaxNodeProvisionTimeProvider{}
 }
 
 type defultMaxNodeProvisionTimeProvider struct {
+	initialized              bool
 	context                  *context.AutoscalingContext
 	nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor
 }
 
-// GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
+// Initialize initializes defultMaxNodeProvisionTimeProvider
+func (p *defultMaxNodeProvisionTimeProvider) Initialize(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) {
+	p.context = context
+	p.nodeGroupConfigProcessor = nodeGroupConfigProcessor
+	p.initialized = true
+}
+
+// GetMaxNodeProvisionTime is a time a node has to register since its creation started
 func (p *defultMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	if !p.initialized {
+		return 0, fmt.Errorf("defultMaxNodeProvisionTimeProvider uninitialized")
+	}
+	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(p.context, nodeGroup)
+}
+
+// GetMaxNodeRegisterTime is a time a node has to register, starting from when its creation finished
+func (p *defultMaxNodeProvisionTimeProvider) GetMaxNodeRegisterTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	if !p.initialized {
+		return 0, fmt.Errorf("defultMaxNodeProvisionTimeProvider uninitialized")
+	}
 	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(p.context, nodeGroup)
 }

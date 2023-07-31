@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	clusterstate_utils "k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -162,8 +163,8 @@ func TestRemove(t *testing.T) {
 				})
 
 			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
-			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder, NewBackoff())
-			clusterStateRegistry.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
+			nptProvider := providers.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute)
+			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder, NewBackoff(), nptProvider)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}

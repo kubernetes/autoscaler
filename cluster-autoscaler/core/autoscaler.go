@@ -22,8 +22,10 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	csr_providers "k8s.io/autoscaler/cluster-autoscaler/clusterstate/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -42,20 +44,21 @@ import (
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
 	config.AutoscalingOptions
-	KubeClient             kube_client.Interface
-	EventsKubeClient       kube_client.Interface
-	AutoscalingKubeClients *context.AutoscalingKubeClients
-	CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker       predicatechecker.PredicateChecker
-	ClusterSnapshot        clustersnapshot.ClusterSnapshot
-	ExpanderStrategy       expander.Strategy
-	EstimatorBuilder       estimator.EstimatorBuilder
-	Processors             *ca_processors.AutoscalingProcessors
-	Backoff                backoff.Backoff
-	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
-	RemainingPdbTracker    pdb.RemainingPdbTracker
-	ScaleUpOrchestrator    scaleup.Orchestrator
-	DeleteOptions          simulator.NodeDeleteOptions
+	KubeClient                   kube_client.Interface
+	EventsKubeClient             kube_client.Interface
+	AutoscalingKubeClients       *context.AutoscalingKubeClients
+	CloudProvider                cloudprovider.CloudProvider
+	PredicateChecker             predicatechecker.PredicateChecker
+	ClusterSnapshot              clustersnapshot.ClusterSnapshot
+	ExpanderStrategy             expander.Strategy
+	EstimatorBuilder             estimator.EstimatorBuilder
+	Processors                   *ca_processors.AutoscalingProcessors
+	Backoff                      backoff.Backoff
+	DebuggingSnapshotter         debuggingsnapshot.DebuggingSnapshotter
+	RemainingPdbTracker          pdb.RemainingPdbTracker
+	ScaleUpOrchestrator          scaleup.Orchestrator
+	DeleteOptions                simulator.NodeDeleteOptions
+	MaxNodeProvisionTimeProvider providers.MaxNodeProvisionTimeProvider
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -88,7 +91,8 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
 		opts.ScaleUpOrchestrator,
-		opts.DeleteOptions), nil
+		opts.DeleteOptions,
+		opts.MaxNodeProvisionTimeProvider), nil
 }
 
 // Initialize default options if not provided.
@@ -138,6 +142,8 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.Backoff =
 			backoff.NewIdBasedExponentialBackoff(opts.InitialNodeGroupBackoffDuration, opts.MaxNodeGroupBackoffDuration, opts.NodeGroupBackoffResetTimeout)
 	}
-
+	if opts.MaxNodeProvisionTimeProvider == nil {
+		opts.MaxNodeProvisionTimeProvider = csr_providers.NewDefaultMaxNodeProvisionTimeProvider()
+	}
 	return nil
 }

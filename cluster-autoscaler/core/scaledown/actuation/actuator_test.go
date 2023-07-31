@@ -39,6 +39,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
@@ -948,8 +949,8 @@ func TestStartDeletion(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Couldn't set up autoscaling context: %v", err)
 				}
-				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
-				csr.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
+				nptProv := providers.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute)
+				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nptProv)
 				for _, bucket := range tc.emptyNodes {
 					for _, node := range bucket.Nodes {
 						err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
@@ -1207,8 +1208,8 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
-			csr.RegisterProviders(clusterstate.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute))
+			nptProv := providers.NewMockMaxNodeProvisionTimeProvider(15 * time.Minute)
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nptProv)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
 			ndb := NewNodeDeletionBatcher(&ctx, csr, ndt, deleteInterval)
 			evictor := Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}

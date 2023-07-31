@@ -14,22 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clusterstate
+package providers
 
 import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 )
 
 // NewMockMaxNodeProvisionTimeProvider returns static maxNodeProvisionTimeProvider which returns constant MaxNodeProvisionTime for every NodeGroup.
-func NewMockMaxNodeProvisionTimeProvider(maxProvisioningTime, maxRegistrationTime time.Duration) *staticMockMaxNodeProvisionTimeProvider {
-	return &staticMockMaxNodeProvisionTimeProvider{maxProvisioningTime, maxRegistrationTime}
+func NewMockMaxNodeProvisionTimeProvider(maxNodeProvisionTime time.Duration) *staticMockMaxNodeProvisionTimeProvider {
+	return &staticMockMaxNodeProvisionTimeProvider{maxNodeProvisionTime}
 }
 
 type staticMockMaxNodeProvisionTimeProvider struct {
 	staticMaxNodeProvisionTime time.Duration
-	staticMaxNodeRegisterTime  time.Duration
+}
+
+func (p *staticMockMaxNodeProvisionTimeProvider) Initialize(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) {
 }
 
 // GetMaxNodeProvisionTime returns constant MaxNodeProvisionTime value that should be used for every NodeGroup.
@@ -39,5 +43,5 @@ func (p *staticMockMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(cloudpr
 
 // GetMaxNodeRegisterTime is a time a node has to register, starting from when its creation finished
 func (p *staticMockMaxNodeProvisionTimeProvider) GetMaxNodeRegisterTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	return p.staticMaxNodeRegisterTime, nil
+	return p.staticMaxNodeProvisionTime, nil
 }

@@ -49,6 +49,7 @@ type HasInstance func(string) (bool, error)
 type TestCloudProvider struct {
 	sync.Mutex
 	nodes             map[string]string
+	nodeStates        map[string]cloudprovider.InstanceState
 	groups            map[string]cloudprovider.NodeGroup
 	onScaleUp         func(string, int) error
 	onScaleDown       func(string, string) error
@@ -65,6 +66,7 @@ type TestCloudProvider struct {
 func NewTestCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc) *TestCloudProvider {
 	return &TestCloudProvider{
 		nodes:           make(map[string]string),
+		nodeStates:      make(map[string]cloudprovider.InstanceState),
 		groups:          make(map[string]cloudprovider.NodeGroup),
 		onScaleUp:       onScaleUp,
 		onScaleDown:     onScaleDown,
@@ -78,6 +80,7 @@ func NewTestAutoprovisioningCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown O
 	machineTypes []string, machineTemplates map[string]*schedulerframework.NodeInfo) *TestCloudProvider {
 	return &TestCloudProvider{
 		nodes:             make(map[string]string),
+		nodeStates:        make(map[string]cloudprovider.InstanceState),
 		groups:            make(map[string]cloudprovider.NodeGroup),
 		onScaleUp:         onScaleUp,
 		onScaleDown:       onScaleDown,
@@ -94,6 +97,7 @@ func NewTestNodeDeletionDetectionCloudProvider(onScaleUp OnScaleUpFunc, onScaleD
 	hasInstance HasInstance) *TestCloudProvider {
 	return &TestCloudProvider{
 		nodes:           make(map[string]string),
+		nodeStates:      make(map[string]cloudprovider.InstanceState),
 		groups:          make(map[string]cloudprovider.NodeGroup),
 		onScaleUp:       onScaleUp,
 		onScaleDown:     onScaleDown,
@@ -288,6 +292,15 @@ func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	defer tcp.Unlock()
 
 	tcp.nodes[node.Name] = nodeGroupId
+	tcp.nodeStates[node.Name] = cloudprovider.InstanceRunning
+}
+
+// SetNodeState sets the state of an existing node.
+func (tcp *TestCloudProvider) SetNodeState(node string, state cloudprovider.InstanceState) {
+	tcp.Lock()
+	defer tcp.Unlock()
+
+	tcp.nodeStates[node] = state
 }
 
 // DeleteNode delete the given node from the provider.
@@ -296,6 +309,7 @@ func (tcp *TestCloudProvider) DeleteNode(node *apiv1.Node) {
 	defer tcp.Unlock()
 
 	delete(tcp.nodes, node.Name)
+	delete(tcp.nodeStates, node.Name)
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
@@ -482,7 +496,7 @@ func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 			instances = append(instances, cloudprovider.Instance{
 				Id: node,
 				Status: &cloudprovider.InstanceStatus{
-					State: cloudprovider.InstanceRunning,
+					State: tng.cloudProvider.nodeStates[node],
 				},
 			})
 		}
