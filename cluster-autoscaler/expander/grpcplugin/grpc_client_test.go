@@ -25,7 +25,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mocks"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 

@@ -86,7 +86,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with a mirror pod",
-			node: test.no.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				po.SetMirrorPodSpec(po.BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
@@ -142,7 +142,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with a DS pod [forceDS=true, some daemon sets]",
-			node: test.no.BuildTestNode("n", 1000, 10),
+			node: no.BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),

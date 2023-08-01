@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -100,7 +100,7 @@ func makeNode(cpu int64, mem int64, name string, zone string) *apiv1.Node {
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
-	SetNodeReadyState(node, true, time.Time{})
+	no.SetNodeReadyState(node, true, time.Time{})
 	return node
 }
 

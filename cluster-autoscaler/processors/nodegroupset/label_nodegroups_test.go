@@ -19,7 +19,6 @@ package nodegroupset
 import (
 	"testing"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	no "k8s.io/autoscaler/cluster-autoscaler/utils/test/node"
 )
 

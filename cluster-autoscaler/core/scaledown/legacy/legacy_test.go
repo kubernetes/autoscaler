@@ -245,13 +245,13 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 
 	// Node with low cpu utilization and high gpu utilization
 	n1 := no.BuildTestNode("n1", 1000, 10)
-	AddGpusToNode(n1, 2)
+	no.AddGpusToNode(n1, 2)
 	// Node with high cpu utilization and low gpu utilization
 	n2 := no.BuildTestNode("n2", 1000, 10)
-	AddGpusToNode(n2, 4)
+	no.AddGpusToNode(n2, 4)
 	// Node with low gpu utilization and pods on node can not be interrupted
 	n3 := no.BuildTestNode("n3", 1000, 10)
-	AddGpusToNode(n3, 8)
+	no.AddGpusToNode(n3, 8)
 
 	no.SetNodeReadyState(n1, true, time.Time{})
 	no.SetNodeReadyState(n2, true, time.Time{})
