@@ -1,5 +1,5 @@
-//go:build exoscale
-// +build exoscale
+//go:build ovhcloud
+// +build ovhcloud
 
 /*
 Copyright 2020 The Kubernetes Authors.
