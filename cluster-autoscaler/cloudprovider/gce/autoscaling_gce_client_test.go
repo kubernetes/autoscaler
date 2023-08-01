@@ -177,6 +177,18 @@ func TestErrors(t *testing.T) {
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
 		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Instance 'myinst' creation failed: The reservation must exist in the same project as the instance.",
+			expectedErrorCode:  "INVALID_RESERVATION",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Cannot insert instance to a reservation with status: CREATING, as it requires reservation to be in READY state.",
+			expectedErrorCode:  "RESERVATION_NOT_READY",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
 			errorCodes:         []string{"xyz", "abc"},
 			expectedErrorCode:  "OTHER",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
