@@ -106,3 +106,4 @@ func main() {
 
 * [RFC-4122](https://tools.ietf.org/html/rfc4122)
 * [DCE 1.1: Authentication and Security Services](http://pubs.opengroup.org/onlinepubs/9696989899/chap5.htm#tagcjh_08_02_01_01)
+* [New UUID Formats RFC Draft (Peabody) Rev 02](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-02)

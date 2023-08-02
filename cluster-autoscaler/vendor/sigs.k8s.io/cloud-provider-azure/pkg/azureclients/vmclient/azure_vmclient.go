@@ -22,13 +22,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient"
@@ -204,7 +204,113 @@ func (c *Client) listVM(ctx context.Context, resourceGroupName string) ([]comput
 		result = append(result, page.Values()...)
 
 		// Abort the loop when there's no nextLink in the response.
-		if to.String(page.Response().NextLink) == "" {
+		if pointer.StringDeref(page.Response().NextLink, "") == "" {
+			break
+		}
+
+		if err = page.NextWithContext(ctx); err != nil {
+			klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.list.next", resourceID, err)
+			return result, retry.GetError(page.Response().Response.Response, err)
+		}
+	}
+
+	return result, nil
+}
+
+// ListVmssFlexVMsWithoutInstanceView gets a list of VirtualMachine in the VMSS Flex without InstanceView.
+func (c *Client) ListVmssFlexVMsWithoutInstanceView(ctx context.Context, vmssFlexID string) ([]compute.VirtualMachine, *retry.Error) {
+	mc := metrics.NewMetricContext("vm", "list", "", c.subscriptionID, "")
+
+	// Report errors if the client is rate limited.
+	if !c.rateLimiterReader.TryAccept() {
+		mc.RateLimitedCount()
+		return nil, retry.GetRateLimitError(false, "VMList")
+	}
+
+	// Report errors if the client is throttled.
+	if c.RetryAfterReader.After(time.Now()) {
+		mc.ThrottledCount()
+		rerr := retry.GetThrottlingError("VMList", "client throttled", c.RetryAfterReader)
+		return nil, rerr
+	}
+
+	result, rerr := c.listVmssFlexVMs(ctx, vmssFlexID, false)
+	mc.Observe(rerr)
+	if rerr != nil {
+		if rerr.IsThrottled() {
+			// Update RetryAfterReader so that no more requests would be sent until RetryAfter expires.
+			c.RetryAfterReader = rerr.RetryAfter
+		}
+
+		return result, rerr
+	}
+
+	return result, nil
+}
+
+// ListVmssFlexVMsWithOnlyInstanceView gets a list of VirtualMachine in the VMSS Flex with only InstanceView.
+func (c *Client) ListVmssFlexVMsWithOnlyInstanceView(ctx context.Context, vmssFlexID string) ([]compute.VirtualMachine, *retry.Error) {
+	mc := metrics.NewMetricContext("vm", "list", "", c.subscriptionID, "")
+
+	// Report errors if the client is rate limited.
+	if !c.rateLimiterReader.TryAccept() {
+		mc.RateLimitedCount()
+		return nil, retry.GetRateLimitError(false, "VMList")
+	}
+
+	// Report errors if the client is throttled.
+	if c.RetryAfterReader.After(time.Now()) {
+		mc.ThrottledCount()
+		rerr := retry.GetThrottlingError("VMList", "client throttled", c.RetryAfterReader)
+		return nil, rerr
+	}
+
+	result, rerr := c.listVmssFlexVMs(ctx, vmssFlexID, true)
+	mc.Observe(rerr)
+	if rerr != nil {
+		if rerr.IsThrottled() {
+			// Update RetryAfterReader so that no more requests would be sent until RetryAfter expires.
+			c.RetryAfterReader = rerr.RetryAfter
+		}
+
+		return result, rerr
+	}
+
+	return result, nil
+}
+
+// listVmssFlexVMs gets a list of VirtualMachines in the VMSS Flex.
+func (c *Client) listVmssFlexVMs(ctx context.Context, vmssFlexID string, statusOnly bool) ([]compute.VirtualMachine, *retry.Error) {
+	resourceID := armclient.GetProviderResourceID(c.subscriptionID, vmResourceType)
+
+	result := make([]compute.VirtualMachine, 0)
+	page := &VirtualMachineListResultPage{}
+	page.fn = c.listNextResults
+
+	queries := make(map[string]interface{})
+	queries["$filter"] = "'virtualMachineScaleSet/id' eq '" + vmssFlexID + "'"
+	if statusOnly {
+		queries["statusOnly"] = true
+	}
+	resp, rerr := c.armClient.GetResourceWithQueries(ctx, resourceID, queries)
+	defer c.armClient.CloseResponse(ctx, resp)
+	if rerr != nil {
+		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.list.request", resourceID, rerr.Error())
+		return result, rerr
+	}
+
+	var err error
+	page.vmlr, err = c.listResponder(resp)
+	if err != nil {
+		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.list.respond", resourceID, err)
+		return result, retry.GetError(resp, err)
+	}
+
+	for {
+		result = append(result, page.Values()...)
+
+		// Abort the loop when there's no nextLink in the response.
+		if pointer.StringDeref(page.Response().NextLink, "") == "" {
 			break
 		}
 
@@ -291,6 +397,7 @@ func (c *Client) WaitForUpdateResult(ctx context.Context, future *azure.Future, 
 	mc := metrics.NewMetricContext("vm", "wait_for_update_result", resourceGroupName, c.subscriptionID, source)
 	response, err := c.armClient.WaitForAsyncOperationResult(ctx, future, "VMWaitForUpdateResult")
 	mc.Observe(retry.NewErrorOrNil(false, err))
+	defer c.armClient.CloseResponse(ctx, response)
 
 	if err != nil {
 		if response != nil {
@@ -356,12 +463,12 @@ func (c *Client) listResponder(resp *http.Response) (result compute.VirtualMachi
 // vmListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (c *Client) vmListResultPreparer(ctx context.Context, vmlr compute.VirtualMachineListResult) (*http.Request, error) {
-	if vmlr.NextLink == nil || len(to.String(vmlr.NextLink)) < 1 {
+	if vmlr.NextLink == nil || len(pointer.StringDeref(vmlr.NextLink, "")) < 1 {
 		return nil, nil
 	}
 
 	decorators := []autorest.PrepareDecorator{
-		autorest.WithBaseURL(to.String(vmlr.NextLink)),
+		autorest.WithBaseURL(pointer.StringDeref(vmlr.NextLink, "")),
 	}
 	return c.armClient.PrepareGetRequest(ctx, decorators...)
 }

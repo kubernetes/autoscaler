@@ -21,14 +21,15 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	"sigs.k8s.io/cloud-provider-azure/pkg/metrics"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
@@ -43,30 +44,41 @@ func (az *Cloud) reconcilePrivateLinkService(
 	createPLS := wantPLS && serviceRequiresPLS(service)
 	serviceName := getServiceName(service)
 	fipConfigID := fipConfig.ID
-	klog.V(2).Infof("reconcilePrivateLinkService for service(%s) - LB fipConfigID(%s) - wantPLS(%t) - createPLS(%t)", serviceName, to.String(fipConfig.Name), wantPLS, createPLS)
+	klog.V(2).Infof("reconcilePrivateLinkService for service(%s) - LB fipConfigID(%s) - wantPLS(%t) - createPLS(%t)", serviceName, pointer.StringDeref(fipConfig.Name, ""), wantPLS, createPLS)
+
+	request := "ensure_privatelinkservice"
+	if !wantPLS {
+		request = "ensure_privatelinkservice_deleted"
+	}
+	mc := metrics.NewMetricContext("services", request, az.ResourceGroup, az.getNetworkResourceSubscriptionID(), serviceName)
+
+	isOperationSucceeded := false
+	defer func() {
+		mc.ObserveOperationWithResult(isOperationSucceeded)
+	}()
 
 	if createPLS {
 		// Firstly, make sure it's internal service
-		if !requiresInternalLoadBalancer(service) {
-			return fmt.Errorf("reconcilePrivateLinkService for service(%s): service requiring private link service must be internal", serviceName)
+		if !requiresInternalLoadBalancer(service) && !consts.IsK8sServiceDisableLoadBalancerFloatingIP(service) {
+			return fmt.Errorf("reconcilePrivateLinkService for service(%s): service requiring private link service must be internal or disable floating ip", serviceName)
 		}
 
 		// Secondly, check if there is a private link service already created
 		existingPLS, err := az.getPrivateLinkService(fipConfigID, azcache.CacheReadTypeDefault)
 		if err != nil {
-			klog.Errorf("reconcilePrivateLinkService for service(%s): getPrivateLinkService(%s) failed: %v", serviceName, to.String(fipConfigID), err)
+			klog.Errorf("reconcilePrivateLinkService for service(%s): getPrivateLinkService(%s) failed: %v", serviceName, pointer.StringDeref(fipConfigID, ""), err)
 			return err
 		}
 
-		exists := !strings.EqualFold(to.String(existingPLS.ID), consts.PrivateLinkServiceNotExistID)
+		exists := !strings.EqualFold(pointer.StringDeref(existingPLS.ID, ""), consts.PrivateLinkServiceNotExistID)
 		if exists {
-			klog.V(4).Infof("reconcilePrivateLinkService for service(%s): found existing private link service attached(%s)", serviceName, to.String(existingPLS.Name))
+			klog.V(4).Infof("reconcilePrivateLinkService for service(%s): found existing private link service attached(%s)", serviceName, pointer.StringDeref(existingPLS.Name, ""))
 			if !isManagedPrivateLinkSerivce(&existingPLS, clusterName) {
 				return fmt.Errorf(
 					"reconcilePrivateLinkService for service(%s) failed: LB frontend(%s) already has unmanaged private link service(%s)",
 					serviceName,
-					to.String(fipConfigID),
-					to.String(existingPLS.ID),
+					pointer.StringDeref(fipConfigID, ""),
+					pointer.StringDeref(existingPLS.ID, ""),
 				)
 			}
 			// If there is an existing private link service, only owner service can update its properties
@@ -76,15 +88,15 @@ func (az *Cloud) reconcilePrivateLinkService(
 					return fmt.Errorf(
 						"reconcilePrivateLinkService for service(%s) failed: LB frontend(%s) already has existing private link service(%s) owned by service(%s)",
 						serviceName,
-						to.String(fipConfigID),
-						to.String(existingPLS.Name),
+						pointer.StringDeref(fipConfigID, ""),
+						pointer.StringDeref(existingPLS.Name, ""),
 						ownerService,
 					)
 				}
 				klog.V(2).Infof(
 					"reconcilePrivateLinkService for service(%s): automatically share private link service(%s) owned by service(%s)",
 					serviceName,
-					to.String(existingPLS.Name),
+					pointer.StringDeref(existingPLS.Name, ""),
 					ownerService,
 				)
 				return nil
@@ -118,7 +130,7 @@ func (az *Cloud) reconcilePrivateLinkService(
 				klog.Errorf("reconcilePrivateLinkService for service(%s) disable PLS network policy failed for pls(%s): %v", serviceName, plsName, err.Error())
 				return err
 			}
-			existingPLS.Etag = to.StringPtr("")
+			existingPLS.Etag = pointer.String("")
 			err = az.CreateOrUpdatePLS(service, existingPLS)
 			if err != nil {
 				klog.Errorf("reconcilePrivateLinkService for service(%s) abort backoff: pls(%s) - updating: %s", serviceName, plsName, err.Error())
@@ -128,20 +140,21 @@ func (az *Cloud) reconcilePrivateLinkService(
 	} else if !wantPLS {
 		existingPLS, err := az.getPrivateLinkService(fipConfigID, azcache.CacheReadTypeDefault)
 		if err != nil {
-			klog.Errorf("reconcilePrivateLinkService for service(%s): getPrivateLinkService(%s) failed: %v", serviceName, to.String(fipConfigID), err)
+			klog.Errorf("reconcilePrivateLinkService for service(%s): getPrivateLinkService(%s) failed: %v", serviceName, pointer.StringDeref(fipConfigID, ""), err)
 			return err
 		}
 
-		exists := !strings.EqualFold(to.String(existingPLS.ID), consts.PrivateLinkServiceNotExistID)
+		exists := !strings.EqualFold(pointer.StringDeref(existingPLS.ID, ""), consts.PrivateLinkServiceNotExistID)
 		if exists {
 			deleteErr := az.safeDeletePLS(&existingPLS, service)
 			if deleteErr != nil {
-				klog.Errorf("reconcilePrivateLinkService for service(%s): deletePLS for frontEnd(%s) failed: %v", serviceName, to.String(fipConfigID), err)
+				klog.Errorf("reconcilePrivateLinkService for service(%s): deletePLS for frontEnd(%s) failed: %v", serviceName, pointer.StringDeref(fipConfigID, ""), err)
 				return deleteErr.Error()
 			}
 		}
 	}
 
+	isOperationSucceeded = true
 	klog.V(2).Infof("reconcilePrivateLinkService for service(%s) finished", serviceName)
 	return nil
 }
@@ -182,19 +195,19 @@ func (az *Cloud) safeDeletePLS(pls *network.PrivateLinkService, service *v1.Serv
 	peConns := pls.PrivateEndpointConnections
 	if peConns != nil {
 		for _, peConn := range *peConns {
-			klog.V(2).Infof("deletePLS: deleting PEConnection %s", to.String(peConn.Name))
-			rerr := az.DeletePEConn(service, to.String(pls.Name), to.String(peConn.Name))
+			klog.V(2).Infof("deletePLS: deleting PEConnection %s", pointer.StringDeref(peConn.Name, ""))
+			rerr := az.DeletePEConn(service, pointer.StringDeref(pls.Name, ""), pointer.StringDeref(peConn.Name, ""))
 			if rerr != nil {
 				return rerr
 			}
 		}
 	}
 
-	rerr := az.DeletePLS(service, to.String(pls.Name), to.String((*pls.LoadBalancerFrontendIPConfigurations)[0].ID))
+	rerr := az.DeletePLS(service, pointer.StringDeref(pls.Name, ""), pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, ""))
 	if rerr != nil {
 		return rerr
 	}
-	klog.V(2).Infof("safeDeletePLS(%s) finished", to.String(pls.Name))
+	klog.V(2).Infof("safeDeletePLS(%s) finished", pointer.StringDeref(pls.Name, ""))
 	return nil
 }
 
@@ -209,11 +222,11 @@ func (az *Cloud) getPrivateLinkServiceName(
 
 	if nameFromService, found := service.Annotations[consts.ServiceAnnotationPLSName]; found {
 		nameFromService = strings.TrimSpace(nameFromService)
-		if existingName != nil && !strings.EqualFold(to.String(existingName), nameFromService) {
+		if existingName != nil && !strings.EqualFold(pointer.StringDeref(existingName, ""), nameFromService) {
 			return "", fmt.Errorf(
 				"getPrivateLinkServiceName(%s) failed: cannot change existing private link service name (%s) to (%s)",
 				serviceName,
-				to.String(existingName),
+				pointer.StringDeref(existingName, ""),
 				nameFromService,
 			)
 		}
@@ -221,7 +234,7 @@ func (az *Cloud) getPrivateLinkServiceName(
 	}
 
 	if existingName != nil {
-		return to.String(existingName), nil
+		return pointer.StringDeref(existingName, ""), nil
 	}
 
 	// default PLS name: pls-<frontendIPConfigName>
@@ -339,19 +352,19 @@ func (az *Cloud) reconcilePLSIpConfigs(
 
 	existingStaticIps := make([]string, 0)
 	for _, ipConfig := range *existingPLS.IPConfigurations {
-		if !strings.EqualFold(to.String(subnet.ID), to.String(ipConfig.Subnet.ID)) {
+		if !strings.EqualFold(pointer.StringDeref(subnet.ID, ""), pointer.StringDeref(ipConfig.Subnet.ID, "")) {
 			changed = true
 		}
-		if strings.EqualFold(string(ipConfig.PrivateIPAllocationMethod), string(network.IPAllocationMethodStatic)) {
-			klog.V(10).Infof("Found static IP: %s", to.String(ipConfig.PrivateIPAddress))
-			if _, found := staticIps[to.String(ipConfig.PrivateIPAddress)]; !found {
+		if strings.EqualFold(string(ipConfig.PrivateIPAllocationMethod), string(network.Static)) {
+			klog.V(10).Infof("Found static IP: %s", pointer.StringDeref(ipConfig.PrivateIPAddress, ""))
+			if _, found := staticIps[pointer.StringDeref(ipConfig.PrivateIPAddress, "")]; !found {
 				changed = true
 			}
-			existingStaticIps = append(existingStaticIps, to.String(ipConfig.PrivateIPAddress))
+			existingStaticIps = append(existingStaticIps, pointer.StringDeref(ipConfig.PrivateIPAddress, ""))
 		}
 		if *ipConfig.Primary {
-			if strings.EqualFold(string(ipConfig.PrivateIPAllocationMethod), string(network.IPAllocationMethodStatic)) {
-				if !strings.EqualFold(primaryIP, to.String(ipConfig.PrivateIPAddress)) {
+			if strings.EqualFold(string(ipConfig.PrivateIPAllocationMethod), string(network.Static)) {
+				if !strings.EqualFold(primaryIP, pointer.StringDeref(ipConfig.PrivateIPAddress, "")) {
 					changed = true
 				}
 			} else {
@@ -371,32 +384,32 @@ func (az *Cloud) reconcilePLSIpConfigs(
 		for k := range staticIps {
 			ip := k
 			isPrimary := strings.EqualFold(ip, primaryIP)
-			configName := fmt.Sprintf("%s-%s-static-%s", to.String(subnet.Name), to.String(existingPLS.Name), ip)
+			configName := fmt.Sprintf("%s-%s-static-%s", pointer.StringDeref(subnet.Name, ""), pointer.StringDeref(existingPLS.Name, ""), ip)
 			ipConfigs = append(ipConfigs, network.PrivateLinkServiceIPConfiguration{
 				Name: &configName,
 				PrivateLinkServiceIPConfigurationProperties: &network.PrivateLinkServiceIPConfigurationProperties{
 					PrivateIPAddress:          &ip,
-					PrivateIPAllocationMethod: network.IPAllocationMethodStatic,
+					PrivateIPAllocationMethod: network.Static,
 					Subnet: &network.Subnet{
 						ID: subnet.ID,
 					},
 					Primary:                 &isPrimary,
-					PrivateIPAddressVersion: network.IPVersionIPv4,
+					PrivateIPAddressVersion: network.IPv4,
 				},
 			})
 		}
 		for i := 0; i < int(ipConfigCount)-len(staticIps); i++ {
 			isPrimary := primaryIP == "" && i == 0
-			configName := fmt.Sprintf("%s-%s-dynamic-%d", to.String(subnet.Name), to.String(existingPLS.Name), i)
+			configName := fmt.Sprintf("%s-%s-dynamic-%d", pointer.StringDeref(subnet.Name, ""), pointer.StringDeref(existingPLS.Name, ""), i)
 			ipConfigs = append(ipConfigs, network.PrivateLinkServiceIPConfiguration{
 				Name: &configName,
 				PrivateLinkServiceIPConfigurationProperties: &network.PrivateLinkServiceIPConfigurationProperties{
-					PrivateIPAllocationMethod: network.IPAllocationMethodDynamic,
+					PrivateIPAllocationMethod: network.Dynamic,
 					Subnet: &network.Subnet{
 						ID: subnet.ID,
 					},
 					Primary:                 &isPrimary,
-					PrivateIPAddressVersion: network.IPVersionIPv4,
+					PrivateIPAddressVersion: network.IPv4,
 				},
 			})
 		}
@@ -518,8 +531,10 @@ func getPLSSubnetName(service *v1.Service) *string {
 		return &l
 	}
 
-	if l, found := service.Annotations[consts.ServiceAnnotationLoadBalancerInternalSubnet]; found && strings.TrimSpace(l) != "" {
-		return &l
+	if requiresInternalLoadBalancer(service) {
+		if l, found := service.Annotations[consts.ServiceAnnotationLoadBalancerInternalSubnet]; found && strings.TrimSpace(l) != "" {
+			return &l
+		}
 	}
 
 	return nil
