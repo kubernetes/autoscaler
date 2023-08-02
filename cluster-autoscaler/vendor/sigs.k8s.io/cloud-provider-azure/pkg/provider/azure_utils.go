@@ -23,19 +23,19 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
+	"k8s.io/utils/pointer"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
 var strToExtendedLocationType = map[string]network.ExtendedLocationTypes{
-	"edgezone": network.ExtendedLocationTypesEdgeZone,
+	"edgezone": network.EdgeZone,
 }
 
 // lockMap used to lock on entries
@@ -115,7 +115,7 @@ func parseTags(tags string, tagsMap map[string]string) map[string]*string {
 				klog.Warning("parseTags: empty key, ignoring this key-value pair")
 				continue
 			}
-			formatted[k] = to.StringPtr(v)
+			formatted[k] = pointer.String(v)
 		}
 	}
 
@@ -131,7 +131,7 @@ func parseTags(tags string, tagsMap map[string]string) map[string]*string {
 				klog.V(4).Infof("parseTags: found identical keys: %s from tags and %s from tagsMap (case-insensitive), %s will replace %s", k, key, key, k)
 				delete(formatted, k)
 			}
-			formatted[key] = to.StringPtr(value)
+			formatted[key] = pointer.String(value)
 		}
 	}
 
@@ -159,7 +159,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 		}
 
 		for _, systemTag := range systemTags {
-			systemTagsMap[systemTag] = to.StringPtr("")
+			systemTagsMap[systemTag] = pointer.String("")
 		}
 	}
 
@@ -170,7 +170,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 		if !found {
 			currentTagsOnResource[k] = v
 			changed = true
-		} else if !strings.EqualFold(to.String(v), to.String(currentTagsOnResource[key])) {
+		} else if !strings.EqualFold(pointer.StringDeref(v, ""), pointer.StringDeref(currentTagsOnResource[key], "")) {
 			currentTagsOnResource[key] = v
 			changed = true
 		}
@@ -181,6 +181,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 		for k := range currentTagsOnResource {
 			if _, ok := newTags[k]; !ok {
 				if found, _ := findKeyInMapCaseInsensitive(systemTagsMap, k); !found {
+					klog.V(2).Infof("reconcileTags: delete tag %s: %s", k, pointer.StringDeref(currentTagsOnResource[k], ""))
 					delete(currentTagsOnResource, k)
 					changed = true
 				}
@@ -208,7 +209,7 @@ func getExtendedLocationTypeFromString(extendedLocationType string) network.Exte
 	if val, ok := strToExtendedLocationType[extendedLocationType]; ok {
 		return val
 	}
-	return network.ExtendedLocationTypesEdgeZone
+	return network.EdgeZone
 }
 
 func getServiceAdditionalPublicIPs(service *v1.Service) ([]string, error) {
@@ -261,22 +262,6 @@ func getNodePrivateIPAddresses(node *v1.Node) []string {
 	return addresses
 }
 
-func isLBBackendPoolTypeIPConfig(service *v1.Service, lb *network.LoadBalancer, clusterName string) bool {
-	if lb == nil || lb.LoadBalancerPropertiesFormat == nil || lb.BackendAddressPools == nil {
-		klog.V(4).Infof("isLBBackendPoolTypeIPConfig: no backend pools in the LB %s", to.String(lb.Name))
-		return false
-	}
-	lbBackendPoolName := getBackendPoolName(clusterName, service)
-	for _, bp := range *lb.BackendAddressPools {
-		if strings.EqualFold(to.String(bp.Name), lbBackendPoolName) {
-			return bp.BackendAddressPoolPropertiesFormat != nil &&
-				bp.BackendIPConfigurations != nil &&
-				len(*bp.BackendIPConfigurations) != 0
-		}
-	}
-	return false
-}
-
 func getBoolValueFromServiceAnnotations(service *v1.Service, key string) bool {
 	if l, found := service.Annotations[key]; found {
 		return strings.EqualFold(strings.TrimSpace(l), consts.TrueAnnotationValue)
@@ -299,4 +284,58 @@ func sameContentInSlices(s1 []string, s2 []string) bool {
 		map1[s]--
 	}
 	return true
+}
+
+func removeDuplicatedSecurityRules(rules []network.SecurityRule) []network.SecurityRule {
+	ruleNames := make(map[string]bool)
+	for i := len(rules) - 1; i >= 0; i-- {
+		if _, ok := ruleNames[pointer.StringDeref(rules[i].Name, "")]; ok {
+			klog.Warningf("Found duplicated rule %s, will be removed.", pointer.StringDeref(rules[i].Name, ""))
+			rules = append(rules[:i], rules[i+1:]...)
+		}
+		ruleNames[pointer.StringDeref(rules[i].Name, "")] = true
+	}
+	return rules
+}
+
+func getLBNameFromBackendPoolID(backendPoolID string) (string, error) {
+	matches := backendPoolIDRE.FindStringSubmatch(backendPoolID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("backendPoolID %q is in wrong format", backendPoolID)
+	}
+
+	return matches[1], nil
+}
+
+func countNICsOnBackendPool(backendPool network.BackendAddressPool) int {
+	if backendPool.BackendAddressPoolPropertiesFormat == nil ||
+		backendPool.BackendIPConfigurations == nil {
+		return 0
+	}
+
+	return len(*backendPool.BackendIPConfigurations)
+}
+
+func countIPsOnBackendPool(backendPool network.BackendAddressPool) int {
+	if backendPool.BackendAddressPoolPropertiesFormat == nil ||
+		backendPool.LoadBalancerBackendAddresses == nil {
+		return 0
+	}
+
+	var ipsCount int
+	for _, loadBalancerBackendAddress := range *backendPool.LoadBalancerBackendAddresses {
+		if loadBalancerBackendAddress.LoadBalancerBackendAddressPropertiesFormat != nil &&
+			pointer.StringDeref(loadBalancerBackendAddress.IPAddress, "") != "" {
+			ipsCount++
+		}
+	}
+
+	return ipsCount
+}
+
+func getServicePIPName(service *v1.Service) string {
+	if service == nil {
+		return ""
+	}
+	return service.Annotations[consts.ServiceAnnotationPIPNameDualStack[false]]
 }

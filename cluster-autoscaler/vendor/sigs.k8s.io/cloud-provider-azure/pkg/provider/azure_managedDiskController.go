@@ -24,8 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,11 +32,12 @@ import (
 	cloudvolume "k8s.io/cloud-provider/volume"
 	volumehelpers "k8s.io/cloud-provider/volume/helpers"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
-//ManagedDiskController : managed disk controller struct
+// ManagedDiskController : managed disk controller struct
 type ManagedDiskController struct {
 	common *controllerCommon
 }
@@ -86,7 +86,7 @@ type ManagedDiskOptions struct {
 	SubscriptionID string
 }
 
-//CreateManagedDisk : create managed disk
+// CreateManagedDisk: create managed disk
 func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *ManagedDiskOptions) (string, error) {
 	var err error
 	klog.V(4).Infof("azureDisk - creating new managed Name:%s StorageAccountType:%s Size:%v", options.DiskName, options.StorageAccountType, options.SizeGB)
@@ -139,7 +139,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 
 	if options.NetworkAccessPolicy != "" {
 		diskProperties.NetworkAccessPolicy = options.NetworkAccessPolicy
-		if options.NetworkAccessPolicy == compute.NetworkAccessPolicyAllowPrivate {
+		if options.NetworkAccessPolicy == compute.AllowPrivate {
 			if options.DiskAccessID == nil {
 				return "", fmt.Errorf("DiskAccessID should not be empty when NetworkAccessPolicy is AllowPrivate")
 			}
@@ -151,7 +151,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 		}
 	}
 
-	if diskSku == compute.DiskStorageAccountTypesUltraSSDLRS {
+	if diskSku == compute.UltraSSDLRS {
 		diskIOPSReadWrite := int64(consts.DefaultDiskIOPSReadWrite)
 		if options.DiskIOPSReadWrite != "" {
 			v, err := strconv.Atoi(options.DiskIOPSReadWrite)
@@ -160,7 +160,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 			}
 			diskIOPSReadWrite = int64(v)
 		}
-		diskProperties.DiskIOPSReadWrite = to.Int64Ptr(diskIOPSReadWrite)
+		diskProperties.DiskIOPSReadWrite = pointer.Int64(diskIOPSReadWrite)
 
 		diskMBpsReadWrite := int64(consts.DefaultDiskMBpsReadWrite)
 		if options.DiskMBpsReadWrite != "" {
@@ -170,11 +170,11 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 			}
 			diskMBpsReadWrite = int64(v)
 		}
-		diskProperties.DiskMBpsReadWrite = to.Int64Ptr(diskMBpsReadWrite)
+		diskProperties.DiskMBpsReadWrite = pointer.Int64(diskMBpsReadWrite)
 
 		if options.LogicalSectorSize != 0 {
 			klog.V(2).Infof("AzureDisk - requested LogicalSectorSize: %v", options.LogicalSectorSize)
-			diskProperties.CreationData.LogicalSectorSize = to.Int32Ptr(options.LogicalSectorSize)
+			diskProperties.CreationData.LogicalSectorSize = pointer.Int32(options.LogicalSectorSize)
 		}
 	} else {
 		if options.DiskIOPSReadWrite != "" {
@@ -222,7 +222,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 
 	if el := c.common.extendedLocation; el != nil {
 		model.ExtendedLocation = &compute.ExtendedLocation{
-			Name: to.StringPtr(el.Name),
+			Name: pointer.String(el.Name),
 			Type: compute.ExtendedLocationTypes(el.Type),
 		}
 	}
@@ -267,7 +267,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 	return diskID, nil
 }
 
-//DeleteManagedDisk : delete managed disk
+// DeleteManagedDisk : delete managed disk
 func (c *ManagedDiskController) DeleteManagedDisk(ctx context.Context, diskURI string) error {
 	resourceGroup, subsID, err := getInfoFromDiskURI(diskURI)
 	if err != nil {
@@ -349,8 +349,8 @@ func (c *ManagedDiskController) ResizeDisk(ctx context.Context, diskURI string, 
 		return newSizeQuant, nil
 	}
 
-	if !supportOnlineResize && result.DiskProperties.DiskState != compute.DiskStateUnattached {
-		return oldSize, fmt.Errorf("azureDisk - disk resize is only supported on Unattached disk, current disk state: %s, already attached to %s", result.DiskProperties.DiskState, to.String(result.ManagedBy))
+	if !supportOnlineResize && result.DiskProperties.DiskState != compute.Unattached {
+		return oldSize, fmt.Errorf("azureDisk - disk resize is only supported on Unattached disk, current disk state: %s, already attached to %s", result.DiskProperties.DiskState, pointer.StringDeref(result.ManagedBy, ""))
 	}
 
 	diskParameter := compute.DiskUpdate{

@@ -20,7 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
+	"github.com/Azure/go-autorest/autorest"
 
 	"k8s.io/klog/v2"
 
@@ -35,6 +36,8 @@ type Client struct {
 	fileServicesClient storage.FileServicesClient
 
 	subscriptionID string
+	baseURI        string
+	authorizer     autorest.Authorizer
 }
 
 // ShareOptions contains the fields which are used to create file share.
@@ -51,17 +54,33 @@ type ShareOptions struct {
 }
 
 // New creates a azure file client
-func New(config *azclients.ClientConfig) *Client {
-	fileSharesClient := storage.NewFileSharesClientWithBaseURI(config.ResourceManagerEndpoint, config.SubscriptionID)
-	fileSharesClient.Authorizer = config.Authorizer
+func New(config *azclients.ClientConfig) Interface {
+	baseURI := config.ResourceManagerEndpoint
+	authorizer := config.Authorizer
+	fileSharesClient := storage.NewFileSharesClientWithBaseURI(baseURI, config.SubscriptionID)
+	fileSharesClient.Authorizer = authorizer
 
-	fileServicesClient := storage.NewFileServicesClientWithBaseURI(config.ResourceManagerEndpoint, config.SubscriptionID)
-	fileServicesClient.Authorizer = config.Authorizer
+	fileServicesClient := storage.NewFileServicesClientWithBaseURI(baseURI, config.SubscriptionID)
+	fileServicesClient.Authorizer = authorizer
 	return &Client{
 		fileSharesClient:   fileSharesClient,
 		fileServicesClient: fileServicesClient,
 		subscriptionID:     config.SubscriptionID,
+		baseURI:            baseURI,
+		authorizer:         authorizer,
 	}
+}
+
+func (c *Client) WithSubscriptionID(subscriptionID string) Interface {
+	if subscriptionID == "" || subscriptionID == c.subscriptionID {
+		return c
+	}
+
+	return New(&azclients.ClientConfig{
+		SubscriptionID:          subscriptionID,
+		ResourceManagerEndpoint: c.baseURI,
+		Authorizer:              c.authorizer,
+	})
 }
 
 // CreateFileShare creates a file share
@@ -107,7 +126,7 @@ func (c *Client) CreateFileShare(resourceGroupName, accountName string, shareOpt
 func (c *Client) DeleteFileShare(resourceGroupName, accountName, name string) error {
 	mc := metrics.NewMetricContext("file_shares", "delete", resourceGroupName, c.subscriptionID, "")
 
-	_, err := c.fileSharesClient.Delete(context.Background(), resourceGroupName, accountName, name, "")
+	_, err := c.fileSharesClient.Delete(context.Background(), resourceGroupName, accountName, name, "", "")
 	var rerr *retry.Error
 	if err != nil {
 		rerr = &retry.Error{
@@ -126,7 +145,7 @@ func (c *Client) ResizeFileShare(resourceGroupName, accountName, name string, si
 
 	quota := int32(sizeGiB)
 
-	share, err := c.fileSharesClient.Get(context.Background(), resourceGroupName, accountName, name, storage.GetShareExpandStats, "")
+	share, err := c.fileSharesClient.Get(context.Background(), resourceGroupName, accountName, name, "stats", "")
 	if err != nil {
 		rerr = &retry.Error{
 			RawError: err,
@@ -160,7 +179,7 @@ func (c *Client) ResizeFileShare(resourceGroupName, accountName, name string, si
 func (c *Client) GetFileShare(resourceGroupName, accountName, name string) (storage.FileShare, error) {
 	mc := metrics.NewMetricContext("file_shares", "get", resourceGroupName, c.subscriptionID, "")
 
-	result, err := c.fileSharesClient.Get(context.Background(), resourceGroupName, accountName, name, storage.GetShareExpandStats, "")
+	result, err := c.fileSharesClient.Get(context.Background(), resourceGroupName, accountName, name, "stats", "")
 	var rerr *retry.Error
 	if err != nil {
 		rerr = &retry.Error{

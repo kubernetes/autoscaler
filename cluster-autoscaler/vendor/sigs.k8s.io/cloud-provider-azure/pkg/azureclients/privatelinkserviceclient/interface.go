@@ -19,14 +19,14 @@ package privatelinkserviceclient
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
 	// APIVersion is the API version for network.
-	APIVersion = "2021-08-01"
+	APIVersion = "2022-07-01"
 	// AzureStackCloudAPIVersion is the API version for Azure Stack
 	AzureStackCloudAPIVersion = "2019-03-01"
 	// AzureStackCloudName is the cloud name of Azure Stack
