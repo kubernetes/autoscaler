@@ -29,54 +29,27 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test/common"
+	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
 	kube_types "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
 // BuildTestPod creates a pod with specified resources.
+// [DEPRECATED]: use `NewTestPod` instead
 func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
-	startTime := metav1.Unix(0, 0)
-	pod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			UID:         types.UID(name),
-			Namespace:   "default",
-			Name:        name,
-			SelfLink:    fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
-			Annotations: map[string]string{},
-		},
-		Spec: apiv1.PodSpec{
-			Containers: []apiv1.Container{
-				{
-					Resources: apiv1.ResourceRequirements{
-						Requests: apiv1.ResourceList{},
-					},
-				},
-			},
-		},
-		Status: apiv1.PodStatus{
-			StartTime: &startTime,
-		},
-	}
-
-	if cpu >= 0 {
-		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpu, resource.DecimalSI)
-	}
-	if mem >= 0 {
-		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
-	}
-
-	return pod
+	return po.NewTestPod(name, po.WithMilliCPU(cpu), po.WithMemory(mem))
 }
 
 // BuildDSTestPod creates a DaemonSet pod with cpu and memory.
+// [DEPRECATED]: use `NewTestPod` instead
 func BuildDSTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 
-	pod := BuildTestPod(name, cpu, mem)
-	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "some-uid")
-
-	return pod
+	return po.NewTestPod(name, po.WithMilliCPU(cpu), po.WithMemory(mem),
+		po.WithOwnerRef(common.GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "some-uid")))
 }
 
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
+// [DEPRECATED]: use `NewTestPod` instead
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
 	pod := &apiv1.Pod{
@@ -115,6 +88,7 @@ func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage in
 }
 
 // BuildScheduledTestPod builds a scheduled test pod with a given spec
+// [DEPRECATED]: use `NewTestPod` instead
 func BuildScheduledTestPod(name string, cpu, memory int64, nodeName string) *apiv1.Pod {
 	p := BuildTestPod(name, cpu, memory)
 	p.Spec.NodeName = nodeName
@@ -122,24 +96,28 @@ func BuildScheduledTestPod(name string, cpu, memory int64, nodeName string) *api
 }
 
 // SetStaticPodSpec sets pod spec to make it a static pod
+// [DEPRECATED]: use `NewTestPod` instead
 func SetStaticPodSpec(pod *apiv1.Pod) *apiv1.Pod {
 	pod.Annotations[kube_types.ConfigSourceAnnotationKey] = kube_types.FileSource
 	return pod
 }
 
 // SetMirrorPodSpec sets pod spec to make it a mirror pod
+// [DEPRECATED]: use `NewTestPod` instead
 func SetMirrorPodSpec(pod *apiv1.Pod) *apiv1.Pod {
 	pod.ObjectMeta.Annotations[kube_types.ConfigMirrorAnnotationKey] = "mirror"
 	return pod
 }
 
 // SetDSPodSpec sets pod spec to make it a DS pod
+// [DEPRECATED]: use `NewTestPod` instead
 func SetDSPodSpec(pod *apiv1.Pod) *apiv1.Pod {
 	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "api/v1/namespaces/default/daemonsets/ds")
 	return pod
 }
 
 // SetRSPodSpec sets pod spec to make it a RS pod
+// [DEPRECATED]: use `NewTestPod` instead
 func SetRSPodSpec(pod *apiv1.Pod, rsName string) *apiv1.Pod {
 	pod.OwnerReferences = GenerateOwnerReferences(rsName, "ReplicaSet", "extensions/v1beta1", types.UID(rsName))
 	return pod
@@ -167,6 +145,7 @@ const (
 )
 
 // RequestGpuForPod modifies pod's resource requests by adding a number of GPUs to them.
+// [DEPRECATED]: use `NewTestPod` instead
 func RequestGpuForPod(pod *apiv1.Pod, gpusCount int64) {
 	if pod.Spec.Containers[0].Resources.Limits == nil {
 		pod.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{}
@@ -180,6 +159,7 @@ func RequestGpuForPod(pod *apiv1.Pod, gpusCount int64) {
 }
 
 // TolerateGpuForPod adds toleration for nvidia.com/gpu to Pod
+// [DEPRECATED]: use `NewTestPod` instead
 func TolerateGpuForPod(pod *apiv1.Pod) {
 	pod.Spec.Tolerations = append(pod.Spec.Tolerations, apiv1.Toleration{Key: resourceNvidiaGPU, Operator: apiv1.TolerationOpExists})
 }
