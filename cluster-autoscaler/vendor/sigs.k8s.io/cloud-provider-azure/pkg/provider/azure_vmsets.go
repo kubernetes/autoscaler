@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 	"github.com/Azure/go-autorest/autorest/azure"
 
 	v1 "k8s.io/api/core/v1"
@@ -71,9 +71,9 @@ type VMSet interface {
 	// participating in the specified LoadBalancer Backend Pool.
 	EnsureHostInPool(service *v1.Service, nodeName types.NodeName, backendPoolID string, vmSetName string) (string, string, string, *compute.VirtualMachineScaleSetVM, error)
 	// EnsureBackendPoolDeleted ensures the loadBalancer backendAddressPools deleted from the specified nodes.
-	EnsureBackendPoolDeleted(service *v1.Service, backendPoolID, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) (bool, error)
+	EnsureBackendPoolDeleted(service *v1.Service, backendPoolIDs []string, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) (bool, error)
 	//EnsureBackendPoolDeletedFromVMSets ensures the loadBalancer backendAddressPools deleted from the specified VMSS/VMAS
-	EnsureBackendPoolDeletedFromVMSets(vmSetNamesMap map[string]bool, backendPoolID string) error
+	EnsureBackendPoolDeletedFromVMSets(vmSetNamesMap map[string]bool, backendPoolIDs []string) error
 
 	// AttachDisk attaches a disk to vm
 	AttachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]*AttachDiskOptions) (*azure.Future, error)
@@ -87,6 +87,9 @@ type VMSet interface {
 
 	// UpdateVM updates a vm
 	UpdateVM(ctx context.Context, nodeName types.NodeName) error
+
+	// UpdateVMAsync updates a vm asynchronously
+	UpdateVMAsync(ctx context.Context, nodeName types.NodeName) (*azure.Future, error)
 
 	// GetPowerStatusByNodeName returns the powerState for the specified node.
 	GetPowerStatusByNodeName(name string) (string, error)

@@ -53,13 +53,13 @@ type Interface interface {
 	CreateOrUpdate(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachine, source string) *retry.Error
 
 	// Update updates a VirtualMachine.
-	Update(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachineUpdate, source string) *retry.Error
+	Update(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachineUpdate, source string) (*compute.VirtualMachine, *retry.Error)
 
 	// UpdateAsync updates a VirtualMachine asynchronously
 	UpdateAsync(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachineUpdate, source string) (*azure.Future, *retry.Error)
 
 	// WaitForUpdateResult waits for the response of the update request
-	WaitForUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName, source string) *retry.Error
+	WaitForUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName, source string) (*compute.VirtualMachine, *retry.Error)
 
 	// Delete deletes a VirtualMachine.
 	Delete(ctx context.Context, resourceGroupName string, VMName string) *retry.Error

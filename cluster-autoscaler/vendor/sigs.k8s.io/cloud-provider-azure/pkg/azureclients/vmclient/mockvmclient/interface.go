@@ -143,11 +143,12 @@ func (mr *MockInterfaceMockRecorder) ListVmssFlexVMsWithoutInstanceView(ctx, vms
 }
 
 // Update mocks base method.
-func (m *MockInterface) Update(ctx context.Context, resourceGroupName, VMName string, parameters compute.VirtualMachineUpdate, source string) *retry.Error {
+func (m *MockInterface) Update(ctx context.Context, resourceGroupName, VMName string, parameters compute.VirtualMachineUpdate, source string) (*compute.VirtualMachine, *retry.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, resourceGroupName, VMName, parameters, source)
-	ret0, _ := ret[0].(*retry.Error)
-	return ret0
+	ret0, _ := ret[0].(*compute.VirtualMachine)
+	ret1, _ := ret[1].(*retry.Error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
@@ -172,11 +173,12 @@ func (mr *MockInterfaceMockRecorder) UpdateAsync(ctx, resourceGroupName, VMName,
 }
 
 // WaitForUpdateResult mocks base method.
-func (m *MockInterface) WaitForUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName, source string) *retry.Error {
+func (m *MockInterface) WaitForUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName, source string) (*compute.VirtualMachine, *retry.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WaitForUpdateResult", ctx, future, resourceGroupName, source)
-	ret0, _ := ret[0].(*retry.Error)
-	return ret0
+	ret0, _ := ret[0].(*compute.VirtualMachine)
+	ret1, _ := ret[1].(*retry.Error)
+	return ret0, ret1
 }
 
 // WaitForUpdateResult indicates an expected call of WaitForUpdateResult.
