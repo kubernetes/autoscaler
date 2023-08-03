@@ -979,7 +979,7 @@ func TestStartDeletion(t *testing.T) {
 					ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
 					nodeDeletionScheduler: NewGroupDeletionScheduler(&ctx, ndt, ndb, evictor),
 					budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
-					configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+					configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(ctx.NodeGroupDefaults),
 				}
 				gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
 				if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {

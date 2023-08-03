@@ -452,7 +452,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		DeleteOptions:        deleteOptions,
 	}
 
-	opts.Processors = ca_processors.DefaultProcessors()
+	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
 	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}

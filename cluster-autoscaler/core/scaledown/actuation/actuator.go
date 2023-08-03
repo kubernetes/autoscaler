@@ -59,7 +59,7 @@ type Actuator struct {
 // from NodeGroupConfigProcessor interface
 type actuatorNodeGroupConfigGetter interface {
 	// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
-	GetIgnoreDaemonSetsUtilization(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (bool, error)
+	GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error)
 }
 
 // NewActuator returns a new instance of Actuator.
@@ -274,7 +274,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 		return nil, err
 	}
 
-	ignoreDaemonSetsUtilization, err := a.configGetter.GetIgnoreDaemonSetsUtilization(a.ctx, nodeGroup)
+	ignoreDaemonSetsUtilization, err := a.configGetter.GetIgnoreDaemonSetsUtilization(nodeGroup)
 	if err != nil {
 		return nil, err
 	}
