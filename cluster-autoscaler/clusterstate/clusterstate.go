@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -49,11 +50,6 @@ const (
 var (
 	errMaxNodeProvisionTimeProviderNotSet = errors.New("MaxNodeProvisionTimeProvider was not set in cluster state")
 )
-
-type maxNodeProvisionTimeProvider interface {
-	// GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
-	GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
-}
 
 // ScaleUpRequest contains information about the requested node group scale up.
 type ScaleUpRequest struct {
@@ -140,7 +136,7 @@ type ClusterStateRegistry struct {
 	previousCloudProviderNodeInstances map[string][]cloudprovider.Instance
 	cloudProviderNodeInstancesCache    *utils.CloudProviderNodeInstancesCache
 	interrupt                          chan struct{}
-	maxNodeProvisionTimeProvider       maxNodeProvisionTimeProvider
+	nodeGroupConfigProcessor           nodegroupconfig.NodeGroupConfigProcessor
 
 	// scaleUpFailures contains information about scale-up failures for each node group. It should be
 	// cleared periodically to avoid unnecessary accumulation.
@@ -148,7 +144,7 @@ type ClusterStateRegistry struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff) *ClusterStateRegistry {
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) *ClusterStateRegistry {
 	emptyStatus := &api.ClusterAutoscalerStatus{
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
@@ -172,6 +168,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
 		interrupt:                       make(chan struct{}),
 		scaleUpFailures:                 make(map[string][]ScaleUpFailure),
+		nodeGroupConfigProcessor:        nodeGroupConfigProcessor,
 	}
 }
 
@@ -197,17 +194,10 @@ func (csr *ClusterStateRegistry) RegisterOrUpdateScaleUp(nodeGroup cloudprovider
 	csr.registerOrUpdateScaleUpNoLock(nodeGroup, delta, currentTime)
 }
 
-// RegisterProviders registers providers in the cluster state registry.
-func (csr *ClusterStateRegistry) RegisterProviders(maxNodeProvisionTimeProvider maxNodeProvisionTimeProvider) {
-	csr.maxNodeProvisionTimeProvider = maxNodeProvisionTimeProvider
-}
-
 // MaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
+// TODO(BigDarkClown): remove this method entirely, it is a redundant wrapper
 func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	if csr.maxNodeProvisionTimeProvider == nil {
-		return 0, errMaxNodeProvisionTimeProviderNotSet
-	}
-	return csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+	return csr.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(nodeGroup)
 }
 
 func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
