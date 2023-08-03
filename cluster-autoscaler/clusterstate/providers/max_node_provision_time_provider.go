@@ -36,5 +36,5 @@ type defultMaxNodeProvisionTimeProvider struct {
 
 // GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
 func (p *defultMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(p.context, nodeGroup)
+	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(nodeGroup)
 }

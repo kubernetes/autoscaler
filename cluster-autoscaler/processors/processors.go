@@ -70,7 +70,7 @@ type AutoscalingProcessors struct {
 }
 
 // DefaultProcessors returns default set of processors.
-func DefaultProcessors() *AutoscalingProcessors {
+func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:       pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor: nodegroups.NewDefaultNodeGroupListProcessor(),
@@ -87,7 +87,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 		AutoscalingStatusProcessor:  status.NewDefaultAutoscalingStatusProcessor(),
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
-		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),

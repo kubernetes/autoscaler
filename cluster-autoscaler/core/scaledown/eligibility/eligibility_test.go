@@ -154,8 +154,6 @@ func TestFilterOutUnremovable(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			s := nodegroupconfig.DelegatingNodeGroupConfigProcessor{}
-			c := NewChecker(&s)
 			options := config.AutoscalingOptions{
 				UnremovableNodeRecheckTimeout: 5 * time.Minute,
 				ScaleDownUnreadyEnabled:       tc.scaleDownUnready,
@@ -167,6 +165,8 @@ func TestFilterOutUnremovable(t *testing.T) {
 					IgnoreDaemonSetsUtilization:      tc.ignoreDaemonSetsUtilization,
 				},
 			}
+			s := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
+			c := NewChecker(s)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 2)
 			for _, n := range tc.nodes {
