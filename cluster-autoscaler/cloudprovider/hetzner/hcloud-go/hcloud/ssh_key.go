@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -31,7 +15,7 @@ import (
 
 // SSHKey represents a SSH key in the Hetzner Cloud.
 type SSHKey struct {
-	ID          int
+	ID          int64
 	Name        string
 	Fingerprint string
 	PublicKey   string
@@ -45,7 +29,7 @@ type SSHKeyClient struct {
 }
 
 // GetByID retrieves a SSH key by its ID. If the SSH key does not exist, nil is returned.
-func (c *SSHKeyClient) GetByID(ctx context.Context, id int) (*SSHKey, *Response, error) {
+func (c *SSHKeyClient) GetByID(ctx context.Context, id int64) (*SSHKey, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/ssh_keys/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -86,8 +70,8 @@ func (c *SSHKeyClient) GetByFingerprint(ctx context.Context, fingerprint string)
 // Get retrieves a SSH key by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a SSH key by its name. If the SSH key does not exist, nil is returned.
 func (c *SSHKeyClient) Get(ctx context.Context, idOrName string) (*SSHKey, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -101,7 +85,7 @@ type SSHKeyListOpts struct {
 }
 
 func (l SSHKeyListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}

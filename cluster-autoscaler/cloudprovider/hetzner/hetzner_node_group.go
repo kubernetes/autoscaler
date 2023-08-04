@@ -285,7 +285,7 @@ func toInstance(vm *hcloud.Server) cloudprovider.Instance {
 	}
 }
 
-func toProviderID(nodeID int) string {
+func toProviderID(nodeID int64) string {
 	return fmt.Sprintf("%s%d", providerIDPrefix, nodeID)
 }
 

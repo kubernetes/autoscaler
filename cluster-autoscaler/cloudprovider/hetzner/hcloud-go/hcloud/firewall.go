@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -32,7 +16,7 @@ import (
 
 // Firewall represents a Firewall in the Hetzner Cloud.
 type Firewall struct {
-	ID        int
+	ID        int64
 	Name      string
 	Labels    map[string]string
 	Created   time.Time
@@ -96,7 +80,7 @@ type FirewallResource struct {
 
 // FirewallResourceServer represents a Server to apply a Firewall on.
 type FirewallResourceServer struct {
-	ID int
+	ID int64
 }
 
 // FirewallResourceLabelSelector represents a LabelSelector to apply a Firewall on.
@@ -110,7 +94,7 @@ type FirewallClient struct {
 }
 
 // GetByID retrieves a Firewall by its ID. If the Firewall does not exist, nil is returned.
-func (c *FirewallClient) GetByID(ctx context.Context, id int) (*Firewall, *Response, error) {
+func (c *FirewallClient) GetByID(ctx context.Context, id int64) (*Firewall, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/firewalls/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -142,8 +126,8 @@ func (c *FirewallClient) GetByName(ctx context.Context, name string) (*Firewall,
 // Get retrieves a Firewall by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a Firewall by its name. If the Firewall does not exist, nil is returned.
 func (c *FirewallClient) Get(ctx context.Context, idOrName string) (*Firewall, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -156,7 +140,7 @@ type FirewallListOpts struct {
 }
 
 func (l FirewallListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -191,25 +175,7 @@ func (c *FirewallClient) List(ctx context.Context, opts FirewallListOpts) ([]*Fi
 
 // All returns all Firewalls.
 func (c *FirewallClient) All(ctx context.Context) ([]*Firewall, error) {
-	allFirewalls := []*Firewall{}
-
-	opts := FirewallListOpts{}
-	opts.PerPage = 50
-
-	err := c.client.all(func(page int) (*Response, error) {
-		opts.Page = page
-		firewalls, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allFirewalls = append(allFirewalls, firewalls...)
-		return resp, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allFirewalls, nil
+	return c.AllWithOpts(ctx, FirewallListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all Firewalls for the given options.

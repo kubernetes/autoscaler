@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -23,7 +7,7 @@ import (
 )
 
 // RDNSSupporter defines functions to change and lookup reverse dns entries.
-// currently implemented by Server, FloatingIP and LoadBalancer.
+// currently implemented by Server, FloatingIP, PrimaryIP and LoadBalancer.
 type RDNSSupporter interface {
 	// changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
 	// Pass a nil ptr to reset the reverse DNS pointer to its default value.
@@ -33,7 +17,7 @@ type RDNSSupporter interface {
 	GetDNSPtrForIP(ip net.IP) (string, error)
 }
 
-// RDNSClient simplifys the handling objects which support reverse dns entries.
+// RDNSClient simplifies the handling objects which support reverse dns entries.
 type RDNSClient struct {
 	client *Client
 }
@@ -60,3 +44,9 @@ func RDNSLookup(i interface{}, ip net.IP) (string, error) {
 
 	return rdns.GetDNSPtrForIP(ip)
 }
+
+// Make sure that all expected Resources actually implement the interface.
+var _ RDNSSupporter = &FloatingIP{}
+var _ RDNSSupporter = &PrimaryIP{}
+var _ RDNSSupporter = &Server{}
+var _ RDNSSupporter = &LoadBalancer{}

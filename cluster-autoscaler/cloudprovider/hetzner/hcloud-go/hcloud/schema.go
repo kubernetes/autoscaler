@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -294,15 +278,19 @@ func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 // ServerTypeFromSchema converts a schema.ServerType to a ServerType.
 func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 	st := &ServerType{
-		ID:           s.ID,
-		Name:         s.Name,
-		Description:  s.Description,
-		Cores:        s.Cores,
-		Memory:       s.Memory,
-		Disk:         s.Disk,
-		StorageType:  StorageType(s.StorageType),
-		CPUType:      CPUType(s.CPUType),
-		Architecture: Architecture(s.Architecture),
+		ID:              s.ID,
+		Name:            s.Name,
+		Description:     s.Description,
+		Cores:           s.Cores,
+		Memory:          s.Memory,
+		Disk:            s.Disk,
+		StorageType:     StorageType(s.StorageType),
+		CPUType:         CPUType(s.CPUType),
+		Architecture:    Architecture(s.Architecture),
+		IncludedTraffic: s.IncludedTraffic,
+		DeprecatableResource: DeprecatableResource{
+			DeprecationFromSchema(s.Deprecation),
+		},
 	}
 	for _, price := range s.Prices {
 		st.Pricings = append(st.Pricings, ServerTypeLocationPricing{
@@ -317,6 +305,7 @@ func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 			},
 		})
 	}
+
 	return st
 }
 
@@ -414,7 +403,8 @@ func NetworkFromSchema(s schema.Network) *Network {
 		Protection: NetworkProtection{
 			Delete: s.Protection.Delete,
 		},
-		Labels: map[string]string{},
+		Labels:                map[string]string{},
+		ExposeRoutesToVSwitch: s.ExposeRoutesToVSwitch,
 	}
 
 	_, n.IPRange, _ = net.ParseCIDR(s.IPRange)
@@ -903,7 +893,7 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 	}
 	if opts.Location != nil {
 		if opts.Location.ID != 0 {
-			req.Location = Ptr(strconv.Itoa(opts.Location.ID))
+			req.Location = Ptr(strconv.FormatInt(opts.Location.ID, 10))
 		} else {
 			req.Location = Ptr(opts.Location.Name)
 		}
@@ -953,7 +943,7 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 				}
 			}
 			if service.HTTP.Certificates != nil {
-				certificates := []int{}
+				certificates := []int64{}
 				for _, certificate := range service.HTTP.Certificates {
 					certificates = append(certificates, certificate.ID)
 				}
@@ -1008,7 +998,7 @@ func loadBalancerAddServiceOptsToSchema(opts LoadBalancerAddServiceOpts) schema.
 			req.HTTP.CookieLifetime = Ptr(int(opts.HTTP.CookieLifetime.Seconds()))
 		}
 		if opts.HTTP.Certificates != nil {
-			certificates := []int{}
+			certificates := []int64{}
 			for _, certificate := range opts.HTTP.Certificates {
 				certificates = append(certificates, certificate.ID)
 			}
@@ -1060,7 +1050,7 @@ func loadBalancerUpdateServiceOptsToSchema(opts LoadBalancerUpdateServiceOpts) s
 			req.HTTP.CookieLifetime = Ptr(int(opts.HTTP.CookieLifetime.Seconds()))
 		}
 		if opts.HTTP.Certificates != nil {
-			certificates := []int{}
+			certificates := []int64{}
 			for _, certificate := range opts.HTTP.Certificates {
 				certificates = append(certificates, certificate.ID)
 			}
@@ -1263,4 +1253,16 @@ func loadBalancerMetricsFromSchema(s *schema.LoadBalancerGetMetricsResponse) (*L
 	ms.TimeSeries = timeSeries
 
 	return &ms, nil
+}
+
+// DeprecationFromSchema converts a [schema.DeprecationInfo] to a [DeprecationInfo].
+func DeprecationFromSchema(s *schema.DeprecationInfo) *DeprecationInfo {
+	if s == nil {
+		return nil
+	}
+
+	return &DeprecationInfo{
+		Announced:        s.Announced,
+		UnavailableAfter: s.UnavailableAfter,
+	}
 }

@@ -2,7 +2,7 @@
 
 The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
-# Configuration
+## Configuration
 
 `HCLOUD_TOKEN` Required Hetzner Cloud token.
 
@@ -31,10 +31,9 @@ Multiple flags will create multiple node pools. For example:
 
 You can find a deployment sample under [examples/cluster-autoscaler-run-on-master.yaml](examples/cluster-autoscaler-run-on-master.yaml). Please be aware that you should change the values within this deployment to reflect your cluster.
 
-# Development
+## Development
 
-Make sure you're inside the root path of the [autoscaler
-repository](https://github.com/kubernetes/autoscaler)
+Make sure you're inside the `cluster-autoscaler` root folder.
 
 1.) Build the `cluster-autoscaler` binary:
 
@@ -54,4 +53,14 @@ docker build -t hetzner/cluster-autoscaler:dev .
 
 ```
 docker push hetzner/cluster-autoscaler:dev
+```
+
+### Updating vendored hcloud-go
+
+To update the vendored `hcloud-go` code, navigate to the directory and run the `hack/update-vendor.sh` script:
+
+```
+cd cluster-autoscaler/cloudprovider/hetzner
+UPSTREAM_REF=v2.0.0 hack/update-vendor.sh
+git add hcloud-go/
 ```
