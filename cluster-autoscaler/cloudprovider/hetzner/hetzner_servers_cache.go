@@ -131,7 +131,7 @@ func (m *serversCache) getServer(nodeIdOrName string) (*hcloud.Server, error) {
 	}
 
 	for _, server := range servers {
-		if server.Name == nodeIdOrName || strconv.Itoa(server.ID) == nodeIdOrName {
+		if server.Name == nodeIdOrName || strconv.FormatInt(server.ID, 10) == nodeIdOrName {
 			return server, nil
 		}
 	}
