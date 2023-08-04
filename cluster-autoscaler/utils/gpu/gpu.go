@@ -56,15 +56,17 @@ func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes 
 		return "", MetricsNoGPU
 	}
 	resourceName := gpuConfig.ResourceName
-	capacity, capacityFound := node.Status.Capacity[resourceName]
-	// There is no label value, fallback to generic solution
-	if gpuConfig.Type == "" && capacityFound && !capacity.IsZero() {
-		return resourceName.String(), MetricsGenericGPU
-	}
+	if node != nil {
+		capacity, capacityFound := node.Status.Capacity[resourceName]
+		// There is no label value, fallback to generic solution
+		if gpuConfig.Type == "" && capacityFound && !capacity.IsZero() {
+			return resourceName.String(), MetricsGenericGPU
+		}
 
-	// GKE-specific label & capacity are present - consistent state
-	if capacityFound {
-		return resourceName.String(), validateGpuType(availableGPUTypes, gpuConfig.Type)
+		// GKE-specific label & capacity are present - consistent state
+		if capacityFound {
+			return resourceName.String(), validateGpuType(availableGPUTypes, gpuConfig.Type)
+		}
 	}
 
 	// GKE-specific label present but no capacity (yet?) - check the node template
