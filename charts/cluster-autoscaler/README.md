@@ -411,6 +411,7 @@ vpa:
 | rbac.serviceAccount.name | string | `""` | The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template. |
 | replicaCount | int | `1` | Desired number of pods |
 | resources | object | `{}` | Pod resource requests and limits. |
+| secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
 | service.create | bool | `true` | If `true`, a Service will be created. |
