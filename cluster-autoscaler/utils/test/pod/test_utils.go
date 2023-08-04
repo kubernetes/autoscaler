@@ -177,7 +177,7 @@ func AsReplicaSetPod(uid string, rsName string) func(*apiv1.Pod) {
 }
 
 // WithMirrorPodAnnotation adds 'kubernetes.io/config.mirror: mirror' annotation to the pod
-func WithMirrorPodAnnotation(uid string) func(*apiv1.Pod) {
+func WithMirrorPodAnnotation() func(*apiv1.Pod) {
 
 	return func(pod *apiv1.Pod) {
 		pod.ObjectMeta.Annotations[kube_types.ConfigMirrorAnnotationKey] = "mirror"

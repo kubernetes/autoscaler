@@ -31,7 +31,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test/common"
 	po "k8s.io/autoscaler/cluster-autoscaler/utils/test/pod"
-	kube_types "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
 // BuildTestPod creates a pod with specified resources.
@@ -90,36 +89,34 @@ func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage in
 // BuildScheduledTestPod builds a scheduled test pod with a given spec
 // [DEPRECATED]: use `NewTestPod` instead
 func BuildScheduledTestPod(name string, cpu, memory int64, nodeName string) *apiv1.Pod {
-	p := BuildTestPod(name, cpu, memory)
-	p.Spec.NodeName = nodeName
-	return p
+	return po.NewTestPod(name, po.WithMilliCPU(cpu), po.WithMemory(memory), po.ScheduledOnNode(nodeName))
 }
 
 // SetStaticPodSpec sets pod spec to make it a static pod
 // [DEPRECATED]: use `NewTestPod` instead
 func SetStaticPodSpec(pod *apiv1.Pod) *apiv1.Pod {
-	pod.Annotations[kube_types.ConfigSourceAnnotationKey] = kube_types.FileSource
+	po.WithStaticPodAnnotation()(pod)
 	return pod
 }
 
 // SetMirrorPodSpec sets pod spec to make it a mirror pod
 // [DEPRECATED]: use `NewTestPod` instead
 func SetMirrorPodSpec(pod *apiv1.Pod) *apiv1.Pod {
-	pod.ObjectMeta.Annotations[kube_types.ConfigMirrorAnnotationKey] = "mirror"
+	po.WithMirrorPodAnnotation()(pod)
 	return pod
 }
 
 // SetDSPodSpec sets pod spec to make it a DS pod
 // [DEPRECATED]: use `NewTestPod` instead
 func SetDSPodSpec(pod *apiv1.Pod) *apiv1.Pod {
-	pod.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "api/v1/namespaces/default/daemonsets/ds")
+	po.WithOwnerRef(GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "api/v1/namespaces/default/daemonsets/ds"))(pod)
 	return pod
 }
 
 // SetRSPodSpec sets pod spec to make it a RS pod
 // [DEPRECATED]: use `NewTestPod` instead
 func SetRSPodSpec(pod *apiv1.Pod, rsName string) *apiv1.Pod {
-	pod.OwnerReferences = GenerateOwnerReferences(rsName, "ReplicaSet", "extensions/v1beta1", types.UID(rsName))
+	po.WithOwnerRef(GenerateOwnerReferences(rsName, "ReplicaSet", "extensions/v1beta1", types.UID(rsName)))(pod)
 	return pod
 }
 
