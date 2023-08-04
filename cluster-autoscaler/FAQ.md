@@ -862,7 +862,7 @@ Events:
 ```
 
 This limitation was solved with
-[volume topological scheduling](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-topology-scheduling.md)
+[volume topological scheduling](https://github.com/kubernetes/design-proposals-archive/blob/main/storage/volume-topology-scheduling.md)
 introduced as beta in Kubernetes 1.11 and planned for GA in 1.13.
 To allow CA to take advantage of topological scheduling, use separate node groups per zone.
 This way CA knows exactly which node group will create nodes in the required zone rather than relying on the cloud provider choosing a zone for a new node in a multi-zone node group.
