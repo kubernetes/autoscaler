@@ -284,7 +284,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			if err != nil {
 				klog.Warningf("Failed to get template node info for a node group: %s", err)
 			} else {
-				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nil, scaleUpRequest.NodeGroup)
+				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), scaleUpRequest.NodeGroup)
 			}
 			csr.registerFailedScaleUpNoLock(scaleUpRequest.NodeGroup, metrics.Timeout, cloudprovider.OtherErrorClass, "timeout", gpuResource, gpuType, currentTime)
 			delete(csr.scaleUpRequests, nodeGroupName)
@@ -1118,7 +1118,7 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 			if err != nil {
 				klog.Warningf("Failed to get template node info for a node group: %s", err)
 			} else {
-				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nil, nodeGroup)
+				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
 			}
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
