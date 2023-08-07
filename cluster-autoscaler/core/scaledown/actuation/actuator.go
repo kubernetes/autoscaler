@@ -51,8 +51,9 @@ type Actuator struct {
 	// TODO: Move budget processor to scaledown planner, potentially merge into PostFilteringScaleDownNodeProcessor
 	// This is a larger change to the code structure which impacts some existing actuator unit tests
 	// as well as Cluster Autoscaler implementations that may override ScaleDownSetProcessor
-	budgetProcessor *budgets.ScaleDownBudgetProcessor
-	configGetter    actuatorNodeGroupConfigGetter
+	budgetProcessor           *budgets.ScaleDownBudgetProcessor
+	configGetter              actuatorNodeGroupConfigGetter
+	nodeDeleteDelayAfterTaint time.Duration
 }
 
 // actuatorNodeGroupConfigGetter is an interface to limit the functions that can be used
@@ -66,13 +67,14 @@ type actuatorNodeGroupConfigGetter interface {
 func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions, configGetter actuatorNodeGroupConfigGetter) *Actuator {
 	ndb := NewNodeDeletionBatcher(ctx, csr, ndt, ctx.NodeDeletionBatcherInterval)
 	return &Actuator{
-		ctx:                   ctx,
-		clusterState:          csr,
-		nodeDeletionTracker:   ndt,
-		nodeDeletionScheduler: NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
-		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(ctx),
-		deleteOptions:         deleteOptions,
-		configGetter:          configGetter,
+		ctx:                       ctx,
+		clusterState:              csr,
+		nodeDeletionTracker:       ndt,
+		nodeDeletionScheduler:     NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
+		budgetProcessor:           budgets.NewScaleDownBudgetProcessor(ctx),
+		deleteOptions:             deleteOptions,
+		configGetter:              configGetter,
+		nodeDeleteDelayAfterTaint: ctx.NodeDeleteDelayAfterTaint,
 	}
 }
 
@@ -158,8 +160,16 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView) (re
 // applied taints are cleaned up.
 func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) errors.AutoscalerError {
 	var taintedNodes []*apiv1.Node
+	var updateLatencyTracker *UpdateLatencyTracker
+	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+		updateLatencyTracker = NewUpdateLatencyTracker(a.ctx.AutoscalingKubeClients.ListerRegistry.AllNodeLister())
+		go updateLatencyTracker.Start()
+	}
 	for _, bucket := range NodeGroupViews {
 		for _, node := range bucket.Nodes {
+			if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+				updateLatencyTracker.StartTimeChan <- nodeTaintStartTime{node.Name, time.Now()}
+			}
 			err := a.taintNode(node)
 			if err != nil {
 				a.ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
@@ -167,9 +177,22 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) error
 				for _, taintedNode := range taintedNodes {
 					_, _ = taints.CleanToBeDeleted(taintedNode, a.ctx.ClientSet, a.ctx.CordonNodeBeforeTerminate)
 				}
+				if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+					close(updateLatencyTracker.AwaitOrStopChan)
+				}
 				return errors.NewAutoscalerError(errors.ApiCallError, "couldn't taint node %q with ToBeDeleted", node)
 			}
 			taintedNodes = append(taintedNodes, node)
+		}
+	}
+	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+		updateLatencyTracker.AwaitOrStopChan <- true
+		latency, ok := <-updateLatencyTracker.ResultChan
+		if ok {
+			// CA is expected to wait 3 times the round-trip time between CA and the api-server.
+			// Therefore, the nodeDeleteDelayAfterTaint is set 2 times the latency.
+			// A delay of one round trip time is implicitly there when measuring the latency.
+			a.nodeDeleteDelayAfterTaint = 2 * latency
 		}
 	}
 	return nil
@@ -207,9 +230,9 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 		return
 	}
 
-	if a.ctx.NodeDeleteDelayAfterTaint > time.Duration(0) {
-		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", a.ctx.NodeDeleteDelayAfterTaint)
-		time.Sleep(a.ctx.NodeDeleteDelayAfterTaint)
+	if a.nodeDeleteDelayAfterTaint > time.Duration(0) {
+		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", a.nodeDeleteDelayAfterTaint)
+		time.Sleep(a.nodeDeleteDelayAfterTaint)
 	}
 
 	clusterSnapshot, err := a.createSnapshot(nodes)
