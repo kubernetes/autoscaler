@@ -488,7 +488,7 @@ func TestUpdateClusterState(t *testing.T) {
 					ScaleDownUnneededTime: 10 * time.Minute,
 				},
 				ScaleDownSimulationTimeout: 1 * time.Second,
-				MaxScaleDownParallelism:    10,
+				MaxEmptyBulkDelete:         10,
 			}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
@@ -520,7 +520,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 		name               string
 		previouslyUnneeded int
 		nodes              int
-		maxParallelism     int
+		maxEmptyBulkDelete int
 		maxUnneededTime    time.Duration
 		updateInterval     time.Duration
 		wantUnneeded       int
@@ -529,7 +529,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "no unneeded, default settings",
 			previouslyUnneeded: 0,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    1 * time.Minute,
 			updateInterval:     10 * time.Second,
 			wantUnneeded:       20,
@@ -538,7 +538,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "some unneeded, default settings",
 			previouslyUnneeded: 3,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    1 * time.Minute,
 			updateInterval:     10 * time.Second,
 			wantUnneeded:       23,
@@ -547,7 +547,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "max unneeded, default settings",
 			previouslyUnneeded: 70,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    1 * time.Minute,
 			updateInterval:     10 * time.Second,
 			wantUnneeded:       70,
@@ -556,7 +556,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "too many unneeded, default settings",
 			previouslyUnneeded: 77,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    1 * time.Minute,
 			updateInterval:     10 * time.Second,
 			wantUnneeded:       70,
@@ -565,7 +565,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "instant kill nodes",
 			previouslyUnneeded: 0,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    0 * time.Minute,
 			updateInterval:     10 * time.Second,
 			wantUnneeded:       20,
@@ -574,7 +574,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "quick loops",
 			previouslyUnneeded: 13,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    1 * time.Minute,
 			updateInterval:     1 * time.Second,
 			wantUnneeded:       33,
@@ -583,7 +583,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			name:               "slow loops",
 			previouslyUnneeded: 13,
 			nodes:              100,
-			maxParallelism:     10,
+			maxEmptyBulkDelete: 10,
 			maxUnneededTime:    1 * time.Minute,
 			updateInterval:     30 * time.Second,
 			wantUnneeded:       30,
@@ -607,7 +607,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 					ScaleDownUnneededTime: tc.maxUnneededTime,
 				},
 				ScaleDownSimulationTimeout: 1 * time.Hour,
-				MaxScaleDownParallelism:    tc.maxParallelism,
+				MaxEmptyBulkDelete:         tc.maxEmptyBulkDelete,
 			}, &fake.Clientset{}, nil, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)

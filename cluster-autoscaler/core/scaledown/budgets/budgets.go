@@ -1,4 +1,4 @@
-/*
+MaxEmptyBulkDelete/*
 Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 	drainAtomicMap := groupBuckets(drainAtomic)
 
 	emptyInProgress, drainInProgress := as.DeletionsInProgress()
-	parallelismBudget := bp.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
+	parallelismBudget := bp.ctx.MaxEmptyBulkDelete - len(emptyInProgress) - len(drainInProgress)
 	drainBudget := bp.ctx.MaxDrainParallelism - len(drainInProgress)
 
 	canOverflow := true

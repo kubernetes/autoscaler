@@ -1888,7 +1888,7 @@ func waitForDeleteToFinish(t *testing.T, deleteFinished <-chan bool) {
 }
 
 func newScaleDownPlannerAndActuator(t *testing.T, ctx *context.AutoscalingContext, p *ca_processors.AutoscalingProcessors, cs *clusterstate.ClusterStateRegistry) (scaledown.Planner, scaledown.Actuator) {
-	ctx.MaxScaleDownParallelism = 10
+	ctx.MaxEmptyBulkDelete = 10
 	ctx.MaxDrainParallelism = 1
 	ctx.NodeDeletionBatcherInterval = 0 * time.Second
 	ctx.NodeDeleteDelayAfterTaint = 1 * time.Second

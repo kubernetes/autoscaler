@@ -301,9 +301,9 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 // unneeded nodes is a waste of time. The reasoning behind it is essentially as
 // follows.
 // If the nodes are being removed instantly, then during each iteration we're
-// going to delete up to MaxScaleDownParallelism nodes. Therefore, it doesn't
+// going to delete up to MaxEmptyBulkDelete nodes. Therefore, it doesn't
 // really make sense to add more unneeded nodes than that.
-// Let N = MaxScaleDownParallelism. When there are no unneeded nodes, we only
+// Let N = MaxEmptyBulkDelete. When there are no unneeded nodes, we only
 // need to find N of them in the first iteration. Once the unneeded time
 // accumulates for them, only up to N will get deleted in a single iteration.
 // When there are >0 unneeded nodes, we only need to add N more: once the first
@@ -323,7 +323,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 // of unneeded nodes shouldn't really exceed N*U/I - scale down will not be
 // able to keep up with removing them anyway.
 func (p *Planner) unneededNodesLimit() int {
-	n := p.context.AutoscalingOptions.MaxScaleDownParallelism
+	n := p.context.AutoscalingOptions.MaxEmptyBulkDelete
 	extraBuffer := n
 	limit := len(p.unneededNodes.AsList()) + n + extraBuffer
 	// TODO(x13n): Use moving average instead of min.

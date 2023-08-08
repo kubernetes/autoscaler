@@ -1291,7 +1291,7 @@ func generateReplicaSets() []*appsv1.ReplicaSet {
 
 func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker) *ScaleDownWrapper {
 	ctx.MaxDrainParallelism = 1
-	ctx.MaxScaleDownParallelism = 10
+	ctx.MaxEmptyBulkDelete = 10
 	ctx.NodeDeletionBatcherInterval = 0 * time.Second
 	ctx.NodeDeleteDelayAfterTaint = 0 * time.Second
 	if ndt == nil {

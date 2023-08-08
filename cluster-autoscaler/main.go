@@ -218,7 +218,7 @@ var (
 		"maxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.")
 	nodeGroupBackoffResetTimeout = flag.Duration("node-group-backoff-reset-timeout", 3*time.Hour,
 		"nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.")
-	maxScaleDownParallelismFlag       = flag.Int("max-scale-down-parallelism", 10, "Maximum number of nodes (both empty and needing drain) that can be deleted in parallel.")
+	maxScaleDownParallelismFlag       = flag.Int("max-scale-down-parallelism", 10, "Maximum number of nodes (both empty and needing drain) that can be deleted in parallel.WARNING BEING DEPRECATED IN 1.29")
 	maxDrainParallelismFlag           = flag.Int("max-drain-parallelism", 1, "Maximum number of nodes needing drain, that can be drained and deleted in parallel.")
 	recordDuplicatedEvents            = flag.Bool("record-duplicated-events", false, "enable duplication of similar events within a 5 minute window.")
 	maxNodesPerScaleUp                = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
@@ -269,12 +269,9 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 	// in order to avoid inconsistent deletion thresholds for the legacy planner and the new actuator, the max-empty-bulk-delete,
 	// and max-scale-down-parallelism flags must be set to the same value.
-	if isFlagPassed("max-empty-bulk-delete") && !isFlagPassed("max-scale-down-parallelism") {
-		*maxScaleDownParallelismFlag = *maxEmptyBulkDeleteFlag
-		klog.Warning("The max-empty-bulk-delete flag will be deprecated in k8s version 1.29. Please use max-scale-down-parallelism instead.")
-		klog.Infof("Setting max-scale-down-parallelism to %d, based on the max-empty-bulk-delete value %d", *maxScaleDownParallelismFlag, *maxEmptyBulkDeleteFlag)
-	} else if !isFlagPassed("max-empty-bulk-delete") && isFlagPassed("max-scale-down-parallelism") {
+	if isFlagPassed("max-scale-down-parallelism") {
 		*maxEmptyBulkDeleteFlag = *maxScaleDownParallelismFlag
+		klog.Warning("The max-scale-down-parallelism flag will be deprecated in k8s version 1.29. Please use max-empty-bulk-delete instead.")
 	}
 
 	var parsedSchedConfig *scheduler_config.KubeSchedulerConfiguration
@@ -361,7 +358,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		InitialNodeGroupBackoffDuration:    *initialNodeGroupBackoffDuration,
 		MaxNodeGroupBackoffDuration:        *maxNodeGroupBackoffDuration,
 		NodeGroupBackoffResetTimeout:       *nodeGroupBackoffResetTimeout,
-		MaxScaleDownParallelism:            *maxScaleDownParallelismFlag,
 		MaxDrainParallelism:                *maxDrainParallelismFlag,
 		RecordDuplicatedEvents:             *recordDuplicatedEvents,
 		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,

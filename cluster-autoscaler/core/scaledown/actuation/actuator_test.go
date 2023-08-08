@@ -924,7 +924,7 @@ func TestStartDeletion(t *testing.T) {
 
 				// Set up other needed structures and options.
 				opts := config.AutoscalingOptions{
-					MaxScaleDownParallelism:        10,
+					MaxEmptyBulkDelete:             10,
 					MaxDrainParallelism:            5,
 					MaxPodEvictionTime:             0,
 					DaemonSetEvictionForEmptyNodes: true,
@@ -1194,7 +1194,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 				}
 			}
 			opts := config.AutoscalingOptions{
-				MaxScaleDownParallelism:        10,
+				MaxEmptyBulkDelete:             10,
 				MaxDrainParallelism:            5,
 				MaxPodEvictionTime:             0,
 				DaemonSetEvictionForEmptyNodes: true,

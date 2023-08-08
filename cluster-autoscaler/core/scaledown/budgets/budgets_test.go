@@ -313,7 +313,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 
 			ctx := &context.AutoscalingContext{
 				AutoscalingOptions: config.AutoscalingOptions{
-					MaxScaleDownParallelism:     10,
+					MaxEmptyBulkDelete:          10,
 					MaxDrainParallelism:         5,
 					NodeDeletionBatcherInterval: 0 * time.Second,
 					NodeDeleteDelayAfterTaint:   1 * time.Second,
