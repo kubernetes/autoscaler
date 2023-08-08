@@ -15,6 +15,7 @@
   - [Troubleshooting](#troubleshooting)
   - [Components of VPA](#components-of-vpa)
   - [Tear down](#tear-down)
+- [Limits control](#limits-control)
 - [Examples](#examples)
   - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
   - [Capping to Limit Range](#capping-to-limit-range)
@@ -259,13 +260,15 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 # Limits control
 
 When setting limits VPA will conform to
-[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L82).
+[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L100).
 It will maintain limit to request ratio specified for all containers.
 
 VPA will try to cap recommendations between min and max of
 [limit ranges](https://kubernetes.io/docs/concepts/policy/limit-range/). If limit range conflicts
 and VPA resource policy conflict, VPA will follow VPA policy (and set values outside the limit
 range).
+
+To disable getting VPA recommendations for an individual container, set `mode` to `"Off"` in `containerPolicies`.
 
 ## Examples
 

@@ -94,8 +94,11 @@ type VerticalPodAutoscalerSpec struct {
 
 	// Controls how the autoscaler computes recommended resources.
 	// The resource policy may be used to set constraints on the recommendations
-	// for individual containers. If not specified, the autoscaler computes recommended
-	// resources for all containers in the pod, without additional constraints.
+	// for individual containers.
+	// If any individual containers need to be excluded from getting the VPA recommendations, then
+	// it must be disabled explicitly by setting mode to "Off" under containerPolicies.
+	// If not specified, the autoscaler computes recommended resources for all containers in the pod,
+	// without additional constraints.
 	// +optional
 	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
 
