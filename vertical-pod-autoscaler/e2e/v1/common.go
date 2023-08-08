@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -292,40 +293,75 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 
 // SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
 func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	return SetupVPAForNHamsters(f, 1, cpu, mode, targetRef)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(targetRef).
+		WithUpdateMode(mode).
+		WithContainer(GetHamsterContainerNameByIndex(0)).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(GetHamsterContainerNameByIndex(0)).
+				WithTarget(cpu, "").
+				WithLowerBound(cpu, "").
+				WithUpperBound(cpu, "").
+				GetContainerResources()).
+		Get()
+
+	InstallVPA(f, vpaCRD)
+	return vpaCRD
 }
 
 // SetupVPAForNHamsters creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
 func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	return SetupVPAForNHamstersWithMinReplicas(f, n, cpu, mode, targetRef, nil, nil)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(targetRef).
+		WithUpdateMode(mode).
+		WithContainer(GetHamsterContainerNameByIndex(0)).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(GetHamsterContainerNameByIndex(0)).
+				WithTarget(cpu, "").
+				WithLowerBound(cpu, "").
+				WithUpperBound(cpu, "").
+				GetContainerResources()).
+		WithContainer(GetHamsterContainerNameByIndex(1)).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(GetHamsterContainerNameByIndex(1)).
+				WithTarget(cpu, "").
+				WithLowerBound(cpu, "").
+				WithUpperBound(cpu, "").
+				GetContainerResources()).
+		Get()
+
+	InstallVPA(f, vpaCRD)
+	return vpaCRD
 }
 
 // SetupVPAForNHamstersWithMinReplicas creates and installs a simple hamster VPA for a pod with n containers, setting MinReplicas. To be used for e2e test purposes.
 func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference, minReplicas *int32, er []*vpa_types.EvictionRequirement) *vpa_types.VerticalPodAutoscaler {
-	vpaCRD := NewVPA(f, "hamster-vpa", targetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
-	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
-	vpaCRD.Spec.UpdatePolicy.MinReplicas = minReplicas
-	vpaCRD.Spec.UpdatePolicy.EvictionRequirements = er
-
-	cpuQuantity := ParseQuantityOrDie(cpu)
-	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
-
-	containerRecommendations := []vpa_types.RecommendedContainerResources{}
-	for i := 0; i < n; i++ {
-		containerRecommendations = append(containerRecommendations,
-			vpa_types.RecommendedContainerResources{
-				ContainerName: GetHamsterContainerNameByIndex(i),
-				Target:        resourceList,
-				LowerBound:    resourceList,
-				UpperBound:    resourceList,
-			},
-		)
-	}
-	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
-		ContainerRecommendations: containerRecommendations,
-	}
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(targetRef).
+		WithMinReplicas(minReplicas).
+		WithEvictionRequirements(er).
+		WithUpdateMode(mode).
+		WithContainer(GetHamsterContainerNameByIndex(0)).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(GetHamsterContainerNameByIndex(0)).
+				WithTarget(cpu, "").
+				WithLowerBound(cpu, "").
+				WithUpperBound(cpu, "").
+				GetContainerResources()).
+		Get()
 
 	InstallVPA(f, vpaCRD)
+
 	return vpaCRD
 }
 
