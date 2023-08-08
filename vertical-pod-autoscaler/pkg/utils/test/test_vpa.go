@@ -68,7 +68,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 type verticalPodAutoscalerBuilder struct {
 	groupVersion            meta.GroupVersion
 	vpaName                 string
-	containerName           string
+	containerNames          []string
 	namespace               string
 	updatePolicy            *vpa_types.PodUpdatePolicy
 	creationTimestamp       time.Time
@@ -91,7 +91,7 @@ func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutos
 
 func (b *verticalPodAutoscalerBuilder) WithContainer(containerName string) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.containerName = containerName
+	c.containerNames = append(c.containerNames, containerName)
 	return &c
 }
 
@@ -219,21 +219,24 @@ func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_t
 }
 
 func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
-	if b.containerName == "" {
+	if len(b.containerNames) == 0 {
 		panic("Must call WithContainer() before Get()")
 	}
 	var recommenders []*vpa_types.VerticalPodAutoscalerRecommenderSelector
 	if b.recommender != "" {
 		recommenders = []*vpa_types.VerticalPodAutoscalerRecommenderSelector{{Name: b.recommender}}
 	}
-	resourcePolicy := vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-		ContainerName:    b.containerName,
-		MinAllowed:       b.minAllowed,
-		MaxAllowed:       b.maxAllowed,
-		ControlledValues: b.ControlledValues,
-	}}}
-
-	recommendation := b.recommendation.WithContainer(b.containerName).Get()
+	resourcePolicy := vpa_types.PodResourcePolicy{}
+	recommendation := &vpa_types.RecommendedPodResources{}
+	for _, containerName := range b.containerNames {
+		resourcePolicy.ContainerPolicies = append(resourcePolicy.ContainerPolicies, vpa_types.ContainerResourcePolicy{
+			ContainerName:    containerName,
+			MinAllowed:       b.minAllowed,
+			MaxAllowed:       b.maxAllowed,
+			ControlledValues: b.ControlledValues,
+		})
+	}
+	recommendation = b.recommendation.WithContainer(b.containerNames[0]).Get()
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
 
 	return &vpa_types.VerticalPodAutoscaler{
