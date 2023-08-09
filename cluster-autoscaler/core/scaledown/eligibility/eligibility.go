@@ -46,11 +46,11 @@ type Checker struct {
 
 type nodeGroupConfigGetter interface {
 	// GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
-	GetScaleDownUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
+	GetScaleDownUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
-	GetScaleDownGpuUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
+	GetScaleDownGpuUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
-	GetIgnoreDaemonSetsUtilization(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (bool, error)
+	GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error)
 }
 
 // NewChecker creates a new Checker object.
@@ -132,7 +132,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		return simulator.NotAutoscaled, nil
 	}
 
-	ignoreDaemonSetsUtilization, err := c.configGetter.GetIgnoreDaemonSetsUtilization(context, nodeGroup)
+	ignoreDaemonSetsUtilization, err := c.configGetter.GetIgnoreDaemonSetsUtilization(nodeGroup)
 	if err != nil {
 		klog.Warningf("Couldn't retrieve `IgnoreDaemonSetsUtilization` option for node %v: %v", node.Name, err)
 		return simulator.UnexpectedError, nil
@@ -174,12 +174,12 @@ func (c *Checker) isNodeBelowUtilizationThreshold(context *context.AutoscalingCo
 	var err error
 	gpuConfig := context.CloudProvider.GetNodeGpuConfig(node)
 	if gpuConfig != nil {
-		threshold, err = c.configGetter.GetScaleDownGpuUtilizationThreshold(context, nodeGroup)
+		threshold, err = c.configGetter.GetScaleDownGpuUtilizationThreshold(nodeGroup)
 		if err != nil {
 			return false, err
 		}
 	} else {
-		threshold, err = c.configGetter.GetScaleDownUtilizationThreshold(context, nodeGroup)
+		threshold, err = c.configGetter.GetScaleDownUtilizationThreshold(nodeGroup)
 		if err != nil {
 			return false, err
 		}

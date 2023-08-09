@@ -94,7 +94,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 // Initialize default options if not provided.
 func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.Processors == nil {
-		opts.Processors = ca_processors.DefaultProcessors()
+		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)

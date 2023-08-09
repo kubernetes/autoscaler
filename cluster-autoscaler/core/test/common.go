@@ -186,7 +186,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
-		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),

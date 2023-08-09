@@ -35,7 +35,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/providers"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -148,7 +147,7 @@ func NewStaticAutoscaler(
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 	}
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
 		opts,
@@ -164,7 +163,6 @@ func NewStaticAutoscaler(
 		clusterStateRegistry)
 
 	taintConfig := taints.NewTaintConfig(opts)
-	clusterStateRegistry.RegisterProviders(providers.NewDefaultMaxNodeProvisionTimeProvider(autoscalingContext, processors.NodeGroupConfigProcessor))
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
