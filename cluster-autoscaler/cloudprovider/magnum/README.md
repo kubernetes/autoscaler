@@ -48,7 +48,7 @@ to match your cluster.
 | --cluster-name              | The name of your Kubernetes cluster. If there are multiple clusters sharing the same name then the cluster IDs should be used instead.           |
 | --cloud-provider            | Can be omitted if the autoscaler is built with `BUILD_TAGS=magnum`, otherwise use `--cloud-provider=magnum`.                                     |
 | --nodes                     | Used to select a specific node group to autoscale and constrain its node count. Of the form `min:max:NodeGroupName`. Can be used multiple times. |
-| --node-group-auto-discovery | See below(#node-group-auto-discovery).                                                                                                                                       |
+| --node-group-auto-discovery | [See below](#node-group-auto-discovery).                                                                                                                                       |
 
 #### Deployment with helm
 
