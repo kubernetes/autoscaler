@@ -1,4 +1,4 @@
-ALL_ARCH = amd64 arm64
+ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
 TAG?=dev
