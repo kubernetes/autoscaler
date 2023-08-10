@@ -83,9 +83,16 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 				break
 			}
 		}
-		if bucket.BatchSize, err = bucket.Group.TargetSize(); err != nil {
+		var targetSize int
+		if targetSize, err = bucket.Group.TargetSize(); err != nil {
 			// Very unlikely to happen, as we've got this far with this group.
 			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
+			continue
+		}
+		bucket.BatchSize = targetSize
+		if len(bucket.Nodes)+len(drainNodes) != targetSize {
+			// We can't only partially scale down atomic group.
+			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, empty: %v, drainable: %v", bucket.Group.Id(), targetSize, len(bucket.Nodes), len(drainNodes))
 			continue
 		}
 		emptyToDelete = append(emptyToDelete, bucket)
@@ -113,9 +120,16 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 				break
 			}
 		}
-		if bucket.BatchSize, err = bucket.Group.TargetSize(); err != nil {
+		var targetSize int
+		if targetSize, err = bucket.Group.TargetSize(); err != nil {
 			// Very unlikely to happen, as we've got this far with this group.
 			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
+			continue
+		}
+		bucket.BatchSize = targetSize
+		if len(bucket.Nodes) != targetSize {
+			// We can't only partially scale down atomic group.
+			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, empty: none, drainable: %v", bucket.Group.Id(), targetSize, len(bucket.Nodes))
 			continue
 		}
 		drainToDelete = append(drainToDelete, bucket)

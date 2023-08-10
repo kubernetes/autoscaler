@@ -67,6 +67,7 @@ type startDeletionTestCase struct {
 
 func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonSetsUtilization bool, suffix string) map[string]startDeletionTestCase {
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
+
 	dsUtilInfo := generateUtilInfo(2./8., 2./8.)
 
 	if ignoreDaemonSetsUtilization {
@@ -75,6 +76,11 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 
 	atomic2 := sizedNodeGroup("atomic-2", 2, true)
 	atomic4 := sizedNodeGroup("atomic-4", 4, true)
+	// We need separate groups since previous test cases *change state of groups*.
+	// TODO(aleksandra-malinowska): refactor this test to isolate test cases.
+	atomic2pods := sizedNodeGroup("atomic-2-pods", 2, true)
+	atomic4taints := sizedNodeGroup("atomic-4-taints", 4, true)
+	atomic6 := sizedNodeGroup("atomic-6", 6, true)
 
 	testCases := map[string]startDeletionTestCase{
 		"nothing to delete": {
@@ -330,22 +336,22 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint empty atomic node stops deletion and cleans already applied taints": {
-			emptyNodes: generateNodeGroupViewList(atomic4, 0, 4),
+			emptyNodes: generateNodeGroupViewList(atomic4taints, 0, 4),
 			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-4": removablePods(2, "test-node-4"),
 			},
-			failedNodeTaint: map[string]bool{"atomic-4-node-2": true},
+			failedNodeTaint: map[string]bool{"atomic-4-taints-node-2": true},
 			wantStatus: &status.ScaleDownStatus{
 				Result:          status.ScaleDownError,
 				ScaledDownNodes: nil,
 			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"atomic-4-node-0": {
+				"atomic-4-taints-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"atomic-4-node-1": {
+				"atomic-4-taints-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
@@ -396,14 +402,16 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 		},
 		"failure to taint drain atomic node stops further deletion and cleans already applied taints": {
 			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			drainNodes: generateNodeGroupViewList(atomic4, 2, 6),
+			drainNodes: generateNodeGroupViewList(atomic6, 0, 6),
 			pods: map[string][]*apiv1.Pod{
-				"atomic-4-node-2": removablePods(2, "atomic-4-node-2"),
-				"atomic-4-node-3": removablePods(2, "atomic-4-node-3"),
-				"atomic-4-node-4": removablePods(2, "atomic-4-node-4"),
-				"atomic-4-node-5": removablePods(2, "atomic-4-node-5"),
+				"atomic-6-node-0": removablePods(2, "atomic-6-node-0"),
+				"atomic-6-node-1": removablePods(2, "atomic-6-node-1"),
+				"atomic-6-node-2": removablePods(2, "atomic-6-node-2"),
+				"atomic-6-node-3": removablePods(2, "atomic-6-node-3"),
+				"atomic-6-node-4": removablePods(2, "atomic-6-node-4"),
+				"atomic-6-node-5": removablePods(2, "atomic-6-node-5"),
 			},
-			failedNodeTaint: map[string]bool{"atomic-4-node-2": true},
+			failedNodeTaint: map[string]bool{"atomic-6-node-2": true},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownError,
 				ScaledDownNodes: []*status.ScaleDownNode{
@@ -779,11 +787,11 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 		"atomic nodes with pods are not deleted if the node is passed as empty": {
 			emptyNodes: append(
 				generateNodeGroupViewList(testNg, 0, 2),
-				generateNodeGroupViewList(atomic2, 0, 2)...,
+				generateNodeGroupViewList(atomic2pods, 0, 2)...,
 			),
 			pods: map[string][]*apiv1.Pod{
-				"test-node-1":     removablePods(2, "test-node-1"),
-				"atomic-2-node-1": removablePods(2, "atomic-2-node-1"),
+				"test-node-1":          removablePods(2, "test-node-1"),
+				"atomic-2-pods-node-1": removablePods(2, "atomic-2-pods-node-1"),
 			},
 			wantStatus: &status.ScaleDownStatus{
 				Result: status.ScaleDownNodeDeleteStarted,
@@ -801,14 +809,14 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("atomic-2-node-0"),
-						NodeGroup:   atomic2,
+						Node:        generateNode("atomic-2-pods-node-0"),
+						NodeGroup:   atomic2pods,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("atomic-2-node-1"),
-						NodeGroup:   atomic2,
+						Node:        generateNode("atomic-2-pods-node-1"),
+						NodeGroup:   atomic2pods,
 						EvictedPods: nil,
 						UtilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
@@ -824,20 +832,20 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 					{toBeDeletedTaint},
 					{},
 				},
-				"atomic-2-node-0": {
+				"atomic-2-pods-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"atomic-2-node-1": {
+				"atomic-2-pods-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"test-node-0":     {ResultType: status.NodeDeleteOk},
-				"test-node-1":     {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
-				"atomic-2-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"atomic-2-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"test-node-0":          {ResultType: status.NodeDeleteOk},
+				"test-node-1":          {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"atomic-2-pods-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				"atomic-2-pods-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
 			},
 		},
 	}
