@@ -110,7 +110,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 		if _, found := emptyAtomicMap[bucket.Group.Id()]; found {
 			// This atomically-scaled node group should have been already processed
 			// in the previous loop.
-			break
+			continue
 		}
 		if drainBudget < len(bucket.Nodes) {
 			// One pod slice can sneak in even if it would exceed parallelism budget.
