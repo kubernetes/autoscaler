@@ -81,6 +81,8 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 	atomic2pods := sizedNodeGroup("atomic-2-pods", 2, true)
 	atomic4taints := sizedNodeGroup("atomic-4-taints", 4, true)
 	atomic6 := sizedNodeGroup("atomic-6", 6, true)
+	atomic2mixed := sizedNodeGroup("atomic-2-mixed", 2, true)
+	atomic2drain := sizedNodeGroup("atomic-2-drain", 2, true)
 
 	testCases := map[string]startDeletionTestCase{
 		"nothing to delete": {
@@ -251,6 +253,72 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"test-node-1": {ResultType: status.NodeDeleteOk},
 				"test-node-2": {ResultType: status.NodeDeleteOk},
 				"test-node-3": {ResultType: status.NodeDeleteOk},
+			},
+		},
+		"two atomic groups can be scaled down together": {
+			emptyNodes: generateNodeGroupViewList(atomic2mixed, 1, 2),
+			drainNodes: append(generateNodeGroupViewList(atomic2mixed, 0, 1),
+				generateNodeGroupViewList(atomic2drain, 0, 2)...),
+			pods: map[string][]*apiv1.Pod{
+				"atomic-2-mixed-node-0": removablePods(2, "atomic-2-mixed-node-0"),
+				"atomic-2-drain-node-0": removablePods(1, "atomic-2-drain-node-0"),
+				"atomic-2-drain-node-1": removablePods(2, "atomic-2-drain-node-1"),
+			},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:        generateNode("atomic-2-mixed-node-1"),
+						NodeGroup:   atomic2mixed,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("atomic-2-mixed-node-0"),
+						NodeGroup:   atomic2mixed,
+						EvictedPods: removablePods(2, "atomic-2-mixed-node-0"),
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+					{
+						Node:        generateNode("atomic-2-drain-node-0"),
+						NodeGroup:   atomic2drain,
+						EvictedPods: removablePods(1, "atomic-2-drain-node-0"),
+						UtilInfo:    generateUtilInfo(1./8., 1./8.),
+					},
+					{
+						Node:        generateNode("atomic-2-drain-node-1"),
+						NodeGroup:   atomic2drain,
+						EvictedPods: removablePods(2, "atomic-2-drain-node-1"),
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+				},
+			},
+			wantDeletedNodes: []string{
+				"atomic-2-mixed-node-0",
+				"atomic-2-mixed-node-1",
+				"atomic-2-drain-node-0",
+				"atomic-2-drain-node-1",
+			},
+			wantDeletedPods: []string{"atomic-2-mixed-node-0-pod-0", "atomic-2-mixed-node-0-pod-1", "atomic-2-drain-node-0-pod-0", "atomic-2-drain-node-1-pod-0", "atomic-2-drain-node-1-pod-1"},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-2-mixed-node-0": {
+					{toBeDeletedTaint},
+				},
+				"atomic-2-mixed-node-1": {
+					{toBeDeletedTaint},
+				},
+				"atomic-2-drain-node-0": {
+					{toBeDeletedTaint},
+				},
+				"atomic-2-drain-node-1": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"atomic-2-mixed-node-0": {ResultType: status.NodeDeleteOk},
+				"atomic-2-mixed-node-1": {ResultType: status.NodeDeleteOk},
+				"atomic-2-drain-node-0": {ResultType: status.NodeDeleteOk},
+				"atomic-2-drain-node-1": {ResultType: status.NodeDeleteOk},
 			},
 		},
 		"atomic empty and drain deletion work correctly together": {
