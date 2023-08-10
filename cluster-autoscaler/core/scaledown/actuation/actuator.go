@@ -148,7 +148,7 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView) (re
 	}
 
 	for _, bucket := range NodeGroupViews {
-		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, false)
+		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, false, bucket.BatchSize)
 	}
 
 	return reportedSDNodes
@@ -193,13 +193,13 @@ func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView) (re
 	}
 
 	for _, bucket := range NodeGroupViews {
-		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, true)
+		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, true, bucket.BatchSize)
 	}
 
 	return reportedSDNodes
 }
 
-func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
+func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, batchSize int) {
 	var pdbs []*policyv1.PodDisruptionBudget
 	var registry kube_util.ListerRegistry
 
@@ -236,6 +236,10 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 		registry = a.ctx.ListerRegistry
 	}
 
+	if batchSize == 0 {
+		batchSize = len(nodes)
+	}
+
 	for _, node := range nodes {
 		nodeInfo, err := clusterSnapshot.NodeInfos().Get(node.Name)
 		if err != nil {
@@ -260,7 +264,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 			continue
 		}
 
-		go a.nodeDeletionScheduler.ScheduleDeletion(nodeInfo, nodeGroup, len(nodes), drain)
+		go a.nodeDeletionScheduler.ScheduleDeletion(nodeInfo, nodeGroup, batchSize, drain)
 	}
 }
 
