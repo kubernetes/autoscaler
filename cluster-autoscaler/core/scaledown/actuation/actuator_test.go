@@ -247,6 +247,65 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"test-node-3": {ResultType: status.NodeDeleteOk},
 			},
 		},
+		"atomic empty and drain deletion work correctly together": {
+			emptyNodes: generateNodeGroupViewList(atomic4, 0, 2),
+			drainNodes: generateNodeGroupViewList(atomic4, 2, 4),
+			pods: map[string][]*apiv1.Pod{
+				"atomic-4-node-2": removablePods(2, "atomic-4-node-2"),
+				"atomic-4-node-3": removablePods(2, "atomic-4-node-3"),
+			},
+			wantStatus: &status.ScaleDownStatus{
+				Result: status.ScaleDownNodeDeleteStarted,
+				ScaledDownNodes: []*status.ScaleDownNode{
+					{
+						Node:        generateNode("atomic-4-node-0"),
+						NodeGroup:   atomic4,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("atomic-4-node-1"),
+						NodeGroup:   atomic4,
+						EvictedPods: nil,
+						UtilInfo:    generateUtilInfo(0, 0),
+					},
+					{
+						Node:        generateNode("atomic-4-node-2"),
+						NodeGroup:   atomic4,
+						EvictedPods: removablePods(2, "atomic-4-node-2"),
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+					{
+						Node:        generateNode("atomic-4-node-3"),
+						NodeGroup:   atomic4,
+						EvictedPods: removablePods(2, "atomic-4-node-3"),
+						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+					},
+				},
+			},
+			wantDeletedNodes: []string{"atomic-4-node-0", "atomic-4-node-1", "atomic-4-node-2", "atomic-4-node-3"},
+			wantDeletedPods:  []string{"atomic-4-node-2-pod-0", "atomic-4-node-2-pod-1", "atomic-4-node-3-pod-0", "atomic-4-node-3-pod-1"},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-4-node-0": {
+					{toBeDeletedTaint},
+				},
+				"atomic-4-node-1": {
+					{toBeDeletedTaint},
+				},
+				"atomic-4-node-2": {
+					{toBeDeletedTaint},
+				},
+				"atomic-4-node-3": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"atomic-4-node-0": {ResultType: status.NodeDeleteOk},
+				"atomic-4-node-1": {ResultType: status.NodeDeleteOk},
+				"atomic-4-node-2": {ResultType: status.NodeDeleteOk},
+				"atomic-4-node-3": {ResultType: status.NodeDeleteOk},
+			},
+		},
 		"failure to taint empty node stops deletion and cleans already applied taints": {
 			emptyNodes: generateNodeGroupViewList(testNg, 0, 4),
 			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
