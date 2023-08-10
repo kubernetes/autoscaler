@@ -326,7 +326,7 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 	}
 
 	start = time.Now()
-	instanceTypes := []string{}
+	var instanceTypes []string
 	err = m.GetInstanceTypesFromInstanceRequirementsPages(requirementsInput, func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, isLastPage bool) bool {
 		for _, instanceType := range page.InstanceTypes {
 			instanceTypes = append(instanceTypes, *instanceType.InstanceType)
@@ -334,7 +334,7 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 		return !isLastPage
 	})
 	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
-	if err != nil {
+	if err != nil || len(instanceTypes) == 0 {
 		return "", fmt.Errorf("unable to get instance types from requirements")
 	}
 
