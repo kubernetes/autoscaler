@@ -31,6 +31,9 @@ import (
 type NodeGroupView struct {
 	Group cloudprovider.NodeGroup
 	Nodes []*apiv1.Node
+	// BatchSize allows overriding the number of nodes needed to trigger deletion.
+	// Useful for node groups which only scale between zero and max size.
+	BatchSize int
 }
 
 // ScaleDownBudgetProcessor is responsible for keeping the number of nodes deleted in parallel within defined limits.
@@ -59,6 +62,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 	parallelismBudget := bp.ctx.MaxScaleDownParallelism - len(emptyInProgress) - len(drainInProgress)
 	drainBudget := bp.ctx.MaxDrainParallelism - len(drainInProgress)
 
+	var err error
 	canOverflow := true
 	emptyToDelete, drainToDelete = []*NodeGroupView{}, []*NodeGroupView{}
 	for _, bucket := range emptyAtomic {
@@ -79,8 +83,21 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 				break
 			}
 		}
+		var targetSize int
+		if targetSize, err = bucket.Group.TargetSize(); err != nil {
+			// Very unlikely to happen, as we've got this far with this group.
+			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
+			continue
+		}
+		bucket.BatchSize = targetSize
+		if len(bucket.Nodes)+len(drainNodes) != targetSize {
+			// We can't only partially scale down atomic group.
+			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, empty: %v, drainable: %v", bucket.Group.Id(), targetSize, len(bucket.Nodes), len(drainNodes))
+			continue
+		}
 		emptyToDelete = append(emptyToDelete, bucket)
 		if drainFound {
+			drainBucket.BatchSize = bucket.BatchSize
 			drainToDelete = append(drainToDelete, drainBucket)
 		}
 		parallelismBudget -= len(bucket.Nodes) + len(drainNodes)
@@ -93,7 +110,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 		if _, found := emptyAtomicMap[bucket.Group.Id()]; found {
 			// This atomically-scaled node group should have been already processed
 			// in the previous loop.
-			break
+			continue
 		}
 		if drainBudget < len(bucket.Nodes) {
 			// One pod slice can sneak in even if it would exceed parallelism budget.
@@ -102,6 +119,18 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 			if drainBudget == 0 || !canOverflow {
 				break
 			}
+		}
+		var targetSize int
+		if targetSize, err = bucket.Group.TargetSize(); err != nil {
+			// Very unlikely to happen, as we've got this far with this group.
+			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
+			continue
+		}
+		bucket.BatchSize = targetSize
+		if len(bucket.Nodes) != targetSize {
+			// We can't only partially scale down atomic group.
+			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, empty: none, drainable: %v", bucket.Group.Id(), targetSize, len(bucket.Nodes))
+			continue
 		}
 		drainToDelete = append(drainToDelete, bucket)
 		parallelismBudget -= len(bucket.Nodes)
