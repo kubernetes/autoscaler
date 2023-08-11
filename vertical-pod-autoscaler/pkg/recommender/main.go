@@ -68,6 +68,8 @@ var (
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
+	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
+	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
 	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
 )
 
@@ -174,6 +176,10 @@ func main() {
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
 			Namespace:              *vpaObjectNamespace,
+			PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
+				Username: *username,
+				Password: *password,
+			},
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
