@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -46,7 +48,7 @@ func (ref TcRef) ToProviderID() string {
 }
 
 // TcRefFromProviderID creates InstanceConfig object from provider id which
-// must be in format: tencentcloud:///100003/ins-3ven36lk
+// must be in format: qcloud:///100003/ins-3ven36lk
 func TcRefFromProviderID(id string) (TcRef, error) {
 	validIDRegex := regexp.MustCompile(`^qcloud\:\/\/\/[-0-9a-z]*\/[-0-9a-z]*$`)
 	if validIDRegex.FindStringSubmatch(id) == nil {
@@ -245,6 +247,7 @@ func (asg *tcAsg) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	klog.V(4).Infof("Generate tencentcloud template: labels=%v taints=%v allocatable=%v", node.Labels, node.Spec.Taints, node.Status.Allocatable)
 
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
