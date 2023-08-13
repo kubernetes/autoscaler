@@ -20,15 +20,15 @@ The following policy provides the minimum privileges necessary for Cluster Autos
         {
             "effect": "allow",
             "action": [
-                "tke:DeleteClusterInstances",
-                "tke:DescribeClusterAsGroups",
                 "as:ModifyAutoScalingGroup",
                 "as:RemoveInstances",
-                "as:StopAutoScalingInstances",
                 "as:DescribeAutoScalingGroups",
                 "as:DescribeAutoScalingInstances",
                 "as:DescribeLaunchConfigurations",
-                "as:DescribeAutoScalingActivities"
+                "as:DescribeAutoScalingActivities",
+                "cvm:DescribeZones",
+                "cvm:DescribeInstanceTypeConfigs",
+                "vpc:DescribeSubnets"
             ],
             "resource": [
                 "*"
@@ -72,8 +72,6 @@ env:
         key: tencentcloud_secret_key
   - name: REGION
     value: YOUR_TENCENCLOUD_REGION
-  - name: REGION_NAME
-    value: YOUR_TENCENCLOUD_REGION_NAME
   - name: CLUSTER_ID
     value: YOUR_TKE_CLUSTER_ID
 ```
@@ -124,10 +122,6 @@ spec:
               key: tencentcloud_secret_key
         - name: REGION
           value: YOUR_TENCENCLOUD_REGION
-        - name: REGION_NAME
-          value: YOUR_TENCENCLOUD_REGION_NAME
-        - name: CLUSTER_ID
-          value: YOUR_TKE_CLUSTER_ID
         image: ccr.ccs.tencentyun.com/tkeimages/cluster-autoscaler:v1.18.4-49692187a
         imagePullPolicy: Always
         name: cluster-autoscaler
@@ -143,25 +137,9 @@ spec:
           name: tz-config
       hostAliases:
       - hostnames:
-        - cbs.api.qcloud.com
-        - cvm.api.qcloud.com
-        - lb.api.qcloud.com
-        - tag.api.qcloud.com
-        - snapshot.api.qcloud.com
-        - monitor.api.qcloud.com
-        - scaling.api.qcloud.com
-        - ccs.api.qcloud.com
-        ip: 169.254.0.28
-      - hostnames:
-        - tke.internal.tencentcloudapi.com
-        - clb.internal.tencentcloudapi.com
-        - cvm.internal.tencentcloudapi.com
-        - tag.internal.tencentcloudapi.com
         - as.tencentcloudapi.com
-        - cbs.tencentcloudapi.com
         - cvm.tencentcloudapi.com
         - vpc.tencentcloudapi.com
-        - tke.tencentcloudapi.com
         ip: 169.254.0.95
       restartPolicy: Always
       serviceAccount: kube-admin
@@ -176,6 +154,40 @@ spec:
         name: tz-config
 ```
 
-### Auto-Discovery Setup
+### Scaling up from 0 nodes
 
-Auto Discovery is not supported in TencentCloud currently.
+When scaling up from 0 nodes, the Cluster Autoscaler reads ASG tags to derive information about the specifications of the nodes
+i.e labels and taints in that ASG. Note that it does not actually apply these labels or taints - this is done by an AWS generated
+user data script. It gives the Cluster Autoscaler information about whether pending pods will be able to be scheduled should a new node
+be spun up for a particular ASG with the asumption the ASG tags accurately reflect the labels/taint actually applied.
+
+The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the label tag
+on the ASG should a deployment have a NodeSelector, else no scaling will occur as the Cluster Autoscaler does not realise
+the ASG has that particular label. The tag is of the format
+`k8s.io/cluster-autoscaler/node-template/label/<label-name>`: `<label-value>` or `tencentcloud:<label-name>`: `<label-value>` is
+the name of the label and the value of each tag specifies the label value.
+
+Example tags:
+
+- `k8s.io/cluster-autoscaler/node-template/label/foo`: `bar`
+- `tencentcloud:foo`:`bar`
+
+The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the taint tag
+on the ASG, else tainted nodes may get spun up that cannot actually have the pending pods run on it. The tag is of the format
+`k8s.io/cluster-autoscaler/node-template/taint/<taint-name>`:`<taint-value:taint-effect>` is
+the name of the taint and the value of each tag specifies the taint value and effect with the format `<taint-value>:<taint-effect>`.
+
+Example tags:
+
+- `k8s.io/cluster-autoscaler/node-template/taint/dedicated`: `true:NoSchedule`
+
+From version 1.14, Cluster Autoscaler can also determine the resources provided
+by each Auto Scaling Group via tags. The tag is of the format
+`k8s.io/cluster-autoscaler/node-template/resources/<resource-name>`.
+`<resource-name>` is the name of the resource, such as `ephemeral-storage`. The
+value of each tag specifies the amount of resource provided. The units are
+identical to the units used in the `resources` field of a Pod specification.
+
+Example tags:
+
+- `k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage`: `100G`
