@@ -36,6 +36,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMinAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
 	WithMaxAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
 	WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
+	WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) VerticalPodAutoscalerBuilder
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetResource(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
@@ -78,6 +79,7 @@ type verticalPodAutoscalerBuilder struct {
 	minAllowed              map[string]core.ResourceList
 	maxAllowed              map[string]core.ResourceList
 	ControlledValues        map[string]*vpa_types.ContainerControlledValues
+	scalingMode             map[string]*vpa_types.ContainerScalingMode
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	annotations             map[string]string
@@ -134,6 +136,12 @@ func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(containerName, cpu, memory
 func (b *verticalPodAutoscalerBuilder) WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.ControlledValues[containerName] = &mode
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.scalingMode[containerName] = &scalingMode
 	return &c
 }
 
@@ -237,6 +245,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			MinAllowed:       b.minAllowed[containerName],
 			MaxAllowed:       b.maxAllowed[containerName],
 			ControlledValues: b.ControlledValues[containerName],
+			Mode:             b.scalingMode[containerName],
 		})
 	}
 	recommendation = b.recommendation.WithContainer(b.containerNames[0]).Get()
