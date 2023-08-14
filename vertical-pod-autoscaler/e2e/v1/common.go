@@ -292,57 +292,8 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 }
 
 // SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
-func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	vpaCRD := test.VerticalPodAutoscaler().
-		WithName("hamster-vpa").
-		WithNamespace(f.Namespace.Name).
-		WithTargetRef(targetRef).
-		WithUpdateMode(mode).
-		WithContainer(GetHamsterContainerNameByIndex(0)).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(GetHamsterContainerNameByIndex(0)).
-				WithTarget(cpu, "").
-				WithLowerBound(cpu, "").
-				WithUpperBound(cpu, "").
-				GetContainerResources()).
-		Get()
-
-	InstallVPA(f, vpaCRD)
-	return vpaCRD
-}
-
-// SetupVPAForNHamsters creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
-func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	vpaCRD := test.VerticalPodAutoscaler().
-		WithName("hamster-vpa").
-		WithNamespace(f.Namespace.Name).
-		WithTargetRef(targetRef).
-		WithUpdateMode(mode).
-		WithContainer(GetHamsterContainerNameByIndex(0)).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(GetHamsterContainerNameByIndex(0)).
-				WithTarget(cpu, "").
-				WithLowerBound(cpu, "").
-				WithUpperBound(cpu, "").
-				GetContainerResources()).
-		WithContainer(GetHamsterContainerNameByIndex(1)).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(GetHamsterContainerNameByIndex(1)).
-				WithTarget(cpu, "").
-				WithLowerBound(cpu, "").
-				WithUpperBound(cpu, "").
-				GetContainerResources()).
-		Get()
-
-	InstallVPA(f, vpaCRD)
-	return vpaCRD
-}
-
-// SetupVPAForNHamstersWithMinReplicas creates and installs a simple hamster VPA for a pod with n containers, setting MinReplicas. To be used for e2e test purposes.
-func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference, minReplicas *int32, er []*vpa_types.EvictionRequirement) *vpa_types.VerticalPodAutoscaler {
+func SetupVPA(f *framework.Framework, cpu string, memory string, mode vpa_types.UpdateMode, minAllowedCPU string, minAllowedMemory string, minReplicas *int32, maxAllowedMemory string, maxAllowedCPU string, er []*vpa_types.EvictionRequirement, controlledValues vpa_types.ContainerControlledValues, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
+	containerName := GetHamsterContainerNameByIndex(0)
 	vpaCRD := test.VerticalPodAutoscaler().
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
@@ -350,13 +301,16 @@ func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu stri
 		WithMinReplicas(minReplicas).
 		WithEvictionRequirements(er).
 		WithUpdateMode(mode).
-		WithContainer(GetHamsterContainerNameByIndex(0)).
+		WithContainer(containerName).
+		WithControlledValues(containerName, controlledValues).
+		WithMinAllowed(containerName, minAllowedCPU, minAllowedMemory).
+		WithMaxAllowed(containerName, maxAllowedCPU, maxAllowedMemory).
 		AppendRecommendation(
 			test.Recommendation().
-				WithContainer(GetHamsterContainerNameByIndex(0)).
-				WithTarget(cpu, "").
-				WithLowerBound(cpu, "").
-				WithUpperBound(cpu, "").
+				WithContainer(containerName).
+				WithTarget(cpu, memory).
+				WithLowerBound(cpu, memory).
+				WithUpperBound(cpu, memory).
 				GetContainerResources()).
 		Get()
 
@@ -365,31 +319,37 @@ func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu stri
 	return vpaCRD
 }
 
-// NewVPA creates a VPA object for e2e test purposes.
-func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVersionObjectReference, recommenders []*vpa_types.VerticalPodAutoscalerRecommenderSelector) *vpa_types.VerticalPodAutoscaler {
-	updateMode := vpa_types.UpdateModeAuto
-	vpa := vpa_types.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: f.Namespace.Name,
-		},
-		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			TargetRef: targetRef,
-			UpdatePolicy: &vpa_types.PodUpdatePolicy{
-				UpdateMode: &updateMode,
-			},
-			ResourcePolicy: &vpa_types.PodResourcePolicy{
-				ContainerPolicies: []vpa_types.ContainerResourcePolicy{},
-			},
-		},
-	}
+// SetupVPAFor2Containers creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
+func SetupVPAFor2Containers(f *framework.Framework, container1CPU string, container1Memory string, container2CPU string, container2Memory string, targetRef *autoscaling.CrossVersionObjectReference, mode vpa_types.UpdateMode, container1ScalingMode vpa_types.ContainerScalingMode, container2ScalingMode vpa_types.ContainerScalingMode) *vpa_types.VerticalPodAutoscaler {
+	container1Name := GetHamsterContainerNameByIndex(0)
+	container2Name := GetHamsterContainerNameByIndex(1)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(targetRef).
+		WithUpdateMode(mode).
+		WithContainer(container1Name).
+		WithScalingMode(container1Name, container1ScalingMode).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(container1Name).
+				WithTarget(container1CPU, container1Memory).
+				WithLowerBound(container1CPU, container1Memory).
+				WithUpperBound(container1CPU, container1Memory).
+				GetContainerResources()).
+		WithContainer(container2Name).
+		WithScalingMode(container2Name, container2ScalingMode).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(container2Name).
+				WithTarget(container2CPU, container2Memory).
+				WithLowerBound(container2CPU, container2Memory).
+				WithUpperBound(container2CPU, container2Memory).
+				GetContainerResources()).
+		Get()
 
-	if len(recommenders) == 0 {
-		return &vpa
-	}
-
-	vpa.Spec.Recommenders = recommenders
-	return &vpa
+	InstallVPA(f, vpaCRD)
+	return vpaCRD
 }
 
 type patchRecord struct {

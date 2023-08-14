@@ -159,7 +159,7 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	SetupVPAForNHamstersWithMinReplicas(f, 1, "200m", vpa_types.UpdateModeAuto, controller, nil, er)
+	SetupVPA(f, "200m", vpa_types.UpdateModeAuto, controller, "", "", er, "", "", vpa_types.ContainerControlledValuesRequestsAndLimits, nil, v1.ContainerScalingModeAuto)
 
 	return podList
 }
