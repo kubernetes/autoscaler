@@ -319,39 +319,6 @@ func SetupVPA(f *framework.Framework, cpu string, memory string, mode vpa_types.
 	return vpaCRD
 }
 
-// SetupVPAFor2Containers creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
-func SetupVPAFor2Containers(f *framework.Framework, container1CPU string, container1Memory string, container2CPU string, container2Memory string, targetRef *autoscaling.CrossVersionObjectReference, mode vpa_types.UpdateMode, container1ScalingMode vpa_types.ContainerScalingMode, container2ScalingMode vpa_types.ContainerScalingMode) *vpa_types.VerticalPodAutoscaler {
-	container1Name := GetHamsterContainerNameByIndex(0)
-	container2Name := GetHamsterContainerNameByIndex(1)
-	vpaCRD := test.VerticalPodAutoscaler().
-		WithName("hamster-vpa").
-		WithNamespace(f.Namespace.Name).
-		WithTargetRef(targetRef).
-		WithUpdateMode(mode).
-		WithContainer(container1Name).
-		WithScalingMode(container1Name, container1ScalingMode).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(container1Name).
-				WithTarget(container1CPU, container1Memory).
-				WithLowerBound(container1CPU, container1Memory).
-				WithUpperBound(container1CPU, container1Memory).
-				GetContainerResources()).
-		WithContainer(container2Name).
-		WithScalingMode(container2Name, container2ScalingMode).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(container2Name).
-				WithTarget(container2CPU, container2Memory).
-				WithLowerBound(container2CPU, container2Memory).
-				WithUpperBound(container2CPU, container2Memory).
-				GetContainerResources()).
-		Get()
-
-	InstallVPA(f, vpaCRD)
-	return vpaCRD
-}
-
 type patchRecord struct {
 	Op    string      `json:"op,inline"`
 	Path  string      `json:"path,inline"`

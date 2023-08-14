@@ -19,6 +19,7 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -265,7 +266,31 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		podList := startDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		SetupVPAFor2Containers(f, "200m", "", "200m", "", hamsterTargetRef, vpa_types.UpdateModeAuto, vpa_types.ContainerScalingModeAuto, vpa_types.ContainerScalingModeAuto)
+		container1Name := GetHamsterContainerNameByIndex(0)
+		container2Name := GetHamsterContainerNameByIndex(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithTarget("200m", "").
+					WithLowerBound("200m", "").
+					WithUpperBound("200m", "").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithTarget("200m", "").
+					WithLowerBound("200m", "").
+					WithUpperBound("200m", "").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		// Max CPU limit is 600m per pod, 300m per container and ratio is 3., so max request is 100m,
 		// while recommendation is 200m
@@ -282,11 +307,35 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
 			ParseQuantityOrDie("300m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
-		d.Spec.Template.Spec.Containers[1].Name = "hamster2"
+		container2Name := "hamster2"
+		d.Spec.Template.Spec.Containers[1].Name = container2Name
 		podList := startDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		SetupVPAFor2Containers(f, "50m", "", "50m", "", hamsterTargetRef, vpa_types.UpdateModeAuto, vpa_types.ContainerScalingModeAuto, vpa_types.ContainerScalingModeAuto)
+		container1Name := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithTarget("50m", "").
+					WithLowerBound("50m", "").
+					WithUpperBound("50m", "").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithTarget("50m", "").
+					WithLowerBound("50m", "").
+					WithUpperBound("50m", "").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		// Min CPU from limit range is 200m per pod, 100m per container and ratio is 3. Min applies both
 		// to limit and request so min request is 100m request and 300m limit
@@ -327,7 +376,31 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		defer webhookCleanup()
 
 		ginkgo.By("Setting up a hamster vpa")
-		SetupVPAFor2Containers(f, "100m", "", "5000m", "", hamsterTargetRef, vpa_types.UpdateModeAuto, vpa_types.ContainerScalingModeAuto, vpa_types.ContainerScalingModeAuto)
+		container1Name := GetHamsterContainerNameByIndex(0)
+		container2Name := GetHamsterContainerNameByIndex(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithTarget("100m", "").
+					WithLowerBound("100m", "").
+					WithUpperBound("100m", "").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithTarget("5000m", "").
+					WithLowerBound("5000m", "").
+					WithUpperBound("5000m", "").
+					GetContainerResources()).
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
 

@@ -19,6 +19,7 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"strings"
 	"time"
 
@@ -313,8 +314,19 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
 		_ = startDeploymentPods(f, d)
+
 		ginkgo.By("Setting up VPA CRD")
-		vpaCRD := SetupVPAFor2Containers(f, "", "", "", "", hamsterTargetRef, vpa_types.UpdateModeAuto, vpa_types.ContainerScalingModeAuto, vpa_types.ContainerScalingModeAuto)
+		container1Name := GetHamsterContainerNameByIndex(0)
+		container2Name := GetHamsterContainerNameByIndex(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(container1Name).
+			WithContainer(container2Name).
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled for both containers")
 		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
@@ -326,7 +338,21 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
 		_ = startDeploymentPods(f, d)
-		vpaCRD := SetupVPAFor2Containers(f, "", "", "", "", hamsterTargetRef, vpa_types.UpdateModeAuto, vpa_types.ContainerScalingModeOff, vpa_types.ContainerScalingModeAuto)
+
+		ginkgo.By("Setting up VPA CRD")
+		container1Name := GetHamsterContainerNameByIndex(0)
+		container2Name := GetHamsterContainerNameByIndex(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(container1Name).
+			WithScalingMode(container1Name, vpa_types.ContainerScalingModeOff).
+			WithContainer(container2Name).
+			Get()
+
+		InstallVPA(f, vpaCRD)
+
 		ginkgo.By("Waiting for recommendation to be filled for just one container")
 		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
