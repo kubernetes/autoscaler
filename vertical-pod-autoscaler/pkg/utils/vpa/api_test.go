@@ -119,8 +119,8 @@ func TestPodMatchesVPA(t *testing.T) {
 	vpaBuilder := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G")
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G")
 
 	vpa := vpaBuilder.Get()
 	otherNamespaceVPA := vpaBuilder.WithNamespace("other").Get()
@@ -143,8 +143,8 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	vpaBuilder := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G")
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G")
 	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
 	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
 	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).Get()
