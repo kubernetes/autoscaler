@@ -63,18 +63,19 @@ func newManager() (*hetznerManager, error) {
 		return nil, errors.New("`HCLOUD_TOKEN` is not specified")
 	}
 
-	cloudInitBase64 := os.Getenv("HCLOUD_CLOUD_INIT")
-	if cloudInitBase64 == "" {
-		return nil, errors.New("`HCLOUD_CLOUD_INIT` is not specified")
-	}
-
 	client := hcloud.NewClient(
 		hcloud.WithToken(token),
 		hcloud.WithHTTPClient(httpClient),
 		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
+		hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, 500*time.Millisecond)),
 	)
 
 	ctx := context.Background()
+
+	cloudInitBase64 := os.Getenv("HCLOUD_CLOUD_INIT")
+	if cloudInitBase64 == "" {
+		return nil, errors.New("`HCLOUD_CLOUD_INIT` is not specified")
+	}
 	cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
