@@ -19,6 +19,7 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"time"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -159,7 +160,23 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	SetupVPA(f, "200m", vpa_types.UpdateModeAuto, controller, "", "", er, "", "", vpa_types.ContainerControlledValuesRequestsAndLimits, nil, v1.ContainerScalingModeAuto)
+	containerName := GetHamsterContainerNameByIndex(0)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(controller).
+		WithEvictionRequirements(er).
+		WithContainer(containerName).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget(containerName, "200m").
+				WithLowerBound(containerName, "200m").
+				WithUpperBound(containerName, "200m").
+				GetContainerResources()).
+		Get()
+
+	InstallVPA(f, vpaCRD)
 
 	return podList
 }

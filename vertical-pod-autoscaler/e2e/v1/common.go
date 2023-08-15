@@ -36,7 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -289,34 +288,6 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 		Command: []string{"/bin/sh"},
 		Args:    []string{"-c", "while true; do sleep 10 ; done"},
 	}
-}
-
-// SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
-func SetupVPA(f *framework.Framework, cpu string, memory string, mode vpa_types.UpdateMode, minAllowedCPU string, minAllowedMemory string, minReplicas *int32, maxAllowedMemory string, maxAllowedCPU string, er []*vpa_types.EvictionRequirement, controlledValues vpa_types.ContainerControlledValues, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	containerName := GetHamsterContainerNameByIndex(0)
-	vpaCRD := test.VerticalPodAutoscaler().
-		WithName("hamster-vpa").
-		WithNamespace(f.Namespace.Name).
-		WithTargetRef(targetRef).
-		WithMinReplicas(minReplicas).
-		WithEvictionRequirements(er).
-		WithUpdateMode(mode).
-		WithContainer(containerName).
-		WithControlledValues(containerName, controlledValues).
-		WithMinAllowed(containerName, minAllowedCPU, minAllowedMemory).
-		WithMaxAllowed(containerName, maxAllowedCPU, maxAllowedMemory).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(containerName).
-				WithTarget(cpu, memory).
-				WithLowerBound(cpu, memory).
-				WithUpperBound(cpu, memory).
-				GetContainerResources()).
-		Get()
-
-	InstallVPA(f, vpaCRD)
-
-	return vpaCRD
 }
 
 type patchRecord struct {

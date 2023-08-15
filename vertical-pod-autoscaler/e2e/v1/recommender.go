@@ -164,7 +164,16 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			Kind:       "CronJob",
 			Name:       "hamster-cronjob",
 		}
-		vpaCRD := SetupVPA(f, "", "", vpa_types.UpdateModeAuto, "", "", nil, "", "", nil, vpa_types.ContainerControlledValuesRequestsAndLimits, targetRef)
+
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(targetRef).
+			WithContainer(containerName).
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled")
 		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
@@ -191,7 +200,15 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD = SetupVPA(f, "", "", vpa_types.UpdateModeAuto, "", "", nil, "", "", nil, vpa_types.ContainerControlledValuesRequestsAndLimits, hamsterTargetRef)
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		vpaClientSet = getVpaClientSet(f)
 	})
@@ -265,7 +282,17 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	ginkgo.It("respects min allowed recommendation", func() {
 		const minMilliCpu = 10000
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := SetupVPA(f, "", "", vpa_types.UpdateModeAuto, "10000", "", nil, "", "", nil, vpa_types.ContainerControlledValuesRequestsAndLimits, hamsterTargetRef)
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD2 := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithMinAllowed(containerName, "10000", "").
+			Get()
+
+		InstallVPA(f, vpaCRD2)
+		vpaCRD := vpaCRD2
 
 		ginkgo.By("Waiting for recommendation to be filled")
 		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
@@ -282,7 +309,16 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	ginkgo.It("respects max allowed recommendation", func() {
 		const maxMilliCpu = 1
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := SetupVPA(f, "", "", vpa_types.UpdateModeAuto, "", "", nil, "", "1", nil, vpa_types.ContainerControlledValuesRequestsAndLimits, hamsterTargetRef)
+		containerName := GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(hamsterTargetRef).
+			WithContainer(containerName).
+			WithMaxAllowed(containerName, "1", "").
+			Get()
+
+		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled")
 		vpa, err := WaitForUncappedCPURecommendationAbove(vpaClientSet, vpaCRD, maxMilliCpu)
