@@ -65,7 +65,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 		conditions:              []vpa_types.VerticalPodAutoscalerCondition{},
 		minAllowed:              map[string]core.ResourceList{},
 		maxAllowed:              map[string]core.ResourceList{},
-		ControlledValues:        map[string]*vpa_types.ContainerControlledValues{},
+		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
 	}
 }
 
@@ -78,7 +78,7 @@ type verticalPodAutoscalerBuilder struct {
 	creationTimestamp       time.Time
 	minAllowed              map[string]core.ResourceList
 	maxAllowed              map[string]core.ResourceList
-	ControlledValues        map[string]*vpa_types.ContainerControlledValues
+	controlledValues        map[string]*vpa_types.ContainerControlledValues
 	scalingMode             map[string]*vpa_types.ContainerScalingMode
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
@@ -135,7 +135,7 @@ func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(containerName, cpu, memory
 
 func (b *verticalPodAutoscalerBuilder) WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.ControlledValues[containerName] = &mode
+	c.controlledValues[containerName] = &mode
 	return &c
 }
 
@@ -244,7 +244,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			ContainerName:    containerName,
 			MinAllowed:       b.minAllowed[containerName],
 			MaxAllowed:       b.maxAllowed[containerName],
-			ControlledValues: b.ControlledValues[containerName],
+			ControlledValues: b.controlledValues[containerName],
 			Mode:             b.scalingMode[containerName],
 		})
 	}
