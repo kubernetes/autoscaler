@@ -151,6 +151,64 @@ func TestFilterOutSchedulable(t *testing.T) {
 			},
 			nodeMatches: matchesAllNodes,
 		},
+		"different schedule order 1: 12c 12c 6c 6c": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
+				BuildTestNode("node16c_1", 15600, 200000): {},
+				BuildTestNode("node16c_2", 15600, 200000): {},
+				BuildTestNode("node16c_3", 15600, 200000): {},
+			},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod12c_1", 12000, 10),
+				BuildTestPod("pod12c_2", 12000, 10),
+				BuildTestPod("pod6c_1", 6000, 10),
+				BuildTestPod("pod6c_2", 6000, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod12c_1", 12000, 10),
+				BuildTestPod("pod12c_2", 12000, 10),
+				BuildTestPod("pod6c_1", 6000, 10),
+				BuildTestPod("pod6c_2", 6000, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{},
+			nodeMatches:             matchesAllNodes,
+		},
+		"different schedule order 2: 12c 6c 6c": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
+				BuildTestNode("node16c_1", 15600, 200000): {},
+				BuildTestNode("node16c_2", 15600, 200000): {},
+			},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod12c_1", 12000, 10),
+				BuildTestPod("pod6c_1", 6000, 10),
+				BuildTestPod("pod6c_2", 6000, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod12c_1", 12000, 10),
+				BuildTestPod("pod6c_1", 6000, 10),
+				BuildTestPod("pod6c_2", 6000, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{},
+			nodeMatches:             matchesAllNodes,
+		},
+		"different schedule order 3: 6c 6c 12c": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
+				BuildTestNode("node16c_1", 15600, 200000): {},
+				BuildTestNode("node16c_2", 15600, 200000): {},
+			},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod6c_1", 6000, 10),
+				BuildTestPod("pod6c_2", 6000, 10),
+				BuildTestPod("pod12c_1", 12000, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod6c_1", 6000, 10),
+				BuildTestPod("pod6c_2", 6000, 10),
+			},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod12c_1", 12000, 10),
+			},
+			nodeMatches: matchesAllNodes,
+		},
 	}
 
 	for tn, tc := range testCases {
