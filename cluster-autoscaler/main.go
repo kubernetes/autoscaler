@@ -603,7 +603,6 @@ func parseSkipPodLabels() (map[string]string, error) {
 		pair := strings.Split(podLabelPair, "=")
 		if len(pair) != 2 {
 			return nil, fmt.Errorf("incorrect skip-pods-with-label-labels specification: %v", podLabelPair)
-			//klog.Warningf("Invalid label pair: %s", podLabelPair)
 		}
 		skipPodsWithLabels[(pair[0])] = pair[1]
 	}
