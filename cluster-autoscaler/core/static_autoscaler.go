@@ -432,6 +432,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
 
+	// skip pods with labels that should not be considered for scale-up or scale down (e.g. pods that are not managed by CA)
+	unschedulablePodsToHelp = a.skipPodsWithLabels(unschedulablePodsToHelp, a.AutoscalingContext.AutoscalingOptions.SkipPodsWithLabels)
+
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
@@ -728,6 +731,29 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 		} else {
 			klog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
 
+		}
+	}
+	return oldUnschedulablePods
+}
+
+// Don't consider pods with skip labels for scheduling and remove them from unschedulablePods list
+func (a *StaticAutoscaler) skipPodsWithLabels(allUnschedulablePods []*apiv1.Pod, labels map[string]string) []*apiv1.Pod {
+	var oldUnschedulablePods []*apiv1.Pod
+	for _, pod := range allUnschedulablePods {
+		skipPod := false
+		podLabels := pod.ObjectMeta.Labels
+		if podLabels != nil {
+			for key, value := range podLabels {
+				if _, ok := labels[key]; ok {
+					if value == labels[key] {
+						skipPod = true
+						break
+					}
+				}
+			}
+		}
+		if !skipPod {
+			oldUnschedulablePods = append(oldUnschedulablePods, pod)
 		}
 	}
 	return oldUnschedulablePods

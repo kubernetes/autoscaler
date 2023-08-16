@@ -187,11 +187,12 @@ var (
 	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
 
-	emitPerNodeGroupMetrics  = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
-	debuggingSnapshotEnabled = flag.Bool("debugging-snapshot-enabled", false, "Whether the debugging snapshot of cluster autoscaler feature is enabled")
-	nodeInfoCacheExpireTime  = flag.Duration("node-info-cache-expire-time", 87600*time.Hour, "Node Info cache expire time for each item. Default value is 10 years.")
-	maxNodesPerScaleUp                 = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
-	maxNodeGroupBinpackingDuration     = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
+	emitPerNodeGroupMetrics        = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
+	debuggingSnapshotEnabled       = flag.Bool("debugging-snapshot-enabled", false, "Whether the debugging snapshot of cluster autoscaler feature is enabled")
+	nodeInfoCacheExpireTime        = flag.Duration("node-info-cache-expire-time", 87600*time.Hour, "Node Info cache expire time for each item. Default value is 10 years.")
+	maxNodesPerScaleUp             = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
+	maxNodeGroupBinpackingDuration = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
+	skipPodsWithLabel              = multiStringFlag("skip-pods-with-label-labels", "If set, CA will skip pods with this label when calculating resource utilization for scaling down. Format: <key>=<value> ")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -208,6 +209,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	maxMemoryTotal = maxMemoryTotal * units.GiB
 
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
+	if err != nil {
+		klog.Fatalf("Failed to parse flags: %v", err)
+	}
+
+	parseSkipPodsLabels, err := parseSkipPodLabels()
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
@@ -273,6 +279,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		UserAgent:                          *userAgent,
 		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,
 		MaxNodeGroupBinpackingDuration:     *maxNodeGroupBinpackingDuration,
+		SkipPodsWithLabels:                 parseSkipPodsLabels,
 	}
 }
 
@@ -583,4 +590,23 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+func parseSkipPodLabels() (map[string]string, error) {
+	skipPodsWithLabels := make(map[string]string)
+
+	for _, podLabelPair := range *skipPodsWithLabel {
+		if len(podLabelPair) == 0 {
+			return nil, fmt.Errorf("incorrect skip-pods-with-label-labels specification: %v", podLabelPair)
+		}
+
+		pair := strings.Split(podLabelPair, "=")
+		if len(pair) != 2 {
+			return nil, fmt.Errorf("incorrect skip-pods-with-label-labels specification: %v", podLabelPair)
+			//klog.Warningf("Invalid label pair: %s", podLabelPair)
+		}
+		skipPodsWithLabels[(pair[0])] = pair[1]
+	}
+
+	return skipPodsWithLabels, nil
 }

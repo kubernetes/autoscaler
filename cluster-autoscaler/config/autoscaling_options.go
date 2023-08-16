@@ -176,4 +176,6 @@ type AutoscalingOptions struct {
 	// MaxNodeGroupBinpackingDuration is a maximum time that can be spent binpacking a single NodeGroup. If the threshold
 	// is exceeded binpacking will be cut short and a partial scale-up will be performed.
 	MaxNodeGroupBinpackingDuration time.Duration
+	// Skipping pods with labels
+	SkipPodsWithLabels map[string]string
 }
