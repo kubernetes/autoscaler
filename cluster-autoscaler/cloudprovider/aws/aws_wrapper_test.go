@@ -731,6 +731,7 @@ func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
 
 	result, err := awsWrapper.getInstanceTypeFromInstanceRequirements("123", requirements)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unable to get instance types from requirements")
+	exp := fmt.Errorf("no instance types found for requirements")
+	assert.EqualError(t, err, exp.Error())
 	assert.Equal(t, "", result)
 }
