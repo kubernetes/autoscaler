@@ -334,10 +334,13 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 		return !isLastPage
 	})
 	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
-	if err != nil || len(instanceTypes) == 0 {
-		return "", fmt.Errorf("unable to get instance types from requirements")
+	if err != nil {
+		return "", fmt.Errorf("unable to get instance types from requirements: %w", err)
 	}
 
+	if len(instanceTypes) == 0 {
+		return "", fmt.Errorf("no instance types found for requirements")
+	}
 	return instanceTypes[0], nil
 }
 
