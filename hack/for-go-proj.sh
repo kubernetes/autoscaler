@@ -19,7 +19,7 @@ set -o pipefail
 set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
-PROJECT_NAMES=(addon-resizer cluster-autoscaler vertical-pod-autoscaler)
+PROJECT_NAMES=(vertical-pod-autoscaler)
 
 if [[ $# -ne 1 ]]; then
   echo "missing subcommand: [build|install|test]"

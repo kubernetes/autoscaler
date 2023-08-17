@@ -38,7 +38,7 @@ jobs:
         env:
           GO111MODULE: auto
 
-      - name: Test
+      - name: Test Vertical pod autoscaler
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
         run: hack/for-go-proj.sh test
         env:
