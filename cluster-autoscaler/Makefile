@@ -116,9 +116,10 @@ start:
 	@GO111MODULE=on go run main.go \
 			--kubeconfig=$(TARGET_KUBECONFIG) \
 			--cloud-provider=mcm \
-			--nodes=1:2:$(MACHINE_DEPLOYMENT_ZONE_1) \
-			--nodes=0:1:$(MACHINE_DEPLOYMENT_ZONE_2) \
-			--nodes=0:1:$(MACHINE_DEPLOYMENT_ZONE_3) \
+			--nodes=0:2:$(MACHINE_DEPLOYMENT_1_ZONE_1) \
+			--nodes=1:2:$(MACHINE_DEPLOYMENT_2_ZONE_1) \
+			--nodes=0:1:$(MACHINE_DEPLOYMENT_2_ZONE_2) \
+			--nodes=0:1:$(MACHINE_DEPLOYMENT_2_ZONE_3) \
 			--skip-nodes-with-system-pods=false \
 			--skip-nodes-with-local-storage=false \
 			--scale-down-delay-after-add=10s \
@@ -147,7 +148,7 @@ download-kubeconfigs:
 	read SHOOT; \
 	echo "enter cluster provider(gcp|aws|azure|vsphere|openstack|alicloud|metal|equinix-metal)"; \
 	read PROVIDER; \
-	echo "enter zone with zero nodes where the PV needs to be created to perform test"; \
+	echo "enter zone with zero nodes in worker pool \"three-zones\" where the PV needs to be created to perform test"; \
 	read ZONE; \
 	. ./hack/local_setup.sh --SEED $$SEED --SHOOT $$SHOOT --PROJECT $$PROJECT; \
 	echo "###############################################" ; \

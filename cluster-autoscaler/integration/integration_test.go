@@ -3,14 +3,14 @@ package integration
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"regexp"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
+	"os"
+	"regexp"
+	"strings"
 )
 
 var (
@@ -45,6 +45,12 @@ func (driver *Driver) afterEachCheck(fn func()) {
 func removeWorkload() {
 	if flag {
 		Expect(driver.deleteWorkload()).To(BeNil())
+		By("Checking that number of Ready nodes is equal to initial")
+		Eventually(
+			driver.targetCluster.getNumberOfReadyNodes,
+			pollingTimeout,
+			pollingInterval).
+			Should(BeNumerically("==", initialNumberOfNodes))
 	}
 	flag = false
 }
@@ -92,7 +98,7 @@ func (driver *Driver) controllerTests() {
 			It("should not lead to any errors and add 1 more node in target cluster", func() {
 
 				By("Deploying workload...")
-				Expect(driver.deployWorkload(1, scaleUpWorkload, false)).To(BeNil())
+				Expect(driver.deployWorkload(1, scaleUpWorkload, workerWithThreeZones, false)).To(BeNil())
 
 				By("Validating Scale up")
 				Eventually(
@@ -138,7 +144,7 @@ func (driver *Driver) controllerTests() {
 		Context("by adding annotation and then scaling the workload to zero", func() {
 			It("should not scale down the extra node and should log correspondingly", func() {
 				By("adding the annotation after deploy workload to 1")
-				Expect(driver.deployWorkload(1, scaleUpWorkload, false)).To(BeNil())
+				Expect(driver.deployWorkload(1, scaleUpWorkload, workerWithThreeZones, false)).To(BeNil())
 				By("Validating Scale up")
 				Eventually(
 					driver.targetCluster.getNumberOfReadyNodes,
@@ -184,7 +190,7 @@ func (driver *Driver) controllerTests() {
 		Context("by increasing the workload to above max", func() {
 			It("shouldn't scale beyond max number of workers", func() {
 				By("Deploying workload with replicas = max+4")
-				Expect(driver.deployWorkload(int32(maxNodes+4), scaleUpWorkload, false)).To(BeNil())
+				Expect(driver.deployWorkload(int32(maxNodes+4), scaleUpWorkload, workerWithThreeZones, false)).To(BeNil())
 				By("Validating Scale up")
 				Eventually(
 					driver.targetCluster.getNumberOfReadyNodes,
@@ -218,7 +224,7 @@ func (driver *Driver) controllerTests() {
 				driver.addTaintsToNode(latestNode, map[string]bool{disabledTaint: true})
 
 				By("Increasing the workload")
-				Expect(driver.deploySmallWorkload(1, scaleUpWorkload, true)).To(BeNil())
+				Expect(driver.deploySmallWorkload(1, scaleUpWorkload, workerWithThreeZones, true)).To(BeNil())
 
 				By("Validating Scale up")
 				Eventually(
@@ -302,14 +308,6 @@ func (driver *Driver) controllerTests() {
 					fmt.Printf("Deployment Create API error: %v", err)
 				}
 
-				defer func() {
-					By("Removing deployment created earlier")
-					err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Delete(context.Background(), deploymentName, metav1.DeleteOptions{})
-					if err != nil {
-						fmt.Printf("Deployment Delete API error: %v", err)
-					}
-				}()
-
 				By("Validation scale up to +1 in a new Zone")
 				Eventually(
 					driver.targetCluster.getNumberOfReadyNodes,
@@ -324,13 +322,75 @@ func (driver *Driver) controllerTests() {
 		Context("create a pod requiring more resources than a single machine can provide", func() {
 			It("shouldn't scale up and log the error", func() {
 				By("Deploying the workload")
-				Expect(driver.deployLargeWorkload(1, scaleUpWorkload, false)).To(BeNil())
+				Expect(driver.deployLargeWorkload(1, scaleUpWorkload, workerWithThreeZones, false)).To(BeNil())
 				By("checking that scale up didn't trigger because of no machine satisfying the requirement")
 				skippedRegexp, _ := regexp.Compile("Pod large-scale-up-pod-.* can't be scheduled on .*, predicate checking error: Insufficient cpu; predicateName=NodeResourcesFit; reasons: Insufficient cpu;")
 				Eventually(func() bool {
 					data, _ := ioutil.ReadFile(CALogFile)
 					return skippedRegexp.Match(data)
 				}, pollingTimeout, pollingInterval).Should(BeTrue())
+				flag = true
+			})
+		})
+	})
+	Describe("testing targeted scale-down done using priority annotation", func() {
+		Context("when more than one machines have priority 1 in the same nodegrp", func() {
+			It("should scale-down correct node and reset priorities of the rest to 3", func() {
+				By("Deploying a workload A")
+				Expect(driver.deployWorkload(int32(1), scaleUpWorkload+"-a", workerWithOneZone, false)).To(BeNil())
+				By("Validating Scale up, node A should join soon")
+				Eventually(
+					driver.targetCluster.getNumberOfReadyNodes,
+					pollingTimeout,
+					pollingInterval).
+					Should(BeNumerically("==", initialNumberOfNodes+1))
+
+				By("Setting priority annotation with value 1 on the machine obj for node A")
+				mcdList, err := driver.controlCluster.MCMClient.MachineV1alpha1().MachineDeployments(controlClusterNamespace).List(context.TODO(), metav1.ListOptions{})
+				Expect(err).To(BeNil())
+
+				var mcdName string
+				for _, mcd := range mcdList.Items {
+					if strings.Contains(mcd.Name, workerWithOneZone) {
+						mcdName = mcd.Name
+						break
+					}
+				}
+
+				mcList, err := driver.controlCluster.MCMClient.MachineV1alpha1().Machines(controlClusterNamespace).List(context.TODO(), metav1.ListOptions{
+					LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{mcdNameLabel: mcdName}})})
+				Expect(err).To(BeNil())
+
+				clone := mcList.Items[0].DeepCopy()
+				clone.Annotations[mcmPriorityAnnotation] = "1"
+				_, err = driver.controlCluster.MCMClient.MachineV1alpha1().Machines(controlClusterNamespace).Update(context.TODO(), clone, metav1.UpdateOptions{})
+				Expect(err).To(BeNil())
+
+				By("Deploying another workload B")
+				Expect(driver.deployWorkload(int32(1), scaleUpWorkload+"-b", workerWithOneZone, false)).To(BeNil())
+				By("Validating Scale up, node B should join soon")
+				Eventually(
+					driver.targetCluster.getNumberOfReadyNodes,
+					pollingTimeout,
+					pollingInterval).
+					Should(BeNumerically("==", initialNumberOfNodes+2))
+
+				By("Scaling down workload B to zero...")
+				Expect(driver.scaleWorkload(scaleUpWorkload+"-b", 0)).To(BeNil())
+
+				By("Validating Scale down due to under-utilization")
+				Eventually(
+					driver.targetCluster.getNumberOfReadyNodes,
+					pollingTimeout,
+					pollingInterval).
+					Should(BeNumerically("==", initialNumberOfNodes+1))
+
+				By("Checking that the node A is not removed and it's priority is set to 3")
+				mc, err := driver.controlCluster.MCMClient.MachineV1alpha1().Machines(controlClusterNamespace).Get(context.TODO(), clone.Name, metav1.GetOptions{})
+				Expect(err).Should(BeNil())
+				Expect(mc.Annotations[mcmPriorityAnnotation]).To(Equal("3"))
+
+				// For AfterCheck function to clean up the workload, set flag as true
 				flag = true
 			})
 		})

@@ -25,14 +25,18 @@ import (
 )
 
 const (
-	// annotaion which makes dwd skip the scaling of component
+	// dwdAnnotation annotation which makes dwd skip the scaling of component
 	dwdAnnotation string = "dependency-watchdog.gardener.cloud/ignore-scaling"
-	// annotaion to skip the scaling down of exrta/unused node.
-	ignoreScaledownAnnotation string = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
-
-	pollingTimeout       = 300 * time.Second
-	pollingInterval      = 2 * time.Second
-	initialNumberOfNodes = 1
+	// ignoreScaleDownAnnotation is the annotation to skip the scaling down of extra/unused node.
+	ignoreScaleDownAnnotation string = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
+	mcmPriorityAnnotation            = "machinepriority.machine.sapcloud.io"
+	mcdNameLabel                     = "name"
+	workerLabelKey                   = "worker.garden.sapcloud.io/group"
+	workerWithOneZone                = "one-zone"
+	workerWithThreeZones             = "three-zones"
+	pollingTimeout                   = 300 * time.Second
+	pollingInterval                  = 2 * time.Second
+	initialNumberOfNodes             = 1
 )
 
 var (
@@ -101,14 +105,15 @@ func (driver *Driver) adjustNodeGroups() error {
 		return err
 	}
 
-	for index, machineDeployment := range machineDeployments.Items {
+	isFirstMDOfWorkerWithThreeZones := true
+	for _, machineDeployment := range machineDeployments.Items {
 		scaleDownMachineDeployment := machineDeployment.DeepCopy()
-		if index > 0 && machineDeployment.Spec.Replicas != 0 {
-			scaleDownMachineDeployment.Spec.Replicas = 0
-		} else if index == 0 && machineDeployment.Spec.Replicas > 1 {
+		if strings.Contains(machineDeployment.Name, workerWithThreeZones) && isFirstMDOfWorkerWithThreeZones {
+			isFirstMDOfWorkerWithThreeZones = false
 			scaleDownMachineDeployment.Spec.Replicas = 1
+		} else {
+			scaleDownMachineDeployment.Spec.Replicas = 0
 		}
-
 		_, err := driver.controlCluster.MCMClient.MachineV1alpha1().MachineDeployments(controlClusterNamespace).Update(context.Background(), scaleDownMachineDeployment, metav1.UpdateOptions{})
 		if err != nil {
 			return err
@@ -176,7 +181,7 @@ func (driver *Driver) runAutoscaler() {
 		return
 	}
 
-	if len(machineDeployments.Items) > 3 {
+	if len(machineDeployments.Items) > 4 {
 		fmt.Printf("Cluster node group configuration is improper. Setup Before Suite might not have successfully run. Please check!")
 		return
 	}
@@ -184,12 +189,13 @@ func (driver *Driver) runAutoscaler() {
 	gin.By("Starting Cluster Autoscaler....")
 	args := strings.Fields(
 		fmt.Sprintf(
-			"make --directory=%s start TARGET_KUBECONFIG=%s MACHINE_DEPLOYMENT_ZONE_1=%s MACHINE_DEPLOYMENT_ZONE_2=%s MACHINE_DEPLOYMENT_ZONE_3=%s LEADER_ELECT=%s",
+			"make --directory=%s start TARGET_KUBECONFIG=%s MACHINE_DEPLOYMENT_1_ZONE_1=%s MACHINE_DEPLOYMENT_2_ZONE_1=%s MACHINE_DEPLOYMENT_2_ZONE_2=%s MACHINE_DEPLOYMENT_2_ZONE_3=%s LEADER_ELECT=%s",
 			"../",
 			driver.targetCluster.KubeConfigFilePath,
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[0].Name),
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[1].Name),
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[2].Name),
+			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[3].Name),
 			"false",
 		),
 	)
@@ -323,7 +329,7 @@ func getDeploymentObjectWithVolumeReq(deploymentName string, claimName string) *
 	return deployment
 }
 
-func getDeploymentObject(replicas int32, resourceCPU resource.Quantity, resourceMemory resource.Quantity, workloadName string, tolerations []v1.Toleration) *appv1.Deployment {
+func getDeploymentObject(replicas int32, resourceCPU resource.Quantity, resourceMemory resource.Quantity, workloadName, workerName string, tolerations []v1.Toleration) *appv1.Deployment {
 	deployment := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      workloadName,
@@ -360,7 +366,8 @@ func getDeploymentObject(replicas int32, resourceCPU resource.Quantity, resource
 							},
 						},
 					},
-					Tolerations: tolerations,
+					Tolerations:  tolerations,
+					NodeSelector: map[string]string{workerLabelKey: workerName},
 				},
 			},
 		},
@@ -368,16 +375,16 @@ func getDeploymentObject(replicas int32, resourceCPU resource.Quantity, resource
 	return deployment
 }
 
-func (driver *Driver) deployWorkload(replicas int32, workloadName string, canTolerateTaintPlacedOnInitialNodes bool) error {
+func (driver *Driver) deployWorkload(replicas int32, workloadName, workerName string, canTolerateTaintPlacedOnInitialNodes bool) error {
 	// TODO(himanshu-kun): Remove such a dependency on approximating system components space . This changes over time.
 	assumedSystemComponentsUsedSpace := *resource.NewMilliQuantity(1000, resource.DecimalSI)
 	approxCPURequested := cpuResource.DeepCopy()
 	approxCPURequested.Sub(assumedSystemComponentsUsedSpace)
 	var deployment *appv1.Deployment
 	if canTolerateTaintPlacedOnInitialNodes {
-		deployment = getDeploymentObject(replicas, approxCPURequested, mediumMemory, workloadName, tolerationsToInitialNodeTaint)
+		deployment = getDeploymentObject(replicas, approxCPURequested, mediumMemory, workloadName, workerName, tolerationsToInitialNodeTaint)
 	} else {
-		deployment = getDeploymentObject(replicas, approxCPURequested, mediumMemory, workloadName, nil)
+		deployment = getDeploymentObject(replicas, approxCPURequested, mediumMemory, workloadName, workerName, nil)
 	}
 	_, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
@@ -386,16 +393,16 @@ func (driver *Driver) deployWorkload(replicas int32, workloadName string, canTol
 	return nil
 }
 
-func (driver *Driver) deployLargeWorkload(replicas int32, workloadName string, canTolerateTaintPlacedOnInitialNodes bool) error {
+func (driver *Driver) deployLargeWorkload(replicas int32, workloadName, workerName string, canTolerateTaintPlacedOnInitialNodes bool) error {
 	// TODO(himanshu-kun): Remove such an approximation
 	extraCPURequest := *resource.NewMilliQuantity(1000, resource.DecimalSI)
 	cpuRequested := cpuResource.DeepCopy()
 	cpuRequested.Add(extraCPURequest)
 	var deployment *appv1.Deployment
 	if canTolerateTaintPlacedOnInitialNodes {
-		deployment = getDeploymentObject(replicas, cpuRequested, largeMemory, "large-"+workloadName, tolerationsToInitialNodeTaint)
+		deployment = getDeploymentObject(replicas, cpuRequested, largeMemory, "large-"+workloadName, workerName, tolerationsToInitialNodeTaint)
 	} else {
-		deployment = getDeploymentObject(replicas, cpuRequested, largeMemory, "large-"+workloadName, nil)
+		deployment = getDeploymentObject(replicas, cpuRequested, largeMemory, "large-"+workloadName, workerName, nil)
 	}
 	_, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
@@ -404,12 +411,12 @@ func (driver *Driver) deployLargeWorkload(replicas int32, workloadName string, c
 	return nil
 }
 
-func (driver *Driver) deploySmallWorkload(replicas int32, workloadName string, canTolerateTaintPlacedOnInitialNodes bool) error {
+func (driver *Driver) deploySmallWorkload(replicas int32, workloadName, workerName string, canTolerateTaintPlacedOnInitialNodes bool) error {
 	var deployment *appv1.Deployment
 	if canTolerateTaintPlacedOnInitialNodes {
-		deployment = getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName, tolerationsToInitialNodeTaint)
+		deployment = getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName, workerName, tolerationsToInitialNodeTaint)
 	} else {
-		deployment = getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName, nil)
+		deployment = getDeploymentObject(replicas, smallCPU, smallMemory, "small-"+workloadName, workerName, nil)
 	}
 	_, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Create(context.Background(), deployment, metav1.CreateOptions{})
 	if err != nil {
@@ -453,7 +460,7 @@ func (driver *Driver) getOldestAndLatestNode() (*v1.Node, *v1.Node, error) {
 }
 
 func (driver *Driver) addAnnotationToNode(node *v1.Node) error {
-	node.ObjectMeta.Annotations[ignoreScaledownAnnotation] = "true"
+	node.ObjectMeta.Annotations[ignoreScaleDownAnnotation] = "true"
 	_, err := driver.targetCluster.Clientset.CoreV1().Nodes().Update(context.Background(), node, metav1.UpdateOptions{})
 	if err != nil {
 		return err
@@ -462,7 +469,7 @@ func (driver *Driver) addAnnotationToNode(node *v1.Node) error {
 }
 
 func (driver *Driver) removeAnnotationFromNode(node *v1.Node) error {
-	delete(node.ObjectMeta.Annotations, ignoreScaledownAnnotation)
+	delete(node.ObjectMeta.Annotations, ignoreScaleDownAnnotation)
 	_, err := driver.targetCluster.Clientset.CoreV1().Nodes().Update(context.Background(), node, metav1.UpdateOptions{})
 	if err != nil {
 		return err
@@ -511,7 +518,7 @@ func (driver *Driver) removeTaintsFromNode(node *v1.Node, failIfCriticalAddonsOn
 		return nil
 	}
 
-	gin.By(fmt.Sprintf("Remove taint(s) from node %s", node.Name))
+	gin.By(fmt.Sprintf("Removing taint(s) from node %s", node.Name))
 	for j := 0; j < 3; j++ {
 		freshNode, err := driver.targetCluster.Clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if err != nil {

@@ -55,9 +55,15 @@ for project_name in ${PROJECT_NAMES[*]}; do
     case "${CMD}" in
       "test")
         if [[ -n $(find . -name "Godeps.json") ]]; then
-          godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/integration)
+          godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/integration | grep -v cluster-autoscaler/cloudprovider)
+          if [[ $project_name == cluster-autoscaler ]];then
+            godep go test -race $(go list ./... | grep cluster-autoscaler/cloudprovider/mcm)
+          fi
         else
-          go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/integration)
+          go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v cluster-autoscaler/integration | grep -v cluster-autoscaler/cloudprovider)
+          if [[ $project_name == cluster-autoscaler ]];then
+            go test -race $(go list ./... | grep cluster-autoscaler/cloudprovider/mcm)
+          fi
         fi
         ;;
       *)

@@ -22,15 +22,15 @@ Modifications Copyright (c) 2017 SAP SE or an SAP affiliate company. All rights 
 package mcm
 
 import (
+	"context"
 	"fmt"
-	"strings"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -194,7 +194,13 @@ func (mcm *mcmCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimite
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (mcm *mcmCloudProvider) Refresh() error {
-	// If we don't need to check between every reconcile, we will have return nil here
+	for _, machineDeployment := range mcm.machinedeployments {
+		err := mcm.mcmManager.resetPriorityForNotToBeDeletedMachines(machineDeployment.Name)
+		if err != nil {
+			klog.Errorf("failed to reset priority for machines in MachineDeployment %s, err: %v", machineDeployment.Name, err.Error())
+			return err
+		}
+	}
 	return nil
 }
 
@@ -312,10 +318,13 @@ func (machinedeployment *MachineDeployment) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	if int(size)+delta > machinedeployment.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, machinedeployment.MaxSize())
+	targetSize := int(size) + delta
+	if targetSize > machinedeployment.MaxSize() {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", targetSize, machinedeployment.MaxSize())
 	}
-	return machinedeployment.mcmManager.SetMachineDeploymentSize(machinedeployment, size+int64(delta))
+	return machinedeployment.mcmManager.retry(func(ctx context.Context) (bool, error) {
+		return machinedeployment.mcmManager.SetMachineDeploymentSize(ctx, machinedeployment, int64(targetSize))
+	}, "MachineDeployment", "update", machinedeployment.Name)
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
@@ -331,11 +340,14 @@ func (machinedeployment *MachineDeployment) DecreaseTargetSize(delta int) error 
 	if err != nil {
 		return err
 	}
-	if int(size)+delta < machinedeployment.minSize {
+	decreaseAmount := int(size) + delta
+	if decreaseAmount < machinedeployment.minSize {
 		klog.Warningf("Cannot go below min size= %d for machineDeployment %s, requested target size= %d . Setting target size to min size", machinedeployment.minSize, machinedeployment.Name, size+int64(delta))
-		return machinedeployment.mcmManager.SetMachineDeploymentSize(machinedeployment, int64(machinedeployment.minSize))
+		decreaseAmount = machinedeployment.minSize
 	}
-	return machinedeployment.mcmManager.SetMachineDeploymentSize(machinedeployment, size+int64(delta))
+	return machinedeployment.mcmManager.retry(func(ctx context.Context) (bool, error) {
+		return machinedeployment.mcmManager.SetMachineDeploymentSize(ctx, machinedeployment, int64(decreaseAmount))
+	}, "MachineDeployment", "update", machinedeployment.Name)
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
@@ -358,7 +370,8 @@ func (machinedeployment *MachineDeployment) Belongs(node *apiv1.Node) (bool, err
 	return true, nil
 }
 
-// DeleteNodes deletes the nodes from the group.
+// DeleteNodes deletes the nodes from the group. It is expected that this method will not be called
+// for nodes not part of ANY machine deployment.
 func (machinedeployment *MachineDeployment) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := machinedeployment.mcmManager.GetMachineDeploymentSize(machinedeployment)
 	if err != nil {
@@ -377,7 +390,7 @@ func (machinedeployment *MachineDeployment) DeleteNodes(nodes []*apiv1.Node) err
 		}
 		ref, err := ReferenceFromProviderID(machinedeployment.mcmManager, node.Spec.ProviderID)
 		if err != nil {
-			return fmt.Errorf("Couldn't find the machine-name from provider-id %s", node.Spec.ProviderID)
+			return fmt.Errorf("couldn't find the machine-name from provider-id %s", node.Spec.ProviderID)
 		}
 		machines = append(machines, ref)
 	}

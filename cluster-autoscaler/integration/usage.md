@@ -3,11 +3,12 @@
 
 1. No user workload to be deployed other than system-components.
 2. All system-components to be able to run on one node
-3. Ideal machine size -> 2 cores CPU, 8Gi memory
-4. 3 machinedeployments/node groups in the cluster should be present, with following min:max limits
-    - machineDeployment1 (1:2)
-    - machineDeployment2 (0:1)
-    - machineDeployment3 (0:1)
+3. Required machine size -> 2 cores CPU, 8Gi memory
+4. 2 worker pools are needed named `one-zone` and `three-zones` respectively. The 4 machinedeployments/node groups in the cluster should be present, with following `min:max` limits
+    - machineDeployment1 (`0:2`) [worker:- `one-zone`]
+    - machineDeployment2 (`1:2`) [worker:- `three-zones`]
+    - machineDeployment3 (`0:1`) [worker:- `three-zones`]
+    - machineDeployment4 (`0:1`) [worker:- `three-zones`]
 5. Make sure to **disable** calico-typha pods as they interfere with Integration test (especially ones related to scale-down due to under-utilization). Refer this [doc](https://github.com/gardener/gardener-extension-networking-calico/blob/master/docs/usage-as-end-user.md#example-networkingconfig-manifest) to disable it. 
 
 ## Cluster Autoscaler integration test suite
@@ -32,7 +33,7 @@ Cluster Autoscaler integration test suite runs a set of tests against an actual 
 	export TARGET_KUBECONFIG=<Path to the kubeconfig file of the Shoot>
 	export CONTROL_KUBECONFIG=<Path to the kubeconfig file of the Seed (or the control plane where the Cluster Autoscaler & Machine deployment objects exists)>
 	export KUBECONFIG=<Path to the kubeconfig file of the Shoot>
-	export VOLUME_ZONE=<zone with zero nodes where the PV needs to be created to perform test>
+	export VOLUME_ZONE=<zone with zero nodes in the worker pool "three-zones" where the PV needs to be created to perform test>
 	export PROVIDER=<aws/gcp/azure/...>
 	```
 	
