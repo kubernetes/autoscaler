@@ -274,4 +274,6 @@ type AutoscalingOptions struct {
 	ParallelDrain bool
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
 	NodeGroupSetRatios NodeGroupDifferenceRatios
+	// Skipping pods with labels
+	SkipPodsWithLabels map[string]string
 }

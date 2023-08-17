@@ -234,6 +234,7 @@ var (
 	maxFreeDifferenceRatio            = flag.Float64("max-free-difference-ratio", config.DefaultMaxFreeDifferenceRatio, "Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource.")
 	maxAllocatableDifferenceRatio     = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
 	forceDaemonSets                   = flag.Bool("force-ds", false, "Blocks scale-up of node groups too small for all suitable Daemon Sets pods.")
+	skipPodsWithLabel                 = multiStringFlag("skip-pods-with-labels", "If set, CA will skip unschedulable pods with these labels for scheduling. Format: <key>=<value> ")
 )
 
 func isFlagPassed(name string) bool {
@@ -284,6 +285,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	}
 	if err != nil {
 		klog.Fatalf("Failed to get scheduler config: %v", err)
+	}
+
+	parseSkipPodsLabels, err := parseSkipPodLabels()
+	if err != nil {
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 
 	return config.AutoscalingOptions{
@@ -379,6 +385,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			MaxAllocatableDifferenceRatio:    *maxAllocatableDifferenceRatio,
 			MaxFreeDifferenceRatio:           *maxFreeDifferenceRatio,
 		},
+		SkipPodsWithLabels: parseSkipPodsLabels,
 	}
 }
 
@@ -718,4 +725,22 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+func parseSkipPodLabels() (map[string]string, error) {
+	skipPodsWithLabels := make(map[string]string)
+
+	for _, podLabelPair := range *skipPodsWithLabel {
+		if len(podLabelPair) == 0 {
+			return nil, fmt.Errorf("incorrect skip-pods-with-labels specification: %v", podLabelPair)
+		}
+
+		pair := strings.Split(podLabelPair, "=")
+		if len(pair) != 2 {
+			return nil, fmt.Errorf("incorrect skip-pods-with-labels specification: %v", podLabelPair)
+		}
+		skipPodsWithLabels[(pair[0])] = pair[1]
+	}
+
+	return skipPodsWithLabels, nil
 }
