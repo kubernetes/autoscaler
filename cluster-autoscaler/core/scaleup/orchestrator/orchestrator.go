@@ -139,7 +139,8 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			continue
 		}
 		if currentTargetSize >= nodeGroup.MaxSize() {
-			klog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
+			//FORK-CHANGE: log level changed to 2 for better debugging.
+			klog.V(2).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
 			skippedNodeGroups[nodeGroup.Id()] = MaxLimitReachedReason
 			continue
 		}

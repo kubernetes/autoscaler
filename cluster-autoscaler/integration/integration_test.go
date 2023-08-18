@@ -86,7 +86,7 @@ func (driver *Driver) cleanup() {
 	driver.removeTaintsFromInitialNodes()
 
 	By("Scaling CA back up to 1 in the Shoot namespace")
-	err := driver.scaleAutoscaler(int32(initialNumberOfNodes))
+	err := driver.scaleAutoscaler(int32(1))
 	if err != nil {
 		fmt.Printf("error scaling up cluster autoscaler deployment in control cluster Shoot namespace: %s", err.Error())
 	}

@@ -40,24 +40,21 @@ done
 CURRENT_DIR=$(pwd)
 PROJECT_ROOT="${CURRENT_DIR}"
 KUBECONFIG_PATH=$PROJECT_ROOT/dev/kubeconfigs
+NAMESPACE=garden-${PROJECT}
+GARDEN_NAMESPACE=garden
 
-#setting kuebconfig of control cluster
+# target garden cluster
 
-gardenctl target --garden sap-landscape-dev --project garden
-
+gardenctl target --garden sap-landscape-dev
 eval $(gardenctl kubectl-env bash)
 
-echo "$(kubectl get secret/$SEED.kubeconfig --template={{.data.kubeconfig}} | base64 -d)" > $KUBECONFIG_PATH/kubeconfig_control.yaml
+#setting kubeconfig of control cluster
 
-#setting up the target config
+echo "$(kubectl create -f $PROJECT_ROOT/hack/kubeconfig-request.json --raw /apis/core.gardener.cloud/v1beta1/namespaces/${GARDEN_NAMESPACE}/shoots/${SEED}/adminkubeconfig | jq -r ".status.kubeconfig" | base64 -d)" >  $KUBECONFIG_PATH/kubeconfig_control.yaml
 
-gardenctl target --garden sap-landscape-dev --project $PROJECT --shoot $SHOOT --control-plane
+#setting kubeconfig of target cluster
 
-eval $(gardenctl kubectl-env bash)
-
-SECRET=$(kubectl get secrets | awk '{ print $1 }' |grep user-kubeconfig-)
-
-echo "$(kubectl get secret/$SECRET -n shoot--$PROJECT--$SHOOT --template={{.data.kubeconfig}} | base64 -d)" > $KUBECONFIG_PATH/kubeconfig_target.yaml
+echo "$(kubectl create -f $PROJECT_ROOT/hack/kubeconfig-request.json --raw /apis/core.gardener.cloud/v1beta1/namespaces/${NAMESPACE}/shoots/${SHOOT}/adminkubeconfig | jq -r ".status.kubeconfig" | base64 -d)" >  $KUBECONFIG_PATH/kubeconfig_target.yaml
 
 # All the kubeconfigs are at place
 

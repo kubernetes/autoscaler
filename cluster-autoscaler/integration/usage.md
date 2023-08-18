@@ -2,14 +2,15 @@
 (Note the prerequisite will be made less restrictive with time.)
 
 1. No user workload to be deployed other than system-components.
-2. All system-components to be able to run on one node
-3. Required machine size -> 2 cores CPU, 8Gi memory
-4. 2 worker pools are needed named `one-zone` and `three-zones` respectively. The 4 machinedeployments/node groups in the cluster should be present, with following `min:max` limits
+2. 1 worker pool for system components named `sys-comp` with `allowSystemComponents` set to `true` and `min=1`, `max>=2`.
+3. Required machine size -> 2 cores CPU, 8Gi memory 
+4. 2 worker pools are needed namely `one-zone` and `three-zones` respectively with `allowSystemComponents` set to `false`. The 4 machinedeployments/node groups in the cluster should be present, with following `min:max` limits
     - machineDeployment1 (`0:2`) [worker:- `one-zone`]
     - machineDeployment2 (`1:2`) [worker:- `three-zones`]
     - machineDeployment3 (`0:1`) [worker:- `three-zones`]
     - machineDeployment4 (`0:1`) [worker:- `three-zones`]
-5. Make sure to **disable** calico-typha pods as they interfere with Integration test (especially ones related to scale-down due to under-utilization). Refer this [doc](https://github.com/gardener/gardener-extension-networking-calico/blob/master/docs/usage-as-end-user.md#example-networkingconfig-manifest) to disable it. 
+5. Make sure that the names of the worker pools are as mentioned above. It is very important for the integration tests to run properly.
+6. Make sure to **disable** calico-typha pods as they interfere with Integration test (especially ones related to scale-down due to under-utilization). Refer this [doc](https://github.com/gardener/gardener-extension-networking-calico/blob/master/docs/usage-as-end-user.md#example-networkingconfig-manifest) to disable it. 
 
 ## Cluster Autoscaler integration test suite
 

@@ -34,9 +34,10 @@ const (
 	workerLabelKey                   = "worker.garden.sapcloud.io/group"
 	workerWithOneZone                = "one-zone"
 	workerWithThreeZones             = "three-zones"
+	workerForSystemComponents        = "sys-comp"
 	pollingTimeout                   = 300 * time.Second
 	pollingInterval                  = 2 * time.Second
-	initialNumberOfNodes             = 1
+	initialNumberOfNodes             = 2
 )
 
 var (
@@ -108,6 +109,9 @@ func (driver *Driver) adjustNodeGroups() error {
 	isFirstMDOfWorkerWithThreeZones := true
 	for _, machineDeployment := range machineDeployments.Items {
 		scaleDownMachineDeployment := machineDeployment.DeepCopy()
+		if strings.Contains(machineDeployment.Name, workerForSystemComponents) {
+			continue
+		}
 		if strings.Contains(machineDeployment.Name, workerWithThreeZones) && isFirstMDOfWorkerWithThreeZones {
 			isFirstMDOfWorkerWithThreeZones = false
 			scaleDownMachineDeployment.Spec.Replicas = 1
@@ -181,7 +185,7 @@ func (driver *Driver) runAutoscaler() {
 		return
 	}
 
-	if len(machineDeployments.Items) > 4 {
+	if len(machineDeployments.Items) != 5 {
 		fmt.Printf("Cluster node group configuration is improper. Setup Before Suite might not have successfully run. Please check!")
 		return
 	}
@@ -193,9 +197,9 @@ func (driver *Driver) runAutoscaler() {
 			"../",
 			driver.targetCluster.KubeConfigFilePath,
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[0].Name),
-			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[1].Name),
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[2].Name),
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[3].Name),
+			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[4].Name),
 			"false",
 		),
 	)
@@ -440,7 +444,9 @@ func (driver *Driver) scaleWorkload(workloadName string, replicas int32) (err er
 }
 
 func (driver *Driver) getOldestAndLatestNode() (*v1.Node, *v1.Node, error) {
-	nodeList, err := driver.targetCluster.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	nodeList, err := driver.targetCluster.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{workerLabelKey: workerWithThreeZones},
+	})})
 	if err != nil {
 		return nil, nil, err
 	}
