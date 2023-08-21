@@ -56,7 +56,7 @@ const (
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
 	// InitFromHistoryProvider loads historical pod spec into clusterState.
-	InitFromHistoryProvider(historyProvider history.HistoryProvider)
+	InitFromHistoryProvider(historyProvider history.HistoryProvider) (historyInitError error)
 
 	// InitFromCheckpoints loads historical checkpoints into clusterState.
 	InitFromCheckpoints()
@@ -194,10 +194,12 @@ type clusterStateFeeder struct {
 	recommenderName     string
 }
 
-func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) (historyInitError error) {
+	historyInitError = nil
 	klog.V(3).Info("Initializing VPA from history provider")
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
+		historyInitError = err
 		klog.Errorf("Cannot get cluster history: %v", err)
 	}
 	for podID, podHistory := range clusterHistory {
@@ -223,6 +225,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
+	return historyInitError
 }
 
 func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {

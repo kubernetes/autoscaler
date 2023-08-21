@@ -71,6 +71,7 @@ var (
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
 	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	requireHistoryInit  = flag.Bool("require-history-init", false, `If true, will fail if the history loading from prometheus failed, the default is to continue without history if the first load attempt failed`)
 )
 
 // Aggregation configuration flags
@@ -185,7 +186,11 @@ func main() {
 		if err != nil {
 			klog.Fatalf("Could not initialize history provider: %v", err)
 		}
-		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
+
+		historyInitErr := recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
+		if (*requireHistoryInit) && (historyInitErr != nil) {
+			klog.Fatalf("Failed to load history withrequireHistoryInit=true, exiting")
+		}
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
