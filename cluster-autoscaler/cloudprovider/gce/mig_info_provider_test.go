@@ -105,6 +105,10 @@ func (client *mockAutoscalingGceClient) FetchReservations() ([]*gce.Reservation,
 	return nil, nil
 }
 
+func (client *mockAutoscalingGceClient) FetchReservationsInProject(_ string) ([]*gce.Reservation, error) {
+	return nil, nil
+}
+
 func (client *mockAutoscalingGceClient) ResizeMig(_ GceRef, _ int64) error {
 	return nil
 }

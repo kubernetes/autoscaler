@@ -87,6 +87,7 @@ type AutoscalingGceClient interface {
 	FetchZones(region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
 	FetchReservations() ([]*gce.Reservation, error)
+	FetchReservationsInProject(projectId string) ([]*gce.Reservation, error)
 
 	// modifying resources
 	ResizeMig(GceRef, int64) error
@@ -550,8 +551,12 @@ func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regex
 }
 
 func (client *autoscalingGceClientV1) FetchReservations() ([]*gce.Reservation, error) {
+	return client.FetchReservationsInProject(client.projectId)
+}
+
+func (client *autoscalingGceClientV1) FetchReservationsInProject(projectId string) ([]*gce.Reservation, error) {
 	reservations := make([]*gce.Reservation, 0)
-	call := client.gceService.Reservations.AggregatedList(client.projectId)
+	call := client.gceService.Reservations.AggregatedList(projectId)
 	err := call.Pages(context.TODO(), func(ls *gce.ReservationAggregatedList) error {
 		for _, items := range ls.Items {
 			reservations = append(reservations, items.Reservations...)
