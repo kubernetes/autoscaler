@@ -185,6 +185,30 @@ There will be also scenarios testing differences between `InPlaceOnly` and `InPl
   equal to limit). In `InPlaceOnly` pod should not be evicted, request slightly lower than the recommendation will be
   applied. In the `InPlaceOrRecreate` pod should be evicted and the recommendation applied.
 
+### Details still to consider
+
+#### Ensure in-place resize request doesn't cause restarts
+
+Currently the container [resize policy](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/#container-resize-policies)
+can be either `NotRequired` or `RestartContainer`. With `NotRequired` in-place update could still end up
+restarting the container if in-place update is not possible, depending on kubelet and container
+runtime implementation. However in the proposed design it should be VPA's decision whether to fall back
+to restarts or not.
+
+Extending or changing the existing API for in-place updates is possible, e.g. adding a new
+`MustNotRestart` container resize policy.
+
+#### Should `InPlaceOnly` mode be dropped
+
+The use case for `InPlaceOnly` is not understood yet. Unless we have a strong signal it solves real
+needs we should not implement it. Also VPA cannot ensure no restart would happen unless
+*Ensure in-place resize request doesn't cause restarts* (see above) is solved.
+
+#### Careful with memory scale down
+
+Downsizing memory may have to be done slowly to prevent OOMs if application starts to allocate rapidly.
+Needs more research on how to scale down on memory safely.
+
 ## Implementation History
 
 - 2023-05-10: initial version
