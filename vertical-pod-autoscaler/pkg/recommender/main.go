@@ -55,7 +55,7 @@ var (
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 
-	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
+	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, none, checkpoint (default)`)
 	// prometheus history provider configs
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
@@ -71,7 +71,6 @@ var (
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
 	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
-	requireHistoryInit  = flag.Bool("require-history-init", false, `If true, will fail if the history loading from prometheus failed, the default is to continue without history if the first load attempt failed`)
 )
 
 // Aggregation configuration flags
@@ -119,7 +118,9 @@ func main() {
 	metrics_recommender.Register()
 	metrics_quality.Register()
 
-	useCheckpoints := *storage != "prometheus"
+	usePrometheus := *storage == "prometheus"
+	useNoStorage := *storage == "none"
+	useCheckpoints := (!usePrometheus) && (!useNoStorage)
 
 	var postProcessors []routines.RecommendationPostProcessor
 	if *postProcessorCPUasInteger {
@@ -161,8 +162,10 @@ func main() {
 	}
 
 	if useCheckpoints {
+		klog.Infof("Using checkpoints as a history provider")
 		recommender.GetClusterStateFeeder().InitFromCheckpoints()
-	} else {
+	} else if usePrometheus {
+		klog.Infof("Using prometheus as a history provider")
 		config := history.PrometheusHistoryProviderConfig{
 			Address:                *prometheusAddress,
 			QueryTimeout:           promQueryTimeout,
@@ -182,15 +185,18 @@ func main() {
 				Password: *password,
 			},
 		}
+
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
 			klog.Fatalf("Could not initialize history provider: %v", err)
 		}
 
 		historyInitErr := recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
-		if (*requireHistoryInit) && (historyInitErr != nil) {
-			klog.Fatalf("Failed to load history withrequireHistoryInit=true, exiting")
+		if historyInitErr != nil {
+			klog.Fatalf("Failed to load prometheus history")
 		}
+	} else {
+		klog.Infof("Running without a history provider")
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
