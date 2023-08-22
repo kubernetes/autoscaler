@@ -1,6 +1,6 @@
 # External gRPC Cloud Provider
 
-The Exteral gRPC Cloud Provider provides a plugin system to support out-of-tree cloud provider implementations.
+The External gRPC Cloud Provider provides a plugin system to support out-of-tree cloud provider implementations.
 
 Cluster Autoscaler adds or removes nodes from the cluster by creating or deleting VMs. To separate the autoscaling logic (the same for all clouds) from the API calls required to execute it (different for each cloud), the latter are hidden behind an interface, `CloudProvider`. Each supported cloud has its own implementation in this repository and `--cloud-provider` flag determines which one will be used.
 
