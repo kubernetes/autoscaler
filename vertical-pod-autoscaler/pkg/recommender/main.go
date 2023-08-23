@@ -55,8 +55,8 @@ var (
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 
-	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, none, checkpoint (default)`)
 	// prometheus history provider configs
+	storage             = flag.String("storage", "checkpoint", `Specifies storage mode. Supported values: prometheus, none, checkpoint`)
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
 	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
@@ -118,9 +118,17 @@ func main() {
 	metrics_recommender.Register()
 	metrics_quality.Register()
 
-	usePrometheus := *storage == "prometheus"
-	useNoStorage := *storage == "none"
-	useCheckpoints := (!usePrometheus) && (!useNoStorage)
+	var usePrometheus, useCheckpoints, useNoStorage bool
+	switch *storage {
+	case "checkpoint":
+		useCheckpoints = true
+	case "prometheus":
+		usePrometheus = true
+	case "none":
+		useNoStorage = true
+	default:
+		klog.Fatalf("Storage option '%s' is not supported. Supported values: prometheus, none, checkpoint", *storage)
+	}
 
 	var postProcessors []routines.RecommendationPostProcessor
 	if *postProcessorCPUasInteger {
@@ -195,7 +203,7 @@ func main() {
 		if historyInitErr != nil {
 			klog.Fatalf("Failed to load prometheus history")
 		}
-	} else {
+	} else if useNoStorage {
 		klog.Infof("Running without a history provider")
 	}
 
