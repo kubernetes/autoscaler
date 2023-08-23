@@ -50,6 +50,7 @@ The proposed solution involves updating the addon-resizer with the following ste
 - In the main function, we create a new `FsWatcher` and then we wait in an infinite loop to receive events indicating
 filesystem changes. Based on these changes, we re-execute `loadNannyConfiguration` function.
 
+> **Note:** The expected configuration file format is YAML. It has the same structure as the NannyConfiguration CRD.
 
 ### Test Plan
 To ensure the proper functioning of the enhanced addon-resizer, the following test plan should be executed:
