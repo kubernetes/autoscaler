@@ -23,7 +23,7 @@ We use the issue to communicate what is state of the release.
 ## Update VPA version const
 
 1. [ ] Wait for all VPA changes that will be in the release to merge.
-2. [ ] Wait for [the end to end tests](https://k8s-testgrid.appspot.com/sig-autoscaling-vpa) to run with all VPA changes
+2. [ ] Wait for [the end to end tests](https://testgrid.k8s.io/sig-autoscaling-vpa) to run with all VPA changes
    included.
    To see what code was actually tested, look for `===== last commit =====`
    entries in the full `build-log.txt` of a given test run.
