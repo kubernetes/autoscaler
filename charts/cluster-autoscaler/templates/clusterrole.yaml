@@ -151,9 +151,7 @@ rules:
     - cluster.x-k8s.io
     resources:
     - machinedeployments
-    - machinedeployments/scale
     - machinepools
-    - machinepools/scale
     - machines
     - machinesets
     verbs:
@@ -161,5 +159,14 @@ rules:
     - list
     - update
     - watch
+  - apiGroups:
+    - cluster.x-k8s.io
+    resources:
+    - machinedeployments/scale
+    - machinepools/scale
+    verbs:
+    - get
+    - patch
+    - update
 {{- end }}
 {{- end -}}
