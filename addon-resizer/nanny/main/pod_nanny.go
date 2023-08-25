@@ -36,8 +36,10 @@ import (
 	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
 	nannyscheme "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/scheme"
 	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
+	"k8s.io/autoscaler/addon-resizer/nanny/utils"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 var (
@@ -90,7 +92,16 @@ func main() {
 	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerResource)
 
 	// Set up work objects.
-	config, err := rest.InClusterConfig()
+	// config, err := rest.InClusterConfig()
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		glog.Fatal(err)
 	}
@@ -113,7 +124,43 @@ func main() {
 		BaseMemory:    *baseMemory,
 		MemoryPerNode: *memoryPerResource,
 	}
-	nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
+
+	period := time.Duration(*pollPeriod) * time.Millisecond
+	hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
+	hc.Serve()
+
+	n := &nanny.Nanny{
+		StopChan:       make(chan struct{}, 1),
+		ScaleDownDelay: *scaleDownDelay,
+		ScaleUpDelay:   *scaleUpDelay,
+		PollPeriod:     period,
+		HealthCheck:    hc,
+		Threshold:      uint64(*threshold),
+		Client:         k8s,
+		ScalingMode:    *scalingMode,
+	}
+
+	configureAndRunNanny(n, *nannyConfigurationFromFlags)
+	configWatch, err := utils.CreateFsWatcher(time.Second, filepath.Join(*configDir, "NannyConfiguration"))
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	for {
+		select {
+		case <-configWatch.Events:
+			// stop nanny
+			fmt.Println("stopping nanny")
+			n.Stop()
+			// run nanny
+			fmt.Println("reloading configuration and starting nanny")
+			configureAndRunNanny(n, *nannyConfigurationFromFlags)
+		}
+	}
+}
+
+func configureAndRunNanny(n *nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyConfiguration) {
+	nannycfg, err := loadNannyConfiguration(*configDir, &nannyCfdFlags)
 	if err != nil {
 		glog.Fatal(err)
 	}
@@ -163,16 +210,11 @@ func main() {
 		glog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
-	if *scalingMode != nanny.NodeProportional && *scalingMode != nanny.ContainerProportional {
-		glog.Fatalf("scaling mode %s not supported", *scalingMode)
-	}
-
-	period := time.Duration(*pollPeriod) * time.Millisecond
-	hc := healthcheck.NewHealthCheck(*hcAddress, period*5)
-	hc.Serve()
+	n.Estimator = est
 
 	// Begin nannying.
-	nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold), *scalingMode)
+	go n.PollAPIServer()
+
 }
 
 func userAgent() string {

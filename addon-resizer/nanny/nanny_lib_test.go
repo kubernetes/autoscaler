@@ -174,7 +174,10 @@ func TestCheckResources(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		gotOverwrite, gotOp := checkResource(tc.th, tc.x, tc.y, tc.res)
+		n := &Nanny{
+			Threshold: uint64(tc.th),
+		}
+		gotOverwrite, gotOp := n.checkResource(tc.x, tc.y, tc.res)
 		if tc.wantOverwrite != gotOverwrite || tc.wantOp != gotOp {
 			t.Errorf("checkResource got (%t, %v), want (%t, %v) for test case %d.", gotOverwrite, gotOp, tc.wantOverwrite, tc.wantOp, i)
 		}
@@ -218,8 +221,10 @@ func TestShouldOverwriteResources(t *testing.T) {
 		{10, noStorage, siNoStorage, false, unknown},
 	}
 	for i, tc := range testCases {
-
-		gotOverwrite, gotOp := shouldOverwriteResources(tc.th, tc.x, tc.x, tc.y, tc.x)
+		n := &Nanny{
+			Threshold: uint64(tc.th),
+		}
+		gotOverwrite, gotOp := n.shouldOverwriteResources(tc.x, tc.x, tc.y, tc.x)
 		if tc.wantOverwrite != gotOverwrite || tc.wantOp != gotOp {
 			t.Errorf("shouldOverwriteResources got (%t, %v), want (%t, %v) for test case %d.", gotOverwrite, gotOp, tc.wantOverwrite, tc.wantOp, i)
 		}
@@ -276,7 +281,14 @@ func TestUpdateResources(t *testing.T) {
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, 50, tc.x, tc.x)
 		est := newFakeResourceEstimator(tc.y, tc.x)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, tc.scalingMode)
+		n := &Nanny{
+			Client:         k8s,
+			Estimator:      est,
+			ScaleDownDelay: tc.sdd,
+			ScaleUpDelay:   tc.sud,
+			Threshold:      tc.th,
+		}
+		got := n.updateResources(now, tc.lc, noChange)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}

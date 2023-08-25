@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nannyconfig
+  namespace: default
+data:
+  NannyConfiguration: |-
+    apiVersion: nannyconfig/v1alpha1
+    kind: NannyConfiguration
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pod-nanny
+  namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nanny-v1
+  namespace: default
+  labels:
+    k8s-app: nanny
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: nanny
+      version: v1
+  template:
+    metadata:
+      labels:
+        k8s-app: nanny
+        version: v1
+        kubernetes.io/cluster-service: "true"
+    spec:
+      serviceAccountName: pod-nanny
+      containers:
+        - image: ahmedgrati/addon-resizer-amd64:1.8.19
+          imagePullPolicy: Always
+          name: pod-nanny
+          resources:
+            limits:
+              cpu: 300m
+              memory: 200Mi
+            requests:
+              cpu: 300m
+              memory: 200Mi
+          env:
+            - name: MY_POD_NAME
+              value: nginx-deployment-6f554bcd5d-5vv22
+            - name: MY_POD_NAMESPACE
+              value: default
+          volumeMounts:
+            - name: nanny-config-volume
+              mountPath: /etc/config
+          command:
+            - /pod_nanny
+            - --config-dir=/etc/config
+            - --extra-cpu=20m
+            - --memory=200Mi
+            - --extra-memory=10Mi
+            - --threshold=5
+            - --container=nginx
+            - --deployment=nginx-deployment
+      volumes:
+        - name: nanny-config-volume
+          configMap:
+            name: nannyconfig
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: default:pod-nanny
+rules:
+  ### --use-metrics=false
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - list
+### --use-metrics=true
+# - nonResourceURLs:
+#   - /metrics
+#   verbs:
+#   - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pod-nanny-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: default:pod-nanny
+subjects:
+  - kind: ServiceAccount
+    name: pod-nanny
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: default:pod-nanny
+  namespace: default
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+    verbs:
+      - get
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-nanny-binding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: default:pod-nanny
+subjects:
+  - kind: ServiceAccount
+    name: pod-nanny
+---
+
