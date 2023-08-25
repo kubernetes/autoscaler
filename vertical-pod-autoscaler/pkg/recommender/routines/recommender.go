@@ -97,7 +97,7 @@ func (r *recommender) UpdateVPAs() {
 		listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
 
 		for _, postProcessor := range r.recommendationPostProcessor {
-			listOfResourceRecommendation = postProcessor.Process(vpa, listOfResourceRecommendation, observedVpa.Spec.ResourcePolicy)
+			listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
 		}
 
 		vpa.UpdateRecommendation(listOfResourceRecommendation)

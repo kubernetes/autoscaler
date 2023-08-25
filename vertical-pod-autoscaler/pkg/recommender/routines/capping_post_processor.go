@@ -17,10 +17,10 @@ limitations under the License.
 package routines
 
 import (
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog/v2"
+
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // CappingPostProcessor ensure that the policy is applied to recommendation
@@ -30,11 +30,11 @@ type CappingPostProcessor struct{}
 var _ RecommendationPostProcessor = &CappingPostProcessor{}
 
 // Process apply the capping post-processing to the recommendation. (use to be function getCappedRecommendation)
-func (c CappingPostProcessor) Process(vpa *model.Vpa, recommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
+func (c CappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 	// TODO: maybe rename the vpa_utils.ApplyVPAPolicy to something that mention that it is doing capping only
-	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, policy)
+	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy)
 	if err != nil {
-		klog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpa.ID.Namespace, vpa.ID.VpaName, err)
+		klog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpa.GetNamespace(), vpa.GetName(), err)
 		return recommendation
 	}
 	return cappedRecommendation
