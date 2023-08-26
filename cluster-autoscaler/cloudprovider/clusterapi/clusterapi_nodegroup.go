@@ -369,7 +369,7 @@ func buildGenericLabels(nodeName string) map[string]string {
 	// TODO revisit this function and add an explanation about what these
 	// labels are used for, or remove them if not necessary
 	m := make(map[string]string)
-	m[corev1.LabelArchStable] = cloudprovider.DefaultArch
+	m[corev1.LabelArchStable] = GetDefaultScaleFromZeroArchitecture().Name()
 
 	m[corev1.LabelOSStable] = cloudprovider.DefaultOS
 
