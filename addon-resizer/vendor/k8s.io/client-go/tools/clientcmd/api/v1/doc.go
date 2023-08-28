@@ -16,6 +16,5 @@ limitations under the License.
 
 // +k8s:conversion-gen=k8s.io/client-go/tools/clientcmd/api
 // +k8s:deepcopy-gen=package
-// +k8s:defaulter-gen=Kind
 
 package v1

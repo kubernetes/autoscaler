@@ -101,11 +101,6 @@ func (obj *Unstructured) EachListItem(fn func(runtime.Object) error) error {
 	return nil
 }
 
-func (obj *Unstructured) EachListItemWithAlloc(fn func(runtime.Object) error) error {
-	// EachListItem has allocated a new Object for the user, we can use it directly.
-	return obj.EachListItem(fn)
-}
-
 func (obj *Unstructured) UnstructuredContent() map[string]interface{} {
 	if obj.Object == nil {
 		return make(map[string]interface{})
@@ -447,6 +442,18 @@ func (u *Unstructured) SetFinalizers(finalizers []string) {
 		return
 	}
 	u.setNestedStringSlice(finalizers, "metadata", "finalizers")
+}
+
+func (u *Unstructured) GetClusterName() string {
+	return getNestedString(u.Object, "metadata", "clusterName")
+}
+
+func (u *Unstructured) SetClusterName(clusterName string) {
+	if len(clusterName) == 0 {
+		RemoveNestedField(u.Object, "metadata", "clusterName")
+		return
+	}
+	u.setNestedField(clusterName, "metadata", "clusterName")
 }
 
 func (u *Unstructured) GetManagedFields() []metav1.ManagedFieldsEntry {

@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/utils/clock"
+	"k8s.io/apimachinery/pkg/util/clock"
 )
 
 // This file provides abstractions for setting the provider (e.g., prometheus)
@@ -244,18 +244,13 @@ func (f *queueMetricsFactory) newQueueMetrics(name string, clock clock.Clock) qu
 	}
 }
 
-func newRetryMetrics(name string, provider MetricsProvider) retryMetrics {
+func newRetryMetrics(name string) retryMetrics {
 	var ret *defaultRetryMetrics
 	if len(name) == 0 {
 		return ret
 	}
-
-	if provider == nil {
-		provider = globalMetricsFactory.metricsProvider
-	}
-
 	return &defaultRetryMetrics{
-		retries: provider.NewRetriesMetric(name),
+		retries: globalMetricsFactory.metricsProvider.NewRetriesMetric(name),
 	}
 }
 

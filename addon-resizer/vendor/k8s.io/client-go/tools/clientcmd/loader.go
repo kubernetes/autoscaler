@@ -18,6 +18,7 @@ package clientcmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -128,28 +129,6 @@ type ClientConfigLoadingRules struct {
 	// WarnIfAllMissing indicates whether the configuration files pointed by KUBECONFIG environment variable are present or not.
 	// In case of missing files, it warns the user about the missing files.
 	WarnIfAllMissing bool
-
-	// Warner is the warning log callback to use in case of missing files.
-	Warner WarningHandler
-}
-
-// WarningHandler allows to set the logging function to use
-type WarningHandler func(error)
-
-func (handler WarningHandler) Warn(err error) {
-	if handler == nil {
-		klog.V(1).Info(err)
-	} else {
-		handler(err)
-	}
-}
-
-type MissingConfigError struct {
-	Missing []string
-}
-
-func (c MissingConfigError) Error() string {
-	return fmt.Sprintf("Config not found: %s", strings.Join(c.Missing, ", "))
 }
 
 // ClientConfigLoadingRules implements the ClientConfigLoader interface.
@@ -181,10 +160,8 @@ func NewDefaultClientConfigLoadingRules() *ClientConfigLoadingRules {
 
 // Load starts by running the MigrationRules and then
 // takes the loading rules and returns a Config object based on following rules.
-//
-//	if the ExplicitPath, return the unmerged explicit file
-//	Otherwise, return a merged config based on the Precedence slice
-//
+//   if the ExplicitPath, return the unmerged explicit file
+//   Otherwise, return a merged config based on the Precedence slice
 // A missing ExplicitPath file produces an error. Empty filenames or other missing files are ignored.
 // Read errors or files with non-deserializable content produce errors.
 // The first file to set a particular map key wins and map key's value is never changed.
@@ -241,7 +218,7 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 	}
 
 	if rules.WarnIfAllMissing && len(missingList) > 0 && len(kubeconfigs) == 0 {
-		rules.Warner.Warn(MissingConfigError{Missing: missingList})
+		klog.Warningf("Config not found: %s", strings.Join(missingList, ", "))
 	}
 
 	// first merge all of our maps
@@ -304,12 +281,12 @@ func (rules *ClientConfigLoadingRules) Migrate() error {
 			return fmt.Errorf("cannot migrate %v to %v because it is a directory", source, destination)
 		}
 
-		data, err := os.ReadFile(source)
+		data, err := ioutil.ReadFile(source)
 		if err != nil {
 			return err
 		}
 		// destination is created with mode 0666 before umask
-		err = os.WriteFile(destination, data, 0666)
+		err = ioutil.WriteFile(destination, data, 0666)
 		if err != nil {
 			return err
 		}
@@ -384,7 +361,7 @@ func (rules *ClientConfigLoadingRules) IsDefaultConfig(config *restclient.Config
 
 // LoadFromFile takes a filename and deserializes the contents into Config object
 func LoadFromFile(filename string) (*clientcmdapi.Config, error) {
-	kubeconfigBytes, err := os.ReadFile(filename)
+	kubeconfigBytes, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +427,7 @@ func WriteToFile(config clientcmdapi.Config, filename string) error {
 		}
 	}
 
-	if err := os.WriteFile(filename, content, 0600); err != nil {
+	if err := ioutil.WriteFile(filename, content, 0600); err != nil {
 		return err
 	}
 	return nil

@@ -41,8 +41,13 @@ type ExecCredential struct {
 // ExecCredentialSpec holds request and runtime specific information provided by
 // the transport.
 type ExecCredentialSpec struct {
+	// Response is populated when the transport encounters HTTP status codes, such as 401,
+	// suggesting previous credentials were invalid.
+	// +optional
+	Response *Response
+
 	// Interactive is true when the transport detects the command is being called from an
-	// interactive prompt, i.e., when stdin has been passed to this exec plugin.
+	// interactive prompt.
 	// +optional
 	Interactive bool
 
@@ -68,6 +73,15 @@ type ExecCredentialStatus struct {
 	// PEM-encoded client TLS private key.
 	// +optional
 	ClientKeyData string `datapolicy:"secret-key"`
+}
+
+// Response defines metadata about a failed request, including HTTP status code and
+// response headers.
+type Response struct {
+	// Headers holds HTTP headers returned by the server.
+	Header map[string][]string
+	// Code is the HTTP status code returned by the server.
+	Code int32
 }
 
 // Cluster contains information to allow an exec plugin to communicate
@@ -98,11 +112,6 @@ type Cluster struct {
 	// cluster.
 	// +optional
 	ProxyURL string
-	// DisableCompression allows client to opt-out of response compression for all requests to the server. This is useful
-	// to speed up requests (specifically lists) when client-server network bandwidth is ample, by saving time on
-	// compression (server-side) and decompression (client-side): https://github.com/kubernetes/kubernetes/issues/112296.
-	// +optional
-	DisableCompression bool
 	// Config holds additional config data that is specific to the exec
 	// plugin with regards to the cluster being authenticated to.
 	//

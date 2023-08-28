@@ -20,10 +20,9 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -37,10 +36,6 @@ func New(config *Config) (http.RoundTripper, error) {
 	// Set transport level security
 	if config.Transport != nil && (config.HasCA() || config.HasCertAuth() || config.HasCertCallback() || config.TLS.Insecure) {
 		return nil, fmt.Errorf("using a custom transport with TLS certificate options or the insecure flag is not allowed")
-	}
-
-	if !isValidHolders(config) {
-		return nil, fmt.Errorf("misconfigured holder for dialer or cert callback")
 	}
 
 	var (
@@ -58,18 +53,6 @@ func New(config *Config) (http.RoundTripper, error) {
 	}
 
 	return HTTPWrappersForConfig(config, rt)
-}
-
-func isValidHolders(config *Config) bool {
-	if config.TLS.GetCertHolder != nil && config.TLS.GetCertHolder.GetCert == nil {
-		return false
-	}
-
-	if config.DialHolder != nil && config.DialHolder.Dial == nil {
-		return false
-	}
-
-	return true
 }
 
 // TLSConfigFor returns a tls.Config that will provide the transport level security defined
@@ -96,11 +79,7 @@ func TLSConfigFor(c *Config) (*tls.Config, error) {
 	}
 
 	if c.HasCA() {
-		rootCAs, err := rootCertPool(c.TLS.CAData)
-		if err != nil {
-			return nil, fmt.Errorf("unable to load root certificates: %w", err)
-		}
-		tlsConfig.RootCAs = rootCAs
+		tlsConfig.RootCAs = rootCertPool(c.TLS.CAData)
 	}
 
 	var staticCert *tls.Certificate
@@ -132,7 +111,7 @@ func TLSConfigFor(c *Config) (*tls.Config, error) {
 				return dynamicCertLoader()
 			}
 			if c.HasCertCallback() {
-				cert, err := c.TLS.GetCertHolder.GetCert()
+				cert, err := c.TLS.GetCert()
 				if err != nil {
 					return nil, err
 				}
@@ -173,7 +152,10 @@ func loadTLSFiles(c *Config) error {
 	}
 
 	c.TLS.KeyData, err = dataFromSliceOrFile(c.TLS.KeyData, c.TLS.KeyFile)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // dataFromSliceOrFile returns data from the slice (if non-empty), or from the file,
@@ -183,7 +165,7 @@ func dataFromSliceOrFile(data []byte, file string) ([]byte, error) {
 		return data, nil
 	}
 	if len(file) > 0 {
-		fileData, err := os.ReadFile(file)
+		fileData, err := ioutil.ReadFile(file)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -194,41 +176,18 @@ func dataFromSliceOrFile(data []byte, file string) ([]byte, error) {
 
 // rootCertPool returns nil if caData is empty.  When passed along, this will mean "use system CAs".
 // When caData is not empty, it will be the ONLY information used in the CertPool.
-func rootCertPool(caData []byte) (*x509.CertPool, error) {
+func rootCertPool(caData []byte) *x509.CertPool {
 	// What we really want is a copy of x509.systemRootsPool, but that isn't exposed.  It's difficult to build (see the go
 	// code for a look at the platform specific insanity), so we'll use the fact that RootCAs == nil gives us the system values
 	// It doesn't allow trusting either/or, but hopefully that won't be an issue
 	if len(caData) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	// if we have caData, use it
 	certPool := x509.NewCertPool()
-	if ok := certPool.AppendCertsFromPEM(caData); !ok {
-		return nil, createErrorParsingCAData(caData)
-	}
-	return certPool, nil
-}
-
-// createErrorParsingCAData ALWAYS returns an error.  We call it because know we failed to AppendCertsFromPEM
-// but we don't know the specific error because that API is just true/false
-func createErrorParsingCAData(pemCerts []byte) error {
-	for len(pemCerts) > 0 {
-		var block *pem.Block
-		block, pemCerts = pem.Decode(pemCerts)
-		if block == nil {
-			return fmt.Errorf("unable to parse bytes as PEM block")
-		}
-
-		if block.Type != "CERTIFICATE" || len(block.Headers) != 0 {
-			continue
-		}
-
-		if _, err := x509.ParseCertificate(block.Bytes); err != nil {
-			return fmt.Errorf("failed to parse certificate: %w", err)
-		}
-	}
-	return fmt.Errorf("no valid certificate authority data seen")
+	certPool.AppendCertsFromPEM(caData)
+	return certPool
 }
 
 // WrapperFunc wraps an http.RoundTripper when a new transport
@@ -310,7 +269,7 @@ type certificateCacheEntry struct {
 
 // isStale returns true when this cache entry is too old to be usable
 func (c *certificateCacheEntry) isStale() bool {
-	return time.Since(c.birth) > time.Second
+	return time.Now().Sub(c.birth) > time.Second
 }
 
 func newCertificateCacheEntry(certFile, keyFile string) certificateCacheEntry {

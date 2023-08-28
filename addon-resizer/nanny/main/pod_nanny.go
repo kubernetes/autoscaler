@@ -38,8 +38,7 @@ import (
 	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 	"k8s.io/autoscaler/addon-resizer/nanny/utils"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
+	"k8s.io/client-go/rest"
 )
 
 var (
@@ -92,16 +91,7 @@ func main() {
 	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerResource)
 
 	// Set up work objects.
-	// config, err := rest.InClusterConfig()
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
-
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		glog.Fatal(err)
 	}

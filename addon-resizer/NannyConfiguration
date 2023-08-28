@@ -1,3 +1,0 @@
-apiVersion: nannyconfig/v1alpha1
-kind: NannyConfiguration
-baseCPU: 264m

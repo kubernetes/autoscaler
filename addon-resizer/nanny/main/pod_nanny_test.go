@@ -51,5 +51,5 @@ baseCPU: 264m
 	}
 	nannyEstimator, err := getNannyEstimator(n, *nannyConfigurationFromFlags, configFilePath)
 	assert.NoError(t, err)
-	assert.Equal(t, nannyEstimator, expectedEstimator)
+	assert.Equal(t, expectedEstimator, nannyEstimator)
 }

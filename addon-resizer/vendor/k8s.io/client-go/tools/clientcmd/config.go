@@ -135,7 +135,11 @@ func (o *PathOptions) GetDefaultFilename() string {
 }
 
 func (o *PathOptions) IsExplicitFile() bool {
-	return len(o.LoadingRules.ExplicitPath) > 0
+	if len(o.LoadingRules.ExplicitPath) > 0 {
+		return true
+	}
+
+	return false
 }
 
 func (o *PathOptions) GetExplicitFile() string {

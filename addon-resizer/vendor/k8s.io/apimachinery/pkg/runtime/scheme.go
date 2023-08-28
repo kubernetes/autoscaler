@@ -44,11 +44,11 @@ import (
 // Schemes are not expected to change at runtime and are only threadsafe after
 // registration is complete.
 type Scheme struct {
-	// gvkToType allows one to figure out the go type of an object with
+	// versionMap allows one to figure out the go type of an object with
 	// the given version and name.
 	gvkToType map[schema.GroupVersionKind]reflect.Type
 
-	// typeToGVK allows one to find metadata for a given go object.
+	// typeToGroupVersion allows one to find metadata for a given go object.
 	// The reflect.Type we index by should *not* be a pointer.
 	typeToGVK map[reflect.Type][]schema.GroupVersionKind
 
@@ -64,7 +64,7 @@ type Scheme struct {
 	// resource field labels in that version to internal version.
 	fieldLabelConversionFuncs map[schema.GroupVersionKind]FieldLabelConversionFunc
 
-	// defaulterFuncs is a map to funcs to be called with an object to provide defaulting
+	// defaulterFuncs is an array of interfaces to be called with an object to provide defaulting
 	// the provided object must be a pointer.
 	defaulterFuncs map[reflect.Type]func(interface{})
 
@@ -99,12 +99,34 @@ func NewScheme() *Scheme {
 		versionPriority:           map[string][]string{},
 		schemeName:                naming.GetNameFromCallsite(internalPackages...),
 	}
-	s.converter = conversion.NewConverter(nil)
+	s.converter = conversion.NewConverter(s.nameFunc)
 
 	// Enable couple default conversions by default.
 	utilruntime.Must(RegisterEmbeddedConversions(s))
 	utilruntime.Must(RegisterStringConversions(s))
 	return s
+}
+
+// nameFunc returns the name of the type that we wish to use to determine when two types attempt
+// a conversion. Defaults to the go name of the type if the type is not registered.
+func (s *Scheme) nameFunc(t reflect.Type) string {
+	// find the preferred names for this type
+	gvks, ok := s.typeToGVK[t]
+	if !ok {
+		return t.Name()
+	}
+
+	for _, gvk := range gvks {
+		internalGV := gvk.GroupVersion()
+		internalGV.Version = APIVersionInternal // this is hacky and maybe should be passed in
+		internalGVK := internalGV.WithKind(gvk.Kind)
+
+		if internalType, exists := s.gvkToType[internalGVK]; exists {
+			return s.typeToGVK[internalType][0].Kind
+		}
+	}
+
+	return gvks[0].Kind
 }
 
 // Converter allows access to the converter for the scheme
@@ -118,7 +140,7 @@ func (s *Scheme) Converter() *conversion.Converter {
 // API group and version that would never be updated.
 //
 // TODO: there is discussion about removing unversioned and replacing it with objects that are manifest into
-// every version with particular schemas. Resolve this method at that point.
+//   every version with particular schemas. Resolve this method at that point.
 func (s *Scheme) AddUnversionedTypes(version schema.GroupVersion, types ...Object) {
 	s.addObservedVersion(version)
 	s.AddKnownTypes(version, types...)
@@ -141,7 +163,7 @@ func (s *Scheme) AddKnownTypes(gv schema.GroupVersion, types ...Object) {
 	s.addObservedVersion(gv)
 	for _, obj := range types {
 		t := reflect.TypeOf(obj)
-		if t.Kind() != reflect.Pointer {
+		if t.Kind() != reflect.Ptr {
 			panic("All types must be pointers to structs.")
 		}
 		t = t.Elem()
@@ -159,7 +181,7 @@ func (s *Scheme) AddKnownTypeWithName(gvk schema.GroupVersionKind, obj Object) {
 	if len(gvk.Version) == 0 {
 		panic(fmt.Sprintf("version is required on all types: %s %v", gvk, t))
 	}
-	if t.Kind() != reflect.Pointer {
+	if t.Kind() != reflect.Ptr {
 		panic("All types must be pointers to structs.")
 	}
 	t = t.Elem()
@@ -462,7 +484,7 @@ func (s *Scheme) convertToVersion(copy bool, in Object, target GroupVersioner) (
 	} else {
 		// determine the incoming kinds with as few allocations as possible.
 		t = reflect.TypeOf(in)
-		if t.Kind() != reflect.Pointer {
+		if t.Kind() != reflect.Ptr {
 			return nil, fmt.Errorf("only pointer types may be converted: %v", t)
 		}
 		t = t.Elem()

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"golang.org/x/term"
@@ -50,15 +51,15 @@ func (a *PromptingAuthLoader) LoadAuth(path string) (*clientauth.Info, error) {
 	// Prompt for user/pass and write a file if none exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		authPtr, err := a.Prompt()
+		auth := *authPtr
 		if err != nil {
 			return nil, err
 		}
-		auth := *authPtr
 		data, err := json.Marshal(auth)
 		if err != nil {
 			return &auth, err
 		}
-		err = os.WriteFile(path, data, 0600)
+		err = ioutil.WriteFile(path, data, 0600)
 		return &auth, err
 	}
 	authPtr, err := clientauth.LoadFromFile(path)

@@ -18,7 +18,6 @@ package exec
 
 import (
 	"errors"
-	"io/fs"
 	"os/exec"
 	"reflect"
 	"sync"
@@ -93,7 +92,6 @@ func (c *certificateExpirationTracker) set(a *Authenticator, t time.Time) {
 func incrementCallsMetric(err error) {
 	execExitError := &exec.ExitError{}
 	execError := &exec.Error{}
-	pathError := &fs.PathError{}
 	switch {
 	case err == nil: // Binary execution succeeded.
 		metrics.ExecPluginCalls.Increment(successExitCode, noError)
@@ -101,7 +99,7 @@ func incrementCallsMetric(err error) {
 	case errors.As(err, &execExitError): // Binary execution failed (see "os/exec".Cmd.Run()).
 		metrics.ExecPluginCalls.Increment(execExitError.ExitCode(), pluginExecutionError)
 
-	case errors.As(err, &execError), errors.As(err, &pathError): // Binary does not exist (see exec.Error, fs.PathError).
+	case errors.As(err, &execError): // Binary does not exist (see exec.Error).
 		metrics.ExecPluginCalls.Increment(failureExitCode, pluginNotFoundError)
 
 	default: // We don't know about this error type.

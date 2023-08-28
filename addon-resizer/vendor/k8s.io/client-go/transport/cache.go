@@ -17,7 +17,6 @@ limitations under the License.
 package transport
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -27,7 +26,6 @@ import (
 
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/tools/metrics"
 )
 
 // TlsTransportCache caches TLS http.RoundTrippers different configurations. The
@@ -37,11 +35,6 @@ type tlsTransportCache struct {
 	mu         sync.Mutex
 	transports map[tlsCacheKey]*http.Transport
 }
-
-// DialerStopCh is stop channel that is passed down to dynamic cert dialer.
-// It's exposed as variable for testing purposes to avoid testing for goroutine
-// leakages.
-var DialerStopCh = wait.NeverStop
 
 const idleConnsPerHost = 25
 
@@ -57,9 +50,6 @@ type tlsCacheKey struct {
 	serverName         string
 	nextProtos         string
 	disableCompression bool
-	// these functions are wrapped to allow them to be used as map keys
-	getCert *GetCertHolder
-	dial    *DialHolder
 }
 
 func (t tlsCacheKey) String() string {
@@ -67,8 +57,7 @@ func (t tlsCacheKey) String() string {
 	if len(t.keyData) > 0 {
 		keyText = "<redacted>"
 	}
-	return fmt.Sprintf("insecure:%v, caData:%#v, certData:%#v, keyData:%s, serverName:%s, disableCompression:%t, getCert:%p, dial:%p",
-		t.insecure, t.caData, t.certData, keyText, t.serverName, t.disableCompression, t.getCert, t.dial)
+	return fmt.Sprintf("insecure:%v, caData:%#v, certData:%#v, keyData:%s, serverName:%s, disableCompression:%t", t.insecure, t.caData, t.certData, keyText, t.serverName, t.disableCompression)
 }
 
 func (c *tlsTransportCache) get(config *Config) (http.RoundTripper, error) {
@@ -81,16 +70,11 @@ func (c *tlsTransportCache) get(config *Config) (http.RoundTripper, error) {
 		// Ensure we only create a single transport for the given TLS options
 		c.mu.Lock()
 		defer c.mu.Unlock()
-		defer metrics.TransportCacheEntries.Observe(len(c.transports))
 
 		// See if we already have a custom transport for this config
 		if t, ok := c.transports[key]; ok {
-			metrics.TransportCreateCalls.Increment("hit")
 			return t, nil
 		}
-		metrics.TransportCreateCalls.Increment("miss")
-	} else {
-		metrics.TransportCreateCalls.Increment("uncacheable")
 	}
 
 	// Get the TLS options for this client config
@@ -99,14 +83,12 @@ func (c *tlsTransportCache) get(config *Config) (http.RoundTripper, error) {
 		return nil, err
 	}
 	// The options didn't require a custom TLS config
-	if tlsConfig == nil && config.DialHolder == nil && config.Proxy == nil {
+	if tlsConfig == nil && config.Dial == nil && config.Proxy == nil {
 		return http.DefaultTransport, nil
 	}
 
-	var dial func(ctx context.Context, network, address string) (net.Conn, error)
-	if config.DialHolder != nil {
-		dial = config.DialHolder.Dial
-	} else {
+	dial := config.Dial
+	if dial == nil {
 		dial = (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -115,11 +97,11 @@ func (c *tlsTransportCache) get(config *Config) (http.RoundTripper, error) {
 
 	// If we use are reloading files, we need to handle certificate rotation properly
 	// TODO(jackkleeman): We can also add rotation here when config.HasCertCallback() is true
-	if config.TLS.ReloadTLSFiles && tlsConfig != nil && tlsConfig.GetClientCertificate != nil {
+	if config.TLS.ReloadTLSFiles {
 		dynamicCertDialer := certRotatingDialer(tlsConfig.GetClientCertificate, dial)
 		tlsConfig.GetClientCertificate = dynamicCertDialer.GetClientCertificate
 		dial = dynamicCertDialer.connDialer.DialContext
-		go dynamicCertDialer.Run(DialerStopCh)
+		go dynamicCertDialer.Run(wait.NeverStop)
 	}
 
 	proxy := http.ProxyFromEnvironment
@@ -151,7 +133,7 @@ func tlsConfigKey(c *Config) (tlsCacheKey, bool, error) {
 		return tlsCacheKey{}, false, err
 	}
 
-	if c.Proxy != nil {
+	if c.TLS.GetCert != nil || c.Dial != nil || c.Proxy != nil {
 		// cannot determine equality for functions
 		return tlsCacheKey{}, false, nil
 	}
@@ -162,8 +144,6 @@ func tlsConfigKey(c *Config) (tlsCacheKey, bool, error) {
 		serverName:         c.TLS.ServerName,
 		nextProtos:         strings.Join(c.TLS.NextProtos, ","),
 		disableCompression: c.DisableCompression,
-		getCert:            c.TLS.GetCertHolder,
-		dial:               c.DialHolder,
 	}
 
 	if c.TLS.ReloadTLSFiles {
