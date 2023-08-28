@@ -62,6 +62,9 @@ import (
 	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/component-base/config/options"
+	"k8s.io/component-base/logs"
+	logsapi "k8s.io/component-base/logs/api/v1"
+	_ "k8s.io/component-base/logs/json/register"
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 )
@@ -483,13 +486,26 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 func main() {
 	klog.InitFlags(nil)
+	featureGate := utilfeature.DefaultMutableFeatureGate
+	loggingConfig := logsapi.NewLoggingConfiguration()
+
+	if err := logsapi.AddFeatureGates(featureGate); err != nil {
+		klog.Fatalf("Failed to add logging feature flags: %v", err)
+	}
+
+	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
+	featureGate.AddFlag(pflag.CommandLine)
+	kube_flag.InitFlags()
+
+	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
+		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
+	}
+
+	logs.InitLogs()
 
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
-
 	options.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
-	utilfeature.DefaultMutableFeatureGate.AddFlag(pflag.CommandLine)
-	kube_flag.InitFlags()
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
