@@ -140,7 +140,8 @@ func main() {
 		ScalingMode:    *scalingMode,
 	}
 
-	configureAndRunNanny(n, *nannyConfigurationFromFlags)
+	runNanny(*n, *nannyConfigurationFromFlags, *configDir)
+
 	configWatch, err := utils.CreateFsWatcher(time.Second, filepath.Join(*configDir, "NannyConfiguration"))
 	if err != nil {
 		glog.Fatal(err)
@@ -150,19 +151,28 @@ func main() {
 		select {
 		case <-configWatch.Events:
 			// stop nanny
-			fmt.Println("stopping nanny")
+			glog.Info("stopping nanny")
 			n.Stop()
 			// run nanny
-			fmt.Println("reloading configuration and starting nanny")
-			configureAndRunNanny(n, *nannyConfigurationFromFlags)
+			glog.Info("reloading configuration and starting nanny")
+			runNanny(*n, *nannyConfigurationFromFlags, *configDir)
 		}
 	}
 }
 
-func configureAndRunNanny(n *nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyConfiguration) {
-	nannycfg, err := loadNannyConfiguration(*configDir, &nannyCfdFlags)
+func runNanny(n nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyConfiguration, configDir string) {
+	estimator, err := getNannyEstimator(n, nannyCfdFlags, configDir)
 	if err != nil {
 		glog.Fatal(err)
+	}
+	n.Estimator = estimator
+	go n.PollAPIServer()
+}
+
+func getNannyEstimator(n nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyConfiguration, configDir string) (nanny.ResourceEstimator, error) {
+	nannycfg, err := loadNannyConfiguration(configDir, &nannyCfdFlags)
+	if err != nil {
+		return nil, err
 	}
 	glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
 
@@ -210,11 +220,7 @@ func configureAndRunNanny(n *nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyCo
 		glog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
-	n.Estimator = est
-
-	// Begin nannying.
-	go n.PollAPIServer()
-
+	return est, nil
 }
 
 func userAgent() string {
