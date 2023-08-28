@@ -37,7 +37,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
-	WithResourceInTarget(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder
+	WithTargetResource(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
@@ -49,6 +49,8 @@ type VerticalPodAutoscalerBuilder interface {
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
 	Get() *vpa_types.VerticalPodAutoscaler
 }
+
+// TODO part of this interface is a repetition of RecommendationBuilder, we can probably factorize some code
 
 // VerticalPodAutoscaler returns a new VerticalPodAutoscalerBuilder.
 func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
@@ -136,9 +138,9 @@ func (b *verticalPodAutoscalerBuilder) WithTarget(cpu, memory string) VerticalPo
 	return &c
 }
 
-func (b *verticalPodAutoscalerBuilder) WithResourceInTarget(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder {
+func (b *verticalPodAutoscalerBuilder) WithTargetResource(resource core.ResourceName, value string) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.recommendation = c.recommendation.WithResource(resource, value)
+	c.recommendation = c.recommendation.WithTargetResource(resource, value)
 	return &c
 }
 

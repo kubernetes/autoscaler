@@ -62,7 +62,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithTarget("2", "200Mi").
 		WithMinAllowed("1", "100Mi").
 		WithMaxAllowed("3", "1Gi").
-		WithResourceInTarget("", "666") // Testing that this weird/empty resource will be purged
+		WithTargetResource("", "666") // Testing that this weird/empty resource will be purged
 	vpa := vpaBuilder.Get()
 
 	uninitialized := test.Pod().WithName("test_uninitialized").
@@ -311,8 +311,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 					return
 				}
 
-				_, foundEmpty := resources[0].Requests[""]
-				assert.Equal(t, foundEmpty, false, "empty resourceKey have not been purged")
+				assert.Contains(t, resources, "", "expected empty resource to be removed")
 
 				cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
 				assert.Equal(t, tc.expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
