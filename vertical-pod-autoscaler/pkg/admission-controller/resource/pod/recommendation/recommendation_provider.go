@@ -114,7 +114,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 	// Ensure that we are not propagating empty resource key if any.
 	for _, resource := range containerResources {
 		if resource.RemoveEmptyResourceKeyIfAny() {
-			klog.Error("An empty resource key was found and purged for pod=%s/%s with vpa=", pod.Namespace, pod.Name, vpa.Name)
+			klog.Infof("An empty resource key was found and purged for pod=%s/%s with vpa=", pod.Namespace, pod.Name, vpa.Name)
 		}
 	}
 
