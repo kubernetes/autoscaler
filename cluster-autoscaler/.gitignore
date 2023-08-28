@@ -1,6 +1,7 @@
 cluster-autoscaler
 cluster-autoscaler-amd64
 cluster-autoscaler-arm64
+cluster-autoscaler-s390x
 cluster_autoscaler
 .cover
 
