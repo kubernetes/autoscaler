@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"k8s.io/klog/v2"
+	"github.com/golang/glog"
 )
 
 // FsWatcher is a wrapper helper for watching files
@@ -94,9 +94,9 @@ func (w *FsWatcher) add(files ...string) error {
 		for p := file; ; p = filepath.Dir(p) {
 			if _, ok := w.paths[p]; !ok {
 				if err := w.Add(p); err != nil {
-					klog.V(1).ErrorS(err, "failed to add fsnotify watch", "path", p)
+					glog.Errorf("failed to add fsnotify watch in path %v: %v", p, err)
 				} else {
-					klog.V(1).InfoS("added fsnotify watch", "path", p)
+					glog.Infof("added fsnotify watch in path %v", p)
 					added = true
 				}
 
@@ -124,14 +124,14 @@ func (w *FsWatcher) watch() {
 		case e, ok := <-w.Watcher.Events:
 			// Watcher has been closed
 			if !ok {
-				klog.InfoS("watcher closed")
+				glog.Info("watcher closed")
 				return
 			}
 
 			// If any of our paths change
 			name := filepath.Clean(e.Name)
 			if _, ok := w.paths[filepath.Clean(name)]; ok {
-				klog.V(2).InfoS("fsnotify event detected", "path", name, "fsNotifyEvent", e)
+				glog.Infof("fsnotify event detected, path: %v, fsNotifyEvent: %v", name, e)
 
 				// Rate limiter. In certain filesystem operations we get
 				// numerous events in quick succession
@@ -141,15 +141,15 @@ func (w *FsWatcher) watch() {
 		case e, ok := <-w.Watcher.Errors:
 			// Watcher has been closed
 			if !ok {
-				klog.InfoS("watcher closed")
+				glog.Info("watcher closed")
 				return
 			}
-			klog.ErrorS(e, "fswatcher error event detected")
+			glog.Errorf("fswatcher error event detected: %v", e)
 
 		case <-ratelimiter:
 			// Blindly remove existing watch and add a new one
 			if err := w.reset(w.files...); err != nil {
-				klog.ErrorS(err, "re-trying in 60 seconds")
+				glog.Errorf("re-trying in 60 seconds: %v", err)
 				ratelimiter = time.After(60 * time.Second)
 			}
 
