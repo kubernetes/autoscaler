@@ -20,6 +20,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 func TestGetContainersMetricsReturnsEmptyList(t *testing.T) {
@@ -42,5 +46,54 @@ func TestGetContainersMetricsReturnsResults(t *testing.T) {
 	assert.Len(t, snapshots, len(tc.getAllSnaps()), "It should return right number of snapshots")
 	for _, snap := range snapshots {
 		assert.Contains(t, tc.getAllSnaps(), snap, "One of returned ContainerMetricsSnapshot is different then expected ")
+	}
+}
+
+func Test_calculateUsage(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		containerUsage v1.ResourceList
+		want           model.Resources
+	}{
+		{
+			name:           "nothing",
+			containerUsage: v1.ResourceList{},
+			want:           model.Resources{},
+		},
+		{
+			name: "cpu and memory",
+			containerUsage: v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("100m"),
+				v1.ResourceMemory: resource.MustParse("256Mi"),
+			},
+			want: model.Resources{
+				model.ResourceName(v1.ResourceCPU):    model.ResourceAmount(100),
+				model.ResourceName(v1.ResourceMemory): model.ResourceAmount(256 * 1024 * 1024),
+			},
+		},
+		{
+			name: "cpu only",
+			containerUsage: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("100m"),
+			},
+			want: model.Resources{
+				model.ResourceName(v1.ResourceCPU): model.ResourceAmount(100),
+			},
+		},
+		{
+			name: "mem only",
+			containerUsage: v1.ResourceList{
+				v1.ResourceMemory: resource.MustParse("256Mi"),
+			},
+			want: model.Resources{
+				model.ResourceName(v1.ResourceMemory): model.ResourceAmount(256 * 1024 * 1024),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, calculateUsage(tt.containerUsage), "calculateUsage(%v)", tt.containerUsage)
+		})
 	}
 }
