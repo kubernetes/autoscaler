@@ -311,8 +311,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 					return
 				}
 
-				_, foundEmpty := resources[0].Requests[""]
-				assert.Equal(t, foundEmpty, false, "empty resourceKey have not been purged")
+				assert.Contains(t, resources, "", "expected empty resource to be removed")
 
 				cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
 				assert.Equal(t, tc.expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
