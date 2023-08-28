@@ -74,16 +74,6 @@ func Resources(cpu, mem string) apiv1.ResourceList {
 	return result
 }
 
-// AddResource add a resource to the given resource list
-func AddResource(rl apiv1.ResourceList, resourceName apiv1.ResourceName, value string) apiv1.ResourceList {
-	val, _ := resource.ParseQuantity(value)
-	if rl == nil {
-		rl = apiv1.ResourceList{}
-	}
-	rl[resourceName] = val
-	return rl
-}
-
 // RecommenderAPIMock is a mock of RecommenderAPI
 type RecommenderAPIMock struct {
 	mock.Mock

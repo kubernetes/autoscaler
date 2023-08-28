@@ -62,7 +62,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithTarget("2", "200Mi").
 		WithMinAllowed("1", "100Mi").
 		WithMaxAllowed("3", "1Gi").
-		WithResourceInTarget("", "666") // Testing that this weird/empty resource will be purged
+		WithTargetResource("", "666") // Testing that this weird/empty resource will be purged
 	vpa := vpaBuilder.Get()
 
 	uninitialized := test.Pod().WithName("test_uninitialized").
