@@ -380,6 +380,12 @@ type PersistentVolumeStatus struct {
 	// Reason is a brief CamelCase string that describes any failure and is meant for machine parsing and tidy display in the CLI
 	// +optional
 	Reason string
+	// LastPhaseTransitionTime is the time the phase transitioned from one to another
+	// and automatically resets to current time everytime a volume phase transitions.
+	// This is an alpha field and requires enabling PersistentVolumeLastPhaseTransitionTime feature.
+	// +featureGate=PersistentVolumeLastPhaseTransitionTime
+	// +optional
+	LastPhaseTransitionTime *metav1.Time
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -4068,15 +4074,6 @@ type LoadBalancerIngress struct {
 	// +optional
 	Hostname string
 
-	// IPMode specifies how the load-balancer IP behaves, and may only be specified when the ip field is specified.
-	// Setting this to "VIP" indicates that traffic is delivered to the node with
-	// the destination set to the load-balancer's IP and port.
-	// Setting this to "Proxy" indicates that traffic is delivered to the node or pod with
-	// the destination set to the node's IP and node port or the pod's IP and port.
-	// Service implementations may use this information to adjust traffic routing.
-	// +optional
-	IPMode *LoadBalancerIPMode
-
 	// Ports is a list of records of service ports
 	// If used, every port defined in the service should have an entry in it
 	// +optional
@@ -6149,15 +6146,3 @@ type PortStatus struct {
 	// +kubebuilder:validation:MaxLength=316
 	Error *string
 }
-
-// LoadBalancerIPMode represents the mode of the LoadBalancer ingress IP
-type LoadBalancerIPMode string
-
-const (
-	// LoadBalancerIPModeVIP indicates that traffic is delivered to the node with
-	// the destination set to the load-balancer's IP and port.
-	LoadBalancerIPModeVIP LoadBalancerIPMode = "VIP"
-	// LoadBalancerIPModeProxy indicates that traffic is delivered to the node or pod with
-	// the destination set to the node's IP and port or the pod's IP and port.
-	LoadBalancerIPModeProxy LoadBalancerIPMode = "Proxy"
-)

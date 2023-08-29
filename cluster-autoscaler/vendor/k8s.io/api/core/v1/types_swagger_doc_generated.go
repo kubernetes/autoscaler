@@ -988,7 +988,6 @@ var map_LoadBalancerIngress = map[string]string{
 	"":         "LoadBalancerIngress represents the status of a load-balancer ingress point: traffic intended for the service should be sent to an ingress point.",
 	"ip":       "IP is set for load-balancer ingress points that are IP based (typically GCE or OpenStack load-balancers)",
 	"hostname": "Hostname is set for load-balancer ingress points that are DNS based (typically AWS load-balancers)",
-	"ipMode":   "IPMode specifies how the load-balancer IP behaves, and may only be specified when the ip field is specified. Setting this to \"VIP\" indicates that traffic is delivered to the node with the destination set to the load-balancer's IP and port. Setting this to \"Proxy\" indicates that traffic is delivered to the node or pod with the destination set to the node's IP and node port or the pod's IP and port. Service implementations may use this information to adjust traffic routing.",
 	"ports":    "Ports is a list of records of service ports If used, every port defined in the service should have an entry in it",
 }
 
@@ -1446,10 +1445,11 @@ func (PersistentVolumeSpec) SwaggerDoc() map[string]string {
 }
 
 var map_PersistentVolumeStatus = map[string]string{
-	"":        "PersistentVolumeStatus is the current status of a persistent volume.",
-	"phase":   "phase indicates if a volume is available, bound to a claim, or released by a claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#phase",
-	"message": "message is a human-readable message indicating details about why the volume is in this state.",
-	"reason":  "reason is a brief CamelCase string that describes any failure and is meant for machine parsing and tidy display in the CLI.",
+	"":                        "PersistentVolumeStatus is the current status of a persistent volume.",
+	"phase":                   "phase indicates if a volume is available, bound to a claim, or released by a claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#phase",
+	"message":                 "message is a human-readable message indicating details about why the volume is in this state.",
+	"reason":                  "reason is a brief CamelCase string that describes any failure and is meant for machine parsing and tidy display in the CLI.",
+	"lastPhaseTransitionTime": "lastPhaseTransitionTime is the time the phase transitioned from one to another and automatically resets to current time everytime a volume phase transitions. This is an alpha field and requires enabling PersistentVolumeLastPhaseTransitionTime feature.",
 }
 
 func (PersistentVolumeStatus) SwaggerDoc() map[string]string {
