@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -60,7 +61,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithContainer(containerName).
 		WithTarget("2", "200Mi").
 		WithMinAllowed("1", "100Mi").
-		WithMaxAllowed("3", "1Gi")
+		WithMaxAllowed("3", "1Gi").
+		WithTargetResource("", "666") // Testing that this weird/empty resource will be purged
 	vpa := vpaBuilder.Get()
 
 	uninitialized := test.Pod().WithName("test_uninitialized").
@@ -308,6 +310,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 				if !assert.Equal(t, len(resources), 1) {
 					return
 				}
+
+				assert.NotContains(t, resources, "", "expected empty resource to be removed")
 
 				cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
 				assert.Equal(t, tc.expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
