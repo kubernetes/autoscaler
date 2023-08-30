@@ -210,7 +210,7 @@ type IPAddressCreateRequest struct {
 type DeviceCreateRequest struct {
 	Hostname              string                   `json:"hostname"`
 	Plan                  string                   `json:"plan"`
-	Metro                 []string                 `json:"metro"`
+	Metro                 string                   `json:"metro"`
 	OS                    string                   `json:"operating_system"`
 	BillingCycle          string                   `json:"billing_cycle"`
 	ProjectID             string                   `json:"project_id"`
@@ -313,7 +313,7 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		}
 
 		manager.packetManagerNodePools[nodepool] = &packetManagerNodePool{
-			baseURL:           "https://api.equinix.com/metal/v1/",
+			baseURL:           "https://api.equinix.com/metal/v1",
 			clusterName:       cfg.Nodegroupdef[nodepool].ClusterName,
 			projectID:         cfg.Nodegroupdef["default"].ProjectID,
 			apiServerEndpoint: cfg.Nodegroupdef["default"].APIServerEndpoint,
@@ -521,7 +521,7 @@ func (mgr *packetManagerRest) createDevice(ctx context.Context, hostname, userDa
 
 	cr := &DeviceCreateRequest{
 		Hostname:              hostname,
-		Metro:                 []string{mgr.getNodePoolDefinition(nodegroup).metro},
+		Metro:                 mgr.getNodePoolDefinition(nodegroup).metro,
 		Plan:                  mgr.getNodePoolDefinition(nodegroup).plan,
 		OS:                    mgr.getNodePoolDefinition(nodegroup).os,
 		ProjectID:             mgr.getNodePoolDefinition(nodegroup).projectID,
