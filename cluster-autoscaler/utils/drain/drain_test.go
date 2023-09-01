@@ -528,6 +528,19 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	unsafeNakedPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "false",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
 	kubeSystemSafePod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -836,6 +849,15 @@ func TestDrain(t *testing.T) {
 			expectFatal:         true,
 			expectPods:          []*apiv1.Pod{},
 			expectBlockingPod:   &BlockingPod{Pod: unsafeJobPod, Reason: NotSafeToEvictAnnotation},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "naked pod with PodSafeToEvict=false annotation",
+			pods:                []*apiv1.Pod{unsafeNakedPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: unsafeNakedPod, Reason: NotSafeToEvictAnnotation},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{

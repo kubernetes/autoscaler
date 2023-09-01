@@ -127,6 +127,9 @@ func GetPodsForDeletionOnNodeDrain(
 		}
 
 		if !safeToEvict && !terminal {
+			if hasNotSafeToEvictAnnotation(pod) {
+				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: NotSafeToEvictAnnotation}, fmt.Errorf("pod annotated as not safe to evict present: %s", pod.Name)
+			}
 			if !replicated {
 				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: NotReplicated}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
 			}
@@ -141,9 +144,6 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 			if HasBlockingLocalStorage(pod) && skipNodesWithLocalStorage {
 				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: LocalStorageRequested}, fmt.Errorf("pod with local storage present: %s", pod.Name)
-			}
-			if hasNotSafeToEvictAnnotation(pod) {
-				return []*apiv1.Pod{}, []*apiv1.Pod{}, &BlockingPod{Pod: pod, Reason: NotSafeToEvictAnnotation}, fmt.Errorf("pod annotated as not safe to evict present: %s", pod.Name)
 			}
 		}
 		pods = append(pods, pod)
