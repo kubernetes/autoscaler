@@ -146,7 +146,7 @@ func TestBuildDeadline(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			now = func() time.Time { return time.Time{} }
-			maxExpected := now().Add(3 * test.coolDownDelay.Abs())
+			maxExpected := now().Add(time.Duration(delayFactor+1) * test.coolDownDelay.Abs())
 			result := buildDeadline(test.attempts, test.coolDownDelay)
 			if result.Before(now()) || result.After(maxExpected) {
 				t.Errorf("buildDeadline(%v, %v) = %v, should be in [%v-%v] range",

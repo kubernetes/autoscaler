@@ -33,6 +33,8 @@ package pods
 
 import (
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -42,13 +44,17 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-// we won't quarantine a workload's pods until they all went
-// through (were considered for upscales) minAttempts times
-const minAttempts = 3
-
 var (
 	now              = time.Now // unit tests
 	retriesIncrement = 2 * time.Minute
+
+	// we won't quarantine a workload's pods until they all went
+	// through (were considered for upscales) minAttempts times
+	minAttempts = getEnv("QUARANTINE_MIN_ATTEMPTS", 2)
+
+	// how many multiple of coolDownDelay will "long pending"
+	// pods be delayed (at most).
+	delayFactor = getEnv("QUARANTINE_DELAY_FACTOR", 3)
 )
 
 type pendingTracker struct {
@@ -159,7 +165,8 @@ func logSkipped(ref types.UID, tracker *pendingTracker, pods []*apiv1.Pod) {
 
 func buildDeadline(attempts int, coolDownDelay time.Duration) time.Time {
 	increment := time.Duration(attempts-minAttempts) * retriesIncrement
-	delay := minDuration(increment, 2*coolDownDelay.Abs()) - jitterDuration(coolDownDelay.Abs())
+	delay := minDuration(increment, time.Duration(delayFactor)*coolDownDelay.Abs())
+	delay -= jitterDuration(coolDownDelay.Abs())
 	return now().Add(delay.Abs())
 }
 
@@ -173,4 +180,13 @@ func minDuration(a, b time.Duration) time.Duration {
 func jitterDuration(duration time.Duration) time.Duration {
 	jitter := time.Duration(rand.Int63n(int64(duration.Abs() + 1)))
 	return jitter - duration/2
+}
+
+func getEnv(key string, fallback int) int {
+	if value, ok := os.LookupEnv(key); ok {
+		if intVal, err := strconv.Atoi(value); err == nil {
+			return intVal
+		}
+	}
+	return fallback
 }
