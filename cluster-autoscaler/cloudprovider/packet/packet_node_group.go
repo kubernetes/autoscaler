@@ -28,14 +28,14 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// packetNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
+// equinixMetalNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
 //
 // Represents a homogeneous collection of nodes within a cluster,
 // which can be dynamically resized between a minimum and maximum
 // number of nodes.
-type packetNodeGroup struct {
-	packetManager packetManager
-	id            string
+type equinixMetalNodeGroup struct {
+	equinixMetalManager equinixMetalManager
+	id                  string
 
 	clusterUpdateMutex *sync.Mutex
 
@@ -70,7 +70,7 @@ const (
 //
 // Takes precautions so that the cluster is not modified while in an UPDATE_IN_PROGRESS state.
 // Blocks until the cluster has reached UPDATE_COMPLETE.
-func (ng *packetNodeGroup) IncreaseSize(delta int) error {
+func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
 	ng.clusterUpdateMutex.Lock()
 	defer ng.clusterUpdateMutex.Unlock()
 
@@ -78,7 +78,7 @@ func (ng *packetNodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("size increase must be positive")
 	}
 
-	size, err := ng.packetManager.nodeGroupSize(ng.id)
+	size, err := ng.equinixMetalManager.nodeGroupSize(ng.id)
 	if err != nil {
 		return fmt.Errorf("could not check current nodegroup size: %v", err)
 	}
@@ -89,7 +89,7 @@ func (ng *packetNodeGroup) IncreaseSize(delta int) error {
 	klog.V(0).Infof("Increasing size by %d, %d->%d", delta, *ng.targetSize, *ng.targetSize+delta)
 	*ng.targetSize += delta
 
-	err = ng.packetManager.createNodes(ng.id, delta)
+	err = ng.equinixMetalManager.createNodes(ng.id, delta)
 	if err != nil {
 		return fmt.Errorf("could not increase cluster size: %v", err)
 	}
@@ -99,12 +99,12 @@ func (ng *packetNodeGroup) IncreaseSize(delta int) error {
 
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
 //
-// The process of deletion depends on the implementation of packetManager,
+// The process of deletion depends on the implementation of equinixMetalManager,
 // but this function handles what should be common between all implementations:
 //   - simultaneous but separate calls from the autoscaler are batched together
 //   - does not allow scaling while the cluster is already in an UPDATE_IN_PROGRESS state
 //   - after scaling down, blocks until the cluster has reached UPDATE_COMPLETE
-func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	klog.V(1).Infof("Locking nodesToDeleteMutex")
 
 	// Batch simultaneous deletes on individual nodes
@@ -117,7 +117,7 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	var cachedSize int
 	var err error
 	if time.Since(ng.deleteNodesCachedSizeAt) > time.Second*10 {
-		cachedSize, err = ng.packetManager.nodeGroupSize(ng.id)
+		cachedSize, err = ng.equinixMetalManager.nodeGroupSize(ng.id)
 		if err != nil {
 			ng.nodesToDeleteMutex.Unlock()
 			klog.V(1).Infof("UnLocking nodesToDeleteMutex")
@@ -204,13 +204,13 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		})
 	}
 
-	err = ng.packetManager.deleteNodes(ng.id, nodeRefs, cachedSize-len(nodes))
+	err = ng.equinixMetalManager.deleteNodes(ng.id, nodeRefs, cachedSize-len(nodes))
 	if err != nil {
 		return fmt.Errorf("manager error deleting nodes: %v", err)
 	}
 
 	// Check the new node group size and store that as the new target
-	newSize, err := ng.packetManager.nodeGroupSize(ng.id)
+	newSize, err := ng.equinixMetalManager.nodeGroupSize(ng.id)
 	if err != nil {
 		// Set to the expected size as a fallback
 		*ng.targetSize = cachedSize - len(nodes)
@@ -221,29 +221,29 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
-// DecreaseTargetSize decreases the cluster node_count in packet.
-func (ng *packetNodeGroup) DecreaseTargetSize(delta int) error {
+// DecreaseTargetSize decreases the cluster node_count in Equinix Metal.
+func (ng *equinixMetalNodeGroup) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
 	klog.V(0).Infof("Decreasing target size by %d, %d->%d", delta, *ng.targetSize, *ng.targetSize+delta)
 	*ng.targetSize += delta
-	return fmt.Errorf("could not decrease target size") /*ng.packetManager.updateNodeCount(ng.id, *ng.targetSize)*/
+	return fmt.Errorf("could not decrease target size") /*ng.equinixMetalManager.updateNodeCount(ng.id, *ng.targetSize)*/
 }
 
 // Id returns the node group ID
-func (ng *packetNodeGroup) Id() string {
+func (ng *equinixMetalNodeGroup) Id() string {
 	return ng.id
 }
 
 // Debug returns a string formatted with the node group's min, max and target sizes.
-func (ng *packetNodeGroup) Debug() string {
+func (ng *equinixMetalNodeGroup) Debug() string {
 	return fmt.Sprintf("%s min=%d max=%d target=%d", ng.id, ng.minSize, ng.maxSize, *ng.targetSize)
 }
 
 // Nodes returns a list of nodes that belong to this node group.
-func (ng *packetNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	nodes, err := ng.packetManager.getNodes(ng.id)
+func (ng *equinixMetalNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+	nodes, err := ng.equinixMetalManager.getNodes(ng.id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get nodes: %v", err)
 	}
@@ -255,48 +255,48 @@ func (ng *packetNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *packetNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return ng.packetManager.templateNodeInfo(ng.id)
+func (ng *equinixMetalNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+	return ng.equinixMetalManager.templateNodeInfo(ng.id)
 }
 
 // Exist returns if this node group exists.
 // Currently always returns true.
-func (ng *packetNodeGroup) Exist() bool {
+func (ng *equinixMetalNodeGroup) Exist() bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *packetNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *equinixMetalNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (ng *packetNodeGroup) Delete() error {
+func (ng *equinixMetalNodeGroup) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns if the nodegroup is autoprovisioned.
-func (ng *packetNodeGroup) Autoprovisioned() bool {
+func (ng *equinixMetalNodeGroup) Autoprovisioned() bool {
 	return false
 }
 
 // MaxSize returns the maximum allowed size of the node group.
-func (ng *packetNodeGroup) MaxSize() int {
+func (ng *equinixMetalNodeGroup) MaxSize() int {
 	return ng.maxSize
 }
 
 // MinSize returns the minimum allowed size of the node group.
-func (ng *packetNodeGroup) MinSize() int {
+func (ng *equinixMetalNodeGroup) MinSize() int {
 	return ng.minSize
 }
 
 // TargetSize returns the target size of the node group.
-func (ng *packetNodeGroup) TargetSize() (int, error) {
+func (ng *equinixMetalNodeGroup) TargetSize() (int, error) {
 	return *ng.targetSize, nil
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *packetNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *equinixMetalNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
