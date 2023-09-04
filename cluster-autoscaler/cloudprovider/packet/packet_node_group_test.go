@@ -42,10 +42,10 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	assert.Equal(t, true, true)
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
 		// If auth token set in env, hit the actual Packet API
-		m = newTestPacketManagerRest(t, "https://api.equinix.com/metal/v1")
+		m = newTestMetalManagerRest(t, "https://api.equinix.com")
 	} else {
 		// Set up a mock Packet API
-		m = newTestPacketManagerRest(t, server.URL)
+		m = newTestMetalManagerRest(t, server.URL)
 		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponse).Times(3)
 		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", createMetalDeviceResponsePool3).Times(1)
 		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponseAfterIncreasePool3).Times(2)

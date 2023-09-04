@@ -36,9 +36,8 @@ const DefaultCloudProvider = packet.EquinixMetalProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case packet.ProviderName:
-		return packet.BuildCloudProvider(opts, do, rl)
-	case packet.EquinixMetalProviderName:
+	case packet.ProviderName,
+		packet.EquinixMetalProviderName:
 		return packet.BuildCloudProvider(opts, do, rl)
 	}
 
