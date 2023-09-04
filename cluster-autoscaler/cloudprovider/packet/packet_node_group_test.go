@@ -40,7 +40,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
 	assert.Equal(t, true, true)
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If auth token set in env, hit the actual Packet API
 		m = newTestPacketManagerRest(t, "https://api.equinix.com")
 	} else {
@@ -106,7 +106,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	err = ngPool3.IncreaseSize(1)
 	assert.NoError(t, err)
 
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If testing with actual API give it some time until the nodes bootstrap
 		time.Sleep(420 * time.Second)
 	}
@@ -120,7 +120,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	err = ngPool2.IncreaseSize(1)
 	assert.NoError(t, err)
 
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If testing with actual API give it some time until the nodes bootstrap
 		time.Sleep(420 * time.Second)
 	}
@@ -151,7 +151,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Wait a few seconds if talking to the actual Packet API
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		time.Sleep(10 * time.Second)
 	}
 
