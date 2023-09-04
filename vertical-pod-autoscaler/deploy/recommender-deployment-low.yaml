@@ -29,7 +29,7 @@ spec:
         image: registry.k8s.io/autoscaling/vpa-recommender:0.14.0
         imagePullPolicy: Always
         args:
-          - --name=frugal
+          - --recommender-name=frugal
           - --target-cpu-percentile=0.50
         resources:
           limits:
