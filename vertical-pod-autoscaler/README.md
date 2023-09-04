@@ -304,7 +304,7 @@ For example you could have 3 profiles: [frugal](deploy/recommender-deployment-lo
 use different TargetCPUPercentile (50, 90 and 95) to calculate their recommendations.
 
 Please note the usage of the following arguments to override default names and percentiles:
-- --name=performance
+- --recommender-name=performance
 - --target-cpu-percentile=0.95
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
