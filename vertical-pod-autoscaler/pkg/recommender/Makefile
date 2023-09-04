@@ -8,6 +8,8 @@ ENVVAR=CGO_ENABLED=0 $(TEST_ENVVAR)
 GOOS?=linux
 COMPONENT=recommender
 FULL_COMPONENT=vpa-${COMPONENT}
+# localhost registries need --insecure for some docker commands.
+INSECURE=$(subst localhost,--insecure,$(findstring localhost,$(REGISTRY)))
 
 ALL_ARCHITECTURES?=amd64 arm arm64 ppc64le s390x
 export DOCKER_CLI_EXPERIMENTAL=enabled
@@ -64,9 +66,9 @@ endif
 
 .PHONY: push-multi-arch
 push-multi-arch:
-	docker manifest create --amend $(REGISTRY)/${FULL_COMPONENT}:$(TAG) $(shell echo $(ALL_ARCHITECTURES) | sed -e "s~[^ ]*~$(REGISTRY)/${FULL_COMPONENT}\-&:$(TAG)~g")
+	docker manifest create $(INSECURE) --amend $(REGISTRY)/${FULL_COMPONENT}:$(TAG) $(shell echo $(ALL_ARCHITECTURES) | sed -e "s~[^ ]*~$(REGISTRY)/${FULL_COMPONENT}\-&:$(TAG)~g")
 	@for arch in $(ALL_ARCHITECTURES); do docker manifest annotate --arch $${arch} $(REGISTRY)/${FULL_COMPONENT}:$(TAG) $(REGISTRY)/${FULL_COMPONENT}-$${arch}:${TAG}; done
-	docker manifest push --purge $(REGISTRY)/${FULL_COMPONENT}:$(TAG)
+	docker manifest push $(INSECURE) --purge $(REGISTRY)/${FULL_COMPONENT}:$(TAG)
 
 docker-builder:
 	docker build -t vpa-autoscaling-builder ../../builder

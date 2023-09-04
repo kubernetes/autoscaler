@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -71,6 +72,10 @@ var (
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
 	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	// external metrics provider config
+	useExternalMetrics   = flag.Bool("use-external-metrics", false, "ALPHA.  Use an external metrics provider instead of metrics_server.")
+	externalCpuMetric    = flag.String("external-metrics-cpu-metric", "", "ALPHA.  Metric to use with external metrics provider for CPU usage.")
+	externalMemoryMetric = flag.String("external-metrics-memory-metric", "", "ALPHA.  Metric to use with external metrics provider for memory usage.")
 )
 
 // Aggregation configuration flags
@@ -102,7 +107,7 @@ const (
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
-	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender: %v", common.VerticalPodAutoscalerVersion, recommenderName)
+	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender: %v", common.VerticalPodAutoscalerVersion, *recommenderName)
 
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
@@ -124,14 +129,31 @@ func main() {
 	if *postProcessorCPUasInteger {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
+
 	// CappingPostProcessor, should always come in the last position for post-processing
 	postProcessors = append(postProcessors, &routines.CappingPostProcessor{})
+	var source input_metrics.PodMetricsLister
+	if *useExternalMetrics {
+		resourceMetrics := map[apiv1.ResourceName]string{}
+		if externalCpuMetric != nil && *externalCpuMetric != "" {
+			resourceMetrics[apiv1.ResourceCPU] = *externalCpuMetric
+		}
+		if externalMemoryMetric != nil && *externalMemoryMetric != "" {
+			resourceMetrics[apiv1.ResourceMemory] = *externalMemoryMetric
+		}
+		externalClientOptions := &input_metrics.ExternalClientOptions{ResourceMetrics: resourceMetrics, ContainerNameLabel: *ctrNameLabel}
+		klog.V(1).Infof("Using External Metrics: %+v", externalClientOptions)
+		source = input_metrics.NewExternalClient(config, clusterState, *externalClientOptions)
+	} else {
+		klog.V(1).Infof("Using Metrics Server.")
+		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
+	}
 
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
 		KubeClient:          kubeClient,
-		MetricsClient:       input_metrics.NewMetricsClient(config, *vpaObjectNamespace, "default-metrics-client"),
+		MetricsClient:       input_metrics.NewMetricsClient(source, *vpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), *vpaObjectNamespace),
 		ClusterState:        clusterState,

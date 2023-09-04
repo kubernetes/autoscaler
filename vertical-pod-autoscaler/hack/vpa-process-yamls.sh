@@ -40,7 +40,20 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment recommender-externalmetrics-deployment"
+TEST_COMPONENTS=(recommender-externalmetrics-deployment)
+
+function script_path {
+  # Regular components have deployment yaml files under /deploy/.  But some components only have
+  # test deployment yaml files that are under hack/e2e.  If $1 is one of ${TEST_COMPONENTS}, use
+  # the hack/e2e subdir instead of deploy.
+  if printf '%s\0' "${TEST_COMPONENTS[@]}" | grep -Fqxz -- $1; then
+    echo "${SCRIPT_ROOT}/hack/e2e/${1}.yaml"
+  else
+    echo "${SCRIPT_ROOT}/deploy/${1}.yaml"
+  fi
+}
+
 case ${ACTION} in
 delete|diff) COMPONENTS+=" vpa-beta2-crd" ;;
 esac
@@ -59,8 +72,8 @@ for i in $COMPONENTS; do
     fi
   fi
   if [[ ${ACTION} == print ]]; then
-    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml
+    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh $(script_path $i)
   else
-    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - || true
+    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh $(script_path $i) | kubectl ${ACTION} -f - || true
   fi
 done
