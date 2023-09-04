@@ -354,6 +354,9 @@ message NodeGroupAutoscalingOptions {
   // ScaleDownUnreadyTime represents how long an unready node should be
   // unneeded before it is eligible for scale down.
   k8s.io.apimachinery.pkg.apis.meta.v1.Duration scaleDownUnreadyTime = 4;
+
+  // MaxNodeProvisionTime time CA waits for node to be provisioned
+	k8s.io.apimachinery.pkg.apis.meta.v1.Duration MaxNodeProvisionTime = 5;
 }
 
 message NodeGroupAutoscalingOptionsRequest {
