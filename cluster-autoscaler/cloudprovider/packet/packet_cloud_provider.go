@@ -42,7 +42,10 @@ const (
 	// master/controller node.
 	DefaultControllerNodeLabelKey = "node-role.kubernetes.io/master"
 	// ControllerNodeIdentifierEnv is the string for the environment variable.
-	ControllerNodeIdentifierEnv = "PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL"
+	// Deprecated: This env var is deprecated in the favour packet's acquisition to equinix.
+	// Please use 'ControllerNodeIdentifierMetalEnv'
+	ControllerNodeIdentifierEnv      = "PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL"
+	ControllerNodeIdentifierMetalEnv = "METAL_CONTROLLER_NODE_IDENTIFIER_LABEL"
 )
 
 var (
@@ -106,10 +109,15 @@ func (pcp *equinixMetalCloudProvider) AddNodeGroup(group equinixMetalNodeGroup) 
 //
 // Since only a single node group is currently supported, the first node group is always returned.
 func (pcp *equinixMetalCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	controllerNodeLabel := os.Getenv(ControllerNodeIdentifierEnv)
-	if controllerNodeLabel == "" {
-		klog.V(3).Infof("env %s not set, using default: %s", ControllerNodeIdentifierEnv, DefaultControllerNodeLabelKey)
-		controllerNodeLabel = DefaultControllerNodeLabelKey
+	controllerNodeLabel := DefaultControllerNodeLabelKey
+	value, present := os.LookupEnv(ControllerNodeIdentifierMetalEnv)
+	if present {
+		controllerNodeLabel = value
+	} else {
+		controllerNodeLabel = os.Getenv(ControllerNodeIdentifierEnv)
+		if controllerNodeLabel == "" {
+			klog.V(3).Infof("env %s not set, using default: %s", ControllerNodeIdentifierEnv, DefaultControllerNodeLabelKey)
+		}
 	}
 
 	if _, found := node.ObjectMeta.Labels[controllerNodeLabel]; found {

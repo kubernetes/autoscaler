@@ -79,7 +79,7 @@ func TestListMetalDevices(t *testing.T) {
 	var m *equinixMetalManagerRest
 	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If auth token set in env, hit the actual Packet API
 		m = newTestMetalManagerRest(t, "https://api.equinix.com/metal/v1/")
 	} else {

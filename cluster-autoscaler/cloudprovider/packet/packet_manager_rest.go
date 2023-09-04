@@ -49,6 +49,7 @@ const (
 	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 	expectedAPIContentTypePrefix = "application/json"
 	prefix                       = "equinixmetal://"
+	metalAuthTokenEnv            = "METAL_AUTH_TOKEN"
 )
 
 type instanceType struct {
@@ -298,9 +299,15 @@ func createEquinixMetalManagerRest(configReader io.Reader, discoverOpts cloudpro
 		klog.Fatalf("No \"default\" or [Global] nodepool definition was found")
 	}
 
-	metalAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	if len(metalAuthToken) == 0 {
-		klog.Fatalf("PACKET_AUTH_TOKEN is required and missing")
+	var metalAuthToken string
+	value, present := os.LookupEnv(metalAuthTokenEnv)
+	if present {
+		metalAuthToken = value
+	} else {
+		metalAuthToken = os.Getenv("PACKET_AUTH_TOKEN")
+		if len(metalAuthToken) == 0 {
+			klog.Fatalf("%s or PACKET_AUTH_TOKEN is required and missing", metalAuthTokenEnv)
+		}
 	}
 
 	manager.authToken = metalAuthToken
