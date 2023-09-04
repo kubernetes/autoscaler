@@ -24,8 +24,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
-// PacketPriceModel implements PriceModel interface for Packet.
-type PacketPriceModel struct {
+// EquinixMetalPriceModel implements PriceModel interface for Equinix Metal.
+type EquinixMetalPriceModel struct {
 }
 
 const (
@@ -55,7 +55,7 @@ var instancePrices = map[string]float64{
 
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices are in USD.
-func (model *PacketPriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
+func (model *EquinixMetalPriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	if node.Labels != nil {
 		if machineType, found := node.Labels[apiv1.LabelInstanceType]; found {
@@ -75,7 +75,7 @@ func getHours(startTime time.Time, endTime time.Time) float64 {
 
 // PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
-func (model *PacketPriceModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
+func (model *EquinixMetalPriceModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	for _, container := range pod.Spec.Containers {
 		price += getBasePrice(container.Resources.Requests, startTime, endTime)
