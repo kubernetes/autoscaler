@@ -114,19 +114,19 @@ func main() {
 	hc.Serve()
 
 	n := &nanny.Nanny{
-		StopChan:       make(chan struct{}, 1),
-		ScaleDownDelay: *scaleDownDelay,
-		ScaleUpDelay:   *scaleUpDelay,
-		PollPeriod:     period,
-		HealthCheck:    hc,
-		Threshold:      uint64(*threshold),
-		Client:         k8s,
-		ScalingMode:    *scalingMode,
-		EstimatorType:  *estimator,
-		MinClusterSize: *minClusterSize,
-		ConfigurationFlags:  *nannyConfigurationFromFlags,
-		ConfigDir:      *configDir,
-		BaseStorage:    *baseStorage,
+		StopChan:           make(chan struct{}, 1),
+		ScaleDownDelay:     *scaleDownDelay,
+		ScaleUpDelay:       *scaleUpDelay,
+		PollPeriod:         period,
+		HealthCheck:        hc,
+		Threshold:          uint64(*threshold),
+		Client:             k8s,
+		ScalingMode:        *scalingMode,
+		EstimatorType:      *estimator,
+		MinClusterSize:     *minClusterSize,
+		ConfigurationFlags: *nannyConfigurationFromFlags,
+		ConfigDir:          *configDir,
+		BaseStorage:        *baseStorage,
 	}
 
 	n.Run()

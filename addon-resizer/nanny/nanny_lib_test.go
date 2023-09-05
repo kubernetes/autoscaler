@@ -473,14 +473,14 @@ baseCPU: 264m
 	expectedEstimator := LinearEstimator{
 		Resources: []Resource{
 			{
-				Name:         "cpu",
-				Base:         resource.MustParse("264m"),
-				ExtraPerNode: resource.MustParse("350m"),
+				Name:             "cpu",
+				Base:             resource.MustParse("264m"),
+				ExtraPerResource: resource.MustParse("350m"),
 			},
 			{
-				Base:         resource.MustParse("200Mi"),
-				ExtraPerNode: resource.MustParse("20Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("200Mi"),
+				ExtraPerResource: resource.MustParse("20Mi"),
+				Name:             "memory",
 			},
 		},
 	}

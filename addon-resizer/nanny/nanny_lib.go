@@ -129,7 +129,7 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the size of the cluster, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func (n *Nanny) PollAPIServer() {
+func (n *Nanny) pollAPIServer() {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -151,13 +151,17 @@ func (n *Nanny) PollAPIServer() {
 	}
 }
 
+// Run would trigger the nanny to get the estimator based on the command line flags and configuration file
+// and then trigger the API polling which periodically counts the number of nodes, estimates the expected
+// ResourceRequirements, compares them to the actual ResourceRequirements, and
+// updates the deployment with the expected ResourceRequirements if necessary.
 func (n *Nanny) Run() {
 	estimator, err := n.getEstimator()
 	if err != nil {
 		log.Fatal(err)
 	}
 	n.estimator = estimator
-	go n.PollAPIServer()
+	go n.pollAPIServer()
 }
 
 func (n *Nanny) loadConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {
@@ -220,25 +224,25 @@ func (n *Nanny) getEstimator() (ResourceEstimator, error) {
 	// Monitor only the resources specified.
 	if nannycfg.BaseCPU != nannyconfig.NoValue {
 		resources = append(resources, Resource{
-			Base:         resource.MustParse(nannycfg.BaseCPU),
-			ExtraPerNode: resource.MustParse(nannycfg.CPUPerNode),
-			Name:         "cpu",
+			Base:             resource.MustParse(nannycfg.BaseCPU),
+			ExtraPerResource: resource.MustParse(nannycfg.CPUPerNode),
+			Name:             "cpu",
 		})
 	}
 
 	if nannycfg.BaseMemory != nannyconfig.NoValue {
 		resources = append(resources, Resource{
-			Base:         resource.MustParse(nannycfg.BaseMemory),
-			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:         "memory",
+			Base:             resource.MustParse(nannycfg.BaseMemory),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "memory",
 		})
 	}
 
 	if n.BaseStorage != nannyconfig.NoValue {
 		resources = append(resources, Resource{
-			Base:         resource.MustParse(n.BaseStorage),
-			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:         "storage",
+			Base:             resource.MustParse(n.BaseStorage),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "storage",
 		})
 	}
 
