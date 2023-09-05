@@ -17,24 +17,18 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
 	flag "github.com/spf13/pflag"
 
-	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny"
 
 	"path/filepath"
 
 	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
-	nannyscheme "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/scheme"
 	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 	"k8s.io/autoscaler/addon-resizer/nanny/utils"
 	"k8s.io/client-go/kubernetes"
@@ -128,9 +122,14 @@ func main() {
 		Threshold:      uint64(*threshold),
 		Client:         k8s,
 		ScalingMode:    *scalingMode,
+		EstimatorType:  *estimator,
+		MinClusterSize: *minClusterSize,
+		NannyCfdFlags:  *nannyConfigurationFromFlags,
+		ConfigDir:      *configDir,
+		BaseStorage:    *baseStorage,
 	}
 
-	runNanny(*n, *nannyConfigurationFromFlags, *configDir)
+	n.Run()
 
 	configWatch, err := utils.CreateFsWatcher(time.Second, filepath.Join(*configDir, "NannyConfiguration"))
 	if err != nil {
@@ -145,72 +144,9 @@ func main() {
 			n.Stop()
 			// run nanny
 			glog.Info("reloading configuration and starting nanny")
-			runNanny(*n, *nannyConfigurationFromFlags, *configDir)
+			n.Run()
 		}
 	}
-}
-
-func runNanny(n nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyConfiguration, configDir string) {
-	estimator, err := getNannyEstimator(n, nannyCfdFlags, configDir)
-	if err != nil {
-		glog.Fatal(err)
-	}
-	n.Estimator = estimator
-	go n.PollAPIServer()
-}
-
-func getNannyEstimator(n nanny.Nanny, nannyCfdFlags nannyconfigalpha.NannyConfiguration, configDir string) (nanny.ResourceEstimator, error) {
-	nannycfg, err := loadNannyConfiguration(configDir, &nannyCfdFlags)
-	if err != nil {
-		return nil, err
-	}
-	glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
-
-	var resources []nanny.Resource
-
-	// Monitor only the resources specified.
-	if nannycfg.BaseCPU != nannyconfig.NoValue {
-		resources = append(resources, nanny.Resource{
-			Base:             resource.MustParse(nannycfg.BaseCPU),
-			ExtraPerResource: resource.MustParse(nannycfg.CPUPerNode),
-			Name:             "cpu",
-		})
-	}
-
-	if nannycfg.BaseMemory != nannyconfig.NoValue {
-		resources = append(resources, nanny.Resource{
-			Base:             resource.MustParse(nannycfg.BaseMemory),
-			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:             "memory",
-		})
-	}
-
-	if *baseStorage != nannyconfig.NoValue {
-		resources = append(resources, nanny.Resource{
-			Base:             resource.MustParse(*baseStorage),
-			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:             "storage",
-		})
-	}
-
-	glog.Infof("Resources: %+v", resources)
-
-	var est nanny.ResourceEstimator
-	if *estimator == "linear" {
-		est = nanny.LinearEstimator{
-			Resources: resources,
-		}
-	} else if *estimator == "exponential" {
-		est = nanny.ExponentialEstimator{
-			Resources:      resources,
-			ScaleFactor:    1.5,
-			MinClusterSize: *minClusterSize,
-		}
-	} else {
-		glog.Fatalf("Estimator %s not supported", *estimator)
-	}
-
-	return est, nil
 }
 
 func userAgent() string {
@@ -222,52 +158,4 @@ func userAgent() string {
 		command = "addon-resizer"
 	}
 	return command + "/" + nanny.AddonResizerVersion
-}
-
-func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {
-	path := filepath.Join(configDir, "NannyConfiguration")
-	_, codecs, err := nannyscheme.NewSchemeAndCodecs()
-	if err != nil {
-		return nil, err
-	}
-	// overwrite defaults with flag-specified parameters
-	nannyconfigalpha.SetDefaults_NannyConfiguration(defaultConfig)
-	// retrieve config map parameters if present
-	configMapConfig := &nannyconfigalpha.NannyConfiguration{}
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		glog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
-	} else if configMapConfig, err = decodeNannyConfiguration(data, codecs); err != nil {
-		configMapConfig = &nannyconfigalpha.NannyConfiguration{}
-		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
-	}
-	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
-	// overwrite defaults with config map parameters
-	nannyconfigalpha.FillInDefaults_NannyConfiguration(configMapConfig, defaultConfig)
-	return convertNannyConfiguration(configMapConfig), nil
-}
-
-func convertNannyConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration) *nannyconfig.NannyConfiguration {
-	if configAlpha == nil {
-		return nil
-	}
-	return &nannyconfig.NannyConfiguration{
-		TypeMeta:      configAlpha.TypeMeta,
-		BaseCPU:       configAlpha.BaseCPU,
-		CPUPerNode:    configAlpha.CPUPerNode,
-		BaseMemory:    configAlpha.BaseMemory,
-		MemoryPerNode: configAlpha.MemoryPerNode,
-	}
-}
-
-func decodeNannyConfiguration(data []byte, codecs *serializer.CodecFactory) (*nannyconfigalpha.NannyConfiguration, error) {
-	obj, err := runtime.Decode(codecs.UniversalDecoder(nannyconfigalpha.SchemeGroupVersion), data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode, error: %v", err)
-	}
-	externalHC, ok := obj.(*nannyconfigalpha.NannyConfiguration)
-	if !ok {
-		return nil, fmt.Errorf("failed to cast object to NannyConfiguration, object: %#v", obj)
-	}
-	return externalHC, nil
 }

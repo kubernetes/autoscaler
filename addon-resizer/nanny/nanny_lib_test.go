@@ -17,11 +17,18 @@ limitations under the License.
 package nanny
 
 import (
-	"testing"
 	"time"
 
+	"os"
+	"path/filepath"
+	"testing"
+
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
+	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 )
 
 var (
@@ -283,7 +290,7 @@ func TestUpdateResources(t *testing.T) {
 		est := newFakeResourceEstimator(tc.y, tc.x)
 		n := &Nanny{
 			Client:         k8s,
-			Estimator:      est,
+			estimator:      est,
 			ScaleDownDelay: tc.sdd,
 			ScaleUpDelay:   tc.sud,
 			Threshold:      tc.th,
@@ -431,4 +438,53 @@ func newFakeResourceEstimator(limits, reqs corev1.ResourceList) *fakeResourceEst
 
 func (f *fakeResourceEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
 	return f.resources
+}
+
+func TestConfigureAndRunNanny(t *testing.T) {
+	f, err := os.Create("NannyConfiguration")
+	defer os.Remove(f.Name())
+	assert.NoError(t, err)
+
+	configDir, err := filepath.Abs(filepath.Dir(f.Name()))
+	assert.NoError(t, err)
+
+	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
+		BaseCPU:       "300m",
+		CPUPerNode:    "350m",
+		BaseMemory:    "200Mi",
+		MemoryPerNode: "20Mi",
+	}
+	estimator := "linear"
+	baseStorage := nannyconfig.NoValue
+	n := Nanny{
+		EstimatorType: estimator,
+		BaseStorage:   baseStorage,
+		NannyCfdFlags: *nannyConfigurationFromFlags,
+		ConfigDir:     configDir,
+	}
+
+	_, err = f.WriteString(`
+apiVersion: nannyconfig/v1alpha1
+kind: NannyConfiguration
+baseCPU: 264m	
+`)
+	assert.NoError(t, err)
+
+	expectedEstimator := LinearEstimator{
+		Resources: []Resource{
+			{
+				Name:         "cpu",
+				Base:         resource.MustParse("264m"),
+				ExtraPerNode: resource.MustParse("350m"),
+			},
+			{
+				Base:         resource.MustParse("200Mi"),
+				ExtraPerNode: resource.MustParse("20Mi"),
+				Name:         "memory",
+			},
+		},
+	}
+	nannyEstimator, err := n.getEstimator()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedEstimator, nannyEstimator)
 }
