@@ -457,10 +457,10 @@ func TestConfigureAndRunNanny(t *testing.T) {
 	estimator := "linear"
 	baseStorage := nannyconfig.NoValue
 	n := Nanny{
-		EstimatorType: estimator,
-		BaseStorage:   baseStorage,
-		NannyCfdFlags: *nannyConfigurationFromFlags,
-		ConfigDir:     configDir,
+		EstimatorType:      estimator,
+		BaseStorage:        baseStorage,
+		ConfigurationFlags: *nannyConfigurationFromFlags,
+		ConfigDir:          configDir,
 	}
 
 	_, err = f.WriteString(`

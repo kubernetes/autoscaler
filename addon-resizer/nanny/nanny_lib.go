@@ -209,7 +209,7 @@ func (n *Nanny) decodeConfiguration(data []byte, codecs *serializer.CodecFactory
 }
 
 func (n *Nanny) getEstimator() (ResourceEstimator, error) {
-	nannycfg, err := n.loadConfiguration(n.ConfigDir, &n.NannyCfdFlags)
+	nannycfg, err := n.loadConfiguration(n.ConfigDir, &n.ConfigurationFlags)
 	if err != nil {
 		return nil, err
 	}

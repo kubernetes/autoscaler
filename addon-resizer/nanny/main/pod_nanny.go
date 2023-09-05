@@ -124,7 +124,7 @@ func main() {
 		ScalingMode:    *scalingMode,
 		EstimatorType:  *estimator,
 		MinClusterSize: *minClusterSize,
-		NannyCfdFlags:  *nannyConfigurationFromFlags,
+		ConfigurationFlags:  *nannyConfigurationFromFlags,
 		ConfigDir:      *configDir,
 		BaseStorage:    *baseStorage,
 	}
