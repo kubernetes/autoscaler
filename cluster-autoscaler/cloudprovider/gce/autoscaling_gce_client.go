@@ -72,6 +72,22 @@ const (
 	ErrorCodeOther = "OTHER"
 )
 
+var (
+	regexReservationErrors = []*regexp.Regexp{
+		regexp.MustCompile("Incompatible AggregateReservation VMFamily"),
+		regexp.MustCompile("Could not find the given reservation with the following name"),
+		regexp.MustCompile("must use ReservationAffinity of"),
+		regexp.MustCompile("The reservation must exist in the same project as the instance"),
+		regexp.MustCompile("only compatible with Aggregate Reservations"),
+		regexp.MustCompile("Please target a reservation with workload_type ="),
+		regexp.MustCompile("AggregateReservation VMFamily: should be a (.*) VM Family for instance with (.*) machine type"),
+		regexp.MustCompile("VM Family: (.*) is not supported for aggregate reservations. It must be one of"),
+		regexp.MustCompile("Reservation (.*) is incorrect for the requested resources"),
+		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
+		regexp.MustCompile("Reservation (.*) does not have sufficient capacity for the requested resources."),
+	}
+)
+
 // AutoscalingGceClient is used for communicating with GCE API.
 type AutoscalingGceClient interface {
 	// reading resources
@@ -453,15 +469,8 @@ func isReservationNotReady(errorCode, errorMessage string) bool {
 }
 
 func isInvalidReservationError(errorCode, errorMessage string) bool {
-	reservationErrors := []string{
-		"Incompatible AggregateReservation VMFamily",
-		"Could not find the given reservation with the following name",
-		"must use ReservationAffinity of",
-		"The reservation must exist in the same project as the instance",
-		"only compatible with Aggregate Reservations",
-	}
-	for _, rErr := range reservationErrors {
-		if strings.Contains(errorMessage, rErr) {
+	for _, re := range regexReservationErrors {
+		if re.MatchString(errorMessage) {
 			return true
 		}
 	}
