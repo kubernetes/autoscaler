@@ -74,7 +74,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	provider2.AddNodeGroup("ng6", 1, 10, 1) // Nodegroup without nodes.
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
@@ -159,7 +159,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	provider1.AddNode("ng4", ready6)
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
@@ -249,7 +249,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	// Cloud provider with TemplateNodeInfo not implemented.
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 

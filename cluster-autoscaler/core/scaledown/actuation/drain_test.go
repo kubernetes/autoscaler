@@ -152,7 +152,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 1)
 			provider.AddNode("ng1", n1)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 			assert.NoError(t, err)

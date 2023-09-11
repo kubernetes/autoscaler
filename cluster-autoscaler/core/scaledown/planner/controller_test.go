@@ -125,7 +125,7 @@ func TestReplicasCounter(t *testing.T) {
 	jobLister, _ := kube_util.NewTestJobLister([]*batchv1.Job{job, unsetJob, jobWithSucceededReplicas})
 	rsLister, _ := kube_util.NewTestReplicaSetLister([]*appsv1.ReplicaSet{rs, unsetRs})
 	ssLister, _ := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{sS})
-	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, rcLister, jobLister, rsLister, ssLister)
+	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, rcLister, jobLister, rsLister, ssLister)
 	testCases := []struct {
 		name         string
 		ownerRef     metav1.OwnerReference

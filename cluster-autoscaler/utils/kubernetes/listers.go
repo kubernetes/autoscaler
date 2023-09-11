@@ -38,8 +38,7 @@ import (
 type ListerRegistry interface {
 	AllNodeLister() NodeLister
 	ReadyNodeLister() NodeLister
-	ScheduledPodLister() PodLister
-	ScheduledAndUnschedulablePodLister() ScheduledAndUnschedulablePodLister
+	AllPodLister() PodLister
 	PodDisruptionBudgetLister() PodDisruptionBudgetLister
 	DaemonSetLister() v1appslister.DaemonSetLister
 	ReplicationControllerLister() v1lister.ReplicationControllerLister
@@ -49,42 +48,38 @@ type ListerRegistry interface {
 }
 
 type listerRegistryImpl struct {
-	allNodeLister                      NodeLister
-	readyNodeLister                    NodeLister
-	scheduledPodLister                 PodLister
-	scheduledAndUnschedulablePodLister ScheduledAndUnschedulablePodLister
-	podDisruptionBudgetLister          PodDisruptionBudgetLister
-	daemonSetLister                    v1appslister.DaemonSetLister
-	replicationControllerLister        v1lister.ReplicationControllerLister
-	jobLister                          v1batchlister.JobLister
-	replicaSetLister                   v1appslister.ReplicaSetLister
-	statefulSetLister                  v1appslister.StatefulSetLister
+	allNodeLister               NodeLister
+	readyNodeLister             NodeLister
+	allPodLister                PodLister
+	podDisruptionBudgetLister   PodDisruptionBudgetLister
+	daemonSetLister             v1appslister.DaemonSetLister
+	replicationControllerLister v1lister.ReplicationControllerLister
+	jobLister                   v1batchlister.JobLister
+	replicaSetLister            v1appslister.ReplicaSetLister
+	statefulSetLister           v1appslister.StatefulSetLister
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
-func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod PodLister,
-	scheduledAndUnschedulablePodLister ScheduledAndUnschedulablePodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
+func NewListerRegistry(allNode NodeLister, readyNode NodeLister, allPodLister PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
 	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
 	statefulSetLister v1appslister.StatefulSetLister) ListerRegistry {
 	return listerRegistryImpl{
-		allNodeLister:                      allNode,
-		readyNodeLister:                    readyNode,
-		scheduledPodLister:                 scheduledPod,
-		scheduledAndUnschedulablePodLister: scheduledAndUnschedulablePodLister,
-		podDisruptionBudgetLister:          podDisruptionBudgetLister,
-		daemonSetLister:                    daemonSetLister,
-		replicationControllerLister:        replicationControllerLister,
-		jobLister:                          jobLister,
-		replicaSetLister:                   replicaSetLister,
-		statefulSetLister:                  statefulSetLister,
+		allNodeLister:               allNode,
+		readyNodeLister:             readyNode,
+		allPodLister:                allPodLister,
+		podDisruptionBudgetLister:   podDisruptionBudgetLister,
+		daemonSetLister:             daemonSetLister,
+		replicationControllerLister: replicationControllerLister,
+		jobLister:                   jobLister,
+		replicaSetLister:            replicaSetLister,
+		statefulSetLister:           statefulSetLister,
 	}
 }
 
 // NewListerRegistryWithDefaultListers returns a registry filled with listers of the default implementations
 func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChannel <-chan struct{}) ListerRegistry {
-	scheduledAndUnschedulablePodLister := NewScheduledAndUnschedulablePodLister(kubeClient, stopChannel)
-	scheduledPodLister := NewScheduledPodLister(kubeClient, stopChannel)
+	allPodLister := NewAllPodLister(kubeClient, stopChannel)
 	readyNodeLister := NewReadyNodeLister(kubeClient, stopChannel)
 	allNodeLister := NewAllNodeLister(kubeClient, stopChannel)
 	podDisruptionBudgetLister := NewPodDisruptionBudgetLister(kubeClient, stopChannel)
@@ -93,9 +88,14 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChanne
 	jobLister := NewJobLister(kubeClient, stopChannel)
 	replicaSetLister := NewReplicaSetLister(kubeClient, stopChannel)
 	statefulSetLister := NewStatefulSetLister(kubeClient, stopChannel)
-	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
-		scheduledAndUnschedulablePodLister, podDisruptionBudgetLister, daemonSetLister,
-		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister)
+	return NewListerRegistry(allNodeLister, readyNodeLister, allPodLister,
+		podDisruptionBudgetLister, daemonSetLister, replicationControllerLister,
+		jobLister, replicaSetLister, statefulSetLister)
+}
+
+// AllPodLister returns the AllPodLister registered to this registry
+func (r listerRegistryImpl) AllPodLister() PodLister {
+	return r.allPodLister
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
@@ -106,16 +106,6 @@ func (r listerRegistryImpl) AllNodeLister() NodeLister {
 // ReadyNodeLister returns the ReadyNodeLister registered to this registry
 func (r listerRegistryImpl) ReadyNodeLister() NodeLister {
 	return r.readyNodeLister
-}
-
-// ScheduledPodLister returns the ScheduledPodLister registered to this registry
-func (r listerRegistryImpl) ScheduledPodLister() PodLister {
-	return r.scheduledPodLister
-}
-
-// ScheduledAndUnschedulablePodLister returns the ScheduledAndUnschedulablePodLister registered to this registry
-func (r listerRegistryImpl) ScheduledAndUnschedulablePodLister() ScheduledAndUnschedulablePodLister {
-	return r.scheduledAndUnschedulablePodLister
 }
 
 // PodDisruptionBudgetLister returns the podDisruptionBudgetLister registered to this registry
@@ -148,69 +138,52 @@ func (r listerRegistryImpl) StatefulSetLister() v1appslister.StatefulSetLister {
 	return r.statefulSetLister
 }
 
-// PodLister lists pods.
+// PodLister lists all pods.
+// To filter out the scheduled or unschedulable pods the helper methods ScheduledPods and UnschedulablePods should be used.
 type PodLister interface {
 	List() ([]*apiv1.Pod, error)
 }
 
-// ScheduledPodLister lists scheduled pods.
-type ScheduledPodLister struct {
-	podLister v1lister.PodLister
-}
-
-// List returns all scheduled pods.
-func (lister *ScheduledPodLister) List() ([]*apiv1.Pod, error) {
-	return lister.podLister.List(labels.Everything())
-}
-
-// NewScheduledPodLister builds ScheduledPodLister
-func NewScheduledPodLister(kubeClient client.Interface, stopchannel <-chan struct{}) PodLister {
-	// watch unscheduled pods
-	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
-		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
-	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(podListWatch, &apiv1.Pod{}, time.Hour)
-	podLister := v1lister.NewPodLister(store)
-	go reflector.Run(stopchannel)
-
-	return &ScheduledPodLister{
-		podLister: podLister,
-	}
-}
-
-// ScheduledAndUnschedulablePodLister lists scheduled and unschedulable pods obtained at the same point in time.
-type ScheduledAndUnschedulablePodLister interface {
-	List() (scheduledPods, unschedulablePods []*apiv1.Pod, err error)
-}
-
-// ScheduledAndUnschedulablePodLister lists scheduled and unschedulable pods.
-type scheduledAndUnschedulablePodLister struct {
-	podLister v1lister.PodLister
-}
-
-// List returns all scheduled and unschedulable pods.
-func (lister *scheduledAndUnschedulablePodLister) List() (scheduledPods []*apiv1.Pod, unschedulablePods []*apiv1.Pod, err error) {
-	allPods, err := lister.podLister.List(labels.Everything())
-	if err != nil {
-		return scheduledPods, unschedulablePods, err
-	}
+// ScheduledPods is a helper method that returns all scheduled pods from given pod list.
+func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
+	var scheduledPods []*apiv1.Pod
 	for _, pod := range allPods {
 		if pod.Spec.NodeName != "" {
 			scheduledPods = append(scheduledPods, pod)
 			continue
 		}
-		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
-		if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonUnschedulable {
-			if pod.GetDeletionTimestamp() == nil {
-				unschedulablePods = append(unschedulablePods, pod)
+	}
+	return scheduledPods
+}
+
+// UnschedulablePods is a helper method that returns all unschedulable pods from given pod list.
+func UnschedulablePods(allPods []*apiv1.Pod) []*apiv1.Pod {
+	var unschedulablePods []*apiv1.Pod
+	for _, pod := range allPods {
+		if pod.Spec.NodeName == "" {
+			_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+			if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonUnschedulable {
+				if pod.GetDeletionTimestamp() == nil {
+					unschedulablePods = append(unschedulablePods, pod)
+				}
 			}
 		}
 	}
-	return scheduledPods, unschedulablePods, nil
+	return unschedulablePods
 }
 
-// NewScheduledAndUnschedulablePodLister builds ScheduledAndUnschedulablePodLister
-func NewScheduledAndUnschedulablePodLister(kubeClient client.Interface, stopchannel <-chan struct{}) ScheduledAndUnschedulablePodLister {
+// AllPodLister lists all pods.
+type AllPodLister struct {
+	podLister v1lister.PodLister
+}
+
+// List returns all scheduled pods.
+func (lister *AllPodLister) List() ([]*apiv1.Pod, error) {
+	return lister.podLister.List(labels.Everything())
+}
+
+// NewAllPodLister builds AllPodLister
+func NewAllPodLister(kubeClient client.Interface, stopchannel <-chan struct{}) PodLister {
 	selector := fields.ParseSelectorOrDie("status.phase!=" +
 		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
@@ -218,7 +191,7 @@ func NewScheduledAndUnschedulablePodLister(kubeClient client.Interface, stopchan
 	podLister := v1lister.NewPodLister(store)
 	go reflector.Run(stopchannel)
 
-	return &scheduledAndUnschedulablePodLister{
+	return &AllPodLister{
 		podLister: podLister,
 	}
 }
