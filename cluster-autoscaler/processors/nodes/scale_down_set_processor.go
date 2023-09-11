@@ -23,32 +23,66 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-// PostFilteringScaleDownNodeProcessor selects first maxCount nodes (if possible) to be removed
-type PostFilteringScaleDownNodeProcessor struct {
+// CompositeScaleDownSetProcessor is a ScaleDownSetProcessor composed of multiple sub-processors passed as an argument.
+type CompositeScaleDownSetProcessor struct {
+	orderedProcessorList []ScaleDownSetProcessor
+}
+
+// NewCompositeScaleDownSetProcessor creates new CompositeScaleDownSetProcessor. The order on a list defines order in witch
+// sub-processors are invoked.
+func NewCompositeScaleDownSetProcessor(orderedProcessorList []ScaleDownSetProcessor) *CompositeScaleDownSetProcessor {
+	return &CompositeScaleDownSetProcessor{
+		orderedProcessorList: orderedProcessorList,
+	}
+}
+
+// GetNodesToRemove selects nodes to remove.
+func (p *CompositeScaleDownSetProcessor) GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
+	for _, p := range p.orderedProcessorList {
+		candidates = p.GetNodesToRemove(ctx, candidates, maxCount)
+	}
+	return candidates
+}
+
+// CleanUp is called at CA termination
+func (p *CompositeScaleDownSetProcessor) CleanUp() {
+	for _, p := range p.orderedProcessorList {
+		p.CleanUp()
+	}
+}
+
+// MaxNodesProcessor selects first maxCount nodes (if possible) to be removed
+type MaxNodesProcessor struct {
 }
 
 // GetNodesToRemove selects up to maxCount nodes for deletion, by selecting a first maxCount candidates
-func (p *PostFilteringScaleDownNodeProcessor) GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
+func (p *MaxNodesProcessor) GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
 	end := len(candidates)
 	if len(candidates) > maxCount {
 		end = maxCount
 	}
-	return p.filterOutIncompleteAtomicNodeGroups(ctx, candidates[:end])
+	return candidates[:end]
 }
 
 // CleanUp is called at CA termination
-func (p *PostFilteringScaleDownNodeProcessor) CleanUp() {
+func (p *MaxNodesProcessor) CleanUp() {
 }
 
-// NewPostFilteringScaleDownNodeProcessor returns a new PostFilteringScaleDownNodeProcessor
-func NewPostFilteringScaleDownNodeProcessor() *PostFilteringScaleDownNodeProcessor {
-	return &PostFilteringScaleDownNodeProcessor{}
+// NewMaxNodesProcessor returns a new MaxNodesProcessor
+func NewMaxNodesProcessor() *MaxNodesProcessor {
+	return &MaxNodesProcessor{}
 }
 
-func (p *PostFilteringScaleDownNodeProcessor) filterOutIncompleteAtomicNodeGroups(ctx *context.AutoscalingContext, nodes []simulator.NodeToBeRemoved) []simulator.NodeToBeRemoved {
+// AtomicResizeFilteringProcessor removes node groups which should be scaled down as one unit
+// if only part of these nodes were scheduled for scale down.
+type AtomicResizeFilteringProcessor struct {
+}
+
+// GetNodesToRemove selects up to maxCount nodes for deletion, by selecting a first maxCount candidates
+func (p *AtomicResizeFilteringProcessor) GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
 	nodesByGroup := map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{}
 	result := []simulator.NodeToBeRemoved{}
-	for _, node := range nodes {
+	for _, node := range candidates {
 		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node.Node)
 		if err != nil {
 			klog.Errorf("Node %v will not scale down, failed to get node info: %s", node.Node.Name, err)
@@ -81,4 +115,13 @@ func (p *PostFilteringScaleDownNodeProcessor) filterOutIncompleteAtomicNodeGroup
 		}
 	}
 	return result
+}
+
+// CleanUp is called at CA termination
+func (p *AtomicResizeFilteringProcessor) CleanUp() {
+}
+
+// NewAtomicResizeFilteringProcessor returns a new AtomicResizeFilteringProcessor
+func NewAtomicResizeFilteringProcessor() *AtomicResizeFilteringProcessor {
+	return &AtomicResizeFilteringProcessor{}
 }
