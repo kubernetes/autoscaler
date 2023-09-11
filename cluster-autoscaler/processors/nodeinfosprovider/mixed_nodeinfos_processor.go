@@ -195,12 +195,13 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 }
 
 func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod, errors.AutoscalerError) {
-	pods, err := listers.ScheduledPodLister().List()
+	pods, err := listers.AllPodLister().List()
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
+	scheduledPods := kube_util.ScheduledPods(pods)
 	podsForNodes := map[string][]*apiv1.Pod{}
-	for _, p := range pods {
+	for _, p := range scheduledPods {
 		podsForNodes[p.Spec.NodeName] = append(podsForNodes[p.Spec.NodeName], p)
 	}
 	return podsForNodes, nil

@@ -314,12 +314,12 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
 	knownNodes := make(map[string]bool)
 	snapshot := clustersnapshot.NewBasicClusterSnapshot()
-
-	scheduledPods, err := a.ctx.ScheduledPodLister().List()
+	pods, err := a.ctx.AllPodLister().List()
 	if err != nil {
 		return nil, err
 	}
 
+	scheduledPods := kube_util.ScheduledPods(pods)
 	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
 	for _, node := range nodes {
