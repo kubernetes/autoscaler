@@ -908,7 +908,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 		extraPods[i] = buildTestPod(p)
 	}
 	podLister := kube_util.NewTestPodLister(pods)
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	// setup node groups
 	var provider *testprovider.TestCloudProvider
@@ -1050,7 +1050,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	p2.Spec.NodeName = "n2"
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1, p2})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		t.Fatalf("No expansion is expected, but increased %s by %d", nodeGroup, increase)
@@ -1096,7 +1096,7 @@ func TestBinpackingLimiter(t *testing.T) {
 	nodes := []*apiv1.Node{n1, n2}
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		return nil
@@ -1151,7 +1151,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	p1.Spec.NodeName = "n1"
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		t.Fatalf("No expansion is expected")
@@ -1320,7 +1320,7 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 				nodeGroupSetProcessor.similarNodeGroups = append(nodeGroupSetProcessor.similarNodeGroups, provider.GetNodeGroup(ng))
 			}
 
-			listers := kube_util.NewListerRegistry(nil, nil, kube_util.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil, nil)
+			listers := kube_util.NewListerRegistry(nil, nil, kube_util.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil)
 			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled}, &fake.Clientset{}, listers, provider, nil, nil)
 			assert.NoError(t, err)
 
@@ -1377,7 +1377,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 
 	podLister := kube_util.NewTestPodLister(podList)
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
 	options := config.AutoscalingOptions{
 		EstimatorName:            estimator.BinpackingEstimatorName,
@@ -1447,7 +1447,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
@@ -1502,7 +1502,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
@@ -1532,7 +1532,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 
 func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		assert.Equal(t, "ng1", nodeGroup)
 		assert.Equal(t, 1, increase)
