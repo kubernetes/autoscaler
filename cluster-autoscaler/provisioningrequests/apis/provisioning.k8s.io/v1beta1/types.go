@@ -19,6 +19,11 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// Dependencies for the generation of the code:
+	_ "github.com/onsi/ginkgo/v2"
+	_ "github.com/onsi/gomega"
+	_ "k8s.io/code-generator"
 )
 
 // +genclient

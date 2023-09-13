@@ -23,6 +23,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/json-iterator/go v1.1.12
+	github.com/onsi/ginkgo/v2 v2.9.4
+	github.com/onsi/gomega v1.27.6
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/satori/go.uuid v1.2.0
@@ -43,6 +45,7 @@ require (
 	k8s.io/client-go v0.28.0
 	k8s.io/cloud-provider v0.28.0
 	k8s.io/cloud-provider-aws v1.27.0
+	k8s.io/code-generator v0.28.0
 	k8s.io/component-base v0.28.0
 	k8s.io/component-helpers v0.28.0
 	k8s.io/klog/v2 v2.100.1
@@ -97,6 +100,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
+	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/godbus/dbus/v5 v5.0.6 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -104,6 +108,7 @@ require (
 	github.com/google/cel-go v0.16.0 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
@@ -183,6 +188,7 @@ require (
 	k8s.io/cri-api v0.28.0 // indirect
 	k8s.io/csi-translation-lib v0.27.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
+	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect
 	k8s.io/kms v0.28.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
