@@ -179,8 +179,8 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		BinpackingLimiter:      binpacking.NewDefaultBinpackingLimiter(),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor: nodes.NewCompositeScaleDownSetProcessor([]nodes.ScaleDownSetProcessor{
-			nodes.NewAtomicResizeFilteringProcessor(),
 			nodes.NewMaxNodesProcessor(),
+			nodes.NewAtomicResizeFilteringProcessor(),
 		}),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
 		ScaleUpStatusProcessor:      &status.EventingScaleUpStatusProcessor{},
