@@ -75,6 +75,9 @@ func NewMaxNodesProcessor() *MaxNodesProcessor {
 
 // AtomicResizeFilteringProcessor removes node groups which should be scaled down as one unit
 // if only part of these nodes were scheduled for scale down.
+// NOTE! When chaining with other processors, AtomicResizeFilteringProcessors should be always used last.
+// Otherwise, it's possible that another processor will break the property that this processor aims to restore:
+// no partial scale-downs for node groups that should be resized atomically.
 type AtomicResizeFilteringProcessor struct {
 }
 
