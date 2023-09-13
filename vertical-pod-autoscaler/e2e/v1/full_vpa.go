@@ -19,7 +19,6 @@ package autoscaling
 import (
 	"context"
 	"fmt"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"time"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -27,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 

@@ -19,7 +19,6 @@ package autoscaling
 import (
 	"context"
 	"fmt"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -27,13 +26,14 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	podsecurity "k8s.io/pod-security-admission/api"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-	klog "k8s.io/klog/v2"
 )
 
 var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
