@@ -17,6 +17,7 @@ limitations under the License.
 package predicatechecker
 
 import (
+	"k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
@@ -30,14 +31,14 @@ func NewTestPredicateChecker() (PredicateChecker, error) {
 	}
 
 	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
-	return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), schedConfig, make(chan struct{}))
+	return NewSchedulerBasedPredicateChecker(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
 }
 
 // NewTestPredicateCheckerWithCustomConfig builds test version of PredicateChecker with custom scheduler config.
 func NewTestPredicateCheckerWithCustomConfig(schedConfig *config.KubeSchedulerConfiguration) (PredicateChecker, error) {
 	if schedConfig != nil {
 		// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
-		return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), schedConfig, make(chan struct{}))
+		return NewSchedulerBasedPredicateChecker(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
 	}
 
 	return NewTestPredicateChecker()

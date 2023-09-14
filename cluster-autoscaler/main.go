@@ -59,6 +59,7 @@ import (
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -437,11 +438,11 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
 	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
 	kubeClient := createKubeClient(kubeClientConfig)
+	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
-	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(kubeClient,
-		autoscalingOptions.SchedulerConfig, make(chan struct{}))
+	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(informerFactory, autoscalingOptions.SchedulerConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -451,6 +452,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		AutoscalingOptions:   autoscalingOptions,
 		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
 		KubeClient:           kubeClient,
+		InformerFactory:      informerFactory,
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
 		PredicateChecker:     predicateChecker,
@@ -492,6 +494,9 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
 		Comparator: nodeInfoComparator,
 	}
+
+	stop := make(chan struct{})
+	informerFactory.Start(stop)
 
 	// These metrics should be published only once.
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
