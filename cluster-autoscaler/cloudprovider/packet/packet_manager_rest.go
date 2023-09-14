@@ -48,8 +48,7 @@ import (
 const (
 	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 	expectedAPIContentTypePrefix = "application/json"
-	packetPrefix                 = "packet://"
-	equinixMetalPrefix           = "equinixmetal://"
+	prefix                       = "equinixmetal://"
 )
 
 type instanceType struct {
@@ -61,34 +60,22 @@ type instanceType struct {
 
 // InstanceTypes is a map of packet resources
 var InstanceTypes = map[string]*instanceType{
-	"c1.large.arm": {
-		InstanceName: "c1.large.arm",
-		CPU:          96,
-		MemoryMb:     131072,
-		GPU:          0,
-	},
-	"c1.small.x86": {
-		InstanceName: "c1.small.x86",
-		CPU:          4,
-		MemoryMb:     32768,
-		GPU:          0,
-	},
-	"c1.xlarge.x86": {
-		InstanceName: "c1.xlarge.x86",
-		CPU:          16,
-		MemoryMb:     131072,
-		GPU:          0,
-	},
-	"c2.large.arm": {
-		InstanceName: "c2.large.arm",
-		CPU:          32,
-		MemoryMb:     131072,
+	"a3.large.x86": {
+		InstanceName: "a3.large.x86",
+		CPU:          64,
+		MemoryMb:     1048576,
 		GPU:          0,
 	},
 	"c2.medium.x86": {
 		InstanceName: "c2.medium.x86",
 		CPU:          24,
 		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.large.arm64": {
+		InstanceName: "c3.large.arm64",
+		CPU:          80,
+		MemoryMb:     262144,
 		GPU:          0,
 	},
 	"c3.medium.x86": {
@@ -101,24 +88,30 @@ var InstanceTypes = map[string]*instanceType{
 		InstanceName: "c3.small.x86",
 		CPU:          8,
 		MemoryMb:     32768,
-		GPU:          1,
+		GPU:          0,
 	},
 	"g2.large.x86": {
 		InstanceName: "g2.large.x86",
 		CPU:          24,
 		MemoryMb:     196608,
-		GPU:          0,
-	},
-	"m1.xlarge.x86": {
-		InstanceName: "m1.xlarge.x86",
-		CPU:          24,
-		MemoryMb:     262144,
-		GPU:          0,
+		GPU:          1,
 	},
 	"m2.xlarge.x86": {
 		InstanceName: "m2.xlarge.x86",
 		CPU:          28,
 		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"m3.large.x86": {
+		InstanceName: "m3.large.x86",
+		CPU:          32,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m3.small.x86": {
+		InstanceName: "m3.small.x86",
+		CPU:          8,
+		MemoryMb:     65536,
 		GPU:          0,
 	},
 	"n2.xlarge.x86": {
@@ -127,10 +120,10 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 	},
-	"s1.large.x86": {
-		InstanceName: "s1.large.x86",
-		CPU:          8,
-		MemoryMb:     65536,
+	"n3.xlarge.x86": {
+		InstanceName: "n3.xlarge.x86",
+		CPU:          32,
+		MemoryMb:     524288,
 		GPU:          0,
 	},
 	"s3.xlarge.x86": {
@@ -139,22 +132,10 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 	},
-	"t1.small.x86": {
-		InstanceName: "t1.small.x86",
-		CPU:          4,
-		MemoryMb:     8192,
-		GPU:          0,
-	},
 	"t3.small.x86": {
 		InstanceName: "t3.small.x86",
 		CPU:          4,
 		MemoryMb:     16384,
-		GPU:          0,
-	},
-	"x1.small.x86": {
-		InstanceName: "x1.small.x86",
-		CPU:          4,
-		MemoryMb:     32768,
 		GPU:          0,
 	},
 	"x2.xlarge.x86": {
@@ -170,14 +151,13 @@ type packetManagerNodePool struct {
 	clusterName       string
 	projectID         string
 	apiServerEndpoint string
-	facility          string
+	metro             string
 	plan              string
 	os                string
 	billing           string
 	cloudinit         string
 	reservation       string
 	hostnamePattern   string
-	waitTimeStep      time.Duration
 }
 
 type packetManagerRest struct {
@@ -190,7 +170,7 @@ type ConfigNodepool struct {
 	ClusterName       string `gcfg:"cluster-name"`
 	ProjectID         string `gcfg:"project-id"`
 	APIServerEndpoint string `gcfg:"api-server-endpoint"`
-	Facility          string `gcfg:"facility"`
+	Metro             string `gcfg:"metro"`
 	Plan              string `gcfg:"plan"`
 	OS                string `gcfg:"os"`
 	Billing           string `gcfg:"billing"`
@@ -230,7 +210,7 @@ type IPAddressCreateRequest struct {
 type DeviceCreateRequest struct {
 	Hostname              string                   `json:"hostname"`
 	Plan                  string                   `json:"plan"`
-	Facility              []string                 `json:"facility"`
+	Metro                 string                   `json:"metro"`
 	OS                    string                   `json:"operating_system"`
 	BillingCycle          string                   `json:"billing_cycle"`
 	ProjectID             string                   `json:"project_id"`
@@ -333,11 +313,11 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		}
 
 		manager.packetManagerNodePools[nodepool] = &packetManagerNodePool{
-			baseURL:           "https://api.packet.net",
+			baseURL:           "https://api.equinix.com/metal/v1",
 			clusterName:       cfg.Nodegroupdef[nodepool].ClusterName,
 			projectID:         cfg.Nodegroupdef["default"].ProjectID,
 			apiServerEndpoint: cfg.Nodegroupdef["default"].APIServerEndpoint,
-			facility:          cfg.Nodegroupdef[nodepool].Facility,
+			metro:             cfg.Nodegroupdef[nodepool].Metro,
 			plan:              cfg.Nodegroupdef[nodepool].Plan,
 			os:                cfg.Nodegroupdef[nodepool].OS,
 			billing:           cfg.Nodegroupdef[nodepool].Billing,
@@ -439,19 +419,18 @@ func (mgr *packetManagerRest) NodeGroupForNode(labels map[string]string, nodeId 
 		return nodegroup, nil
 	}
 
-	trimmedNodeId := strings.TrimPrefix(nodeId, packetPrefix)
-	trimmedNodeId = strings.TrimPrefix(trimmedNodeId, equinixMetalPrefix)
+	trimmedNodeId := strings.TrimPrefix(nodeId, prefix)
 
 	device, err := mgr.getPacketDevice(context.TODO(), trimmedNodeId)
 	if err != nil {
-		return "", fmt.Errorf("Could not find group for node: %s %s", nodeId, err)
+		return "", fmt.Errorf("could not find group for node: %s %s", nodeId, err)
 	}
 	for _, t := range device.Tags {
 		if strings.HasPrefix(t, "k8s-nodepool-") {
 			return strings.TrimPrefix(t, "k8s-nodepool-"), nil
 		}
 	}
-	return "", fmt.Errorf("Could not find group for node: %s", nodeId)
+	return "", fmt.Errorf("could not find group for node: %s", nodeId)
 }
 
 // nodeGroupSize gets the current size of the nodegroup as reported by packet tags.
@@ -542,7 +521,7 @@ func (mgr *packetManagerRest) createDevice(ctx context.Context, hostname, userDa
 
 	cr := &DeviceCreateRequest{
 		Hostname:              hostname,
-		Facility:              []string{mgr.getNodePoolDefinition(nodegroup).facility},
+		Metro:                 mgr.getNodePoolDefinition(nodegroup).metro,
 		Plan:                  mgr.getNodePoolDefinition(nodegroup).plan,
 		OS:                    mgr.getNodePoolDefinition(nodegroup).os,
 		ProjectID:             mgr.getNodePoolDefinition(nodegroup).projectID,
@@ -600,27 +579,6 @@ func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
 	}
 
 	nodes := []string{}
-
-	// This bit of code along with the switch statement, checks if the CCM installed on the cluster is
-	// `packet-ccm` or `cloud-provider-equinix-metal`. The reason its important to check because depending
-	// on the CCM installed, the prefix in providerID of K8s Node spec differs from either `packet://` or
-	// `equinixmetal://`. This is now needed as `packet-ccm` is now deprecated and renamed in favor of
-	// `cloud-provider-equinix-metal`.
-	// This code checks if the INSTALLED_CCM env var is set or not. If set to `cloud-provider-equinix-metal`,
-	// the prefix is set to `equinixmetal://` and any other case the prefix is `packet://`.
-	// At a later point in time, there would be a need to make `equinixmetal://` prefix as the default or do away
-	// with `packet://` prefix entirely. This should happen presumably when the packet code in autoscaler is
-	// renamed from packet to equinixmetal.
-	prefix := packetPrefix
-
-	switch installedCCM := os.Getenv("INSTALLED_CCM"); installedCCM {
-	case "packet-ccm":
-		prefix = packetPrefix
-	case "cloud-provider-equinix-metal":
-		prefix = equinixMetalPrefix
-	default:
-		klog.V(3).Info("Unrecognized value: expected INSTALLED_CCM to be either `packet-ccm` or `cloud-provider-equinix-metal`, using default: `packet-ccm`")
-	}
 
 	for _, d := range devices.Devices {
 		if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
@@ -693,8 +651,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 			if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
 
-				trimmedName := strings.TrimPrefix(n.Name, packetPrefix)
-				trimmedName = strings.TrimPrefix(trimmedName, equinixMetalPrefix)
+				trimmedName := strings.TrimPrefix(n.Name, prefix)
 
 				switch {
 				case d.Hostname == n.Name:
