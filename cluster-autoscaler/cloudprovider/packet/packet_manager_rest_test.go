@@ -50,8 +50,8 @@ func newTestPacketManagerRest(t *testing.T, url string) *packetManagerRest {
 				clusterName:       "cluster2",
 				projectID:         "3d27fd13-0466-4878-be22-9a4b5595a3df",
 				apiServerEndpoint: "147.75.102.15:6443",
-				facility:          "ams1",
-				plan:              "t1.small.x86",
+				metro:             "ams",
+				plan:              "c3.small.x86",
 				os:                "ubuntu_18_04",
 				billing:           "hourly",
 				cloudinit:         cloudinitDefault,
@@ -63,8 +63,8 @@ func newTestPacketManagerRest(t *testing.T, url string) *packetManagerRest {
 				clusterName:       "cluster2",
 				projectID:         "3d27fd13-0466-4878-be22-9a4b5595a3df",
 				apiServerEndpoint: "147.75.102.15:6443",
-				facility:          "ams1",
-				plan:              "c1.small.x86",
+				metro:             "ams",
+				plan:              "c3.small.x86",
 				os:                "ubuntu_18_04",
 				billing:           "hourly",
 				cloudinit:         cloudinitDefault,
@@ -81,7 +81,7 @@ func TestListPacketDevices(t *testing.T) {
 	defer server.Close()
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
 		// If auth token set in env, hit the actual Packet API
-		m = newTestPacketManagerRest(t, "https://api.packet.net")
+		m = newTestPacketManagerRest(t, "https://api.equinix.com/metal/v1/")
 	} else {
 		// Set up a mock Packet API
 		m = newTestPacketManagerRest(t, server.URL)
