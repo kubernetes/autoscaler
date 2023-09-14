@@ -24,7 +24,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -45,9 +44,7 @@ type SchedulerBasedPredicateChecker struct {
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
-func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, schedConfig *config.KubeSchedulerConfiguration, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
-	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-
+func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerFactory, schedConfig *config.KubeSchedulerConfiguration) (*SchedulerBasedPredicateChecker, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = scheduler_config.Default()
@@ -77,10 +74,6 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, schedCo
 		framework:              framework,
 		delegatingSharedLister: sharedLister,
 	}
-
-	// this MUST be called after all the informers/listers are acquired via the
-	// informerFactory....Lister()/informerFactory....Informer() methods
-	informerFactory.Start(stop)
 
 	return checker, nil
 }
