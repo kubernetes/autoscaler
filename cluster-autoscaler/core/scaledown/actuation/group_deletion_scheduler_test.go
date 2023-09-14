@@ -39,9 +39,9 @@ import (
 )
 
 func TestScheduleDeletion(t *testing.T) {
-	testNg := testprovider.NewTestNodeGroup("test", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
-	atomic2 := sizedNodeGroup("atomic-2", 2, true)
-	atomic4 := sizedNodeGroup("atomic-4", 4, true)
+	testNg := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
+	atomic2 := sizedNodeGroup("atomic-2", 2, true, false)
+	atomic4 := sizedNodeGroup("atomic-4", 4, true, false)
 
 	testCases := []struct {
 		name                  string
