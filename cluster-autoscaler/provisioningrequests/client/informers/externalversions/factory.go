@@ -27,8 +27,8 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	versioned "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/clientset/versioned"
+	autoscalingxk8sio "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/informers/externalversions/autoscaling.x-k8s.io"
 	internalinterfaces "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/informers/externalversions/internalinterfaces"
-	provisioningk8sio "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/informers/externalversions/provisioning.k8s.io"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -243,9 +243,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Provisioning() provisioningk8sio.Interface
+	Autoscaling() autoscalingxk8sio.Interface
 }
 
-func (f *sharedInformerFactory) Provisioning() provisioningk8sio.Interface {
-	return provisioningk8sio.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Autoscaling() autoscalingxk8sio.Interface {
+	return autoscalingxk8sio.New(f, f.namespace, f.tweakListOptions)
 }

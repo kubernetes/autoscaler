@@ -40,7 +40,7 @@ func ProvisioningRequest(name, namespace string) *ProvisioningRequestApplyConfig
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("ProvisioningRequest")
-	b.WithAPIVersion("provisioning.k8s.io/v1beta1")
+	b.WithAPIVersion("autoscaling.x-k8s.io/v1beta1")
 	return b
 }
 

@@ -27,14 +27,14 @@ import (
 	labels "k8s.io/apimachinery/pkg/labels"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis/provisioning.k8s.io/v1beta1"
-	provisioningk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/applyconfiguration/provisioning.k8s.io/v1beta1"
+	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis/autoscaling.x-k8s.io/v1beta1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
 	testing "k8s.io/client-go/testing"
 )
 
 // FakeProvisioningRequests implements ProvisioningRequestInterface
 type FakeProvisioningRequests struct {
-	Fake *FakeProvisioningV1beta1
+	Fake *FakeAutoscalingV1beta1
 	ns   string
 }
 
@@ -144,7 +144,7 @@ func (c *FakeProvisioningRequests) Patch(ctx context.Context, name string, pt ty
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied provisioningRequest.
-func (c *FakeProvisioningRequests) Apply(ctx context.Context, provisioningRequest *provisioningk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
+func (c *FakeProvisioningRequests) Apply(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
 	if provisioningRequest == nil {
 		return nil, fmt.Errorf("provisioningRequest provided to Apply must not be nil")
 	}
@@ -167,7 +167,7 @@ func (c *FakeProvisioningRequests) Apply(ctx context.Context, provisioningReques
 
 // ApplyStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakeProvisioningRequests) ApplyStatus(ctx context.Context, provisioningRequest *provisioningk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
+func (c *FakeProvisioningRequests) ApplyStatus(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
 	if provisioningRequest == nil {
 		return nil, fmt.Errorf("provisioningRequest provided to Apply must not be nil")
 	}

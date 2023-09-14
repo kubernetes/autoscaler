@@ -17,5 +17,5 @@ limitations under the License.
 // Package v1beta1 contains definitions of Provisioning Request related objects.
 // +k8s:deepcopy-gen=package
 // +k8s:defaulter-gen=TypeMeta
-// +groupName=provisioning.k8s.io
+// +groupName=autoscaling.x-k8s.io
 package v1beta1
