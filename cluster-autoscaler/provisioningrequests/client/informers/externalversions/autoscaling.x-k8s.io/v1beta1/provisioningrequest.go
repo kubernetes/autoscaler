@@ -25,10 +25,10 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	provisioningk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis/provisioning.k8s.io/v1beta1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis/autoscaling.x-k8s.io/v1beta1"
 	versioned "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/informers/externalversions/internalinterfaces"
-	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/listers/provisioning.k8s.io/v1beta1"
+	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/listers/autoscaling.x-k8s.io/v1beta1"
 	cache "k8s.io/client-go/tools/cache"
 )
 
@@ -62,16 +62,16 @@ func NewFilteredProvisioningRequestInformer(client versioned.Interface, namespac
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ProvisioningV1beta1().ProvisioningRequests(namespace).List(context.TODO(), options)
+				return client.AutoscalingV1beta1().ProvisioningRequests(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ProvisioningV1beta1().ProvisioningRequests(namespace).Watch(context.TODO(), options)
+				return client.AutoscalingV1beta1().ProvisioningRequests(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&provisioningk8siov1beta1.ProvisioningRequest{},
+		&autoscalingxk8siov1beta1.ProvisioningRequest{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,7 +82,7 @@ func (f *provisioningRequestInformer) defaultInformer(client versioned.Interface
 }
 
 func (f *provisioningRequestInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&provisioningk8siov1beta1.ProvisioningRequest{}, f.defaultInformer)
+	return f.factory.InformerFor(&autoscalingxk8siov1beta1.ProvisioningRequest{}, f.defaultInformer)
 }
 
 func (f *provisioningRequestInformer) Lister() v1beta1.ProvisioningRequestLister {
