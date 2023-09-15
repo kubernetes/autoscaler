@@ -543,6 +543,11 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 func main() {
 	klog.InitFlags(nil)
+
+	leaderElection := defaultLeaderElectionConfiguration()
+	leaderElection.LeaderElect = true
+	options.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+
 	featureGate := utilfeature.DefaultMutableFeatureGate
 	loggingConfig := logsapi.NewLoggingConfiguration()
 
@@ -559,10 +564,6 @@ func main() {
 	}
 
 	logs.InitLogs()
-
-	leaderElection := defaultLeaderElectionConfiguration()
-	leaderElection.LeaderElect = true
-	options.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
