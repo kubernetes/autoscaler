@@ -27,8 +27,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis/provisioning.k8s.io/v1beta1"
-	provisioningk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/applyconfiguration/provisioning.k8s.io/v1beta1"
+	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis/autoscaling.x-k8s.io/v1beta1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
 	scheme "k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -50,8 +50,8 @@ type ProvisioningRequestInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.ProvisioningRequestList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.ProvisioningRequest, err error)
-	Apply(ctx context.Context, provisioningRequest *provisioningk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error)
-	ApplyStatus(ctx context.Context, provisioningRequest *provisioningk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error)
+	Apply(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error)
+	ApplyStatus(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error)
 	ProvisioningRequestExpansion
 }
 
@@ -62,7 +62,7 @@ type provisioningRequests struct {
 }
 
 // newProvisioningRequests returns a ProvisioningRequests
-func newProvisioningRequests(c *ProvisioningV1beta1Client, namespace string) *provisioningRequests {
+func newProvisioningRequests(c *AutoscalingV1beta1Client, namespace string) *provisioningRequests {
 	return &provisioningRequests{
 		client: c.RESTClient(),
 		ns:     namespace,
@@ -200,7 +200,7 @@ func (c *provisioningRequests) Patch(ctx context.Context, name string, pt types.
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied provisioningRequest.
-func (c *provisioningRequests) Apply(ctx context.Context, provisioningRequest *provisioningk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
+func (c *provisioningRequests) Apply(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
 	if provisioningRequest == nil {
 		return nil, fmt.Errorf("provisioningRequest provided to Apply must not be nil")
 	}
@@ -227,7 +227,7 @@ func (c *provisioningRequests) Apply(ctx context.Context, provisioningRequest *p
 
 // ApplyStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *provisioningRequests) ApplyStatus(ctx context.Context, provisioningRequest *provisioningk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
+func (c *provisioningRequests) ApplyStatus(ctx context.Context, provisioningRequest *autoscalingxk8siov1beta1.ProvisioningRequestApplyConfiguration, opts v1.ApplyOptions) (result *v1beta1.ProvisioningRequest, err error) {
 	if provisioningRequest == nil {
 		return nil, fmt.Errorf("provisioningRequest provided to Apply must not be nil")
 	}
