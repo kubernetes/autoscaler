@@ -37,7 +37,6 @@ import (
 //
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/autoscaler/pull/5848"
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ProvisioningRequest struct {
 	metav1.TypeMeta `json:",inline"`

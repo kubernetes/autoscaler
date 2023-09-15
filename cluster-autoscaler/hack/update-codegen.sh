@@ -32,7 +32,7 @@ chmod +x "${CODEGEN_PKG}"/generate-internal-groups.sh
 bash "${CODEGEN_PKG}"/generate-groups.sh "applyconfiguration,client,deepcopy,informer,lister" \
   k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/client \
   k8s.io/autoscaler/cluster-autoscaler/provisioningrequests/apis \
-  provisioning.k8s.io:v1beta1 \
+  autoscaling.x-k8s.io:v1beta1 \
   --go-header-file "${SCRIPT_ROOT}"/../hack/boilerplate/boilerplate.generatego.txt
 
 chmod -x "${CODEGEN_PKG}"/generate-groups.sh

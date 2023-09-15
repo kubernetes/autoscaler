@@ -25,7 +25,7 @@ import (
 
 const (
 	// GroupName represents the group name for ProvisioningRequest resources.
-	GroupName = "provisioning.k8s.io"
+	GroupName = "autoscaling.x-k8s.io"
 	// GroupVersion represents the group name for ProvisioningRequest resources.
 	GroupVersion = "v1beta1"
 )
