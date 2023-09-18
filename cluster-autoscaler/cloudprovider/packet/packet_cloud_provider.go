@@ -134,7 +134,7 @@ func (pcp *equinixMetalCloudProvider) HasInstance(node *apiv1.Node) (bool, error
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (pcp *equinixMetalCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	return &EquinixMetalPriceModel{}, nil
+	return &PriceModel{}, nil
 }
 
 // GetAvailableMachineTypes is not implemented.
@@ -168,11 +168,11 @@ func (pcp *equinixMetalCloudProvider) Cleanup() error {
 	return nil
 }
 
-// BuildEquinixMetal is called by the autoscaler to build an Equinix Metal cloud provider.
+// BuildCloudProvider is called by the autoscaler to build an Equinix Metal cloud provider.
 //
 // The equinixMetalManager is created here, and the node groups are created
 // based on the specs provided via the command line parameters.
-func BuildEquinixMetal(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 
 	if opts.CloudConfig != "" {
