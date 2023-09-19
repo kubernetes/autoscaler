@@ -101,6 +101,7 @@ var (
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile          = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
+	kubeAPIContentType      = flag.String("kube-api-content-type", "application/vnd.kubernetes.protobuf", "Content type of requests sent to apiserver.")
 	kubeClientBurst         = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client.")
 	kubeClientQPS           = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client.")
 	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
@@ -407,6 +408,8 @@ func getKubeConfig() *rest.Config {
 	if err != nil {
 		klog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
 	}
+
+	kubeConfig.ContentType = *kubeAPIContentType
 
 	return kubeConfig
 }
