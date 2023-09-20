@@ -97,11 +97,11 @@ type ProvisioningRequestSpec struct {
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable"
 	ProvisioningClass string `json:"provisioningClass"`
 
-	// AdditionalParameters contains all other parameters custom classes may require.
+	// Parameters contains all other parameters custom classes may require.
 	//
 	// +optional
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable"
-	AdditionalParameters map[string]string `json:"additionalParameters"`
+	Parameters map[string]string `json:"Parameters"`
 }
 
 type PodSet struct {
@@ -142,11 +142,11 @@ type ProvisioningRequestStatus struct {
     // +optional
 	Conditions []metav1.Condition `json:"conditions"`
 
-	// AdditionalStatus contains all other status values custom provisioning classes may require.
+	// Statuses contains all other status values custom provisioning classes may require.
 	//
 	// +optional
 	// +kubebuilder:validation:MaxItems=64
-	AdditionalStatus map[string]string `json:"additionalStatus"`
+	Statuses map[string]string `json:"statuses"`
 }
 ```
 
@@ -168,7 +168,7 @@ specified pods in an atomic way. The proposed logic is to:
 1. Try to provision required VMs in one loop.
 2. If it failed, remove the partially provisioned VMs and back-off.
 3. Stop the back-off after a given duration (optional), which would be passed
-   via `AdditionalParameters` field, using `ValidUntilSeconds` key and would contain string
+   via `Parameters` field, using `ValidUntilSeconds` key and would contain string
    denoting duration for which we should retry (measured since creation fo the CR).
 
 Note: that the VMs created in this mode are subject to the scale-down logic.
@@ -318,9 +318,9 @@ type ProvisioningClass struct {
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 
-	// AdditionalParameters contains all other parameters custom classes may require.
+	// Parameters contains all other parameters custom classes may require.
 	//
 	// +optional
-	AdditionalParameters map[string]string `json:"additionalParameters"`
+	Parameters map[string]string `json:"Parameters"`
 }
 ```

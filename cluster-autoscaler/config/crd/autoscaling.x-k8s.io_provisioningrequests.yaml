@@ -43,13 +43,20 @@ spec:
             type: object
           spec:
             description: 'Spec contains specification of the ProvisioningRequest object.
-              More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+              More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+              The spec is immutable, to make changes to the request users are expected
+              to delete an existing and create a new object with the corrected fields.'
             properties:
-              additionalParameters:
+              parameters:
                 additionalProperties:
+                  description: Parameter is limited to 255 characters.
+                  maxLength: 255
                   type: string
-                description: AdditionalParameters contains all other parameters custom
-                  classes may require.
+                description: Parameters contains all other parameters classes may
+                  require. 'atomic-scale-up.kubernetes.io' supports 'ValidUntilSeconds'
+                  parameter, which should contain a string denoting duration for which
+                  we should retry (measured since creation fo the CR).
+                maxProperties: 100
                 type: object
                 x-kubernetes-validations:
                 - message: Value is immutable
@@ -65,7 +72,6 @@ spec:
                       description: Count contains the number of pods that will be
                         created with a given template.
                       format: int32
-                      maximum: 16384
                       minimum: 1
                       type: integer
                     podTemplateRef:
@@ -79,6 +85,8 @@ spec:
                         name:
                           description: 'Name of the referenced object. More info:
                             https://kubernetes.io/docs/concepts/overview/working-with-objects/names#names'
+                          maxLength: 253
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                           type: string
                       type: object
                   required:
@@ -91,32 +99,38 @@ spec:
                 x-kubernetes-validations:
                 - message: Value is immutable
                   rule: self == oldSelf
-              provisioningClass:
-                description: 'ProvisioningClass describes the different modes of provisioning
-                  the resources. Supported values: * check-capacity.kubernetes.io
+              provisioningClassName:
+                description: 'ProvisioningClassName describes the different modes
+                  of provisioning the resources. Currently there is no support for
+                  ''ProvisioningClass'' objects. Supported values: * check-capacity.kubernetes.io
                   - check if current cluster state can fullfil this request, do not
-                  reserve the capacity. * atomic-scale-up.kubernetes.io - provision
-                  the resources in an atomic manner * ... - potential other classes
-                  that are specific to the cloud providers'
+                  reserve the capacity. Users should provide a reference to a valid
+                  PodTemplate object. CA will check if there is enough capacity in
+                  cluster to fulfill the request and put the answer in ''CapacityAvailable''
+                  condition. * atomic-scale-up.kubernetes.io - provision the resources
+                  in an atomic manner. Users should provide a reference to a valid
+                  PodTemplate object. CA will try to create the VMs in an atomic manner,
+                  clean any partially provisioned VMs and re-try the operation in
+                  a exponential back-off manner. Users can configure the timeout duration
+                  after which the request will fail by ''ValidUntilSeconds'' key in
+                  ''Parameters''. CA will set ''Failed=true'' or ''Provisioned=true''
+                  condition according to the outcome. * ... - potential other classes
+                  that are specific to the cloud providers. ''kubernetes.io'' suffix
+                  is reserved for the modes defined in Kubernetes projects.'
+                maxLength: 253
+                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                 type: string
                 x-kubernetes-validations:
                 - message: Value is immutable
                   rule: self == oldSelf
             required:
             - podSets
-            - provisioningClass
+            - provisioningClassName
             type: object
           status:
             description: Status of the ProvisioningRequest. CA constantly reconciles
               this field.
             properties:
-              additionalStatus:
-                additionalProperties:
-                  type: string
-                description: AdditionalStatus contains all other status values custom
-                  provisioning classes may require.
-                minProperties: 64
-                type: object
               conditions:
                 description: Conditions represent the observations of a Provisioning
                   Request's current state. Those will contain information whether
@@ -192,6 +206,15 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              provisioningClassDetails:
+                additionalProperties:
+                  description: Detail is limited to 32768 characters.
+                  maxLength: 32768
+                  type: string
+                description: ProvisioningClassDetails contains all other values custom
+                  provisioning classes may want to pass to end users.
+                maxProperties: 64
+                type: object
             type: object
         required:
         - spec
