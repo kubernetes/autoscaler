@@ -498,16 +498,23 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		Comparator: nodeInfoComparator,
 	}
 
-	stop := make(chan struct{})
-	informerFactory.Start(stop)
-
 	// These metrics should be published only once.
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Create autoscaler.
-	return core.NewAutoscaler(opts)
+	autoscaler, err := core.NewAutoscaler(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// Start informers. This must come after fully constructing the autoscaler because
+	// additional informers might have been registered in the factory during NewAutoscaler.
+	stop := make(chan struct{})
+	informerFactory.Start(stop)
+
+	return autoscaler, nil
 }
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
