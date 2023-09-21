@@ -96,12 +96,12 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 			VMType:                                   consts.VMTypeStandard,
 			LoadBalancerBackendPoolConfigurationType: consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration,
 		},
-		nodeZones:                map[string]sets.String{},
+		nodeZones:                map[string]sets.Set[string]{},
 		nodeInformerSynced:       func() bool { return true },
 		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.NewString(),
-		excludeLoadBalancerNodes: sets.NewString(),
-		nodePrivateIPs:           map[string]sets.String{},
+		unmanagedNodes:           sets.New[string](),
+		excludeLoadBalancerNodes: sets.New[string](),
+		nodePrivateIPs:           map[string]sets.Set[string]{},
 		routeCIDRs:               map[string]string{},
 		eventRecorder:            &record.FakeRecorder{},
 	}
@@ -126,6 +126,7 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 	az.pipCache, _ = az.newPIPCache()
 	az.plsCache, _ = az.newPLSCache()
 	az.LoadBalancerBackendPool = NewMockBackendPool(ctrl)
+	az.storageAccountCache, _ = az.newStorageAccountCache()
 
 	_ = initDiskControllers(az)
 
@@ -139,9 +140,5 @@ func GetTestCloudWithExtendedLocation(ctrl *gomock.Controller) (az *Cloud) {
 	az = GetTestCloud(ctrl)
 	az.Config.ExtendedLocationName = "microsoftlosangeles1"
 	az.Config.ExtendedLocationType = "EdgeZone"
-	az.controllerCommon.extendedLocation = &ExtendedLocation{
-		Name: az.Config.ExtendedLocationName,
-		Type: az.Config.ExtendedLocationType,
-	}
 	return az
 }
