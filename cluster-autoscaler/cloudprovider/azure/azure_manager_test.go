@@ -25,7 +25,7 @@ import (
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -450,6 +450,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 		assert.NoError(t, err)
+		manager.config.TenantID = "tenantId"
+		manager.config.AADClientID = "aadClientId"
 		assert.Equal(t, true, reflect.DeepEqual(*expectedConfig, *manager.config), "unexpected azure manager configuration")
 	})
 

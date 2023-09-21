@@ -23,7 +23,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -35,13 +34,13 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
-func (az *Cloud) refreshZones(refreshFunc func() error) {
-	ticker := time.NewTicker(consts.ZoneFetchingInterval)
-	defer ticker.Stop()
-
-	for range ticker.C {
+func (az *Cloud) refreshZones(ctx context.Context, refreshFunc func() error) {
+	klog.V(2).Info("refreshZones: refreshing zones every 30 minutes.")
+	err := wait.PollUntilContextCancel(ctx, consts.ZoneFetchingInterval, false, func(ctx context.Context) (bool, error) {
 		_ = refreshFunc()
-	}
+		return false, nil
+	})
+	klog.V(2).Infof("refreshZones: refresh zones finished with error: %s", err.Error())
 }
 
 func (az *Cloud) syncRegionZonesMap() error {

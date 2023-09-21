@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 	"github.com/Azure/go-autorest/autorest/date"

@@ -38,10 +38,10 @@ func (az *Cloud) CreateFileShare(ctx context.Context, accountOptions *AccountOpt
 		return "", "", fmt.Errorf("share options is nil")
 	}
 	if accountOptions.ResourceGroup == "" {
-		accountOptions.ResourceGroup = az.resourceGroup
+		accountOptions.ResourceGroup = az.ResourceGroup
 	}
 	if accountOptions.SubscriptionID == "" {
-		accountOptions.SubscriptionID = az.subscriptionID
+		accountOptions.SubscriptionID = az.SubscriptionID
 	}
 
 	accountOptions.EnableHTTPSTrafficOnly = true

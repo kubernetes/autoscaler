@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -257,7 +257,7 @@ func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 
 			expectedScaleSets := newTestVMSSList(3, "vmss-failed-upscale", "eastus", compute.Uniform)
 			expectedVMSSVMs := newTestVMSSVMList(3)
-			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(string(compute.ProvisioningStateFailed))
+			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(provisioningStateFailed)
 			if !testCase.isMissingInstanceView {
 				expectedVMSSVMs[2].InstanceView = &compute.VirtualMachineScaleSetVMInstanceView{Statuses: &testCase.statuses}
 			}
@@ -314,7 +314,7 @@ func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
 				Capacity: &vmssCapacity,
 			},
 			VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-				ProvisioningState: to.StringPtr(string(compute.ProvisioningStateUpdating)),
+				ProvisioningState: to.StringPtr(provisioningStateUpdating),
 				OrchestrationMode: compute.Uniform,
 			},
 		},
@@ -472,12 +472,12 @@ func TestDeleteNodes(t *testing.T) {
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 
 		if orchMode == compute.Uniform {
-			expectedVMSSVMs[0].ProvisioningState = to.StringPtr(string(compute.ProvisioningStateDeleting))
-			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(string(compute.ProvisioningStateDeleting))
+			expectedVMSSVMs[0].ProvisioningState = to.StringPtr(provisioningStateDeleting)
+			expectedVMSSVMs[2].ProvisioningState = to.StringPtr(provisioningStateDeleting)
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 		} else {
-			expectedVMs[0].ProvisioningState = to.StringPtr(string(compute.ProvisioningStateDeleting))
-			expectedVMs[2].ProvisioningState = to.StringPtr(string(compute.ProvisioningStateDeleting))
+			expectedVMs[0].ProvisioningState = to.StringPtr(provisioningStateDeleting)
+			expectedVMs[2].ProvisioningState = to.StringPtr(provisioningStateDeleting)
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 

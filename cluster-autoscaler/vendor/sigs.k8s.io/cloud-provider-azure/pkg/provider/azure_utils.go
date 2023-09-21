@@ -23,20 +23,25 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
+	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
+const (
+	IPVersionIPv6 bool = true
+	IPVersionIPv4 bool = false
+)
+
 var strToExtendedLocationType = map[string]network.ExtendedLocationTypes{
-	"edgezone": network.ExtendedLocationTypesEdgeZone,
+	"edgezone": network.EdgeZone,
 }
 
 // lockMap used to lock on entries
@@ -56,12 +61,13 @@ func newLockMap() *lockMap {
 func (lm *lockMap) LockEntry(entry string) {
 	lm.Lock()
 	// check if entry does not exists, then add entry
-	if _, exists := lm.mutexMap[entry]; !exists {
-		lm.addEntry(entry)
+	mutex, exists := lm.mutexMap[entry]
+	if !exists {
+		mutex = &sync.Mutex{}
+		lm.mutexMap[entry] = mutex
 	}
-
 	lm.Unlock()
-	lm.lockEntry(entry)
+	mutex.Lock()
 }
 
 // UnlockEntry release the lock associated with the specific entry
@@ -69,22 +75,11 @@ func (lm *lockMap) UnlockEntry(entry string) {
 	lm.Lock()
 	defer lm.Unlock()
 
-	if _, exists := lm.mutexMap[entry]; !exists {
+	mutex, exists := lm.mutexMap[entry]
+	if !exists {
 		return
 	}
-	lm.unlockEntry(entry)
-}
-
-func (lm *lockMap) addEntry(entry string) {
-	lm.mutexMap[entry] = &sync.Mutex{}
-}
-
-func (lm *lockMap) lockEntry(entry string) {
-	lm.mutexMap[entry].Lock()
-}
-
-func (lm *lockMap) unlockEntry(entry string) {
-	lm.mutexMap[entry].Unlock()
+	mutex.Unlock()
 }
 
 func getContextWithCancel() (context.Context, context.CancelFunc) {
@@ -116,7 +111,7 @@ func parseTags(tags string, tagsMap map[string]string) map[string]*string {
 				klog.Warning("parseTags: empty key, ignoring this key-value pair")
 				continue
 			}
-			formatted[k] = to.StringPtr(v)
+			formatted[k] = pointer.String(v)
 		}
 	}
 
@@ -132,7 +127,7 @@ func parseTags(tags string, tagsMap map[string]string) map[string]*string {
 				klog.V(4).Infof("parseTags: found identical keys: %s from tags and %s from tagsMap (case-insensitive), %s will replace %s", k, key, key, k)
 				delete(formatted, k)
 			}
-			formatted[key] = to.StringPtr(value)
+			formatted[key] = pointer.String(value)
 		}
 	}
 
@@ -160,7 +155,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 		}
 
 		for _, systemTag := range systemTags {
-			systemTagsMap[systemTag] = to.StringPtr("")
+			systemTagsMap[systemTag] = pointer.String("")
 		}
 	}
 
@@ -171,7 +166,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 		if !found {
 			currentTagsOnResource[k] = v
 			changed = true
-		} else if !strings.EqualFold(to.String(v), to.String(currentTagsOnResource[key])) {
+		} else if !strings.EqualFold(pointer.StringDeref(v, ""), pointer.StringDeref(currentTagsOnResource[key], "")) {
 			currentTagsOnResource[key] = v
 			changed = true
 		}
@@ -182,6 +177,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 		for k := range currentTagsOnResource {
 			if _, ok := newTags[k]; !ok {
 				if found, _ := findKeyInMapCaseInsensitive(systemTagsMap, k); !found {
+					klog.V(2).Infof("reconcileTags: delete tag %s: %s", k, pointer.StringDeref(currentTagsOnResource[k], ""))
 					delete(currentTagsOnResource, k)
 					changed = true
 				}
@@ -192,24 +188,12 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 	return currentTagsOnResource, changed
 }
 
-func (az *Cloud) getVMSetNamesSharingPrimarySLB() sets.String {
-	vmSetNames := make([]string, 0)
-	if az.NodePoolsWithoutDedicatedSLB != "" {
-		vmSetNames = strings.Split(az.Config.NodePoolsWithoutDedicatedSLB, consts.VMSetNamesSharingPrimarySLBDelimiter)
-		for i := 0; i < len(vmSetNames); i++ {
-			vmSetNames[i] = strings.ToLower(strings.TrimSpace(vmSetNames[i]))
-		}
-	}
-
-	return sets.NewString(vmSetNames...)
-}
-
 func getExtendedLocationTypeFromString(extendedLocationType string) network.ExtendedLocationTypes {
 	extendedLocationType = strings.ToLower(extendedLocationType)
 	if val, ok := strToExtendedLocationType[extendedLocationType]; ok {
 		return val
 	}
-	return network.ExtendedLocationTypesEdgeZone
+	return network.EdgeZone
 }
 
 func getServiceAdditionalPublicIPs(service *v1.Service) ([]string, error) {
@@ -237,11 +221,10 @@ func getServiceAdditionalPublicIPs(service *v1.Service) ([]string, error) {
 	return result, nil
 }
 
-func getNodePrivateIPAddress(service *v1.Service, node *v1.Node) string {
-	isIPV6SVC := utilnet.IsIPv6String(service.Spec.ClusterIP)
+func getNodePrivateIPAddress(node *v1.Node, isIPv6 bool) string {
 	for _, nodeAddress := range node.Status.Addresses {
 		if strings.EqualFold(string(nodeAddress.Type), string(v1.NodeInternalIP)) &&
-			utilnet.IsIPv6String(nodeAddress.Address) == isIPV6SVC {
+			utilnet.IsIPv6String(nodeAddress.Address) == isIPv6 {
 			klog.V(6).Infof("getNodePrivateIPAddress: node %s, ip %s", node.Name, nodeAddress.Address)
 			return nodeAddress.Address
 		}
@@ -289,11 +272,11 @@ func sameContentInSlices(s1 []string, s2 []string) bool {
 func removeDuplicatedSecurityRules(rules []network.SecurityRule) []network.SecurityRule {
 	ruleNames := make(map[string]bool)
 	for i := len(rules) - 1; i >= 0; i-- {
-		if _, ok := ruleNames[to.String(rules[i].Name)]; ok {
-			klog.Warningf("Found duplicated rule %s, will be removed.", to.String(rules[i].Name))
+		if _, ok := ruleNames[pointer.StringDeref(rules[i].Name, "")]; ok {
+			klog.Warningf("Found duplicated rule %s, will be removed.", pointer.StringDeref(rules[i].Name, ""))
 			rules = append(rules[:i], rules[i+1:]...)
 		}
-		ruleNames[to.String(rules[i].Name)] = true
+		ruleNames[pointer.StringDeref(rules[i].Name, "")] = true
 	}
 	return rules
 }
@@ -304,17 +287,17 @@ func getVMSSVMCacheKey(resourceGroup, vmssName string) string {
 }
 
 // isNodeInVMSSVMCache check whether nodeName is in vmssVMCache
-func isNodeInVMSSVMCache(nodeName string, vmssVMCache *azcache.TimedCache) bool {
+func isNodeInVMSSVMCache(nodeName string, vmssVMCache azcache.Resource) bool {
 	if vmssVMCache == nil {
 		return false
 	}
 
 	var isInCache bool
 
-	vmssVMCache.Lock.Lock()
-	defer vmssVMCache.Lock.Unlock()
+	vmssVMCache.Lock()
+	defer vmssVMCache.Unlock()
 
-	for _, entry := range vmssVMCache.Store.List() {
+	for _, entry := range vmssVMCache.GetStore().List() {
 		if entry != nil {
 			e := entry.(*azcache.AzureCacheEntry)
 			e.Lock.Lock()
@@ -337,4 +320,287 @@ func isNodeInVMSSVMCache(nodeName string, vmssVMCache *azcache.TimedCache) bool 
 	}
 
 	return isInCache
+}
+
+func extractVmssVMName(name string) (string, string, error) {
+	split := strings.SplitAfter(name, consts.VMSSNameSeparator)
+	if len(split) < 2 {
+		klog.V(3).Infof("Failed to extract vmssVMName %q", name)
+		return "", "", ErrorNotVmssInstance
+	}
+
+	ssName := strings.Join(split[0:len(split)-1], "")
+	// removing the trailing `vmssNameSeparator` since we used SplitAfter
+	ssName = ssName[:len(ssName)-1]
+	instanceID := split[len(split)-1]
+	return ssName, instanceID, nil
+}
+
+// isServiceDualStack checks if a Service is dual-stack or not.
+func isServiceDualStack(svc *v1.Service) bool {
+	return len(svc.Spec.IPFamilies) == 2
+}
+
+// getIPFamiliesEnabled checks if IPv4, IPv6 are enabled according to svc.Spec.IPFamilies.
+func getIPFamiliesEnabled(svc *v1.Service) (v4Enabled bool, v6Enabled bool) {
+	for _, ipFamily := range svc.Spec.IPFamilies {
+		if ipFamily == v1.IPv4Protocol {
+			v4Enabled = true
+		} else if ipFamily == v1.IPv6Protocol {
+			v6Enabled = true
+		}
+	}
+	return
+}
+
+// getServiceLoadBalancerIP retrieves LB IP from IPv4 annotation, then IPv6 annotation, then service.Spec.LoadBalancerIP.
+func getServiceLoadBalancerIP(service *v1.Service, isIPv6 bool) string {
+	if service == nil {
+		return ""
+	}
+
+	if ip, ok := service.Annotations[consts.ServiceAnnotationLoadBalancerIPDualStack[isIPv6]]; ok && ip != "" {
+		return ip
+	}
+
+	// Retrieve LB IP from service.Spec.LoadBalancerIP (will be deprecated)
+	svcLBIP := service.Spec.LoadBalancerIP
+	if (net.ParseIP(svcLBIP).To4() != nil && !isIPv6) ||
+		(net.ParseIP(svcLBIP).To4() == nil && isIPv6) {
+		return svcLBIP
+	}
+	return ""
+}
+
+func getServiceLoadBalancerIPs(service *v1.Service) []string {
+	if service == nil {
+		return []string{}
+	}
+
+	ips := []string{}
+	if ip, ok := service.Annotations[consts.ServiceAnnotationLoadBalancerIPDualStack[false]]; ok && ip != "" {
+		ips = append(ips, ip)
+	}
+	if ip, ok := service.Annotations[consts.ServiceAnnotationLoadBalancerIPDualStack[true]]; ok && ip != "" {
+		ips = append(ips, ip)
+	}
+	if len(ips) != 0 {
+		return ips
+	}
+
+	lbIP := service.Spec.LoadBalancerIP
+	if lbIP != "" {
+		ips = append(ips, lbIP)
+	}
+
+	return ips
+}
+
+// setServiceLoadBalancerIP sets LB IP to a Service
+func setServiceLoadBalancerIP(service *v1.Service, ip string) {
+	if service == nil {
+		klog.Warning("setServiceLoadBalancerIP: Service is nil")
+		return
+	}
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
+		klog.Warning("setServiceLoadBalancerIP: IP %q is not valid for Service", ip, service.Name)
+		return
+	}
+
+	isIPv6 := parsedIP.To4() == nil
+	if service.Annotations == nil {
+		service.Annotations = map[string]string{}
+	}
+	service.Annotations[consts.ServiceAnnotationLoadBalancerIPDualStack[isIPv6]] = ip
+}
+
+func getServicePIPName(service *v1.Service, isIPv6 bool) string {
+	if service == nil {
+		return ""
+	}
+
+	if !isServiceDualStack(service) {
+		return service.Annotations[consts.ServiceAnnotationPIPNameDualStack[false]]
+	}
+
+	return service.Annotations[consts.ServiceAnnotationPIPNameDualStack[isIPv6]]
+}
+
+func getServicePIPNames(service *v1.Service) []string {
+	var ips []string
+	for _, ipVersion := range []bool{IPVersionIPv4, IPVersionIPv6} {
+		ips = append(ips, getServicePIPName(service, ipVersion))
+	}
+	return ips
+}
+
+func getServicePIPPrefixID(service *v1.Service, isIPv6 bool) string {
+	if service == nil {
+		return ""
+	}
+
+	if !isServiceDualStack(service) {
+		return service.Annotations[consts.ServiceAnnotationPIPPrefixIDDualStack[false]]
+	}
+
+	return service.Annotations[consts.ServiceAnnotationPIPPrefixIDDualStack[isIPv6]]
+}
+
+// getResourceByIPFamily returns the resource name of with IPv6 suffix when
+// it is a dual-stack Service and the resource is of IPv6.
+// NOTICE: For PIPs of IPv6 Services created with CCM v1.27.1, after the CCM is upgraded,
+// the old PIPs will be recreated.
+func getResourceByIPFamily(resource string, isDualStack, isIPv6 bool) string {
+	if isDualStack && isIPv6 {
+		return fmt.Sprintf("%s-%s", resource, v6Suffix)
+	}
+	return resource
+}
+
+// isFIPIPv6 checks if the frontend IP configuration is of IPv6.
+// NOTICE: isFIPIPv6 assumes the FIP is owned by the Service and it is the primary Service.
+func (az *Cloud) isFIPIPv6(service *v1.Service, pipRG string, fip *network.FrontendIPConfiguration) (bool, error) {
+	isDualStack := isServiceDualStack(service)
+	if !isDualStack {
+		return service.Spec.IPFamilies[0] == v1.IPv6Protocol, nil
+	}
+	return managedResourceHasIPv6Suffix(pointer.StringDeref(fip.Name, "")), nil
+}
+
+// getResourceIDPrefix returns a substring from the provided one between beginning and the last "/".
+func getResourceIDPrefix(id string) string {
+	idx := strings.LastIndexByte(id, '/')
+	if idx == -1 {
+		return id // Should not happen
+	}
+	return id[:idx]
+}
+
+// fillSubnet fills subnet value into the variable.
+func (az *Cloud) fillSubnet(subnet *network.Subnet, subnetName string) error {
+	if subnet == nil {
+		return fmt.Errorf("subnet is nil, should not happen")
+	}
+	if subnet.ID == nil {
+		curSubnet, existsSubnet, err := az.getSubnet(az.VnetName, subnetName)
+		if err != nil {
+			return err
+		}
+		if !existsSubnet {
+			return fmt.Errorf("failed to get subnet: %s/%s", az.VnetName, subnetName)
+		}
+		*subnet = curSubnet
+	}
+	return nil
+}
+
+func getLBNameFromBackendPoolID(backendPoolID string) (string, error) {
+	matches := backendPoolIDRE.FindStringSubmatch(backendPoolID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("backendPoolID %q is in wrong format", backendPoolID)
+	}
+
+	return matches[1], nil
+}
+
+func countNICsOnBackendPool(backendPool network.BackendAddressPool) int {
+	if backendPool.BackendAddressPoolPropertiesFormat == nil ||
+		backendPool.BackendIPConfigurations == nil {
+		return 0
+	}
+
+	return len(*backendPool.BackendIPConfigurations)
+}
+
+func countIPsOnBackendPool(backendPool network.BackendAddressPool) int {
+	if backendPool.BackendAddressPoolPropertiesFormat == nil ||
+		backendPool.LoadBalancerBackendAddresses == nil {
+		return 0
+	}
+
+	var ipsCount int
+	for _, loadBalancerBackendAddress := range *backendPool.LoadBalancerBackendAddresses {
+		if loadBalancerBackendAddress.LoadBalancerBackendAddressPropertiesFormat != nil &&
+			pointer.StringDeref(loadBalancerBackendAddress.IPAddress, "") != "" {
+			ipsCount++
+		}
+	}
+
+	return ipsCount
+}
+
+// StringInSlice check if string in a list
+func StringInSlice(s string, list []string) bool {
+	for _, item := range list {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+// stringSlice returns a string slice value for the passed string slice pointer. It returns a nil
+// slice if the pointer is nil.
+func stringSlice(s *[]string) []string {
+	if s != nil {
+		return *s
+	}
+	return nil
+}
+
+// IntInSlice checks if an int is in a list
+func IntInSlice(i int, list []int) bool {
+	for _, item := range list {
+		if item == i {
+			return true
+		}
+	}
+	return false
+}
+
+func safeAddKeyToStringsSet(set sets.Set[string], key string) sets.Set[string] {
+	if set != nil {
+		set.Insert(key)
+	} else {
+		set = sets.New[string](key)
+	}
+
+	return set
+}
+
+func safeRemoveKeyFromStringsSet(set sets.Set[string], key string) (sets.Set[string], bool) {
+	var has bool
+	if set != nil {
+		if set.Has(key) {
+			has = true
+		}
+		set.Delete(key)
+	}
+
+	return set, has
+}
+
+func setToStrings(set sets.Set[string]) []string {
+	var res []string
+	for key := range set {
+		res = append(res, key)
+	}
+	return res
+}
+
+func isLocalService(service *v1.Service) bool {
+	return service.Spec.ExternalTrafficPolicy == v1.ServiceExternalTrafficPolicyLocal
+}
+
+func getServiceIPFamily(service *v1.Service) string {
+	if len(service.Spec.IPFamilies) > 1 {
+		return consts.IPVersionDualStackString
+	}
+	for _, ipFamily := range service.Spec.IPFamilies {
+		if ipFamily == v1.IPv6Protocol {
+			return consts.IPVersionIPv6String
+		}
+	}
+	return consts.IPVersionIPv4String
 }
