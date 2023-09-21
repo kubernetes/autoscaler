@@ -42,7 +42,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	assert.Equal(t, true, true)
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
 		// If auth token set in env, hit the actual Packet API
-		m = newTestPacketManagerRest(t, "https://api.equinix.com")
+		m = newTestPacketManagerRest(t, "https://api.equinix.com/metal/v1")
 	} else {
 		// Set up a mock Packet API
 		m = newTestPacketManagerRest(t, server.URL)

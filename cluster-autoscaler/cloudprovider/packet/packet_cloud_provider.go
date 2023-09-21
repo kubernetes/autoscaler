@@ -35,7 +35,8 @@ import (
 
 const (
 	// ProviderName is the cloud provider name for Equinix Metal
-	ProviderName = "equinix-metal"
+	ProviderName             = "packet"
+	EquinixMetalProviderName = "packet"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as
@@ -69,7 +70,7 @@ func buildEquinixMetalCloudProvider(metalManager equinixMetalManager, resourceLi
 
 // Name returns the name of the cloud provider.
 func (pcp *equinixMetalCloudProvider) Name() string {
-	return ProviderName
+	return EquinixMetalProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
@@ -134,7 +135,7 @@ func (pcp *equinixMetalCloudProvider) HasInstance(node *apiv1.Node) (bool, error
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (pcp *equinixMetalCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	return &PriceModel{}, nil
+	return &Price{}, nil
 }
 
 // GetAvailableMachineTypes is not implemented.

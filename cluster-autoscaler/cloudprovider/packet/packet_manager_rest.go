@@ -313,7 +313,7 @@ func createEquinixMetalManagerRest(configReader io.Reader, discoverOpts cloudpro
 		}
 
 		manager.equinixMetalManagerNodePools[nodepool] = &equinixMetalManagerNodePool{
-			baseURL:           "https://api.equinix.com",
+			baseURL:           "https://api.equinix.com/metal/v1",
 			clusterName:       cfg.Nodegroupdef[nodepool].ClusterName,
 			projectID:         cfg.Nodegroupdef["default"].ProjectID,
 			apiServerEndpoint: cfg.Nodegroupdef["default"].APIServerEndpoint,
