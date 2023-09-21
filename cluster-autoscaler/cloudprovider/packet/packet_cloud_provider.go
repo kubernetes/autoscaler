@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for Packet cloud provider, now named as equinixmetal
+	// ProviderName is the cloud provider name for Equinix Metal
 	ProviderName = "packet"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
