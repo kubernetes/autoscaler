@@ -63,7 +63,6 @@ type TaintKeySet map[string]bool
 type TaintConfig struct {
 	IgnoredTaints     TaintKeySet
 	StatusTaints      TaintKeySet
-	StatusTaintPrefix string
 }
 
 // NewTaintConfig returns the taint config extracted from options
@@ -83,7 +82,6 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 	return TaintConfig{
 		IgnoredTaints:     ignoredTaints,
 		StatusTaints:      statusTaints,
-		StatusTaintPrefix: DefaultStatusTaintPrefix,
 	}
 }
 
