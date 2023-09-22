@@ -2755,6 +2755,13 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:          8,
 		Architecture: "amd64",
 	},
+	"p5.48xlarge": {
+		InstanceType: "p5.48xlarge",
+		VCPU:         192,
+		MemoryMb:     2048000,
+		GPU:          8,
+		Architecture: "amd64",
+	},
 	"r3.2xlarge": {
 		InstanceType: "r3.2xlarge",
 		VCPU:         8,
