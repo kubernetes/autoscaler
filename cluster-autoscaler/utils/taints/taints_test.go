@@ -388,7 +388,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, one unready prefixed tainted node": {
+		"no ignored taint, one node unready prefixed with ignore taint": {
 			readyNodes:    0,
 			allNodes:      1,
 			ignoredTaints: map[string]bool{},
@@ -401,6 +401,29 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 					Taints: []apiv1.Taint{
 						{
 							Key:    IgnoreTaintPrefix + "another-taint",
+							Value:  "myValue",
+							Effect: apiv1.TaintEffectNoSchedule,
+						},
+					},
+				},
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{readyCondition},
+				},
+			},
+		},
+		"no ignored taint, one node unready prefixed with startup taint": {
+			readyNodes:    0,
+			allNodes:      1,
+			ignoredTaints: map[string]bool{},
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:              "notReadyTainted",
+					CreationTimestamp: metav1.NewTime(time.Now()),
+				},
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:    StartupTaintPrefix + "another-taint",
 							Value:  "myValue",
 							Effect: apiv1.TaintEffectNoSchedule,
 						},
@@ -486,6 +509,16 @@ func TestSanitizeTaints(t *testing.T) {
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
 				{
+					Key:    DefaultStatusTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    StartupTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
 					Key:    "test-taint",
 					Value:  "test2",
 					Effect: apiv1.TaintEffectNoSchedule,
@@ -522,8 +555,9 @@ func TestSanitizeTaints(t *testing.T) {
 		},
 	}
 	taintConfig := TaintConfig{
-		IgnoredTaints: map[string]bool{"ignore-me": true},
-		StatusTaints:  map[string]bool{"status-me": true},
+		IgnoredTaints:     map[string]bool{"ignore-me": true},
+		StatusTaints:      map[string]bool{"status-me": true},
+		StatusTaintPrefix: DefaultStatusTaintPrefix,
 	}
 
 	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)

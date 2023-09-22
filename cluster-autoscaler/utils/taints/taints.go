@@ -44,6 +44,12 @@ const (
 	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
 	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
 
+	// StartupTaintPrefix (Same as IgnoreTaintPrefix) any taint starting with it will be filtered out from autoscaler template node.
+	StartupTaintPrefix = "startup-taint.cluster-autoscaler.kubernetes.io/"
+
+	// StartupTaintPrefix (Same as IgnoreTaintPrefix) any taint starting with it will be filtered out from autoscaler template node.
+	DefaultStatusTaintPrefix = "status-taint.cluster-autoscaler.kubernetes.io/"
+
 	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
 
 	// AWS: Indicates that a node has volumes stuck in attaching state and hence it is not fit for scheduling more pods
@@ -55,8 +61,9 @@ type TaintKeySet map[string]bool
 
 // TaintConfig is a config of taints that require special handling
 type TaintConfig struct {
-	IgnoredTaints TaintKeySet
-	StatusTaints  TaintKeySet
+	IgnoredTaints     TaintKeySet
+	StatusTaints      TaintKeySet
+	StatusTaintPrefix string
 }
 
 // NewTaintConfig returns the taint config extracted from options
@@ -74,8 +81,9 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 	}
 
 	return TaintConfig{
-		IgnoredTaints: ignoredTaints,
-		StatusTaints:  statusTaints,
+		IgnoredTaints:     ignoredTaints,
+		StatusTaints:      statusTaints,
+		StatusTaintPrefix: DefaultStatusTaintPrefix,
 	}
 }
 
@@ -352,6 +360,15 @@ func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint
 			continue
 		}
 
+		if strings.HasPrefix(taint.Key, StartupTaintPrefix) {
+			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
+			continue
+		}
+		if strings.HasPrefix(taint.Key, DefaultStatusTaintPrefix) {
+			klog.V(4).Infof("Removing status taint %s, when creating template from node", taint.Key)
+			continue
+		}
+
 		if _, exists := taintConfig.StatusTaints[taint.Key]; exists {
 			klog.V(4).Infof("Removing status taint %s, when creating template from node", taint.Key)
 			continue
@@ -376,10 +393,10 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 		ready := true
 		for _, t := range node.Spec.Taints {
 			_, hasIgnoredTaint := ignoredTaints[t.Key]
-			if hasIgnoredTaint || strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
+			if hasIgnoredTaint || strings.HasPrefix(t.Key, IgnoreTaintPrefix) || strings.HasPrefix(t.Key, StartupTaintPrefix) {
 				ready = false
 				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.IgnoreTaint)
-				klog.V(3).Infof("Overriding status of node %v, which seems to have ignored taint %q", node.Name, t.Key)
+				klog.V(3).Infof("Overriding status of node %v, which seems to have ignored or startup taint %q", node.Name, t.Key)
 				break
 			}
 		}
