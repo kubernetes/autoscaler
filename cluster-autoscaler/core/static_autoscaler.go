@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -38,7 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	cacontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
@@ -79,7 +80,7 @@ const (
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
 type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
-	*context.AutoscalingContext
+	*cacontext.AutoscalingContext
 	// ClusterState for maintaining the state of cluster nodes.
 	clusterStateRegistry    *clusterstate.ClusterStateRegistry
 	lastScaleUpTime         time.Time
@@ -133,7 +134,7 @@ func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
 	predicateChecker predicatechecker.PredicateChecker,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
-	autoscalingKubeClients *context.AutoscalingKubeClients,
+	autoscalingKubeClients *cacontext.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
@@ -150,7 +151,7 @@ func NewStaticAutoscaler(
 	}
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-	autoscalingContext := context.NewAutoscalingContext(
+	autoscalingContext := cacontext.NewAutoscalingContext(
 		opts,
 		predicateChecker,
 		clusterSnapshot,
@@ -255,6 +256,9 @@ func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, schedu
 				return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 			}
 		}
+	}
+	if err := a.PredicateChecker.Snapshot(context.TODO(), a.ClusterSnapshot); err != nil {
+		return caerrors.NewAutoscalerError(caerrors.InternalError, "initialize simulation in predicate checker: %v", err)
 	}
 	return nil
 }
@@ -694,7 +698,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 // Sets the target size of node groups to the current number of nodes in them
 // if the difference was constant for a prolonged time. Returns true if managed
 // to fix something.
-func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, currentTime time.Time) (bool, error) {
+func fixNodeGroupSize(context *cacontext.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, currentTime time.Time) (bool, error) {
 	fixed := false
 	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
 		incorrectSize := clusterStateRegistry.GetIncorrectNodeGroupSize(nodeGroup.Id())
@@ -723,7 +727,7 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 }
 
 // Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
-func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clusterstate.UnregisteredNode, context *context.AutoscalingContext,
+func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clusterstate.UnregisteredNode, context *cacontext.AutoscalingContext,
 	csr *clusterstate.ClusterStateRegistry, currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 
 	nodeGroups := a.nodeGroupsById()

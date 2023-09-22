@@ -18,6 +18,7 @@ package predicatechecker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -32,6 +33,8 @@ import (
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 )
+
+var errNoSnapshot = errors.New("ClusterSnapshot not provided")
 
 // SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
 // The verification is done by calling out to scheduler code.
@@ -78,6 +81,42 @@ func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerF
 	return checker, nil
 }
 
+func (p *SchedulerBasedPredicateChecker) Snapshot(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot) error {
+	if clusterSnapshot == nil {
+		return errNoSnapshot
+	}
+
+	cycleState := clusterSnapshot.CycleState()
+	for _, plugin := range p.framework.ClusterAutoscalerPlugins() {
+		status := plugin.StartSimulation(ctx, cycleState)
+		if !status.IsSuccess() {
+			return fmt.Errorf("%s: error running StartSimulation: %v", plugin.Name(), status.Message())
+		}
+	}
+	return nil
+}
+
+func (p *SchedulerBasedPredicateChecker) BindPod(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) error {
+	logger := klog.LoggerWithName(klog.FromContext(ctx), "BindPod")
+	ctx = klog.NewContext(ctx, logger)
+	if err := clusterSnapshot.AddPod(pod, nodeName); err != nil {
+		return fmt.Errorf("adding pod  %v.%v to node %v in ClusterSnapshot failed: %v", pod.Namespace, pod.Name, nodeName, err)
+	}
+	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
+	if err != nil {
+		return fmt.Errorf("adding pod  %v.%v to node %v failed because node lookup failed: %v", pod.Namespace, pod.Name, nodeName, err)
+	}
+	cycleState := clusterSnapshot.CycleState()
+	for _, plugin := range p.framework.ClusterAutoscalerPlugins() {
+		pluginCtx := klog.NewContext(ctx, klog.LoggerWithName(logger, plugin.Name()))
+		status := plugin.SimulateBindPod(pluginCtx, cycleState, pod, nodeInfo)
+		if !status.IsSuccess() {
+			return fmt.Errorf("%s: error running SimulateBindPod: %v", plugin.Name(), status.Message())
+		}
+	}
+	return nil
+}
+
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
 func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, error) {
 	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*schedulerframework.NodeInfo) bool {
@@ -88,7 +127,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnap
 // FitsAnyNodeMatching checks if the given pod can be placed on any of the given nodes matching the provided function.
 func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error) {
 	if clusterSnapshot == nil {
-		return "", fmt.Errorf("ClusterSnapshot not provided")
+		return "", errNoSnapshot
 	}
 
 	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
@@ -104,7 +143,8 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
-	state := schedulerframework.NewCycleState()
+	// Filtering must not modify the cluster state, so use a clone.
+	state := clusterSnapshot.CycleState().Clone()
 	preFilterResult, preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
@@ -137,7 +177,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 // CheckPredicates checks if the given pod can be placed on the given node.
 func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
 	if clusterSnapshot == nil {
-		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
+		return NewPredicateError(InternalPredicateError, "", errNoSnapshot.Error(), nil, emptyString)
 	}
 	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
 	if err != nil {
@@ -148,7 +188,9 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
-	state := schedulerframework.NewCycleState()
+	// Filtering must not modify the cluster state, so use a clone.
+	state := clusterSnapshot.CycleState().Clone()
+
 	_, preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return NewPredicateError(

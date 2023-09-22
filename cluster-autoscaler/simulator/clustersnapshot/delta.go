@@ -48,7 +48,8 @@ type deltaSnapshotNodeLister DeltaClusterSnapshot
 type deltaSnapshotStorageLister DeltaClusterSnapshot
 
 type internalDeltaSnapshotData struct {
-	baseData *internalDeltaSnapshotData
+	baseData   *internalDeltaSnapshotData
+	cycleState *schedulerframework.CycleState
 
 	addedNodeInfoMap    map[string]*schedulerframework.NodeInfo
 	modifiedNodeInfoMap map[string]*schedulerframework.NodeInfo
@@ -62,6 +63,7 @@ type internalDeltaSnapshotData struct {
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
 	return &internalDeltaSnapshotData{
+		cycleState:          schedulerframework.NewCycleState(),
 		addedNodeInfoMap:    make(map[string]*schedulerframework.NodeInfo),
 		modifiedNodeInfoMap: make(map[string]*schedulerframework.NodeInfo),
 		deletedNodeInfos:    make(map[string]bool),
@@ -294,6 +296,7 @@ func (data *internalDeltaSnapshotData) isPVCUsedByPods(key string) bool {
 func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 	forkedData := newInternalDeltaSnapshotData()
 	forkedData.baseData = data
+	forkedData.cycleState = data.cycleState.Clone()
 	return forkedData
 }
 
@@ -458,7 +461,7 @@ func (snapshot *DeltaClusterSnapshot) Revert() {
 }
 
 // Commit commits changes done after forking.
-// Time: O(n), where n = size of delta (number of nodes added, modified or deleted since forking)
+// Time: O(n), where n = size of delta (number of nodes added, modified or deleted since forking) + time for cloning the scheduler cycle state (shallow copy depending on plugins)
 func (snapshot *DeltaClusterSnapshot) Commit() error {
 	newData, err := snapshot.data.commit()
 	if err != nil {
@@ -472,4 +475,9 @@ func (snapshot *DeltaClusterSnapshot) Commit() error {
 // Time: O(1)
 func (snapshot *DeltaClusterSnapshot) Clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
+}
+
+// CycleState returns the scheduler cycle state of the latest snapshot.
+func (snapshot *DeltaClusterSnapshot) CycleState() *schedulerframework.CycleState {
+	return snapshot.data.cycleState
 }

@@ -42,6 +42,9 @@ type ClusterSnapshot interface {
 	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
 	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
 	IsPVCUsedByPods(key string) bool
+	// CycleState returns a scheduler cycle state that was created when the snapshot
+	// was created. Fork will clone that state.
+	CycleState() *schedulerframework.CycleState
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.

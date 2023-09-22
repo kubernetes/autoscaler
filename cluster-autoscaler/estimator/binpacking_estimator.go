@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -97,8 +98,8 @@ func (e *BinpackingNodeEstimator) Estimate(
 		})
 		if err == nil {
 			found = true
-			if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
+			if err := e.predicateChecker.BindPod(context.TODO(), e.clusterSnapshot, pod, nodeName); err != nil {
+				klog.Errorf("Error binding pod to node, not scaling up: %v", err)
 				return 0, nil
 			}
 			scheduledPods = append(scheduledPods, pod)
@@ -136,8 +137,8 @@ func (e *BinpackingNodeEstimator) Estimate(
 			if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, pod, newNodeName); err != nil {
 				continue
 			}
-			if err := e.clusterSnapshot.AddPod(pod, newNodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, newNodeName, err)
+			if err := e.predicateChecker.BindPod(context.TODO(), e.clusterSnapshot, pod, newNodeName); err != nil {
+				klog.Errorf("Error binding pod to node, not scaling up: %v", err)
 				return 0, nil
 			}
 			newNodesWithPods[newNodeName] = true

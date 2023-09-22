@@ -32,6 +32,7 @@ type BasicClusterSnapshot struct {
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
+	cycleState         *schedulerframework.CycleState
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() ([]*schedulerframework.NodeInfo, error) {
@@ -120,6 +121,7 @@ func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        make(map[string]*schedulerframework.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
+		cycleState:         schedulerframework.NewCycleState(),
 	}
 }
 
@@ -138,6 +140,7 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
+		cycleState:         data.cycleState.Clone(),
 	}
 }
 
@@ -321,4 +324,9 @@ func (snapshot *basicClusterSnapshotNodeLister) Get(nodeName string) (*scheduler
 // Returns the IsPVCUsedByPods in a given key.
 func (snapshot *basicClusterSnapshotStorageLister) IsPVCUsedByPods(key string) bool {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().isPVCUsedByPods(key)
+}
+
+// CycleState returns the cycle state of the current snapshot state.
+func (snapshot *BasicClusterSnapshot) CycleState() *schedulerframework.CycleState {
+	return snapshot.getInternalData().cycleState
 }
