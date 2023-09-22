@@ -199,6 +199,7 @@ var (
 
 	ignoreTaintsFlag          = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 	startupTaintFlag          = multiStringFlag("startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
+	statusTaintsFlag          = multiStringFlag("status-taint", "Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready")
 	balancingIgnoreLabelsFlag = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	balancingLabelsFlag       = multiStringFlag("balancing-label", "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
 	awsUseStaticInstanceList  = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
@@ -348,6 +349,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
 		IgnoredTaints:                    append(*ignoreTaintsFlag, *startupTaintFlag...),
+		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
 		KubeConfigPath:                   *kubeConfigFile,
