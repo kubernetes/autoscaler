@@ -423,6 +423,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 
 	t.Setenv("ARM_CLOUD", "AzurePublicCloud")
 	t.Setenv("LOCATION", "southeastasia")
+	t.Setenv("AZURE_TENANT_ID", "tenantId")
+	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_SUBSCRIPTION_ID", "subscriptionId")
 	t.Setenv("ARM_RESOURCE_GROUP", "resourceGroup")
 	t.Setenv("ARM_TENANT_ID", "tenantId")
