@@ -64,10 +64,7 @@ fi
 
 for i in $COMPONENTS; do
   if [ $i == admission-controller-deployment ] ; then
-    if [ ${ACTION} == create ] ; then
-      (bash ${SCRIPT_ROOT}/pkg/admission-controller/gencerts.sh || true)
-    elif [ ${ACTION} == delete ] ; then
-      (bash ${SCRIPT_ROOT}/pkg/admission-controller/rmcerts.sh || true)
+    if [ ${ACTION} == delete ] ; then
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/delete-webhook.sh || true)
     fi
   fi
