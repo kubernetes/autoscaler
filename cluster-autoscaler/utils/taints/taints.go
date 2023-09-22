@@ -47,7 +47,7 @@ const (
 	// StartupTaintPrefix (Same as IgnoreTaintPrefix) any taint starting with it will be filtered out from autoscaler template node.
 	StartupTaintPrefix = "startup-taint.cluster-autoscaler.kubernetes.io/"
 
-	// StartupTaintPrefix (Same as IgnoreTaintPrefix) any taint starting with it will be filtered out from autoscaler template node.
+	// DefaultStatusTaintPrefix any taint starting with it will be filtered out from autoscaler template node but unlike IgnoreTaintPrefix & StartTaintPrefix it should not be trated as unready.
 	DefaultStatusTaintPrefix = "status-taint.cluster-autoscaler.kubernetes.io/"
 
 	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
